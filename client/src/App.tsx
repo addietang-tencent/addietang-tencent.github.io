@@ -4,34 +4,64 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
 
+// Landing
+import LandingPage from "./pages/LandingPage";
+
+// Tenant
+import MyOpenClaw from "./pages/tenant/MyOpenClaw";
+import OpenClawDetail from "./pages/tenant/OpenClawDetail";
+import ModelQuota from "./pages/tenant/ModelQuota";
+import HelpDocs from "./pages/tenant/HelpDocs";
+import ResetPassword from "./pages/tenant/ResetPassword";
+
+// Admin
+import BasicInfo from "./pages/admin/BasicInfo";
+import MemberManagement from "./pages/admin/MemberManagement";
+import ModelConfig from "./pages/admin/ModelConfig";
+import ChannelConfig from "./pages/admin/ChannelConfig";
+import DocManagement from "./pages/admin/DocManagement";
+import ServerManagement from "./pages/admin/ServerManagement";
+import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
+import TokensMonitor from "./pages/admin/TokensMonitor";
+import AuditLog from "./pages/admin/AuditLog";
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Landing Page */}
+      <Route path="/" component={LandingPage} />
+
+      {/* Tenant Routes */}
+      <Route path="/my-openclaw" component={MyOpenClaw} />
+      <Route path="/openclaw/:id" component={OpenClawDetail} />
+      <Route path="/model-quota" component={ModelQuota} />
+      <Route path="/help-docs" component={HelpDocs} />
+      <Route path="/reset-password" component={ResetPassword} />
+
+      {/* Admin Routes */}
+      <Route path="/admin/basic-info" component={BasicInfo} />
+      <Route path="/admin/members" component={MemberManagement} />
+      <Route path="/admin/model-config" component={ModelConfig} />
+      <Route path="/admin/channel-config" component={ChannelConfig} />
+      <Route path="/admin/doc-management" component={DocManagement} />
+      <Route path="/admin/server-management" component={ServerManagement} />
+      <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
+      <Route path="/admin/tokens-monitor" component={TokensMonitor} />
+      <Route path="/admin/audit-log" component={AuditLog} />
+
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
-          <Toaster />
+          <Toaster position="top-right" />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

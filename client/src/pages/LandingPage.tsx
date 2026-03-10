@@ -13,6 +13,7 @@ import {
   Bot, Zap, Shield, Cloud, Settings, Users, ArrowRight,
   MessageSquare, Brain, Puzzle, Clock, CheckCircle2
 } from "lucide-react";
+import { useUserRole } from "@/contexts/UserRoleContext";
 
 const CONCEPT_POINTS = [
   {
@@ -81,6 +82,7 @@ const FEATURE_POINTS = [
 ];
 
 export default function LandingPage() {
+  const { isAdmin } = useUserRole();
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Bar */}
@@ -97,9 +99,14 @@ export default function LandingPage() {
             <Link href="/my-openclaw">
               <Button variant="ghost" size="sm" className="text-gray-600">进入我的OpenClaw</Button>
             </Link>
-            <Link href="/admin/basic-info">
-              <Button variant="outline" size="sm" className="text-gray-600">管控端</Button>
-            </Link>
+            {isAdmin && (
+              <Link href="/admin/basic-info">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
+                  <Settings className="w-3.5 h-3.5" />
+                  管理后台
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </header>

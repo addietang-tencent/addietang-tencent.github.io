@@ -196,7 +196,7 @@ export default function MyOpenClaw() {
                     />
                   )}
                   <div
-                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isStopped ? "hover:-translate-y-0.5 hover:border-blue-100 cursor-pointer" : "cursor-default"}`}
+                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isStopped ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
                     {/* Card Header */}
                     <div className="p-5">

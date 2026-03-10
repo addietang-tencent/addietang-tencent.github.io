@@ -114,15 +114,15 @@ export default function MyOpenClaw() {
             <div className="mb-8 rounded-2xl p-6 border border-blue-100 relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04), rgba(88,86,214,0.04))" }}>
               <div className="absolute top-0 right-0 w-48 h-48 orb-blue opacity-30 pointer-events-none" />
-              {/* Close Button */}
+              <div className="relative z-10">
+              {/* Close Button - z-20 确保在内层内容之上 */}
               <button
                 onClick={() => setShowQuickStart(false)}
-                className="absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-10"
+                className="absolute top-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-20"
                 aria-label="关闭快速上手"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-              <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
                   <Zap className="w-5 h-5 text-blue-600" />
                   <h3 className="font-semibold text-gray-900">快速上手</h3>

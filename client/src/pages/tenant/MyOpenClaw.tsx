@@ -218,7 +218,7 @@ export default function MyOpenClaw() {
                                       </DropdownMenuItem>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent side="left" className="max-w-48 text-xs">
+                                  <TooltipContent side="left" className="w-max text-xs">
                                     {DISABLED_TIP}
                                   </TooltipContent>
                                 </Tooltip>
@@ -239,7 +239,7 @@ export default function MyOpenClaw() {
                                       </DropdownMenuItem>
                                     </div>
                                   </TooltipTrigger>
-                                  <TooltipContent side="left" className="max-w-48 text-xs">
+                                  <TooltipContent side="left" className="w-max text-xs">
                                     {DISABLED_TIP}
                                   </TooltipContent>
                                 </Tooltip>
@@ -286,7 +286,7 @@ export default function MyOpenClaw() {
                               </Button>
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent className="max-w-48 text-xs">
+                          <TooltipContent className="w-max text-xs">
                             {DISABLED_TIP}
                           </TooltipContent>
                         </Tooltip>

@@ -118,7 +118,7 @@ export default function MyOpenClaw() {
               {/* Close Button - z-20 确保在内层内容之上 */}
               <button
                 onClick={() => setShowQuickStart(false)}
-                className="absolute top-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors z-20"
+                className="absolute top-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors z-20"
                 aria-label="关闭快速上手"
               >
                 <X className="w-3.5 h-3.5" />

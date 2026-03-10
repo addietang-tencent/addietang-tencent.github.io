@@ -70,7 +70,7 @@ const NAV_GROUPS = [
   },
 ];
 
-const CURRENT_ADMIN = "zhangsan@a-company.com";
+const CURRENT_ADMIN = "alice@acompany.com";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();

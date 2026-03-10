@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   { label: "帮助文档", path: "/help-docs" },
 ];
 
-const CURRENT_USER = "zhangsan@a-company.com";
+const CURRENT_USER = "alice@acompany.com";
 
 export default function TenantLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();

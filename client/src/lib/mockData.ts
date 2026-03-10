@@ -46,7 +46,8 @@ export const MOCK_OPENCLAW_LIST = [
 
 export const MOCK_MEMBERS = [
   {
-    id: "zhangsan@a-company.com",
+    id: "alice@acompany.com",
+    name: "Alice",
     role: "admin",
     status: "active",
     openclawLimit: 5,
@@ -198,7 +199,7 @@ export const DEFAULT_OUTBOUND_RULES = [
 export const MOCK_AUDIT_LOGS = [
   {
     id: "log-001",
-    operator: "zhangsan@a-company.com",
+    operator: "alice@acompany.com",
     event: "UpdateBasicInfo",
     action: "/api/admin/basic-info",
     requestTime: "2026-03-09 10:23:45",
@@ -210,7 +211,7 @@ export const MOCK_AUDIT_LOGS = [
       startDate: "2026-03-09 10:23:45",
       endDate: "2026-03-09 10:23:45",
       duration: "158",
-      invokerName: "zhangsan@a-company.com",
+      invokerName: "alice@acompany.com",
       invokerId: "1001",
       action: "/api/admin/basic-info",
       sourceIp: "30.42.219.99",
@@ -220,7 +221,7 @@ export const MOCK_AUDIT_LOGS = [
   },
   {
     id: "log-002",
-    operator: "zhangsan@a-company.com",
+    operator: "alice@acompany.com",
     event: "AddMember",
     action: "/api/admin/members",
     requestTime: "2026-03-09 11:05:12",
@@ -232,7 +233,7 @@ export const MOCK_AUDIT_LOGS = [
       startDate: "2026-03-09 11:05:12",
       endDate: "2026-03-09 11:05:12",
       duration: "92",
-      invokerName: "zhangsan@a-company.com",
+      invokerName: "alice@acompany.com",
       invokerId: "1001",
       action: "/api/admin/members",
       sourceIp: "30.42.219.99",
@@ -273,7 +274,7 @@ export const MOCK_TOKEN_STATS = {
 };
 
 export const MOCK_TOKEN_BY_MEMBER = [
-  { memberId: "zhangsan@a-company.com", inputTokens: 1200000, outputTokens: 680000, totalTokens: 1880000, tokenLimit: 100000, ratio: 0.188 },
+  { memberId: "alice@acompany.com", inputTokens: 1200000, outputTokens: 680000, totalTokens: 1880000, tokenLimit: 100000, ratio: 0.188 },
   { memberId: "lisi@a-company.com", inputTokens: 980000, outputTokens: 560000, totalTokens: 1540000, tokenLimit: 50000, ratio: 0.308 },
   { memberId: "wangwu@a-company.com", inputTokens: 760000, outputTokens: 420000, totalTokens: 1180000, tokenLimit: 50000, ratio: 0.236 },
   { memberId: "zhaoliu@a-company.com", inputTokens: 301580, outputTokens: 216320, totalTokens: 517900, tokenLimit: 50000, ratio: 0.104 },
@@ -286,8 +287,8 @@ export const MOCK_TOKEN_BY_MODEL = [
 ];
 
 export const MOCK_OPENCLAW_MONITOR = [
-  { id: "oc-001", name: "工作助手", creator: "zhangsan@a-company.com", status: "running", createdAt: "2026-03-01 10:23:45" },
-  { id: "oc-002", name: "代码助手", creator: "zhangsan@a-company.com", status: "running", createdAt: "2026-03-03 14:12:00" },
+  { id: "oc-001", name: "工作助手", creator: "alice@acompany.com", status: "running", createdAt: "2026-03-01 10:23:45" },
+  { id: "oc-002", name: "代码助手", creator: "alice@acompany.com", status: "running", createdAt: "2026-03-03 14:12:00" },
   { id: "oc-003", name: "文档整理助手", creator: "lisi@a-company.com", status: "stopped", createdAt: "2026-03-05 09:00:00" },
   { id: "oc-004", name: "数据分析助手", creator: "wangwu@a-company.com", status: "running", createdAt: "2026-03-06 16:45:00" },
   { id: "oc-005", name: "客服助手", creator: "wangwu@a-company.com", status: "running", createdAt: "2026-03-07 11:20:00" },

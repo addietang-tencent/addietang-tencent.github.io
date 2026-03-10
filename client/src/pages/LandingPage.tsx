@@ -149,11 +149,7 @@ export default function LandingPage() {
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link href="/help-docs">
-              <Button variant="outline" size="lg" className="px-8 py-3 text-base rounded-xl">
-                查看文档
-              </Button>
-            </Link>
+
           </div>
 
           {/* Quick steps */}

@@ -187,8 +187,16 @@ export default function MyOpenClaw() {
               {claws.map((claw) => {
                 const isStopped = claw.status === "stopped";
                 return (
-                  <div key={claw.id}
-                    className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:-translate-y-0.5 transition-all duration-200 group"
+                  <div key={claw.id} className="relative">
+                  {/* 整张卡片可点击（已停用时不可点击） */}
+                  {!isStopped && (
+                    <Link href={`/openclaw/${claw.id}`}
+                      className="absolute inset-0 z-0 rounded-2xl"
+                      aria-label={`进入 ${claw.name} 详细配置`}
+                    />
+                  )}
+                  <div
+                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isStopped ? "hover:-translate-y-0.5 hover:border-blue-100 cursor-pointer" : "cursor-default"}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
                     {/* Card Header */}
                     <div className="p-5">
@@ -303,6 +311,7 @@ export default function MyOpenClaw() {
                         </Link>
                       )}
                     </div>
+                  </div>
                   </div>
                 );
               })}

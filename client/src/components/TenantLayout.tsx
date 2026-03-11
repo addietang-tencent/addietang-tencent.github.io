@@ -20,9 +20,9 @@ import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
 const NAV_ITEMS = [
-  { label: "我的 OpenClaw", path: "/my-openclaw" },
-  { label: "模型额度", path: "/model-quota" },
-  { label: "帮助文档", path: "/help-docs" },
+  { label: "我的 OpenClaw", path: "/my-openclaw", newTab: false },
+  { label: "模型额度", path: "/model-quota", newTab: false },
+  { label: "帮助文档", path: "/help-docs", newTab: true },
 ];
 
 const CURRENT_USER = "alice@acompany.com";
@@ -52,18 +52,22 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
           {/* Navigation */}
           <nav className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
-              const isActive = location.startsWith(item.path);
+              const isActive = !item.newTab && location.startsWith(item.path);
+              const btnClass = `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                isActive
+                  ? "text-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              }`;
+              if (item.newTab) {
+                return (
+                  <a key={item.path} href={item.path} target="_blank" rel="noopener noreferrer">
+                    <button className={btnClass}>{item.label}</button>
+                  </a>
+                );
+              }
               return (
                 <Link key={item.path} href={item.path}>
-                  <button
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                      isActive
-                        ? "text-blue-600 bg-blue-50"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
+                  <button className={btnClass}>{item.label}</button>
                 </Link>
               );
             })}

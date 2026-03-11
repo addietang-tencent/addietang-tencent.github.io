@@ -358,7 +358,7 @@ export default function ModelQuota() {
                 <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-sm text-gray-500 flex items-center gap-1">
                   今日配额消耗
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -366,29 +366,34 @@ export default function ModelQuota() {
                     </TooltipTrigger>
                     <TooltipContent
                       side="top"
-                      className="max-w-[180px] text-xs leading-relaxed text-justify tracking-normal"
+                      className="max-w-[180px] text-xs leading-relaxed text-justify"
+                      style={{ letterSpacing: '0' }}
                     >
                       此配额为公司提供的外部模型 Token 额度，按自然日统计和刷新
                     </TooltipContent>
                   </Tooltip>
                 </span>
               </div>
-              <p className="text-xl font-bold text-gray-900 tabular-nums leading-none mb-1">
+              <p className="text-2xl font-bold text-gray-900 tabular-nums leading-none mb-3">
                 {quotaPctStr}%
               </p>
-              <p className="text-xs text-gray-400 mb-3">
-                {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
-              </p>
-              {/* Progress bar */}
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all",
-                    isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
-                  )}
-                  style={{ width: `${Math.min(quotaPct, 100)}%` }}
-                />
-              </div>
+              {/* Progress bar — hover to see token details */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden cursor-default">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
+                      )}
+                      style={{ width: `${Math.min(quotaPct, 100)}%` }}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs" style={{ letterSpacing: '0' }}>
+                  {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
 
@@ -413,10 +418,10 @@ export default function ModelQuota() {
                   {summarySlice.map((row) => (
                     <tr key={row.model} className="hover:bg-gray-50/60 transition-colors">
                       <td className="px-5 py-3.5 text-sm text-gray-600">{row.model}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {summarySlice.length === 0 && (
@@ -456,12 +461,12 @@ export default function ModelQuota() {
                 <tbody className="divide-y divide-gray-50">
                   {detailSlice.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.time}</td>
+                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap">{row.time}</td>
                       <td className="px-5 py-3.5 text-sm text-gray-600 whitespace-nowrap">{row.model}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500" style={{fontFamily:'"DM Mono",monospace',fontWeight:300}}>{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {detailSlice.length === 0 && (

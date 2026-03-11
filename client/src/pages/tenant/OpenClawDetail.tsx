@@ -9,7 +9,6 @@ import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -18,21 +17,86 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Trash2, EyeOff,
+  ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  Edit2, Check, X, ChevronRight
+  Edit2, Check, X, ChevronRight, ChevronDown, Info,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
-const CHANNEL_OPTIONS = [
-  { value: "feishu", label: "飞书", fields: [{ key: "appId", label: "飞书机器人的 App ID" }, { key: "appSecret", label: "飞书机器人的 App Secret" }] },
-  { value: "qq", label: "QQ", fields: [{ key: "appId", label: "QQ机器人的 App ID" }, { key: "appSecret", label: "QQ机器人的 App Secret" }] },
-  { value: "wework-bot", label: "企业微信机器人", fields: [{ key: "webhookUrl", label: "企业微信机器人 Webhook URL" }] },
-  { value: "wework-app", label: "企业微信应用", fields: [{ key: "corpId", label: "企业 Corp ID" }, { key: "agentId", label: "应用 Agent ID" }, { key: "secret", label: "应用 Secret" }] },
-  { value: "dingtalk", label: "钉钉", fields: [{ key: "appKey", label: "钉钉应用 App Key" }, { key: "appSecret", label: "钉钉应用 App Secret" }] },
+// ─── 通道配置定义 ───────────────────────────────────────────────────────────────
+
+type ChannelField = {
+  key: string;
+  label: string;
+  secret: boolean; // true = 加密显示（保留前3字符）
+};
+
+type ChannelConfig = {
+  value: string;
+  label: string;
+  descText: string;
+  detailUrl: string;
+  hasInfoIcon?: boolean;
+  fields?: ChannelField[];
+  feishuMode?: true; // 飞书特殊处理
+};
+
+const CHANNEL_OPTIONS: ChannelConfig[] = [
+  {
+    value: "wework",
+    label: "企业微信",
+    descText: "企业微信是一款高效协同办公的企业通讯与办公工具。",
+    detailUrl: "#",
+    hasInfoIcon: true,
+    fields: [
+      { key: "token", label: "企业微信机器人的Token", secret: true },
+      { key: "encodingAESKey", label: "企业微信机器人的encodingAESKey", secret: true },
+    ],
+  },
+  {
+    value: "qq",
+    label: "QQ",
+    descText: "一键解锁智能玩法，开启你的个性化QQ机器人之旅。",
+    detailUrl: "#",
+    fields: [
+      { key: "appId", label: "QQ机器人的App ID", secret: false },
+      { key: "appSecret", label: "QQ机器人的App Secret", secret: true },
+    ],
+  },
+  {
+    value: "feishu",
+    label: "飞书",
+    descText: "飞书是字节跳动推出的一站式先进协作平台，AI 赋能助力高效办公。",
+    detailUrl: "#",
+    feishuMode: true,
+    // 快捷配置和手动配置都存 appId + appSecret
+    fields: [
+      { key: "appId", label: "飞书应用的App ID", secret: false },
+      { key: "appSecret", label: "飞书应用的App Secret", secret: true },
+    ],
+  },
+  {
+    value: "dingtalk",
+    label: "钉钉",
+    descText: "钉钉是阿里打造的智能办公平台，驱动组织数字化管理升级。",
+    detailUrl: "#",
+    fields: [
+      { key: "clientId", label: "钉钉应用的Client ID", secret: false },
+      { key: "clientSecret", label: "钉钉应用的Client Secret", secret: true },
+    ],
+  },
 ];
+
+// ─── 模型配置定义 ────────────────────────────────────────────────────────────────
 
 const MODEL_OPTIONS = [
   { value: "deepseek-v3", label: "DeepSeek V3 0324", badge: "默认", badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
@@ -51,6 +115,28 @@ const DEFAULT_CUSTOM_JSON = `{
   }
 }`;
 
+// ─── 工具函数 ────────────────────────────────────────────────────────────────────
+
+/** 加密显示：保留前3字符，后面用 •••••• 替代 */
+function maskSecret(val: string): string {
+  if (!val) return "";
+  if (val.length <= 3) return val;
+  return val.slice(0, 3) + "••••••";
+}
+
+// ─── 已接入通道数据结构 ───────────────────────────────────────────────────────────
+
+type AppliedChannel = {
+  type: string;       // label
+  channelValue: string; // value key
+  status: "running";
+  fields: ChannelField[];
+  fieldValues: Record<string, string>;
+  feishuConfigMode?: "quick" | "manual"; // 飞书专用
+};
+
+// ─── 主组件 ──────────────────────────────────────────────────────────────────────
+
 export default function OpenClawDetail() {
   const [, params] = useRoute("/openclaw/:id");
   const clawId = params?.id;
@@ -60,23 +146,38 @@ export default function OpenClawDetail() {
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(claw.name);
 
-  // Model state - 默认选中 DeepSeek V3 0324
+  // ── Model state ──
   const [selectedModel, setSelectedModel] = useState("deepseek-v3");
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
-  // 已应用模型：只展示一个
   const [appliedModel, setAppliedModel] = useState({ name: "DeepSeek V3 0324", active: true });
 
-  // Channel state
+  // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("qq");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
-  const [appliedChannels, setAppliedChannels] = useState([
-    { type: "飞书", status: "running" },
-    { type: "QQ", status: "running" },
+  // 飞书专用：快捷/手动 Tab
+  const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("quick");
+  // 飞书二维码弹窗
+  const [showQrModal, setShowQrModal] = useState(false);
+  // 已接入通道
+  const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([
+    {
+      type: "飞书", channelValue: "feishu", status: "running",
+      fields: CHANNEL_OPTIONS.find(c => c.value === "feishu")!.fields!,
+      fieldValues: { appId: "cli_a1b2c3d4e5f6", appSecret: "abc123456789" },
+      feishuConfigMode: "manual",
+    },
+    {
+      type: "QQ", channelValue: "qq", status: "running",
+      fields: CHANNEL_OPTIONS.find(c => c.value === "qq")!.fields!,
+      fieldValues: { appId: "1234567890", appSecret: "xyz987654321" },
+    },
   ]);
+  // 已接入通道展开状态
+  const [expandedChannels, setExpandedChannels] = useState<Record<number, boolean>>({});
 
-  // Skills state
+  // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
   const [installedSkills, setInstalledSkills] = useState(claw.skills || [
     "tavily-search 1.0.0", "summarize 1.0.0", "agent-browser 0.2.0",
@@ -84,6 +185,8 @@ export default function OpenClawDetail() {
     "notion 1.0.0", "weather 1.0.0", "tencentcloud-lighthouse-skill 1.0.0",
     "tencent-docs 1.0.3", "xhs-skill 1.0.15", "ai-ppt-generator 1.1.2",
   ]);
+
+  // ── Handlers ──
 
   const handleApplyModel = () => {
     const opt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
@@ -102,27 +205,122 @@ export default function OpenClawDetail() {
   const handleAddChannel = () => {
     const ch = CHANNEL_OPTIONS.find((c) => c.value === selectedChannel);
     if (!ch) return;
-    setAppliedChannels([...appliedChannels, { type: ch.label, status: "running" }]);
+
+    // 飞书快捷配置：点击"前往授权"弹出二维码
+    if (ch.feishuMode && feishuConfigMode === "quick") {
+      setShowQrModal(true);
+      return;
+    }
+
+    const newEntry: AppliedChannel = {
+      type: ch.label,
+      channelValue: ch.value,
+      status: "running",
+      fields: ch.fields || [],
+      fieldValues: { ...channelFields },
+      feishuConfigMode: ch.feishuMode ? feishuConfigMode : undefined,
+    };
+    setAppliedChannels([...appliedChannels, newEntry]);
     setChannelFields({});
     toast.success(`${ch.label} 通道已添加`);
   };
 
-  const handleInstallSkill = (skill: string) => {
-    if (installedSkills.includes(skill)) { toast.info("该技能已安装"); return; }
-    setInstalledSkills([...installedSkills, skill]);
-    toast.success(`${skill} 安装成功`);
+  const toggleExpand = (idx: number) => {
+    setExpandedChannels(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
   const filteredSkills = AVAILABLE_SKILLS.filter((s) =>
     s.toLowerCase().includes(skillSearch.toLowerCase())
   );
 
-  const selectedModelOpt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
+  const currentChannelConfig = CHANNEL_OPTIONS.find((c) => c.value === selectedChannel);
+
+  // ─── 渲染通道配置输入区 ───────────────────────────────────────────────────────
+
+  const renderChannelInputs = () => {
+    if (!currentChannelConfig) return null;
+
+    if (currentChannelConfig.feishuMode) {
+      return (
+        <div className="space-y-3">
+          {/* 快捷/手动 Tab */}
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            <button
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${feishuConfigMode === "quick" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
+              onClick={() => setFeishuConfigMode("quick")}
+            >
+              快捷配置
+            </button>
+            <button
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${feishuConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+              onClick={() => setFeishuConfigMode("manual")}
+            >
+              手动配置
+            </button>
+          </div>
+
+          {feishuConfigMode === "manual" && (
+            <div className="space-y-2">
+              {currentChannelConfig.fields!.map((field) => (
+                <div key={field.key} className="relative">
+                  <Input
+                    type={field.secret ? "password" : "text"}
+                    placeholder={field.label}
+                    value={channelFields[field.key] || ""}
+                    onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
+                    className="bg-gray-50 border-gray-200 pr-10"
+                  />
+                  {field.secret && <EyeOff className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // 普通通道
+    return (
+      <div className="space-y-2">
+        {currentChannelConfig.fields?.map((field) => (
+          <div key={field.key} className="relative">
+            <Input
+              type={field.secret ? "password" : "text"}
+              placeholder={field.label}
+              value={channelFields[field.key] || ""}
+              onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
+              className="bg-gray-50 border-gray-200 pr-10"
+            />
+            {field.secret && <EyeOff className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ─── 渲染已接入通道的展开配置项 ───────────────────────────────────────────────
+
+  const renderAppliedChannelDetail = (ch: AppliedChannel) => {
+    return (
+      <div className="mt-2 ml-5 space-y-1.5 pb-1">
+        {ch.fields.map((field) => {
+          const val = ch.fieldValues[field.key] || "";
+          const displayVal = field.secret ? maskSecret(val) : val;
+          return (
+            <div key={field.key} className="flex items-center justify-between text-xs">
+              <span className="text-gray-400 shrink-0 mr-2">{field.label}</span>
+              <span className="text-gray-700 font-mono truncate max-w-[120px]">{displayVal || "—"}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <TenantLayout>
       <div className="max-w-7xl mx-auto px-6 py-8 page-enter">
-        {/* Back & Header */}
+        {/* Back */}
         <div className="flex items-center gap-3 mb-6">
           <Link href="/my-openclaw">
             <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-900 -ml-2">
@@ -169,6 +367,7 @@ export default function OpenClawDetail() {
 
         {/* Three-column layout */}
         <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0 }}>
+
           {/* ===== Model Column ===== */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
@@ -182,7 +381,6 @@ export default function OpenClawDetail() {
             </div>
 
             <div className="p-5 space-y-3">
-              {/* 模型单选下拉 */}
               <Select value={selectedModel} onValueChange={setSelectedModel}>
                 <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="选择模型" />
@@ -203,10 +401,8 @@ export default function OpenClawDetail() {
                 </SelectContent>
               </Select>
 
-              {/* 自定义模型展开区域 */}
               {selectedModel === "custom" && (
                 <div className="space-y-3 pt-1">
-                  {/* JSON / 表单 切换 Tab */}
                   <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                     <button
                       className={`flex-1 py-2 text-sm font-medium transition-colors ${customInputMode === "json" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
@@ -244,13 +440,12 @@ export default function OpenClawDetail() {
                           placeholder={field.label}
                           value={customForm[field.key as keyof typeof customForm]}
                           onChange={(e) => setCustomForm({ ...customForm, [field.key]: e.target.value })}
-                          className="bg-gray-50 border-gray-200 text-xs"
+                          className="bg-gray-50 border-gray-200 text-sm"
                         />
                       ))}
                     </div>
                   )}
 
-                  {/* 费用说明 */}
                   <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
                     <a href="#" className="text-blue-500 hover:underline ml-1 inline-flex items-center gap-0.5">
@@ -260,21 +455,14 @@ export default function OpenClawDetail() {
                 </div>
               )}
 
-              <Button
-                className="w-full text-sm"
-                variant="outline"
-                onClick={handleApplyModel}
-              >
+              <Button className="w-full text-sm" variant="outline" onClick={handleApplyModel}>
                 应用
               </Button>
 
-              {/* 已应用模型 */}
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs text-gray-400 mb-2">已应用模型</p>
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-gray-800">{appliedModel.name}</span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-800">{appliedModel.name}</span>
                   <span className="badge-running text-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                     应用中
@@ -297,64 +485,75 @@ export default function OpenClawDetail() {
             </div>
 
             <div className="p-5 space-y-3">
-              {/* Channel Select */}
-              <Select value={selectedChannel} onValueChange={setSelectedChannel}>
-                <SelectTrigger className="bg-gray-50 border-gray-200">
-                  <SelectValue placeholder="选择通道类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CHANNEL_OPTIONS.map((ch) => (
-                    <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* 通道下拉 - 固定宽度 */}
+              <div className="flex items-center gap-2">
+                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("quick"); }}>
+                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                    <SelectValue placeholder="选择通道类型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CHANNEL_OPTIONS.map((ch) => (
+                      <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {currentChannelConfig?.hasInfoIcon && (
+                  <button className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                    <Info className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
 
-              {/* Dynamic Fields */}
-              {CHANNEL_OPTIONS.find((c) => c.value === selectedChannel)?.fields.map((field) => (
-                <div key={field.key} className="relative">
-                  <Input
-                    type="password"
-                    placeholder={field.label}
-                    value={channelFields[field.key] || ""}
-                    onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
-                    className="bg-gray-50 border-gray-200 pr-10"
-                  />
-                  <EyeOff className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                </div>
-              ))}
+              {/* 动态配置输入区 */}
+              {renderChannelInputs()}
 
+              {/* 操作按钮 */}
               <Button className="w-full text-sm" variant="outline" onClick={handleAddChannel}>
-                添加并应用
+                {currentChannelConfig?.feishuMode && feishuConfigMode === "quick" ? "前往授权" : "应用"}
               </Button>
 
+              {/* 底部说明 */}
               <p className="text-xs text-gray-400 leading-relaxed">
-                一键解锁智能玩法，开启你的个性化机器人之旅。
-                <a href="#" className="text-blue-500 hover:underline ml-1">查看详情 ↗</a>
+                {currentChannelConfig?.descText}
+                <a href={currentChannelConfig?.detailUrl || "#"} className="text-blue-500 hover:underline ml-1">
+                  查看详情 ↗
+                </a>
               </p>
 
-              {/* Applied Channels */}
+              {/* 已接入通道 */}
               {appliedChannels.length > 0 && (
                 <div className="pt-2 border-t border-gray-50">
                   <p className="text-xs text-gray-400 mb-2">已接入通道</p>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {appliedChannels.map((ch, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-                        <div className="flex items-center gap-1.5">
-                          <ChevronRight className="w-3 h-3 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-800">{ch.type}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="badge-running text-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                            运行中
-                          </span>
+                      <div key={idx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
+                        {/* 折叠行 */}
+                        <div className="flex items-center justify-between px-2.5 py-2">
                           <button
-                            onClick={() => setAppliedChannels(appliedChannels.filter((_, i) => i !== idx))}
-                            className="text-gray-300 hover:text-red-500 transition-colors"
+                            className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
+                            onClick={() => toggleExpand(idx)}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            {expandedChannels[idx]
+                              ? <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
+                              : <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+                            }
+                            <span className="text-sm font-medium text-gray-800 truncate">{ch.type}</span>
                           </button>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="badge-running text-xs">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                              运行中
+                            </span>
+                            <button
+                              onClick={() => setAppliedChannels(appliedChannels.filter((_, i) => i !== idx))}
+                              className="text-gray-300 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
+                        {/* 展开配置项 */}
+                        {expandedChannels[idx] && renderAppliedChannelDetail(ch)}
                       </div>
                     ))}
                   </div>
@@ -376,7 +575,6 @@ export default function OpenClawDetail() {
             </div>
 
             <div className="p-5 space-y-3">
-              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -393,7 +591,6 @@ export default function OpenClawDetail() {
 
               <a href="#" className="text-xs text-blue-500 hover:underline block">获取更多 Skills?</a>
 
-              {/* Installed Skills */}
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs text-gray-400 mb-2">已安装技能</p>
                 <div className="space-y-1 max-h-80 overflow-y-auto">
@@ -418,6 +615,119 @@ export default function OpenClawDetail() {
           </div>
         </div>
       </div>
+
+      {/* ===== 飞书二维码弹窗 ===== */}
+      <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <Info className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
+                <DialogDescription className="text-sm text-gray-400 mt-0.5">
+                  请使用飞书扫描下方二维码完成授权配置
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex items-center justify-center bg-gray-50 rounded-xl p-8 mt-2">
+            {/* 模拟二维码 SVG */}
+            <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+              <rect width="180" height="180" fill="white"/>
+              {/* 左上角定位块 */}
+              <rect x="10" y="10" width="50" height="50" fill="black"/>
+              <rect x="18" y="18" width="34" height="34" fill="white"/>
+              <rect x="26" y="26" width="18" height="18" fill="black"/>
+              {/* 右上角定位块 */}
+              <rect x="120" y="10" width="50" height="50" fill="black"/>
+              <rect x="128" y="18" width="34" height="34" fill="white"/>
+              <rect x="136" y="26" width="18" height="18" fill="black"/>
+              {/* 左下角定位块 */}
+              <rect x="10" y="120" width="50" height="50" fill="black"/>
+              <rect x="18" y="128" width="34" height="34" fill="white"/>
+              <rect x="26" y="136" width="18" height="18" fill="black"/>
+              {/* 数据模块 - 随机分布 */}
+              <rect x="70" y="10" width="8" height="8" fill="black"/>
+              <rect x="82" y="10" width="8" height="8" fill="black"/>
+              <rect x="94" y="10" width="8" height="8" fill="black"/>
+              <rect x="106" y="10" width="8" height="8" fill="black"/>
+              <rect x="70" y="22" width="8" height="8" fill="black"/>
+              <rect x="94" y="22" width="8" height="8" fill="black"/>
+              <rect x="70" y="34" width="8" height="8" fill="black"/>
+              <rect x="82" y="34" width="8" height="8" fill="black"/>
+              <rect x="106" y="34" width="8" height="8" fill="black"/>
+              <rect x="70" y="46" width="8" height="8" fill="black"/>
+              <rect x="94" y="46" width="8" height="8" fill="black"/>
+              <rect x="70" y="58" width="8" height="8" fill="black"/>
+              <rect x="82" y="58" width="8" height="8" fill="black"/>
+              <rect x="94" y="58" width="8" height="8" fill="black"/>
+              <rect x="106" y="58" width="8" height="8" fill="black"/>
+              <rect x="10" y="70" width="8" height="8" fill="black"/>
+              <rect x="22" y="70" width="8" height="8" fill="black"/>
+              <rect x="46" y="70" width="8" height="8" fill="black"/>
+              <rect x="58" y="70" width="8" height="8" fill="black"/>
+              <rect x="70" y="70" width="8" height="8" fill="black"/>
+              <rect x="94" y="70" width="8" height="8" fill="black"/>
+              <rect x="118" y="70" width="8" height="8" fill="black"/>
+              <rect x="130" y="70" width="8" height="8" fill="black"/>
+              <rect x="154" y="70" width="8" height="8" fill="black"/>
+              <rect x="166" y="70" width="8" height="8" fill="black"/>
+              <rect x="10" y="82" width="8" height="8" fill="black"/>
+              <rect x="34" y="82" width="8" height="8" fill="black"/>
+              <rect x="58" y="82" width="8" height="8" fill="black"/>
+              <rect x="82" y="82" width="8" height="8" fill="black"/>
+              <rect x="106" y="82" width="8" height="8" fill="black"/>
+              <rect x="130" y="82" width="8" height="8" fill="black"/>
+              <rect x="154" y="82" width="8" height="8" fill="black"/>
+              <rect x="10" y="94" width="8" height="8" fill="black"/>
+              <rect x="22" y="94" width="8" height="8" fill="black"/>
+              <rect x="46" y="94" width="8" height="8" fill="black"/>
+              <rect x="70" y="94" width="8" height="8" fill="black"/>
+              <rect x="94" y="94" width="8" height="8" fill="black"/>
+              <rect x="118" y="94" width="8" height="8" fill="black"/>
+              <rect x="142" y="94" width="8" height="8" fill="black"/>
+              <rect x="166" y="94" width="8" height="8" fill="black"/>
+              <rect x="10" y="106" width="8" height="8" fill="black"/>
+              <rect x="34" y="106" width="8" height="8" fill="black"/>
+              <rect x="58" y="106" width="8" height="8" fill="black"/>
+              <rect x="82" y="106" width="8" height="8" fill="black"/>
+              <rect x="106" y="106" width="8" height="8" fill="black"/>
+              <rect x="130" y="106" width="8" height="8" fill="black"/>
+              <rect x="154" y="106" width="8" height="8" fill="black"/>
+              <rect x="70" y="118" width="8" height="8" fill="black"/>
+              <rect x="82" y="118" width="8" height="8" fill="black"/>
+              <rect x="106" y="118" width="8" height="8" fill="black"/>
+              <rect x="118" y="118" width="8" height="8" fill="black"/>
+              <rect x="142" y="118" width="8" height="8" fill="black"/>
+              <rect x="166" y="118" width="8" height="8" fill="black"/>
+              <rect x="70" y="130" width="8" height="8" fill="black"/>
+              <rect x="94" y="130" width="8" height="8" fill="black"/>
+              <rect x="118" y="130" width="8" height="8" fill="black"/>
+              <rect x="130" y="130" width="8" height="8" fill="black"/>
+              <rect x="154" y="130" width="8" height="8" fill="black"/>
+              <rect x="70" y="142" width="8" height="8" fill="black"/>
+              <rect x="82" y="142" width="8" height="8" fill="black"/>
+              <rect x="94" y="142" width="8" height="8" fill="black"/>
+              <rect x="106" y="142" width="8" height="8" fill="black"/>
+              <rect x="130" y="142" width="8" height="8" fill="black"/>
+              <rect x="142" y="142" width="8" height="8" fill="black"/>
+              <rect x="166" y="142" width="8" height="8" fill="black"/>
+              <rect x="70" y="154" width="8" height="8" fill="black"/>
+              <rect x="94" y="154" width="8" height="8" fill="black"/>
+              <rect x="118" y="154" width="8" height="8" fill="black"/>
+              <rect x="142" y="154" width="8" height="8" fill="black"/>
+              <rect x="70" y="166" width="8" height="8" fill="black"/>
+              <rect x="82" y="166" width="8" height="8" fill="black"/>
+              <rect x="106" y="166" width="8" height="8" fill="black"/>
+              <rect x="130" y="166" width="8" height="8" fill="black"/>
+              <rect x="154" y="166" width="8" height="8" fill="black"/>
+              <rect x="166" y="166" width="8" height="8" fill="black"/>
+            </svg>
+          </div>
+        </DialogContent>
+      </Dialog>
     </TenantLayout>
   );
 }

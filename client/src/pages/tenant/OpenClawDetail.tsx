@@ -184,10 +184,16 @@ export default function OpenClawDetail() {
   // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
   const [installedSkills, setInstalledSkills] = useState(claw.skills || [
-    "tavily-search 1.0.0", "summarize 1.0.0", "agent-browser 0.2.0",
-    "find-skills 0.1.0", "github 1.0.0", "obsidian 1.0.0",
-    "notion 1.0.0", "weather 1.0.0", "tencentcloud-lighthouse-skill 1.0.0",
-    "tencent-docs 1.0.3", "xhs-skill 1.0.15", "ai-ppt-generator 1.1.2",
+    "tavily-search 1.0.0",
+    "summarize 1.0.0",
+    "agent-browser 0.2.0",
+    "find-skills 0.1.0",
+    "github 1.0.0",
+    "obsidian 1.0.0",
+    "notion 1.0.0",
+    "weather 1.0.0",
+    "tencentcloud-lighthouse-skill 1.0.0",
+    "tencent-docs 1.0.3",
   ]);
 
   // ── Handlers ──
@@ -376,12 +382,11 @@ export default function OpenClawDetail() {
           )}
         </div>
 
-        {/* Three-column layout */}
-        <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0 }}>
+        {/* Three-column layout - unified height, upper fixed / lower scrollable */}
+        <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "680px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -391,7 +396,8 @@ export default function OpenClawDetail() {
               </div>
             </div>
 
-            <div className="p-5 space-y-3">
+            {/* Upper: config inputs - fixed */}
+            <div className="p-5 space-y-3 flex-shrink-0">
               <Select value={selectedModel} onValueChange={setSelectedModel}>
                 <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="选择模型" />
@@ -470,6 +476,9 @@ export default function OpenClawDetail() {
                 应用
               </Button>
 
+            </div>
+            {/* Lower: applied model - scrollable */}
+            <div className="px-5 pb-5 overflow-y-auto flex-1">
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs text-gray-400 mb-2">已应用模型</p>
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
@@ -484,8 +493,7 @@ export default function OpenClawDetail() {
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "680px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -495,7 +503,8 @@ export default function OpenClawDetail() {
               </div>
             </div>
 
-            <div className="p-5 space-y-3">
+            {/* Upper: config inputs - fixed */}
+            <div className="p-5 space-y-3 flex-shrink-0">
               {/* 通道下拉 - 固定宽度 */}
               <div className="flex items-center gap-2">
                 <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("quick"); }}>
@@ -531,7 +540,9 @@ export default function OpenClawDetail() {
                 </a>
               </p>
 
-              {/* 已接入通道 */}
+            </div>
+            {/* Lower: applied channels - scrollable */}
+            <div className="px-5 pb-5 overflow-y-auto flex-1">
               {appliedChannels.length > 0 && (
                 <div className="pt-2 border-t border-gray-50">
                   <p className="text-xs text-gray-400 mb-2">已接入通道</p>
@@ -577,9 +588,7 @@ export default function OpenClawDetail() {
           </div>
 
           {/* ===== Skills Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="p-5 border-b border-gray-50">
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "680px" }}>            <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
                   <Puzzle className="w-3.5 h-3.5 text-white" />
@@ -588,11 +597,12 @@ export default function OpenClawDetail() {
               </div>
             </div>
 
-            <div className="p-5 space-y-3">
+            {/* Upper: search + install - fixed */}
+            <div className="p-5 space-y-3 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="请输入 ClawHub 中上架的 Skill 名称，或输入后回车搜索"
+                  placeholder="请输入 Skill 名称，或输入后回车搜索"
                   value={skillSearch}
                   onChange={(e) => setSkillSearch(e.target.value)}
                   className="pl-9 bg-gray-50 border-gray-200 text-xs"
@@ -602,12 +612,12 @@ export default function OpenClawDetail() {
               <Button className="w-full text-sm" variant="outline" onClick={() => toast.info("功能开发中")}>
                 安装技能
               </Button>
-
-              <a href="#" className="text-xs text-blue-500 hover:underline block">获取更多 Skills?</a>
-
+            </div>
+            {/* Lower: installed skills - scrollable */}
+            <div className="px-5 pb-5 overflow-y-auto flex-1">
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs text-gray-400 mb-2">已安装技能</p>
-                <div className="space-y-1 max-h-80 overflow-y-auto">
+                <div className="space-y-1">
                   {(skillSearch ? filteredSkills : installedSkills).map((skill) => (
                     <div key={skill}
                       className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group">

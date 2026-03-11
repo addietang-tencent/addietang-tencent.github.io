@@ -144,7 +144,7 @@ function StatCard({
         </div>
         <span className="text-sm text-gray-500">{label}</span>
       </div>
-      <p className="text-[1.625rem] font-bold text-gray-900 tabular-nums leading-none">{value}</p>
+      <p className="text-xl font-bold text-gray-900 tabular-nums leading-none">{value}</p>
     </div>
   );
 }
@@ -373,7 +373,7 @@ export default function ModelQuota() {
                   </Tooltip>
                 </span>
               </div>
-              <p className="text-[1.625rem] font-bold text-gray-900 tabular-nums leading-none mb-1">
+              <p className="text-xl font-bold text-gray-900 tabular-nums leading-none mb-1">
                 {quotaPctStr}%
               </p>
               <p className="text-xs text-gray-400 mb-3">
@@ -412,11 +412,11 @@ export default function ModelQuota() {
                 <tbody className="divide-y divide-gray-50">
                   {summarySlice.map((row) => (
                     <tr key={row.model} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-sm font-medium text-gray-800">{row.model}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-600">{row.model}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums font-semibold text-gray-900">{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {summarySlice.length === 0 && (
@@ -456,12 +456,12 @@ export default function ModelQuota() {
                 <tbody className="divide-y divide-gray-50">
                   {detailSlice.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-xs text-gray-400 tabular-nums whitespace-nowrap">{row.time}</td>
-                      <td className="px-5 py-3.5 text-sm font-medium text-gray-800 whitespace-nowrap">{row.model}</td>
+                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-600 whitespace-nowrap">{row.time}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-600 whitespace-nowrap">{row.model}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums font-semibold text-gray-900">{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {detailSlice.length === 0 && (

@@ -13,14 +13,25 @@ export const SITE_CONFIG = {
 
 export const MOCK_OPENCLAW_LIST = [
   {
-    id: "oc-001",
+    id: "oc-1",
     name: "工作助手",
     status: "running",
     createdAt: "2026-03-01 10:23:45",
     model: "腾讯云 DeepSeek",
     modelVersion: "DeepSeek V3 0324",
     channels: ["飞书", "QQ"],
-    skills: ["tavily-search 1.0.0", "summarize 1.0.0"],
+    skills: [
+      "tavily-search 1.0.0",
+      "summarize 1.0.0",
+      "agent-browser 0.2.0",
+      "find-skills 0.1.0",
+      "github 1.0.0",
+      "obsidian 1.0.0",
+      "notion 1.0.0",
+      "weather 1.0.0",
+      "tencentcloud-lighthouse-skill 1.0.0",
+      "tencent-docs 1.0.3",
+    ],
   },
   {
     id: "oc-002",

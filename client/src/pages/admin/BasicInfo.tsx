@@ -92,7 +92,7 @@ export default function BasicInfo() {
                   所在地域
                   <span className="text-xs text-gray-400 font-normal ml-2">员工端、管控端及员工 OpenClaw 底层云服务器所在的地域，由部署时自动确定</span>
                 </p>
-                <p className="text-sm text-gray-900 px-1">{form.region}</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.region}</div>
               </div>
 
               {/* Domain — read-only text */}
@@ -101,7 +101,7 @@ export default function BasicInfo() {
                   域名
                   <span className="text-xs text-gray-400 font-normal ml-2">员工端与管控端的访问域名</span>
                 </p>
-                <p className="text-sm text-gray-900 px-1">{form.domain}</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.domain}</div>
               </div>
 
               {/* Tencent Cloud UIN — read-only text */}
@@ -110,7 +110,7 @@ export default function BasicInfo() {
                   关联腾讯云账号
                   <span className="text-xs text-gray-400 font-normal ml-2">当前平台关联的腾讯云账号 UIN</span>
                 </p>
-                <p className="text-sm text-gray-900 px-1">{form.tencentUin}</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.tencentUin}</div>
               </div>
             </div>
           </div>

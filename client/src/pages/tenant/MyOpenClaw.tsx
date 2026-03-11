@@ -33,7 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
-  Plus, MoreVertical, Settings, RefreshCw, ArrowUpCircle, Trash2,
+  Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
@@ -237,8 +237,8 @@ export default function MyOpenClaw() {
                                   <TooltipTrigger asChild>
                                     <div>
                                       <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                        <ArrowUpCircle className="w-4 h-4 mr-2 text-gray-400" />
-                                        更新 OpenClaw 版本
+                                        <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
+                                         重新安装 OpenClaw
                                       </DropdownMenuItem>
                                     </div>
                                   </TooltipTrigger>
@@ -248,8 +248,8 @@ export default function MyOpenClaw() {
                                 </Tooltip>
                               ) : (
                                 <DropdownMenuItem onClick={() => handleUpdate(claw.name)}>
-                                  <ArrowUpCircle className="w-4 h-4 mr-2 text-gray-500" />
-                                  更新 OpenClaw 版本
+                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
+                                   重新安装 OpenClaw
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />

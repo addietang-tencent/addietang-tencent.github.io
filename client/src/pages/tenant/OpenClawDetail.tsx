@@ -10,6 +10,7 @@ import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -17,14 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-  ArrowLeft, ChevronRight, ChevronDown, Trash2, Eye, EyeOff,
-  Search, Plus, ExternalLink, Brain, MessageSquare, Puzzle,
-  Edit2, Check, X
+  ArrowLeft, Trash2, EyeOff,
+  Search, ExternalLink, Brain, MessageSquare, Puzzle,
+  Edit2, Check, X, ChevronRight
 } from "lucide-react";
-import { MOCK_OPENCLAW_LIST, AVAILABLE_MODELS, AVAILABLE_SKILLS } from "@/lib/mockData";
+import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
 const CHANNEL_OPTIONS = [
   { value: "feishu", label: "飞书", fields: [{ key: "appId", label: "飞书机器人的 App ID" }, { key: "appSecret", label: "飞书机器人的 App Secret" }] },
@@ -33,6 +33,23 @@ const CHANNEL_OPTIONS = [
   { value: "wework-app", label: "企业微信应用", fields: [{ key: "corpId", label: "企业 Corp ID" }, { key: "agentId", label: "应用 Agent ID" }, { key: "secret", label: "应用 Secret" }] },
   { value: "dingtalk", label: "钉钉", fields: [{ key: "appKey", label: "钉钉应用 App Key" }, { key: "appSecret", label: "钉钉应用 App Secret" }] },
 ];
+
+const MODEL_OPTIONS = [
+  { value: "deepseek-v3", label: "DeepSeek V3 0324", badge: "默认", badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
+  { value: "hunyuan-turbos", label: "混元 TurboS Latest", badge: null, badgeColor: "" },
+  { value: "custom", label: "自定义模型", badge: "需自费", badgeColor: "bg-amber-50 text-amber-600 border-amber-100" },
+];
+
+const DEFAULT_CUSTOM_JSON = `{
+  "provider": "provider_name",
+  "base_url": "baseurl",
+  "api": "API协议",
+  "api_key": "your-api-key-here",
+  "model": {
+    "id": "model_id",
+    "name": "model_name"
+  }
+}`;
 
 export default function OpenClawDetail() {
   const [, params] = useRoute("/openclaw/:id");
@@ -43,15 +60,13 @@ export default function OpenClawDetail() {
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(claw.name);
 
-  // Model state
-  const [selectedProvider, setSelectedProvider] = useState("tencent-deepseek");
-  const [selectedVersion, setSelectedVersion] = useState("DeepSeek V3 0324");
-  const [apiKey, setApiKey] = useState("sk-**********************a1b2");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [appliedModels, setAppliedModels] = useState([
-    { provider: "腾讯云混元", version: "混元 Turbo", apiKey: "sk-****c3d4", active: true },
-    { provider: "腾讯云 DeepSeek", version: "DeepSeek R1", apiKey: "sk-****e5f6", active: false },
-  ]);
+  // Model state - 默认选中 DeepSeek V3 0324
+  const [selectedModel, setSelectedModel] = useState("deepseek-v3");
+  const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
+  const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
+  const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
+  // 已应用模型：只展示一个
+  const [appliedModel, setAppliedModel] = useState({ name: "DeepSeek V3 0324", active: true });
 
   // Channel state
   const [selectedChannel, setSelectedChannel] = useState("qq");
@@ -70,13 +85,15 @@ export default function OpenClawDetail() {
     "tencent-docs 1.0.3", "xhs-skill 1.0.15", "ai-ppt-generator 1.1.2",
   ]);
 
-  const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === selectedProvider);
-
-  const handleAddModel = () => {
-    if (!apiKey.trim()) { toast.error("请输入 API Key"); return; }
-    const providerLabel = selectedProviderData?.label || selectedProvider;
-    setAppliedModels([...appliedModels, { provider: providerLabel, version: selectedVersion, apiKey: apiKey.slice(0, 8) + "****", active: false }]);
-    toast.success("模型已添加并应用");
+  const handleApplyModel = () => {
+    const opt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
+    if (!opt) return;
+    if (selectedModel === "custom") {
+      setAppliedModel({ name: customForm.model_name || "自定义模型", active: true });
+    } else {
+      setAppliedModel({ name: opt.label, active: true });
+    }
+    toast.success("模型已应用");
   };
 
   const handleAddChannel = () => {
@@ -96,6 +113,8 @@ export default function OpenClawDetail() {
   const filteredSkills = AVAILABLE_SKILLS.filter((s) =>
     s.toLowerCase().includes(skillSearch.toLowerCase())
   );
+
+  const selectedModelOpt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
 
   return (
     <TenantLayout>
@@ -160,102 +179,105 @@ export default function OpenClawDetail() {
             </div>
 
             <div className="p-5 space-y-3">
-              {/* Provider Select */}
-              <Select value={selectedProvider} onValueChange={(v) => { setSelectedProvider(v); setSelectedVersion(""); }}>
+              {/* 模型单选下拉 */}
+              <Select value={selectedModel} onValueChange={setSelectedModel}>
                 <SelectTrigger className="bg-gray-50 border-gray-200">
                   <SelectValue placeholder="选择模型" />
                 </SelectTrigger>
                 <SelectContent>
-                  {AVAILABLE_MODELS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  {MODEL_OPTIONS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{m.label}</span>
+                        {m.badge && (
+                          <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${m.badgeColor}`}>
+                            {m.badge}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {/* Version Select */}
-              {selectedProviderData && selectedProviderData.versions.length > 0 && (
-                <Select value={selectedVersion} onValueChange={setSelectedVersion}>
-                  <SelectTrigger className="bg-gray-50 border-gray-200">
-                    <SelectValue placeholder="选择具体模型版本" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedProviderData.versions.map((v) => (
-                      <SelectItem key={v} value={v}>{v}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              {/* 自定义模型展开区域 */}
+              {selectedModel === "custom" && (
+                <div className="space-y-3 pt-1">
+                  {/* JSON / 表单 切换 Tab */}
+                  <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                    <button
+                      className={`flex-1 py-2 text-sm font-medium transition-colors ${customInputMode === "json" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
+                      onClick={() => setCustomInputMode("json")}
+                    >
+                      JSON 输入
+                    </button>
+                    <button
+                      className={`flex-1 py-2 text-sm font-medium transition-colors ${customInputMode === "form" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+                      onClick={() => setCustomInputMode("form")}
+                    >
+                      表单输入
+                    </button>
+                  </div>
 
-              {/* API Key */}
-              <div className="relative">
-                <Input
-                  type={showApiKey ? "text" : "password"}
-                  placeholder="请输入 API Key"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="bg-gray-50 border-gray-200 pr-10"
-                />
-                <button
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+                  {customInputMode === "json" ? (
+                    <Textarea
+                      value={customJson}
+                      onChange={(e) => setCustomJson(e.target.value)}
+                      className="font-mono text-xs bg-gray-50 border-gray-200 min-h-[180px] resize-none"
+                      spellCheck={false}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      {[
+                        { key: "provider", label: "请输入自定义模型 provider" },
+                        { key: "base_url", label: "请输入自定义模型 base_url" },
+                        { key: "api", label: "请输入自定义模型 api" },
+                        { key: "api_key", label: "请输入自定义模型 api_key" },
+                        { key: "model_id", label: "请输入自定义模型 model.id" },
+                        { key: "model_name", label: "请输入自定义模型 model.name" },
+                      ].map((field) => (
+                        <Input
+                          key={field.key}
+                          placeholder={field.label}
+                          value={customForm[field.key as keyof typeof customForm]}
+                          onChange={(e) => setCustomForm({ ...customForm, [field.key]: e.target.value })}
+                          className="bg-gray-50 border-gray-200 text-xs"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 费用说明 */}
+                  <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
+                    使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
+                    <a href="#" className="text-blue-500 hover:underline ml-1 inline-flex items-center gap-0.5">
+                      自定义模型配置请查看详细教程 <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              )}
 
               <Button
                 className="w-full text-sm"
                 variant="outline"
-                onClick={handleAddModel}
+                onClick={handleApplyModel}
               >
                 添加并应用
               </Button>
 
-              {selectedProviderData && (
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  {selectedProviderData.label}，集成多家主流模型。
-                  <a href="#" className="text-blue-500 hover:underline ml-1">点击获取 API KEY ↗</a>
-                </p>
-              )}
-
-              {/* Applied Models */}
-              {appliedModels.length > 0 && (
-                <div className="pt-2 border-t border-gray-50">
-                  <p className="text-xs text-gray-400 mb-2">切换模型</p>
-                  <div className="space-y-2">
-                    {appliedModels.map((m, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <ChevronRight className="w-3 h-3 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-800">{m.provider}</span>
-                          </div>
-                          <p className="text-xs text-gray-400 ml-4.5 mt-0.5">API Key: {m.apiKey}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {m.active ? (
-                            <span className="badge-running text-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                              应用中
-                            </span>
-                          ) : (
-                            <span className="badge-stopped text-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
-                              未应用
-                            </span>
-                          )}
-                          <button
-                            onClick={() => setAppliedModels(appliedModels.filter((_, i) => i !== idx))}
-                            className="text-gray-300 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+              {/* 已应用模型 */}
+              <div className="pt-2 border-t border-gray-50">
+                <p className="text-xs text-gray-400 mb-2">已应用模型</p>
+                <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-gray-800">{appliedModel.name}</span>
                   </div>
+                  <span className="badge-running text-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                    应用中
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 

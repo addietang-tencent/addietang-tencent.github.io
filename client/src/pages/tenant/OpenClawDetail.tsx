@@ -89,7 +89,10 @@ export default function OpenClawDetail() {
     const opt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
     if (!opt) return;
     if (selectedModel === "custom") {
-      setAppliedModel({ name: customForm.model_name || "自定义模型", active: true });
+      const customName = customInputMode === "json"
+        ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
+        : customForm.model_name;
+      setAppliedModel({ name: customName ? `自定义模型（${customName}）` : "自定义模型", active: true });
     } else {
       setAppliedModel({ name: opt.label, active: true });
     }
@@ -181,7 +184,7 @@ export default function OpenClawDetail() {
             <div className="p-5 space-y-3">
               {/* 模型单选下拉 */}
               <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="bg-gray-50 border-gray-200">
+                <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="选择模型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -262,7 +265,7 @@ export default function OpenClawDetail() {
                 variant="outline"
                 onClick={handleApplyModel}
               >
-                添加并应用
+                应用
               </Button>
 
               {/* 已应用模型 */}

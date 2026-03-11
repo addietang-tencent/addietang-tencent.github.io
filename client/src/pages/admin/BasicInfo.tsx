@@ -42,7 +42,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label htmlFor="siteName" className="text-sm font-medium text-gray-700">
                 网站名称
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在租户端左上角</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在员工端左上角</span>
               </Label>
               <Input
                 id="siteName"
@@ -72,7 +72,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 公司 Logo
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在租户端左上角，建议尺寸 200×200px</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在员工端左上角，建议尺寸 200×200px</span>
               </Label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">

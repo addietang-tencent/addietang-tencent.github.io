@@ -1,16 +1,17 @@
 /**
  * ModelQuota - 模型额度页面
  * Design: 「流动蓝图」Fluid Blueprint
- * Features:
- *  - 时间筛选器（单日/时间段），默认今天
- *  - 刷新按钮（保持时间选项）
- *  - 5张总览卡片（前4受筛选器影响，今日配额消耗固定当天）
- *  - 模型使用汇总列表（固定高度+滚动+翻页）
- *  - 详细使用记录列表（固定高度+滚动+翻页）
+ * Changes v2:
+ *  - 拉宽主体内容区域（max-w-7xl）
+ *  - 删除今日配额消耗卡片「今日」徽章
+ *  - Tooltip 文案两端对齐
+ *  - 今日配额消耗总Tokens对齐左侧卡片当天数据
+ *  - 今日配额消耗卡片底部进度条（>80%橙色）
+ *  - 卡片 icon/配色对齐管控端风格（圆形icon）
+ *  - 字体排版统一
  */
 import { useState, useCallback, useMemo } from "react";
 import TenantLayout from "@/components/TenantLayout";
-import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -18,11 +19,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Hash,
+  Activity,
   ArrowDownToLine,
   ArrowUpFromLine,
-  Layers,
-  Gauge,
+  Zap,
   RefreshCw,
   Info,
   ChevronLeft,
@@ -122,41 +122,30 @@ function aggregateRange(start: string, end: string): { summary: SummaryRow[]; de
 
 const TODAY = new Date().toISOString().slice(0, 10);
 const TODAY_QUOTA_TOTAL = 500000;
-const TODAY_QUOTA_USED = 187420;
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function StatCard({
   icon: Icon,
-  iconBg,
+  iconColor,
   label,
   value,
-  sub,
-  frozen,
 }: {
   icon: React.ElementType;
-  iconBg: string;
-  label: React.ReactNode;
+  iconColor: string;
+  label: string;
   value: string;
-  sub?: string;
-  frozen?: boolean;
 }) {
   return (
-    <Card className="p-5 bg-white border border-gray-100 rounded-2xl relative overflow-hidden"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-      {frozen && (
-        <span className="absolute top-3 right-3 text-[10px] font-medium text-gray-400 bg-gray-100 rounded px-1.5 py-0.5">
-          今日
-        </span>
-      )}
-      <div className="flex items-center gap-2 mb-3">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", iconBg)}>
+    <div className="bg-white border border-gray-100 rounded-xl p-5"
+      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", iconColor)}>
           <Icon className="w-4 h-4 text-white" />
         </div>
-        <span className="text-sm text-gray-500 font-medium">{label}</span>
+        <span className="text-sm text-gray-500">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-gray-900 tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-    </Card>
+      <p className="text-[1.625rem] font-bold text-gray-900 tabular-nums leading-none">{value}</p>
+    </div>
   );
 }
 
@@ -174,19 +163,19 @@ function Pagination({
   const totalPages = Math.ceil(total / pageSize);
   if (totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-end gap-2 px-4 py-2 border-t border-gray-100">
+    <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100">
       <span className="text-xs text-gray-400">
         第 {page}/{totalPages} 页，共 {total} 条
       </span>
       <button
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
         disabled={page === 1}
         onClick={() => onChange(page - 1)}
       >
         <ChevronLeft className="w-4 h-4 text-gray-500" />
       </button>
       <button
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30"
+        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
         disabled={page === totalPages}
         onClick={() => onChange(page + 1)}
       >
@@ -236,7 +225,12 @@ export default function ModelQuota() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateMode, singleDate, dateRange, refreshKey]);
 
-  const quotaPct = ((TODAY_QUOTA_USED / TODAY_QUOTA_TOTAL) * 100).toFixed(1);
+  // Today quota: always based on today's data (not affected by filter)
+  const todaySummary = useMemo(() => generateSummary(TODAY), []);
+  const todayTotalTokens = todaySummary.reduce((acc, r) => acc + r.totalTokens, 0);
+  const quotaPct = (todayTotalTokens / TODAY_QUOTA_TOTAL) * 100;
+  const quotaPctStr = quotaPct.toFixed(1);
+  const isQuotaWarning = quotaPct > 80;
 
   // Paginated slices
   const summarySlice = summary.slice(
@@ -251,7 +245,7 @@ export default function ModelQuota() {
   return (
     <TenantLayout>
       <TooltipProvider>
-        <div className="max-w-5xl mx-auto px-6 py-8 page-enter">
+        <div className="max-w-7xl mx-auto px-8 py-8 page-enter">
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">模型额度</h1>
@@ -333,70 +327,81 @@ export default function ModelQuota() {
           {/* Overview Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <StatCard
-              icon={Hash}
-              iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+              icon={Activity}
+              iconColor="bg-blue-500"
               label="总请求数"
               value={overviewStats.totalRequests.toLocaleString()}
             />
             <StatCard
               icon={ArrowDownToLine}
-              iconBg="bg-gradient-to-br from-indigo-500 to-indigo-600"
+              iconColor="bg-blue-500"
               label="输入 Tokens"
               value={overviewStats.totalInput.toLocaleString()}
             />
             <StatCard
               icon={ArrowUpFromLine}
-              iconBg="bg-gradient-to-br from-violet-500 to-violet-600"
+              iconColor="bg-violet-500"
               label="输出 Tokens"
               value={overviewStats.totalOutput.toLocaleString()}
             />
             <StatCard
-              icon={Layers}
-              iconBg="bg-gradient-to-br from-cyan-500 to-cyan-600"
+              icon={Zap}
+              iconColor="bg-violet-500"
               label="总 Tokens"
               value={overviewStats.totalTokens.toLocaleString()}
             />
-            {/* Today Quota Card — not affected by filter */}
-            <Card className="p-5 bg-white border border-gray-100 rounded-2xl relative overflow-hidden col-span-2 lg:col-span-1"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <span className="absolute top-3 right-3 text-[10px] font-medium text-gray-400 bg-gray-100 rounded px-1.5 py-0.5">
-                今日
-              </span>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                  <Gauge className="w-4 h-4 text-white" />
+
+            {/* Today Quota Card — not affected by time filter */}
+            <div className="bg-white border border-gray-100 rounded-xl p-5 col-span-2 lg:col-span-1"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                <span className="text-sm text-gray-500 flex items-center gap-1">
                   今日配额消耗
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[200px] text-xs leading-relaxed">
+                    <TooltipContent
+                      side="top"
+                      className="max-w-[180px] text-xs leading-relaxed text-justify"
+                    >
                       此配额为公司提供的外部模型 Token 额度，按自然日统计和刷新
                     </TooltipContent>
                   </Tooltip>
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 tabular-nums">
-                {quotaPct}%
+              <p className="text-[1.625rem] font-bold text-gray-900 tabular-nums leading-none mb-1">
+                {quotaPctStr}%
               </p>
-              <p className="text-xs text-gray-400 mt-1">
-                {TODAY_QUOTA_USED.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
+              <p className="text-xs text-gray-400 mb-3">
+                {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
               </p>
-            </Card>
+              {/* Progress bar */}
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
+                  )}
+                  style={{ width: `${Math.min(quotaPct, 100)}%` }}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Model Usage Summary */}
-          <div className="bg-white rounded-2xl border border-gray-100 mb-6 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white rounded-xl border border-gray-100 mb-5 overflow-hidden"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
             <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm">模型使用汇总</h2>
+              <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-xs">
+                  <tr className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
                     <th className="text-left px-5 py-3 font-medium">模型名称</th>
                     <th className="text-right px-5 py-3 font-medium">总请求数</th>
                     <th className="text-right px-5 py-3 font-medium">输入 Tokens</th>
@@ -407,16 +412,16 @@ export default function ModelQuota() {
                 <tbody className="divide-y divide-gray-50">
                   {summarySlice.map((row) => (
                     <tr key={row.model} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3 font-medium text-gray-800">{row.model}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums font-medium text-gray-800">{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-sm font-medium text-gray-800">{row.model}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums font-semibold text-gray-900">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {summarySlice.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-5 py-8 text-center text-gray-400 text-sm">暂无数据</td>
+                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
                     </tr>
                   )}
                 </tbody>
@@ -431,15 +436,15 @@ export default function ModelQuota() {
           </div>
 
           {/* Detail Usage Records */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
             <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm">详细使用记录</h2>
+              <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
             <div className="overflow-x-auto" style={{ maxHeight: 360, overflowY: "auto" }}>
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
-                  <tr className="bg-gray-50 text-gray-500 text-xs">
+                  <tr className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
                     <th className="text-left px-5 py-3 font-medium whitespace-nowrap">请求时间</th>
                     <th className="text-left px-5 py-3 font-medium">模型名称</th>
                     <th className="text-right px-5 py-3 font-medium">总请求数</th>
@@ -451,17 +456,17 @@ export default function ModelQuota() {
                 <tbody className="divide-y divide-gray-50">
                   {detailSlice.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3 text-gray-500 tabular-nums whitespace-nowrap text-xs">{row.time}</td>
-                      <td className="px-5 py-3 font-medium text-gray-800 whitespace-nowrap">{row.model}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3 text-right tabular-nums font-medium text-gray-800">{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-xs text-gray-400 tabular-nums whitespace-nowrap">{row.time}</td>
+                      <td className="px-5 py-3.5 text-sm font-medium text-gray-800 whitespace-nowrap">{row.model}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.requests.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.inputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-600">{row.outputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums font-semibold text-gray-900">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {detailSlice.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-5 py-8 text-center text-gray-400 text-sm">暂无数据</td>
+                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
                     </tr>
                   )}
                 </tbody>

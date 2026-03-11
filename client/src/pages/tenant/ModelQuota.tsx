@@ -142,9 +142,9 @@ function StatCard({
         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", iconColor)}>
           <Icon className="w-4 h-4 text-white" />
         </div>
-        <span className="text-xs text-gray-500">{label}</span>
+        <span className="text-sm text-gray-500">{label}</span>
       </div>
-      <p className="text-xl font-bold text-gray-900 tabular-nums leading-none">{value}</p>
+      <p className="text-2xl font-bold text-gray-900 tabular-nums leading-none">{value}</p>
     </div>
   );
 }

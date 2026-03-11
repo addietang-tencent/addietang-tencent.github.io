@@ -19,10 +19,9 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
 import {
   Search, Plus, ChevronDown, Info, Upload, Download,
-  Trash2, Key, UserX, UserCheck, MoreHorizontal, Mail
+  Trash2, Key, UserX, UserCheck, MoreHorizontal
 } from "lucide-react";
 
 const MOCK_MEMBERS = [
@@ -57,7 +56,6 @@ export default function MemberManagement() {
   const handleAdd = () => {
     if (!newMember.id.trim()) { toast.error("请输入成员 ID"); return; }
     if (newMember.passwordMode === "custom" && !newMember.customPassword.trim()) { toast.error("请输入指定密码"); return; }
-    if (newMember.sendNotification && !newMember.notificationEmail.trim()) { toast.error("请输入通知邮箱地址"); return; }
     setMembers([...members, {
       id: newMember.id, role: newMember.role, status: "active",
       clawLimit: newMember.clawLimit, tokenLimit: newMember.tokenLimit,
@@ -262,10 +260,12 @@ export default function MemberManagement() {
                   <Label className="flex items-center gap-1.5">
                     成员 ID
                     <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="w-3.5 h-3.5 text-gray-400" />
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default inline-flex">
+                          <Info className="w-3.5 h-3.5 text-gray-400" />
+                        </span>
                       </TooltipTrigger>
-                      <TooltipContent>填写企业成员的唯一 ID，例如企业邮箱或企业成员唯一名称</TooltipContent>
+                      <TooltipContent>填写企业成员的唯一 ID，例如企业邮箱或企业成员唯一名称，作为企业成员登录员工端的账号</TooltipContent>
                     </Tooltip>
                   </Label>
                   <Input
@@ -293,7 +293,7 @@ export default function MemberManagement() {
                 {/* 密码 */}
                 <div className="space-y-2">
                   <Label>密码</Label>
-                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+                  <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full">
                     <button
                       onClick={() => setNewMember({ ...newMember, passwordMode: "random" })}
                       className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
@@ -328,25 +328,24 @@ export default function MemberManagement() {
 
                 {/* 信息发送 */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-gray-400" />
-                      信息发送
-                    </Label>
-                    <Switch
-                      checked={newMember.sendNotification}
-                      onCheckedChange={(v) => setNewMember({ ...newMember, sendNotification: v })}
-                    />
-                  </div>
-                  {newMember.sendNotification && (
-                    <Input
-                      type="email"
-                      placeholder="请输入接收通知的邮箱地址"
-                      value={newMember.notificationEmail}
-                      onChange={(e) => setNewMember({ ...newMember, notificationEmail: e.target.value })}
-                      className="bg-gray-50"
-                    />
-                  )}
+                  <Label className="flex items-center gap-1.5">
+                    信息发送
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default inline-flex">
+                          <Info className="w-3.5 h-3.5 text-gray-400" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <Input
+                    type="email"
+                    placeholder="选填，输入成员接收账号密码的邮箱地址"
+                    value={newMember.notificationEmail}
+                    onChange={(e) => setNewMember({ ...newMember, notificationEmail: e.target.value })}
+                    className="bg-gray-50"
+                  />
                 </div>
               </div>
             </div>

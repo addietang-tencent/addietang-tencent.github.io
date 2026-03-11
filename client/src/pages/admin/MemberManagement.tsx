@@ -296,7 +296,7 @@ export default function MemberManagement() {
                   <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full">
                     <button
                       onClick={() => setNewMember({ ...newMember, passwordMode: "random" })}
-                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
                         newMember.passwordMode === "random"
                           ? "bg-white text-gray-900 shadow-sm"
                           : "text-gray-500 hover:text-gray-700"
@@ -306,7 +306,7 @@ export default function MemberManagement() {
                     </button>
                     <button
                       onClick={() => setNewMember({ ...newMember, passwordMode: "custom" })}
-                      className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
                         newMember.passwordMode === "custom"
                           ? "bg-white text-gray-900 shadow-sm"
                           : "text-gray-500 hover:text-gray-700"

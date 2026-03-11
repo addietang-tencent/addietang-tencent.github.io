@@ -9,15 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Upload } from "lucide-react";
 
 export default function BasicInfo() {
   const [form, setForm] = useState({
     siteName: "A公司企业版OpenClaw",
     siteDesc: "快速创建属于你的24小时AI私人助理，提升企业团队的工作效率",
     region: "广州",
-    ip: "120.48.88.123",
     domain: "openclaw.acompany.com",
     tencentUin: "3205597606",
     logo: null as File | null,
@@ -88,73 +86,31 @@ export default function BasicInfo() {
             </div>
 
             <div className="border-t border-gray-100 pt-6 space-y-6">
-              {/* Region */}
-              <div className="space-y-2">
-                <Label htmlFor="region" className="text-sm font-medium text-gray-700">
+              {/* Region — read-only text */}
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium text-gray-700">
                   所在地域
-                  <span className="text-xs text-gray-400 font-normal ml-2">当前管控端部署所在的云服务器地域</span>
-                </Label>
-                <Input
-                  id="region"
-                  value={form.region}
-                  onChange={(e) => setForm({ ...form, region: e.target.value })}
-                  placeholder="例如：广州"
-                  className="bg-gray-50 border-gray-200"
-                />
+                  <span className="text-xs text-gray-400 font-normal ml-2">员工端、管控端及员工 OpenClaw 底层云服务器所在的地域，由部署时自动确定</span>
+                </p>
+                <p className="text-sm text-gray-900 px-1">{form.region}</p>
               </div>
 
-              {/* IP Address - Read Only */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
-                  IP 地址
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="w-3.5 h-3.5 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>服务器 IP 地址，不可修改</TooltipContent>
-                  </Tooltip>
-                </Label>
-                <Input
-                  value={form.ip}
-                  readOnly
-                  className="bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                />
-              </div>
-
-              {/* Domain - Read Only */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              {/* Domain — read-only text */}
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium text-gray-700">
                   域名
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="w-3.5 h-3.5 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>平台访问域名，不可修改</TooltipContent>
-                  </Tooltip>
-                </Label>
-                <Input
-                  value={form.domain}
-                  readOnly
-                  className="bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                />
+                  <span className="text-xs text-gray-400 font-normal ml-2">员工端与管控端的访问域名</span>
+                </p>
+                <p className="text-sm text-gray-900 px-1">{form.domain}</p>
               </div>
 
-              {/* Tencent Cloud UIN - Read Only */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              {/* Tencent Cloud UIN — read-only text */}
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium text-gray-700">
                   关联腾讯云账号
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="w-3.5 h-3.5 text-gray-400" />
-                    </TooltipTrigger>
-                    <TooltipContent>腾讯云账号 UIN，不可修改</TooltipContent>
-                  </Tooltip>
-                </Label>
-                <Input
-                  value={form.tencentUin}
-                  readOnly
-                  className="bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
-                />
+                  <span className="text-xs text-gray-400 font-normal ml-2">当前平台关联的腾讯云账号 UIN</span>
+                </p>
+                <p className="text-sm text-gray-900 px-1">{form.tencentUin}</p>
               </div>
             </div>
           </div>

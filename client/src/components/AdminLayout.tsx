@@ -22,6 +22,7 @@ import {
   ChevronRight,
   LogOut,
   Shield,
+  ExternalLink,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -91,17 +92,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 flex flex-col z-40"
         style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)" }}>
         {/* Logo */}
-        <div className="h-16 flex items-center px-5 border-b border-gray-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-              🦞
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
-              <p className="text-xs text-gray-400">OpenClaw Enterprise</p>
+        <div className="px-5 border-b border-gray-100">
+          <div className="h-16 flex items-center">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                🦞
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
+                <p className="text-xs text-gray-400">OpenClaw Enterprise</p>
+              </div>
             </div>
           </div>
+          {/* 前往员工端 */}
+          <Link href="/my-openclaw">
+            <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
+              <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
+              <span>前往员工端</span>
+            </div>
+          </Link>
         </div>
 
         {/* Navigation */}

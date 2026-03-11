@@ -154,7 +154,7 @@ export default function OpenClawDetail() {
   const [appliedModel, setAppliedModel] = useState({ name: "DeepSeek V3 0324", active: true });
 
   // ── Channel state ──
-  const [selectedChannel, setSelectedChannel] = useState("qq");
+  const [selectedChannel, setSelectedChannel] = useState("wework");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
   // 飞书专用：快捷/手动 Tab
   const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("quick");
@@ -174,8 +174,12 @@ export default function OpenClawDetail() {
       fieldValues: { appId: "1234567890", appSecret: "xyz987654321" },
     },
   ]);
-  // 已接入通道展开状态
-  const [expandedChannels, setExpandedChannels] = useState<Record<number, boolean>>({});
+  // 已接入通道展开状态（手风琴：同一时间只展开一个，用 index | null）
+  const [expandedChannelIdx, setExpandedChannelIdx] = useState<number | null>(null);
+
+  const toggleExpandChannel = (idx: number) => {
+    setExpandedChannelIdx(prev => prev === idx ? null : idx);
+  };
 
   // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
@@ -225,9 +229,7 @@ export default function OpenClawDetail() {
     toast.success(`${ch.label} 通道已添加`);
   };
 
-  const toggleExpand = (idx: number) => {
-    setExpandedChannels(prev => ({ ...prev, [idx]: !prev[idx] }));
-  };
+
 
   const filteredSkills = AVAILABLE_SKILLS.filter((s) =>
     s.toLowerCase().includes(skillSearch.toLowerCase())
@@ -301,15 +303,24 @@ export default function OpenClawDetail() {
   // ─── 渲染已接入通道的展开配置项 ───────────────────────────────────────────────
 
   const renderAppliedChannelDetail = (ch: AppliedChannel) => {
+    // 将字段 label 转换为简短 key 名（如 "飞书应用的App ID" → "appId"）
+    const getShortKey = (field: ChannelField): string => {
+      if (field.key === "appId" || field.key === "clientId") return field.key;
+      if (field.key === "appSecret" || field.key === "clientSecret") return field.key;
+      if (field.key === "token") return "token";
+      if (field.key === "encodingAESKey") return "encodingAESKey";
+      return field.key;
+    };
     return (
-      <div className="mt-2 ml-5 space-y-1.5 pb-1">
+      <div className="mx-2 mb-2 rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
         {ch.fields.map((field) => {
           const val = ch.fieldValues[field.key] || "";
           const displayVal = field.secret ? maskSecret(val) : val;
+          const shortKey = getShortKey(field);
           return (
-            <div key={field.key} className="flex items-center justify-between text-xs">
-              <span className="text-gray-400 shrink-0 mr-2">{field.label}</span>
-              <span className="text-gray-700 font-mono truncate max-w-[120px]">{displayVal || "—"}</span>
+            <div key={field.key} className="flex items-start gap-1 text-sm">
+              <span className="text-gray-500 shrink-0">{shortKey}：</span>
+              <span className="text-gray-800 font-mono break-all">{displayVal || "—"}</span>
             </div>
           );
         })}
@@ -509,7 +520,7 @@ export default function OpenClawDetail() {
 
               {/* 操作按钮 */}
               <Button className="w-full text-sm" variant="outline" onClick={handleAddChannel}>
-                {currentChannelConfig?.feishuMode && feishuConfigMode === "quick" ? "前往授权" : "应用"}
+                {currentChannelConfig?.feishuMode && feishuConfigMode === "quick" ? "前往授权" : "添加并应用"}
               </Button>
 
               {/* 底部说明 */}
@@ -531,9 +542,9 @@ export default function OpenClawDetail() {
                         <div className="flex items-center justify-between px-2.5 py-2">
                           <button
                             className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
-                            onClick={() => toggleExpand(idx)}
+                            onClick={() => toggleExpandChannel(idx)}
                           >
-                            {expandedChannels[idx]
+                            {expandedChannelIdx === idx
                               ? <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                               : <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
                             }
@@ -545,7 +556,10 @@ export default function OpenClawDetail() {
                               运行中
                             </span>
                             <button
-                              onClick={() => setAppliedChannels(appliedChannels.filter((_, i) => i !== idx))}
+                              onClick={() => {
+                                setAppliedChannels(appliedChannels.filter((_, i) => i !== idx));
+                                if (expandedChannelIdx === idx) setExpandedChannelIdx(null);
+                              }}
                               className="text-gray-300 hover:text-red-500 transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -553,7 +567,7 @@ export default function OpenClawDetail() {
                           </div>
                         </div>
                         {/* 展开配置项 */}
-                        {expandedChannels[idx] && renderAppliedChannelDetail(ch)}
+                        {expandedChannelIdx === idx && renderAppliedChannelDetail(ch)}
                       </div>
                     ))}
                   </div>
@@ -618,7 +632,7 @@ export default function OpenClawDetail() {
 
       {/* ===== 飞书二维码弹窗 ===== */}
       <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-1">
               <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">

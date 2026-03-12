@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import {
   Search, Plus, ChevronDown, Info, Upload, Download,
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
 } from "lucide-react";
 
 const PAGE_SIZE = 10;
@@ -46,10 +46,18 @@ const MOCK_MEMBERS_BASE = [
 const LAST_CLAW_LIMIT = 3;
 const LAST_TOKEN_LIMIT = 50000;
 
+/** 生成随机密码，格式 Oc@xxxxxxxx */
+function generatePassword(): string {
+  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let pwd = "Oc@";
+  for (let i = 0; i < 8; i++) {
+    pwd += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return pwd;
+}
+
 const emptyNewMember = {
   id: "", role: "member", clawLimit: LAST_CLAW_LIMIT, tokenLimit: LAST_TOKEN_LIMIT,
-  passwordMode: "random" as "random" | "custom",
-  customPassword: "",
   notificationEmail: "",
 };
 
@@ -58,12 +66,10 @@ const emptyEditForm = {
 };
 
 const emptyResetForm = {
-  passwordMode: "random" as "random" | "custom",
-  customPassword: "",
   notificationEmail: "",
 };
 
-// 添加成员表单（含密码）
+// ─── 添加成员表单（无密码） ───────────────────────────────────────────────────
 function AddMemberFormFields({
   values,
   onChange,
@@ -110,42 +116,6 @@ function AddMemberFormFields({
                 <SelectItem value="admin">管理员</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* 密码 */}
-          <div className="space-y-2">
-            <Label>密码</Label>
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full">
-              <button
-                onClick={() => onChange({ ...values, passwordMode: "random" })}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  values.passwordMode === "random"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                随机密码
-              </button>
-              <button
-                onClick={() => onChange({ ...values, passwordMode: "custom" })}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                  values.passwordMode === "custom"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                指定密码
-              </button>
-            </div>
-            {values.passwordMode === "custom" && (
-              <Input
-                type="password"
-                placeholder="请输入指定密码"
-                value={values.customPassword}
-                onChange={(e) => onChange({ ...values, customPassword: e.target.value })}
-                className="bg-gray-50"
-              />
-            )}
           </div>
 
           {/* 信息发送 */}
@@ -223,7 +193,7 @@ function AddMemberFormFields({
   );
 }
 
-// 编辑成员表单（无密码、无信息发送，成员ID只读）
+// ─── 编辑成员表单（无密码、无信息发送，成员ID只读） ──────────────────────────
 function EditMemberFormFields({
   values,
   onChange,
@@ -326,6 +296,83 @@ function EditMemberFormFields({
   );
 }
 
+// ─── 创建/重置成功弹窗 ────────────────────────────────────────────────────────
+function CredentialResultDialog({
+  open,
+  onClose,
+  title,
+  memberId,
+  password,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  memberId: string;
+  password: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    const text = `账号：${memberId}\n密码：${password}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="py-2 space-y-4">
+          {/* 账号密码展示 */}
+          <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">成员 ID</span>
+              <span className="text-sm font-mono text-gray-800 select-all">{memberId}</span>
+            </div>
+            <div className="border-t border-gray-100" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">初始密码</span>
+              <span className="text-sm font-mono text-gray-800 select-all tracking-wider">{password}</span>
+            </div>
+          </div>
+
+          {/* 复制按钮 */}
+          <Button
+            className="w-full"
+            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            onClick={handleCopy}
+          >
+            {copied ? (
+              <><CheckCircle className="w-4 h-4 mr-2" />已复制</>
+            ) : (
+              <><Copy className="w-4 h-4 mr-2" />复制账号密码</>
+            )}
+          </Button>
+
+          {/* 警示文案 */}
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              关闭弹窗后将无法再次查看此密码，请复制后妥善保存，并通过安全渠道告知成员。
+            </p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>关闭</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function MemberManagement() {
   const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
   const [search, setSearch] = useState("");
@@ -344,6 +391,7 @@ export default function MemberManagement() {
 
   // 初始管理员：排序后第一位
   const initialAdminId = sortedMembers.find((m) => m.role === "admin")?.id;
+
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
@@ -352,6 +400,14 @@ export default function MemberManagement() {
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
   const [resetForm, setResetForm] = useState({ ...emptyResetForm });
+
+  // 创建/重置成功弹窗
+  const [credentialDialog, setCredentialDialog] = useState<{
+    open: boolean;
+    title: string;
+    memberId: string;
+    password: string;
+  }>({ open: false, title: "", memberId: "", password: "" });
 
   const filtered = sortedMembers.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
@@ -362,7 +418,7 @@ export default function MemberManagement() {
 
   const handleAdd = () => {
     if (!newMember.id.trim()) { toast.error("请输入成员 ID"); return; }
-    if (newMember.passwordMode === "custom" && !newMember.customPassword.trim()) { toast.error("请输入指定密码"); return; }
+    const pwd = generatePassword();
     setMembers([...members, {
       id: newMember.id, role: newMember.role, status: "active",
       clawLimit: newMember.clawLimit, tokenLimit: newMember.tokenLimit,
@@ -370,7 +426,8 @@ export default function MemberManagement() {
     }]);
     setShowAddDialog(false);
     setNewMember({ ...emptyNewMember });
-    toast.success("成员已添加");
+    // 显示创建成功弹窗
+    setCredentialDialog({ open: true, title: "成员已创建", memberId: newMember.id, password: pwd });
   };
 
   const openEditDialog = (member: typeof MOCK_MEMBERS_BASE[0]) => {
@@ -407,12 +464,12 @@ export default function MemberManagement() {
   };
 
   const handleReset = () => {
-    if (resetForm.passwordMode === "custom" && !resetForm.customPassword.trim()) {
-      toast.error("请输入指定密码"); return;
-    }
+    const pwd = generatePassword();
+    const memberId = showResetDialog!;
     setShowResetDialog(null);
     setResetForm({ ...emptyResetForm });
-    toast.success("密码已重置" + (resetForm.notificationEmail ? "，新密码已发送至邮箱" : ""));
+    // 显示重置成功弹窗
+    setCredentialDialog({ open: true, title: "密码已重置", memberId, password: pwd });
   };
 
   return (
@@ -444,7 +501,7 @@ export default function MemberManagement() {
           </DropdownMenu>
         </div>
 
-        {/* Search - 白底无卡片包裹，与列表融合 */}
+        {/* Search */}
         <div className="mb-4">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -512,7 +569,12 @@ export default function MemberManagement() {
               {paginated.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-gray-900">{member.id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">{member.id}</span>
+                      {member.id === initialAdminId && (
+                        <Badge variant="outline" className="text-[10px] border-amber-200 text-amber-600 bg-amber-50 px-1.5 py-0">初始管理员</Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-4">
                     <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
@@ -614,10 +676,25 @@ export default function MemberManagement() {
                             <Pencil className="w-3.5 h-3.5 mr-2" />
                             编辑
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
-                            <Key className="w-3.5 h-3.5 mr-2" />
-                            重置密码
-                          </DropdownMenuItem>
+                          {/* 重置密码：初始管理员禁用 */}
+                          {member.id === initialAdminId ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <Key className="w-3.5 h-3.5 mr-2" />
+                                  重置密码
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">
+                                初始管理员账号不允许重置密码，如有需要请前往腾讯云云服务器控制台修改
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                              <Key className="w-3.5 h-3.5 mr-2" />
+                              重置密码
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -732,44 +809,8 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-4">
             <p className="text-sm text-gray-500">
-              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？
+              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
-
-            {/* 密码方式 */}
-            <div className="space-y-2">
-              <Label>密码方式</Label>
-              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full">
-                <button
-                  onClick={() => setResetForm({ ...resetForm, passwordMode: "random" })}
-                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                    resetForm.passwordMode === "random"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  随机密码
-                </button>
-                <button
-                  onClick={() => setResetForm({ ...resetForm, passwordMode: "custom" })}
-                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
-                    resetForm.passwordMode === "custom"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  指定密码
-                </button>
-              </div>
-              {resetForm.passwordMode === "custom" && (
-                <Input
-                  type="password"
-                  placeholder="请输入指定密码"
-                  value={resetForm.customPassword}
-                  onChange={(e) => setResetForm({ ...resetForm, customPassword: e.target.value })}
-                  className="bg-gray-50"
-                />
-              )}
-            </div>
 
             {/* 信息发送 */}
             <div className="space-y-2">
@@ -786,7 +827,7 @@ export default function MemberManagement() {
               </Label>
               <Input
                 type="email"
-                placeholder="选填，输入成员接收账号密码的邮箱地址"
+                placeholder="选填，输入成员接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
                 className="bg-gray-50"
@@ -801,6 +842,15 @@ export default function MemberManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Credential Result Dialog (创建成功 / 密码已重置) */}
+      <CredentialResultDialog
+        open={credentialDialog.open}
+        onClose={() => setCredentialDialog((d) => ({ ...d, open: false }))}
+        title={credentialDialog.title}
+        memberId={credentialDialog.memberId}
+        password={credentialDialog.password}
+      />
     </AdminLayout>
   );
 }

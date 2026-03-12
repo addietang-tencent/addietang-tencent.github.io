@@ -14,7 +14,8 @@ import {
   Brain,
   MessageSquare,
   FileText,
-  Server,
+  HardDrive,
+  ShieldCheck,
   Activity,
   BarChart3,
   ClipboardList,
@@ -55,7 +56,8 @@ const NAV_GROUPS = [
   {
     label: "云设备配置",
     items: [
-      { label: "云服务器管理", path: "/admin/server-management", icon: Server },
+      { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
+      { label: "安全组管理", path: "/admin/security-group", icon: ShieldCheck },
     ],
   },
   {

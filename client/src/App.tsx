@@ -23,7 +23,8 @@ import ModelConfig from "./pages/admin/ModelConfig";
 import ChannelConfig from "./pages/admin/ChannelConfig";
 import SkillConfig from "./pages/admin/SkillConfig";
 import DocManagement from "./pages/admin/DocManagement";
-import ServerManagement from "./pages/admin/ServerManagement";
+import ImageManagement from "./pages/admin/ImageManagement";
+import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
@@ -48,7 +49,8 @@ function Router() {
       <Route path="/admin/channel-config" component={ChannelConfig} />
       <Route path="/admin/skill-config" component={SkillConfig} />
       <Route path="/admin/doc-management" component={DocManagement} />
-      <Route path="/admin/server-management" component={ServerManagement} />
+      <Route path="/admin/image-management" component={ImageManagement} />
+      <Route path="/admin/security-group" component={SecurityGroupManagement} />
       <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
       <Route path="/admin/tokens-monitor" component={TokensMonitor} />
       <Route path="/admin/audit-log" component={AuditLog} />

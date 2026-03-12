@@ -210,7 +210,10 @@ export default function MyOpenClaw() {
                           {/* 三个点菜单 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                              <button
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <MoreVertical className="w-4 h-4" />
                               </button>
                             </DropdownMenuTrigger>
@@ -252,7 +255,7 @@ export default function MyOpenClaw() {
                                   </TooltipContent>
                                 </Tooltip>
                               ) : (
-                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); setReinstallConfirm({ name: claw.name }); }}>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReinstallConfirm({ name: claw.name }); }}>
                                    <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
                                    重新安装 OpenClaw
                                 </DropdownMenuItem>
@@ -260,7 +263,7 @@ export default function MyOpenClaw() {
                               <DropdownMenuSeparator />
                               {/* 删除 - 始终可用 */}
                               <DropdownMenuItem
-                                onClick={(e) => { e.preventDefault(); setDeleteConfirm({ id: claw.id, name: claw.name }); }}
+                                onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: claw.id, name: claw.name }); }}
                                 className="text-red-600 focus:text-red-600"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />

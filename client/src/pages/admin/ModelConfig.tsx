@@ -59,10 +59,10 @@ const MOCK_MODELS: ModelRow[] = [
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
   },
   {
-    id: "2", name: "腾讯云混元", version: "混元 Turbo",
+    id: "2", name: "腾讯云混元", version: "混元 TurboS Latest",
     apiKey: "sk-****e5f6g7h8", visible: true, dailyLimit: 200000,
     provider: "tencent-hunyuan",
-    versions: ["混元 Turbo", "混元 Pro", "混元 Standard"],
+    versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
   },
   {
     id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
@@ -396,7 +396,7 @@ export default function ModelConfig() {
           </div>
           <div className="space-y-3">
             <Label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-              每日全局 Tokens 数量上限
+              每日全局 TOKENS 上限
               <Tooltip>
                 <TooltipTrigger>
                   <Info className="w-3.5 h-3.5 text-gray-400" />

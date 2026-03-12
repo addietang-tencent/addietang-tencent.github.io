@@ -307,9 +307,8 @@ export const MOCK_OPENCLAW_MONITOR = [
 
 export const AVAILABLE_MODELS = [
   { value: "tencent-deepseek", label: "腾讯云 DeepSeek", versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2"] },
-  { value: "tencent-hunyuan", label: "腾讯云混元", versions: ["混元 Turbo", "混元 Pro", "混元 Lite"] },
+  { value: "tencent-hunyuan", label: "腾讯云混元", versions: ["混元 TurboS Latest", "混元 Pro", "混元 Lite"] },
   { value: "tencent-coding", label: "腾讯云 Coding Plan", versions: ["自动"] },
-  { value: "custom", label: "自定义模型", versions: [] },
 ];
 
 export const AVAILABLE_SKILLS = [

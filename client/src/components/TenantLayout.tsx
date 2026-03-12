@@ -22,7 +22,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 const NAV_ITEMS = [
   { label: "我的 OpenClaw", path: "/my-openclaw", newTab: false },
   { label: "模型额度", path: "/model-quota", newTab: false },
-  { label: "帮助文档", path: "/help-docs", newTab: true },
+  { label: "帮助文档", path: "/help-docs", newTab: false },
 ];
 
 const CURRENT_USER = "alice@acompany.com";

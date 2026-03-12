@@ -5,7 +5,6 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 // Landing
 import LandingPage from "./pages/LandingPage";
@@ -33,62 +32,28 @@ import AuditLog from "./pages/admin/AuditLog";
 function Router() {
   return (
     <Switch>
-      {/* Landing Page - 公开访问 */}
+      {/* Landing Page */}
       <Route path="/" component={LandingPage} />
 
-      {/* Tenant Routes - 需要登录 */}
-      <Route path="/my-openclaw">
-        <ProtectedRoute><MyOpenClaw /></ProtectedRoute>
-      </Route>
-      <Route path="/openclaw/:id">
-        {(params) => (
-          <ProtectedRoute><OpenClawDetail /></ProtectedRoute>
-        )}
-      </Route>
-      <Route path="/model-quota">
-        <ProtectedRoute><ModelQuota /></ProtectedRoute>
-      </Route>
-      <Route path="/help-docs">
-        <ProtectedRoute><HelpDocs /></ProtectedRoute>
-      </Route>
-      <Route path="/reset-password">
-        <ProtectedRoute><ResetPassword /></ProtectedRoute>
-      </Route>
+      {/* Tenant Routes */}
+      <Route path="/my-openclaw" component={MyOpenClaw} />
+      <Route path="/openclaw/:id" component={OpenClawDetail} />
+      <Route path="/model-quota" component={ModelQuota} />
+      <Route path="/help-docs" component={HelpDocs} />
+      <Route path="/reset-password" component={ResetPassword} />
 
-      {/* Admin Routes - 需要登录且为管理员 */}
-      <Route path="/admin/basic-info">
-        <ProtectedRoute requireAdmin><BasicInfo /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/members">
-        <ProtectedRoute requireAdmin><MemberManagement /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/model-config">
-        <ProtectedRoute requireAdmin><ModelConfig /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/channel-config">
-        <ProtectedRoute requireAdmin><ChannelConfig /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/skill-config">
-        <ProtectedRoute requireAdmin><SkillConfig /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/doc-management">
-        <ProtectedRoute requireAdmin><DocManagement /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/image-management">
-        <ProtectedRoute requireAdmin><ImageManagement /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/security-group">
-        <ProtectedRoute requireAdmin><SecurityGroupManagement /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/openclaw-monitor">
-        <ProtectedRoute requireAdmin><OpenClawMonitor /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/tokens-monitor">
-        <ProtectedRoute requireAdmin><TokensMonitor /></ProtectedRoute>
-      </Route>
-      <Route path="/admin/audit-log">
-        <ProtectedRoute requireAdmin><AuditLog /></ProtectedRoute>
-      </Route>
+      {/* Admin Routes */}
+      <Route path="/admin/basic-info" component={BasicInfo} />
+      <Route path="/admin/members" component={MemberManagement} />
+      <Route path="/admin/model-config" component={ModelConfig} />
+      <Route path="/admin/channel-config" component={ChannelConfig} />
+      <Route path="/admin/skill-config" component={SkillConfig} />
+      <Route path="/admin/doc-management" component={DocManagement} />
+      <Route path="/admin/image-management" component={ImageManagement} />
+      <Route path="/admin/security-group" component={SecurityGroupManagement} />
+      <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
+      <Route path="/admin/tokens-monitor" component={TokensMonitor} />
+      <Route path="/admin/audit-log" component={AuditLog} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

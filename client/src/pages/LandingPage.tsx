@@ -6,16 +6,14 @@
  * - 第三屏：企业版功能与特色
  * - 未登录用户可访问，已登录用户跳转到「我的 OpenClaw」
  */
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/mockData";
 import {
   Bot, Zap, Shield, Cloud, Settings, Users, ArrowRight,
-  MessageSquare, Brain, Puzzle, Clock, CheckCircle2, LogIn, LogOut
+  MessageSquare, Brain, Puzzle, Clock, CheckCircle2
 } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
-import LoginModal from "@/components/LoginModal";
 
 const CONCEPT_POINTS = [
   {
@@ -84,8 +82,7 @@ const FEATURE_POINTS = [
 ];
 
 export default function LandingPage() {
-  const { isAdmin, isLoggedIn, currentUser, logout } = useUserRole();
-  const [showLogin, setShowLogin] = useState(!isLoggedIn);
+  const { isAdmin } = useUserRole();
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Bar */}
@@ -99,43 +96,18 @@ export default function LandingPage() {
             <span className="font-semibold text-gray-900 text-sm">{SITE_CONFIG.name}</span>
           </div>
           <div className="flex items-center gap-3">
-            {isLoggedIn ? (
-              <>
-                <Link href="/my-openclaw">
-                  <Button variant="ghost" size="sm" className="text-gray-600">进入我的OpenClaw</Button>
-                </Link>
-                {isAdmin && (
-                  <Link href="/admin/basic-info">
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
-                      <Settings className="w-3.5 h-3.5" />
-                      管理后台
-                    </button>
-                  </Link>
-                )}
-                <div className="flex items-center gap-2 pl-2 border-l border-gray-100">
-                  <span className="text-xs text-gray-500">{currentUser?.id}</span>
-                  <button
-                    onClick={logout}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
-                    title="退出登录"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    退出
-                  </button>
-                </div>
-              </>
-            ) : (
-              <button
-                onClick={() => setShowLogin(true)}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-all duration-150"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                登录
-              </button>
+            <Link href="/my-openclaw">
+              <Button variant="ghost" size="sm" className="text-gray-600">进入我的OpenClaw</Button>
+            </Link>
+            {isAdmin && (
+              <Link href="/admin/basic-info">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
+                  <Settings className="w-3.5 h-3.5" />
+                  管理后台
+                </button>
+              </Link>
             )}
           </div>
-          <LoginModal open={showLogin} onSuccess={() => setShowLogin(false)} onClose={() => setShowLogin(false)} />
         </div>
       </header>
 

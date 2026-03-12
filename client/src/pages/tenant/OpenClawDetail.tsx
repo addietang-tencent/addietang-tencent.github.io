@@ -295,20 +295,26 @@ export default function OpenClawDetail() {
     if (currentChannelConfig.feishuMode) {
       return (
         <div className="space-y-3">
-          {/* 快捷/手动 Tab */}
+          {/* 手动/快捷 Tab（手动在前，快捷置灰禁用） */}
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
             <button
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${feishuConfigMode === "quick" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
-              onClick={() => setFeishuConfigMode("quick")}
-            >
-              快捷配置
-            </button>
-            <button
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${feishuConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+              className={`flex-1 py-2 text-sm font-medium transition-colors border-r border-gray-200 ${feishuConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
               onClick={() => setFeishuConfigMode("manual")}
             >
               手动配置
             </button>
+            <div className="relative flex-1 group">
+              <button
+                disabled
+                className="w-full py-2 text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed"
+              >
+                快捷配置
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                扫码一键配置飞书机器人能力即将开放
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+              </div>
+            </div>
           </div>
 
           {feishuConfigMode === "manual" && (

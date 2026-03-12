@@ -292,7 +292,25 @@ export default function TokensMonitor() {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-5 gap-4 mb-6">
-          {/* 今日全局配额消耗（不随时间联动） */}
+          {/* 随时间联动的四张卡片 */}
+          {[
+            { label: "总请求数", value: fmt(totalRequests), icon: TrendingUp, color: "from-blue-500 to-blue-600" },
+            { label: "输入 Tokens", value: fmt(totalInput), icon: ArrowUp, color: "from-indigo-500 to-indigo-600" },
+            { label: "输出 Tokens", value: fmt(totalOutput), icon: ArrowDown, color: "from-purple-500 to-purple-600" },
+            { label: "总 Tokens", value: fmt(totalTokens), icon: Zap, color: "from-blue-600 to-purple-600" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                  <stat.icon className="w-3.5 h-3.5 text-white" />
+                </div>
+                <p className="text-xs text-gray-400">{stat.label}</p>
+              </div>
+              <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+            </div>
+          ))}
+          {/* 今日全局配额消耗（不随时间联动，放末尾） */}
           <div className="bg-white rounded-2xl border border-gray-100 p-4"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
             <div className="flex items-center gap-2 mb-2">
@@ -316,24 +334,6 @@ export default function TokensMonitor() {
             <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
             <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip />
           </div>
-          {/* 以下随时间联动 */}
-          {[
-            { label: "总请求数", value: fmt(totalRequests), icon: TrendingUp, color: "from-blue-500 to-blue-600" },
-            { label: "输入 Tokens", value: fmt(totalInput), icon: ArrowUp, color: "from-indigo-500 to-indigo-600" },
-            { label: "输出 Tokens", value: fmt(totalOutput), icon: ArrowDown, color: "from-purple-500 to-purple-600" },
-            { label: "总 Tokens", value: fmt(totalTokens), icon: Zap, color: "from-blue-600 to-purple-600" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-3.5 h-3.5 text-white" />
-                </div>
-                <p className="text-xs text-gray-400">{stat.label}</p>
-              </div>
-              <p className="text-xl font-bold text-gray-900">{stat.value}</p>
-            </div>
-          ))}
         </div>
 
         {/* Line Chart */}

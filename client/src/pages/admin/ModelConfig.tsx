@@ -17,11 +17,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Info, Brain, Zap, Eye, EyeOff,
-  ChevronRight, ChevronDown, Pencil,
+  Plus, Trash2, Info, Brain, Zap, Eye, EyeOff, Pencil,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 
@@ -137,11 +135,6 @@ export default function ModelConfig() {
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("form");
   const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
 
-  // 展开的行
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  // 每行当前选中的子版本（展开面板内）
-  const [pendingVersion, setPendingVersion] = useState<Record<string, string>>({});
-
   // 编辑配额弹窗
   const [editQuotaModel, setEditQuotaModel] = useState<ModelRow | null>(null);
   const [showEditQuota, setShowEditQuota] = useState(false);
@@ -160,17 +153,6 @@ export default function ModelConfig() {
   const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
   const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
   const [allowCustomModel, setAllowCustomModel] = useState(false);
-  // 设为默认模型（单选）
-  const [defaultModelId, setDefaultModelId] = useState<string>(MOCK_MODELS[0]?.id ?? "");
-
-  const handleSetDefault = (id: string, checked: boolean) => {
-    if (checked) {
-      setDefaultModelId(id);
-      toast.success("已设为默认模型");
-    }
-    // 关闭操作不允许（必须有一个默认）
-  };
-
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
 
@@ -178,30 +160,6 @@ export default function ModelConfig() {
   const openAddDialog = () => {
     setNewModel({ provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", apiKey: "", dailyLimit: 100000 });
     setShowAddDialog(true);
-  };
-
-  // 展开/收起行
-  const toggleExpand = (id: string, currentVersion: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-        // 初始化 pending 为当前版本
-        setPendingVersion((pv) => ({ ...pv, [id]: currentVersion }));
-      }
-      return next;
-    });
-  };
-
-  // 切换并应用版本
-  const applyVersion = (id: string) => {
-    const version = pendingVersion[id];
-    if (!version) return;
-    setModels(models.map((m) => m.id === id ? { ...m, version } : m));
-    setExpandedRows((prev) => { const next = new Set(prev); next.delete(id); return next; });
-    toast.success("模型版本已切换");
   };
 
   const handleAddModel = () => {
@@ -266,136 +224,63 @@ export default function ModelConfig() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-8"></th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">API Key</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">成员可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    设为默认
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-default">
-                          <Info className="w-3 h-3 text-gray-400" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-[200px] text-xs">
-                        成员创建 OpenClaw 时将默认使用此模型，成员后续可再自行切换
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[35%]">模型名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">API Key</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">每日 Tokens 上限</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">成员可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[7%]">操作</th>
               </tr>
             </thead>
             <tbody>
-              {models.map((model) => {
-                const isExpanded = expandedRows.has(model.id);
-                const hasVersions = model.versions.length > 1;
-                return (
-                  <>
-                    <tr key={model.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      {/* 展开按钮 */}
-                      <td className="px-4 py-4 w-8">
-                        {hasVersions ? (
-                          <button
-                            onClick={() => toggleExpand(model.id, model.version)}
-                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                          >
-                            {isExpanded
-                              ? <ChevronDown className="w-4 h-4" />
-                              : <ChevronRight className="w-4 h-4" />}
-                          </button>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{model.name}</p>
-                          <p className="text-xs text-gray-400">{model.version}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm text-gray-600 font-mono">
-                            {showApiKey[model.id] ? model.apiKey : "••••••••••••"}
-                          </span>
-                          <button onClick={() => setShowApiKey({ ...showApiKey, [model.id]: !showApiKey[model.id] })}
-                            className="text-gray-300 hover:text-gray-500">
-                            {showApiKey[model.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
-                          <button
-                            onClick={() => openEditQuota(model)}
-                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                            title="编辑配额"
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <Switch
-                          checked={model.visible}
-                          onCheckedChange={(v) => {
-                            setModels(models.map((m) => m.id === model.id ? { ...m, visible: v } : m));
-                            toast.success(v ? "已对成员可见" : "已对成员隐藏");
-                          }}
-                        />
-                      </td>
-                      <td className="px-4 py-4">
-                        <Switch
-                          checked={defaultModelId === model.id}
-                          onCheckedChange={(v) => handleSetDefault(model.id, v)}
-                        />
-                      </td>
-                      <td className="px-4 py-4">
-                        <button
-                          onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
-                          className="text-gray-300 hover:text-red-500 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* 展开的子版本面板 */}
-                    {isExpanded && hasVersions && (
-                      <tr key={`${model.id}-expand`} className="bg-blue-50/40 border-b border-gray-50">
-                        <td></td>
-                        <td colSpan={6} className="px-4 py-4">
-                          <p className="text-xs text-gray-500 mb-3 font-medium">选择具体模型版本</p>
-                          <RadioGroup
-                            value={pendingVersion[model.id] ?? model.version}
-                            onValueChange={(v) => setPendingVersion({ ...pendingVersion, [model.id]: v })}
-                            className="space-y-2"
-                          >
-                            {model.versions.map((v) => (
-                              <div key={v} className="flex items-center gap-2">
-                                <RadioGroupItem value={v} id={`${model.id}-${v}`} />
-                                <label htmlFor={`${model.id}-${v}`} className="text-sm text-gray-700 cursor-pointer">
-                                  {v}
-                                </label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                          <Button
-                            size="sm"
-                            className="mt-3"
-                            onClick={() => applyVersion(model.id)}
-                            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                          >
-                            切换并应用
-                          </Button>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
-              })}
+              {models.map((model) => (
+                <tr key={model.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{model.name}</p>
+                      <p className="text-xs text-gray-400">{model.version}</p>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-gray-600 font-mono">
+                        {showApiKey[model.id] ? model.apiKey : "••••••••••••"}
+                      </span>
+                      <button onClick={() => setShowApiKey({ ...showApiKey, [model.id]: !showApiKey[model.id] })}
+                        className="text-gray-300 hover:text-gray-500">
+                        {showApiKey[model.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
+                      <button
+                        onClick={() => openEditQuota(model)}
+                        className="text-gray-400 hover:text-blue-500 transition-colors"
+                        title="编辑配额"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Switch
+                      checked={model.visible}
+                      onCheckedChange={(v) => {
+                        setModels(models.map((m) => m.id === model.id ? { ...m, visible: v } : m));
+                        toast.success(v ? "已对成员可见" : "已对成员隐藏");
+                      }}
+                    />
+                  </td>
+                  <td className="px-4 py-4">
+                    <button
+                      onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
+                      className="text-gray-300 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
@@ -505,7 +390,7 @@ export default function ModelConfig() {
               <>
                 {selectedProviderData && selectedProviderData.versions.length > 0 && (
                   <div className="space-y-2">
-                    <Label>具体模型版本</Label>
+                    <Label>模型名称</Label>
                     <Select value={newModel.version} onValueChange={(v) => setNewModel({ ...newModel, version: v })}>
                       <SelectTrigger className="bg-gray-50 w-full">
                         <SelectValue placeholder="选择模型版本" />

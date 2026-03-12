@@ -272,18 +272,17 @@ export default function AuditLog() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作人的成员 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作事件</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">请求时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">返回时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">执行结果</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[6%]">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">操作人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[24%]">操作事件</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">请求时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">返回时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">执行结果</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paged.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">暂无操作记录</td>
+                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无操作记录</td>
                 </tr>
               ) : paged.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
@@ -306,14 +305,7 @@ export default function AuditLog() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => setSelectedLog(log)}
-                      className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
-                    >
-                      详情
-                    </button>
-                  </td>
+
                 </tr>
               ))}
             </tbody>

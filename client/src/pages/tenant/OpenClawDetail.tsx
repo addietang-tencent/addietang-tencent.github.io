@@ -703,14 +703,8 @@ export default function OpenClawDetail() {
                 <div className="space-y-1">
                   {(skillSearch ? filteredSkills : installedSkills).map((skill) => (
                     <div key={skill}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group">
+                      className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                       <span className="text-sm text-gray-700">{skill}</span>
-                      <button
-                        onClick={() => setInstalledSkills(installedSkills.filter((s) => s !== skill))}
-                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   ))}
                   {skillSearch && filteredSkills.length === 0 && (

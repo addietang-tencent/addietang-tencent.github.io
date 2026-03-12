@@ -685,7 +685,7 @@ export default function OpenClawDetail() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="请输入 Skill 名称，或输入后回车搜索"
+                  placeholder="请输入准确 Skill 名称"
                   value={skillSearch}
                   onChange={(e) => setSkillSearch(e.target.value)}
                   className="pl-9 bg-gray-50 border-gray-200 text-xs"

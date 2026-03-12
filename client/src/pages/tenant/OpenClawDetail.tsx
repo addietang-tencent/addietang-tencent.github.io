@@ -200,7 +200,7 @@ export default function OpenClawDetail() {
   const [selectedChannel, setSelectedChannel] = useState("wework");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
   // 飞书专用：快捷/手动 Tab
-  const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("quick");
+  const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("manual");
   // 飞书二维码弹窗
   const [showQrModal, setShowQrModal] = useState(false);
   // 已接入通道

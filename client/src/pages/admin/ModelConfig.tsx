@@ -157,6 +157,8 @@ export default function ModelConfig() {
 
   // Global quota
   const [globalLimit, setGlobalLimit] = useState(1000000);
+  const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
+  const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
   const [allowCustomModel, setAllowCustomModel] = useState(false);
 
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
@@ -377,7 +379,7 @@ export default function ModelConfig() {
             <div>
               <p className="text-sm font-medium text-gray-900">允许成员添加自定义模型</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                开启后，成员可在 OpenClaw 中自行添加自定义模型，费用由成员自行承担，不在企业覆盖范围内。
+                开启后，成员可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内。
               </p>
             </div>
           </div>
@@ -404,18 +406,42 @@ export default function ModelConfig() {
                 </TooltipContent>
               </Tooltip>
             </Label>
-            <div className="flex gap-3">
-              <Input
-                type="number"
-                value={globalLimit}
-                onChange={(e) => setGlobalLimit(Number(e.target.value))}
-                className="bg-gray-50 border-gray-200 max-w-xs"
-              />
-              <Button onClick={() => toast.success("全局配额已保存")}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                保存
-              </Button>
-            </div>
+            {globalLimitEditing ? (
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  value={globalLimitDraft}
+                  onChange={(e) => setGlobalLimitDraft(Number(e.target.value))}
+                  className="bg-gray-50 border-gray-200 max-w-xs"
+                  autoFocus
+                />
+                <Button
+                  size="sm"
+                  onClick={() => { setGlobalLimit(globalLimitDraft); setGlobalLimitEditing(false); toast.success("全局配额已保存"); }}
+                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                >
+                  保存
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(false); }}
+                >
+                  取消
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-gray-700">{globalLimit.toLocaleString()}</span>
+                <button
+                  onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(true); }}
+                  className="text-gray-400 hover:text-blue-500 transition-colors"
+                  title="编辑全局配额"
+                >
+                  <Pencil className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

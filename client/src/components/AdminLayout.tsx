@@ -43,7 +43,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "员工端配置",
+    label: "OpenClaw 权限配置",
     items: [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
@@ -51,7 +51,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "底层云端设备配置",
+    label: "云设备配置",
     items: [
       { label: "云服务器管理", path: "/admin/server-management", icon: Server },
     ],
@@ -64,7 +64,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "操作审计",
+    label: "安全审计",
     items: [
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
     ],

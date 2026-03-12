@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
   ChevronRight, ChevronDown, Info,
@@ -383,6 +389,7 @@ export default function OpenClawDetail() {
   };
 
   return (
+    <TooltipProvider delayDuration={200}>
     <TenantLayout>
       <div className="max-w-7xl mx-auto px-6 py-8 page-enter">
         {/* Back */}
@@ -579,9 +586,21 @@ export default function OpenClawDetail() {
                   </SelectContent>
                 </Select>
                 {currentChannelConfig?.hasInfoIcon && (
-                  <button className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
-                    <Info className="w-4 h-4" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="shrink-0 text-gray-400 hover:text-blue-500 transition-colors">
+                        <Info className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="p-0 border-0 shadow-xl bg-transparent" sideOffset={8}>
+                      <img
+                        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/pasted_file_To1FVK_image_06b2d1cc.png"
+                        alt="企业微信通道示意图"
+                        className="rounded-xl max-w-xs"
+                        style={{ width: 320 }}
+                      />
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </div>
 
@@ -808,5 +827,6 @@ export default function OpenClawDetail() {
         </DialogContent>
       </Dialog>
     </TenantLayout>
+    </TooltipProvider>
   );
 }

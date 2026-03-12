@@ -225,10 +225,10 @@ export default function ModelConfig() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[35%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">模型 URL</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[38%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">成员可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">成员可见</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[7%]">操作</th>
               </tr>
             </thead>
@@ -242,7 +242,7 @@ export default function ModelConfig() {
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm text-gray-600 font-mono break-all">{model.modelUrl}</span>
+                    <span className="text-sm text-gray-600 font-mono whitespace-nowrap">{model.modelUrl}</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-1.5">

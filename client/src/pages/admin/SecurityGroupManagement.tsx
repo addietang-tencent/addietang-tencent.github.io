@@ -16,7 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Shield, Info } from "lucide-react";
+import { Plus, Trash2, Pencil, Info } from "lucide-react";
 
 const DEFAULT_INBOUND = [
   { id: "1", source: "0.0.0.0/0", protocol: "ICMP", port: "ALL", policy: "允许", remark: "放通 Ping 服务" },
@@ -159,8 +159,7 @@ export default function SecurityGroupManagement() {
     <AdminLayout>
       <div className="page-enter max-w-5xl">
         <div className="mb-8">
-          <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-5 h-5 text-blue-500" />
+          <div className="mb-1">
             <h1 className="text-2xl font-bold text-gray-900">安全组管理</h1>
           </div>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">

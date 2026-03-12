@@ -269,6 +269,7 @@ function EditMemberFormFields({
               value={values.clawLimit}
               onChange={(e) => onChange({ ...values, clawLimit: Number(e.target.value) })}
               className="bg-gray-50"
+              autoFocus
             />
           </div>
           <div className="space-y-2">

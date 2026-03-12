@@ -125,11 +125,7 @@ export default function ImageManagement() {
                         <p className="text-sm font-medium text-gray-900">{img.name}</p>
                         <p className="text-xs text-gray-400 font-mono">{img.id}</p>
                       </div>
-                      {img.active && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100">
-                          生效中
-                        </span>
-                      )}
+
                     </div>
                   </td>
                   <td className="px-6 py-4">

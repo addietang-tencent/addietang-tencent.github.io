@@ -135,7 +135,7 @@ export default function LandingPage() {
               </button>
             )}
           </div>
-          <LoginModal open={showLogin} onSuccess={() => setShowLogin(false)} />
+          <LoginModal open={showLogin} onSuccess={() => setShowLogin(false)} onClose={() => setShowLogin(false)} />
         </div>
       </header>
 

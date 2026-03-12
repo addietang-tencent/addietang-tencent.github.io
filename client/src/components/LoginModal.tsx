@@ -14,9 +14,10 @@ import { SITE_CONFIG } from "@/lib/mockData";
 interface LoginModalProps {
   open: boolean;
   onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export default function LoginModal({ open, onSuccess }: LoginModalProps) {
+export default function LoginModal({ open, onSuccess, onClose }: LoginModalProps) {
   const { login } = useUserRole();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
@@ -44,7 +45,7 @@ export default function LoginModal({ open, onSuccess }: LoginModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose?.(); }}>
       <DialogContent
         className="sm:max-w-md p-0 overflow-hidden"
         style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.12)" }}

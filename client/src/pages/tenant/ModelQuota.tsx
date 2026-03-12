@@ -57,7 +57,7 @@ interface DetailRow {
 }
 
 // ─── Mock Data Generators ────────────────────────────────────────────────────
-const MODELS = ["DeepSeek V3 0324", "混元 TurboS Latest", "自定义模型（Claude Opus 4.6）"];
+const MODELS = ["腾讯云 DeepSeek（DeepSeek V3 0324）", "腾讯云混元（混元 TurboS Latest）", "自定义模型（Claude Opus 4.6）"];
 
 function generateSummary(dateStr: string): SummaryRow[] {
   const seed = dateStr.replace(/-/g, "").slice(-4);
@@ -450,28 +450,26 @@ export default function ModelQuota() {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
-                    <th className="text-left px-5 py-3 font-medium whitespace-nowrap">请求时间</th>
+                    <th className="text-left px-5 py-3 font-medium whitespace-nowrap w-44">请求时间</th>
                     <th className="text-left px-5 py-3 font-medium">模型名称</th>
-                    <th className="text-right px-5 py-3 font-medium">总请求数</th>
-                    <th className="text-right px-5 py-3 font-medium">输入 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium">输出 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium">总 Tokens</th>
+                    <th className="text-right px-5 py-3 font-medium w-32">输入 Tokens</th>
+                    <th className="text-right px-5 py-3 font-medium w-32">输出 Tokens</th>
+                    <th className="text-right px-5 py-3 font-medium w-32">总 Tokens</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {detailSlice.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap">{row.time}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600 whitespace-nowrap">{row.model}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap w-44">{row.time}</td>
+                      <td className="px-5 py-3.5 text-sm text-gray-600">{row.model}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.inputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.outputTokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.totalTokens.toLocaleString()}</td>
                     </tr>
                   ))}
                   {detailSlice.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
+                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
                     </tr>
                   )}
                 </tbody>

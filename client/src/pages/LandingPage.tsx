@@ -168,7 +168,7 @@ export default function LandingPage() {
             <div className="w-8 h-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">2</div>
-              <span>配置通道（企微/飞书/钉钉等）</span>
+              <span>配置模型和通道（企微/飞书/钉钉等）</span>
             </div>
             <div className="w-8 h-px bg-gray-200" />
             <div className="flex items-center gap-2">

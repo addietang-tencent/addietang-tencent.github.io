@@ -90,7 +90,7 @@ export default function BasicInfo() {
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-gray-700">
                   所在地域
-                  <span className="text-xs text-gray-400 font-normal ml-2">员工端、管控端及员工 OpenClaw 底层云服务器所在的地域，由部署时自动确定</span>
+                  <span className="text-xs text-gray-400 font-normal ml-2">员工端、管控端及员工 OpenClaw 底层云设备所在的地域</span>
                 </p>
                 <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.region}</div>
               </div>

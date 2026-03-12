@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Puzzle, Pencil, X, Check } from "lucide-react";
 
 export default function SkillConfig() {
-  const [skillhubUrl, setSkillhubUrl] = useState("https://skillhub.example.com");
+  const [skillhubUrl, setSkillhubUrl] = useState("https://clawhub.openclaw.com");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(skillhubUrl);
 
@@ -39,7 +39,7 @@ export default function SkillConfig() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
           <p className="text-sm text-gray-500 mt-1">
-            配置企业专属 SkillHub 地址。成员为自己的 OpenClaw 配置技能时，将从指定的 SkillHub 范围内选择和安装技能。
+            配置企业专属 SkillHub 地址。成员为自己的 OpenClaw 配置技能时，将从指定的 SkillHub 范围内选择和安装技能。若未配置，默认从 ClawHub 上加载可用技能。
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function SkillConfig() {
           {/* 内容区 */}
           <div className="px-6 py-6">
             <p className="text-xs text-gray-400 mb-3">
-              填写企业自建或采购的 SkillHub 服务地址，成员的技能市场将从此地址加载可用技能列表。
+              填写企业自建或采购的 SkillHub 服务地址，成员的技能市场将从此地址加载可用技能列表。若留空，成员将默认使用 ClawHub 官方技能库。
             </p>
 
             {editing ? (
@@ -66,7 +66,7 @@ export default function SkillConfig() {
                 <Input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder="https://skillhub.yourcompany.com"
+                  placeholder="https://clawhub.yourcompany.com"
                   className="flex-1 font-mono text-sm"
                   autoFocus
                   onKeyDown={(e) => {

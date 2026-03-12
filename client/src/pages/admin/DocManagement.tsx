@@ -44,9 +44,9 @@ export default function DocManagement() {
       <div className="page-enter">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">文档管理</h1>
+            <h1 className="text-2xl font-bold text-gray-900">帮助文档</h1>
             <p className="text-sm text-gray-500 mt-1">
-              此处配置的文档将展示在企业成员看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加其他文档。
+              此处配置的文档将展示在企业成员看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。
             </p>
           </div>
           <Button onClick={() => setShowAddDialog(true)}
@@ -65,7 +65,7 @@ export default function DocManagement() {
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">添加时间</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">添加人</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">展示状态</th>
-                <th className="text-right px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -106,7 +106,7 @@ export default function DocManagement() {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">成员可见</span>
                         <Switch
@@ -117,13 +117,11 @@ export default function DocManagement() {
                           }}
                         />
                       </div>
-                      {!doc.isDefault && (
-                        <button
-                          onClick={() => { setDocs(docs.filter((d) => d.id !== doc.id)); toast.success("文档已删除"); }}
-                          className="text-gray-300 hover:text-red-500 transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => { setDocs(docs.filter((d) => d.id !== doc.id)); toast.success("文档已删除"); }}
+                        className="text-gray-300 hover:text-red-500 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>

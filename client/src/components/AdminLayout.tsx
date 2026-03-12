@@ -50,7 +50,6 @@ const NAV_GROUPS = [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
       { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
-      { label: "文档管理", path: "/admin/doc-management", icon: FileText },
     ],
   },
   {
@@ -71,6 +70,12 @@ const NAV_GROUPS = [
     label: "安全审计",
     items: [
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
+    ],
+  },
+  {
+    label: "平台服务配置",
+    items: [
+      { label: "帮助文档", path: "/admin/doc-management", icon: FileText },
     ],
   },
 ];

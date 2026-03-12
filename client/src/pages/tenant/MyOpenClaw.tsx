@@ -353,21 +353,22 @@ export default function MyOpenClaw() {
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <HardDriveDownload className="w-4 h-4 text-blue-500" />
-                确认重新安装
+                <HardDriveDownload className="w-4 h-4 text-amber-500" />
+                重新安装 OpenClaw
               </DialogTitle>
             </DialogHeader>
-            <div className="py-2 space-y-2">
+            <div className="py-2 space-y-3">
               <p className="text-sm text-gray-600">
-                确定要重新安装 <span className="font-medium text-gray-900">{reinstallConfirm?.name}</span> 吗？
+                确定要重新安装「<span className="font-medium text-gray-900">{reinstallConfirm?.name}</span>」吗？
               </p>
-              <p className="text-sm text-amber-600 font-medium">重新安装期间 OpenClaw 将暂时无法使用。</p>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <p className="text-sm text-amber-700 font-medium">重新安装将使用最新镜像版本，<span className="font-bold">当前所有配置和数据将会丢失且无法恢复</span>，请谨慎操作。</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
               <Button
-                className="text-white"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                className="bg-amber-500 hover:bg-amber-600 text-white"
                 onClick={() => handleUpdate(reinstallConfirm!.name)}
               >
                 确认重新安装

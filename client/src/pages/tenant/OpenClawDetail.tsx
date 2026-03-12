@@ -185,7 +185,7 @@ export default function OpenClawDetail() {
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
-  const [appliedModel, setAppliedModel] = useState({ name: "腾讯云 DeepSeek（DeepSeek V3 0324）", active: true, isCustom: false });
+  const [appliedModel, setAppliedModel] = useState({ providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", active: true, isCustom: false, customName: "" });
 
   const currentProvider = MODEL_PROVIDERS.find(p => p.value === selectedProvider) || MODEL_PROVIDERS[0];
   const currentVersions = currentProvider.versions;
@@ -246,12 +246,12 @@ export default function OpenClawDetail() {
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      setAppliedModel({ name: customName ? `自定义模型（${customName}）` : "自定义模型", active: true, isCustom: true });
+      setAppliedModel({ providerLabel: "自定义模型", versionLabel: "", active: true, isCustom: true, customName: customName || "" });
     } else {
       const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
       const version = currentVersions.find(v => v.value === selectedModel);
       if (!provider || !version) return;
-      setAppliedModel({ name: `${provider.label}（${version.label}）`, active: true, isCustom: false });
+      setAppliedModel({ providerLabel: provider.label, versionLabel: version.label, active: true, isCustom: false, customName: "" });
     }
     toast.success("模型已添加并应用");
   };
@@ -549,8 +549,24 @@ export default function OpenClawDetail() {
               <div className="pt-2 border-t border-gray-50">
                 <p className="text-xs text-gray-400 mb-2">已应用模型</p>
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-                  <span className="text-sm font-medium text-gray-800">{appliedModel.name}</span>
-                  <span className="badge-running text-xs">
+                  <div className="flex flex-col min-w-0 mr-2">
+                    {appliedModel.isCustom ? (
+                      <>
+                        <span className="text-sm font-medium text-gray-800 leading-tight">自定义模型</span>
+                        {appliedModel.customName && (
+                          <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate">{appliedModel.customName}</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm font-medium text-gray-800 leading-tight">{appliedModel.providerLabel}</span>
+                        {appliedModel.versionLabel && (
+                          <span className="text-xs text-gray-400 leading-tight mt-0.5">{appliedModel.versionLabel}</span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <span className="badge-running text-xs shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                     应用中
                   </span>

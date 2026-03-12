@@ -293,11 +293,11 @@ export default function ModelConfig() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5 group/quota">
+                        <div className="flex items-center gap-1.5">
                           <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
                           <button
                             onClick={() => openEditQuota(model)}
-                            className="text-gray-300 hover:text-blue-500 transition-colors opacity-0 group-hover/quota:opacity-100"
+                            className="text-gray-400 hover:text-blue-500 transition-colors"
                             title="编辑配额"
                           >
                             <Pencil className="w-3 h-3" />

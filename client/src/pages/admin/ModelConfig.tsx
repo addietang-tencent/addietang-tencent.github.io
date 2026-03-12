@@ -160,6 +160,16 @@ export default function ModelConfig() {
   const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
   const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
   const [allowCustomModel, setAllowCustomModel] = useState(false);
+  // 设为默认模型（单选）
+  const [defaultModelId, setDefaultModelId] = useState<string>(MOCK_MODELS[0]?.id ?? "");
+
+  const handleSetDefault = (id: string, checked: boolean) => {
+    if (checked) {
+      setDefaultModelId(id);
+      toast.success("已设为默认模型");
+    }
+    // 关闭操作不允许（必须有一个默认）
+  };
 
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
@@ -260,6 +270,8 @@ export default function ModelConfig() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型名称</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">API Key</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">每日 Tokens 上限</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">成员可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">设为默认</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
               </tr>
             </thead>
@@ -313,23 +325,26 @@ export default function ModelConfig() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-gray-400">成员可见</span>
-                            <Switch
-                              checked={model.visible}
-                              onCheckedChange={(v) => {
-                                setModels(models.map((m) => m.id === model.id ? { ...m, visible: v } : m));
-                                toast.success(v ? "已对成员可见" : "已对成员隐藏");
-                              }}
-                            />
-                          </div>
-                          <button
-                            onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
-                            className="text-gray-300 hover:text-red-500 transition-colors">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <Switch
+                          checked={model.visible}
+                          onCheckedChange={(v) => {
+                            setModels(models.map((m) => m.id === model.id ? { ...m, visible: v } : m));
+                            toast.success(v ? "已对成员可见" : "已对成员隐藏");
+                          }}
+                        />
+                      </td>
+                      <td className="px-4 py-4">
+                        <Switch
+                          checked={defaultModelId === model.id}
+                          onCheckedChange={(v) => handleSetDefault(model.id, v)}
+                        />
+                      </td>
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
+                          className="text-gray-300 hover:text-red-500 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </td>
                     </tr>
 
@@ -337,7 +352,7 @@ export default function ModelConfig() {
                     {isExpanded && hasVersions && (
                       <tr key={`${model.id}-expand`} className="bg-blue-50/40 border-b border-gray-50">
                         <td></td>
-                        <td colSpan={4} className="px-4 py-4">
+                        <td colSpan={6} className="px-4 py-4">
                           <p className="text-xs text-gray-500 mb-3 font-medium">选择具体模型版本</p>
                           <RadioGroup
                             value={pendingVersion[model.id] ?? model.version}
@@ -379,7 +394,7 @@ export default function ModelConfig() {
             <div>
               <p className="text-sm font-medium text-gray-900">允许成员添加自定义模型</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                开启后，成员可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内。
+                开启后，成员可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内
               </p>
             </div>
           </div>

@@ -449,7 +449,16 @@ export default function OpenClawDetail() {
                 </SelectTrigger>
                 <SelectContent>
                   {MODEL_PROVIDERS.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    <SelectItem key={p.value} value={p.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{p.label}</span>
+                        {p.value === "custom" && (
+                          <span className="text-xs px-1.5 py-0.5 rounded border font-medium bg-amber-50 text-amber-600 border-amber-100">
+                            需自费
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

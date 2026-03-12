@@ -5,7 +5,12 @@
 import { useState, useMemo } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import {
+  Tooltip as UITooltip,
+  TooltipContent as UITooltipContent,
+  TooltipTrigger as UITooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -91,13 +96,24 @@ const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.
 const TODAY_GLOBAL_PCT = ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
 
 // ─── 进度条 ───────────────────────────────────────────────────────────────────
-function ProgressBar({ value, max }: { value: number; max: number }) {
+function ProgressBar({ value, max, showTooltip }: { value: number; max: number; showTooltip?: boolean }) {
   const pct = Math.min((value / max) * 100, 100);
   const barColor = pct > 80 ? "bg-red-500" : pct > 60 ? "bg-yellow-500" : "bg-blue-500";
-  return (
-    <div className="w-full bg-gray-100 rounded-full h-1.5">
+  const bar = (
+    <div className="w-full bg-gray-100 rounded-full h-1.5 cursor-default">
       <div className={`h-1.5 rounded-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
     </div>
+  );
+  if (!showTooltip) return bar;
+  return (
+    <UITooltip>
+      <UITooltipTrigger asChild>
+        {bar}
+      </UITooltipTrigger>
+      <UITooltipContent side="bottom" className="text-xs font-medium">
+        {value.toLocaleString()} / {max.toLocaleString()} Tokens
+      </UITooltipContent>
+    </UITooltip>
   );
 }
 
@@ -283,10 +299,22 @@ export default function TokensMonitor() {
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
                 <Zap className="w-3.5 h-3.5 text-white" />
               </div>
-              <p className="text-xs text-gray-400">今日全局配额消耗</p>
+              <div className="flex items-center gap-1">
+                <p className="text-xs text-gray-400">今日全局配额消耗</p>
+                <UITooltip>
+                  <UITooltipTrigger asChild>
+                    <span className="cursor-default">
+                      <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
+                    </span>
+                  </UITooltipTrigger>
+                  <UITooltipContent side="top" className="max-w-[240px] text-xs">
+                    此处统计所有成员使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新
+                  </UITooltipContent>
+                </UITooltip>
+              </div>
             </div>
             <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} />
+            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip />
           </div>
           {/* 以下随时间联动 */}
           {[

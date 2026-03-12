@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ClipboardList, CheckCircle, XCircle } from "lucide-react";
+import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 const MOCK_LOGS = [
   {
@@ -91,13 +92,24 @@ const MOCK_LOGS = [
 
 export default function AuditLog() {
   const [search, setSearch] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [selectedLog, setSelectedLog] = useState<(typeof MOCK_LOGS)[0] | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => { setRefreshing(false); toast.success("列表已刷新"); }, 1000);
+  };
+
+  const hasFilter = search || dateFrom || dateTo;
 
   const filtered = MOCK_LOGS.filter((log) => {
     const matchSearch = !search || log.operator.includes(search) || log.action.includes(search) || log.api.includes(search);
-    const matchDate = !dateFilter || log.requestTime.startsWith(dateFilter);
-    return matchSearch && matchDate;
+    const logDate = log.requestTime.slice(0, 10);
+    const matchFrom = !dateFrom || logDate >= dateFrom;
+    const matchTo = !dateTo || logDate <= dateTo;
+    return matchSearch && matchFrom && matchTo;
   });
 
   return (
@@ -109,8 +121,8 @@ export default function AuditLog() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3 mb-4">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex flex-wrap gap-3 mb-4 items-center">
+          <div className="relative flex-1 min-w-48 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="搜索操作人、事件或接口"
@@ -119,17 +131,36 @@ export default function AuditLog() {
               className="pl-9 bg-white"
             />
           </div>
-          <Input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="bg-white w-44"
-          />
-          {(search || dateFilter) && (
-            <Button variant="outline" size="sm" onClick={() => { setSearch(""); setDateFilter(""); }}>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              title="开始日期"
+            />
+            <span className="text-gray-400 text-sm shrink-0">—</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              title="结束日期"
+            />
+          </div>
+          {hasFilter && (
+            <Button variant="outline" size="sm" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); }}>
               清除筛选
             </Button>
           )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+            title="刷新列表"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
         </div>
 
         {/* Table */}

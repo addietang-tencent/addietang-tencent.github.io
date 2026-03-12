@@ -85,7 +85,7 @@ const FEATURE_POINTS = [
 
 export default function LandingPage() {
   const { isAdmin, isLoggedIn, currentUser, logout } = useUserRole();
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(!isLoggedIn);
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Bar */}

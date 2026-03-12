@@ -71,6 +71,9 @@ export default function MyOpenClaw() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
+  // 二次确认弹窗
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [reinstallConfirm, setReinstallConfirm] = useState<{ name: string } | null>(null);
 
   const handleCreate = () => {
     if (!newName.trim()) {
@@ -95,6 +98,7 @@ export default function MyOpenClaw() {
 
   const handleDelete = (id: string, name: string) => {
     setClaws(claws.filter((c) => c.id !== id));
+    setDeleteConfirm(null);
     toast.success(`「${name}」已删除`);
   };
 
@@ -103,7 +107,8 @@ export default function MyOpenClaw() {
   };
 
   const handleUpdate = (name: string) => {
-    toast.success(`「${name}」正在更新 OpenClaw 版本...`);
+    setReinstallConfirm(null);
+    toast.success(`「${name}」正在重新安装 OpenClaw...`);
   };
 
   return (
@@ -247,7 +252,7 @@ export default function MyOpenClaw() {
                                   </TooltipContent>
                                 </Tooltip>
                               ) : (
-                                <DropdownMenuItem onClick={() => handleUpdate(claw.name)}>
+                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); setReinstallConfirm({ name: claw.name }); }}>
                                    <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
                                    重新安装 OpenClaw
                                 </DropdownMenuItem>
@@ -255,7 +260,7 @@ export default function MyOpenClaw() {
                               <DropdownMenuSeparator />
                               {/* 删除 - 始终可用 */}
                               <DropdownMenuItem
-                                onClick={() => handleDelete(claw.id, claw.name)}
+                                onClick={(e) => { e.preventDefault(); setDeleteConfirm({ id: claw.id, name: claw.name }); }}
                                 className="text-red-600 focus:text-red-600"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -312,6 +317,61 @@ export default function MyOpenClaw() {
             </div>
           )}
         </div>
+
+        {/* Delete Confirm Dialog */}
+        <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-red-600">
+                <Trash2 className="w-4 h-4" />
+                确认删除
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-2 space-y-2">
+              <p className="text-sm text-gray-600">
+                确定要删除 <span className="font-medium text-gray-900">{deleteConfirm?.name}</span> 吗？
+              </p>
+              <p className="text-sm text-red-500 font-medium">删除后无法恢复，请谨慎操作。</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={() => handleDelete(deleteConfirm!.id, deleteConfirm!.name)}
+              >
+                确认删除
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reinstall Confirm Dialog */}
+        <Dialog open={!!reinstallConfirm} onOpenChange={(open) => { if (!open) setReinstallConfirm(null); }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <HardDriveDownload className="w-4 h-4 text-blue-500" />
+                确认重新安装
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-2 space-y-2">
+              <p className="text-sm text-gray-600">
+                确定要重新安装 <span className="font-medium text-gray-900">{reinstallConfirm?.name}</span> 吗？
+              </p>
+              <p className="text-sm text-amber-600 font-medium">重新安装期间 OpenClaw 将暂时无法使用。</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
+              <Button
+                className="text-white"
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                onClick={() => handleUpdate(reinstallConfirm!.name)}
+              >
+                确认重新安装
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Create Dialog */}
         <Dialog open={showCreate} onOpenChange={setShowCreate}>

@@ -1,5 +1,7 @@
 /**
  * OpenClawMonitor - 管控端 OpenClaw 监控页
+ * 布局：时间筛选器 → 总 OpenClaw 数统计 → 列表
+ * 列表：去掉状态列和停用按钮，仅保留删除操作
  */
 import { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
@@ -9,28 +11,27 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Bot, Activity, PowerOff, Trash2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 
 const MOCK_CLAWS = [
-  { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  status: "running", createTime: "2025-12-01" },
-  { id: "2",  name: "Bob工作助手",       creator: "bob@acompany.com",    status: "running", createTime: "2025-12-15" },
-  { id: "3",  name: "Carol的研究助手",   creator: "carol@acompany.com",  status: "stopped", createTime: "2026-01-05" },
-  { id: "4",  name: "Dave的代码助手",    creator: "dave@acompany.com",   status: "running", createTime: "2026-01-20" },
-  { id: "5",  name: "Eve的写作助手",     creator: "eve@acompany.com",    status: "stopped", createTime: "2026-02-10" },
-  { id: "6",  name: "Frank的数据助手",   creator: "frank@acompany.com",  status: "running", createTime: "2026-02-18" },
-  { id: "7",  name: "Grace的翻译助手",   creator: "grace@acompany.com",  status: "running", createTime: "2026-02-25" },
-  { id: "8",  name: "Henry的销售助手",   creator: "henry@acompany.com",  status: "stopped", createTime: "2026-03-01" },
-  { id: "9",  name: "Ivy的客服助手",     creator: "ivy@acompany.com",    status: "running", createTime: "2026-03-05" },
-  { id: "10", name: "Jack的会议助手",    creator: "jack@acompany.com",   status: "running", createTime: "2026-03-08" },
-  { id: "11", name: "Karen的报告助手",   creator: "karen@acompany.com",  status: "stopped", createTime: "2026-03-09" },
-  { id: "12", name: "Leo的项目助手",     creator: "leo@acompany.com",    status: "running", createTime: "2026-03-10" },
+  { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01" },
+  { id: "2",  name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15" },
+  { id: "3",  name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05" },
+  { id: "4",  name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20" },
+  { id: "5",  name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10" },
+  { id: "6",  name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18" },
+  { id: "7",  name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25" },
+  { id: "8",  name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01" },
+  { id: "9",  name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05" },
+  { id: "10", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08" },
+  { id: "11", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09" },
+  { id: "12", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10" },
 ];
 
 const PAGE_SIZE = 10;
 
 export default function OpenClawMonitor() {
   const [claws, setClaws] = useState(
-    // 按创建时间降序排列（最近的在前）
     [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime))
   );
   const [search, setSearch] = useState("");
@@ -50,11 +51,16 @@ export default function OpenClawMonitor() {
 
   const hasFilter = search || dateFrom || dateTo;
 
-  const filtered = claws.filter((c) => {
-    const matchSearch = !search || c.name.includes(search) || c.creator.includes(search);
+  // 时间筛选后的数据（用于统计卡片和列表）
+  const timeFiltered = claws.filter((c) => {
     const matchFrom = !dateFrom || c.createTime >= dateFrom;
     const matchTo = !dateTo || c.createTime <= dateTo;
-    return matchSearch && matchFrom && matchTo;
+    return matchFrom && matchTo;
+  });
+
+  // 搜索进一步过滤（仅用于列表）
+  const filtered = timeFiltered.filter((c) => {
+    return !search || c.name.includes(search) || c.creator.includes(search);
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -73,68 +79,61 @@ export default function OpenClawMonitor() {
     setPage(1);
   };
 
-  const total = claws.length;
-  const running = claws.filter((c) => c.status === "running").length;
-  const stopped = claws.filter((c) => c.status === "stopped").length;
-
-  const toggleStatus = (id: string) => {
-    setClaws(claws.map((c) => {
-      if (c.id !== id) return c;
-      const newStatus = c.status === "running" ? "stopped" : "running";
-      toast.success(`OpenClaw 已${newStatus === "running" ? "启用" : "停用"}`);
-      return { ...c, status: newStatus };
-    }));
-  };
-
   return (
     <AdminLayout>
       <div className="page-enter">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
           <p className="text-sm text-gray-500 mt-1">查看和管理所有企业成员创建的 OpenClaw 实例。</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">总 OpenClaw 数</p>
-                <p className="text-2xl font-bold text-gray-900">{total}</p>
-              </div>
+        {/* 时间筛选器 */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="flex flex-wrap gap-3 items-center">
+            <span className="text-sm text-gray-500 shrink-0">创建时间</span>
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
+                className="bg-gray-50 w-40"
+                title="开始日期"
+              />
+              <span className="text-gray-400 text-sm shrink-0">—</span>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
+                className="bg-gray-50 w-40"
+                title="结束日期"
+              />
             </div>
+            {(dateFrom || dateTo) && (
+              <Button variant="outline" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}>
+                清除时间
+              </Button>
+            )}
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5"
+        </div>
+
+        {/* 总 OpenClaw 数统计卡片 */}
+        <div className="mb-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 inline-flex items-center gap-3"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <Activity className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">运行中</p>
-                <p className="text-2xl font-bold text-green-600">{running}</p>
-              </div>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
             </div>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                <PowerOff className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">已停用</p>
-                <p className="text-2xl font-bold text-gray-500">{stopped}</p>
-              </div>
+            <div>
+              <p className="text-xs text-gray-400">
+                {(dateFrom || dateTo) ? "筛选时间段内 OpenClaw 数" : "总 OpenClaw 数"}
+              </p>
+              <p className="text-2xl font-bold text-gray-900">{timeFiltered.length}</p>
             </div>
           </div>
         </div>
 
-        {/* Filters */}
+        {/* 搜索栏 + 刷新 */}
         <div className="flex flex-wrap gap-3 mb-4 items-center">
           <div className="relative flex-1 min-w-48 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -143,24 +142,6 @@ export default function OpenClawMonitor() {
               value={search}
               onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
               className="pl-9 bg-white"
-            />
-          </div>
-          {/* 时间范围筛选 */}
-          <div className="flex items-center gap-2">
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
-              className="bg-white w-40"
-              title="开始日期"
-            />
-            <span className="text-gray-400 text-sm shrink-0">—</span>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
-              className="bg-white w-40"
-              title="结束日期"
             />
           </div>
           {hasFilter && (
@@ -184,17 +165,16 @@ export default function OpenClawMonitor() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建人的成员 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">状态</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[40%]">OpenClaw 名称</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[40%]">创建人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
@@ -210,39 +190,16 @@ export default function OpenClawMonitor() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                     <td className="px-6 py-4">
-                      {claw.status === "running" ? (
-                        <span className="badge-running text-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                          运行中
-                        </span>
-                      ) : (
-                        <span className="badge-stopped text-xs">
-                          <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
-                          已停用
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{claw.createTime}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7"
-                          onClick={() => toggleStatus(claw.id)}
-                        >
-                          {claw.status === "running" ? "停用" : "启用"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
-                          onClick={() => setDeleteTarget(claw.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
+                        onClick={() => setDeleteTarget(claw.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     </td>
                   </tr>
                 ))

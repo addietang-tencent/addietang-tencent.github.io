@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  Edit2, Check, X, ChevronRight, ChevronDown, Info,
+  ChevronRight, ChevronDown, Info,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -175,9 +175,7 @@ export default function OpenClawDetail() {
   const clawId = params?.id;
   const claw = MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) || MOCK_OPENCLAW_LIST[0];
 
-  const [clawName, setClawName] = useState(claw.name);
-  const [editingName, setEditingName] = useState(false);
-  const [tempName, setTempName] = useState(claw.name);
+  const clawName = claw.name;
 
   // ── Model state ──
   const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
@@ -403,33 +401,13 @@ export default function OpenClawDetail() {
             style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
             🦞
           </div>
-          {editingName ? (
-            <div className="flex items-center gap-2">
-              <Input
-                value={tempName}
-                onChange={(e) => setTempName(e.target.value)}
-                className="text-xl font-bold h-9 w-48"
-                autoFocus
-              />
-              <Button size="sm" variant="ghost" onClick={() => { setClawName(tempName); setEditingName(false); toast.success("名称已更新"); }}>
-                <Check className="w-4 h-4 text-green-600" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => { setTempName(clawName); setEditingName(false); }}>
-                <X className="w-4 h-4 text-gray-400" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
-              <Button size="sm" variant="ghost" className="p-1 h-auto" onClick={() => { setTempName(clawName); setEditingName(true); }}>
-                <Edit2 className="w-3.5 h-3.5 text-gray-400" />
-              </Button>
-              <span className="badge-running ml-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                运行中
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
+            <span className="badge-running ml-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+              运行中
+            </span>
+          </div>
         </div>
 
         {/* Three-column layout - unified height, upper fixed / lower scrollable */}

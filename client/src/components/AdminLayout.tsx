@@ -72,12 +72,7 @@ const NAV_GROUPS = [
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
     ],
   },
-  {
-    label: "平台服务配置",
-    items: [
-      { label: "帮助文档", path: "/admin/doc-management", icon: FileText },
-    ],
-  },
+
 ];
 
 const CURRENT_ADMIN = "alice@acompany.com";

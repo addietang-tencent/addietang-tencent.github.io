@@ -22,7 +22,6 @@ import MemberManagement from "./pages/admin/MemberManagement";
 import ModelConfig from "./pages/admin/ModelConfig";
 import ChannelConfig from "./pages/admin/ChannelConfig";
 import SkillConfig from "./pages/admin/SkillConfig";
-import DocManagement from "./pages/admin/DocManagement";
 import ImageManagement from "./pages/admin/ImageManagement";
 import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
@@ -48,7 +47,6 @@ function Router() {
       <Route path="/admin/model-config" component={ModelConfig} />
       <Route path="/admin/channel-config" component={ChannelConfig} />
       <Route path="/admin/skill-config" component={SkillConfig} />
-      <Route path="/admin/doc-management" component={DocManagement} />
       <Route path="/admin/image-management" component={ImageManagement} />
       <Route path="/admin/security-group" component={SecurityGroupManagement} />
       <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />

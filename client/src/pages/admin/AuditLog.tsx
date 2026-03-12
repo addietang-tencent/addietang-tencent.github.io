@@ -5,18 +5,18 @@ import { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+
+const PAGE_SIZE = 10;
 
 const MOCK_LOGS = [
   {
-    id: "log-001", operator: "admin@acompany.com", action: "更新成员信息",
-    api: "/api/admin/members/update", requestTime: "2026-03-09 15:45:37",
-    responseTime: "2026-03-09 15:45:38", success: true,
+    id: "log-001", operator: "admin@acompany.com", action: "updateMember",
+    requestTime: "2026-03-09 15:45:37", responseTime: "2026-03-09 15:45:38", success: true,
     detail: {
       eventId: "6af57777-10bd-4032-b881-f2e2f8872cd0",
       request: '{"memberId":"alice@acompany.com","openclawLimit":5,"tokenLimit":100000}',
@@ -24,14 +24,13 @@ const MOCK_LOGS = [
       userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
       duration: "158", application: "openclaw-enterprise",
       sourceIp: "30.42.219.99", success: "true",
-      action: "/api/admin/members/update", invokerId: "1",
+      action: "updateMember", invokerId: "1",
       startDate: "2026-03-09 15:45:37",
     },
   },
   {
-    id: "log-002", operator: "admin@acompany.com", action: "添加模型",
-    api: "/api/admin/models/create", requestTime: "2026-03-09 14:30:12",
-    responseTime: "2026-03-09 14:30:13", success: true,
+    id: "log-002", operator: "admin@acompany.com", action: "createModel",
+    requestTime: "2026-03-09 14:30:12", responseTime: "2026-03-09 14:30:13", success: true,
     detail: {
       eventId: "7bf68888-20cd-5143-c992-g3f3g9983de1",
       request: '{"provider":"腾讯云DeepSeek","version":"DeepSeek V3 0324","dailyLimit":500000}',
@@ -39,14 +38,13 @@ const MOCK_LOGS = [
       userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
       duration: "203", application: "openclaw-enterprise",
       sourceIp: "30.42.219.99", success: "true",
-      action: "/api/admin/models/create", invokerId: "1",
+      action: "createModel", invokerId: "1",
       startDate: "2026-03-09 14:30:12",
     },
   },
   {
-    id: "log-003", operator: "superadmin@acompany.com", action: "修改基础信息",
-    api: "/api/admin/basic-info/update", requestTime: "2026-03-09 11:20:05",
-    responseTime: "2026-03-09 11:20:06", success: true,
+    id: "log-003", operator: "superadmin@acompany.com", action: "updateBasicInfo",
+    requestTime: "2026-03-09 11:20:05", responseTime: "2026-03-09 11:20:06", success: true,
     detail: {
       eventId: "8cg79999-31de-6254-d003-h4g4h0094ef2",
       request: '{"siteName":"A公司企业版OpenClaw","siteDesc":"企业专属AI助理平台"}',
@@ -54,14 +52,13 @@ const MOCK_LOGS = [
       userAgent: "okhttp/4.10.0", invokerName: "ak.SUPERADMIN",
       duration: "89", application: "openclaw-enterprise",
       sourceIp: "30.42.219.88", success: "true",
-      action: "/api/admin/basic-info/update", invokerId: "0",
+      action: "updateBasicInfo", invokerId: "0",
       startDate: "2026-03-09 11:20:05",
     },
   },
   {
-    id: "log-004", operator: "admin@acompany.com", action: "删除成员",
-    api: "/api/admin/members/delete", requestTime: "2026-03-08 16:45:22",
-    responseTime: "2026-03-08 16:45:22", success: false,
+    id: "log-004", operator: "admin@acompany.com", action: "deleteMember",
+    requestTime: "2026-03-08 16:45:22", responseTime: "2026-03-08 16:45:22", success: false,
     detail: {
       eventId: "9dh80000-42ef-7365-e114-i5h5i1105fg3",
       request: '{"memberId":"frank@acompany.com"}',
@@ -69,14 +66,13 @@ const MOCK_LOGS = [
       userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
       duration: "45", application: "openclaw-enterprise",
       sourceIp: "30.42.219.99", success: "false",
-      action: "/api/admin/members/delete", invokerId: "1",
+      action: "deleteMember", invokerId: "1",
       startDate: "2026-03-08 16:45:22",
     },
   },
   {
-    id: "log-005", operator: "admin@acompany.com", action: "更新安全组规则",
-    api: "/api/admin/security-group/update", requestTime: "2026-03-08 10:12:33",
-    responseTime: "2026-03-08 10:12:34", success: true,
+    id: "log-005", operator: "admin@acompany.com", action: "updateSecurityGroup",
+    requestTime: "2026-03-08 10:12:33", responseTime: "2026-03-08 10:12:34", success: true,
     detail: {
       eventId: "0ei91111-53fg-8476-f225-j6i6j2216gh4",
       request: '{"ruleType":"inbound","source":"0.0.0.0/0","protocol":"TCP","port":"18789","policy":"允许"}',
@@ -84,8 +80,106 @@ const MOCK_LOGS = [
       userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
       duration: "112", application: "openclaw-enterprise",
       sourceIp: "30.42.219.99", success: "true",
-      action: "/api/admin/security-group/update", invokerId: "1",
+      action: "updateSecurityGroup", invokerId: "1",
       startDate: "2026-03-08 10:12:33",
+    },
+  },
+  {
+    id: "log-006", operator: "admin@acompany.com", action: "createMember",
+    requestTime: "2026-03-07 09:30:11", responseTime: "2026-03-07 09:30:12", success: true,
+    detail: {
+      eventId: "1fj02222-64gh-9587-g336-k7j7k3327hi5",
+      request: '{"memberId":"grace@acompany.com","role":"member"}',
+      endDate: "2026-03-07 09:30:12", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
+      duration: "134", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.99", success: "true",
+      action: "createMember", invokerId: "1",
+      startDate: "2026-03-07 09:30:11",
+    },
+  },
+  {
+    id: "log-007", operator: "admin@acompany.com", action: "resetPassword",
+    requestTime: "2026-03-07 08:15:44", responseTime: "2026-03-07 08:15:44", success: true,
+    detail: {
+      eventId: "2gk13333-75hi-0698-h447-l8k8l4438ij6",
+      request: '{"memberId":"henry@acompany.com"}',
+      endDate: "2026-03-07 08:15:44", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
+      duration: "67", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.99", success: "true",
+      action: "resetPassword", invokerId: "1",
+      startDate: "2026-03-07 08:15:44",
+    },
+  },
+  {
+    id: "log-008", operator: "superadmin@acompany.com", action: "importImage",
+    requestTime: "2026-03-06 17:22:09", responseTime: "2026-03-06 17:22:11", success: true,
+    detail: {
+      eventId: "3hl24444-86ij-1709-i558-m9l9m5549jk7",
+      request: '{"imageId":"img-abc123","imageName":"OpenClaw镜像v2.1"}',
+      endDate: "2026-03-06 17:22:11", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.SUPERADMIN",
+      duration: "1842", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.88", success: "true",
+      action: "importImage", invokerId: "0",
+      startDate: "2026-03-06 17:22:09",
+    },
+  },
+  {
+    id: "log-009", operator: "admin@acompany.com", action: "deleteModel",
+    requestTime: "2026-03-06 14:05:33", responseTime: "2026-03-06 14:05:33", success: false,
+    detail: {
+      eventId: "4im35555-97jk-2810-j669-n0m0n6650kl8",
+      request: '{"modelId":"model-xyz789"}',
+      endDate: "2026-03-06 14:05:33", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
+      duration: "23", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.99", success: "false",
+      action: "deleteModel", invokerId: "1",
+      startDate: "2026-03-06 14:05:33",
+    },
+  },
+  {
+    id: "log-010", operator: "admin@acompany.com", action: "updateChannelConfig",
+    requestTime: "2026-03-05 16:48:27", responseTime: "2026-03-05 16:48:28", success: true,
+    detail: {
+      eventId: "5jn46666-08kl-3921-k770-o1n1o7761lm9",
+      request: '{"channel":"feishu","appId":"cli_abc","appSecret":"xxx"}',
+      endDate: "2026-03-05 16:48:28", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
+      duration: "245", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.99", success: "true",
+      action: "updateChannelConfig", invokerId: "1",
+      startDate: "2026-03-05 16:48:27",
+    },
+  },
+  {
+    id: "log-011", operator: "superadmin@acompany.com", action: "updateGlobalQuota",
+    requestTime: "2026-03-05 10:30:00", responseTime: "2026-03-05 10:30:01", success: true,
+    detail: {
+      eventId: "6ko57777-19lm-4032-l881-p2o2p8872mn0",
+      request: '{"dailyGlobalLimit":2000000}',
+      endDate: "2026-03-05 10:30:01", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.SUPERADMIN",
+      duration: "98", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.88", success: "true",
+      action: "updateGlobalQuota", invokerId: "0",
+      startDate: "2026-03-05 10:30:00",
+    },
+  },
+  {
+    id: "log-012", operator: "admin@acompany.com", action: "disableMember",
+    requestTime: "2026-03-04 13:22:15", responseTime: "2026-03-04 13:22:15", success: true,
+    detail: {
+      eventId: "7lp68888-20mn-5143-m992-q3p3q9983no1",
+      request: '{"memberId":"ivan@acompany.com","status":"disabled"}',
+      endDate: "2026-03-04 13:22:15", serviceAccount: "true",
+      userAgent: "okhttp/4.10.0", invokerName: "ak.ADMIN",
+      duration: "56", application: "openclaw-enterprise",
+      sourceIp: "30.42.219.99", success: "true",
+      action: "disableMember", invokerId: "1",
+      startDate: "2026-03-04 13:22:15",
     },
   },
 ];
@@ -96,6 +190,7 @@ export default function AuditLog() {
   const [dateTo, setDateTo] = useState("");
   const [selectedLog, setSelectedLog] = useState<(typeof MOCK_LOGS)[0] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -105,12 +200,20 @@ export default function AuditLog() {
   const hasFilter = search || dateFrom || dateTo;
 
   const filtered = MOCK_LOGS.filter((log) => {
-    const matchSearch = !search || log.operator.includes(search) || log.action.includes(search) || log.api.includes(search);
+    const matchSearch = !search || log.operator.includes(search) || log.action.includes(search);
     const logDate = log.requestTime.slice(0, 10);
     const matchFrom = !dateFrom || logDate >= dateFrom;
     const matchTo = !dateTo || logDate <= dateTo;
     return matchSearch && matchFrom && matchTo;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const handleSearch = (v: string) => { setSearch(v); setPage(1); };
+  const handleDateFrom = (v: string) => { setDateFrom(v); setPage(1); };
+  const handleDateTo = (v: string) => { setDateTo(v); setPage(1); };
 
   return (
     <AdminLayout>
@@ -125,9 +228,9 @@ export default function AuditLog() {
           <div className="relative flex-1 min-w-48 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="搜索操作人、事件或接口"
+              placeholder="搜索操作人或操作事件"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               className="pl-9 bg-white"
             />
           </div>
@@ -135,7 +238,7 @@ export default function AuditLog() {
             <input
               type="date"
               value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onChange={(e) => handleDateFrom(e.target.value)}
               className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               title="开始日期"
             />
@@ -143,13 +246,13 @@ export default function AuditLog() {
             <input
               type="date"
               value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
+              onChange={(e) => handleDateTo(e.target.value)}
               className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               title="结束日期"
             />
           </div>
           {hasFilter && (
-            <Button variant="outline" size="sm" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); }}>
+            <Button variant="outline" size="sm" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); setPage(1); }}>
               清除筛选
             </Button>
           )}
@@ -169,22 +272,24 @@ export default function AuditLog() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作人</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作事件</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">API 接口</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">请求时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">返回时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">执行结果</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作事件</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">请求时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">返回时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">执行结果</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[6%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map((log) => (
+              {paged.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">暂无操作记录</td>
+                </tr>
+              ) : paged.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 text-sm text-gray-700">{log.operator}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{log.action}</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs font-mono text-gray-500 bg-gray-50 px-2 py-0.5 rounded">{log.api}</span>
+                    <span className="text-xs font-mono text-gray-700 bg-gray-50 px-2 py-0.5 rounded">{log.action}</span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{log.requestTime}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{log.responseTime}</td>
@@ -201,20 +306,53 @@ export default function AuditLog() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4">
                     <button
                       onClick={() => setSelectedLog(log)}
                       className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
                     >
-                      查看详情
+                      详情
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
-            共 {filtered.length} 条记录
+
+          {/* Footer: count + pagination */}
+          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
+            <span className="text-xs text-gray-400">共 {filtered.length} 条记录</span>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage === 1}
+                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-7 h-7 flex items-center justify-center rounded-md text-xs font-medium transition-colors ${
+                      p === safePage
+                        ? "bg-blue-500 text-white border border-blue-500"
+                        : "border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage === totalPages}
+                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

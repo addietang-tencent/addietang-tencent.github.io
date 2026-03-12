@@ -411,6 +411,11 @@ export default function MemberManagement() {
     password: string;
   }>({ open: false, title: "", memberId: "", password: "" });
 
+  // 删除检查弹窗
+  const [deleteCheckDialog, setDeleteCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
+  // 二次确认弹窗
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; memberId: string } | null>(null);
+
   const filtered = sortedMembers.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
   );
@@ -460,8 +465,13 @@ export default function MemberManagement() {
     toast.success("状态已更新");
   };
 
+  const openDeleteCheck = (member: typeof MOCK_MEMBERS_BASE[0]) => {
+    setDeleteCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+  };
+
   const handleDelete = (id: string) => {
     setMembers(members.filter((m) => m.id !== id));
+    setDeleteConfirmDialog(null);
     toast.success("成员已删除");
   };
 
@@ -655,7 +665,7 @@ export default function MemberManagement() {
                           variant="ghost"
                           size="sm"
                           className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-7 px-2"
-                          onClick={() => handleDelete(member.id)}
+                          onClick={() => openDeleteCheck(member)}
                         >
                           <Trash2 className="w-3 h-3 mr-1" />
                           删除
@@ -848,6 +858,93 @@ export default function MemberManagement() {
         memberId={credentialDialog.memberId}
         password={credentialDialog.password}
       />
+
+      {/* Delete Check Dialog */}
+      <Dialog
+        open={!!deleteCheckDialog?.open}
+        onOpenChange={(open) => { if (!open) setDeleteCheckDialog(null); }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-4 h-4 text-red-500" />
+              删除成员
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            <p className="text-sm text-gray-600">
+              只有当成员名下没有任何 OpenClaw 时，才可以删除成员。
+            </p>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">成员 ID</span>
+              <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
+            </div>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className={`text-sm font-semibold ${
+                (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
+              }`}>
+                {deleteCheckDialog?.clawCount ?? 0} 个
+              </span>
+            </div>
+            {(deleteCheckDialog?.clawCount ?? 0) > 0 ? (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 space-y-1">
+                <p className="font-medium">无法删除该成员</p>
+                <p>请让成员自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该成员名下的所有 OpenClaw 后，再执行删除操作。</p>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                该成员名下没有 OpenClaw，可以删除。
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteCheckDialog(null)}>取消</Button>
+            {(deleteCheckDialog?.clawCount ?? 0) === 0 && (
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white"
+                onClick={() => {
+                  const id = deleteCheckDialog!.memberId;
+                  setDeleteCheckDialog(null);
+                  setDeleteConfirmDialog({ open: true, memberId: id });
+                }}
+              >
+                确认删除
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog (二次确认) */}
+      <Dialog
+        open={!!deleteConfirmDialog?.open}
+        onOpenChange={(open) => { if (!open) setDeleteConfirmDialog(null); }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-4 h-4" />
+              确认删除成员
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-600">
+              确定要删除成员 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span> 吗？
+            </p>
+            <p className="text-sm text-red-500 font-medium">此操作不可撤销，删除后该成员将无法登录员工端。</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => handleDelete(deleteConfirmDialog!.memberId)}
+            >
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

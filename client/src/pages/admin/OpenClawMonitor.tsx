@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Bot, Activity, PowerOff, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Bot, Activity, PowerOff, Trash2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  status: "running", createTime: "2025-12-01" },
@@ -38,6 +38,15 @@ export default function OpenClawMonitor() {
   const [dateTo, setDateTo] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success("列表已刷新");
+    }, 1000);
+  };
 
   const hasFilter = search || dateFrom || dateTo;
 
@@ -159,6 +168,14 @@ export default function OpenClawMonitor() {
               清除筛选
             </Button>
           )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+            title="刷新列表"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
         </div>
 
         {/* Table */}

@@ -98,10 +98,43 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
 
 // ─── 模型配置定义 ────────────────────────────────────────────────────────────────
 
-const MODEL_OPTIONS = [
-  { value: "deepseek-v3", label: "DeepSeek V3 0324", badge: "默认", badgeColor: "bg-blue-50 text-blue-600 border-blue-100" },
-  { value: "hunyuan-turbos", label: "混元 TurboS Latest", badge: null, badgeColor: "" },
-  { value: "custom", label: "自定义模型", badge: "需自费", badgeColor: "bg-amber-50 text-amber-600 border-amber-100" },
+type ModelVersion = {
+  value: string;
+  label: string;
+  badge?: string;
+  badgeColor?: string;
+};
+
+type ModelProvider = {
+  value: string;
+  label: string;
+  versions: ModelVersion[];
+};
+
+const MODEL_PROVIDERS: ModelProvider[] = [
+  {
+    value: "tencent-deepseek",
+    label: "腾讯云 DeepSeek",
+    versions: [
+      { value: "deepseek-v3", label: "DeepSeek V3 0324" },
+      { value: "deepseek-r1", label: "DeepSeek R1" },
+    ],
+  },
+  {
+    value: "tencent-hunyuan",
+    label: "腾讯云混元",
+    versions: [
+      { value: "hunyuan-turbos", label: "混元 TurboS Latest" },
+      { value: "hunyuan-pro", label: "混元 Pro" },
+    ],
+  },
+  {
+    value: "custom",
+    label: "自定义模型",
+    versions: [
+      { value: "custom", label: "自定义模型", badge: "需自费", badgeColor: "bg-amber-50 text-amber-600 border-amber-100" },
+    ],
+  },
 ];
 
 const DEFAULT_CUSTOM_JSON = `{
@@ -147,11 +180,21 @@ export default function OpenClawDetail() {
   const [tempName, setTempName] = useState(claw.name);
 
   // ── Model state ──
-  const [selectedModel, setSelectedModel] = useState("deepseek-v3");
+  const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
+  const [selectedModel, setSelectedModel] = useState(MODEL_PROVIDERS[0].versions[0].value);
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
-  const [appliedModel, setAppliedModel] = useState({ name: "DeepSeek V3 0324", active: true });
+  const [appliedModel, setAppliedModel] = useState({ name: "腾讯云 DeepSeek（DeepSeek V3 0324）", active: true, isCustom: false });
+
+  const currentProvider = MODEL_PROVIDERS.find(p => p.value === selectedProvider) || MODEL_PROVIDERS[0];
+  const currentVersions = currentProvider.versions;
+
+  const handleProviderChange = (providerValue: string) => {
+    setSelectedProvider(providerValue);
+    const provider = MODEL_PROVIDERS.find(p => p.value === providerValue);
+    if (provider) setSelectedModel(provider.versions[0].value);
+  };
 
   // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("wework");
@@ -199,17 +242,18 @@ export default function OpenClawDetail() {
   // ── Handlers ──
 
   const handleApplyModel = () => {
-    const opt = MODEL_OPTIONS.find((m) => m.value === selectedModel);
-    if (!opt) return;
-    if (selectedModel === "custom") {
+    if (selectedProvider === "custom") {
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      setAppliedModel({ name: customName ? `自定义模型（${customName}）` : "自定义模型", active: true });
+      setAppliedModel({ name: customName ? `自定义模型（${customName}）` : "自定义模型", active: true, isCustom: true });
     } else {
-      setAppliedModel({ name: opt.label, active: true });
+      const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
+      const version = currentVersions.find(v => v.value === selectedModel);
+      if (!provider || !version) return;
+      setAppliedModel({ name: `${provider.label}（${version.label}）`, active: true, isCustom: false });
     }
-    toast.success("模型已应用");
+    toast.success("模型已添加并应用");
   };
 
   const handleAddChannel = () => {
@@ -398,27 +442,35 @@ export default function OpenClawDetail() {
 
             {/* Upper: config inputs - fixed */}
             <div className="p-5 space-y-3 flex-shrink-0">
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
+              {/* 模型厂商选择 */}
+              <Select value={selectedProvider} onValueChange={handleProviderChange}>
                 <SelectTrigger className="w-full bg-gray-50 border-gray-200">
-                  <SelectValue placeholder="选择模型" />
+                  <SelectValue placeholder="选择模型厂商" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MODEL_OPTIONS.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      <div className="flex items-center gap-2">
-                        <span>{m.label}</span>
-                        {m.badge && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${m.badgeColor}`}>
-                            {m.badge}
-                          </span>
-                        )}
-                      </div>
-                    </SelectItem>
+                  {MODEL_PROVIDERS.map((p) => (
+                    <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {selectedModel === "custom" && (
+              {/* 模型版本选择（自定义模型厂商时隐藏） */}
+              {selectedProvider !== "custom" && (
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                    <SelectValue placeholder="选择模型版本" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentVersions.map((v) => (
+                      <SelectItem key={v.value} value={v.value}>
+                        <span>{v.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {selectedProvider === "custom" && (
                 <div className="space-y-3 pt-1">
                   <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                     <button
@@ -473,7 +525,7 @@ export default function OpenClawDetail() {
               )}
 
               <Button className="w-full text-sm" variant="outline" onClick={handleApplyModel}>
-                应用
+                添加并应用
               </Button>
 
             </div>

@@ -19,7 +19,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Info, Brain, Zap, Eye, EyeOff, Pencil,
+  Plus, Trash2, Info, Brain, Zap, Pencil, AlertTriangle,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 
@@ -42,7 +42,7 @@ interface ModelRow {
   id: string;
   name: string;
   version: string;
-  apiKey: string;
+  modelUrl: string;
   visible: boolean;
   dailyLimit: number;
   provider: string; // 对应 AVAILABLE_MODELS.value
@@ -52,19 +52,19 @@ interface ModelRow {
 const MOCK_MODELS: ModelRow[] = [
   {
     id: "1", name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324",
-    apiKey: "sk-****a1b2c3d4", visible: true, dailyLimit: 500000,
+    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: true, dailyLimit: 500000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
   },
   {
     id: "2", name: "腾讯云混元", version: "混元 TurboS Latest",
-    apiKey: "sk-****e5f6g7h8", visible: true, dailyLimit: 200000,
+    modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, dailyLimit: 200000,
     provider: "tencent-hunyuan",
     versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
   },
   {
     id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
-    apiKey: "sk-****i9j0k1l2", visible: false, dailyLimit: 100000,
+    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: false, dailyLimit: 100000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
   },
@@ -133,7 +133,8 @@ export default function ModelConfig() {
   const [models, setModels] = useState<ModelRow[]>(MOCK_MODELS);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("form");
-  const [showApiKey, setShowApiKey] = useState<Record<string, boolean>>({});
+  // 删除二次确认弹窗
+  const [deleteConfirmModel, setDeleteConfirmModel] = useState<ModelRow | null>(null);
 
   // 编辑配额弹窗
   const [editQuotaModel, setEditQuotaModel] = useState<ModelRow | null>(null);
@@ -141,7 +142,7 @@ export default function ModelConfig() {
 
   // Add form state — 统一用一个 provider 字段，默认选第一个厂商
   const [newModel, setNewModel] = useState({
-    provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", apiKey: "", dailyLimit: 100000,
+    provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", modelUrl: "", dailyLimit: 100000,
   });
   const [customForm, setCustomForm] = useState({
     provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "", dailyLimit: 100000,
@@ -158,7 +159,7 @@ export default function ModelConfig() {
 
   // 打开添加弹窗时重置为默认第一个厂商
   const openAddDialog = () => {
-    setNewModel({ provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", apiKey: "", dailyLimit: 100000 });
+    setNewModel({ provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", modelUrl: "", dailyLimit: 100000 });
     setShowAddDialog(true);
   };
 
@@ -167,24 +168,24 @@ export default function ModelConfig() {
       const name = customInputMode === "form" ? (customForm.provider || "自定义模型") : "自定义模型";
       setModels([...models, {
         id: String(Date.now()), name, version: customInputMode === "form" ? customForm.model_name : "自定义",
-        apiKey: "****", visible: true, dailyLimit: customForm.dailyLimit,
+        modelUrl: customForm.base_url || "", visible: true, dailyLimit: customForm.dailyLimit,
         provider: CUSTOM_PROVIDER_VALUE, versions: [],
       }]);
       setShowAddDialog(false);
       toast.success("自定义模型已添加");
     } else {
-      if (!newModel.provider || !newModel.apiKey) { toast.error("请填写完整信息"); return; }
+      if (!newModel.provider || !newModel.modelUrl) { toast.error("请填写完整信息"); return; }
       const providerLabel = selectedProviderData?.label || newModel.provider;
       const versions = selectedProviderData?.versions ?? [];
       setModels([...models, {
         id: String(Date.now()), name: providerLabel,
         version: newModel.version || (versions[0] ?? "自动"),
-        apiKey: newModel.apiKey.slice(0, 8) + "****", visible: true,
+        modelUrl: newModel.modelUrl, visible: true,
         dailyLimit: newModel.dailyLimit,
         provider: newModel.provider, versions,
       }]);
       setShowAddDialog(false);
-      setNewModel({ provider: "", version: "", apiKey: "", dailyLimit: 100000 });
+      setNewModel({ provider: "", version: "", modelUrl: "", dailyLimit: 100000 });
       toast.success("模型已添加");
     }
   };
@@ -225,7 +226,7 @@ export default function ModelConfig() {
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[35%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">API Key</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">每日 Tokens 上限</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">成员可见</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[7%]">操作</th>
@@ -241,15 +242,7 @@ export default function ModelConfig() {
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm text-gray-600 font-mono">
-                        {showApiKey[model.id] ? model.apiKey : "••••••••••••"}
-                      </span>
-                      <button onClick={() => setShowApiKey({ ...showApiKey, [model.id]: !showApiKey[model.id] })}
-                        className="text-gray-300 hover:text-gray-500">
-                        {showApiKey[model.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
+                    <span className="text-sm text-gray-600 font-mono break-all">{model.modelUrl}</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-1.5">
@@ -274,7 +267,7 @@ export default function ModelConfig() {
                   </td>
                   <td className="px-4 py-4">
                     <button
-                      onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
+                      onClick={() => setDeleteConfirmModel(model)}
                       className="text-gray-300 hover:text-red-500 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -404,12 +397,12 @@ export default function ModelConfig() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label>API Key</Label>
+                  <Label>模型 URL</Label>
                   <Input
-                    type="password"
-                    placeholder="请输入 API Key"
-                    value={newModel.apiKey}
-                    onChange={(e) => setNewModel({ ...newModel, apiKey: e.target.value })}
+                    type="text"
+                    placeholder="请输入模型 URL地址"
+                    value={newModel.modelUrl}
+                    onChange={(e) => setNewModel({ ...newModel, modelUrl: e.target.value })}
                     className="bg-gray-50"
                   />
                 </div>
@@ -478,6 +471,37 @@ export default function ModelConfig() {
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               确认添加
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={!!deleteConfirmModel} onOpenChange={(open) => { if (!open) setDeleteConfirmModel(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-4 h-4" />
+              确认删除模型
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-600">
+              确定要删除模型 <span className="font-medium text-gray-900">{deleteConfirmModel?.name}</span>（{deleteConfirmModel?.version}）吗？
+            </p>
+            <p className="text-sm text-red-500 font-medium">删除后成员将无法使用该模型，此操作不可撤销。</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>取消</Button>
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => {
+                setModels(models.filter((m) => m.id !== deleteConfirmModel!.id));
+                setDeleteConfirmModel(null);
+                toast.success("模型已删除");
+              }}
+            >
+              确认删除
             </Button>
           </DialogFooter>
         </DialogContent>

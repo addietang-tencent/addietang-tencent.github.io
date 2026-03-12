@@ -311,6 +311,8 @@ function CredentialResultDialog({
   password: string;
 }) {
   const [copied, setCopied] = useState(false);
+  // 全加密：用 • 替换所有字符
+  const maskedPassword = "•".repeat(password.length);
 
   const handleCopy = () => {
     const text = `账号：${memberId}\n密码：${password}`;
@@ -322,14 +324,14 @@ function CredentialResultDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-green-500" />
             {title}
           </DialogTitle>
         </DialogHeader>
-        <div className="py-2 space-y-4">
+        <div className="pt-1 pb-3 space-y-3">
           {/* 账号密码展示 */}
           <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -339,8 +341,16 @@ function CredentialResultDialog({
             <div className="border-t border-gray-100" />
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">初始密码</span>
-              <span className="text-sm font-mono text-gray-800 select-all tracking-wider">{password}</span>
+              <span className="text-sm font-mono text-gray-800 tracking-widest select-none">{maskedPassword}</span>
             </div>
+          </div>
+
+          {/* 警示文案 */}
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              关闭弹窗后将无法再次查看此密码，请复制后妥善保存，并通过安全渠道告知成员。
+            </p>
           </div>
 
           {/* 复制按钮 */}
@@ -355,18 +365,7 @@ function CredentialResultDialog({
               <><Copy className="w-4 h-4 mr-2" />复制账号密码</>
             )}
           </Button>
-
-          {/* 警示文案 */}
-          <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-700 leading-relaxed">
-              关闭弹窗后将无法再次查看此密码，请复制后妥善保存，并通过安全渠道告知成员。
-            </p>
-          </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>关闭</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -465,7 +464,7 @@ export default function MemberManagement() {
 
   const handleReset = () => {
     const pwd = generatePassword();
-    const memberId = showResetDialog!;
+    const memberId = showResetDialog ?? "";
     setShowResetDialog(null);
     setResetForm({ ...emptyResetForm });
     // 显示重置成功弹窗
@@ -569,12 +568,7 @@ export default function MemberManagement() {
               {paginated.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">{member.id}</span>
-                      {member.id === initialAdminId && (
-                        <Badge variant="outline" className="text-[10px] border-amber-200 text-amber-600 bg-amber-50 px-1.5 py-0">初始管理员</Badge>
-                      )}
-                    </div>
+                    <span className="text-sm font-medium text-gray-900">{member.id}</span>
                   </td>
                   <td className="px-4 py-4">
                     <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>

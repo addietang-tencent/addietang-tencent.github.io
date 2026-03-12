@@ -2,7 +2,7 @@
  * MemberManagement - 管控端成员管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -311,6 +311,10 @@ function CredentialResultDialog({
   password: string;
 }) {
   const [copied, setCopied] = useState(false);
+  // 每次弹窗打开时重置复制状态
+  useEffect(() => {
+    if (open) setCopied(false);
+  }, [open]);
   // 全加密：用 • 替换所有字符
   const maskedPassword = "•".repeat(password.length);
 

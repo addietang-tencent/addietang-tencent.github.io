@@ -21,15 +21,26 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { toast } from "sonner";
 import {
   Search, Plus, ChevronDown, Info, Upload, Download,
-  Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key
+  Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 
-const MOCK_MEMBERS = [
+const PAGE_SIZE = 10;
+
+// 生成更多 mock 数据以演示翻页
+const MOCK_MEMBERS_BASE = [
   { id: "alice@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-01-10" },
   { id: "bob@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-02-15" },
   { id: "carol@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-03-01" },
   { id: "david@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-03-20" },
   { id: "eve@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 4, joinTime: "2025-04-05" },
+  { id: "frank@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-04-12" },
+  { id: "grace@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-05-01" },
+  { id: "henry@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-05-18" },
+  { id: "iris@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 3, joinTime: "2025-06-02" },
+  { id: "jack@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-20" },
+  { id: "kate@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-07-05" },
+  { id: "leo@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-22" },
 ];
 
 const LAST_CLAW_LIMIT = 3;
@@ -44,6 +55,11 @@ const emptyNewMember = {
 
 const emptyEditForm = {
   id: "", role: "member", clawLimit: LAST_CLAW_LIMIT, tokenLimit: LAST_TOKEN_LIMIT,
+};
+
+const emptyResetForm = {
+  passwordMode: "random" as "random" | "custom",
+  customPassword: "",
   notificationEmail: "",
 };
 
@@ -207,7 +223,7 @@ function AddMemberFormFields({
   );
 }
 
-// 编辑成员表单（无密码，成员ID禁用）
+// 编辑成员表单（无密码、无信息发送，成员ID只读）
 function EditMemberFormFields({
   values,
   onChange,
@@ -221,7 +237,7 @@ function EditMemberFormFields({
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">成员信息</p>
         <div className="space-y-4">
-          {/* 成员 ID - 禁用 */}
+          {/* 成员 ID - 只读 */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               成员 ID
@@ -236,8 +252,8 @@ function EditMemberFormFields({
             </Label>
             <Input
               value={values.id}
-              disabled
-              className="bg-gray-50"
+              readOnly
+              className="bg-gray-50 cursor-not-allowed select-none"
             />
           </div>
 
@@ -253,28 +269,6 @@ function EditMemberFormFields({
                 <SelectItem value="admin">管理员</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          {/* 信息发送 */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1.5">
-              信息发送
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
-              </Tooltip>
-            </Label>
-            <Input
-              type="email"
-              placeholder="选填，输入成员接收账号密码的邮箱地址"
-              value={values.notificationEmail}
-              onChange={(e) => onChange({ ...values, notificationEmail: e.target.value })}
-              className="bg-gray-50"
-            />
           </div>
         </div>
       </div>
@@ -331,8 +325,9 @@ function EditMemberFormFields({
 }
 
 export default function MemberManagement() {
-  const [members, setMembers] = useState(MOCK_MEMBERS);
+  const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
@@ -340,10 +335,14 @@ export default function MemberManagement() {
 
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
+  const [resetForm, setResetForm] = useState({ ...emptyResetForm });
 
   const filtered = members.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleAdd = () => {
     if (!newMember.id.trim()) { toast.error("请输入成员 ID"); return; }
@@ -358,13 +357,12 @@ export default function MemberManagement() {
     toast.success("成员已添加");
   };
 
-  const openEditDialog = (member: typeof MOCK_MEMBERS[0]) => {
+  const openEditDialog = (member: typeof MOCK_MEMBERS_BASE[0]) => {
     setEditForm({
       id: member.id,
       role: member.role,
       clawLimit: member.clawLimit,
       tokenLimit: member.tokenLimit,
-      notificationEmail: "",
     });
     setEditMemberId(member.id);
   };
@@ -389,6 +387,15 @@ export default function MemberManagement() {
   const handleDelete = (id: string) => {
     setMembers(members.filter((m) => m.id !== id));
     toast.success("成员已删除");
+  };
+
+  const handleReset = () => {
+    if (resetForm.passwordMode === "custom" && !resetForm.customPassword.trim()) {
+      toast.error("请输入指定密码"); return;
+    }
+    setShowResetDialog(null);
+    setResetForm({ ...emptyResetForm });
+    toast.success("密码已重置" + (resetForm.notificationEmail ? "，新密码已发送至邮箱" : ""));
   };
 
   return (
@@ -420,16 +427,15 @@ export default function MemberManagement() {
           </DropdownMenu>
         </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-2xl border border-gray-100 mb-5 p-4"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        {/* Search - 白底无卡片包裹，与列表融合 */}
+        <div className="mb-4">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="搜索成员 ID..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-gray-50 border-gray-200"
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="pl-9 bg-white border-gray-200"
             />
           </div>
         </div>
@@ -482,11 +488,11 @@ export default function MemberManagement() {
                   </div>
                 </th>
                 <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[11%] whitespace-nowrap">加入时间</th>
-                <th className="text-right px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">操作</th>
+                <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map((member) => (
+              {paginated.map((member) => (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <span className="text-sm font-medium text-gray-900">{member.id}</span>
@@ -519,7 +525,7 @@ export default function MemberManagement() {
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center justify-end gap-0.5">
+                    <div className="flex items-center gap-0.5">
                       {/* 禁用/启用 */}
                       <Button
                         variant="ghost"
@@ -555,7 +561,7 @@ export default function MemberManagement() {
                             <Pencil className="w-3.5 h-3.5 mr-2" />
                             编辑
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setShowResetDialog(member.id)}>
+                          <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                             <Key className="w-3.5 h-3.5 mr-2" />
                             重置密码
                           </DropdownMenuItem>
@@ -567,8 +573,47 @@ export default function MemberManagement() {
               ))}
             </tbody>
           </table>
-          <div className="px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
-            共 {filtered.length} 名成员
+
+          {/* 底部：共 N 名成员 + 翻页 */}
+          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
+            <span className="text-xs text-gray-400">共 {filtered.length} 名成员</span>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-gray-500"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage(currentPage - 1)}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <Button
+                    key={p}
+                    variant="ghost"
+                    size="sm"
+                    className={`h-7 w-7 p-0 text-xs ${
+                      p === currentPage
+                        ? "bg-blue-50 text-blue-600 font-semibold"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setPage(p)}
+                  >
+                    {p}
+                  </Button>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-gray-500"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setPage(currentPage + 1)}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -627,19 +672,77 @@ export default function MemberManagement() {
       </Dialog>
 
       {/* Reset Password Dialog */}
-      <Dialog open={!!showResetDialog} onOpenChange={() => setShowResetDialog(null)}>
-        <DialogContent className="sm:max-w-sm">
+      <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); } }}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>重置密码</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-500 py-2">
-            确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？
-            重置后系统将生成随机密码并发送给该成员。
-          </p>
+          <div className="py-2 space-y-4">
+            <p className="text-sm text-gray-500">
+              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？
+            </p>
+
+            {/* 密码方式 */}
+            <div className="space-y-2">
+              <Label>密码方式</Label>
+              <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-full">
+                <button
+                  onClick={() => setResetForm({ ...resetForm, passwordMode: "random" })}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    resetForm.passwordMode === "random"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  随机密码
+                </button>
+                <button
+                  onClick={() => setResetForm({ ...resetForm, passwordMode: "custom" })}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    resetForm.passwordMode === "custom"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  指定密码
+                </button>
+              </div>
+              {resetForm.passwordMode === "custom" && (
+                <Input
+                  type="password"
+                  placeholder="请输入指定密码"
+                  value={resetForm.customPassword}
+                  onChange={(e) => setResetForm({ ...resetForm, customPassword: e.target.value })}
+                  className="bg-gray-50"
+                />
+              )}
+            </div>
+
+            {/* 信息发送 */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                信息发送
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-default inline-flex">
+                      <Info className="w-3.5 h-3.5 text-gray-400" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
+                </Tooltip>
+              </Label>
+              <Input
+                type="email"
+                placeholder="选填，输入成员接收账号密码的邮箱地址"
+                value={resetForm.notificationEmail}
+                onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
+                className="bg-gray-50"
+              />
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowResetDialog(null)}>取消</Button>
-            <Button onClick={() => { setShowResetDialog(null); toast.success("密码已重置，新密码已发送给成员"); }}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <Button variant="outline" onClick={() => { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); }}>取消</Button>
+            <Button onClick={handleReset} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认重置
             </Button>
           </DialogFooter>

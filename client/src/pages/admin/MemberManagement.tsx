@@ -227,9 +227,11 @@ function AddMemberFormFields({
 function EditMemberFormFields({
   values,
   onChange,
+  isInitialAdmin = false,
 }: {
   values: typeof emptyEditForm;
   onChange: (v: typeof emptyEditForm) => void;
+  isInitialAdmin?: boolean;
 }) {
   return (
     <div className="py-2 space-y-6">
@@ -253,15 +255,15 @@ function EditMemberFormFields({
             <Input
               value={values.id}
               readOnly
-              className="bg-gray-50 cursor-not-allowed select-none"
+              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
             />
           </div>
 
           {/* 成员角色 */}
           <div className="space-y-2">
             <Label>成员角色</Label>
-            <Select value={values.role} onValueChange={(v) => onChange({ ...values, role: v })}>
-              <SelectTrigger className="bg-gray-50 w-full">
+            <Select value={values.role} onValueChange={(v) => !isInitialAdmin && onChange({ ...values, role: v })} disabled={isInitialAdmin}>
+              <SelectTrigger className={`w-full ${isInitialAdmin ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-gray-50"}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -328,6 +330,20 @@ export default function MemberManagement() {
   const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
+
+  // 排序：管理员置顶（按加入时间升序），普通成员按加入时间降序
+  const sortedMembers = [...members].sort((a, b) => {
+    if (a.role === "admin" && b.role !== "admin") return -1;
+    if (a.role !== "admin" && b.role === "admin") return 1;
+    if (a.role === "admin" && b.role === "admin") {
+      return new Date(a.joinTime).getTime() - new Date(b.joinTime).getTime();
+    }
+    return new Date(b.joinTime).getTime() - new Date(a.joinTime).getTime();
+  });
+
+  // 初始管理员：排序后第一位
+  const initialAdminId = sortedMembers.find((m) => m.role === "admin")?.id;
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
@@ -337,7 +353,7 @@ export default function MemberManagement() {
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
   const [resetForm, setResetForm] = useState({ ...emptyResetForm });
 
-  const filtered = members.filter((m) =>
+  const filtered = sortedMembers.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -364,6 +380,7 @@ export default function MemberManagement() {
       clawLimit: member.clawLimit,
       tokenLimit: member.tokenLimit,
     });
+    setIsInitialAdminEdit(member.id === initialAdminId);
     setEditMemberId(member.id);
   };
 
@@ -527,28 +544,64 @@ export default function MemberManagement() {
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-0.5">
                       {/* 禁用/启用 */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-gray-500 hover:text-orange-600 h-7 px-2"
-                        onClick={() => handleToggleStatus(member.id)}
-                      >
-                        {member.status === "active" ? (
-                          <><UserX className="w-3 h-3 mr-1" />禁用</>
-                        ) : (
-                          <><UserCheck className="w-3 h-3 mr-1" />启用</>
-                        )}
-                      </Button>
+                      {member.id === initialAdminId ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs text-gray-300 h-7 px-2 cursor-not-allowed pointer-events-none"
+                                disabled
+                              >
+                                <UserX className="w-3 h-3 mr-1" />禁用
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>初始管理员账号不可禁用</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-gray-500 hover:text-orange-600 h-7 px-2"
+                          onClick={() => handleToggleStatus(member.id)}
+                        >
+                          {member.status === "active" ? (
+                            <><UserX className="w-3 h-3 mr-1" />禁用</>
+                          ) : (
+                            <><UserCheck className="w-3 h-3 mr-1" />启用</>
+                          )}
+                        </Button>
+                      )}
                       {/* 删除 */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-7 px-2"
-                        onClick={() => handleDelete(member.id)}
-                      >
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        删除
-                      </Button>
+                      {member.id === initialAdminId ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs text-red-200 h-7 px-2 cursor-not-allowed pointer-events-none"
+                                disabled
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />删除
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>初始管理员账号不可删除</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-7 px-2"
+                          onClick={() => handleDelete(member.id)}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          删除
+                        </Button>
+                      )}
                       {/* 更多 */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -638,7 +691,7 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle>编辑成员</DialogTitle>
           </DialogHeader>
-          <EditMemberFormFields values={editForm} onChange={setEditForm} />
+          <EditMemberFormFields values={editForm} onChange={setEditForm} isInitialAdmin={isInitialAdminEdit} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditMemberId(null)}>取消</Button>
             <Button onClick={handleEdit} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>保存修改</Button>

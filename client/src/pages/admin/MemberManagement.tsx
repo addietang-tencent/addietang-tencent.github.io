@@ -787,8 +787,8 @@ export default function MemberManagement() {
             </Button>
             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
               <Upload className="w-6 h-6 text-gray-400 mb-2" />
-              <span className="text-sm text-gray-500">点击上传 Excel / CSV 文件</span>
-              <input type="file" accept=".xlsx,.csv" className="hidden"
+              <span className="text-sm text-gray-500">点击上传 CSV 文件</span>
+              <input type="file" accept=".csv" className="hidden"
                 onChange={() => { setShowBatchDialog(false); toast.success("成员已批量导入"); }} />
             </label>
           </div>

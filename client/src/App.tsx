@@ -21,6 +21,7 @@ import BasicInfo from "./pages/admin/BasicInfo";
 import MemberManagement from "./pages/admin/MemberManagement";
 import ModelConfig from "./pages/admin/ModelConfig";
 import ChannelConfig from "./pages/admin/ChannelConfig";
+import SkillConfig from "./pages/admin/SkillConfig";
 import DocManagement from "./pages/admin/DocManagement";
 import ServerManagement from "./pages/admin/ServerManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/admin/members" component={MemberManagement} />
       <Route path="/admin/model-config" component={ModelConfig} />
       <Route path="/admin/channel-config" component={ChannelConfig} />
+      <Route path="/admin/skill-config" component={SkillConfig} />
       <Route path="/admin/doc-management" component={DocManagement} />
       <Route path="/admin/server-management" component={ServerManagement} />
       <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />

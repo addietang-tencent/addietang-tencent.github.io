@@ -23,6 +23,7 @@ import {
   LogOut,
   Shield,
   ExternalLink,
+  Puzzle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -47,6 +48,7 @@ const NAV_GROUPS = [
     items: [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
+      { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
       { label: "文档管理", path: "/admin/doc-management", icon: FileText },
     ],
   },

@@ -272,11 +272,11 @@ export default function AuditLog() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">操作人的成员 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[24%]">操作事件</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">操作人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作事件</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">请求时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">返回时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">执行结果</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%] whitespace-nowrap">执行结果</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -294,12 +294,12 @@ export default function AuditLog() {
                   <td className="px-6 py-4 text-sm text-gray-500">{log.responseTime}</td>
                   <td className="px-6 py-4">
                     {log.success ? (
-                      <span className="flex items-center gap-1 text-green-600 text-xs">
+                      <span className="flex items-center gap-1 text-green-600 text-xs whitespace-nowrap">
                         <CheckCircle className="w-3.5 h-3.5" />
                         成功
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-red-500 text-xs">
+                      <span className="flex items-center gap-1 text-red-500 text-xs whitespace-nowrap">
                         <XCircle className="w-3.5 h-3.5" />
                         失败
                       </span>

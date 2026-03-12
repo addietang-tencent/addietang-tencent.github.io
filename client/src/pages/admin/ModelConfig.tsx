@@ -146,9 +146,9 @@ export default function ModelConfig() {
   const [editQuotaModel, setEditQuotaModel] = useState<ModelRow | null>(null);
   const [showEditQuota, setShowEditQuota] = useState(false);
 
-  // Add form state — 统一用一个 provider 字段
+  // Add form state — 统一用一个 provider 字段，默认选第一个厂商
   const [newModel, setNewModel] = useState({
-    provider: "", version: "", apiKey: "", dailyLimit: 100000,
+    provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", apiKey: "", dailyLimit: 100000,
   });
   const [customForm, setCustomForm] = useState({
     provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "", dailyLimit: 100000,
@@ -161,6 +161,12 @@ export default function ModelConfig() {
 
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
+
+  // 打开添加弹窗时重置为默认第一个厂商
+  const openAddDialog = () => {
+    setNewModel({ provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", apiKey: "", dailyLimit: 100000 });
+    setShowAddDialog(true);
+  };
 
   // 展开/收起行
   const toggleExpand = (id: string, currentVersion: string) => {
@@ -238,7 +244,7 @@ export default function ModelConfig() {
               </div>
               <h2 className="font-semibold text-gray-900">模型列表</h2>
             </div>
-            <Button size="sm" onClick={() => setShowAddDialog(true)}
+            <Button size="sm" onClick={openAddDialog}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               <Plus className="w-3.5 h-3.5 mr-1.5" />
               添加模型
@@ -363,17 +369,17 @@ export default function ModelConfig() {
           </table>
 
           {/* 允许成员自定义模型开关 — 列表末尾 */}
-          <div className="flex items-start justify-between px-6 py-4 border-t border-gray-50 bg-gray-50/30">
-            <div className="flex-1 pr-6">
-              <p className="text-sm font-medium text-gray-900">允许企业成员自行添加自定义模型</p>
-              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
-                开启后，企业成员可在自己的 OpenClaw 中自行添加自定义模型。系统会提醒成员：自定义模型需自行负责配置和管理费用，不在企业的 Tokens 和费用覆盖范围内。
-              </p>
-            </div>
+          <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-50 bg-gray-50/30">
             <Switch
               checked={allowCustomModel}
               onCheckedChange={(v) => { setAllowCustomModel(v); toast.success(v ? "已允许成员添加自定义模型" : "已禁止成员添加自定义模型"); }}
             />
+            <div>
+              <p className="text-sm font-medium text-gray-900">允许成员添加自定义模型</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                开启后，成员可在 OpenClaw 中自行添加自定义模型，费用由成员自行承担，不在企业覆盖范围内。
+              </p>
+            </div>
           </div>
         </div>
 
@@ -385,16 +391,6 @@ export default function ModelConfig() {
               <Zap className="w-4 h-4 text-white" />
             </div>
             <h2 className="font-semibold text-gray-900">全局配额设置</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">已配置模型数</p>
-              <p className="text-2xl font-bold text-gray-900">{models.length}</p>
-            </div>
-            <div className="bg-blue-50 rounded-xl p-4">
-              <p className="text-xs text-blue-400 mb-1">全局每日 Tokens 上限</p>
-              <p className="text-2xl font-bold text-blue-600">{globalLimit.toLocaleString()}</p>
-            </div>
           </div>
           <div className="space-y-3">
             <Label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">

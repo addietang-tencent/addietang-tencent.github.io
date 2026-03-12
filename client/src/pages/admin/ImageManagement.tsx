@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Download, Trash2, Info, RefreshCw, ExternalLink } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
@@ -160,17 +161,27 @@ export default function ImageManagement() {
                           }}
                         />
                       </div>
-                      <button
-                        onClick={() => {
-                          if (img.active) { toast.error("当前生效镜像不可删除，请先切换至其他镜像"); return; }
-                          setImages(images.filter((i) => i.id !== img.id));
-                          toast.success("镜像已删除");
-                        }}
-                        className="text-gray-300 hover:text-red-500 transition-colors"
-                        title="删除镜像"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {img.active ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex cursor-not-allowed">
+                              <Trash2 className="w-4 h-4 text-gray-200" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left">生效中的镜像无法删除</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setImages(images.filter((i) => i.id !== img.id));
+                            toast.success("镜像已删除");
+                          }}
+                          className="text-gray-300 hover:text-red-500 transition-colors"
+                          title="删除镜像"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

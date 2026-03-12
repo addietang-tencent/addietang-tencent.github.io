@@ -415,6 +415,8 @@ export default function MemberManagement() {
   const [deleteCheckDialog, setDeleteCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
   // 二次确认弹窗
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; memberId: string } | null>(null);
+  // 禁用检查弹窗
+  const [disableCheckDialog, setDisableCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
 
   const filtered = sortedMembers.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
@@ -467,6 +469,16 @@ export default function MemberManagement() {
 
   const openDeleteCheck = (member: typeof MOCK_MEMBERS_BASE[0]) => {
     setDeleteCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+  };
+
+  const openDisableCheck = (member: typeof MOCK_MEMBERS_BASE[0]) => {
+    setDisableCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+  };
+
+  const handleDisable = (id: string) => {
+    setMembers(members.map((m) => m.id === id ? { ...m, status: "disabled" } : m));
+    setDisableCheckDialog(null);
+    toast.success("成员已禁用");
   };
 
   const handleDelete = (id: string) => {
@@ -612,66 +624,16 @@ export default function MemberManagement() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-0.5">
-                      {/* 禁用/启用 */}
-                      {member.id === initialAdminId ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs text-gray-300 h-7 px-2 cursor-not-allowed pointer-events-none"
-                                disabled
-                              >
-                                <UserX className="w-3 h-3 mr-1" />禁用
-                              </Button>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>初始管理员账号不可禁用</TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs text-gray-500 hover:text-orange-600 h-7 px-2"
-                          onClick={() => handleToggleStatus(member.id)}
-                        >
-                          {member.status === "active" ? (
-                            <><UserX className="w-3 h-3 mr-1" />禁用</>
-                          ) : (
-                            <><UserCheck className="w-3 h-3 mr-1" />启用</>
-                          )}
-                        </Button>
-                      )}
-                      {/* 删除 */}
-                      {member.id === initialAdminId ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs text-red-200 h-7 px-2 cursor-not-allowed pointer-events-none"
-                                disabled
-                              >
-                                <Trash2 className="w-3 h-3 mr-1" />删除
-                              </Button>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>初始管理员账号不可删除</TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-7 px-2"
-                          onClick={() => openDeleteCheck(member)}
-                        >
-                          <Trash2 className="w-3 h-3 mr-1" />
-                          删除
-                        </Button>
-                      )}
-                      {/* 更多 */}
+                      {/* 编辑 - 直接展示 */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-gray-500 hover:text-blue-600 h-7 px-2"
+                        onClick={() => openEditDialog(member)}
+                      >
+                        <Pencil className="w-3 h-3 mr-1" />编辑
+                      </Button>
+                      {/* 三点菜单：重置密码 + 禁用/启用 */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0">
@@ -679,10 +641,6 @@ export default function MemberManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(member)}>
-                            <Pencil className="w-3.5 h-3.5 mr-2" />
-                            编辑
-                          </DropdownMenuItem>
                           {/* 重置密码：初始管理员禁用 */}
                           {member.id === initialAdminId ? (
                             <Tooltip>
@@ -700,6 +658,34 @@ export default function MemberManagement() {
                             <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                               <Key className="w-3.5 h-3.5 mr-2" />
                               重置密码
+                            </DropdownMenuItem>
+                          )}
+                          {/* 禁用/启用 */}
+                          {member.id === initialAdminId ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <UserX className="w-3.5 h-3.5 mr-2" />
+                                  禁用
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
+                            </Tooltip>
+                          ) : member.status === "active" ? (
+                            <DropdownMenuItem
+                              className="text-orange-600 focus:text-orange-600 focus:bg-orange-50"
+                              onClick={() => openDisableCheck(member)}
+                            >
+                              <UserX className="w-3.5 h-3.5 mr-2" />
+                              禁用
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              className="text-green-600 focus:text-green-600 focus:bg-green-50"
+                              onClick={() => handleToggleStatus(member.id)}
+                            >
+                              <UserCheck className="w-3.5 h-3.5 mr-2" />
+                              启用
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -910,6 +896,59 @@ export default function MemberManagement() {
                 }}
               >
                 确认删除
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Disable Check Dialog */}
+      <Dialog
+        open={!!disableCheckDialog?.open}
+        onOpenChange={(open) => { if (!open) setDisableCheckDialog(null); }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserX className="w-4 h-4 text-orange-500" />
+              禁用成员
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            <p className="text-sm text-gray-600">
+              禁用后，该成员将无法登录员工端。只有成员名下没有任何 OpenClaw 时，才可以禁用。
+            </p>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">成员 ID</span>
+              <span className="text-sm font-medium text-gray-900">{disableCheckDialog?.memberId}</span>
+            </div>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className={`text-sm font-semibold ${
+                (disableCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
+              }`}>
+                {disableCheckDialog?.clawCount ?? 0} 个
+              </span>
+            </div>
+            {(disableCheckDialog?.clawCount ?? 0) > 0 ? (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 space-y-1">
+                <p className="font-medium">无法禁用该成员</p>
+                <p>请让成员自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该成员名下的所有 OpenClaw 后，再执行禁用操作。</p>
+              </div>
+            ) : (
+              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                该成员名下没有 OpenClaw，可以执行禁用。
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisableCheckDialog(null)}>取消</Button>
+            {(disableCheckDialog?.clawCount ?? 0) === 0 && (
+              <Button
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={() => handleDisable(disableCheckDialog!.memberId)}
+              >
+                确认禁用
               </Button>
             )}
           </DialogFooter>

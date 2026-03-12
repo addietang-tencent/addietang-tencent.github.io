@@ -574,7 +574,7 @@ export default function OpenClawDetail() {
             <div className="p-5 space-y-3 flex-shrink-0">
               {/* 通道下拉 - 固定宽度 */}
               <div className="flex items-center gap-2">
-                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("quick"); }}>
+                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("manual"); }}>
                   <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>

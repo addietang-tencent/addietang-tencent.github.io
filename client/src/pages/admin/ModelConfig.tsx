@@ -293,7 +293,16 @@ export default function ModelConfig() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
+                        <div className="flex items-center gap-1.5 group/quota">
+                          <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
+                          <button
+                            onClick={() => openEditQuota(model)}
+                            className="text-gray-300 hover:text-blue-500 transition-colors opacity-0 group-hover/quota:opacity-100"
+                            title="编辑配额"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
@@ -307,13 +316,6 @@ export default function ModelConfig() {
                               }}
                             />
                           </div>
-                          <button
-                            onClick={() => openEditQuota(model)}
-                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                            title="编辑配额"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
                           <button
                             onClick={() => { setModels(models.filter((m) => m.id !== model.id)); toast.success("模型已删除"); }}
                             className="text-gray-300 hover:text-red-500 transition-colors">

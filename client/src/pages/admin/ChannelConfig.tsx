@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
 
 const CHANNELS = [
-  { id: "wework-bot", name: "企业微信机器人", desc: "通过企业微信机器人 Webhook 接入，适合群消息通知场景", icon: "💬" },
-  { id: "wework-app", name: "企业微信应用", desc: "通过企业微信自建应用接入，支持更丰富的交互能力", icon: "🏢" },
+  { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力", icon: "💬" },
   { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景", icon: "🐧" },
   { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队", icon: "🪶" },
   { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户", icon: "📎" },
@@ -17,7 +16,7 @@ const CHANNELS = [
 
 export default function ChannelConfig() {
   const [visibility, setVisibility] = useState<Record<string, boolean>>({
-    "wework-bot": true, "wework-app": true, qq: true, feishu: true, dingtalk: false,
+    wework: true, qq: true, feishu: true, dingtalk: false,
   });
 
   return (
@@ -26,7 +25,7 @@ export default function ChannelConfig() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
           <p className="text-sm text-gray-500 mt-1">
-            配置企业成员可以为 OpenClaw 选择接入的即时通讯工具。开启「企业成员可见」后，成员可在 OpenClaw 配置中选择对应通道。
+            配置成员可以为 OpenClaw 选择接入的即时通讯工具。开启「成员可见」后，成员可在 OpenClaw 配置中选择对应通道。
           </p>
         </div>
 
@@ -51,7 +50,7 @@ export default function ChannelConfig() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">企业成员可见</span>
+                  <span className="text-xs text-gray-400">成员可见</span>
                   <Switch
                     checked={visibility[ch.id] || false}
                     onCheckedChange={(v) => {

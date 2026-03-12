@@ -218,9 +218,9 @@ export default function ImageManagement() {
                       <SelectLabel className="text-xs text-gray-400 font-medium">公共镜像</SelectLabel>
                       {PUBLIC_IMAGES.map((img) => (
                         <SelectItem key={img.id} value={img.id}>
-                          <div className="flex flex-col">
+                          <div className="flex items-center justify-between gap-6 w-full">
                             <span className="text-sm">{img.name}</span>
-                            <span className="text-xs text-gray-400 font-mono">{img.id}</span>
+                            <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -229,9 +229,9 @@ export default function ImageManagement() {
                       <SelectLabel className="text-xs text-gray-400 font-medium">自定义镜像</SelectLabel>
                       {CUSTOM_IMAGES.map((img) => (
                         <SelectItem key={img.id} value={img.id}>
-                          <div className="flex flex-col">
+                          <div className="flex items-center justify-between gap-6 w-full">
                             <span className="text-sm">{img.name}</span>
-                            <span className="text-xs text-gray-400 font-mono">{img.id}</span>
+                            <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -247,11 +247,7 @@ export default function ImageManagement() {
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
                 </button>
               </div>
-              {selectedImage && (
-                <p className="text-xs text-gray-400 font-mono pl-1">
-                  镜像 ID：{selectedImage.id}
-                </p>
-              )}
+
             </div>
           </div>
 

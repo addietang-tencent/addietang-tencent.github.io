@@ -121,7 +121,7 @@ function AddMemberFormFields({
           {/* 信息发送 */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              信息发送
+              （选填）信息发送
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
@@ -133,7 +133,7 @@ function AddMemberFormFields({
             </Label>
             <Input
               type="email"
-              placeholder="选填，输入成员接收账号密码的邮箱地址"
+              placeholder="输入成员接收账号密码的邮箱地址"
               value={values.notificationEmail}
               onChange={(e) => onChange({ ...values, notificationEmail: e.target.value })}
               className="bg-gray-50"
@@ -808,7 +808,7 @@ export default function MemberManagement() {
             {/* 信息发送 */}
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
-                信息发送
+                （选填）信息发送
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="cursor-default inline-flex">
@@ -820,7 +820,7 @@ export default function MemberManagement() {
               </Label>
               <Input
                 type="email"
-                placeholder="选填，输入成员接收新密码的邮箱地址"
+                placeholder="输入成员接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
                 className="bg-gray-50"

@@ -49,9 +49,7 @@ export default function LoginModal({ open, onSuccess, onClose }: LoginModalProps
       <DialogContent
         className="sm:max-w-md p-0 overflow-hidden"
         style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.12)" }}
-        // 禁止点击遮罩关闭
         onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {/* Header gradient bar */}
         <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #007AFF, #5856D6)" }} />

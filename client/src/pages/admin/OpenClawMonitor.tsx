@@ -185,7 +185,7 @@ export default function OpenClawMonitor() {
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建人</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建人的成员 ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">状态</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>

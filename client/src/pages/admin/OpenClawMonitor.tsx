@@ -1,7 +1,6 @@
 /**
  * OpenClawMonitor - 管控端 OpenClaw 监控页
- * 布局：时间筛选器 → 总 OpenClaw 数统计 → 列表
- * 列表：去掉状态列和停用按钮，仅保留删除操作
+ * 布局：标题行右上角时间筛选器+刷新 → 表格（上方左侧搜索框、右侧统计）
  */
 import { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
@@ -49,16 +48,14 @@ export default function OpenClawMonitor() {
     }, 1000);
   };
 
-  const hasFilter = search || dateFrom || dateTo;
-
-  // 时间筛选后的数据（用于统计卡片和列表）
+  // 时间筛选后的数据（用于统计卡片）
   const timeFiltered = claws.filter((c) => {
     const matchFrom = !dateFrom || c.createTime >= dateFrom;
     const matchTo = !dateTo || c.createTime <= dateTo;
     return matchFrom && matchTo;
   });
 
-  // 搜索进一步过滤（仅用于列表）
+  // 搜索进一步过滤（用于列表）
   const filtered = timeFiltered.filter((c) => {
     return !search || c.name.includes(search) || c.creator.includes(search);
   });
@@ -66,13 +63,6 @@ export default function OpenClawMonitor() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  const clearFilters = () => {
-    setSearch("");
-    setDateFrom("");
-    setDateTo("");
-    setPage(1);
-  };
 
   const handleFilterChange = (fn: () => void) => {
     fn();
@@ -82,92 +72,71 @@ export default function OpenClawMonitor() {
   return (
     <AdminLayout>
       <div className="page-enter">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
-          <p className="text-sm text-gray-500 mt-1">查看和管理所有企业成员创建的 OpenClaw 实例。</p>
-        </div>
-
-        {/* 时间筛选器 */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          <div className="flex flex-wrap gap-3 items-center">
-            <span className="text-sm text-gray-500 shrink-0">创建时间</span>
-            <div className="flex items-center gap-2">
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
-                className="bg-gray-50 w-40"
-                title="开始日期"
-              />
-              <span className="text-gray-400 text-sm shrink-0">—</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
-                className="bg-gray-50 w-40"
-                title="结束日期"
-              />
-            </div>
-            {(dateFrom || dateTo) && (
-              <Button variant="outline" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}>
-                清除时间
-              </Button>
-            )}
+        {/* Header：标题左，时间筛选器+刷新右 */}
+        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
+            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业成员创建的 OpenClaw 实例。</p>
           </div>
-        </div>
-
-        {/* 总 OpenClaw 数统计卡片 */}
-        <div className="mb-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 inline-flex items-center gap-3"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">
-                {(dateFrom || dateTo) ? "筛选时间段内 OpenClaw 数" : "总 OpenClaw 数"}
-              </p>
-              <p className="text-2xl font-bold text-gray-900">{timeFiltered.length}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 搜索栏 + 刷新 */}
-        <div className="flex flex-wrap gap-3 mb-4 items-center">
-          <div className="relative flex-1 min-w-48 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="搜索名称或创建人"
-              value={search}
-              onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
-              className="pl-9 bg-white"
+          {/* 时间范围筛选 + 刷新（同 Tokens 监控样式） */}
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
+            <span className="text-gray-400 text-sm">—</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+              title="刷新列表"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
           </div>
-          {hasFilter && (
-            <Button variant="outline" size="sm" onClick={clearFilters}>
-              清除筛选
-            </Button>
-          )}
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
-            title="刷新列表"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
         </div>
 
-        {/* Table */}
+        {/* 表格卡片 */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+
+          {/* 表格上方工具栏：左侧搜索框，右侧统计 */}
+          <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4">
+            {/* 左：搜索框 */}
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="搜索名称或创建人"
+                value={search}
+                onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
+                className="pl-9 bg-gray-50 border-gray-200 h-9"
+              />
+            </div>
+            {/* 右：统计 icon + 文案 */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
+                <Bot className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-sm text-gray-500">
+                共计 <span className="text-lg font-bold text-gray-900">{timeFiltered.length}</span> 个 OpenClaw
+              </span>
+            </div>
+          </div>
+
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[40%]">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[40%]">创建人的成员 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[38%]">创建人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">创建时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">操作</th>
               </tr>
             </thead>

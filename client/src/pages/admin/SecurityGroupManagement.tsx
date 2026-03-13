@@ -160,10 +160,10 @@ export default function SecurityGroupManagement() {
       <div className="page-enter max-w-5xl">
         <div className="mb-8">
           <div className="mb-1">
-            <h1 className="text-2xl font-bold text-gray-900">安全组管理</h1>
+            <h1 className="text-2xl font-bold text-gray-900">网络管理</h1>
           </div>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            管理成员创建 OpenClaw 时所使用的云服务器安全组规则。企业可在此自行管控云服务器的入站与出站端口策略，精细化控制网络访问权限，保障企业数据安全。
+            提供全面的 AI Agent 资产盘点与全链路安全审计能力，实时发现恐意 Skills 与安全威股，并支持一键管控，为你的 AI 业务构建可信运行环境。
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function SecurityGroupManagement() {
         <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-600 leading-relaxed">
-            规则按从上到下的顺序匹配，命中第一条匹配规则后即停止。修改安全组规则后，对已运行中的 OpenClaw 云服务器立即生效，请谨慎操作。
+配置安全组规则以管控云服务器的入站与出站端口策略。修改规则后，对已运行中的 OpenClaw 云服务器立即生效，请谨慎操作。
           </p>
         </div>
 
@@ -187,6 +187,63 @@ export default function SecurityGroupManagement() {
             <RuleTable rules={outboundRules} type="outbound" />
           </TabsContent>
         </Tabs>
+
+        {/* 网络服务功能卡片 1x3 */}
+        <div className="mt-12 mb-8">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">网络服务能力</h2>
+          <div className="grid grid-cols-3 gap-6">
+            {/* 模型加速服务 */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                  <span className="text-xl">⚡</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    为 Openclaw 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 公网高效接入 */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #34C759, #00C7BE)" }}>
+                  <span className="text-xl">🌐</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">公网高效接入</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    提供高性能 NAT 网关与公网出口，保障 Openclaw 访问各类外部服务（如知识库、公共服务站点）时连接高效、稳定可靠。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 企业网络环境互通 */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #FF9500, #FF6B6B)" }}>
+                  <span className="text-xl">🔗</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    为 Openclaw 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 添加/编辑规则弹窗 */}

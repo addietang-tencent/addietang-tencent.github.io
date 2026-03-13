@@ -56,7 +56,7 @@ const NAV_GROUPS = [
     label: "云设备配置",
     items: [
       { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
-      { label: "安全组管理", path: "/admin/security-group", icon: ShieldCheck },
+      { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
     ],
   },
   {

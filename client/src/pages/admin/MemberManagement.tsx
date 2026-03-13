@@ -884,34 +884,35 @@ export default function MemberManagement() {
 
       {/* Reset Password Dialog */}
       <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>重置密码</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-500">
-              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
+          <div className="py-2 space-y-5">
+            <p className="text-sm text-gray-600 leading-relaxed">
+              确认重置成员 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
 
-            {/* 信息发送 */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                （选填）信息发送
+            {/* 信息发送 - 弱化视觉 */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-gray-400">（选填）信息发送</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="cursor-default inline-flex">
-                      <Info className="w-3.5 h-3.5 text-gray-400" />
+                      <Info className="w-3 h-3 text-gray-300" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
                 </Tooltip>
-              </Label>
+              </div>
               <Input
                 type="email"
                 placeholder="输入成员接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
-                className="bg-gray-50"
+                className="bg-gray-50 text-sm placeholder:text-gray-300 border-gray-200"
+                tabIndex={-1}
               />
             </div>
           </div>

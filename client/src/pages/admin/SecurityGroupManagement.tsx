@@ -203,7 +203,7 @@ export default function SecurityGroupManagement() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    为OpenClaw调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验。
+                    为OpenClaw调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
                   </p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function SecurityGroupManagement() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">公网极速接入</h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障OpenClaw各场景下极速、灵活、稳定的网络接入体验。
+                    提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障OpenClaw各场景下极速、灵活、稳定的网络接入体验
                   </p>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export default function SecurityGroupManagement() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    为OpenClaw平台与企业IDC之间提供大带宽、高速、安全的互通能力，保障云上云下协同。
+                    为OpenClaw平台与企业IDC之间提供大带宽、高速、安全的互通能力，保障云上云下协同
                   </p>
                 </div>
               </div>

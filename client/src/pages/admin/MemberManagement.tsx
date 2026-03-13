@@ -688,7 +688,7 @@ export default function MemberManagement() {
                       {member.role === "admin" ? "管理员" : "成员"}
                     </Badge>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 whitespace-nowrap">
                     {member.status === "active" ? (
                       <span className="badge-running text-xs">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />

@@ -77,7 +77,7 @@ export default function SecurityManagement() {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
                     style={{ background: card.color }}
                   >
                     <Icon className="w-6 h-6 text-white" />

@@ -1,11 +1,8 @@
 /**
  * SecurityManagement - 安全管理页面
  * Design: 「流动蓝图」Fluid Blueprint
- * - 页面标题 + 描述
- * - 2x2 卡片网格：资产盘点、深度审计、运行管控、Skills 扫描
- * - 每个卡片带线性 icon、标题、说明文字
+ * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
-
 import { Shield, FileText, Lock, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -47,18 +44,20 @@ const SECURITY_CARDS = [
 export default function SecurityManagement() {
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto">
+      <div className="page-enter max-w-5xl">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">安全管理</h1>
-            <span className="font-medium text-gray-500 bg-white border border-gray-300 px-2 py-0.5 rounded whitespace-nowrap" style={{ fontSize: '11px' }}>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900">安全管理</h1>
+            <span
+              className="font-medium text-gray-500 bg-white border border-gray-300 px-2 py-0.5 rounded whitespace-nowrap"
+              style={{ fontSize: "11px" }}
+            >
               即将开放
             </span>
           </div>
-          <p className="text-gray-600 leading-relaxed">
-            提供全面的 AI Agent
-            资产盘点与全链路安全审计能力，实时发现恶意 Skills
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            提供全面的 AI Agent 资产盘点与全链路安全审计能力，实时发现恶意 Skills
             与安全威胁，并支持一键管控，为你的 AI 业务构建可信运行环境。
           </p>
         </div>
@@ -70,18 +69,19 @@ export default function SecurityManagement() {
             return (
               <div
                 key={card.id}
-                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-sm transition-shadow duration-200"
+                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+                style={{
+                  boxShadow:
+                    "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                }}
               >
-                <div className="flex gap-4">
-                  {/* Icon */}
+                <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: card.gradient }}
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-bold text-gray-900 mb-1">
                       {card.title}

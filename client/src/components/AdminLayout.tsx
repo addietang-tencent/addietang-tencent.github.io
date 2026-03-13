@@ -197,7 +197,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                               <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
                               <span className="truncate">{item.label}</span>
                               {isComingSoon && (
-                                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1">
+                                <span className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1" style={{ fontSize: '10px' }}>
                                   即将开放
                                 </span>
                               )}

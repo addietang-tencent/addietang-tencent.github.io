@@ -52,7 +52,7 @@ export default function SecurityManagement() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-gray-900">安全管理</h1>
-            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded whitespace-nowrap">
+            <span className="font-medium text-gray-500 bg-white border border-gray-300 px-2 py-0.5 rounded whitespace-nowrap" style={{ fontSize: '11px' }}>
               即将开放
             </span>
           </div>

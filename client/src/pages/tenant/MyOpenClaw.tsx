@@ -39,7 +39,6 @@ import {
 import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
-const LAUNCH_FAILED_TIP = "创建失败，所以无法操作";
 
 // 实例状态配置：颜色分组参考云厂商规范
 // 绿色：正常运行 | 蓝色：过渡进行中 | 橙色：救援模式 | 灰色：已停止 | 红色：异常/失败
@@ -218,9 +217,7 @@ export default function MyOpenClaw() {
               {claws.map((claw) => {
                 // 灰色（已停止）和红色（失败）状态应用禁用样式
                 const isDisabled = ["stopped", "STOPPED", "SHUTDOWN", "LAUNCH_FAILED"].includes(claw.status);
-                const isLaunchFailed = claw.status === "LAUNCH_FAILED";
                 const isStopped = claw.status === "stopped" || claw.status === "STOPPED"; // 保持向后兼容
-                const disabledTip = isLaunchFailed ? LAUNCH_FAILED_TIP : DISABLED_TIP;
                 return (
                   <div key={claw.id}
                     className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"} ${isDisabled ? "opacity-60" : ""}`}
@@ -259,7 +256,7 @@ export default function MyOpenClaw() {
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent side="left" className="w-max text-xs">
-                                    {disabledTip}
+                                    {DISABLED_TIP}
                                   </TooltipContent>
                                 </Tooltip>
                               ) : (
@@ -280,7 +277,7 @@ export default function MyOpenClaw() {
                                     </div>
                                   </TooltipTrigger>
                                   <TooltipContent side="left" className="w-max text-xs">
-                                    {disabledTip}
+                                    {DISABLED_TIP}
                                   </TooltipContent>
                                 </Tooltip>
                               ) : (
@@ -327,7 +324,7 @@ export default function MyOpenClaw() {
                             </div>
                           </TooltipTrigger>
                           <TooltipContent className="w-max text-xs">
-                            {disabledTip}
+                            {DISABLED_TIP}
                           </TooltipContent>
                         </Tooltip>
                       ) : (

@@ -215,12 +215,14 @@ export default function MyOpenClaw() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {claws.map((claw) => {
-                const isStopped = claw.status === "stopped";
+                // 灰色（已停止）和红色（失败）状态应用禁用样式
+                const isDisabled = ["stopped", "STOPPED", "SHUTDOWN", "LAUNCH_FAILED"].includes(claw.status);
+                const isStopped = claw.status === "stopped" || claw.status === "STOPPED"; // 保持向后兼容
                 return (
                   <div key={claw.id}
-                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isStopped ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
+                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"} ${isDisabled ? "opacity-60" : ""}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-                    onClick={() => { if (!isStopped) navigate(`/openclaw/${claw.id}`); }}
+                    onClick={() => { if (!isDisabled) navigate(`/openclaw/${claw.id}`); }}
                   >
                     {/* Card Header */}
                     <div className="p-5">
@@ -242,8 +244,8 @@ export default function MyOpenClaw() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-52">
-                              {/* 重启 - 停用时禁用 */}
-                              {isStopped ? (
+                              {/* 重启 - 禁用时禁用 */}
+                              {isDisabled ? (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div>
@@ -263,8 +265,8 @@ export default function MyOpenClaw() {
                                   重启
                                 </DropdownMenuItem>
                               )}
-                              {/* 更新版本 - 停用时禁用 */}
-                              {isStopped ? (
+                              {/* 更新版本 - 禁用时禁用 */}
+                              {isDisabled ? (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div>
@@ -298,7 +300,7 @@ export default function MyOpenClaw() {
                         </div>
                       </div>
                       {/* 只展示名称和创建时间 */}
-                      <h3 className={`font-semibold text-base mb-1 transition-colors ${isStopped ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
+                      <h3 className={`font-semibold text-base mb-1 transition-colors ${isDisabled ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
                       <p className="text-xs text-gray-400">创建于 {claw.createdAt}</p>
@@ -306,7 +308,7 @@ export default function MyOpenClaw() {
 
                     {/* Card Actions - 详细配置按钮（outline 浅色样式） */}
                     <div className="px-5 pb-4 border-t border-gray-50 pt-3">
-                      {isStopped ? (
+                      {isDisabled ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="w-full">

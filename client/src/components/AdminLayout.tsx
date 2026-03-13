@@ -25,6 +25,7 @@ import {
   Shield,
   ExternalLink,
   Puzzle,
+  Gauge,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -64,6 +65,7 @@ const NAV_GROUPS = [
     items: [
       { label: "OpenClaw 监控", path: "/admin/openclaw-monitor", icon: Activity },
       { label: "Tokens 监控", path: "/admin/tokens-monitor", icon: BarChart3 },
+      { label: "运维观测", path: "/admin/ops-observation", icon: Gauge },
     ],
   },
   {

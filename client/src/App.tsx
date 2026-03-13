@@ -29,6 +29,7 @@ import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
 import SecurityManagement from "./pages/admin/SecurityManagement";
 import SessionManagement from "./pages/admin/SessionManagement";
+import OpsObservation from "./pages/admin/OpsObservation";
 
 function Router() {
   return (
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/admin/tokens-monitor" component={TokensMonitor} />
       <Route path="/admin/security-management" component={SecurityManagement} />
       <Route path="/admin/session-management" component={SessionManagement} />
+      <Route path="/admin/ops-observation" component={OpsObservation} />
       <Route path="/admin/audit-log" component={AuditLog} />
 
       <Route path="/404" component={NotFound} />

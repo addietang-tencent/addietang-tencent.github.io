@@ -158,27 +158,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       let iconClass = "";
                       let borderStyle = {};
 
+                      // 始终保留 2px 左边框占位（transparent），active 时显示颜色，避免宽度变化导致抖动
+                      const borderColor = isComingSoon
+                        ? (isActive ? "#D1D5DB" : "transparent")
+                        : (isActive ? "#007AFF" : "transparent");
+                      borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: "calc(0.75rem - 2px)" };
+
                       if (isComingSoon) {
-                        // "即将开放"项的样式
                         if (isActive) {
-                          // Active状态：浅灰色背景 + 灰色边框
                           bgClass = "bg-gray-100";
                           textClass = "text-gray-600";
                           iconClass = "text-gray-400";
-                          borderStyle = { borderLeft: "2px solid #D1D5DB", paddingLeft: "calc(0.75rem - 2px)" };
                         } else {
-                          // 未active状态：无背景色，颜色与普通菜单项一致
                           bgClass = "hover:bg-gray-50";
                           textClass = "text-gray-600 hover:text-gray-900";
                           iconClass = "text-gray-400";
                         }
                       } else {
-                        // 普通项的样式
                         if (isActive) {
                           bgClass = "bg-blue-50";
                           textClass = "text-blue-600";
                           iconClass = "text-blue-600";
-                          borderStyle = { borderLeft: "2px solid #007AFF", paddingLeft: "calc(0.75rem - 2px)" };
                         } else {
                           bgClass = "hover:bg-gray-50";
                           textClass = "text-gray-600 hover:text-gray-900";

@@ -81,22 +81,28 @@ function TokenLimitInput({
 }) {
   const isUnlimited = value === TOKEN_UNLIMITED;
   return (
-    <div className="relative">
-      <Input
-        type={isUnlimited ? "text" : "number"}
-        value={isUnlimited ? "" : value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        disabled={isUnlimited}
-        placeholder={isUnlimited ? "无限制" : ""}
-        className={`bg-gray-50 pr-16 ${isUnlimited ? "text-gray-400 placeholder:text-gray-400" : ""}`}
-      />
-      <button
-        type="button"
-        onClick={() => onChange(isUnlimited ? 50000 : TOKEN_UNLIMITED)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-500 hover:text-blue-700 transition-colors font-medium"
+    <div className="space-y-2">
+      <Select
+        value={isUnlimited ? "unlimited" : "custom"}
+        onValueChange={(v) => onChange(v === "unlimited" ? TOKEN_UNLIMITED : 50000)}
       >
-        {isUnlimited ? "填写数量" : "无限制"}
-      </button>
+        <SelectTrigger className="bg-gray-50 w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="custom">自定义数量</SelectItem>
+          <SelectItem value="unlimited">无限制</SelectItem>
+        </SelectContent>
+      </Select>
+      {!isUnlimited && (
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="bg-gray-50"
+          placeholder="请输入数量"
+        />
+      )}
     </div>
   );
 }

@@ -40,27 +40,48 @@ import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 
+// 实例状态配置：颜色分组参考云厂商规范
+// 绿色：正常运行 | 蓝色：过渡进行中 | 橙色：救援模式 | 灰色：已停止 | 红色：异常/失败
+const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; bg: string; border: string }> = {
+  // 绿色 - 正常运行
+  RUNNING:                    { label: "运行中",       dot: "bg-green-500",  text: "text-green-700",  bg: "bg-green-50",  border: "border-green-200" },
+  running:                    { label: "运行中",       dot: "bg-green-500",  text: "text-green-700",  bg: "bg-green-50",  border: "border-green-200" },
+  // 蓝色 - 过渡进行中
+  PENDING:                    { label: "创建中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  STARTING:                   { label: "开机中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  STOPPING:                   { label: "关机中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  REBOOTING:                  { label: "重启中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  TERMINATING:                { label: "销毁中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  ENTER_SERVICE_LIVE_MIGRATE: { label: "进入在线迁移", dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  SERVICE_LIVE_MIGRATE:       { label: "在线迁移中",   dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  EXIT_SERVICE_LIVE_MIGRATE:  { label: "退出在线迁移", dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  pending:                    { label: "创建中",       dot: "bg-blue-500",   text: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200" },
+  // 橙色 - 救援模式
+  ENTER_RESCUE_MODE:          { label: "进入救援模式", dot: "bg-orange-500", text: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200" },
+  RESCUE_MODE:                { label: "救援模式中",   dot: "bg-orange-500", text: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200" },
+  EXIT_RESCUE_MODE:           { label: "退出救援模式", dot: "bg-orange-500", text: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200" },
+  // 灰色 - 已停止
+  STOPPED:                    { label: "已关机",       dot: "bg-gray-400",   text: "text-gray-600",   bg: "bg-gray-100",  border: "border-gray-200" },
+  SHUTDOWN:                   { label: "停止待销毁",   dot: "bg-gray-400",   text: "text-gray-600",   bg: "bg-gray-100",  border: "border-gray-200" },
+  stopped:                    { label: "已停用",       dot: "bg-gray-400",   text: "text-gray-600",   bg: "bg-gray-100",  border: "border-gray-200" },
+  // 红色 - 异常/失败
+  LAUNCH_FAILED:              { label: "创建失败",     dot: "bg-red-500",    text: "text-red-700",    bg: "bg-red-50",    border: "border-red-200" },
+};
+
 const StatusBadge = ({ status }: { status: string }) => {
-  if (status === "running") {
+  const cfg = STATUS_CONFIG[status];
+  if (!cfg) {
     return (
-      <span className="badge-running">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-        运行中
-      </span>
-    );
-  }
-  if (status === "stopped") {
-    return (
-      <span className="badge-stopped">
-        <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-        已停用
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 border border-gray-200 text-gray-600">
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
+        {status}
       </span>
     );
   }
   return (
-    <span className="badge-pending">
-      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block" />
-      启动中
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg} border ${cfg.border} ${cfg.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} inline-block`} />
+      {cfg.label}
     </span>
   );
 };

@@ -168,9 +168,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           iconClass = "text-gray-400";
                           borderStyle = { borderLeft: "2px solid #D1D5DB", paddingLeft: "calc(0.75rem - 2px)" };
                         } else {
-                          // 未active状态：无背景色
+                          // 未active状态：无背景色，颜色与普通菜单项一致
                           bgClass = "hover:bg-gray-50";
-                          textClass = "text-gray-500";
+                          textClass = "text-gray-600 hover:text-gray-900";
                           iconClass = "text-gray-400";
                         }
                       } else {

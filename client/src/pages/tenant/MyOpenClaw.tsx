@@ -99,6 +99,17 @@ export default function MyOpenClaw() {
   // 二次确认弹窗
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ name: string } | null>(null);
+  const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
+
+  const handleRefreshStatus = (e: React.MouseEvent, id: string, name: string) => {
+    e.stopPropagation();
+    if (refreshingIds.has(id)) return;
+    setRefreshingIds(prev => { const next = new Set(prev); next.add(id); return next; });
+    setTimeout(() => {
+      setRefreshingIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+      toast.success(`「${name}」状态已刷新`);
+    }, 1500);
+  };
 
   const handleCreate = () => {
     if (!newName.trim()) {
@@ -235,6 +246,13 @@ export default function MyOpenClaw() {
                           🦞
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <button
+                            className="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            onClick={(e) => handleRefreshStatus(e, claw.id, claw.name)}
+                            title="刷新状态"
+                          >
+                            <RefreshCw className={`w-3.5 h-3.5 transition-transform ${refreshingIds.has(claw.id) ? 'animate-spin' : ''}`} />
+                          </button>
                           <StatusBadge status={claw.status} />
                           {/* 三个点菜单 */}
                           <DropdownMenu>

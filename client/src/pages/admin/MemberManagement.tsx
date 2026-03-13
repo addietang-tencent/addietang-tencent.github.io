@@ -797,18 +797,17 @@ export default function MemberManagement() {
 
       {/* Reset Password Dialog */}
       <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>重置密码</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-500">
-              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
+            <p className="text-base text-gray-800">
+              确认重置成员 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
 
-            {/* 信息发送 */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
+            <div className="border-t border-gray-100 pt-4 space-y-2">
+              <Label className="flex items-center gap-1.5 text-xs text-gray-400">
                 （选填）信息发送
                 <Tooltip>
                   <TooltipTrigger asChild>

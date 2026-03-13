@@ -35,7 +35,7 @@ const SESSION_CARDS = [
       "直观展示 QQ、企微等各渠道会话占比与模型使用偏好，洞察团队使用习惯",
     icon: PieChart,
     gradient: "linear-gradient(135deg, #34C759, #00C7BE)",
-    span: "col-span-2",
+    span: "col-span-1",
   },
 ];
 

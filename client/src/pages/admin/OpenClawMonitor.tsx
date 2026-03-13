@@ -3,7 +3,6 @@
  * 布局：标题行右上角时间筛选器+刷新 → 表格（上方左侧搜索框、右侧统计）
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -70,7 +69,7 @@ export default function OpenClawMonitor() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter">
         {/* Header：标题左，时间筛选器+刷新右 */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
@@ -246,6 +245,6 @@ export default function OpenClawMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

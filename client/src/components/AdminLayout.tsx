@@ -5,7 +5,7 @@
  * - 左侧固定导航栏 (256px)，白色背景
  * - 主色 #007AFF，导航分组
  */
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { SITE_CONFIG } from "@/lib/mockData";
 import {
@@ -91,17 +91,6 @@ const CURRENT_ADMIN = "alice@acompany.com";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-  const navRef = useRef<HTMLElement>(null);
-  const savedScrollTop = useRef<number>(0);
-
-  // 路由变化时恢复侧边栏滚动位置
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    // 先恢复之前保存的滚动位置
-    nav.scrollTop = savedScrollTop.current;
-  }, [location]);
-
   const toggleGroup = (label: string) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
@@ -140,11 +129,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Navigation */}
-        <nav
-          ref={navRef}
-          className="flex-1 overflow-y-auto py-4 px-3"
-          onScroll={(e) => { savedScrollTop.current = (e.currentTarget as HTMLElement).scrollTop; }}
-        >
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
           {NAV_GROUPS.map((group) => {
             const isCollapsed = collapsedGroups.has(group.label);
             return (

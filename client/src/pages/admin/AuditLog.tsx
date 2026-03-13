@@ -2,7 +2,6 @@
  * AuditLog - 管控端操作审计页
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -216,7 +215,7 @@ export default function AuditLog() {
   const handleDateTo = (v: string) => { setDateTo(v); setPage(1); };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">操作记录</h1>
@@ -376,6 +375,6 @@ export default function AuditLog() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

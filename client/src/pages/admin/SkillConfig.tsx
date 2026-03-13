@@ -2,7 +2,6 @@
  * SkillConfig - 管控端技能配置页
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -34,7 +33,6 @@ export default function SkillConfig() {
   };
 
   return (
-    <AdminLayout>
       <div className="page-enter max-w-3xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
@@ -105,6 +103,5 @@ export default function SkillConfig() {
           </div>
         </div>
       </div>
-    </AdminLayout>
   );
 }

@@ -2,7 +2,6 @@
  * DocManagement - 管控端文档管理页
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +39,7 @@ export default function DocManagement() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -175,6 +174,6 @@ export default function DocManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

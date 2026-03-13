@@ -4,7 +4,6 @@
  * 企业可自行管控入站/出站端口规则
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,7 +155,7 @@ export default function SecurityGroupManagement() {
   );
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter max-w-5xl">
         <div className="mb-8">
           <div className="mb-1">
@@ -317,6 +316,6 @@ export default function SecurityGroupManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

@@ -17,6 +17,7 @@ import HelpDocs from "./pages/tenant/HelpDocs";
 import ResetPassword from "./pages/tenant/ResetPassword";
 
 // Admin
+import AdminLayout from "./components/AdminLayout";
 import BasicInfo from "./pages/admin/BasicInfo";
 import MemberManagement from "./pages/admin/MemberManagement";
 import ModelConfig from "./pages/admin/ModelConfig";
@@ -44,20 +45,28 @@ function Router() {
       <Route path="/help-docs" component={HelpDocs} />
       <Route path="/reset-password" component={ResetPassword} />
 
-      {/* Admin Routes */}
-      <Route path="/admin/basic-info" component={BasicInfo} />
-      <Route path="/admin/members" component={MemberManagement} />
-      <Route path="/admin/model-config" component={ModelConfig} />
-      <Route path="/admin/channel-config" component={ChannelConfig} />
-      <Route path="/admin/skill-config" component={SkillConfig} />
-      <Route path="/admin/image-management" component={ImageManagement} />
-      <Route path="/admin/security-group" component={SecurityGroupManagement} />
-      <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
-      <Route path="/admin/tokens-monitor" component={TokensMonitor} />
-      <Route path="/admin/security-management" component={SecurityManagement} />
-      <Route path="/admin/session-management" component={SessionManagement} />
-      <Route path="/admin/ops-observation" component={OpsObservation} />
-      <Route path="/admin/audit-log" component={AuditLog} />
+      {/* Admin Routes - 共享同一个 AdminLayout 实例，避免路由切换时侧边栏重建 */}
+      <Route path="/admin/:rest*">
+        {(params) => (
+          <AdminLayout>
+            <Switch>
+              <Route path="/admin/basic-info" component={BasicInfo} />
+              <Route path="/admin/members" component={MemberManagement} />
+              <Route path="/admin/model-config" component={ModelConfig} />
+              <Route path="/admin/channel-config" component={ChannelConfig} />
+              <Route path="/admin/skill-config" component={SkillConfig} />
+              <Route path="/admin/image-management" component={ImageManagement} />
+              <Route path="/admin/security-group" component={SecurityGroupManagement} />
+              <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
+              <Route path="/admin/tokens-monitor" component={TokensMonitor} />
+              <Route path="/admin/security-management" component={SecurityManagement} />
+              <Route path="/admin/session-management" component={SessionManagement} />
+              <Route path="/admin/ops-observation" component={OpsObservation} />
+              <Route path="/admin/audit-log" component={AuditLog} />
+            </Switch>
+          </AdminLayout>
+        )}
+      </Route>
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

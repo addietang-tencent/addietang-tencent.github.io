@@ -2,7 +2,6 @@
  * ChannelConfig - 管控端通道配置页
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { MessageSquare } from "lucide-react";
@@ -20,7 +19,6 @@ export default function ChannelConfig() {
   });
 
   return (
-    <AdminLayout>
       <div className="page-enter max-w-3xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
@@ -64,6 +62,5 @@ export default function ChannelConfig() {
           </div>
         </div>
       </div>
-    </AdminLayout>
   );
 }

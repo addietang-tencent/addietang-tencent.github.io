@@ -4,7 +4,6 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { BarChart3, GitBranch, PieChart } from "lucide-react";
-import AdminLayout from "@/components/AdminLayout";
 
 const SESSION_CARDS = [
   {
@@ -35,7 +34,6 @@ const SESSION_CARDS = [
 
 export default function SessionManagement() {
   return (
-    <AdminLayout>
       <div className="page-enter max-w-5xl">
         {/* Header */}
         <div className="mb-8">
@@ -87,6 +85,5 @@ export default function SessionManagement() {
           })}
         </div>
       </div>
-    </AdminLayout>
   );
 }

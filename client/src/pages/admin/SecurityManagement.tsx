@@ -4,7 +4,6 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { Shield, FileText, Lock, AlertCircle } from "lucide-react";
-import AdminLayout from "@/components/AdminLayout";
 
 const SECURITY_CARDS = [
   {
@@ -43,7 +42,6 @@ const SECURITY_CARDS = [
 
 export default function SecurityManagement() {
   return (
-    <AdminLayout>
       <div className="page-enter max-w-5xl">
         {/* Header */}
         <div className="mb-8">
@@ -96,6 +94,5 @@ export default function SecurityManagement() {
           })}
         </div>
       </div>
-    </AdminLayout>
   );
 }

@@ -3,7 +3,6 @@
  * 设计风格：与整体管控台保持一致，浅色卡片 + 蓝紫渐变强调色
  */
 import { useState, useMemo } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import {
@@ -256,7 +255,6 @@ export default function TokensMonitor() {
   const modelPaged = modelStats.slice((modelPage - 1) * PAGE_SIZE, modelPage * PAGE_SIZE);
 
   return (
-    <AdminLayout>
       <div className="page-enter">
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
@@ -435,6 +433,5 @@ export default function TokensMonitor() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
   );
 }

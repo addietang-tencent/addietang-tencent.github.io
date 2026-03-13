@@ -3,7 +3,6 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,7 +195,7 @@ export default function ModelConfig() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
@@ -517,6 +516,6 @@ export default function ModelConfig() {
           toast.success("配额已更新");
         }}
       />
-    </AdminLayout>
+    </>
   );
 }

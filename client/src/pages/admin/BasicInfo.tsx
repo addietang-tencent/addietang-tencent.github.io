@@ -3,7 +3,6 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side (浅灰背景)
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +25,6 @@ export default function BasicInfo() {
   };
 
   return (
-    <AdminLayout>
       <div className="max-w-3xl page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">基础信息配置</h1>
@@ -130,6 +128,5 @@ export default function BasicInfo() {
           </div>
         </div>
       </div>
-    </AdminLayout>
   );
 }

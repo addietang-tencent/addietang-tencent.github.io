@@ -3,7 +3,6 @@
  * 包含：镜像管理 Tab + 安全组管理 Tab
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,7 +87,7 @@ export default function ServerManagement() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">云服务器管理</h1>
@@ -375,6 +374,6 @@ export default function ServerManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

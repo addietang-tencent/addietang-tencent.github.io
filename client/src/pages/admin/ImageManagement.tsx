@@ -4,7 +4,6 @@
  * 企业可使用自定义镜像，并随时导入最新版本
  */
 import { useState } from "react";
-import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -73,7 +72,7 @@ export default function ImageManagement() {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="page-enter max-w-5xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">镜像管理</h1>
@@ -270,6 +269,6 @@ export default function ImageManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </>
   );
 }

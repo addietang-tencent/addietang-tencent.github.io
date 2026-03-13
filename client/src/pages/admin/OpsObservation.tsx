@@ -3,7 +3,6 @@
  * Design: 「流动蓝图」Fluid Blueprint
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
-import AdminLayout from "@/components/AdminLayout";
 import { Activity, Heart, AlertCircle } from "lucide-react";
 
 const OPS_CARDS = [
@@ -35,7 +34,6 @@ const OPS_CARDS = [
 
 export default function OpsObservation() {
   return (
-    <AdminLayout>
       <div className="page-enter max-w-5xl">
         {/* Header */}
         <div className="mb-8">
@@ -87,6 +85,5 @@ export default function OpsObservation() {
           })}
         </div>
       </div>
-    </AdminLayout>
   );
 }

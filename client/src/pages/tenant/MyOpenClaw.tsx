@@ -34,7 +34,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X
+  Zap, Bot, X, RotateCcw
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
 
@@ -246,6 +246,7 @@ export default function MyOpenClaw() {
                           🦞
                         </div>
                         <div className="flex items-center gap-1.5">
+                          <StatusBadge status={claw.status} />
                           <button
                             className="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                             onClick={(e) => handleRefreshStatus(e, claw.id, claw.name)}
@@ -253,7 +254,6 @@ export default function MyOpenClaw() {
                           >
                             <RefreshCw className={`w-3.5 h-3.5 transition-transform ${refreshingIds.has(claw.id) ? 'animate-spin' : ''}`} />
                           </button>
-                          <StatusBadge status={claw.status} />
                           {/* 三个点菜单 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -271,7 +271,7 @@ export default function MyOpenClaw() {
                                   <TooltipTrigger asChild>
                                     <div>
                                       <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                        <RefreshCw className="w-4 h-4 mr-2 text-gray-400" />
+                                        <RotateCcw className="w-4 h-4 mr-2 text-gray-400" />
                                         重启
                                       </DropdownMenuItem>
                                     </div>
@@ -282,7 +282,7 @@ export default function MyOpenClaw() {
                                 </Tooltip>
                               ) : (
                                 <DropdownMenuItem onClick={() => handleRestart(claw.name)}>
-                                  <RefreshCw className="w-4 h-4 mr-2 text-gray-500" />
+                                  <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
                                   重启
                                 </DropdownMenuItem>
                               )}

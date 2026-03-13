@@ -223,6 +223,17 @@ export default function OpenClawDetail() {
   ]);
   // 已接入通道展开状态（手风琴：同一时间只展开一个，用 index | null）
   const [expandedChannelIdx, setExpandedChannelIdx] = useState<number | null>(null);
+  // 飞书 pairing code
+  const [feishuPairingCode, setFeishuPairingCode] = useState("");
+
+  const handleFeishuPairing = () => {
+    if (!feishuPairingCode.trim()) {
+      toast.error("请输入 pairing code");
+      return;
+    }
+    toast.success("匹配成功");
+    setFeishuPairingCode("");
+  };
 
   const toggleExpandChannel = (idx: number) => {
     setExpandedChannelIdx(prev => prev === idx ? null : idx);
@@ -384,6 +395,24 @@ export default function OpenClawDetail() {
             </div>
           );
         })}
+        {ch.channelValue === "feishu" && (
+          <div className="flex items-center gap-2 pt-1">
+            <Input
+              placeholder="（如需）请输入 pairing code"
+              value={feishuPairingCode}
+              onChange={(e) => setFeishuPairingCode(e.target.value)}
+              className="bg-gray-50 border-gray-200 text-sm h-8"
+              onKeyDown={(e) => e.key === "Enter" && handleFeishuPairing()}
+            />
+            <Button
+              size="sm"
+              className="shrink-0 h-8 px-3 text-sm"
+              onClick={handleFeishuPairing}
+            >
+              匹配
+            </Button>
+          </div>
+        )}
       </div>
     );
   };

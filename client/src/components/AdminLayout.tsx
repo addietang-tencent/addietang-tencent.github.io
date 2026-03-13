@@ -162,14 +162,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       if (isComingSoon) {
                         // "即将开放"项的样式
                         if (isActive) {
-                          // Active状态：浅橙色背景 + 橙色边框
-                          bgClass = "bg-yellow-50";
-                          textClass = "text-gray-500";
+                          // Active状态：浅灰色背景 + 灰色边框
+                          bgClass = "bg-gray-100";
+                          textClass = "text-gray-600";
                           iconClass = "text-gray-400";
-                          borderStyle = { borderLeft: "2px solid #FCD34D", paddingLeft: "calc(0.75rem - 2px)" };
+                          borderStyle = { borderLeft: "2px solid #D1D5DB", paddingLeft: "calc(0.75rem - 2px)" };
                         } else {
-                          // 未active状态：浅灰色背景
-                          bgClass = "bg-gray-50 hover:bg-gray-100";
+                          // 未active状态：无背景色
+                          bgClass = "hover:bg-gray-50";
                           textClass = "text-gray-500";
                           iconClass = "text-gray-400";
                         }
@@ -196,12 +196,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <div className="flex items-center gap-2.5 flex-1 min-w-0">
                               <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
                               <span className="truncate">{item.label}</span>
+                              {isComingSoon && (
+                                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1">
+                                  即将开放
+                                </span>
+                              )}
                             </div>
-                            {isComingSoon && (
-                              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-2">
-                                即将开放
-                              </span>
-                            )}
                           </div>
                         </Link>
                       );

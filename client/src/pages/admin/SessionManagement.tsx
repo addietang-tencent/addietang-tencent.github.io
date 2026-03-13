@@ -45,7 +45,12 @@ export default function SessionManagement() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">会话管理</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900">会话管理</h1>
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded whitespace-nowrap">
+              即将开放
+            </span>
+          </div>
           <p className="text-gray-600 leading-relaxed">
             让每一轮对话，都可追溯、可分析、可优化
           </p>

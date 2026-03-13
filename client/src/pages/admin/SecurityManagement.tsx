@@ -50,7 +50,12 @@ export default function SecurityManagement() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">安全管理</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900">安全管理</h1>
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded whitespace-nowrap">
+              即将开放
+            </span>
+          </div>
           <p className="text-gray-600 leading-relaxed">
             提供全面的 AI Agent
             资产盘点与全链路安全审计能力，实时发现恶意 Skills

@@ -190,7 +190,7 @@ export default function SecurityGroupManagement() {
 
         {/* 网络服务功能卡片 1x3 */}
         <div className="mt-12 mb-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">网络服务能力</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">敬请期待</h2>
           <div className="grid grid-cols-3 gap-6">
             {/* 模型加速服务 */}
             <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"

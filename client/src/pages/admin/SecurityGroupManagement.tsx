@@ -16,7 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link } from "lucide-react";
 
 const DEFAULT_INBOUND = [
   { id: "1", source: "0.0.0.0/0", protocol: "ICMP", port: "ALL", policy: "允许", remark: "放通 Ping 服务" },
@@ -198,7 +198,7 @@ export default function SecurityGroupManagement() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                  <span className="text-xl">⚡</span>
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
@@ -215,7 +215,7 @@ export default function SecurityGroupManagement() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: "linear-gradient(135deg, #34C759, #00C7BE)" }}>
-                  <span className="text-xl">🌐</span>
+                  <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">公网高效接入</h3>
@@ -232,7 +232,7 @@ export default function SecurityGroupManagement() {
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: "linear-gradient(135deg, #FF9500, #FF6B6B)" }}>
-                  <span className="text-xl">🔗</span>
+                  <Link className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>

@@ -69,6 +69,38 @@ const emptyResetForm = {
   notificationEmail: "",
 };
 
+// ─── TokenLimit 输入框：默认填数字，右侧「无限制」文字按钮切换 ─────────────────
+const TOKEN_UNLIMITED = -1;
+
+function TokenLimitInput({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const isUnlimited = value === TOKEN_UNLIMITED;
+  return (
+    <div className="relative">
+      <Input
+        type={isUnlimited ? "text" : "number"}
+        value={isUnlimited ? "" : value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        disabled={isUnlimited}
+        placeholder={isUnlimited ? "无限制" : ""}
+        className={`bg-gray-50 pr-16 ${isUnlimited ? "text-gray-400 placeholder:text-gray-400" : ""}`}
+      />
+      <button
+        type="button"
+        onClick={() => onChange(isUnlimited ? 50000 : TOKEN_UNLIMITED)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-500 hover:text-blue-700 transition-colors font-medium"
+      >
+        {isUnlimited ? "填写数量" : "无限制"}
+      </button>
+    </div>
+  );
+}
+
 // ─── 添加成员表单（无密码） ───────────────────────────────────────────────────
 function AddMemberFormFields({
   values,
@@ -180,11 +212,9 @@ function AddMemberFormFields({
                 <TooltipContent>单个企业成员每日最多可消耗的 Tokens 数量</TooltipContent>
               </Tooltip>
             </Label>
-            <Input
-              type="number"
+            <TokenLimitInput
               value={values.tokenLimit}
-              onChange={(e) => onChange({ ...values, tokenLimit: Number(e.target.value) })}
-              className="bg-gray-50"
+              onChange={(v) => onChange({ ...values, tokenLimit: v })}
             />
           </div>
         </div>
@@ -284,11 +314,9 @@ function EditMemberFormFields({
                 <TooltipContent>单个企业成员每日最多可消耗的 Tokens 数量</TooltipContent>
               </Tooltip>
             </Label>
-            <Input
-              type="number"
+            <TokenLimitInput
               value={values.tokenLimit}
-              onChange={(e) => onChange({ ...values, tokenLimit: Number(e.target.value) })}
-              className="bg-gray-50"
+              onChange={(v) => onChange({ ...values, tokenLimit: v })}
             />
           </div>
         </div>
@@ -797,17 +825,18 @@ export default function MemberManagement() {
 
       {/* Reset Password Dialog */}
       <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); } }}>
-        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>重置密码</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-base text-gray-800">
-              确认重置成员 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
+            <p className="text-sm text-gray-500">
+              确认重置成员 <span className="font-medium text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
 
-            <div className="border-t border-gray-100 pt-4 space-y-2">
-              <Label className="flex items-center gap-1.5 text-xs text-gray-400">
+            {/* 信息发送 */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
                 （选填）信息发送
                 <Tooltip>
                   <TooltipTrigger asChild>

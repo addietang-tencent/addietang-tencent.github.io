@@ -196,8 +196,8 @@ export default function SecurityGroupManagement() {
             <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#007AFF" }}>
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -213,8 +213,8 @@ export default function SecurityGroupManagement() {
             <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #34C759, #00C7BE)" }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#34C759" }}>
                   <Globe className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -230,8 +230,8 @@ export default function SecurityGroupManagement() {
             <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #FF9500, #FF6B6B)" }}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#FF9500" }}>
                   <Link className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">

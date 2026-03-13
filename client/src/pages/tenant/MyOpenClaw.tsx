@@ -78,7 +78,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   const textColor = cfg?.textColor ?? "#4b5563";
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0"
       style={{ background: bgColor, color: textColor }}
     >
       <span
@@ -245,7 +245,7 @@ export default function MyOpenClaw() {
                           style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
                           🦞
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-shrink-0 flex-nowrap">
                           <StatusBadge status={claw.status} />
                           <button
                             className="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"

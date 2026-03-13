@@ -13,7 +13,7 @@ const OPS_CARDS = [
     description:
       "采集消息处理速率、队列等待时间、执行耗时等全链路指标，结合日志与子系统维度快速定位瓶颈与异常",
     icon: Activity,
-    gradient: "linear-gradient(135deg, #007AFF, #5856D6)",
+    color: "#007AFF",
   },
   {
     id: "health",
@@ -21,7 +21,7 @@ const OPS_CARDS = [
     description:
       "一屏聚合处理量、错误率、工具调用成功率、卡死会话等核心指标，全方位掌握系统运行状态",
     icon: Heart,
-    gradient: "linear-gradient(135deg, #FF2D55, #FF6B6B)",
+    color: "#FF2D55",
   },
   {
     id: "alert",
@@ -29,7 +29,7 @@ const OPS_CARDS = [
     description:
       "内置成本突增、接口异常等多维告警规则，异常即时推送至QQ、企微等渠道，第一时间触达",
     icon: AlertCircle,
-    gradient: "linear-gradient(135deg, #FF9500, #FF6B6B)",
+    color: "#FF9500",
   },
 ];
 
@@ -68,8 +68,8 @@ export default function OpsObservation() {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: card.gradient }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: card.color }}
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>

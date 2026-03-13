@@ -13,15 +13,15 @@ const SESSION_CARDS = [
     description:
       "一览会话数量、平均轮次、tool/skill 调用情况、渠道数量等；快速了解员工使用活跃度",
     icon: BarChart3,
-    gradient: "linear-gradient(135deg, #007AFF, #5856D6)",
+    color: "#007AFF",
   },
   {
     id: "session-tracing",
     title: "会话链还原",
     description:
-      "支持「会话 → 消息 → 详情」三级下钻，拆解单次会话的成本构成与性能瓶颈，AI 定制优化建议",
+      "支持「会话 → 消息 → 详情」三级下钒，拆解单次会话的成本构成与性能瓶颈，AI 定制优化建议",
     icon: GitBranch,
-    gradient: "linear-gradient(135deg, #AF52DE, #FF2D55)",
+    color: "#AF52DE",
   },
   {
     id: "channel-model-distribution",
@@ -29,7 +29,7 @@ const SESSION_CARDS = [
     description:
       "直观展示 QQ、企微等各渠道会话占比与模型使用偏好，洞察团队使用习惯",
     icon: PieChart,
-    gradient: "linear-gradient(135deg, #34C759, #00C7BE)",
+    color: "#34C759",
   },
 ];
 
@@ -68,8 +68,8 @@ export default function SessionManagement() {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: card.gradient }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: card.color }}
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>

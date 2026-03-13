@@ -11,25 +11,25 @@ const SECURITY_CARDS = [
     id: "asset-visibility",
     title: "资产盘点与风险可视",
     description:
-      "自动发现并清点企业内所有 AI Agent 资产，实时侦测大模型调用与敏感凭证泄露，实现安全风险动态可视。",
+      "自动发现并清点企业内所有 AI Agent 资产，实时侵测大模型调用与敏感凭证泄露，实现安全风险动态可视。",
     icon: Shield,
-    gradient: "linear-gradient(135deg, #007AFF, #5856D6)",
+    color: "#007AFF",
   },
   {
     id: "audit-tracing",
-    title: "深度审计与全链路溯源",
+    title: "深度审计与全链路源",
     description:
-      "完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作溯源能力。",
+      "完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力。",
     icon: FileText,
-    gradient: "linear-gradient(135deg, #AF52DE, #FF2D55)",
+    color: "#AF52DE",
   },
   {
     id: "runtime-control",
     title: "运行管控与环境隔离",
     description:
-      "通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密钥，实现主机行为与内网环境的主动隔离防护。",
+      "通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密鑰，实现主机行为与内网环境的主动隔离防护。",
     icon: Lock,
-    gradient: "linear-gradient(135deg, #34C759, #00C7BE)",
+    color: "#34C759",
   },
   {
     id: "skills-scanning",
@@ -37,7 +37,7 @@ const SECURITY_CARDS = [
     description:
       "对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信。",
     icon: AlertCircle,
-    gradient: "linear-gradient(135deg, #FF9500, #FF6B6B)",
+    color: "#FF9500",
   },
 ];
 
@@ -77,8 +77,8 @@ export default function SecurityManagement() {
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: card.gradient }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: card.color }}
                   >
                     <Icon className="w-6 h-6 text-white" />
                   </div>

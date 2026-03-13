@@ -37,6 +37,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
+// 标记为"即将开放"的菜单项路径
+const COMING_SOON_PATHS = new Set([
+  "/admin/ops-observation",
+  "/admin/security-management",
+  "/admin/session-management",
+]);
+
 const NAV_GROUPS = [
   {
     label: "基础信息",
@@ -143,19 +150,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div className="space-y-0.5">
                     {group.items.map((item) => {
                       const isActive = location === item.path || location.startsWith(item.path + "/");
+                      const isComingSoon = COMING_SOON_PATHS.has(item.path);
                       const Icon = item.icon;
+
+                      // 确定样式
+                      let bgClass = "";
+                      let textClass = "";
+                      let iconClass = "";
+                      let borderStyle = {};
+
+                      if (isComingSoon) {
+                        // "即将开放"项的样式
+                        if (isActive) {
+                          // Active状态：浅橙色背景 + 橙色边框
+                          bgClass = "bg-yellow-50";
+                          textClass = "text-gray-500";
+                          iconClass = "text-gray-400";
+                          borderStyle = { borderLeft: "2px solid #FCD34D", paddingLeft: "calc(0.75rem - 2px)" };
+                        } else {
+                          // 未active状态：浅灰色背景
+                          bgClass = "bg-gray-50 hover:bg-gray-100";
+                          textClass = "text-gray-500";
+                          iconClass = "text-gray-400";
+                        }
+                      } else {
+                        // 普通项的样式
+                        if (isActive) {
+                          bgClass = "bg-blue-50";
+                          textClass = "text-blue-600";
+                          iconClass = "text-blue-600";
+                          borderStyle = { borderLeft: "2px solid #007AFF", paddingLeft: "calc(0.75rem - 2px)" };
+                        } else {
+                          bgClass = "hover:bg-gray-50";
+                          textClass = "text-gray-600 hover:text-gray-900";
+                          iconClass = "text-gray-400";
+                        }
+                      }
+
                       return (
                         <Link key={item.path} href={item.path}>
                           <div
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${
-                              isActive
-                                ? "text-blue-600 bg-blue-50"
-                                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                            }`}
-                            style={isActive ? { borderLeft: "2px solid #007AFF", paddingLeft: "calc(0.75rem - 2px)" } : {}}
+                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${bgClass} ${textClass}`}
+                            style={borderStyle}
                           >
-                            <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-blue-600" : "text-gray-400"}`} />
-                            {item.label}
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                              <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
+                              <span className="truncate">{item.label}</span>
+                            </div>
+                            {isComingSoon && (
+                              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-2">
+                                即将开放
+                              </span>
+                            )}
                           </div>
                         </Link>
                       );

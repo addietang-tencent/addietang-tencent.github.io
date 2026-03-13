@@ -70,6 +70,7 @@ const NAV_GROUPS = [
     label: "安全审计",
     items: [
       { label: "安全管理", path: "/admin/security-management", icon: Shield },
+      { label: "会话管理", path: "/admin/session-management", icon: MessageSquare },
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
     ],
   },

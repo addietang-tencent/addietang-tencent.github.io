@@ -21,7 +21,7 @@ const OPS_CARDS = [
     description:
       "一屏聚合处理量、错误率、工具调用成功率、卡死会话等核心指标，全方位掌握系统运行状态",
     icon: Heart,
-    color: "#FF2D55",
+    color: "#AF52DE",
   },
   {
     id: "alert",

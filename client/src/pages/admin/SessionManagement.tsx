@@ -27,7 +27,7 @@ const SESSION_CARDS = [
     id: "channel-model-distribution",
     title: "渠道与模型分布",
     description:
-      "直观展示 QQ、企微等各渠道会话占比与模型使用偏好，洞察团队使用习惯",
+      "直观展示 QQ、企微、飞书、钉钉等各渠道会话占比与模型使用偏好，洞察团队使用习惯",
     icon: PieChart,
     color: "#34C759",
   },

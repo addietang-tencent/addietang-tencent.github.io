@@ -27,6 +27,7 @@ import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
+import SecurityManagement from "./pages/admin/SecurityManagement";
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/admin/security-group" component={SecurityGroupManagement} />
       <Route path="/admin/openclaw-monitor" component={OpenClawMonitor} />
       <Route path="/admin/tokens-monitor" component={TokensMonitor} />
+      <Route path="/admin/security-management" component={SecurityManagement} />
       <Route path="/admin/audit-log" component={AuditLog} />
 
       <Route path="/404" component={NotFound} />

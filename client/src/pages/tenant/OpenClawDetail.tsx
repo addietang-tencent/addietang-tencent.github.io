@@ -383,20 +383,24 @@ export default function OpenClawDetail() {
       return field.key;
     };
     return (
-      <div className="mx-2 mb-2 rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
-        {ch.fields.map((field) => {
-          const val = ch.fieldValues[field.key] || "";
-          const displayVal = field.secret ? maskSecret(val) : val;
-          const shortKey = getShortKey(field);
-          return (
-            <div key={field.key} className="flex items-start gap-1 text-sm">
-              <span className="text-gray-500 shrink-0">{shortKey}：</span>
-              <span className="text-gray-800 font-mono break-all">{displayVal || "—"}</span>
-            </div>
-          );
-        })}
+      <div className="mx-2 mb-2 space-y-2">
+        {/* 子框1：appId / appSecret */}
+        <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+          {ch.fields.map((field) => {
+            const val = ch.fieldValues[field.key] || "";
+            const displayVal = field.secret ? maskSecret(val) : val;
+            const shortKey = getShortKey(field);
+            return (
+              <div key={field.key} className="flex items-start gap-1 text-sm">
+                <span className="text-gray-500 shrink-0">{shortKey}：</span>
+                <span className="text-gray-800 font-mono break-all">{displayVal || "—"}</span>
+              </div>
+            );
+          })}
+        </div>
+        {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
-          <div className="flex items-center gap-2 pt-1">
+          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">
             <Input
               placeholder="（如需）请输入 pairing code"
               value={feishuPairingCode}
@@ -406,6 +410,7 @@ export default function OpenClawDetail() {
             />
             <Button
               size="sm"
+              variant="outline"
               className="shrink-0 h-8 px-3 text-sm"
               onClick={handleFeishuPairing}
             >

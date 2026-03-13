@@ -2,7 +2,7 @@
  * MemberManagement - 管控端成员管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,11 +80,24 @@ function TokenLimitInput({
   onChange: (v: number) => void;
 }) {
   const isUnlimited = value === TOKEN_UNLIMITED;
+  const [inputStr, setInputStr] = React.useState<string>(isUnlimited ? "" : String(value));
+
+  React.useEffect(() => {
+    if (!isUnlimited) setInputStr(String(value));
+  }, [value, isUnlimited]);
+
   return (
     <div className="space-y-2">
       <Select
         value={isUnlimited ? "unlimited" : "custom"}
-        onValueChange={(v) => onChange(v === "unlimited" ? TOKEN_UNLIMITED : 50000)}
+        onValueChange={(v) => {
+          if (v === "unlimited") {
+            onChange(TOKEN_UNLIMITED);
+          } else {
+            setInputStr("50000");
+            onChange(50000);
+          }
+        }}
       >
         <SelectTrigger className="bg-gray-50 w-full">
           <SelectValue />
@@ -97,8 +110,17 @@ function TokenLimitInput({
       {!isUnlimited && (
         <Input
           type="number"
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
+          value={inputStr}
+          onChange={(e) => {
+            setInputStr(e.target.value);
+            if (e.target.value !== "") onChange(Number(e.target.value));
+          }}
+          onBlur={() => {
+            if (inputStr === "" || isNaN(Number(inputStr))) {
+              setInputStr("0");
+              onChange(0);
+            }
+          }}
           className="bg-gray-50"
           placeholder="请输入数量"
         />
@@ -115,6 +137,12 @@ function AddMemberFormFields({
   values: typeof emptyNewMember;
   onChange: (v: typeof emptyNewMember) => void;
 }) {
+  const [clawStr, setClawStr] = React.useState<string>(String(values.clawLimit));
+
+  React.useEffect(() => {
+    setClawStr(String(values.clawLimit));
+  }, [values.clawLimit]);
+
   return (
     <div className="py-2 space-y-6">
       {/* 第一大块：成员信息 */}
@@ -201,9 +229,19 @@ function AddMemberFormFields({
             </Label>
             <Input
               type="number"
-              value={values.clawLimit}
-              onChange={(e) => onChange({ ...values, clawLimit: Number(e.target.value) })}
+              value={clawStr}
+              onChange={(e) => {
+                setClawStr(e.target.value);
+                if (e.target.value !== "") onChange({ ...values, clawLimit: Number(e.target.value) });
+              }}
+              onBlur={() => {
+                if (clawStr === "" || isNaN(Number(clawStr))) {
+                  setClawStr("0");
+                  onChange({ ...values, clawLimit: 0 });
+                }
+              }}
               className="bg-gray-50"
+              placeholder="请输入数量"
             />
           </div>
           <div className="space-y-2">
@@ -239,6 +277,12 @@ function EditMemberFormFields({
   onChange: (v: typeof emptyEditForm) => void;
   isInitialAdmin?: boolean;
 }) {
+  const [clawStr, setClawStr] = React.useState<string>(String(values.clawLimit));
+
+  React.useEffect(() => {
+    setClawStr(String(values.clawLimit));
+  }, [values.clawLimit]);
+
   return (
     <div className="py-2 space-y-6">
       {/* 第一大块：成员信息 */}
@@ -302,9 +346,19 @@ function EditMemberFormFields({
             </Label>
             <Input
               type="number"
-              value={values.clawLimit}
-              onChange={(e) => onChange({ ...values, clawLimit: Number(e.target.value) })}
+              value={clawStr}
+              onChange={(e) => {
+                setClawStr(e.target.value);
+                if (e.target.value !== "") onChange({ ...values, clawLimit: Number(e.target.value) });
+              }}
+              onBlur={() => {
+                if (clawStr === "" || isNaN(Number(clawStr))) {
+                  setClawStr("0");
+                  onChange({ ...values, clawLimit: 0 });
+                }
+              }}
               className="bg-gray-50"
+              placeholder="请输入数量"
               autoFocus
             />
           </div>

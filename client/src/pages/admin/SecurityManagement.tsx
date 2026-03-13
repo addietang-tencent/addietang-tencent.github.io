@@ -11,7 +11,7 @@ const SECURITY_CARDS = [
     id: "asset-visibility",
     title: "资产盘点与风险可视",
     description:
-      "自动发现并清点企业内所有 AI Agent 资产，实时侵测大模型调用与敏感凭证泄露，实现安全风险动态可视。",
+      "自动发现并清点企业内所有 AI Agent 资产，实时侵测大模型调用与敏感凭证泄露，实现安全风险动态可视",
     icon: Shield,
     color: "#007AFF",
   },
@@ -19,7 +19,7 @@ const SECURITY_CARDS = [
     id: "audit-tracing",
     title: "深度审计与全链路源",
     description:
-      "完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力。",
+      "完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力",
     icon: FileText,
     color: "#AF52DE",
   },
@@ -27,7 +27,7 @@ const SECURITY_CARDS = [
     id: "runtime-control",
     title: "运行管控与环境隔离",
     description:
-      "通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密鑰，实现主机行为与内网环境的主动隔离防护。",
+      "通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密鑰，实现主机行为与内网环境的主动隔离防护",
     icon: Lock,
     color: "#34C759",
   },
@@ -35,7 +35,7 @@ const SECURITY_CARDS = [
     id: "skills-scanning",
     title: "Skills 供应链安全扫描",
     description:
-      "对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信。",
+      "对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信",
     icon: AlertCircle,
     color: "#FF9500",
   },

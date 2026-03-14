@@ -141,7 +141,7 @@ export default function LandingPage() {
           </h1>
           <p className="text-xl text-gray-500 mb-8 leading-relaxed">
             快速创建属于你的 24 小时 AI 私人助理<br />
-            <span className="text-gray-400 text-lg">让每位员工都拥有专属 AI 伙伴，随时随地提升工作效率</span>
+            <span className="text-gray-400 text-lg">对话即可完成各种工作任务，随时随地提升工作效率</span>
           </p>
 
           {/* CTA */}

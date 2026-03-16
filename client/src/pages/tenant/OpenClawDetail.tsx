@@ -649,8 +649,8 @@ export default function OpenClawDetail() {
               {/* 底部说明 */}
               <p className="text-xs text-gray-400 leading-relaxed">
                 {currentChannelConfig?.descText}
-                <a href={currentChannelConfig?.detailUrl || "#"} className="text-blue-500 hover:underline ml-1">
-                  查看详情 ↗
+                <a href={currentChannelConfig?.detailUrl || "#"} className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
+                  查看详情<ExternalLink className="w-3 h-3" />
                 </a>
               </p>
 

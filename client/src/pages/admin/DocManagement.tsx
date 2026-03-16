@@ -74,11 +74,11 @@ export default function DocManagement() {
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
                       <button
-                        onClick={() => toast.info("跳转到租户端文档页面")}
-                        className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1"
+                        onClick={() => toast.info("跳转到用户端文档页面")}
+                        className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1 underline underline-offset-2 decoration-transparent hover:decoration-blue-600"
                       >
                         {doc.title}
-                        <ExternalLink className="w-3 h-3 text-gray-300" />
+                        <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
                       </button>
                       {doc.isDefault && (
                         <Badge variant="outline" className="text-xs border-blue-200 text-blue-500 bg-blue-50">默认</Badge>

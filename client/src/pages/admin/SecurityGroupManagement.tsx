@@ -14,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Save } from "lucide-react";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
 
@@ -97,10 +97,17 @@ export default function SecurityGroupManagement() {
   const [form, setForm] = useState({ source: "", protocol: "TCP", port: "", policy: "允许", remark: "" });
 
   // VPC 和子网状态
+  const [savedZoneConfigs, setSavedZoneConfigs] = useState<ZoneConfig[]>(
+    AVAILABLE_ZONES.map((zone) => ({ zone, vpcId: "", subnetId: "" }))
+  );
   const [zoneConfigs, setZoneConfigs] = useState<ZoneConfig[]>(
     AVAILABLE_ZONES.map((zone) => ({ zone, vpcId: "", subnetId: "" }))
   );
   const [refreshingZone, setRefreshingZone] = useState<string | null>(null);
+  const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
+
+  // 是否有未保存的 VPC/子网改动
+  const isVpcDirty = JSON.stringify(zoneConfigs) !== JSON.stringify(savedZoneConfigs);
 
   // ── 安全组操作 ──────────────────────────────────────────────────────────────
 
@@ -155,6 +162,16 @@ export default function SecurityGroupManagement() {
       setRefreshingZone(null);
       toast.success(`${zone} 网络信息已刷新`);
     }, 800);
+  };
+
+  const handleVpcSaveConfirm = () => {
+    setSavedZoneConfigs(zoneConfigs);
+    setShowVpcSaveDialog(false);
+    toast.success("VPC 和子网配置已保存");
+  };
+
+  const handleVpcDiscard = () => {
+    setZoneConfigs(savedZoneConfigs);
   };
 
   // ── 子组件：规则表格 ────────────────────────────────────────────────────────
@@ -397,23 +414,47 @@ export default function SecurityGroupManagement() {
             <div className="px-6 py-3 border-t border-gray-50 bg-gray-50/30">
               <p className="text-xs text-gray-400 leading-relaxed">
                 如现有私有网络/子网不符合要求，可以去控制台{" "}
-                <button
-                  className="text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                  onClick={() => toast.info("请前往云控制台创建私有网络")}
+                <a
+                  href="#"
+                  className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
+                  onClick={(e) => { e.preventDefault(); toast.info("请前往云控制台创建私有网络"); }}
                 >
-                  新建私有网络
-                </button>
+                  新建私有网络<ExternalLink className="w-3 h-3" />
+                </a>
                 {" "}或{" "}
-                <button
-                  className="text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                  onClick={() => toast.info("请前往云控制台创建子网")}
+                <a
+                  href="#"
+                  className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
+                  onClick={(e) => { e.preventDefault(); toast.info("请前往云控制台创建子网"); }}
                 >
-                  新建子网
-                </button>
+                  新建子网<ExternalLink className="w-3 h-3" />
+                </a>
                 。云主机购买后可以通过控制台切换私有网络完成私有网络/子网的切换。
               </p>
             </div>
           </div>
+
+          {/* 保存/放弃按钮（有改动时才显示） */}
+          {isVpcDirty && (
+            <div className="flex items-center justify-end gap-3 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleVpcDiscard}
+                className="text-gray-500"
+              >
+                放弃修改
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setShowVpcSaveDialog(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Save className="w-3.5 h-3.5 mr-1.5" />
+                保存配置
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════ */}
@@ -548,6 +589,32 @@ export default function SecurityGroupManagement() {
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               {editRule ? "保存修改" : "添加规则"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* VPC 保存确认弹窗 */}
+      <Dialog open={showVpcSaveDialog} onOpenChange={setShowVpcSaveDialog}>
+        <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>确认保存 VPC 和子网配置</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-gray-700 mb-3">
+              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 实例</span>生效。
+            </p>
+            <p className="text-sm text-gray-500">
+              已有实例保持原有网络配置不变，不会受影响。
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowVpcSaveDialog(false)}>取消</Button>
+            <Button
+              onClick={handleVpcSaveConfirm}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              确认保存
             </Button>
           </DialogFooter>
         </DialogContent>

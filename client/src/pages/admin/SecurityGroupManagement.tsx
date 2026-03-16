@@ -433,13 +433,17 @@ export default function SecurityGroupManagement() {
 
               {/* 每个可用区一行 */}
               {(() => {
-                // 判断是否有任意可用区已选了子网
-                const anyZoneSelected = AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
                 return AVAILABLE_ZONES.map((zone, idx) => {
                   const isRefreshing = refreshingZone === zone;
                   const subnetId = config.zoneSubnets[zone] || "";
-                  // 当前区未选子网时，默认选项文案：有其他区已选 → 「不分配」，否则 → 「自动分配」
-                  const defaultLabel = anyZoneSelected && !subnetId ? "不分配" : "自动分配";
+                  // 其他可用区（排除当前区）是否有已选子网
+                  const otherZoneSelected = AVAILABLE_ZONES.some(z => z !== zone && !!config.zoneSubnets[z]);
+                  // 当前行未选子网时，默认选项文案：其他区有已选 → 「不分配」，否则 → 「自动分配」
+                  const defaultLabel = otherZoneSelected && !subnetId ? "不分配" : "自动分配";
+                  // trigger 中显示的文案：已选子网时显示子网名，未选时显示 defaultLabel
+                  const triggerDisplay = subnetId
+                    ? availableSubnets.find(s => s.id === subnetId)?.name || subnetId
+                    : defaultLabel;
                   return (
                   <div
                     key={zone}
@@ -453,7 +457,7 @@ export default function SecurityGroupManagement() {
                       disabled={!config.vpcId}
                     >
                       <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
-                        <SelectValue placeholder={config.vpcId ? "请选择子网" : "请先选择私有网络"} />
+                        <span className={subnetId ? "text-gray-800" : "text-gray-400 text-xs"}>{config.vpcId ? triggerDisplay : "请先选择私有网络"}</span>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">

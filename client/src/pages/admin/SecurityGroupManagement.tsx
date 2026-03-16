@@ -314,7 +314,7 @@ export default function SecurityGroupManagement() {
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
             {/* 表格标题栏 */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
               <span className="text-sm font-semibold text-gray-800">VPC 与子网配置</span>
               {isVpcDirty && (
                 <div className="flex items-center gap-2">

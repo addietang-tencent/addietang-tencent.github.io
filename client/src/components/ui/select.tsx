@@ -53,7 +53,6 @@ function SelectContent({
   children,
   position = "popper",
   align = "center",
-  side = "bottom",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -79,7 +78,6 @@ function SelectContent({
         )}
         position={position}
         align={align}
-        side={side}
         {...props}
       >
         <SelectScrollUpButton />

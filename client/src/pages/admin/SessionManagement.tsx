@@ -4,6 +4,7 @@
  * 风格：浅色主题，与 Token 监控页保持一致
  */
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { MessageCircle, RotateCw, Zap, Globe } from "lucide-react";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -289,8 +290,10 @@ export default function SessionManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredSessions.map((session) => (
-                  <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
+                filteredSessions.map((session) => {
+                  const [, navigate] = useLocation();
+                  return (
+                  <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
                     <td className="px-6 py-3">
                       <div className="text-sm font-medium text-gray-900">{session.name}</div>
                       <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
@@ -310,7 +313,8 @@ export default function SessionManagement() {
                     <td className="px-6 py-3 text-sm text-gray-600 max-w-xs truncate">{session.lastMessage}</td>
                     <td className="px-6 py-3 text-sm text-gray-600 whitespace-nowrap">{session.updatedAt}</td>
                   </tr>
-                ))
+                );
+                })
               )}
             </tbody>
           </table>

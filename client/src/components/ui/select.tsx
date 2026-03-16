@@ -58,7 +58,6 @@ function SelectContent({
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleWheel = React.useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    e.preventDefault();
     const viewport = contentRef.current?.querySelector('[data-radix-select-viewport]') as HTMLElement | null;
     if (viewport) {
       viewport.scrollTop += e.deltaY;

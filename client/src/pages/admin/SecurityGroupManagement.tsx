@@ -392,7 +392,7 @@ export default function SecurityGroupManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="auto">
-                      <span className="text-gray-400 text-xs">自动分配</span>
+                      <span className="text-gray-400 text-sm">自动分配</span>
                     </SelectItem>
                     {MOCK_VPCS.map((vpc) => (
                       <SelectItem key={vpc.id} value={vpc.id}>
@@ -464,11 +464,11 @@ export default function SecurityGroupManagement() {
                     >
                       <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none overflow-hidden">
                         {!config.vpcId ? (
-                          <span className="text-gray-400 text-xs">自动分配</span>
+                          <span className="text-gray-400 text-sm">自动分配</span>
                         ) : availableSubnets.length === 0 ? (
-                          <span className="text-gray-400 text-xs">{zone}暂无子网</span>
+                          <span className="text-gray-400 text-sm">{zone}暂无子网</span>
                         ) : !selectedSubnet ? (
-                          <span className="text-gray-400 text-xs">{triggerLabel}</span>
+                          <span className="text-gray-400 text-sm">{triggerLabel}</span>
                         ) : (
                           <span className="flex items-center gap-1 min-w-0 overflow-hidden">
                             <span className="text-sm text-gray-600 shrink-0">{selectedSubnet.id}</span>
@@ -479,7 +479,7 @@ export default function SecurityGroupManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">
-                          <span className="text-gray-400 text-xs">{listDefaultLabel}</span>
+                          <span className="text-gray-400 text-sm">{listDefaultLabel}</span>
                         </SelectItem>
                         {availableSubnets.map((subnet) => (
                           <SelectItem key={subnet.id} value={subnet.id}>

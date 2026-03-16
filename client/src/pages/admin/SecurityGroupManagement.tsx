@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Save } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
 
@@ -298,31 +299,12 @@ export default function SecurityGroupManagement() {
             <h2 className="text-base font-bold text-gray-900">VPC 和子网</h2>
           </div>
 
-          {/* 说明文字区域 */}
-          <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 mb-5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-          >
-            <p className="text-sm text-gray-700 mb-3">
-              当前 OpenClaw 实例将分配到以下可用区：
-              <span className="font-semibold text-gray-900 ml-1">
-                {AVAILABLE_ZONES.join("、")}
-              </span>
-            </p>
-            <div className="space-y-1.5">
-              <div className="flex items-start gap-2">
-                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  <span className="text-blue-600 font-medium">推荐：</span>
-                  如果不填写任何 VPC 和子网，系统将自动创建 VPC，并把 OpenClaw 实例随机部署到上述可用区中。
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="mt-1 w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  填写了具体 VPC 则部署到对应 VPC 下；填写了子网则在对应可用区随机部署，未填子网则在该区内自动分配。
-                </p>
-              </div>
+          {/* 说明文字区域 - 蓝色提示条 */}
+          <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
+            <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+            <div className="space-y-1 text-xs text-blue-700 leading-relaxed">
+              <p><strong>推荐：</strong>不填写任何 VPC 和子网，系统将自动创建 VPC，并把 OpenClaw 实例随机部署到系统分配的可用区中。</p>
+              <p>填写了具体 VPC 则部署到对应 VPC 下；填写了几个可用区的子网，系统就在这几个可用区随机部署；若某可用区未填子网，则在该区内自动分配。</p>
             </div>
           </div>
 
@@ -331,9 +313,44 @@ export default function SecurityGroupManagement() {
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            {/* 表头 */}
-            <div className={`grid grid-cols-[110px_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50`}>
-              <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
+            {/* 表格标题栏 */}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+              <span className="text-sm font-semibold text-gray-800">VPC 与子网配置</span>
+              {isVpcDirty && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleVpcDiscard}
+                    className="h-7 px-3 text-xs text-gray-500"
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowVpcSaveDialog(true)}
+                    className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    保存
+                  </Button>
+                </div>
+              )}
+            </div>
+            {/* 列标题 */}
+            <div className="grid grid-cols-[110px_1fr_1fr_40px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/50">
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[220px] text-xs">
+                      系统自动选择的 OpenClaw 实例主力可用区，不可修改。可通过指定 VPC 和子网来规定实例部署在哪个可用区。
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
               <span className="text-xs font-medium text-gray-500">私有网络（VPC）</span>
               <span className="text-xs font-medium text-gray-500">子网</span>
               <span />
@@ -415,17 +432,19 @@ export default function SecurityGroupManagement() {
               <p className="text-xs text-gray-400 leading-relaxed">
                 如现有私有网络/子网不符合要求，可以去控制台{" "}
                 <a
-                  href="#"
+                  href="https://console.cloud.tencent.com/vpc/vpc"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                  onClick={(e) => { e.preventDefault(); toast.info("请前往云控制台创建私有网络"); }}
                 >
                   新建私有网络<ExternalLink className="w-3 h-3" />
                 </a>
                 {" "}或{" "}
                 <a
-                  href="#"
+                  href="https://console.cloud.tencent.com/vpc/subnet"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                  onClick={(e) => { e.preventDefault(); toast.info("请前往云控制台创建子网"); }}
                 >
                   新建子网<ExternalLink className="w-3 h-3" />
                 </a>
@@ -434,27 +453,7 @@ export default function SecurityGroupManagement() {
             </div>
           </div>
 
-          {/* 保存/放弃按钮（有改动时才显示） */}
-          {isVpcDirty && (
-            <div className="flex items-center justify-end gap-3 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleVpcDiscard}
-                className="text-gray-500"
-              >
-                放弃修改
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setShowVpcSaveDialog(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Save className="w-3.5 h-3.5 mr-1.5" />
-                保存配置
-              </Button>
-            </div>
-          )}
+          {/* 保存/取消按钮已移至表格右上角，此处不再重复显示 */}
         </div>
 
         {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════ */}

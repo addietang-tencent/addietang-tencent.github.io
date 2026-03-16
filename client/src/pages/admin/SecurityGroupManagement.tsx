@@ -377,13 +377,18 @@ export default function SecurityGroupManagement() {
               </div>
               {/* 行内容 */}
               <div className="grid grid-cols-[110px_1fr_48px] gap-4 items-center">
-                <span className="text-sm text-gray-400">全局</span>
+                <span className="text-sm text-gray-700">广州</span>
                 <Select
                   value={config.vpcId || "auto"}
                   onValueChange={(val) => handleVpcChange(val === "auto" ? "" : val)}
+                  disabled={MOCK_VPCS.length === 0}
                 >
-                  <SelectTrigger className="h-9 text-sm bg-white border-gray-200 w-full min-w-0 max-w-none">
-                    <SelectValue placeholder="请选择私有网络" />
+                  <SelectTrigger className="h-9 text-sm bg-white border-gray-200 w-full min-w-0 max-w-none disabled:opacity-50">
+                    {MOCK_VPCS.length === 0 ? (
+                      <span className="text-gray-400 text-xs">该地域下暂无私有网络</span>
+                    ) : (
+                      <SelectValue placeholder="请选择私有网络" />
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="auto">

@@ -337,7 +337,7 @@ export default function SecurityGroupManagement() {
               )}
             </div>
             {/* 列标题 */}
-            <div className="grid grid-cols-[110px_1fr_1fr_40px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/50">
+            <div className="grid grid-cols-[110px_1fr_1fr_48px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/50">
               <div className="flex items-center gap-1">
                 <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
                 <TooltipProvider>
@@ -363,7 +363,7 @@ export default function SecurityGroupManagement() {
               return (
                 <div
                   key={config.zone}
-                  className={`grid grid-cols-[110px_1fr_1fr_40px] gap-4 items-center px-6 py-4 ${idx < zoneConfigs.length - 1 ? "border-b border-gray-50" : ""}`}
+                  className={`grid grid-cols-[110px_1fr_1fr_48px] gap-4 items-center px-6 py-4 ${idx < zoneConfigs.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
                   {/* 可用区名称 */}
                   <span className="text-sm font-medium text-gray-700">{config.zone}</span>

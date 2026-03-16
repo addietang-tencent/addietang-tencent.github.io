@@ -413,8 +413,8 @@ export default function SecurityGroupManagement() {
                     </SelectContent>
                   </Select>
 
-                  {/* 刷新按钮 */}
-                  <div className="pl-1">
+                  {/* 刷新按鈕 */}
+                  <div className="flex justify-end">
                   <button
                     onClick={() => handleRefreshZone(config.zone)}
                     className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"

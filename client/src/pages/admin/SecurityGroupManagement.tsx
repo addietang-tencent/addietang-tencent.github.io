@@ -455,11 +455,15 @@ export default function SecurityGroupManagement() {
                     <Select
                       value={subnetId || "auto"}
                       onValueChange={(val) => handleSubnetChange(zone, val === "auto" ? "" : val)}
-                      disabled={!config.vpcId}
+                      disabled={!config.vpcId || availableSubnets.length === 0}
                     >
                       <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none overflow-hidden">
-                        {!config.vpcId || !selectedSubnet ? (
-                          <span className="text-gray-400 text-xs">{config.vpcId ? triggerLabel : "自动分配"}</span>
+                        {!config.vpcId ? (
+                          <span className="text-gray-400 text-xs">自动分配</span>
+                        ) : availableSubnets.length === 0 ? (
+                          <span className="text-gray-400 text-xs">{zone}暂无子网</span>
+                        ) : !selectedSubnet ? (
+                          <span className="text-gray-400 text-xs">{triggerLabel}</span>
                         ) : (
                           <span className="flex items-center gap-1 min-w-0 overflow-hidden">
                             <span className="font-mono text-xs text-gray-500 shrink-0">{selectedSubnet.id}</span>

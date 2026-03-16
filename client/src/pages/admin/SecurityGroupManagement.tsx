@@ -396,9 +396,9 @@ export default function SecurityGroupManagement() {
                     </SelectItem>
                     {MOCK_VPCS.map((vpc) => (
                       <SelectItem key={vpc.id} value={vpc.id}>
-                        <span className="font-mono text-xs text-gray-500 mr-1">{vpc.id}</span>
+                        <span className="text-sm text-gray-800 mr-1">{vpc.id}</span>
                         <span className="text-sm text-gray-800 mr-1">| {vpc.name}</span>
-                        <span className="text-xs text-gray-400">| {vpc.cidr}</span>
+                        <span className="text-sm text-gray-800">| {vpc.cidr}</span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -471,9 +471,9 @@ export default function SecurityGroupManagement() {
                           <span className="text-gray-400 text-xs">{triggerLabel}</span>
                         ) : (
                           <span className="flex items-center gap-1 min-w-0 overflow-hidden">
-                            <span className="font-mono text-xs text-gray-500 shrink-0">{selectedSubnet.id}</span>
+                            <span className="text-sm text-gray-800 shrink-0">{selectedSubnet.id}</span>
                             <span className="text-sm text-gray-800 shrink-0">| {selectedSubnet.name}</span>
-                            <span className="text-xs text-gray-400 shrink-0">| {selectedSubnet.cidr}</span>
+                            <span className="text-sm text-gray-800 shrink-0">| {selectedSubnet.cidr}</span>
                           </span>
                         )}
                       </SelectTrigger>
@@ -483,9 +483,9 @@ export default function SecurityGroupManagement() {
                         </SelectItem>
                         {availableSubnets.map((subnet) => (
                           <SelectItem key={subnet.id} value={subnet.id}>
-                            <span className="font-mono text-xs text-gray-500 mr-1">{subnet.id}</span>
+                            <span className="text-sm text-gray-800 mr-1">{subnet.id}</span>
                             <span className="text-sm text-gray-800 mr-1">| {subnet.name}</span>
-                            <span className="text-xs text-gray-400">| {subnet.cidr}</span>
+                            <span className="text-sm text-gray-800">| {subnet.cidr}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>

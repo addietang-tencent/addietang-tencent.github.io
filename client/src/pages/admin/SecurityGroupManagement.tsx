@@ -316,7 +316,7 @@ export default function SecurityGroupManagement() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
               <Globe className="w-3.5 h-3.5 text-white" />
             </div>
-            <h2 className="text-base font-bold text-gray-900">VPC 和子网</h2>
+            <h2 className="text-base font-bold text-gray-900">私有网络和子网</h2>
           </div>
 
           {/* 说明文字区域 */}
@@ -325,11 +325,11 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>不填任何 VPC 和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
+                <span><strong>不填任何私有网络和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的私有网络，私有网络之间独立，通信不互通。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>填写了具体 VPC</strong> — 同一个 VPC 下的 OpenClaw 实例内网可互通。</span>
+                <span><strong>填写了具体私有网络</strong> — 同一个私有网络下的 OpenClaw 实例内网可互通。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
@@ -345,7 +345,7 @@ export default function SecurityGroupManagement() {
           >
             {/* 标题栏 */}
             <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
-              <span className="text-sm font-semibold text-gray-800">VPC 与子网配置</span>
+              <span className="text-sm font-semibold text-gray-800">私有网络与子网配置</span>
               {isDirty && (
                 <div className="flex items-center gap-2">
                   <Button
@@ -371,7 +371,7 @@ export default function SecurityGroupManagement() {
             <div className="px-6 py-4 border-b border-gray-100">
               {/* 行标题 */}
               <div className="grid grid-cols-[110px_1fr_48px] gap-4 mb-2">
-                <span className="text-xs font-medium text-gray-500">私有网络（VPC）</span>
+                <span className="text-xs font-medium text-gray-500">私有网络</span>
                 <span />
                 <span />
               </div>
@@ -402,7 +402,7 @@ export default function SecurityGroupManagement() {
                   <button
                     onClick={handleRefreshVpc}
                     className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
-                    title="刷新 VPC 列表"
+                        title="刷新私有网络列表"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${refreshingVpc ? "animate-spin" : ""}`} />
                   </button>
@@ -453,7 +453,7 @@ export default function SecurityGroupManagement() {
                       disabled={!config.vpcId}
                     >
                       <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
-                        <SelectValue placeholder={config.vpcId ? "请选择子网" : "请先选择 VPC"} />
+                        <SelectValue placeholder={config.vpcId ? "请选择子网" : "请先选择私有网络"} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">
@@ -474,7 +474,7 @@ export default function SecurityGroupManagement() {
                         onClick={() => handleRefreshZone(zone)}
                         disabled={!config.vpcId}
                         className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-400 disabled:hover:border-gray-200"
-                        title={config.vpcId ? `刷新 ${zone} 子网列表` : "请先选择 VPC"}
+                        title={config.vpcId ? `刷新 ${zone} 子网列表` : "请先选择私有网络"}
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
                       </button>

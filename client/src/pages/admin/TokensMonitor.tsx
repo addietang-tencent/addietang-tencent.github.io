@@ -156,6 +156,7 @@ export default function TokensMonitor() {
   const [refreshing, setRefreshing] = useState(false);
   const [memberPage, setMemberPage] = useState(1);
   const [modelPage, setModelPage] = useState(1);
+  const [sessionPage, setSessionPage] = useState(1);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -166,11 +167,13 @@ export default function TokensMonitor() {
     setDateFrom(v);
     setMemberPage(1);
     setModelPage(1);
+    setSessionPage(1);
   };
   const handleToChange = (v: string) => {
     setDateTo(v);
     setMemberPage(1);
     setModelPage(1);
+    setSessionPage(1);
   };
 
   // 有效时间范围
@@ -249,6 +252,27 @@ export default function TokensMonitor() {
       .map(([name, v]) => ({ name, ...v, total: v.inputTokens + v.outputTokens }))
       .sort((a, b) => b.requests - a.requests);
   }, [rangeRecords]);
+
+  // 按会话汇总（高成本 TOP 5），按成本降序
+  interface SessionStat {
+    sessionId: string;
+    sessionName: string;
+    channel: string;
+    model: string;
+    lastActiveTime: string;
+    rounds: number;
+    tokens: number;
+    cost: number;
+    duration: string;
+  }
+  const sessionStats: SessionStat[] = [
+    { sessionId: "fb766833", sessionName: "你能干啥 / 你管理一下我在伊朗的局势", channel: "Feishu Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-04 21:06", rounds: 63, tokens: 1950000, cost: 0.2743, duration: "454m 1s" },
+    { sessionId: "06468225", sessionName: "我感觉现在仅表盘可观测细节这人，...", channel: "Feishu Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-08 13:14", rounds: 51, tokens: 1880000, cost: 0.2700, duration: "28m 52s" },
+    { sessionId: "a9c7eb8b", sessionName: "请帮我列出 /etc 目录下所有 .conf ...", channel: "Webchat", model: "deepseek-v3.2", lastActiveTime: "2026-03-04 20:23", rounds: 47, tokens: 1590000, cost: 0.2242, duration: "12m 5s" },
+    { sessionId: "a46be600", sessionName: "nihao / 帮我看看你的session-cost...", channel: "QQ Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-07 23:29", rounds: 35, tokens: 965000, cost: 0.1359, duration: "679m 41s" },
+    { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 openclaw 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
+  ];
+  const sessionPaged = sessionStats.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
 
   // 翻页切片
   const memberPaged = memberStats.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
@@ -363,6 +387,7 @@ export default function TokensMonitor() {
             <TabsList>
               <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
+              <TabsTrigger value="session">按会话</TabsTrigger>
             </TabsList>
           </div>
 
@@ -429,6 +454,48 @@ export default function TokensMonitor() {
                 </tbody>
               </table>
               <Pagination page={modelPage} total={modelStats.length} onChange={setModelPage} />
+            </div>
+          </TabsContent>
+
+          {/* 按会话 */}
+          <TabsContent value="session">
+            <p className="text-xs text-gray-400 mb-3">展示高成本会话 TOP 5，点击查看会话详情</p>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">渠道</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {sessionPaged.length === 0 ? (
+                    <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : sessionPaged.map((s) => (
+                    <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-700">{s.sessionName}</div>
+                        <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{s.channel}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{s.model}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">${s.cost.toFixed(4)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />
             </div>
           </TabsContent>
         </Tabs>

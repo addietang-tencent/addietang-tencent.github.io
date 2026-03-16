@@ -19,13 +19,24 @@ import { Download, Trash2, Info, RefreshCw, ExternalLink } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
 const PUBLIC_IMAGES = [
-  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", group: "public" },
+  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像 v1.7.0", group: "public" },
+  { id: "img-openclaw-v1.8.0", name: "云服务器 OpenClaw 镜像 v1.8.0", group: "public" },
+  { id: "img-openclaw-v1.9.0", name: "云服务器 OpenClaw 镜像 v1.9.0", group: "public" },
+  { id: "img-openclaw-v2.0.0", name: "云服务器 OpenClaw 镜像 v2.0.0", group: "public" },
+  { id: "img-openclaw-v2.1.0", name: "云服务器 OpenClaw 镜像 v2.1.0", group: "public" },
 ];
 
 const CUSTOM_IMAGES = [
   { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", group: "custom" },
   { id: "img-cust-e5f6g7h8", name: "openclaw-custom-v1.1-beta", group: "custom" },
   { id: "img-cust-i9j0k1l2", name: "openclaw-prod-2025Q4", group: "custom" },
+  { id: "img-cust-m3n4o5p6", name: "openclaw-dev-testing-v2", group: "custom" },
+  { id: "img-cust-q7r8s9t0", name: "openclaw-staging-latest", group: "custom" },
+  { id: "img-cust-u1v2w3x4", name: "openclaw-prod-stable", group: "custom" },
+  { id: "img-cust-y5z6a7b8", name: "openclaw-experimental-ai", group: "custom" },
+  { id: "img-cust-c9d0e1f2", name: "openclaw-gpu-optimized", group: "custom" },
+  { id: "img-cust-g3h4i5j6", name: "openclaw-arm64-support", group: "custom" },
+  { id: "img-cust-k7l8m9n0", name: "openclaw-security-hardened", group: "custom" },
 ];
 
 const ALL_IMPORTABLE = [...PUBLIC_IMAGES, ...CUSTOM_IMAGES];

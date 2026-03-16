@@ -23,7 +23,7 @@ export default function ChannelConfig() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
           <p className="text-sm text-gray-500 mt-1">
-            配置成员可以为 OpenClaw 选择接入的即时通讯工具。开启「成员可见」后，成员可在 OpenClaw 配置中选择对应通道。
+            配置用户可以为 OpenClaw 选择接入的即时通讯工具。开启「用户可见」后，用户可在 OpenClaw 配置中选择对应通道。
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export default function ChannelConfig() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">成员可见</span>
+                  <span className="text-xs text-gray-400">用户可见</span>
                   <Switch
                     checked={visibility[ch.id] || false}
                     onCheckedChange={(v) => {

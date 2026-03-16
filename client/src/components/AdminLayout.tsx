@@ -49,7 +49,7 @@ const NAV_GROUPS = [
     label: "基础信息",
     items: [
       { label: "基础信息配置", path: "/admin/basic-info", icon: Settings },
-      { label: "成员管理", path: "/admin/members", icon: Users },
+      { label: "用户管理", path: "/admin/members", icon: Users },
     ],
   },
   {
@@ -119,11 +119,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
           </div>
-          {/* 前往员工端 */}
+          {/* 前往用户端 */}
           <Link href="/my-openclaw">
             <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
-              <span>前往员工端</span>
+              <span>前往用户端</span>
             </div>
           </Link>
         </div>

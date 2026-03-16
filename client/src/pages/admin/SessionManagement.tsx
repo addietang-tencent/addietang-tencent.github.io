@@ -10,7 +10,7 @@ const SESSION_CARDS = [
     id: "session-overview",
     title: "会话总览",
     description:
-      "一览会话数量、平均轮次、tool/skill 调用情况、渠道数量等；快速了解员工使用活跃度",
+      "一览会话数量、平均轮次、tool/skill 调用情况、渠道数量等；快速了解用户使用活跃度",
     icon: BarChart3,
     color: "#007AFF",
   },

@@ -38,7 +38,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label htmlFor="siteName" className="text-sm font-medium text-gray-700">
                 网站名称
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在员工端左上角</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角</span>
               </Label>
               <Input
                 id="siteName"
@@ -68,7 +68,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 公司 Logo
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在员工端左上角，建议尺寸 200×200px</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角，建议尺寸 200×200px</span>
               </Label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
@@ -88,7 +88,7 @@ export default function BasicInfo() {
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-gray-700">
                   所在地域
-                  <span className="text-xs text-gray-400 font-normal ml-2">员工端、管控端及员工 OpenClaw 底层云设备所在的地域</span>
+                  <span className="text-xs text-gray-400 font-normal ml-2">用户端、管控端及用户 OpenClaw 底层云设备所在的地域</span>
                 </p>
                 <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.region}</div>
               </div>
@@ -97,7 +97,7 @@ export default function BasicInfo() {
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-gray-700">
                   域名
-                  <span className="text-xs text-gray-400 font-normal ml-2">员工端与管控端的访问域名</span>
+                  <span className="text-xs text-gray-400 font-normal ml-2">用户端与管控端的访问域名</span>
                 </p>
                 <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.domain}</div>
               </div>

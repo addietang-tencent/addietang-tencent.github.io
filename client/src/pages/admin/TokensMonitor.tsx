@@ -59,7 +59,7 @@ const MODELS = [
   "腾讯云混元 (Pro)",
 ];
 
-// 每天每成员的 mock 数据
+// 每天每用户的 mock 数据
 function seedRand(seed: number) {
   let s = seed;
   return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
@@ -218,7 +218,7 @@ export default function TokensMonitor() {
     }
   }, [isSingleDay, effectiveFrom, effectiveTo, today]);
 
-  // 按成员汇总（随时间联动），按总请求数降序
+  // 按用户汇总（随时间联动），按总请求数降序
   const memberStats = useMemo(() => {
     const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
     rangeRecords.forEach((r) => {
@@ -260,7 +260,7 @@ export default function TokensMonitor() {
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
-            <p className="text-sm text-gray-500 mt-1">查看企业成员和模型的 Tokens 消耗情况。</p>
+            <p className="text-sm text-gray-500 mt-1">查看企业用户和模型的 Tokens 消耗情况。</p>
           </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export default function TokensMonitor() {
                     </span>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    此处统计所有成员使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新
+                    此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新
                   </UITooltipContent>
                 </UITooltip>
               </div>
@@ -361,20 +361,20 @@ export default function TokensMonitor() {
         <Tabs defaultValue="member">
           <div className="flex items-center justify-between mb-4">
             <TabsList>
-              <TabsTrigger value="member">按成员</TabsTrigger>
+              <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
             </TabsList>
           </div>
 
-          {/* 按成员 */}
+          {/* 按用户 */}
           <TabsContent value="member">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个成员使用所有模型的消耗，按总请求数降序排列</p>
+            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成员 ID</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
@@ -401,7 +401,7 @@ export default function TokensMonitor() {
 
           {/* 按模型 */}
           <TabsContent value="model">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个模型被所有企业成员使用的消耗，按总请求数降序排列</p>
+            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">

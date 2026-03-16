@@ -1,6 +1,6 @@
 /**
  * SecurityGroupManagement - 管控端安全组管理页
- * 成员创建 OpenClaw 时启动的云服务器安全组管理
+ * 用户创建 OpenClaw 时启动的云服务器安全组管理
  * 企业可自行管控入站/出站端口规则
  */
 import { useState } from "react";

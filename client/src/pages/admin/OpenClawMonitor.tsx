@@ -75,7 +75,7 @@ export default function OpenClawMonitor() {
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
-            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业成员创建的 OpenClaw 实例。</p>
+            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 实例。</p>
           </div>
           {/* 时间范围筛选 + 刷新（同 Tokens 监控样式） */}
           <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export default function OpenClawMonitor() {
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[32%]">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">创建人的成员 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">创建人的用户 ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">创建时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">操作</th>
               </tr>

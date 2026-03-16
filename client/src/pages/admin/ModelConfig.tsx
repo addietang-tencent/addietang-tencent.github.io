@@ -200,7 +200,7 @@ export default function ModelConfig() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
           <p className="text-sm text-gray-500 mt-1">
-            配置企业成员可使用的大模型。配置好的模型会展示在企业成员的模型选择里；如果只有一个模型，企业成员将直接使用，无需选择。
+            配置企业用户可使用的大模型。配置好的模型会展示在企业用户的模型选择里；如果只有一个模型，企业用户将直接使用，无需选择。
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export default function ModelConfig() {
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[38%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">成员可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">用户可见</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[7%]">操作</th>
               </tr>
             </thead>
@@ -260,7 +260,7 @@ export default function ModelConfig() {
                       checked={model.visible}
                       onCheckedChange={(v) => {
                         setModels(models.map((m) => m.id === model.id ? { ...m, visible: v } : m));
-                        toast.success(v ? "已对成员可见" : "已对成员隐藏");
+                        toast.success(v ? "已对用户可见" : "已对用户隐藏");
                       }}
                     />
                   </td>
@@ -276,16 +276,16 @@ export default function ModelConfig() {
             </tbody>
           </table>
 
-          {/* 允许成员自定义模型开关 — 列表末尾 */}
+          {/* 允许用户自定义模型开关 — 列表末尾 */}
           <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-50 bg-gray-50/30">
             <Switch
               checked={allowCustomModel}
-              onCheckedChange={(v) => { setAllowCustomModel(v); toast.success(v ? "已允许成员添加自定义模型" : "已禁止成员添加自定义模型"); }}
+              onCheckedChange={(v) => { setAllowCustomModel(v); toast.success(v ? "已允许用户添加自定义模型" : "已禁止用户添加自定义模型"); }}
             />
             <div>
-              <p className="text-sm font-medium text-gray-900">允许成员添加自定义模型</p>
+              <p className="text-sm font-medium text-gray-900">允许用户添加自定义模型</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                开启后，成员可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内
+                开启后，用户可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内
               </p>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function ModelConfig() {
                   <Info className="w-3.5 h-3.5 text-gray-400" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  全局 Tokens 指所有企业成员使用所有模型所消耗的总 Tokens 数量，达到上限后当日将暂停服务
+                  全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后当日将暂停服务
                 </TooltipContent>
               </Tooltip>
             </Label>
@@ -488,7 +488,7 @@ export default function ModelConfig() {
             <p className="text-sm text-gray-600">
               确定要删除模型 <span className="font-medium text-gray-900">{deleteConfirmModel?.name}</span>（{deleteConfirmModel?.version}）吗？
             </p>
-            <p className="text-sm text-red-500 font-medium">删除后成员将无法使用该模型，此操作不可撤销。</p>
+            <p className="text-sm text-red-500 font-medium">删除后用户将无法使用该模型，此操作不可撤销。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>取消</Button>

@@ -1,6 +1,6 @@
 /**
  * ImageManagement - 管控端镜像管理页
- * 成员创建 OpenClaw 时启动的云服务器镜像管理
+ * 用户创建 OpenClaw 时启动的云服务器镜像管理
  * 企业可使用自定义镜像，并随时导入最新版本
  */
 import { useState } from "react";
@@ -77,7 +77,7 @@ export default function ImageManagement() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">镜像管理</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            管理成员创建 OpenClaw 时所使用的云服务器镜像。企业可导入自定义镜像以满足特定的运行环境需求；当镜像有版本更新时，也可随时导入最新镜像并切换生效，确保成员始终使用最新版本的运行环境。
+            管理用户创建 OpenClaw 时所使用的云服务器镜像。企业可导入自定义镜像以满足特定的运行环境需求；当镜像有版本更新时，也可随时导入最新镜像并切换生效，确保用户始终使用最新版本的运行环境。
           </p>
         </div>
 

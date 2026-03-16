@@ -45,7 +45,7 @@ export default function DocManagement() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">帮助文档</h1>
             <p className="text-sm text-gray-500 mt-1">
-              此处配置的文档将展示在企业成员看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。
+              此处配置的文档将展示在企业用户看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。
             </p>
           </div>
           <Button onClick={() => setShowAddDialog(true)}
@@ -107,7 +107,7 @@ export default function DocManagement() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">成员可见</span>
+                        <span className="text-xs text-gray-400">用户可见</span>
                         <Switch
                           checked={doc.visible}
                           onCheckedChange={(v) => {

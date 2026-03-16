@@ -1,5 +1,5 @@
 /**
- * MemberManagement - 管控端成员管理页
+ * MemberManagement - 管控端用户管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
 import React, { useState, useEffect } from "react";
@@ -128,7 +128,7 @@ function TokenLimitInput({
   );
 }
 
-// ─── 添加成员表单（无密码） ───────────────────────────────────────────────────
+// ─── 添加用户表单（无密码） ───────────────────────────────────────────────────
 function AddMemberFormFields({
   values,
   onChange,
@@ -144,21 +144,21 @@ function AddMemberFormFields({
 
   return (
     <div className="py-2 space-y-6">
-      {/* 第一大块：成员信息 */}
+      {/* 第一大块：用户信息 */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">成员信息</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
         <div className="space-y-4">
-          {/* 成员 ID */}
+          {/* 用户 ID */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              成员 ID
+              用户 ID
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>填写企业成员的唯一 ID，例如企业邮箱或企业成员唯一名称，作为企业成员登录员工端的账号</TooltipContent>
+                <TooltipContent>填写企业用户的唯一 ID，例如企业邮箱或企业用户唯一名称，作为企业用户登录用户端的账号</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -169,15 +169,15 @@ function AddMemberFormFields({
             />
           </div>
 
-          {/* 成员角色 */}
+          {/* 用户角色 */}
           <div className="space-y-2">
-            <Label>成员角色</Label>
+            <Label>用户角色</Label>
             <Select value={values.role} onValueChange={(v) => onChange({ ...values, role: v })}>
               <SelectTrigger className="bg-gray-50 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="member">成员</SelectItem>
+                <SelectItem value="member">用户</SelectItem>
                 <SelectItem value="admin">管理员</SelectItem>
               </SelectContent>
             </Select>
@@ -198,7 +198,7 @@ function AddMemberFormFields({
             </Label>
             <Input
               type="email"
-              placeholder="输入成员接收账号密码的邮箱地址"
+              placeholder="输入用户接收账号密码的邮箱地址"
               value={values.notificationEmail}
               onChange={(e) => onChange({ ...values, notificationEmail: e.target.value })}
               className="bg-gray-50"
@@ -210,9 +210,9 @@ function AddMemberFormFields({
       {/* 分隔线 */}
       <div className="border-t border-gray-100" />
 
-      {/* 第二大块：成员配额 */}
+      {/* 第二大块：用户配额 */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">成员配额</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -223,7 +223,7 @@ function AddMemberFormFields({
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业成员最多可以创建的 OpenClaw 数量</TooltipContent>
+                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -252,7 +252,7 @@ function AddMemberFormFields({
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业成员每日最多可消耗的 Tokens 数量</TooltipContent>
+                <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
               </Tooltip>
             </Label>
             <TokenLimitInput
@@ -266,7 +266,7 @@ function AddMemberFormFields({
   );
 }
 
-// ─── 编辑成员表单（无密码、无信息发送，成员ID只读） ──────────────────────────
+// ─── 编辑用户表单（无密码、无信息发送，成员ID只读） ──────────────────────────
 function EditMemberFormFields({
   values,
   onChange,
@@ -284,21 +284,21 @@ function EditMemberFormFields({
 
   return (
     <div className="py-2 space-y-6">
-      {/* 第一大块：成员信息 */}
+      {/* 第一大块：用户信息 */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">成员信息</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
         <div className="space-y-4">
-          {/* 成员 ID - 只读 */}
+          {/* 用户 ID - 只读 */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              成员 ID
+              用户 ID
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>成员 ID 为唯一标识，不可修改</TooltipContent>
+                <TooltipContent>用户 ID 为唯一标识，不可修改</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -308,15 +308,15 @@ function EditMemberFormFields({
             />
           </div>
 
-          {/* 成员角色 */}
+          {/* 用户角色 */}
           <div className="space-y-2">
-            <Label>成员角色</Label>
+            <Label>用户角色</Label>
             <Select value={values.role} onValueChange={(v) => !isInitialAdmin && onChange({ ...values, role: v })} disabled={isInitialAdmin}>
               <SelectTrigger className={`w-full ${isInitialAdmin ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-gray-50"}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="member">成员</SelectItem>
+                <SelectItem value="member">用户</SelectItem>
                 <SelectItem value="admin">管理员</SelectItem>
               </SelectContent>
             </Select>
@@ -327,9 +327,9 @@ function EditMemberFormFields({
       {/* 分隔线 */}
       <div className="border-t border-gray-100" />
 
-      {/* 第二大块：成员配额 */}
+      {/* 第二大块：用户配额 */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">成员配额</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -340,7 +340,7 @@ function EditMemberFormFields({
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业成员最多可以创建的 OpenClaw 数量</TooltipContent>
+                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -370,7 +370,7 @@ function EditMemberFormFields({
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业成员每日最多可消耗的 Tokens 数量</TooltipContent>
+                <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
               </Tooltip>
             </Label>
             <TokenLimitInput
@@ -426,7 +426,7 @@ function CredentialResultDialog({
           {/* 账号密码展示 */}
           <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">成员 ID</span>
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">用户 ID</span>
               <span className="text-sm font-mono text-gray-800 select-all">{memberId}</span>
             </div>
             <div className="border-t border-gray-100" />
@@ -440,7 +440,7 @@ function CredentialResultDialog({
           <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
             <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700 leading-relaxed">
-              关闭弹窗后将无法再次查看此密码，请复制后妥善保存，并通过安全渠道告知成员。
+              关闭弹窗后将无法再次查看此密码，请复制后妥善保存，并通过安全渠道告知用户。
             </p>
           </div>
 
@@ -469,7 +469,7 @@ export default function MemberManagement() {
   const [page, setPage] = useState(1);
   const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
 
-  // 排序：管理员置顶（按加入时间升序），普通成员按加入时间降序
+  // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
   const sortedMembers = [...members].sort((a, b) => {
     if (a.role === "admin" && b.role !== "admin") return -1;
     if (a.role !== "admin" && b.role === "admin") return 1;
@@ -514,7 +514,7 @@ export default function MemberManagement() {
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleAdd = () => {
-    if (!newMember.id.trim()) { toast.error("请输入成员 ID"); return; }
+    if (!newMember.id.trim()) { toast.error("请输入用户 ID"); return; }
     const pwd = generatePassword();
     setMembers([...members, {
       id: newMember.id, role: newMember.role, status: "active",
@@ -545,7 +545,7 @@ export default function MemberManagement() {
         : m
     ));
     setEditMemberId(null);
-    toast.success("成员信息已更新");
+    toast.success("用户信息已更新");
   };
 
   const handleToggleStatus = (id: string) => {
@@ -566,13 +566,13 @@ export default function MemberManagement() {
   const handleDisable = (id: string) => {
     setMembers(members.map((m) => m.id === id ? { ...m, status: "disabled" } : m));
     setDisableCheckDialog(null);
-    toast.success("成员已禁用");
+    toast.success("用户已禁用");
   };
 
   const handleDelete = (id: string) => {
     setMembers(members.filter((m) => m.id !== id));
     setDeleteConfirmDialog(null);
-    toast.success("成员已删除");
+    toast.success("用户已删除");
   };
 
   const handleReset = () => {
@@ -589,14 +589,14 @@ export default function MemberManagement() {
       <div className="page-enter">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">成员管理</h1>
-            <p className="text-sm text-gray-500 mt-1">管理企业成员的访问权限和资源配额</p>
+            <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
+            <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额</p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
                 <Plus className="w-4 h-4 mr-1.5" />
-                添加成员
+                添加用户
                 <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -618,7 +618,7 @@ export default function MemberManagement() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="搜索成员 ID..."
+              placeholder="搜索用户 ID..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="pl-9 bg-white border-gray-200"
@@ -634,14 +634,14 @@ export default function MemberManagement() {
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">
                   <div className="flex items-center gap-1.5">
-                    成员 ID
+                    用户 ID
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-default inline-flex">
                           <Info className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>企业成员的唯一 ID，例如企业邮箱或企业成员唯一名称</TooltipContent>
+                      <TooltipContent>企业用户的唯一 ID，例如企业邮箱或企业用户唯一名称</TooltipContent>
                     </Tooltip>
                   </div>
                 </th>
@@ -656,7 +656,7 @@ export default function MemberManagement() {
                           <Info className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>单个企业成员最多可以创建的 OpenClaw 数量</TooltipContent>
+                      <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
                     </Tooltip>
                   </div>
                 </th>
@@ -669,7 +669,7 @@ export default function MemberManagement() {
                           <Info className="w-3.5 h-3.5 text-gray-400" />
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent>单个企业成员每日最多可消耗的 Tokens 数量</TooltipContent>
+                      <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
                     </Tooltip>
                   </div>
                 </th>
@@ -685,7 +685,7 @@ export default function MemberManagement() {
                   </td>
                   <td className="px-4 py-4">
                     <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
-                      {member.role === "admin" ? "管理员" : "成员"}
+                      {member.role === "admin" ? "管理员" : "用户"}
                     </Badge>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
@@ -785,9 +785,9 @@ export default function MemberManagement() {
             </tbody>
           </table>
 
-          {/* 底部：共 N 名成员 + 翻页 */}
+          {/* 底部：共 N 名用户 + 翻页 */}
           <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {filtered.length} 名成员</span>
+            <span className="text-xs text-gray-400">共 {filtered.length} 名用户</span>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <Button
@@ -833,7 +833,7 @@ export default function MemberManagement() {
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>添加成员</DialogTitle>
+            <DialogTitle>添加用户</DialogTitle>
           </DialogHeader>
           <AddMemberFormFields values={newMember} onChange={setNewMember} />
           <DialogFooter>
@@ -847,7 +847,7 @@ export default function MemberManagement() {
       <Dialog open={!!editMemberId} onOpenChange={(open) => { if (!open) setEditMemberId(null); }}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>编辑成员</DialogTitle>
+            <DialogTitle>编辑用户</DialogTitle>
           </DialogHeader>
           <EditMemberFormFields values={editForm} onChange={setEditForm} isInitialAdmin={isInitialAdminEdit} />
           <DialogFooter>
@@ -861,10 +861,10 @@ export default function MemberManagement() {
       <Dialog open={showBatchDialog} onOpenChange={setShowBatchDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>批量导入成员</DialogTitle>
+            <DialogTitle>批量导入用户</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <p className="text-sm text-gray-500">请下载模板，填写成员信息后上传</p>
+            <p className="text-sm text-gray-500">请下载模板，填写用户信息后上传</p>
             <Button variant="outline" className="w-full" onClick={() => toast.success("模板已下载")}>
               <Download className="w-4 h-4 mr-2" />
               下载导入模板
@@ -873,7 +873,7 @@ export default function MemberManagement() {
               <Upload className="w-6 h-6 text-gray-400 mb-2" />
               <span className="text-sm text-gray-500">点击上传 CSV 文件</span>
               <input type="file" accept=".csv" className="hidden"
-                onChange={() => { setShowBatchDialog(false); toast.success("成员已批量导入"); }} />
+                onChange={() => { setShowBatchDialog(false); toast.success("用户已批量导入"); }} />
             </label>
           </div>
           <DialogFooter>
@@ -890,7 +890,7 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-5">
             <p className="text-sm text-gray-600 leading-relaxed">
-              确认重置成员 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
+              确认重置用户 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
 
             {/* 信息发送 - 弱化视觉 */}
@@ -908,7 +908,7 @@ export default function MemberManagement() {
               </div>
               <Input
                 type="email"
-                placeholder="输入成员接收新密码的邮箱地址"
+                placeholder="输入用户接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
                 className="bg-gray-50 text-sm placeholder:text-gray-300 border-gray-200"
@@ -943,15 +943,15 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Trash2 className="w-4 h-4 text-red-500" />
-              删除成员
+              删除用户
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <p className="text-sm text-gray-600">
-              只有当成员名下没有任何 OpenClaw 时，才可以删除成员。
+              只有当用户名下没有任何 OpenClaw 时，才可以删除用户。
             </p>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">成员 ID</span>
+              <span className="text-sm text-gray-500">用户 ID</span>
               <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
             </div>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -964,12 +964,12 @@ export default function MemberManagement() {
             </div>
             {(deleteCheckDialog?.clawCount ?? 0) > 0 ? (
               <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 space-y-1">
-                <p className="font-medium">无法删除该成员</p>
-                <p>请让成员自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该成员名下的所有 OpenClaw 后，再执行删除操作。</p>
+                <p className="font-medium">无法删除该用户</p>
+                <p>请让用户自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该用户名下的所有 OpenClaw 后，再执行删除操作。</p>
               </div>
             ) : (
               <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                该成员名下没有 OpenClaw，可以删除。
+                该用户名下没有 OpenClaw，可以删除。
               </div>
             )}
           </div>
@@ -1000,15 +1000,15 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <UserX className="w-4 h-4 text-orange-500" />
-              禁用成员
+              禁用用户
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <p className="text-sm text-gray-600">
-              禁用后，该成员将无法登录员工端。只有成员名下没有任何 OpenClaw 时，才可以禁用。
+              禁用后，该用户将无法登录用户端。只有用户名下没有任何 OpenClaw 时，才可以禁用。
             </p>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">成员 ID</span>
+              <span className="text-sm text-gray-500">用户 ID</span>
               <span className="text-sm font-medium text-gray-900">{disableCheckDialog?.memberId}</span>
             </div>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -1021,12 +1021,12 @@ export default function MemberManagement() {
             </div>
             {(disableCheckDialog?.clawCount ?? 0) > 0 ? (
               <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 space-y-1">
-                <p className="font-medium">无法禁用该成员</p>
-                <p>请让成员自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该成员名下的所有 OpenClaw 后，再执行禁用操作。</p>
+                <p className="font-medium">无法禁用该用户</p>
+                <p>请让用户自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该用户名下的所有 OpenClaw 后，再执行禁用操作。</p>
               </div>
             ) : (
               <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                该成员名下没有 OpenClaw，可以执行禁用。
+                该用户名下没有 OpenClaw，可以执行禁用。
               </div>
             )}
           </div>
@@ -1053,14 +1053,14 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="w-4 h-4" />
-              确认删除成员
+              确认删除用户
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm text-gray-600">
-              确定要删除成员 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span> 吗？
+              确定要删除用户 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span> 吗？
             </p>
-            <p className="text-sm text-red-500 font-medium">此操作不可撤销，删除后该成员将无法登录员工端。</p>
+            <p className="text-sm text-red-500 font-medium">此操作不可撤销，删除后该用户将无法登录用户端。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>

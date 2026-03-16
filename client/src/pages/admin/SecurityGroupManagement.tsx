@@ -1,6 +1,11 @@
 /**
  * SecurityGroupManagement - 管控端网络管理页
  * 三大块：安全组（入站/出站规则）、VPC 和子网配置、敬请期待
+ *
+ * VPC 和子网配置布局：
+ * - VPC 单独一行：全局选一个 VPC + 刷新按钮
+ * - 子网按可用区多行：每行一个可用区 + 子网选框 + 刷新按钮
+ * - VPC 或子网有改动时，标题栏右上角出现保存/取消按钮，统一保存
  */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Save } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
@@ -43,7 +48,7 @@ const DEFAULT_OUTBOUND = [
 // 系统分配的可用区
 const AVAILABLE_ZONES = ["广州五区", "广州六区", "广州七区"];
 
-// Mock VPC 列表（每个可用区相同，实际应按区过滤）
+// Mock VPC 列表
 const MOCK_VPCS = [
   { id: "vpc-jp7fjg13", name: "auto_test_vpc_2", cidr: "10.1.0.0/16" },
   { id: "vpc-9lyx5t8h", name: "CHC-带外", cidr: "192.168.0.0/16" },
@@ -80,10 +85,10 @@ type Rule = {
   remark: string;
 };
 
-type ZoneConfig = {
-  zone: string;
+type NetworkConfig = {
   vpcId: string;
-  subnetId: string;
+  // 每个可用区对应的子网 ID
+  zoneSubnets: Record<string, string>;
 };
 
 // ─── 组件 ─────────────────────────────────────────────────────────────────────
@@ -97,18 +102,63 @@ export default function SecurityGroupManagement() {
   const [editRule, setEditRule] = useState<Rule | null>(null);
   const [form, setForm] = useState({ source: "", protocol: "TCP", port: "", policy: "允许", remark: "" });
 
-  // VPC 和子网状态
-  const [savedZoneConfigs, setSavedZoneConfigs] = useState<ZoneConfig[]>(
-    AVAILABLE_ZONES.map((zone) => ({ zone, vpcId: "", subnetId: "" }))
-  );
-  const [zoneConfigs, setZoneConfigs] = useState<ZoneConfig[]>(
-    AVAILABLE_ZONES.map((zone) => ({ zone, vpcId: "", subnetId: "" }))
-  );
+  // VPC 和子网状态（全局一个 VPC，每个可用区一个子网）
+  const initConfig: NetworkConfig = {
+    vpcId: "",
+    zoneSubnets: Object.fromEntries(AVAILABLE_ZONES.map((z) => [z, ""])),
+  };
+  const [savedConfig, setSavedConfig] = useState<NetworkConfig>(initConfig);
+  const [config, setConfig] = useState<NetworkConfig>(initConfig);
+
+  // 刷新状态：vpc 表示刷新 VPC 列表，zone 名称表示刷新对应可用区子网
+  const [refreshingVpc, setRefreshingVpc] = useState(false);
   const [refreshingZone, setRefreshingZone] = useState<string | null>(null);
+
   const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
 
-  // 是否有未保存的 VPC/子网改动
-  const isVpcDirty = JSON.stringify(zoneConfigs) !== JSON.stringify(savedZoneConfigs);
+  // 是否有未保存的改动
+  const isDirty = JSON.stringify(config) !== JSON.stringify(savedConfig);
+
+  // VPC 改变时，所有可用区子网重置
+  const handleVpcChange = (vpcId: string) => {
+    setConfig((prev) => ({
+      vpcId,
+      zoneSubnets: Object.fromEntries(AVAILABLE_ZONES.map((z) => [z, ""])),
+    }));
+  };
+
+  const handleSubnetChange = (zone: string, subnetId: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      zoneSubnets: { ...prev.zoneSubnets, [zone]: subnetId },
+    }));
+  };
+
+  const handleRefreshVpc = () => {
+    setRefreshingVpc(true);
+    setTimeout(() => {
+      setRefreshingVpc(false);
+      toast.success("VPC 列表已刷新");
+    }, 800);
+  };
+
+  const handleRefreshZone = (zone: string) => {
+    setRefreshingZone(zone);
+    setTimeout(() => {
+      setRefreshingZone(null);
+      toast.success(`${zone} 子网列表已刷新`);
+    }, 800);
+  };
+
+  const handleSaveConfirm = () => {
+    setSavedConfig(config);
+    setShowVpcSaveDialog(false);
+    toast.success("VPC 和子网配置已保存");
+  };
+
+  const handleDiscard = () => {
+    setConfig(savedConfig);
+  };
 
   // ── 安全组操作 ──────────────────────────────────────────────────────────────
 
@@ -141,38 +191,6 @@ export default function SecurityGroupManagement() {
     setEditRule(rule);
     setForm({ source: rule.source, protocol: rule.protocol, port: rule.port, policy: rule.policy, remark: rule.remark });
     setShowRuleDialog(true);
-  };
-
-  // ── VPC 和子网操作 ──────────────────────────────────────────────────────────
-
-  const handleVpcChange = (zone: string, vpcId: string) => {
-    setZoneConfigs((prev) =>
-      prev.map((c) => c.zone === zone ? { ...c, vpcId, subnetId: "" } : c)
-    );
-  };
-
-  const handleSubnetChange = (zone: string, subnetId: string) => {
-    setZoneConfigs((prev) =>
-      prev.map((c) => c.zone === zone ? { ...c, subnetId } : c)
-    );
-  };
-
-  const handleRefreshZone = (zone: string) => {
-    setRefreshingZone(zone);
-    setTimeout(() => {
-      setRefreshingZone(null);
-      toast.success(`${zone} 网络信息已刷新`);
-    }, 800);
-  };
-
-  const handleVpcSaveConfirm = () => {
-    setSavedZoneConfigs(zoneConfigs);
-    setShowVpcSaveDialog(false);
-    toast.success("VPC 和子网配置已保存");
-  };
-
-  const handleVpcDiscard = () => {
-    setZoneConfigs(savedZoneConfigs);
   };
 
   // ── 子组件：规则表格 ────────────────────────────────────────────────────────
@@ -247,6 +265,8 @@ export default function SecurityGroupManagement() {
 
   // ── 渲染 ────────────────────────────────────────────────────────────────────
 
+  const availableSubnets = config.vpcId ? (MOCK_SUBNETS[config.vpcId] ?? []) : [];
+
   return (
     <>
       <div className="page-enter max-w-5xl">
@@ -308,20 +328,20 @@ export default function SecurityGroupManagement() {
             </div>
           </div>
 
-          {/* VPC / 子网列表选框 */}
+          {/* VPC / 子网配置卡片 */}
           <div
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            {/* 表格标题栏 */}
+            {/* 标题栏 */}
             <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
               <span className="text-sm font-semibold text-gray-800">VPC 与子网配置</span>
-              {isVpcDirty && (
+              {isDirty && (
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleVpcDiscard}
+                    onClick={handleDiscard}
                     className="h-7 px-3 text-xs text-gray-500"
                   >
                     取消
@@ -336,96 +356,118 @@ export default function SecurityGroupManagement() {
                 </div>
               )}
             </div>
-            {/* 列标题 */}
-            <div className="grid grid-cols-[110px_1fr_1fr_48px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/50">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="w-3 h-3 text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px] text-xs">
-                      系统自动选择的 OpenClaw 实例主力可用区，不可修改。可通过指定 VPC 和子网来规定实例部署在哪个可用区。
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+
+            {/* ── VPC 行 ── */}
+            <div className="px-6 py-4 border-b border-gray-100">
+              {/* 行标题 */}
+              <div className="grid grid-cols-[110px_1fr_48px] gap-4 mb-2">
+                <span className="text-xs font-medium text-gray-500">私有网络（VPC）</span>
+                <span />
+                <span />
               </div>
-              <span className="text-xs font-medium text-gray-500">私有网络（VPC）</span>
-              <span className="text-xs font-medium text-gray-500">子网</span>
-              <span />
+              {/* 行内容 */}
+              <div className="grid grid-cols-[110px_1fr_48px] gap-4 items-center">
+                <span className="text-sm text-gray-400">全局</span>
+                <Select
+                  value={config.vpcId || "auto"}
+                  onValueChange={(val) => handleVpcChange(val === "auto" ? "" : val)}
+                >
+                  <SelectTrigger className="h-9 text-sm bg-white border-gray-200 w-full min-w-0 max-w-none">
+                    <SelectValue placeholder="请选择私有网络" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">
+                      <span className="text-gray-400 text-xs">自动分配</span>
+                    </SelectItem>
+                    {MOCK_VPCS.map((vpc) => (
+                      <SelectItem key={vpc.id} value={vpc.id}>
+                        <span className="font-mono text-xs text-gray-500 mr-1">{vpc.id}</span>
+                        <span className="text-sm text-gray-800 mr-1">| {vpc.name}</span>
+                        <span className="text-xs text-gray-400">| {vpc.cidr}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleRefreshVpc}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
+                    title="刷新 VPC 列表"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${refreshingVpc ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* 每行一个可用区 */}
-            {zoneConfigs.map((config, idx) => {
-              const availableSubnets = config.vpcId ? (MOCK_SUBNETS[config.vpcId] ?? []) : [];
-              const isRefreshing = refreshingZone === config.zone;
-              return (
-                <div
-                  key={config.zone}
-                  className={`grid grid-cols-[110px_1fr_1fr_48px] gap-4 items-center px-6 py-4 ${idx < zoneConfigs.length - 1 ? "border-b border-gray-50" : ""}`}
-                >
-                  {/* 可用区名称 */}
-                  <span className="text-sm font-medium text-gray-700">{config.zone}</span>
-
-                  {/* VPC 下拉 */}
-                  <Select
-                    value={config.vpcId || "auto"}
-                    onValueChange={(val) => handleVpcChange(config.zone, val === "auto" ? "" : val)}
-                  >
-                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200 w-full min-w-0 max-w-none">
-                      <SelectValue placeholder="请选择私有网络" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">
-                        <span className="text-gray-400 text-xs">自动分配</span>
-                      </SelectItem>
-                      {MOCK_VPCS.map((vpc) => (
-                        <SelectItem key={vpc.id} value={vpc.id}>
-                          <span className="font-mono text-xs text-gray-500 mr-1">{vpc.id}</span>
-                          <span className="text-sm text-gray-800 mr-1">| {vpc.name}</span>
-                          <span className="text-xs text-gray-400">| {vpc.cidr}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* 子网下拉 */}
-                  <Select
-                    value={config.subnetId || "auto"}
-                    onValueChange={(val) => handleSubnetChange(config.zone, val === "auto" ? "" : val)}
-                    disabled={!config.vpcId}
-                  >
-                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
-                      <SelectValue placeholder="请选择子网" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">
-                        <span className="text-gray-400 text-xs">自动分配</span>
-                      </SelectItem>
-                      {availableSubnets.map((subnet) => (
-                        <SelectItem key={subnet.id} value={subnet.id}>
-                          <span className="font-mono text-xs text-gray-500 mr-1">{subnet.id}</span>
-                          <span className="text-sm text-gray-800 mr-1">| {subnet.name}</span>
-                          <span className="text-xs text-gray-400">| {subnet.cidr}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* 刷新按鈕 */}
-                  <div className="flex justify-end">
-                  <button
-                    onClick={() => handleRefreshZone(config.zone)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
-                    title={`刷新 ${config.zone} 网络信息`}
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-                  </button>
-                  </div>
+            {/* ── 子网区域 ── */}
+            <div>
+              {/* 子网列标题 */}
+              <div className="grid grid-cols-[110px_1fr_48px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/50">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px] text-xs">
+                        系统自动选择的 OpenClaw 实例主力可用区，不可修改。可通过指定子网来规定实例部署在哪个可用区。
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
-              );
-            })}
+                <span className="text-xs font-medium text-gray-500">子网</span>
+                <span />
+              </div>
+
+              {/* 每个可用区一行 */}
+              {AVAILABLE_ZONES.map((zone, idx) => {
+                const isRefreshing = refreshingZone === zone;
+                const subnetId = config.zoneSubnets[zone] || "";
+                return (
+                  <div
+                    key={zone}
+                    className={`grid grid-cols-[110px_1fr_48px] gap-4 items-center px-6 py-4 ${idx < AVAILABLE_ZONES.length - 1 ? "border-b border-gray-50" : ""}`}
+                  >
+                    <span className="text-sm font-medium text-gray-700">{zone}</span>
+
+                    <Select
+                      value={subnetId || "auto"}
+                      onValueChange={(val) => handleSubnetChange(zone, val === "auto" ? "" : val)}
+                      disabled={!config.vpcId}
+                    >
+                      <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
+                        <SelectValue placeholder={config.vpcId ? "请选择子网" : "请先选择 VPC"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">
+                          <span className="text-gray-400 text-xs">自动分配</span>
+                        </SelectItem>
+                        {availableSubnets.map((subnet) => (
+                          <SelectItem key={subnet.id} value={subnet.id}>
+                            <span className="font-mono text-xs text-gray-500 mr-1">{subnet.id}</span>
+                            <span className="text-sm text-gray-800 mr-1">| {subnet.name}</span>
+                            <span className="text-xs text-gray-400">| {subnet.cidr}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => handleRefreshZone(zone)}
+                        disabled={!config.vpcId}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-400 disabled:hover:border-gray-200"
+                        title={config.vpcId ? `刷新 ${zone} 子网列表` : "请先选择 VPC"}
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* 底部提示 */}
             <div className="px-6 py-3 border-t border-gray-50 bg-gray-50/30">
@@ -452,8 +494,6 @@ export default function SecurityGroupManagement() {
               </p>
             </div>
           </div>
-
-          {/* 保存/取消按钮已移至表格右上角，此处不再重复显示 */}
         </div>
 
         {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════ */}
@@ -610,7 +650,7 @@ export default function SecurityGroupManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowVpcSaveDialog(false)}>取消</Button>
             <Button
-              onClick={handleVpcSaveConfirm}
+              onClick={handleSaveConfirm}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               确认保存

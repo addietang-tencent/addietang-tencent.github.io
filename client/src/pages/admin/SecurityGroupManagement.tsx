@@ -470,8 +470,25 @@ export default function SecurityGroupManagement() {
             </div>
 
             {/* 底部提示 */}
-            <div className="px-6 py-3 border-t border-gray-50 bg-gray-50/30">
-              <p className="text-xs text-gray-400 leading-relaxed">
+            <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/30 space-y-2.5">
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-gray-600">配置说明：</p>
+                <ul className="text-xs text-gray-500 leading-relaxed space-y-1">
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 flex-shrink-0">•</span>
+                    <span><strong>不填任何 VPC 和子网</strong> — 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 flex-shrink-0">•</span>
+                    <span><strong>填写了具体 VPC</strong> — 同一个 VPC 下的 OpenClaw 实例内网可互通。</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-gray-400 flex-shrink-0">•</span>
+                    <span><strong>填写了子网</strong> — 系统按填写的子网的可用区随机部署；不填的可用区不部署。</span>
+                  </li>
+                </ul>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed pt-1.5 border-t border-gray-200">
                 如现有私有网络/子网不符合要求，可以去控制台{" "}
                 <a
                   href="https://console.cloud.tencent.com/vpc/vpc"

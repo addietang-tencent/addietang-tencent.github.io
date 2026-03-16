@@ -433,17 +433,19 @@ export default function SecurityGroupManagement() {
 
               {/* 每个可用区一行 */}
               {(() => {
+                // 只要任意区有已选子网，所有行的下拉列表第一项都显示「不分配」
+                const anyZoneSelected = AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
                 return AVAILABLE_ZONES.map((zone, idx) => {
                   const isRefreshing = refreshingZone === zone;
                   const subnetId = config.zoneSubnets[zone] || "";
-                  // 其他可用区（排除当前区）是否有已选子网
+                  // 其他可用区（排除当前区）是否有已选子网（用于 trigger 显示）
                   const otherZoneSelected = AVAILABLE_ZONES.some(z => z !== zone && !!config.zoneSubnets[z]);
-                  // 当前行未选子网时，默认选项文案：其他区有已选 → 「不分配」，否则 → 「自动分配」
-                  const defaultLabel = otherZoneSelected && !subnetId ? "不分配" : "自动分配";
-                  // trigger 中显示的文案：已选子网时显示子网名，未选时显示 defaultLabel
+                  // 下拉列表第一项文案：任意区有已选 → 「不分配」，否则 → 「自动分配」
+                  const listDefaultLabel = anyZoneSelected ? "不分配" : "自动分配";
+                  // trigger 中显示的文案：已选子网 → 子网名；未选 + 其他区有已选 → 「不分配」；全未选 → 「自动分配」
                   const triggerDisplay = subnetId
                     ? availableSubnets.find(s => s.id === subnetId)?.name || subnetId
-                    : defaultLabel;
+                    : otherZoneSelected ? "不分配" : "自动分配";
                   return (
                   <div
                     key={zone}
@@ -461,7 +463,7 @@ export default function SecurityGroupManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">
-                          <span className="text-gray-400 text-xs">{defaultLabel}</span>
+                          <span className="text-gray-400 text-xs">{listDefaultLabel}</span>
                         </SelectItem>
                         {availableSubnets.map((subnet) => (
                           <SelectItem key={subnet.id} value={subnet.id}>

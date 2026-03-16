@@ -230,7 +230,7 @@ export default function ImageManagement() {
                   <SelectTrigger className="bg-gray-50 flex-1">
                     <SelectValue placeholder="请选择要导入的镜像" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent side="bottom" align="start">
                     <SelectGroup>
                       <SelectLabel className="text-xs text-gray-400 font-medium">公共镜像</SelectLabel>
                       {PUBLIC_IMAGES.map((img) => (

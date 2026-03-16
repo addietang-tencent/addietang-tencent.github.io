@@ -442,10 +442,9 @@ export default function SecurityGroupManagement() {
                   const otherZoneSelected = AVAILABLE_ZONES.some(z => z !== zone && !!config.zoneSubnets[z]);
                   // 下拉列表第一项文案：任意区有已选 → 「不分配」，否则 → 「自动分配」
                   const listDefaultLabel = anyZoneSelected ? "不分配" : "自动分配";
-                  // trigger 中显示的文案：已选子网 → 子网名；未选 + 其他区有已选 → 「不分配」；全未选 → 「自动分配」
-                  const triggerDisplay = subnetId
-                    ? availableSubnets.find(s => s.id === subnetId)?.name || subnetId
-                    : otherZoneSelected ? "不分配" : "自动分配";
+                  // trigger 中显示的内容
+                  const selectedSubnet = subnetId ? availableSubnets.find(s => s.id === subnetId) : null;
+                  const triggerLabel = otherZoneSelected ? "不分配" : "自动分配";
                   return (
                   <div
                     key={zone}
@@ -458,8 +457,16 @@ export default function SecurityGroupManagement() {
                       onValueChange={(val) => handleSubnetChange(zone, val === "auto" ? "" : val)}
                       disabled={!config.vpcId}
                     >
-                      <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
-                        <span className="text-gray-400 text-xs">{config.vpcId ? triggerDisplay : "自动分配"}</span>
+                      <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none overflow-hidden">
+                        {!config.vpcId || !selectedSubnet ? (
+                          <span className="text-gray-400 text-xs">{config.vpcId ? triggerLabel : "自动分配"}</span>
+                        ) : (
+                          <span className="flex items-center gap-1 min-w-0 overflow-hidden">
+                            <span className="font-mono text-xs text-gray-500 shrink-0">{selectedSubnet.id}</span>
+                            <span className="text-sm text-gray-800 shrink-0">| {selectedSubnet.name}</span>
+                            <span className="text-xs text-gray-400 shrink-0">| {selectedSubnet.cidr}</span>
+                          </span>
+                        )}
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">

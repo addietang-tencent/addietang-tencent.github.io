@@ -203,10 +203,14 @@ export default function OpenClawDetail() {
   // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("wework");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
+  // 密码显示/隐藏状态
+  const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
   // 飞书专用：快捷/手动 Tab
   const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("manual");
   // 飞书二维码弹窗
   const [showQrModal, setShowQrModal] = useState(false);
+  // 已接入通道密码显示/隐藏状态
+  const [visibleAppliedSecrets, setVisibleAppliedSecrets] = useState<Set<string>>(new Set());
   // 已接入通道
   const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([
     {
@@ -237,6 +241,31 @@ export default function OpenClawDetail() {
 
   const toggleExpandChannel = (idx: number) => {
     setExpandedChannelIdx(prev => prev === idx ? null : idx);
+  };
+
+  const toggleSecretVisibility = (key: string) => {
+    setVisibleSecrets(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleAppliedSecretVisibility = (channelIdx: number, fieldKey: string) => {
+    const uniqueKey = `${channelIdx}-${fieldKey}`;
+    setVisibleAppliedSecrets(prev => {
+      const next = new Set(prev);
+      if (next.has(uniqueKey)) {
+        next.delete(uniqueKey);
+      } else {
+        next.add(uniqueKey);
+      }
+      return next;
+    });
   };
 
   // ── Skills state ──
@@ -337,13 +366,26 @@ export default function OpenClawDetail() {
               {currentChannelConfig.fields!.map((field) => (
                 <div key={field.key} className="relative">
                   <Input
-                    type={field.secret ? "password" : "text"}
+                    type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
                     placeholder={field.label}
                     value={channelFields[field.key] || ""}
                     onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
                     className="bg-gray-50 border-gray-200 pr-10"
                   />
-                  {field.secret && <EyeOff className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />}
+                  {field.secret && (
+                    <button
+                      onClick={() => toggleSecretVisibility(field.key)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                      type="button"
+                      title={visibleSecrets.has(field.key) ? "隐藏" : "显示"}
+                    >
+                      {visibleSecrets.has(field.key) ? (
+                        <Eye className="w-4 h-4" />
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -358,13 +400,26 @@ export default function OpenClawDetail() {
         {currentChannelConfig.fields?.map((field) => (
           <div key={field.key} className="relative">
             <Input
-              type={field.secret ? "password" : "text"}
+              type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
               placeholder={field.label}
               value={channelFields[field.key] || ""}
               onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
               className="bg-gray-50 border-gray-200 pr-10"
             />
-            {field.secret && <EyeOff className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />}
+            {field.secret && (
+              <button
+                onClick={() => toggleSecretVisibility(field.key)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                type="button"
+                title={visibleSecrets.has(field.key) ? "隐藏" : "显示"}
+              >
+                {visibleSecrets.has(field.key) ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -373,7 +428,7 @@ export default function OpenClawDetail() {
 
   // ─── 渲染已接入通道的展开配置项 ───────────────────────────────────────────────
 
-  const renderAppliedChannelDetail = (ch: AppliedChannel) => {
+  const renderAppliedChannelDetail = (chIdx: number, ch: AppliedChannel) => {
     // 将字段 label 转换为简短 key 名（如 "飞书应用的App ID" → "appId"）
     const getShortKey = (field: ChannelField): string => {
       if (field.key === "appId" || field.key === "clientId") return field.key;
@@ -384,16 +439,32 @@ export default function OpenClawDetail() {
     };
     return (
       <div className="mx-2 mb-2 space-y-2">
-        {/* 子框1：appId / appSecret */}
+        {/* 子框Ἷb：appId / appSecret */}
         <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
           {ch.fields.map((field) => {
             const val = ch.fieldValues[field.key] || "";
-            const displayVal = field.secret ? maskSecret(val) : val;
+            const uniqueKey = `${chIdx}-${field.key}`;
+            const isVisible = visibleAppliedSecrets.has(uniqueKey);
+            const displayVal = field.secret && !isVisible ? maskSecret(val) : val;
             const shortKey = getShortKey(field);
             return (
-              <div key={field.key} className="flex items-start gap-1 text-sm">
+              <div key={field.key} className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500 shrink-0">{shortKey}：</span>
-                <span className="text-gray-800 font-mono break-all">{displayVal || "—"}</span>
+                <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
+                {field.secret && (
+                  <button
+                    onClick={() => toggleAppliedSecretVisibility(chIdx, field.key)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0"
+                    type="button"
+                    title={isVisible ? "隐藏" : "显示"}
+                  >
+                    {isVisible ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
               </div>
             );
           })}
@@ -661,15 +732,15 @@ export default function OpenClawDetail() {
                 <div className="pt-2 border-t border-gray-50">
                   <p className="text-xs text-gray-400 mb-2">已接入通道</p>
                   <div className="space-y-1">
-                    {appliedChannels.map((ch, idx) => (
-                      <div key={idx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
+                    {appliedChannels.map((ch, chIdx) => (
+                      <div key={chIdx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
                         {/* 折叠行 */}
                         <div className="flex items-center justify-between px-2.5 py-2">
                           <button
                             className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
-                            onClick={() => toggleExpandChannel(idx)}
+                            onClick={() => toggleExpandChannel(chIdx)}
                           >
-                            {expandedChannelIdx === idx
+                            {expandedChannelIdx === chIdx
                               ? <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                               : <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
                             }
@@ -682,8 +753,8 @@ export default function OpenClawDetail() {
                             </span>
                             <button
                               onClick={() => {
-                                setAppliedChannels(appliedChannels.filter((_, i) => i !== idx));
-                                if (expandedChannelIdx === idx) setExpandedChannelIdx(null);
+                                setAppliedChannels(appliedChannels.filter((_, i) => i !== chIdx));
+                                if (expandedChannelIdx === chIdx) setExpandedChannelIdx(null);
                               }}
                               className="text-gray-300 hover:text-red-500 transition-colors"
                             >
@@ -692,7 +763,7 @@ export default function OpenClawDetail() {
                           </div>
                         </div>
                         {/* 展开配置项 */}
-                        {expandedChannelIdx === idx && renderAppliedChannelDetail(ch)}
+                        {expandedChannelIdx === chIdx && renderAppliedChannelDetail(chIdx, ch)}
                       </div>
                     ))}
                   </div>

@@ -325,7 +325,7 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>不填任何私有网络和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的私有网络，私有网络之间独立，通信不互通。</span>
+                <span><strong>不填任何私有网络和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的私有网络，私有网络之间互相独立，内网不互通；在系统分配的全部可用区中随机部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
@@ -333,7 +333,7 @@ export default function SecurityGroupManagement() {
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>填写了子网</strong> — 系统按填写的子网的可用区随机部署；不填的可用区不部署。</span>
+                <span><strong>填写了子网</strong> — 系统按填写了子网的可用区随机部署，不填的可用区不部署；如果子网都没有填写，则在系统分配的全部可用区中随机部署。</span>
               </li>
             </ul>
           </div>
@@ -519,7 +519,7 @@ export default function SecurityGroupManagement() {
                 >
                   新建子网<ExternalLink className="w-3 h-3" />
                 </a>
-                。云主机购买后可以通过控制台切换私有网络完成私有网络/子网的切换。
+                。
               </p>
             </div>
           </div>

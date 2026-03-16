@@ -459,7 +459,7 @@ export default function SecurityGroupManagement() {
                       disabled={!config.vpcId}
                     >
                       <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
-                        <span className={subnetId ? "text-gray-800" : "text-gray-400 text-xs"}>{config.vpcId ? triggerDisplay : "请先选择私有网络"}</span>
+                        <span className="text-gray-400 text-xs">{config.vpcId ? triggerDisplay : "自动分配"}</span>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">

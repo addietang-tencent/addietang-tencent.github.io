@@ -319,13 +319,23 @@ export default function SecurityGroupManagement() {
             <h2 className="text-base font-bold text-gray-900">VPC 和子网</h2>
           </div>
 
-          {/* 说明文字区域 - 蓝色提示条 */}
+          {/* 说明文字区域 */}
           <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-            <div className="space-y-1 text-xs text-blue-700 leading-relaxed">
-              <p><strong>推荐：</strong>不填写任何 VPC 和子网，系统将自动创建 VPC，并把 OpenClaw 实例随机部署到系统分配的可用区中。</p>
-              <p>填写了具体 VPC 则部署到对应 VPC 下；填写了几个可用区的子网，系统就在这几个可用区随机部署；若某可用区未填子网，则在该区内自动分配。</p>
-            </div>
+            <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
+              <li className="flex gap-1.5">
+                <span className="shrink-0">•</span>
+                <span><span className="inline-flex items-center gap-1 mr-1"><strong>不填任何 VPC 和子网</strong><span className="bg-blue-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">推荐</span></span>— 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="shrink-0">•</span>
+                <span><strong>填写了具体 VPC</strong> — 同一个 VPC 下的 OpenClaw 实例内网可互通。</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="shrink-0">•</span>
+                <span><strong>填写了子网</strong> — 系统按填写的子网的可用区随机部署；不填的可用区不部署。</span>
+              </li>
+            </ul>
           </div>
 
           {/* VPC / 子网配置卡片 */}
@@ -470,25 +480,8 @@ export default function SecurityGroupManagement() {
             </div>
 
             {/* 底部提示 */}
-            <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/30 space-y-2.5">
-              <div className="space-y-1.5">
-                <p className="text-xs font-medium text-gray-600">配置说明：</p>
-                <ul className="text-xs text-gray-500 leading-relaxed space-y-1">
-                  <li className="flex gap-2">
-                    <span className="text-gray-400 flex-shrink-0">•</span>
-                    <span><strong>不填任何 VPC 和子网</strong> — 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-gray-400 flex-shrink-0">•</span>
-                    <span><strong>填写了具体 VPC</strong> — 同一个 VPC 下的 OpenClaw 实例内网可互通。</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-gray-400 flex-shrink-0">•</span>
-                    <span><strong>填写了子网</strong> — 系统按填写的子网的可用区随机部署；不填的可用区不部署。</span>
-                  </li>
-                </ul>
-              </div>
-              <p className="text-xs text-gray-400 leading-relaxed pt-1.5 border-t border-gray-200">
+            <div className="px-6 py-3 border-t border-gray-50 bg-gray-50/30">
+              <p className="text-xs text-gray-400 leading-relaxed">
                 如现有私有网络/子网不符合要求，可以去控制台{" "}
                 <a
                   href="https://console.cloud.tencent.com/vpc/vpc"

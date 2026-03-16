@@ -1,10 +1,14 @@
 /**
  * SessionManagement - 会话管理页面
- * 包含：顶部指标卡 / 会话列表表格（支持筛选）
+ * 包含：顶部指标卡 / 会话列表表格（支持筛选）/ 渠道与模型分布
  * 风格：浅色主题，与 Token 监控页保持一致
  */
 import { useState, useMemo } from "react";
-import { MessageCircle, RotateCw, Zap, Lightbulb, Globe } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe } from "lucide-react";
+import {
+  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie,
+} from "recharts";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
 
@@ -32,13 +36,6 @@ const STAT_CARDS = [
     iconBg: "from-purple-500 to-purple-600",
   },
   {
-    label: "SKILLS 调用",
-    value: 1,
-    metric: "skills_calls",
-    icon: Lightbulb,
-    iconBg: "from-green-500 to-green-600",
-  },
-  {
     label: "活跃渠道",
     value: 5,
     metric: "active_channels",
@@ -46,6 +43,21 @@ const STAT_CARDS = [
     iconBg: "from-orange-500 to-orange-600",
     channels: ["CLI", "Webchat", "Feishu Group", "Feishu Dm", "QQ Dm"],
   },
+];
+
+// 按渠道分布数据
+const CHANNEL_DIST_DATA = [
+  { name: "Feishu Dm", count: 4 },
+  { name: "QQ Dm", count: 3 },
+  { name: "Feishu Group", count: 2 },
+  { name: "CLI", count: 1 },
+  { name: "Webchat", count: 1 },
+];
+
+// 按模型分布数据
+const MODEL_DIST_DATA = [
+  { name: "hunyuan-turbos-latest", value: 6, color: "#d8b4fe" },
+  { name: "deepseek-v3.2", value: 5, color: "#60a5fa" },
 ];
 
 // Mock 会话数据
@@ -197,7 +209,7 @@ export default function SessionManagement() {
       </div>
 
       {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         {STAT_CARDS.map((card) => {
           const Icon = card.icon;
           return (
@@ -302,6 +314,103 @@ export default function SessionManagement() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* ══ 渠道与模型分布 ════════════════════════════════════════════════════════ */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 rounded-full bg-blue-500" />
+          <h2 className="text-base font-bold text-gray-900">渠道与模型分布</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-5">
+
+          {/* 按渠道分布 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          >
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-800">按渠道分布</span>
+              </div>
+              <span className="text-xs font-mono text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">channel</span>
+            </div>
+            <div className="px-4 pt-4 pb-2">
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={CHANNEL_DIST_DATA}
+                  layout="vertical"
+                  margin={{ top: 8, right: 32, left: 80, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 12, fill: "#6b7280" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={76}
+                  />
+                  <Tooltip
+                    contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                  />
+                  <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                    {CHANNEL_DIST_DATA.map((entry, index) => {
+                      const colors = ["#d8b4fe", "#22c55e", "#60a5fa", "#f59e0b", "#ef4444"];
+                      return <Cell key={index} fill={colors[index % colors.length]} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* 按模型分布 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          >
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-800">按模型分布</span>
+              </div>
+              <span className="text-xs font-mono text-purple-500 bg-purple-50 px-2 py-0.5 rounded-md">model</span>
+            </div>
+            <div className="px-4 py-4 flex-1 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={MODEL_DIST_DATA}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {MODEL_DIST_DATA.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="px-5 py-3 border-t border-gray-50 bg-gray-50/40 space-y-1.5">
+              {MODEL_DIST_DATA.map((model) => (
+                <div key={model.name} className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: model.color }} />
+                  <span className="text-xs text-gray-700">{model.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
 

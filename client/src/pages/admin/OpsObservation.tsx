@@ -149,11 +149,11 @@ function ChartCard({
 }
 
 /** 底部指标项 */
-function FooterStat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+function FooterStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-gray-400">{label}</span>
-      <span className="text-base font-bold" style={{ color: color ?? "#1f2937" }}>{value}</span>
+      <span className="text-base font-bold text-gray-900">{value}</span>
     </div>
   );
 }
@@ -186,10 +186,10 @@ export default function OpsObservation() {
                   <Icon className="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: card.color }}>{card.value}</div>
+              <div className="text-2xl font-bold mb-1 text-gray-900">{card.value}</div>
               {card.status ? (
-                <div className={`flex items-center gap-1 text-xs font-medium ${card.status.type === "warn" ? "text-red-500" : "text-green-500"}`}>
-                  {card.status.type === "warn" && <AlertTriangle className="w-3 h-3" />}
+                <div className="flex items-center gap-1 text-xs font-medium text-gray-600">
+                  {card.status.type === "warn" && <AlertTriangle className="w-3 h-3 text-red-500" />}
                   {card.status.text}
                 </div>
               ) : (
@@ -287,8 +287,8 @@ export default function OpsObservation() {
             iconBg="from-green-500 to-green-600"
             footer={
               <>
-                <FooterStat label="处理量" value={13} color="#22c55e" />
-                <FooterStat label="积压" value={0} color="#3b82f6" />
+                <FooterStat label="处理量" value={13} />
+                <FooterStat label="积压" value={0} />
               </>
             }
           >
@@ -355,8 +355,8 @@ export default function OpsObservation() {
             iconBg="from-amber-400 to-amber-500"
             footer={
               <>
-                <FooterStat label="P50" value="5s" color="#f59e0b" />
-                <FooterStat label="P95" value="10s" color="#f59e0b" />
+                <FooterStat label="P50" value="5s" />
+                <FooterStat label="P95" value="10s" />
               </>
             }
           >

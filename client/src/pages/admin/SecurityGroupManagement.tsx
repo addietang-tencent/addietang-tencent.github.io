@@ -325,7 +325,7 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><span className="inline-flex items-center gap-1 mr-1"><strong>不填任何 VPC 和子网</strong><span className="bg-blue-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded">推荐</span></span>— 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
+                <span><strong>不填任何 VPC 和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的 VPC，VPC 之间独立，通信不互通。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
@@ -432,10 +432,15 @@ export default function SecurityGroupManagement() {
               </div>
 
               {/* 每个可用区一行 */}
-              {AVAILABLE_ZONES.map((zone, idx) => {
-                const isRefreshing = refreshingZone === zone;
-                const subnetId = config.zoneSubnets[zone] || "";
-                return (
+              {(() => {
+                // 判断是否有任意可用区已选了子网
+                const anyZoneSelected = AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
+                return AVAILABLE_ZONES.map((zone, idx) => {
+                  const isRefreshing = refreshingZone === zone;
+                  const subnetId = config.zoneSubnets[zone] || "";
+                  // 当前区未选子网时，默认选项文案：有其他区已选 → 「不分配」，否则 → 「自动分配」
+                  const defaultLabel = anyZoneSelected && !subnetId ? "不分配" : "自动分配";
+                  return (
                   <div
                     key={zone}
                     className={`grid grid-cols-[110px_1fr_48px] gap-4 items-center px-6 py-4 ${idx < AVAILABLE_ZONES.length - 1 ? "border-b border-gray-50" : ""}`}
@@ -452,7 +457,7 @@ export default function SecurityGroupManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">
-                          <span className="text-gray-400 text-xs">自动分配</span>
+                          <span className="text-gray-400 text-xs">{defaultLabel}</span>
                         </SelectItem>
                         {availableSubnets.map((subnet) => (
                           <SelectItem key={subnet.id} value={subnet.id}>
@@ -476,7 +481,8 @@ export default function SecurityGroupManagement() {
                     </div>
                   </div>
                 );
-              })}
+                });
+              })()}
             </div>
 
             {/* 底部提示 */}

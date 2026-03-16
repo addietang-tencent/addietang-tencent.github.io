@@ -303,7 +303,7 @@ export default function SecurityGroupManagement() {
               <div className="flex items-start gap-2">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0" />
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  如果填写了具体 VPC，则会将 OpenClaw 实例部署到对应 VPC 下。填写了几个可用区的子网，系统就会在这几个可用区随机部署；若某个可用区未填写子网，则在该可用区内随机分配。
+                  填写了具体 VPC 则部署到对应 VPC 下；填写了子网则在对应可用区随机部署，未填子网则在该区内自动分配。
                 </p>
               </div>
             </div>
@@ -315,8 +315,8 @@ export default function SecurityGroupManagement() {
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
             {/* 表头 */}
-            <div className="grid grid-cols-[140px_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50">
-              <span className="text-xs font-medium text-gray-500">已选中可用区</span>
+            <div className={`grid grid-cols-[110px_1fr_1fr_40px] gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50`}>
+              <span className="text-xs font-medium text-gray-500">系统分配可用区</span>
               <span className="text-xs font-medium text-gray-500">私有网络（VPC）</span>
               <span className="text-xs font-medium text-gray-500">子网</span>
               <span />
@@ -329,7 +329,7 @@ export default function SecurityGroupManagement() {
               return (
                 <div
                   key={config.zone}
-                  className={`grid grid-cols-[140px_1fr_1fr_40px] gap-4 items-center px-6 py-4 ${idx < zoneConfigs.length - 1 ? "border-b border-gray-50" : ""}`}
+                  className={`grid grid-cols-[110px_1fr_1fr_40px] gap-4 items-center px-6 py-4 ${idx < zoneConfigs.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
                   {/* 可用区名称 */}
                   <span className="text-sm font-medium text-gray-700">{config.zone}</span>
@@ -339,7 +339,7 @@ export default function SecurityGroupManagement() {
                     value={config.vpcId || "auto"}
                     onValueChange={(val) => handleVpcChange(config.zone, val === "auto" ? "" : val)}
                   >
-                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200">
+                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200 w-full min-w-0 max-w-none">
                       <SelectValue placeholder="请选择私有网络" />
                     </SelectTrigger>
                     <SelectContent>
@@ -362,7 +362,7 @@ export default function SecurityGroupManagement() {
                     onValueChange={(val) => handleSubnetChange(config.zone, val === "auto" ? "" : val)}
                     disabled={!config.vpcId}
                   >
-                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50">
+                    <SelectTrigger className="h-9 text-sm bg-white border-gray-200 disabled:opacity-50 w-full min-w-0 max-w-none">
                       <SelectValue placeholder="请选择子网" />
                     </SelectTrigger>
                     <SelectContent>
@@ -380,6 +380,7 @@ export default function SecurityGroupManagement() {
                   </Select>
 
                   {/* 刷新按钮 */}
+                  <div className="pl-1">
                   <button
                     onClick={() => handleRefreshZone(config.zone)}
                     className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
@@ -387,6 +388,7 @@ export default function SecurityGroupManagement() {
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
                   </button>
+                  </div>
                 </div>
               );
             })}

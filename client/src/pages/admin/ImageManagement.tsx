@@ -199,7 +199,7 @@ export default function ImageManagement() {
 
       {/* 导入镜像弹窗 */}
       <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) setSelectedImageId(""); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md overflow-visible">
           <DialogHeader>
             <DialogTitle>导入镜像</DialogTitle>
           </DialogHeader>
@@ -230,7 +230,7 @@ export default function ImageManagement() {
                   <SelectTrigger className="bg-gray-50 flex-1">
                     <SelectValue placeholder="请选择要导入的镜像" />
                   </SelectTrigger>
-                  <SelectContent side="bottom" align="start">
+                  <SelectContent side="bottom" align="start" sideOffset={8}>
                     <SelectGroup>
                       <SelectLabel className="text-xs text-gray-400 font-medium">公共镜像</SelectLabel>
                       {PUBLIC_IMAGES.map((img) => (

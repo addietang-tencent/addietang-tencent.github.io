@@ -271,7 +271,7 @@ export default function MyOpenClaw() {
                                   <TooltipTrigger asChild>
                                     <div>
                                       <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                        <RotateCcw className="w-4 h-4 mr-2 text-gray-400" />
+                                        <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/restart-icon-DMPdUynkrwT7EaWPgRp657.webp" alt="重启" className="w-4 h-4 mr-2 opacity-50" />
                                         重启
                                       </DropdownMenuItem>
                                     </div>
@@ -282,7 +282,7 @@ export default function MyOpenClaw() {
                                 </Tooltip>
                               ) : (
                                 <DropdownMenuItem onClick={() => handleRestart(claw.name)}>
-                                  <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
+                                  <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/restart-icon-DMPdUynkrwT7EaWPgRp657.webp" alt="重启" className="w-4 h-4 mr-2" />
                                   重启
                                 </DropdownMenuItem>
                               )}

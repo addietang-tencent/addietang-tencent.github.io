@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Trash2, Info, RefreshCw, ExternalLink, Search } from "lucide-react";
+import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
 const PUBLIC_IMAGES = [
@@ -250,10 +250,7 @@ export default function ImageManagement() {
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
                 >
                   <span>{selectedImageId ? selectedImage?.name : "请选择要导入的镜像"}</span>
-                  {/* 上下箭头 icon */}
-                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${showImageList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l5-5m0 0l5 5M12 5v11" />
-                  </svg>
+                  <ChevronsUpDown className="w-4 h-4 text-gray-400" />
                 </button>
 
                 <button

@@ -250,9 +250,10 @@ export default function ImageManagement() {
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
                 >
                   <span>{selectedImageId ? selectedImage?.name : "请选择要导入的镜像"}</span>
-                  {/* 上下箭头 icon */}
-                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${showImageList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l5-5m0 0l5 5M12 5v11" />
+                  {/* 排序上下箭头 icon */}
+                  <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="12 5 19 12 5 12"></polyline>
+                    <polyline points="12 19 5 12 19 12"></polyline>
                   </svg>
                 </button>
 

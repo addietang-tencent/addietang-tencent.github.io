@@ -349,7 +349,7 @@ export default function TokensMonitor() {
       </div>
 
       {/* 统计卡片 + 全局配额卡片 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-5 gap-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -377,9 +377,6 @@ export default function TokensMonitor() {
           </div>
           <p className="text-xl font-bold text-gray-900">{fmt(memberData.reduce((s, m) => s + m.outputTokens, 0))}</p>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">

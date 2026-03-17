@@ -163,7 +163,7 @@ export default function OpenClawMonitor() {
           {/* 表格上方工具栏：左侧搜索框，右侧统计 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4">
             {/* 左：搜索框 */}
-            <div className="relative w-64">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="搜索名称或创建人"

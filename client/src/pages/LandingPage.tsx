@@ -90,7 +90,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+              style={{ background: "#FFFFFF" }}>
               🦞
             </div>
             <span className="font-semibold text-gray-900 text-sm">{SITE_CONFIG.name}</span>
@@ -124,7 +124,7 @@ export default function LandingPage() {
           <div className="flex justify-center mb-8">
             <div className="relative">
               <div className="w-40 h-40 rounded-3xl overflow-hidden flex items-center justify-center relative"
-                style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.08))" }}>
+                style={{ background: "#FFFFFF" }}>
                 <div className="text-8xl select-none" style={{ filter: "drop-shadow(0 4px 12px rgba(0,122,255,0.2))" }}>🦞</div>
               </div>
               {/* Floating badge */}

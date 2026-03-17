@@ -142,7 +142,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
   };
 
   return (
-    <div className="page-enter max-w-7xl space-y-8">
+    <div className="page-enter space-y-8">
 
       {/* 返回按钮 */}
       <div className="flex items-center gap-2">

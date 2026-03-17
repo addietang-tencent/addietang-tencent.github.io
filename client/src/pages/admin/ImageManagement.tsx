@@ -44,6 +44,7 @@ export default function ImageManagement() {
   const [selectedImageId, setSelectedImageId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [showImageList, setShowImageList] = useState(false);
 
   const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
 
@@ -228,95 +229,105 @@ export default function ImageManagement() {
             <div className="space-y-2">
               <Label>选择镜像</Label>
               <div className="flex items-center gap-2">
-                <div className="flex-1 relative">
-                  {/* 搜索框 */}
-                  <div className="relative mb-2">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="搜索镜像 ID..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  {/* 下拉列表 */}
-                  <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-                    <div className="max-h-64 overflow-y-auto">
-                      {filteredPublic.length > 0 && (
-                        <div>
-                          <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                            腾讯云镜像
-                          </div>
-                          {filteredPublic.map((img) => (
-                            <div
-                              key={img.id}
-                              onClick={() => setSelectedImageId(img.id)}
-                              className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
-                                selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                                <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {filteredCustom.length > 0 && (
-                        <div>
-                          <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                            自定义镜像
-                          </div>
-                          {filteredCustom.map((img) => (
-                            <div
-                              key={img.id}
-                              onClick={() => setSelectedImageId(img.id)}
-                              className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
-                                selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                                <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {filteredImages.length === 0 && (
-                        <div className="px-3 py-8 text-center text-sm text-gray-400">
-                          未找到匹配的镜像
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 已选择的镜像显示 */}
-                  {selectedImageId && (
-                    <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100">
-                      <p className="text-xs text-blue-700">
-                        已选择：<span className="font-medium">{selectedImage?.name}</span>
-                      </p>
-                      <p className="text-xs text-blue-600 font-mono">{selectedImage?.id}</p>
-                    </div>
-                  )}
-                </div>
+                {/* 选择框 */}
+                <button
+                  onClick={() => setShowImageList(!showImageList)}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
+                >
+                  <span>{selectedImageId ? selectedImage?.name : "请选择要导入的镜像"}</span>
+                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${showImageList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
 
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 mt-6"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
                   title="刷新镜像列表"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
                 </button>
               </div>
 
+              {/* 展开的镜像列表 */}
+              {showImageList && (
+                <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                  {/* 搜索框 */}
+                  <div className="relative p-2 border-b border-gray-100">
+                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="搜索镜像 ID..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* 镜像列表 */}
+                  <div className="max-h-64 overflow-y-auto">
+                    {filteredPublic.length > 0 && (
+                      <div>
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
+                          腾讯云镜像
+                        </div>
+                        {filteredPublic.map((img) => (
+                          <div
+                            key={img.id}
+                            onClick={() => {
+                              setSelectedImageId(img.id);
+                              setShowImageList(false);
+                              setSearchQuery("");
+                            }}
+                            className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
+                              selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm text-gray-900 truncate">{img.name}</span>
+                              <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {filteredCustom.length > 0 && (
+                      <div>
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
+                          自定义镜像
+                        </div>
+                        {filteredCustom.map((img) => (
+                          <div
+                            key={img.id}
+                            onClick={() => {
+                              setSelectedImageId(img.id);
+                              setShowImageList(false);
+                              setSearchQuery("");
+                            }}
+                            className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
+                              selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm text-gray-900 truncate">{img.name}</span>
+                              <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {filteredImages.length === 0 && (
+                      <div className="px-3 py-8 text-center text-sm text-gray-400">
+                        未找到匹配的镜像
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

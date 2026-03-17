@@ -190,6 +190,7 @@ const MOCK_SESSIONS = [
 
 export default function SessionManagement() {
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "cron" | "groups">("all");
+  const [, navigate] = useLocation();
 
   // 筛选会话
   const filteredSessions = useMemo(() => {
@@ -291,7 +292,6 @@ export default function SessionManagement() {
                 </tr>
               ) : (
                 filteredSessions.map((session) => {
-                  const [, navigate] = useLocation();
                   return (
                   <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
                     <td className="px-6 py-3">
@@ -313,7 +313,7 @@ export default function SessionManagement() {
                     <td className="px-6 py-3 text-sm text-gray-600 max-w-xs truncate">{session.lastMessage}</td>
                     <td className="px-6 py-3 text-sm text-gray-600 whitespace-nowrap">{session.updatedAt}</td>
                   </tr>
-                );
+                  );
                 })
               )}
             </tbody>

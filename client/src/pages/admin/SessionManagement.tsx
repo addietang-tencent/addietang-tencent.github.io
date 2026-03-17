@@ -202,7 +202,7 @@ export default function SessionManagement() {
   }, [filterStatus]);
 
   return (
-    <div className="page-enter max-w-6xl space-y-8">
+    <div className="page-enter space-y-8">
 
       {/* 页头 */}
       <div>

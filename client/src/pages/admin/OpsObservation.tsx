@@ -146,7 +146,7 @@ function FooterStat({ label, value }: { label: string; value: string | number })
 
 export default function OpsObservation() {
   return (
-    <div className="page-enter max-w-6xl space-y-8">
+    <div className="page-enter space-y-8">
 
       {/* 页头 */}
       <div>

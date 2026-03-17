@@ -350,7 +350,7 @@ export default function OpenClawMonitor() {
       <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>接入 OpenClaw</DialogTitle>
+            <DialogTitle>开启可观测面板成功</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {/* 原理说明 */}

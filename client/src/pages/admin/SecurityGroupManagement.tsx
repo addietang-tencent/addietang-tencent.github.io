@@ -328,15 +328,11 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>自动分配私有网络和子网（推荐）</strong> — 系统会为每个用户自动分配一个私有网络。同一私有网络内网互通，不同私有网络之间内网不互通，即同一用户的 OpenClaw 实例之间内网可互通，不同用户的 OpenClaw 实例之间内网不互通；OpenClaw 实例会在系统分配的全部可用区中随机部署。</span>
+                <span><strong>自动分配私有网络和子网（推荐）</strong> — 系统会为每个用户自动分配一个私有网络。同一私有网络内网互通，不同私有网络之间内网不互通，即同一用户的 OpenClaw 实例之间内网可互通，不同用户的 OpenClaw 实例之间内网不互通。OpenClaw 实例会在系统分配的全部可用区中随机部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>填写了具体私有网络</strong> — 同一个私有网络下的 OpenClaw 实例内网可互通。</span>
-              </li>
-              <li className="flex gap-1.5">
-                <span className="shrink-0">•</span>
-                <span><strong>填写了子网</strong> — 系统按填写了子网的可用区随机部署，不填的可用区不部署；如果子网都没有填写，则在系统分配的全部可用区中随机部署。</span>
+                <span><strong>指定私有网络和子网</strong> — 系统会为所有用户的 OpenClaw 实例分配到指定的私有网络，同一个私有网络下的 OpenClaw 实例内网可互通。系统按填写了子网的可用区随机部署 OpenClaw 实例，不填的可用区不部署。</span>
               </li>
             </ul>
           </div>

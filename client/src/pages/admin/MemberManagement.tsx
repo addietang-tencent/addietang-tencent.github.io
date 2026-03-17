@@ -544,6 +544,21 @@ export default function MemberManagement() {
         ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
         : m
     ));
+    
+    // 保存成员配额到 localStorage，供员工端 ModelQuota 页面读取
+    if (editMemberId) {
+      const TOKEN_UNLIMITED = -1;
+      if (editForm.tokenLimit === TOKEN_UNLIMITED) {
+        localStorage.setItem("memberQuotaMode", "unlimited");
+        localStorage.removeItem("memberQuota");
+      } else {
+        localStorage.setItem("memberQuotaMode", "custom");
+        localStorage.setItem("memberQuota", String(editForm.tokenLimit));
+      }
+      // 触发 storage 事件，通知其他标签页
+      window.dispatchEvent(new Event("storage"));
+    }
+    
     setEditMemberId(null);
     toast.success("用户信息已更新");
   };

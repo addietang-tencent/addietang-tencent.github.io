@@ -93,13 +93,34 @@ for (let i = 0; i < DAYS_HISTORY; i++) {
 }
 
 // 今日全局配额（固定）
-const GLOBAL_LIMIT = 2000000;
+// 注意：GLOBAL_LIMIT 为 null 表示无限制
+const GLOBAL_LIMIT: number | null = 2000000; // 改为 null 时表示无限制
 const TODAY_RECORDS = ALL_RECORDS.filter((r) => r.date === todayStr());
 const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.outputTokens, 0);
-const TODAY_GLOBAL_PCT = ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
+const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
+const IS_GLOBAL_UNLIMITED = GLOBAL_LIMIT === null;
 
 // ─── 进度条 ───────────────────────────────────────────────────────────────────
-function ProgressBar({ value, max, showTooltip }: { value: number; max: number; showTooltip?: boolean }) {
+function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; max: number | null; showTooltip?: boolean; isUnlimited?: boolean }) {
+  if (isUnlimited || max === null) {
+    // 无限制时显示浅灰色进度条，不显示进度
+    const bar = (
+      <div className="w-full bg-gray-100 rounded-full h-1.5 cursor-default">
+        <div className="h-1.5 rounded-full bg-gray-300 transition-all" style={{ width: "0%" }} />
+      </div>
+    );
+    if (!showTooltip) return bar;
+    return (
+      <UITooltip>
+        <UITooltipTrigger asChild>
+          {bar}
+        </UITooltipTrigger>
+        <UITooltipContent side="bottom" className="text-xs font-medium">
+          已消耗 {value.toLocaleString()} Tokens（无限制）
+        </UITooltipContent>
+      </UITooltip>
+    );
+  }
   const pct = Math.min((value / max) * 100, 100);
   const barColor = pct > 80 ? "bg-red-500" : pct > 60 ? "bg-yellow-500" : "bg-blue-500";
   const bar = (
@@ -378,13 +399,16 @@ export default function TokensMonitor() {
                     </span>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新
+                    {IS_GLOBAL_UNLIMITED ? "全局配额已设置为无限制，无需关注消耗占比" : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"}
                   </UITooltipContent>
                 </UITooltip>
               </div>
             </div>
-            <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip />
+            <div className="flex items-center gap-2">
+              <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
+              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">无限制</span>}
+            </div>
+            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
           </div>
         </div>
 

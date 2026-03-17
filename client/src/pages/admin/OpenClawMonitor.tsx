@@ -81,7 +81,10 @@ export default function OpenClawMonitor() {
   };
 
   const handleAccessOpenClaw = () => {
-    if (!secretId.startsWith("AKID") || !secretKey.startsWith("MYbT")) {
+    const trimmedSecretId = secretId.trim();
+    const trimmedSecretKey = secretKey.trim();
+    
+    if (!trimmedSecretId.startsWith("AKID") || !trimmedSecretKey.startsWith("MYbT")) {
       toast.error("密钥无效，请检查 SecretId 和 SecretKey");
       return;
     }
@@ -90,7 +93,7 @@ export default function OpenClawMonitor() {
     setTimeout(() => {
       const newClaw = {
         id: String(Math.max(...claws.map(c => parseInt(c.id))) + 1),
-        name: `接入的 OpenClaw (${secretId.slice(0, 4)}...)`,
+        name: `接入的 OpenClaw (${trimmedSecretId.slice(0, 4)}...)`,
         creator: "system@acompany.com",
         createTime: new Date().toLocaleString('zh-CN', {
           year: 'numeric',

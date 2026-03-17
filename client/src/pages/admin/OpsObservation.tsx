@@ -4,7 +4,7 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -70,12 +70,16 @@ const METRIC_CARDS = [
 ];
 
 export default function OpsObservation() {
-  const [clsEnabled, setClsEnabled] = useState(false);
+  const [clsEnabled, setClsEnabled] = useState(() => {
+    return localStorage.getItem("opsObservationClsEnabled") === "true";
+  });
   const [showCLSDialog, setShowCLSDialog] = useState(false);
   const [showAKSKDialog, setShowAKSKDialog] = useState(false);
   const [secretId, setSecretId] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
+  const [isClosingCls, setIsClosingCls] = useState(false);
 
   const handleOpenCLS = () => {
     setShowCLSDialog(true);
@@ -92,9 +96,20 @@ export default function OpsObservation() {
       return;
     }
     setClsEnabled(true);
+    localStorage.setItem("opsObservationClsEnabled", "true");
     setShowAKSKDialog(false);
     setSecretId("");
     setSecretKey("");
+  };
+
+  const handleCloseCls = () => {
+    setIsClosingCls(true);
+    setTimeout(() => {
+      setClsEnabled(false);
+      localStorage.setItem("opsObservationClsEnabled", "false");
+      setIsClosingCls(false);
+      setShowCloseClsConfirm(false);
+    }, 1000);
   };
 
   return (
@@ -109,20 +124,34 @@ export default function OpsObservation() {
         </p>
       </div>
 
-      {/* 可观测面板提示 */}
+      {/* CLS 日志服务未开启提示 */}
       {!clsEnabled && (
-        <div className="mb-8 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3.5 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-blue-900 mb-1">运维观测需要开启可观测面板</div>
-            <p className="text-sm text-blue-700 mb-3">请前往 OpenClaw 监控页面，选择您想开启的 OpenClaw 服务器，点击开启可观测面板，按照步骤指引开启可观测面板</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-900">运维观测需要开启 CLS 日志服务</h3>
+              <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持通过全链路性能监控采集核心运行指标。CLS 根据用量采用资源包或按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+            </div>
             <Button
-              onClick={() => window.location.href = '/admin/openclaw-monitor'}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8 px-3"
+              onClick={handleOpenCLS}
+              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
             >
-              前往 OpenClaw 监控页面
+              开启 CLS 日志服务
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* 已开启时显示关闭按钮 */}
+      {clsEnabled && (
+        <div className="flex items-center justify-end mb-6">
+          <Button
+            onClick={() => setShowCloseClsConfirm(true)}
+            variant="outline"
+            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
+          >
+            关闭 CLS 日志服务
+          </Button>
         </div>
       )}
 
@@ -268,6 +297,28 @@ export default function OpsObservation() {
         </DialogContent>
       </Dialog>
 
+      {/* 关闭 CLS 确认对话框 */}
+      <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>确定要关闭 CLS 日志服务吗？</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 my-4">关闭后将无法查看该页面的数据仪表板。</p>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleCloseCls}
+              disabled={isClosingCls}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            >
+              {isClosingCls ? "关闭中..." : "确定关闭"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* AKSK 接入弹窗 */}
       <Dialog open={showAKSKDialog} onOpenChange={setShowAKSKDialog}>
         <DialogContent className="max-w-md">
@@ -320,18 +371,6 @@ export default function OpsObservation() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {clsEnabled && (
-        <>
-          {/* 开启成功提示 */}
-          <div className="mb-8 bg-green-50 border border-green-200 rounded-xl px-4 py-3.5 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-green-900">开启可观测面板成功</div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }

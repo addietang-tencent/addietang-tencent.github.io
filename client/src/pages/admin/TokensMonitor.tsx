@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -368,23 +368,7 @@ export default function TokensMonitor() {
   return (
       <div className="page-enter">
         {/* Header */}
-        {/* CLS 日志服务未开启提示 */}
-        {!clsEnabled && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
-                <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持从按会话、消息维度查看 tokens、費用使用情况。CLS 根据用量采用资源包或按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:underline">计费详情</a></p>
-              </div>
-              <Button
-                onClick={handleOpenCLS}
-                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
-              >
-                开启 CLS 日志服务
-              </Button>
-            </div>
-          </div>
-        )}
+
 
         {/* 已开启时显示关闭按钮 */}
         {clsEnabled && (
@@ -583,16 +567,17 @@ export default function TokensMonitor() {
           {/* 按会话 */}
           <TabsContent value="session">
             {!clsEnabled && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3.5 flex items-start gap-3 mb-4">
-                <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-blue-900 mb-1">按会话查看需要开启可观测面板</div>
-                  <p className="text-sm text-blue-700 mb-3">请前往 OpenClaw 监控页面，选择您想开启的 OpenClaw 服务器，点击开启可观测面板，按照步骤指引开启可观测面板</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
+                    <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持从按会话、消息维度查看 tokens、費用使用情况。CLS 根据用量采用资源包或按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+                  </div>
                   <Button
-                    onClick={() => window.location.href = '/admin/openclaw-monitor'}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8 px-3"
+                    onClick={handleOpenCLS}
+                    className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
                   >
-                    前往 OpenClaw 监控页面
+                    开启 CLS 日志服务
                   </Button>
                 </div>
               </div>

@@ -223,7 +223,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
 
       {/* ══ 图表区 ═════════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-3 gap-5">
 
         {/* 每轮成本 */}
         <div
@@ -280,7 +280,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       </div>
 
       {/* ══ 交互链 ═════════════════════════════════════════════════════════════ */}
-      <div>
+      <div className="col-span-3">
         <p className="text-sm font-medium text-gray-700 mb-4">交互链</p>
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>

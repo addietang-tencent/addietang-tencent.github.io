@@ -95,7 +95,8 @@ for (let i = 0; i < DAYS_HISTORY; i++) {
 // 今日全局配额 - 从 localStorage 读取，支持跨页面同步
 const globalLimitMode = localStorage.getItem("globalLimitMode") || "unlimited";
 const globalLimitValue = localStorage.getItem("globalLimit");
-const GLOBAL_LIMIT: number | null = globalLimitMode === "unlimited" ? null : (globalLimitValue ? parseInt(globalLimitValue) : 2000000);
+// 修复 bug: 当 globalLimitMode 为 "custom" 且 globalLimitValue 存在时，才使用其值；否则为 null（无限制）
+const GLOBAL_LIMIT: number | null = globalLimitMode === "custom" && globalLimitValue ? parseInt(globalLimitValue) : (globalLimitMode === "unlimited" ? null : null);
 const TODAY_RECORDS = ALL_RECORDS.filter((r) => r.date === todayStr());
 const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.outputTokens, 0);
 const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);

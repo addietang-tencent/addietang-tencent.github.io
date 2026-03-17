@@ -3,7 +3,7 @@
  * 用户创建 OpenClaw 时启动的云服务器镜像管理
  * 企业可使用自定义镜像，并随时导入最新版本
  */
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown } from "lucide-react";
+import { Download, Trash2, Info, RefreshCw, ExternalLink } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
 const PUBLIC_IMAGES = [
@@ -26,8 +26,6 @@ const CUSTOM_IMAGES = [
   { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", group: "custom" },
   { id: "img-cust-e5f6g7h8", name: "openclaw-custom-v1.1-beta", group: "custom" },
   { id: "img-cust-i9j0k1l2", name: "openclaw-prod-2025Q4", group: "custom" },
-  { id: "img-cust-m3n4o5p6", name: "openclaw-dev-latest", group: "custom" },
-  { id: "img-cust-q7r8s9t0", name: "openclaw-test-v2.0", group: "custom" },
 ];
 
 const ALL_IMPORTABLE = [...PUBLIC_IMAGES, ...CUSTOM_IMAGES];
@@ -42,35 +40,9 @@ export default function ImageManagement() {
   const [images, setImages] = useState(MOCK_IMAGES);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [showImageList, setShowImageList] = useState(false);
-  const imageListRef = useRef<HTMLDivElement>(null);
 
   const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
-
-  // 点击外部关闭下拉列表
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (imageListRef.current && !imageListRef.current.contains(event.target as Node)) {
-        setShowImageList(false);
-      }
-    };
-
-    if (showImageList) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [showImageList]);
-
-  // 根据搜索词过滤镜像
-  const filteredImages = ALL_IMPORTABLE.filter((img) =>
-    img.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    img.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredPublic = filteredImages.filter((img) => img.group === "public");
-  const filteredCustom = filteredImages.filter((img) => img.group === "custom");
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -96,7 +68,6 @@ export default function ImageManagement() {
     }]);
     setShowImportDialog(false);
     setSelectedImageId("");
-    setSearchQuery("");
     toast.success(`镜像「${img.name}」已成功导入`);
   };
 
@@ -216,7 +187,7 @@ export default function ImageManagement() {
       </div>
 
       {/* 导入镜像弹窗 */}
-      <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) { setSelectedImageId(""); setSearchQuery(""); } }}>
+      <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) setSelectedImageId(""); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>导入镜像</DialogTitle>
@@ -244,15 +215,35 @@ export default function ImageManagement() {
             <div className="space-y-2">
               <Label>选择镜像</Label>
               <div className="flex items-center gap-2">
-                {/* 选择框 */}
-                <button
-                  onClick={() => setShowImageList(!showImageList)}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
-                >
-                  <span>{selectedImageId ? selectedImage?.name : "请选择要导入的镜像"}</span>
-                  <ChevronsUpDown className="w-4 h-4 text-gray-400" />
-                </button>
-
+                <Select value={selectedImageId} onValueChange={setSelectedImageId}>
+                  <SelectTrigger className="bg-gray-50 flex-1">
+                    <SelectValue placeholder="请选择要导入的镜像" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel className="text-xs text-gray-400 font-medium">公共镜像</SelectLabel>
+                      {PUBLIC_IMAGES.map((img) => (
+                        <SelectItem key={img.id} value={img.id}>
+                          <div className="flex items-center justify-between gap-6 w-full">
+                            <span className="text-sm">{img.name}</span>
+                            <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel className="text-xs text-gray-400 font-medium">自定义镜像</SelectLabel>
+                      {CUSTOM_IMAGES.map((img) => (
+                        <SelectItem key={img.id} value={img.id}>
+                          <div className="flex items-center justify-between gap-6 w-full">
+                            <span className="text-sm">{img.name}</span>
+                            <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
@@ -263,98 +254,17 @@ export default function ImageManagement() {
                 </button>
               </div>
 
-              {/* 展开的镜像列表 */}
-              {showImageList && (
-                <div ref={imageListRef} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
-                  {/* 搜索框 */}
-                  <div className="relative p-2 border-b border-gray-100" onClick={(e) => e.stopPropagation()}>
-                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="搜索镜像 ID..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-
-                  {/* 镜像列表 */}
-                  <div className="max-h-64 overflow-y-auto">
-                    {filteredPublic.length > 0 && (
-                      <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                          腾讯云镜像
-                        </div>
-                        {filteredPublic.map((img) => (
-                          <div
-                            key={img.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedImageId(img.id);
-                              setShowImageList(false);
-                              setSearchQuery("");
-                            }}
-                            className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
-                              selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                              <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {filteredCustom.length > 0 && (
-                      <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                          自定义镜像
-                        </div>
-                        {filteredCustom.map((img) => (
-                          <div
-                            key={img.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedImageId(img.id);
-                              setShowImageList(false);
-                              setSearchQuery("");
-                            }}
-                            className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
-                              selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                              <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {filteredImages.length === 0 && (
-                      <div className="px-3 py-8 text-center text-sm text-gray-400">
-                        未找到匹配的镜像
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowImportDialog(false); setSelectedImageId(""); setSearchQuery(""); }}>取消</Button>
+            <Button variant="outline" onClick={() => { setShowImportDialog(false); setSelectedImageId(""); }}>取消</Button>
             <Button
               onClick={handleImport}
               disabled={!selectedImageId}
               style={selectedImageId ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
             >
-              导入
+              确认导入
             </Button>
           </DialogFooter>
         </DialogContent>

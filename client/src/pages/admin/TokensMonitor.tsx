@@ -5,10 +5,7 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import {
   Tooltip as UITooltip,
   TooltipContent as UITooltipContent,
@@ -161,34 +158,10 @@ export default function TokensMonitor() {
   const [memberPage, setMemberPage] = useState(1);
   const [modelPage, setModelPage] = useState(1);
   const [sessionPage, setSessionPage] = useState(1);
-  const [showCLSDialog, setShowCLSDialog] = useState(false);
-  const [showAKSKDialog, setShowAKSKDialog] = useState(false);
-  const [secretId, setSecretId] = useState("");
-  const [secretKey, setSecretKey] = useState("");
-  const [clsEnabled, setClsEnabled] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
     setTimeout(() => { setRefreshing(false); toast.success("数据已刷新"); }, 1000);
-  };
-
-  const handleOpenCLS = () => {
-    setShowCLSDialog(true);
-  };
-
-  const handleEnableCLS = () => {
-    setShowCLSDialog(false);
-    setShowAKSKDialog(true);
-  };
-
-  const handleConnectAKSK = () => {
-    if (!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")) {
-      return;
-    }
-    setClsEnabled(true);
-    setShowAKSKDialog(false);
-    setSecretId("");
-    setSecretKey("");
   };
 
   const handleFromChange = (v: string) => {
@@ -320,7 +293,7 @@ export default function TokensMonitor() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
@@ -328,7 +301,7 @@ export default function TokensMonitor() {
               type="date"
               value={dateTo}
               onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <button
@@ -489,21 +462,6 @@ export default function TokensMonitor() {
 
           {/* 按会话 */}
           <TabsContent value="session">
-            {!clsEnabled && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3.5 flex items-start gap-3 mb-4">
-                <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-blue-900 mb-1">按会话查看需要开启可观测面板</div>
-                  <p className="text-sm text-blue-700 mb-3">开启可观测面板后，您可以查看每个会话的详细日志和交互数据，帮助您更好地理解和优化对话流程。</p>
-                  <Button
-                    onClick={handleOpenCLS}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8 px-3"
-                  >
-                    开启可观测面板
-                  </Button>
-                </div>
-              </div>
-            )}
             <p className="text-xs text-gray-400 mb-3">展示高成本会话 TOP 5，点击查看会话详情</p>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
@@ -547,93 +505,6 @@ export default function TokensMonitor() {
             </div>
           </TabsContent>
         </Tabs>
-      {/* CLS 开通弹窗 */}
-      <Dialog open={showCLSDialog} onOpenChange={setShowCLSDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开通日志服务CLS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-700">
-                开启可观测面板需要您开通「日志服务CLS」
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                <strong>计费说明：</strong>腾讯云日志服务CLS为独立计费产品。
-              </p>
-              <a
-                href="https://cloud.tencent.com/document/product/614/45802"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:text-blue-700 underline"
-              >
-                查看CLS计费详情 →
-              </a>
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCLSDialog(false)}>
-              取消
-            </Button>
-            <Button onClick={handleEnableCLS} className="bg-blue-600 hover:bg-blue-700">
-              开通
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AKSK 输入弹窗 */}
-      <Dialog open={showAKSKDialog} onOpenChange={setShowAKSKDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开启可观测面板</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-sm text-blue-700">
-                <strong>工作原理：</strong>将采用Loglistener采集器实时监听OpenClaw相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretId</Label>
-                <input
-                  type="text"
-                  placeholder="AKID..."
-                  value={secretId}
-                  onChange={(e) => setSecretId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretKey</Label>
-                <input
-                  type="password"
-                  placeholder="MYbT..."
-                  value={secretKey}
-                  onChange={(e) => setSecretKey(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowAKSKDialog(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={handleConnectAKSK}
-              disabled={!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-            >
-              连接
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      </div>
   );
 }

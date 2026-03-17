@@ -200,14 +200,10 @@ export default function SessionManagement() {
   const [secretKey, setSecretKey] = useState("");
   const [clsEnabled, setClsEnabled] = useState(false);
 
-  // 筛选会话
+  // 筛选会话 - 始终显示所有会话
   const filteredSessions = useMemo(() => {
-    if (filterStatus === "all") return MOCK_SESSIONS;
-    if (filterStatus === "active") return MOCK_SESSIONS.filter((s) => s.status === "active");
-    if (filterStatus === "cron") return MOCK_SESSIONS.filter((s) => s.status === "cron");
-    if (filterStatus === "groups") return MOCK_SESSIONS.filter((s) => s.type === "GROUP");
     return MOCK_SESSIONS;
-  }, [filterStatus]);
+  }, []);
 
   const handleOpenCLS = () => {
     setShowCLSDialog(true);
@@ -289,25 +285,6 @@ export default function SessionManagement() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-gray-900">会话摘要一览</h2>
-          <div className="flex items-center gap-2">
-            {(["All", "Active", "Cron", "Groups"] as const).map((label) => {
-              const value = label.toLowerCase() as typeof filterStatus;
-              const isActive = filterStatus === value;
-              return (
-                <button
-                  key={label}
-                  onClick={() => setFilterStatus(value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-150"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         <div

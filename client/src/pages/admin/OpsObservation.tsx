@@ -62,11 +62,11 @@ const runDurationData = [
 ];
 
 const METRIC_CARDS = [
-  { title: "清单处理总量", value: "13", unit: "processed_total", icon: "📊", color: "#10B981" },
-  { title: "清单入队", value: "13", unit: "queued_total", icon: "📥", color: "#3B82F6" },
-  { title: "执行耗时 P95", value: "10s", unit: "run_duration", icon: "⏱️", color: "#F59E0B" },
-  { title: "队列深度 P95", value: "0", unit: "正常", icon: "✓", color: "#8B5CF6" },
-  { title: "卡死会话", value: "4", unit: "需关注", icon: "⚠️", color: "#EF4444" },
+  { title: "清单处理总量", value: "13", unit: "", icon: "", color: "#10B981" },
+  { title: "清单入队", value: "13", unit: "", icon: "", color: "#3B82F6" },
+  { title: "执行耗时 P95", value: "10s", unit: "正常", icon: "", color: "#F59E0B" },
+  { title: "队列深度 P95", value: "0", unit: "正常", icon: "", color: "#8B5CF6" },
+  { title: "卡死会话", value: "4", unit: "需关注", icon: "", color: "#EF4444" },
 ];
 
 export default function OpsObservation() {
@@ -148,7 +148,6 @@ export default function OpsObservation() {
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">日志级别分布</h3>
-              <span className="text-xs text-gray-400">logLevelName</span>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logLevelData}>
@@ -168,7 +167,6 @@ export default function OpsObservation() {
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">子系统错误</h3>
-              <span className="text-xs text-gray-400">subsystem</span>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={subsystemData} layout="vertical">
@@ -191,7 +189,6 @@ export default function OpsObservation() {
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">消息处理</h3>
-              <span className="text-xs text-gray-400">processed/queued</span>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={messageProcessData}>
@@ -210,7 +207,6 @@ export default function OpsObservation() {
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">队列状态</h3>
-              <span className="text-xs text-gray-400">depth/wait</span>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={queueStatusData}>
@@ -229,7 +225,6 @@ export default function OpsObservation() {
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">执行耗时</h3>
-              <span className="text-xs text-gray-400">run_duration</span>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={runDurationData}>

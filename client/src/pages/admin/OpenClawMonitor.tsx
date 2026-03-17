@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus } from "lucide-react";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34" },
@@ -38,6 +38,10 @@ export default function OpenClawMonitor() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAccessDialog, setShowAccessDialog] = useState(false);
+  const [secretId, setSecretId] = useState("");
+  const [secretKey, setSecretKey] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -45,6 +49,37 @@ export default function OpenClawMonitor() {
       setRefreshing(false);
       toast.success("列表已刷新");
     }, 1000);
+  };
+
+  const handleAccessOpenClaw = () => {
+    if (!secretId.startsWith("AKID") || !secretKey.startsWith("MYbT")) {
+      toast.error("密钥无效，请检查 SecretId 和 SecretKey");
+      return;
+    }
+
+    setIsLoading(true);
+    setTimeout(() => {
+      const newClaw = {
+        id: String(Math.max(...claws.map(c => parseInt(c.id))) + 1),
+        name: `接入的 OpenClaw (${secretId.slice(0, 4)}...)`,
+        creator: "system@acompany.com",
+        createTime: new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\//g, '-')
+      };
+      setClaws([newClaw, ...claws]);
+      setIsLoading(false);
+      setShowAccessDialog(false);
+      setSecretId("");
+      setSecretKey("");
+      toast.success("OpenClaw 接入成功");
+    }, 1500);
   };
 
   // 时间筛选后的数据（用于统计卡片）
@@ -77,8 +112,16 @@ export default function OpenClawMonitor() {
             <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
             <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 实例。</p>
           </div>
-          {/* 时间范围筛选 + 刷新（同 Tokens 监控样式） */}
+          {/* 接入按键 + 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowAccessDialog(true)}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              接入 OpenClaw
+            </Button>
             <input
               type="date"
               value={dateFrom}
@@ -224,6 +267,63 @@ export default function OpenClawMonitor() {
           </div>
         </div>
       </div>
+
+      {/* 接入 OpenClaw 弹窗 */}
+      <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>接入 OpenClaw</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                SecretId <span className="text-red-500">*</span>
+              </label>
+              <Input
+                placeholder="AKIDXXXXXXXXXX"
+                value={secretId}
+                onChange={(e) => setSecretId(e.target.value)}
+                disabled={isLoading}
+                className="bg-gray-50 border-gray-200"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                SecretKey <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="password"
+                placeholder="MYbTCmXXXXXXXXXX"
+                value={secretKey}
+                onChange={(e) => setSecretKey(e.target.value)}
+                disabled={isLoading}
+                className="bg-gray-50 border-gray-200"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAccessDialog(false);
+                setSecretId("");
+                setSecretKey("");
+              }}
+              disabled={isLoading}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleAccessOpenClaw}
+              disabled={isLoading || !secretId || !secretKey}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+            >
+              {isLoading ? "接入中..." : "接入"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirm */}
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>

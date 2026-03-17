@@ -22,6 +22,7 @@ import {
   Search, Plus, ChevronDown, Info, Upload, Download,
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
+  Loader2, X, FileText,
 } from "lucide-react";
 
 const PAGE_SIZE = 10;
@@ -484,6 +485,11 @@ export default function MemberManagement() {
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
+  // 批量导入弹窗状态
+  const [batchImportStep, setBatchImportStep] = useState<"upload" | "importing" | "done">("upload");
+  const [batchImportFile, setBatchImportFile] = useState<File | null>(null);
+  const [batchImportProgress, setBatchImportProgress] = useState(0); // 0~100
+  const [batchImportResult, setBatchImportResult] = useState<{ success: number; fail: number } | null>(null);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
   const [editMemberId, setEditMemberId] = useState<string | null>(null);
 
@@ -858,26 +864,197 @@ export default function MemberManagement() {
       </Dialog>
 
       {/* Batch Import Dialog */}
-      <Dialog open={showBatchDialog} onOpenChange={setShowBatchDialog}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={showBatchDialog} onOpenChange={(open) => {
+        if (!open && batchImportStep !== "importing") {
+          setShowBatchDialog(false);
+          // 重置状态
+          setTimeout(() => {
+            setBatchImportStep("upload");
+            setBatchImportFile(null);
+            setBatchImportProgress(0);
+            setBatchImportResult(null);
+          }, 300);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => {
+          if (batchImportStep === "importing") e.preventDefault();
+        }}>
           <DialogHeader>
             <DialogTitle>批量导入用户</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-gray-500">请下载模板，填写用户信息后上传</p>
-            <Button variant="outline" className="w-full" onClick={() => toast.success("模板已下载")}>
-              <Download className="w-4 h-4 mr-2" />
-              下载导入模板
-            </Button>
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
-              <Upload className="w-6 h-6 text-gray-400 mb-2" />
-              <span className="text-sm text-gray-500">点击上传 CSV 文件</span>
-              <input type="file" accept=".csv" className="hidden"
-                onChange={() => { setShowBatchDialog(false); toast.success("用户已批量导入"); }} />
-            </label>
-          </div>
+
+          {/* 步骤指示器 - 仅在 upload 阶段显示 */}
+          {batchImportStep === "upload" && (
+            <div className="flex items-center gap-0 mb-2">
+              {/* Step 1 */}
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-semibold">1</div>
+                <span className="text-xs font-medium text-blue-600">下载模板</span>
+              </div>
+              <div className="flex-1 h-px bg-gray-200 mx-3" />
+              {/* Step 2 */}
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center font-semibold">2</div>
+                <span className="text-xs text-gray-400">上传文件</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── 上传阶段 ── */}
+          {batchImportStep === "upload" && (
+            <div className="space-y-4 py-1">
+              {/* Step 1: 下载模板 */}
+              <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 space-y-2">
+                <p className="text-sm font-medium text-gray-700">第一步：下载模板并填写用户信息</p>
+                <p className="text-xs text-gray-500 leading-relaxed">下载 CSV 模板，按格式填写用户信息后保存。<span className="text-orange-500 font-medium">单次最多上传 1000 个用户。</span></p>
+                <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
+                  // 生成模板 CSV 并下载
+                  const header = "用户邮箱,姓名,角色(admin/member),每日Tokens上限(-1表示无限制)";
+                  const example = "user@example.com,张三,member,100000";
+                  const blob = new Blob([header + "\n" + example], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = "批量导入用户模板.csv"; a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("模板已下载");
+                }}>
+                  <Download className="w-4 h-4 mr-2" />
+                  下载导入模板
+                </Button>
+              </div>
+
+              {/* Step 2: 上传文件 */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">第二步：上传填写好的 CSV 文件</p>
+                {!batchImportFile ? (
+                  <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
+                    <Upload className="w-5 h-5 text-gray-400 mb-1.5" />
+                    <span className="text-sm text-gray-500">点击选择 CSV 文件</span>
+                    <span className="text-xs text-gray-400 mt-0.5">仅支持 .csv 格式</span>
+                    <input type="file" accept=".csv" className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setBatchImportFile(file);
+                      }} />
+                  </label>
+                ) : (
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-green-200 bg-green-50">
+                    <FileText className="w-8 h-8 text-green-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{batchImportFile.name}</p>
+                      <p className="text-xs text-gray-500">{(batchImportFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <button
+                      className="w-6 h-6 rounded-full bg-gray-200 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors flex-shrink-0"
+                      onClick={() => setBatchImportFile(null)}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── 导入中阶段 ── */}
+          {batchImportStep === "importing" && (
+            <div className="py-8 flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full border-4 border-blue-100 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                </div>
+              </div>
+              <div className="text-center space-y-1.5">
+                <p className="text-base font-semibold text-gray-800">正在导入中...</p>
+                <p className="text-sm text-gray-500">预计等待 1 ~ 1.5 分钟，请勿关闭弹窗</p>
+              </div>
+              {/* 进度条 */}
+              <div className="w-full space-y-1.5">
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                    style={{ width: `${batchImportProgress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 text-right">{batchImportProgress}%</p>
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBatchDialog(false)}>取消</Button>
+            {batchImportStep === "upload" && (
+              <>
+                <Button variant="outline" onClick={() => {
+                  setShowBatchDialog(false);
+                  setTimeout(() => {
+                    setBatchImportStep("upload");
+                    setBatchImportFile(null);
+                    setBatchImportProgress(0);
+                    setBatchImportResult(null);
+                  }, 300);
+                }}>取消</Button>
+                <Button
+                  disabled={!batchImportFile}
+                  onClick={() => {
+                    // 开始导入
+                    setBatchImportStep("importing");
+                    setBatchImportProgress(0);
+                    // 模拟进度：90 秒内从 0 到 95%，最后跳到 100%
+                    const totalMs = 90000;
+                    const intervalMs = 1000;
+                    const steps = totalMs / intervalMs;
+                    let current = 0;
+                    const timer = setInterval(() => {
+                      current += 1;
+                      const pct = Math.min(95, Math.round((current / steps) * 95));
+                      setBatchImportProgress(pct);
+                      if (current >= steps) {
+                        clearInterval(timer);
+                        setBatchImportProgress(100);
+                        setTimeout(() => {
+                          const result = { success: 85, fail: 15 };
+                          setBatchImportResult(result);
+                          setBatchImportStep("upload");
+                          setShowBatchDialog(false);
+                          setTimeout(() => {
+                            setBatchImportStep("upload");
+                            setBatchImportFile(null);
+                            setBatchImportProgress(0);
+                            setBatchImportResult(null);
+                          }, 300);
+                          // Toast with download link
+                          toast.success(
+                            `导入完成：成功 ${result.success} 条，失败 ${result.fail} 条`,
+                            {
+                              duration: 10000,
+                              action: {
+                                label: "下载失败报告",
+                                onClick: () => {
+                                  const rows = ["用户邮箱,失败原因"];
+                                  for (let i = 1; i <= result.fail; i++) {
+                                    rows.push(`fail_user_${i}@example.com,邮箱格式错误`);
+                                  }
+                                  const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url; a.download = "导入失败报告.csv"; a.click();
+                                  URL.revokeObjectURL(url);
+                                },
+                              },
+                            }
+                          );
+                        }, 500);
+                      }
+                    }, intervalMs);
+                  }}
+                >
+                  确认导入
+                </Button>
+              </>
+            )}
+            {batchImportStep === "importing" && (
+              <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">请勿关闭</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -220,32 +220,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         </div>
       </div>
 
-      {/* ══ 快速信息 ════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-        <div className="grid grid-cols-5 gap-6">
-          <div>
-            <span className="text-xs text-gray-400">渠道</span>
-            <p className="text-sm font-medium text-gray-700 mt-1">{sessionInfo.channel}</p>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">模型</span>
-            <p className="text-sm font-medium text-gray-700 mt-1">{sessionInfo.model}</p>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">最后活动</span>
-            <p className="text-sm font-medium text-gray-700 mt-1">{sessionInfo.lastActiveTime}</p>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">工具耗时</span>
-            <p className="text-sm font-medium text-gray-700 mt-1">40 秒</p>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">最后轮次成本</span>
-            <p className="text-sm font-medium text-gray-700 mt-1">$0.0076</p>
-          </div>
-        </div>
-      </div>
+
 
       {/* ══ 图表区 ═════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 gap-5">

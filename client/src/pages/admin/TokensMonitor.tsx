@@ -3,6 +3,7 @@
  * 设计风格：与整体管控台保持一致，浅色卡片 + 蓝紫渐变强调色
  */
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import {
@@ -480,8 +481,10 @@ export default function TokensMonitor() {
                 <tbody className="divide-y divide-gray-50">
                   {sessionPaged.length === 0 ? (
                     <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : sessionPaged.map((s) => (
-                    <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer">
+                  ) : sessionPaged.map((s) => {
+                    const [, navigate] = useLocation();
+                    return (
+                    <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-700">{s.sessionName}</div>
                         <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
@@ -494,7 +497,8 @@ export default function TokensMonitor() {
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">${s.cost.toFixed(4)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
               <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />

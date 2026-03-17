@@ -149,6 +149,7 @@ export default function ModelConfig() {
   const [customJson, setCustomJson] = useState(DEFAULT_JSON);
 
   // Global quota
+  const [globalLimitMode, setGlobalLimitMode] = useState<"unlimited" | "custom">("unlimited"); // 无限制或自定义
   const [globalLimit, setGlobalLimit] = useState(1000000);
   const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
   const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
@@ -312,40 +313,61 @@ export default function ModelConfig() {
                 </TooltipContent>
               </Tooltip>
             </Label>
-            {globalLimitEditing ? (
-              <div className="flex items-center gap-3">
-                <Input
-                  type="number"
-                  value={globalLimitDraft}
-                  onChange={(e) => setGlobalLimitDraft(Number(e.target.value))}
-                  className="bg-gray-50 border-gray-200 max-w-xs"
-                  autoFocus
-                />
-                <Button
-                  size="sm"
-                  onClick={() => { setGlobalLimit(globalLimitDraft); setGlobalLimitEditing(false); toast.success("全局配额已保存"); }}
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                >
-                  保存
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(false); }}
-                >
-                  取消
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm text-gray-700">{globalLimit.toLocaleString()}</span>
-                <button
-                  onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(true); }}
-                  className="text-gray-400 hover:text-blue-500 transition-colors"
-                  title="编辑全局配额"
-                >
-                  <Pencil className="w-3 h-3" />
-                </button>
+            <Select
+              value={globalLimitMode}
+              onValueChange={(v) => {
+                setGlobalLimitMode(v as "unlimited" | "custom");
+                setGlobalLimitEditing(false);
+                toast.success(v === "unlimited" ? "已设置为无限制" : "已切换为自定义数量");
+              }}
+            >
+              <SelectTrigger className="bg-gray-50 w-full max-w-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unlimited">无限制</SelectItem>
+                <SelectItem value="custom">自定义数量</SelectItem>
+              </SelectContent>
+            </Select>
+            {/* 当选择「自定义数量」时，显示数量输入框 */}
+            {globalLimitMode === "custom" && (
+              <div className="mt-4 space-y-3">
+                {globalLimitEditing ? (
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="number"
+                      value={globalLimitDraft}
+                      onChange={(e) => setGlobalLimitDraft(Number(e.target.value))}
+                      className="bg-gray-50 border-gray-200 max-w-xs"
+                      autoFocus
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => { setGlobalLimit(globalLimitDraft); setGlobalLimitEditing(false); toast.success("全局配额已保存"); }}
+                      style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                    >
+                      保存
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(false); }}
+                    >
+                      取消
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm text-gray-700">{globalLimit.toLocaleString()}</span>
+                    <button
+                      onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(true); }}
+                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      title="编辑全局配额"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

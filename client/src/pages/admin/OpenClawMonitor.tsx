@@ -39,13 +39,20 @@ export default function OpenClawMonitor() {
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
   
-  // CLS 服务开通流程状态
-  const [showClsDialog, setShowClsDialog] = useState(false);
-  const [clsEnabled, setClsEnabled] = useState(false);
-  const [showAccessDialog, setShowAccessDialog] = useState(false);
+  // 三步骤开启流程状态
+  const [showSetupDialog, setShowSetupDialog] = useState(false);
+  const [setupStep, setSetupStep] = useState<1 | 2 | 3>(1); // 1: 开通 CLS, 2: 设置主题, 3: 安装 Agent
   
-  const [secretId, setSecretId] = useState("");
-  const [secretKey, setSecretKey] = useState("");
+  // 第一步: CLS 开通
+  const [clsEnabled, setClsEnabled] = useState(false);
+  
+  // 第二步: 主题设置
+  const [logTopic, setLogTopic] = useState("openclaw_log_topic");
+  const [metricTopic, setMetricTopic] = useState("openclaw_metric_topic");
+  
+  // 第三步: Agent 安装
+  const [isInstallingAgent, setIsInstallingAgent] = useState(false);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [allObservableEnabled, setAllObservableEnabled] = useState(false);
   
@@ -63,75 +70,43 @@ export default function OpenClawMonitor() {
   };
 
   // 打开可观测面板
-  const handleOpenObservability = () => {
-    // Demo 默认未开通 CLS 服务
-    if (!clsEnabled) {
-      setShowClsDialog(true);
-    } else {
-      // 已开通则全量开启可观测面板
-      setClaws(claws.map(c => ({ ...c, observableStatus: "on" })));
-      setAllObservableEnabled(true);
-      toast.success("全量开启可观测面板成功");
-    }
+  // 打开三步骤设置弹窗
+  const handleOpenSetupDialog = () => {
+    setSetupStep(1);
+    setShowSetupDialog(true);
   };
 
-  // 开通 CLS 服务
-  const handleEnableCls = () => {
+  // 第一步: 开通 CLS
+  const handleStep1EnableCls = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       setClsEnabled(true);
-      setShowClsDialog(false);
+      setSetupStep(2);
       toast.success("CLS 服务已开通");
-      // 开通后显示接入弹窗
-      setShowAccessDialog(true);
     }, 1500);
   };
 
-  const handleAccessOpenClaw = () => {
-    const trimmedSecretId = secretId.trim();
-    const trimmedSecretKey = secretKey.trim();
-    
-    if (!trimmedSecretId.startsWith("AKID") || !trimmedSecretKey.startsWith("MYbT")) {
-      toast.error("密钥无效，请检查 SecretId 和 SecretKey");
-      return;
-    }
+  // 第二步: 主题设置完成后进入第三步
+  const handleStep2Continue = () => {
+    setSetupStep(3);
+  };
 
-    setIsLoading(true);
+  // 第三步: 安装 Agent
+  const handleStep3InstallAgent = () => {
+    setIsInstallingAgent(true);
     setTimeout(() => {
-      if (batchMode === "enable") {
-        // 批量开启
-        setClaws(claws.map(c => 
-          selectedIds.has(c.id) ? { ...c, observableStatus: "on" } : c
-        ));
-        toast.success(`已为 ${selectedIds.size} 个 OpenClaw 开启可观测面板`);
-      } else {
-        // 单个接入
-        const newClaw = {
-          id: String(Math.max(...claws.map(c => parseInt(c.id))) + 1),
-          name: `接入的 OpenClaw (${trimmedSecretId.slice(0, 4)}...)`,
-          creator: "system@acompany.com",
-          createTime: new Date().toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          }).replace(/\//g, '-')
-        };
-        setClaws([{ ...newClaw, observableStatus: "on" }, ...claws]);
-        toast.success("开启可观测面板成功");
-      }
-      setIsLoading(false);
-      setShowAccessDialog(false);
-      setSecretId("");
-      setSecretKey("");
+      setIsInstallingAgent(false);
+      setClaws(claws.map(c => 
+        selectedIds.has(c.id) ? { ...c, observableStatus: "on" } : c
+      ));
+      setShowSetupDialog(false);
       setSelectedIds(new Set());
-      setBatchMode(null);
-    }, 1500);
+      toast.success("可观测面板开启成功");
+    }, 2000);
   };
+
+
 
   // 时间筛选后的数据（用于统计卡片）
   const timeFiltered = claws.filter((c) => {
@@ -180,12 +155,8 @@ export default function OpenClawMonitor() {
       toast.error("请先选择要开启的 OpenClaw");
       return;
     }
-    setBatchMode("enable");
-    if (!clsEnabled) {
-      setShowClsDialog(true);
-    } else {
-      setShowAccessDialog(true);
-    }
+    // 批量开启也需要经过三步流程
+    handleOpenSetupDialog();
   };
 
   // 批量关闭可观测面板
@@ -217,16 +188,8 @@ export default function OpenClawMonitor() {
             <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
             <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 实例。</p>
           </div>
-          {/* 接入按键 + 时间范围筛选 + 刷新 */}
+          {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleOpenObservability}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              开启可观测面板
-            </Button>
             <input
               type="date"
               value={dateFrom}
@@ -365,15 +328,46 @@ export default function OpenClawMonitor() {
                         {claw.observableStatus === "on" ? "开启" : "未开启"}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      {/* 操作列 */}
+                    </td>
                     <td className="px-6 py-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
-                        onClick={() => setDeleteTarget(claw.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {claw.observableStatus === "off" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 text-blue-600 border-blue-200 hover:bg-blue-50"
+                            onClick={() => {
+                              // 一个 OpenClaw 的开启流程
+                              setSelectedIds(new Set([claw.id]));
+                              handleOpenSetupDialog();
+                            }}
+                          >
+                            开启可观测面板
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => {
+                              setSelectedIds(new Set([claw.id]));
+                              setShowCloseConfirm(true);
+                            }}
+                          >
+                            关闭可观测面板
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
+                          onClick={() => setDeleteTarget(claw.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -408,95 +402,127 @@ export default function OpenClawMonitor() {
         </div>
       </div>
 
-      {/* CLS 开通弹窗 */}
-      <Dialog open={showClsDialog} onOpenChange={setShowClsDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开通日志服务CLS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-amber-800">
-                开启可观测面板需要您开通「日志服务CLS」
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-900">腾讯云日志服务CLS独立计费产品。</p>
-              <p className="text-sm text-gray-600">
-                计费标准清楚见 
-                <a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  CLS计费详情
-                </a>
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowClsDialog(false)}>
-              取消
-            </Button>
-            <Button 
-              onClick={handleEnableCls} 
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isLoading ? "开通中..." : "开通"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 接入 AKSK 弹窗 */}
-      <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
+      {/* 三步骤开启流程弹窗 */}
+      <Dialog open={showSetupDialog} onOpenChange={setShowSetupDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>开启可观测面板</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                将采用Loglistener采集器实时监听Openclaw相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700">SecretId</label>
-                <Input
-                  placeholder="请输入 SecretId"
-                  value={secretId}
-                  onChange={(e) => setSecretId(e.target.value)}
-                  className="mt-1"
-                />
+          
+          {/* 第一步: 开通 CLS */}
+          {setupStep === 1 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-900">1. 开通 CLS</h3>
+                <p className="text-sm text-gray-600">
+                  开启可观测面板需要您开通日志服务 CLS
+                </p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">SecretKey</label>
-                <Input
-                  type="password"
-                  placeholder="请输入 SecretKey"
-                  value={secretKey}
-                  onChange={(e) => setSecretKey(e.target.value)}
-                  className="mt-1"
-                />
+              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-800">
+                  腾讯云日志服务 CLS 是独立计费产品
+                </p>
               </div>
             </div>
-          </div>
+          )}
+          
+          {/* 第二步: 主题设置 */}
+          {setupStep === 2 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-900">2. 设置主题</h3>
+                <p className="text-sm text-gray-600">
+                  配置日志主题和指标主题
+                </p>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">日志主题</label>
+                  <Input
+                    placeholder="日志主题名称"
+                    value={logTopic}
+                    onChange={(e) => setLogTopic(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">指标主题</label>
+                  <Input
+                    placeholder="指标主题名称"
+                    value={metricTopic}
+                    onChange={(e) => setMetricTopic(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* 第三步: 安装 Agent */}
+          {setupStep === 3 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-900">3. 安装 Agent</h3>
+                <p className="text-sm text-gray-600">
+                  正在安装日志采集 Agent…
+                </p>
+              </div>
+              {isInstallingAgent && (
+                <div className="flex items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              )}
+            </div>
+          )}
+          
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowAccessDialog(false)}>
+            {setupStep > 1 && (
+              <Button 
+                variant="outline" 
+                onClick={() => setSetupStep((prev) => (prev - 1) as 1 | 2 | 3)}
+                disabled={isLoading || isInstallingAgent}
+              >
+                上一步
+              </Button>
+            )}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSetupDialog(false)}
+              disabled={isLoading || isInstallingAgent}
+            >
               取消
             </Button>
-            <Button 
-              onClick={handleAccessOpenClaw} 
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isLoading ? "接入中..." : "接入"}
-            </Button>
+            {setupStep === 1 && (
+              <Button 
+                onClick={handleStep1EnableCls} 
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isLoading ? "开通中..." : "下一步"}
+              </Button>
+            )}
+            {setupStep === 2 && (
+              <Button 
+                onClick={handleStep2Continue}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                下一步
+              </Button>
+            )}
+            {setupStep === 3 && (
+              <Button 
+                onClick={handleStep3InstallAgent} 
+                disabled={isInstallingAgent}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isInstallingAgent ? "安装中..." : "确认"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* 关闭确认弹窗 */}
-      <Dialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+      {/* 关闭确认弹窗 */}     <Dialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>关闭可观测面板</DialogTitle>

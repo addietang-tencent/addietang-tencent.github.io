@@ -172,6 +172,7 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 export default function TokensMonitor() {
+  const [, navigate] = useLocation(); // 在组件顶级调用 useLocation
   const today = todayStr();
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo, setDateTo] = useState(today);
@@ -409,9 +410,7 @@ export default function TokensMonitor() {
           </div>
         </div>
 
-        {/* Overview Cards - 仅在 CLS 启用时显示 */}
-        {clsEnabled && (
-          <>
+        {/* Overview Cards - 始终显示 */}
         <div className="grid grid-cols-5 gap-4 mb-6">
           {/* 随时间联动的四张卡片 */}
           {[
@@ -482,8 +481,6 @@ export default function TokensMonitor() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-          </>
-        )}
 
         {/* Detail Tabs */}
         <Tabs defaultValue="member">
@@ -587,48 +584,58 @@ export default function TokensMonitor() {
               </div>
             )}
             {clsEnabled && (
-              <p className="text-xs text-gray-400 mb-3">展示高成本会话 TOP 5，点击查看会话详情</p>
-            )}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">渠道</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sessionPaged.length === 0 ? (
-                    <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : sessionPaged.map((s) => {
-                    const [, navigate] = useLocation();
-                    return (
-                    <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700">{s.sessionName}</div>
-                        <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{s.channel}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{s.model}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">${s.cost.toFixed(4)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
+              <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs text-gray-400">展示高成本会话 TOP 5，点击查看会话详情</p>
+                <Button
+                  onClick={() => setShowCloseClsConfirm(true)}
+                  variant="outline"
+                  className="text-xs h-7 px-3 text-gray-600 hover:text-red-600 hover:border-red-200"
+                >
+                  关闭CLS
+                </Button>
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-50 bg-gray-50/50">
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">渠道</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
                     </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {sessionPaged.length === 0 ? (
+                      <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    ) : sessionPaged.map((s) => {
+                      return (
+                      <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-700">{s.sessionName}</div>
+                          <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{s.channel}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{s.model}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">${s.cost.toFixed(4)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
+                      </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />
+              </div>
+              </>
+            )}
           </TabsContent>
         </Tabs>
 

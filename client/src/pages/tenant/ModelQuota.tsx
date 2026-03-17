@@ -10,7 +10,7 @@
  *  - 卡片 icon/配色对齐管控端风格（圆形icon）
  *  - 字体排版统一
  */
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import TenantLayout from "@/components/TenantLayout";
 import {
   Tooltip,
@@ -121,6 +121,7 @@ function aggregateRange(start: string, end: string): { summary: SummaryRow[]; de
 }
 
 const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY_QUOTA_TOTAL = 500000;
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function StatCard({
@@ -195,37 +196,6 @@ export default function ModelQuota() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [summaryPage, setSummaryPage] = useState(1);
   const [detailPage, setDetailPage] = useState(1);
-  
-  // 从 localStorage 读取成员的每日 Tokens 上限
-  const [memberQuotaLimit, setMemberQuotaLimit] = useState<number | null>(() => {
-    const quotaMode = localStorage.getItem("memberQuotaMode") as "unlimited" | "custom" | null;
-    if (quotaMode === "unlimited") {
-      return null; // 无限制
-    }
-    if (quotaMode === "custom") {
-      const quotaValue = localStorage.getItem("memberQuota");
-      return quotaValue ? parseInt(quotaValue) : 500000;
-    }
-    return 500000; // 默认值
-  });
-  
-  // 监听 localStorage 变化
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const quotaMode = localStorage.getItem("memberQuotaMode") as "unlimited" | "custom" | null;
-      if (quotaMode === "unlimited") {
-        setMemberQuotaLimit(null);
-      } else if (quotaMode === "custom") {
-        const quotaValue = localStorage.getItem("memberQuota");
-        setMemberQuotaLimit(quotaValue ? parseInt(quotaValue) : 500000);
-      } else {
-        setMemberQuotaLimit(500000);
-      }
-    };
-    
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
 
   const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -258,12 +228,9 @@ export default function ModelQuota() {
   // Today quota: always based on today's data (not affected by filter)
   const todaySummary = useMemo(() => generateSummary(TODAY), []);
   const todayTotalTokens = todaySummary.reduce((acc, r) => acc + r.totalTokens, 0);
-  
-  // 计算配额百分比
-  const IS_QUOTA_UNLIMITED = memberQuotaLimit === null;
-  const quotaPct = IS_QUOTA_UNLIMITED ? 0 : (todayTotalTokens / memberQuotaLimit) * 100;
-  const quotaPctStr = IS_QUOTA_UNLIMITED ? "0" : quotaPct.toFixed(1);
-  const isQuotaWarning = !IS_QUOTA_UNLIMITED && quotaPct > 80;
+  const quotaPct = (todayTotalTokens / TODAY_QUOTA_TOTAL) * 100;
+  const quotaPctStr = quotaPct.toFixed(1);
+  const isQuotaWarning = quotaPct > 80;
 
   // Paginated slices
   const summarySlice = summary.slice(
@@ -405,17 +372,14 @@ export default function ModelQuota() {
                       className="max-w-[180px] text-xs leading-relaxed text-justify"
                       style={{ letterSpacing: '0' }}
                     >
-                      {IS_QUOTA_UNLIMITED ? "配额已设置为无限制，无需关注消耗占比" : "此配额为公司提供的外部模型 Token 额度，按自然日统计和刷新"}
+                      此配额为公司提供的外部模型 Token 额度，按自然日统计和刷新
                     </TooltipContent>
                   </Tooltip>
                 </span>
               </div>
-              <div className="flex items-center gap-2 mb-3">
-                <p className="text-2xl font-bold text-gray-900 tabular-nums leading-none">
-                  {quotaPctStr}%
-                </p>
-                {IS_QUOTA_UNLIMITED && <span className="text-xs text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded">无限制</span>}
-              </div>
+              <p className="text-2xl font-bold text-gray-900 tabular-nums leading-none mb-3">
+                {quotaPctStr}%
+              </p>
               {/* Progress bar — hover to see token details */}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -423,14 +387,14 @@ export default function ModelQuota() {
                     <div
                       className={cn(
                         "h-full rounded-full transition-all",
-                        IS_QUOTA_UNLIMITED ? "bg-gray-200" : isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
+                        isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
                       )}
-                      style={{ width: IS_QUOTA_UNLIMITED ? "0%" : `${Math.min(quotaPct, 100)}%` }}
+                      style={{ width: `${Math.min(quotaPct, 100)}%` }}
                     />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs" style={{ letterSpacing: '0' }}>
-                  {todayTotalTokens.toLocaleString()} / {memberQuotaLimit?.toLocaleString() || "无限制"} Tokens
+                  {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
                 </TooltipContent>
               </Tooltip>
             </div>

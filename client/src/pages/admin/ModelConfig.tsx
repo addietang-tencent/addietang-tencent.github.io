@@ -148,20 +148,11 @@ export default function ModelConfig() {
   });
   const [customJson, setCustomJson] = useState(DEFAULT_JSON);
 
-  // Global quota - 从 localStorage 读取，支持跨页面同步
-  const [globalLimitMode, setGlobalLimitMode] = useState<"unlimited" | "custom">(() => {
-    const saved = localStorage.getItem("globalLimitMode");
-    return (saved as "unlimited" | "custom") || "unlimited";
-  });
-  const [globalLimit, setGlobalLimit] = useState(() => {
-    const saved = localStorage.getItem("globalLimit");
-    return saved ? parseInt(saved) : 1000000;
-  });
+  // Global quota
+  const [globalLimitMode, setGlobalLimitMode] = useState<"unlimited" | "custom">("unlimited"); // 无限制或自定义
+  const [globalLimit, setGlobalLimit] = useState(1000000);
   const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
-  const [globalLimitDraft, setGlobalLimitDraft] = useState(() => {
-    const saved = localStorage.getItem("globalLimit");
-    return saved ? parseInt(saved) : 1000000;
-  });
+  const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
   const [allowCustomModel, setAllowCustomModel] = useState(false);
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
@@ -325,9 +316,7 @@ export default function ModelConfig() {
             <Select
               value={globalLimitMode}
               onValueChange={(v) => {
-                const mode = v as "unlimited" | "custom";
-                setGlobalLimitMode(mode);
-                localStorage.setItem("globalLimitMode", mode);
+                setGlobalLimitMode(v as "unlimited" | "custom");
                 setGlobalLimitEditing(false);
                 toast.success(v === "unlimited" ? "已设置为无限制" : "已切换为自定义数量");
               }}
@@ -354,12 +343,7 @@ export default function ModelConfig() {
                     />
                     <Button
                       size="sm"
-                      onClick={() => { 
-                        setGlobalLimit(globalLimitDraft);
-                        localStorage.setItem("globalLimit", String(globalLimitDraft));
-                        setGlobalLimitEditing(false);
-                        toast.success("全局配额已保存");
-                      }}
+                      onClick={() => { setGlobalLimit(globalLimitDraft); setGlobalLimitEditing(false); toast.success("全局配额已保存"); }}
                       style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                     >
                       保存

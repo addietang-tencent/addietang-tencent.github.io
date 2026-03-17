@@ -73,33 +73,24 @@ export default function OpsObservation() {
   const [clsEnabled, setClsEnabled] = useState(() => {
     return localStorage.getItem("opsObservationClsEnabled") === "true";
   });
-  const [showCLSDialog, setShowCLSDialog] = useState(false);
-  const [showAKSKDialog, setShowAKSKDialog] = useState(false);
-  const [secretId, setSecretId] = useState("");
-  const [secretKey, setSecretKey] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [isEnablingCls, setIsEnablingCls] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
 
   const handleOpenCLS = () => {
-    setShowCLSDialog(true);
-  };
-
-  const handleEnableCLS = () => {
-    setShowCLSDialog(false);
-    setShowAKSKDialog(true);
-  };
-
-  const handleConfirmAKSK = () => {
-    if (!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")) {
-      alert("密钥无效");
-      return;
-    }
-    setClsEnabled(true);
-    localStorage.setItem("opsObservationClsEnabled", "true");
-    setShowAKSKDialog(false);
-    setSecretId("");
-    setSecretKey("");
+    setIsEnablingCls(true);
+    // 模拟 loading 1.5 秒
+    setTimeout(() => {
+      setClsEnabled(true);
+      localStorage.setItem("opsObservationClsEnabled", "true");
+      setIsEnablingCls(false);
+      setShowSuccessMessage(true);
+      // 3 秒后隐藏成功提示
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    }, 1500);
   };
 
   const handleCloseCls = () => {
@@ -134,15 +125,24 @@ export default function OpsObservation() {
             </div>
             <Button
               onClick={handleOpenCLS}
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
+              disabled={isEnablingCls}
+              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
             >
-              开启 CLS 日志服务
+              {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
             </Button>
           </div>
         </div>
       )}
 
-      {/* 已开启时显示关闭按钮 */}
+      {/* CLS 开启成功提示 */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">✓</div>
+          <span className="text-sm font-medium text-green-800">CLS 日志服务开启成功</span>
+        </div>
+      )}
+
+      {/* 已开启时显示关闭button */}
       {clsEnabled && (
         <div className="flex items-center justify-end mb-6">
           <Button
@@ -268,34 +268,6 @@ export default function OpsObservation() {
         </div>
       </div>
 
-      {/* CLS 开通弹窗 */}
-      <Dialog open={showCLSDialog} onOpenChange={setShowCLSDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开通日志服务CLS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-orange-800">
-                  开启可观测面板需要您开通「日志服务CLS」
-                </p>
-              </div>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-3 text-sm">
-              <div>
-                <p className="font-medium text-gray-900 mb-2">腾讯云日志服务CLS独立计费产品</p>
-                <p className="text-gray-600 mb-3">计费标准清楚，见<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">CLS计费详情</a></p>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCLSDialog(false)}>取消</Button>
-            <Button onClick={handleEnableCLS} className="bg-blue-600 hover:bg-blue-700">开通</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* 关闭 CLS 确认对话框 */}
       <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>
@@ -319,58 +291,7 @@ export default function OpsObservation() {
         </DialogContent>
       </Dialog>
 
-      {/* AKSK 接入弹窗 */}
-      <Dialog open={showAKSKDialog} onOpenChange={setShowAKSKDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开启可观测面板</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-blue-800">
-                  将采用Loglistener采集器实时监听Openclaw相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
-                </p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">SecretId</label>
-                <input
-                  type="text"
-                  value={secretId}
-                  onChange={(e) => setSecretId(e.target.value)}
-                  placeholder="AKID123456789"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-2">SecretKey</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={secretKey}
-                    onChange={(e) => setSecretKey(e.target.value)}
-                    placeholder="MYbTAbcDefGhIjKl"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? "🙈" : "👁️"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAKSKDialog(false)}>取消</Button>
-            <Button onClick={handleConfirmAKSK} className="bg-blue-600 hover:bg-blue-700">确认</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }

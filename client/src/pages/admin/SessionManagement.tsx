@@ -5,10 +5,9 @@
  */
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, AlertCircle, ArrowUpRight } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie,
@@ -108,7 +107,7 @@ const MOCK_SESSIONS = [
     cost: "$0.1076",
     lastMessage: "System: [2026-03-08 21:58:03 GMT+8] Feishu[...",
     updatedAt: "2026-03-08 13:58",
-    status: "cron",
+    status: "active",
   },
   {
     id: "c51c62c7",
@@ -163,7 +162,7 @@ const MOCK_SESSIONS = [
     cost: "$0.0829",
     lastMessage: "System: [2026-03-04 21:04:20 GMT+8] Feishu[...",
     updatedAt: "2026-03-04 13:08",
-    status: "cron",
+    status: "active",
   },
   {
     id: "7878d832",
@@ -194,13 +193,11 @@ const MOCK_SESSIONS = [
 export default function SessionManagement() {
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "cron" | "groups">("all");
   const [, navigate] = useLocation();
-  const [showCLSDialog, setShowCLSDialog] = useState(false);
-  const [showAKSKDialog, setShowAKSKDialog] = useState(false);
-  const [secretId, setSecretId] = useState("");
-  const [secretKey, setSecretKey] = useState("");
   const [clsEnabled, setClsEnabled] = useState(() => {
     return localStorage.getItem("sessionManagementClsEnabled") === "true";
   });
+  const [isEnablingCls, setIsEnablingCls] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
 
@@ -210,23 +207,18 @@ export default function SessionManagement() {
   }, []);
 
   const handleOpenCLS = () => {
-    setShowCLSDialog(true);
-  };
-
-  const handleEnableCLS = () => {
-    setShowCLSDialog(false);
-    setShowAKSKDialog(true);
-  };
-
-  const handleConnectAKSK = () => {
-    if (!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")) {
-      return;
-    }
-    setClsEnabled(true);
-    localStorage.setItem("sessionManagementClsEnabled", "true");
-    setShowAKSKDialog(false);
-    setSecretId("");
-    setSecretKey("");
+    setIsEnablingCls(true);
+    // 模拟 loading 1.5 秒
+    setTimeout(() => {
+      setClsEnabled(true);
+      localStorage.setItem("sessionManagementClsEnabled", "true");
+      setIsEnablingCls(false);
+      setShowSuccessMessage(true);
+      // 3 秒后隐藏成功提示
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    }, 1500);
   };
 
   const handleCloseCls = () => {
@@ -258,11 +250,20 @@ export default function SessionManagement() {
             </div>
             <Button
               onClick={handleOpenCLS}
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
+              disabled={isEnablingCls}
+              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
             >
-              开启 CLS 日志服务
+              {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* CLS 开启成功提示 */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-5 h-5 text-green-600" />
+          <span className="text-sm font-medium text-green-800">CLS 日志服务开启成功</span>
         </div>
       )}
 
@@ -279,276 +280,113 @@ export default function SessionManagement() {
         </div>
       )}
 
-      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════ */}
+      {/* 仪表板 - 仅在 CLS 启用时显示 */}
       {clsEnabled && (
-        <div className="grid grid-cols-4 gap-4">
-          {STAT_CARDS.map((card) => {
-            const Icon = card.icon;
-            return (
-              <div
-                key={card.label}
-                className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <span className="text-xs text-gray-500 leading-tight">{card.label}</span>
-                  <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${card.iconBg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-3.5 h-3.5 text-white" />
+        <div className="space-y-8">
+          {/* 顶部指标卡 */}
+          <div className="grid grid-cols-4 gap-4">
+            {STAT_CARDS.map((card) => (
+              <div key={card.metric} className="bg-white rounded-xl border border-gray-100 p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-xs text-gray-500 font-medium">{card.label}</span>
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
+                    <card.icon className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-2xl font-bold mb-1 text-gray-900">{card.value}</div>
-                {card.channels ? (
-                  <div className="text-xs text-gray-400 leading-tight">
-                    {card.channels.join(" / ")}
+                <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+                {card.channels && (
+                  <div className="mt-3 text-xs text-gray-500 space-y-1">
+                    {card.channels.map((ch) => (
+                      <div key={ch}>{ch}</div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="text-xs text-gray-400 font-mono">{card.metric}</div>
                 )}
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ══ 会话列表 ════════════════════════════════════════════════════════════ */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gray-900">会话摘要一览</h2>
-        </div>
-
-        <div
-          className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-        >
-          <div className="px-6 py-3 border-b border-gray-50 bg-gray-50/50 text-xs text-gray-500">
-            按时间倒序 · 点击查看会话详情
+            ))}
           </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">会话</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">类型</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">模型</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">TOKENS</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">预计成本</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">最后消息</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">更新时间</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredSessions.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-sm text-gray-400">
-                    暂无会话
-                  </td>
-                </tr>
-              ) : (
-                filteredSessions.map((session) => {
-                  return (
-                  <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
-                    <td className="px-6 py-3">
-                      <div className="text-sm font-medium text-gray-900">{session.name}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
-                    </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-block px-2 py-0.5 text-xs font-medium text-cyan-600 bg-cyan-50 rounded">
-                        {session.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3">
-                      <span className="inline-block px-2 py-0.5 text-xs font-medium text-purple-600 bg-purple-50 rounded">
-                        {session.model}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3 text-sm font-mono text-gray-700">{session.tokens}</td>
-                    <td className="px-6 py-3 text-sm text-gray-700">{session.cost}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 max-w-xs truncate">{session.lastMessage}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 whitespace-nowrap">{session.updatedAt}</td>
+
+          {/* 会话摘要表格 */}
+          <div>
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-gray-900">会话摘要一览</h2>
+              <p className="text-xs text-gray-400 mt-1">按时间倒序 · 点击查看会话详情</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后消息</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">更新时间</th>
                   </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ══ 渠道与模型分布 ════════════════════════════════════════════════════════ */}
-      {clsEnabled && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-1 h-5 rounded-full bg-blue-500" />
-            <h2 className="text-base font-bold text-gray-900">渠道与模型分布</h2>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredSessions.map((session) => (
+                    <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-700 font-medium">{session.name}</div>
+                        <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{session.type}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{session.model}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.tokens}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.cost}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 truncate">{session.lastMessage}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.updatedAt}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-5">
 
-            {/* 按渠道分布 */}
-            <div
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            >
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-800">按渠道分布</span>
-                </div>
-                <span className="text-xs font-mono text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">channel</span>
-              </div>
-              <div className="px-4 pt-4 pb-2">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart
-                    data={CHANNEL_DIST_DATA}
-                    layout="vertical"
-                    margin={{ top: 8, right: 32, left: 80, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      tick={{ fontSize: 12, fill: "#6b7280" }}
-                      axisLine={false}
-                      tickLine={false}
-                      width={76}
-                    />
-                    <Tooltip
-                      contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
-                      cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                    />
-                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                      {CHANNEL_DIST_DATA.map((entry, index) => {
-                        const colors = ["#d8b4fe", "#22c55e", "#60a5fa", "#f59e0b", "#ef4444"];
-                        return <Cell key={index} fill={colors[index % colors.length]} />;
-                      })}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+          {/* 渠道与模型分布 */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* 渠道分布 */}
+            <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <h3 className="text-sm font-bold text-gray-900 mb-4">渠道分布</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={CHANNEL_DIST_DATA}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
 
-            {/* 按模型分布 */}
-            <div
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            >
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-800">按模型分布</span>
-                </div>
-                <span className="text-xs font-mono text-purple-500 bg-purple-50 px-2 py-0.5 rounded-md">model</span>
-              </div>
-              <div className="flex-1 flex items-center justify-center px-4 py-6">
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={MODEL_DIST_DATA}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={60}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {MODEL_DIST_DATA.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+            {/* 模型分布 */}
+            <div className="bg-white rounded-xl border border-gray-100 p-6">
+              <h3 className="text-sm font-bold text-gray-900 mb-4">模型分布</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={MODEL_DIST_DATA}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {MODEL_DIST_DATA.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
       )}
-
-      {/* CLS 开通弹窗 */}
-      <Dialog open={showCLSDialog} onOpenChange={setShowCLSDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开通日志服务CLS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-700">
-                开启可观测面板需要您开通「日志服务CLS」
-              </p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                <strong>计费说明：</strong>腾讯云日志服务CLS为独立计费产品。
-              </p>
-              <a
-                href="https://cloud.tencent.com/document/product/614/45802"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:text-blue-700 underline"
-              >
-                查看CLS计费详情 →
-              </a>
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCLSDialog(false)}>
-              取消
-            </Button>
-            <Button onClick={handleEnableCLS} className="bg-blue-600 hover:bg-blue-700">
-              开通
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* AKSK 输入弹窗 */}
-      <Dialog open={showAKSKDialog} onOpenChange={setShowAKSKDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>开启可观测面板</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-sm text-blue-700">
-                <strong>工作原理：</strong>将采用Loglistener采集器实时监听OpenClaw相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretId</Label>
-                <input
-                  type="text"
-                  placeholder="AKID..."
-                  value={secretId}
-                  onChange={(e) => setSecretId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretKey</Label>
-                <input
-                  type="password"
-                  placeholder="MYbT..."
-                  value={secretKey}
-                  onChange={(e) => setSecretKey(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowAKSKDialog(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={handleConnectAKSK}
-              disabled={!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-            >
-              连接
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* 关闭 CLS 确认对话框 */}
       <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>

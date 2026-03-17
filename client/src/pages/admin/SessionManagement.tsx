@@ -243,7 +243,7 @@ export default function SessionManagement() {
           <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-blue-900 mb-1">会话详情需要开启可观测面板</div>
-            <p className="text-sm text-blue-700 mb-3">开启可观测面板后，您可以查看每个会话的详细日志、性能指标和交互数据，帮助您更好地理解和优化对话流程。</p>
+            <p className="text-sm text-blue-700 mb-3">开启可观测面板后，您可以查看每个会话的详细日志和交互数据，帮助您更好地理解和优化对话流程。</p>
             <Button
               onClick={handleOpenCLS}
               className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8 px-3"

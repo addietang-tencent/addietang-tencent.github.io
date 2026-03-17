@@ -3,7 +3,7 @@
  * 用户创建 OpenClaw 时启动的云服务器镜像管理
  * 企业可使用自定义镜像，并随时导入最新版本
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -45,8 +45,23 @@ export default function ImageManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [showImageList, setShowImageList] = useState(false);
+  const imageListRef = useRef<HTMLDivElement>(null);
 
   const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
+
+  // 点击外部关闭下拉列表
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (imageListRef.current && !imageListRef.current.contains(event.target as Node)) {
+        setShowImageList(false);
+      }
+    };
+
+    if (showImageList) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showImageList]);
 
   // 根据搜索词过滤镜像
   const filteredImages = ALL_IMPORTABLE.filter((img) =>
@@ -235,8 +250,9 @@ export default function ImageManagement() {
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
                 >
                   <span>{selectedImageId ? selectedImage?.name : "请选择要导入的镜像"}</span>
-                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${showImageList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  {/* 上下箭头 icon */}
+                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${showImageList ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l5-5m0 0l5 5M12 5v11" />
                   </svg>
                 </button>
 
@@ -252,9 +268,9 @@ export default function ImageManagement() {
 
               {/* 展开的镜像列表 */}
               {showImageList && (
-                <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                <div ref={imageListRef} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
                   {/* 搜索框 */}
-                  <div className="relative p-2 border-b border-gray-100">
+                  <div className="relative p-2 border-b border-gray-100" onClick={(e) => e.stopPropagation()}>
                     <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
@@ -263,6 +279,7 @@ export default function ImageManagement() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       autoFocus
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </div>
 
@@ -276,7 +293,8 @@ export default function ImageManagement() {
                         {filteredPublic.map((img) => (
                           <div
                             key={img.id}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedImageId(img.id);
                               setShowImageList(false);
                               setSearchQuery("");
@@ -302,7 +320,8 @@ export default function ImageManagement() {
                         {filteredCustom.map((img) => (
                           <div
                             key={img.id}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedImageId(img.id);
                               setShowImageList(false);
                               setSearchQuery("");

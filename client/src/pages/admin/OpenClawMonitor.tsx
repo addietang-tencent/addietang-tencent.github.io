@@ -295,7 +295,7 @@ export default function OpenClawMonitor() {
                     className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={handleBatchEnable}
                   >
-                    开启
+                    开启可观测面板
                   </Button>
                   <Button
                     size="sm"
@@ -303,7 +303,7 @@ export default function OpenClawMonitor() {
                     className="h-7 text-xs text-red-500 border-red-200 hover:bg-red-50"
                     onClick={handleBatchDisable}
                   >
-                    关闭
+                    关闭可观测面板
                   </Button>
                 </div>
               )}

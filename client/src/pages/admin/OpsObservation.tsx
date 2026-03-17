@@ -71,7 +71,8 @@ const METRIC_CARDS = [
 
 export default function OpsObservation() {
   const [clsEnabled, setClsEnabled] = useState(() => {
-    return localStorage.getItem("opsObservationClsEnabled") === "true";
+    const stored = localStorage.getItem("opsObservationClsEnabled");
+    return stored === null ? true : stored === "true"; // 默认开启
   });
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);

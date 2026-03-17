@@ -865,7 +865,7 @@ export default function MemberManagement() {
 
       {/* Batch Import Dialog */}
       <Dialog open={showBatchDialog} onOpenChange={(open) => {
-        if (!open && batchImportStep !== "importing") {
+        if (!open) {
           setShowBatchDialog(false);
           // 重置状态
           setTimeout(() => {
@@ -891,7 +891,7 @@ export default function MemberManagement() {
               {/* Step 1: 下载模板 */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">第一步：下载模板并填写用户信息</p>
-                <p className="text-xs text-gray-500 leading-relaxed">下载 CSV 模板，按格式填写用户信息后保存。<span className="text-orange-500 font-medium">单次最多上传 1000 个用户。</span></p>
+                <p className="text-xs text-gray-500 leading-relaxed">下载 CSV 模板，按格式填写信息后保存。<span className="text-orange-500 font-medium">单次最多导入 1000 个用户。</span></p>
                 <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
                   // 生成模板 CSV 并下载
                   const header = "用户邮箱,姓名,角色(admin/member),每日Tokens上限(-1表示无限制)";

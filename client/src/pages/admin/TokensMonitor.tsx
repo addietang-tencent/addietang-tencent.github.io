@@ -364,18 +364,7 @@ export default function TokensMonitor() {
         {/* Header */}
 
 
-        {/* 已开启时显示关闭按钮 */}
-        {clsEnabled && (
-          <div className="flex items-center justify-end mb-6">
-            <Button
-              onClick={() => setShowCloseClsConfirm(true)}
-              variant="outline"
-              className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
-            >
-              关闭 CLS 日志服务
-            </Button>
-          </div>
-        )}
+
 
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>

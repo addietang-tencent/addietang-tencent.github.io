@@ -194,7 +194,8 @@ export default function SessionManagement() {
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "cron" | "groups">("all");
   const [, navigate] = useLocation();
   const [clsEnabled, setClsEnabled] = useState(() => {
-    return localStorage.getItem("sessionManagementClsEnabled") === "true";
+    const stored = localStorage.getItem("sessionManagementClsEnabled");
+    return stored === null ? true : stored === "true"; // 默认开启
   });
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);

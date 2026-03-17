@@ -183,7 +183,11 @@ export default function TokensMonitor() {
   const [showAKSKDialog, setShowAKSKDialog] = useState(false);
   const [secretId, setSecretId] = useState("");
   const [secretKey, setSecretKey] = useState("");
-  const [clsEnabled, setClsEnabled] = useState(false);
+  const [clsEnabled, setClsEnabled] = useState(() => {
+    return localStorage.getItem("tokensMonitorClsEnabled") === "true";
+  });
+  const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
+  const [isClosingCls, setIsClosingCls] = useState(false);
   const [globalLimit, setGlobalLimit] = useState<number | null>(() => {
     const mode = localStorage.getItem("globalLimitMode");
     if (mode === "unlimited") return null;
@@ -225,9 +229,21 @@ export default function TokensMonitor() {
       return;
     }
     setClsEnabled(true);
+    localStorage.setItem("tokensMonitorClsEnabled", "true");
     setShowAKSKDialog(false);
     setSecretId("");
     setSecretKey("");
+  };
+
+  const handleCloseCls = () => {
+    setIsClosingCls(true);
+    setTimeout(() => {
+      setClsEnabled(false);
+      localStorage.setItem("tokensMonitorClsEnabled", "false");
+      setIsClosingCls(false);
+      setShowCloseClsConfirm(false);
+      toast.success("CLS 日志服务已关闭");
+    }, 1000);
   };
 
   // 计算全局配额百分比
@@ -352,6 +368,37 @@ export default function TokensMonitor() {
   return (
       <div className="page-enter">
         {/* Header */}
+        {/* CLS 日志服务未开启提示 */}
+        {!clsEnabled && (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
+                <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持从按会话、消息维度查看 tokens、費用使用情况。CLS 根据用量采用资源包或按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:underline">计费详情</a></p>
+              </div>
+              <Button
+                onClick={handleOpenCLS}
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap"
+              >
+                开启 CLS 日志服务
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* 已开启时显示关闭按钮 */}
+        {clsEnabled && (
+          <div className="flex items-center justify-end mb-6">
+            <Button
+              onClick={() => setShowCloseClsConfirm(true)}
+              variant="outline"
+              className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
+            >
+              关闭 CLS 日志服务
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
@@ -676,6 +723,28 @@ export default function TokensMonitor() {
               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
             >
               连接
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 关闭 CLS 确认对话框 */}
+      <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>确定要关闭 CLS 日志服务吗？</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 my-4">关闭后将无法查看该页面的数据仪表板。</p>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleCloseCls}
+              disabled={isClosingCls}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+            >
+              {isClosingCls ? "关闭中..." : "确定关闭"}
             </Button>
           </DialogFooter>
         </DialogContent>

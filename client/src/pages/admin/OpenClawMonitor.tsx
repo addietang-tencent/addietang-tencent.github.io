@@ -240,75 +240,36 @@ export default function OpenClawMonitor() {
                 className="pl-9 bg-gray-50 border-gray-200 h-9"
               />
             </div>
-            {/* 右：统计 + 批量操作 */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="text-sm text-gray-500">
-                  共计 <span className="text-lg font-bold text-gray-900">{timeFiltered.length}</span> 个 OpenClaw
-                </span>
+            {/* 右：统计 */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
+                <Bot className="w-3.5 h-3.5 text-white" />
               </div>
-              {selectedIds.size > 0 && (
-                <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
-                  <span className="text-sm text-gray-500">已选 {selectedIds.size} 个</span>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={handleBatchEnable}
-                  >
-                    开启可观测面板
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs text-red-500 border-red-200 hover:bg-red-50"
-                    onClick={handleBatchDisable}
-                  >
-                    关闭可观测面板
-                  </Button>
-                </div>
-              )}
+              <span className="text-sm text-gray-500">
+                共计 <span className="text-lg font-bold text-gray-900">{timeFiltered.length}</span> 个 OpenClaw
+              </span>
             </div>
           </div>
 
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[5%]">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.size === filtered.length && filtered.length > 0}
-                    onChange={toggleSelectAll}
-                    className="rounded border-gray-300 cursor-pointer"
-                  />
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[23%]">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">创建人的用户 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">创建时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">可观测面板状态</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">OpenClaw 名称</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">创建人的用户 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
               ) : (
                 paginated.map((claw) => (
                   <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(claw.id)}
-                        onChange={() => toggleSelect(claw.id)}
-                        className="rounded border-gray-300 cursor-pointer"
-                      />
-                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -320,54 +281,14 @@ export default function OpenClawMonitor() {
                     <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
                     <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
-                        claw.observableStatus === "on"
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-50 text-gray-600"
-                      }`}>
-                        {claw.observableStatus === "on" ? "开启" : "未开启"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {/* 操作列 */}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {claw.observableStatus === "off" ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 text-blue-600 border-blue-200 hover:bg-blue-50"
-                            onClick={() => {
-                              // 一个 OpenClaw 的开启流程
-                              setSelectedIds(new Set([claw.id]));
-                              handleOpenSetupDialog();
-                            }}
-                          >
-                            开启可观测面板
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={() => {
-                              setSelectedIds(new Set([claw.id]));
-                              setShowCloseConfirm(true);
-                            }}
-                          >
-                            关闭可观测面板
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
-                          onClick={() => setDeleteTarget(claw.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
+                        onClick={() => setDeleteTarget(claw.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     </td>
                   </tr>
                 ))

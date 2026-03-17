@@ -318,6 +318,13 @@ export default function ModelConfig() {
               onValueChange={(v) => {
                 setGlobalLimitMode(v as "unlimited" | "custom");
                 setGlobalLimitEditing(false);
+                // 保存到 localStorage
+                localStorage.setItem("globalLimitMode", v);
+                if (v === "custom") {
+                  localStorage.setItem("globalLimit", String(globalLimit));
+                }
+                // 触发 storage 事件，通知其他标签页
+                window.dispatchEvent(new Event("storage"));
                 toast.success(v === "unlimited" ? "已设置为无限制" : "已切换为自定义数量");
               }}
             >
@@ -343,7 +350,16 @@ export default function ModelConfig() {
                     />
                     <Button
                       size="sm"
-                      onClick={() => { setGlobalLimit(globalLimitDraft); setGlobalLimitEditing(false); toast.success("全局配额已保存"); }}
+                      onClick={() => {
+                        setGlobalLimit(globalLimitDraft);
+                        setGlobalLimitEditing(false);
+                        // 保存到 localStorage
+                        localStorage.setItem("globalLimitMode", "custom");
+                        localStorage.setItem("globalLimit", String(globalLimitDraft));
+                        // 触发 storage 事件，通知其他标签页
+                        window.dispatchEvent(new Event("storage"));
+                        toast.success("全局配额已保存");
+                      }}
                       style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                     >
                       保存

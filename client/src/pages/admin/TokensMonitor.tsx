@@ -2,7 +2,7 @@
  * TokensMonitor - 管控端 Tokens 监控页
  * 设计风格：与整体管控台保持一致，浅色卡片 + 蓝紫渐变强调色
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
@@ -94,11 +94,8 @@ for (let i = 0; i < DAYS_HISTORY; i++) {
 
 // 今日全局配额（固定）
 // 注意：GLOBAL_LIMIT 为 null 表示无限制
-const GLOBAL_LIMIT: number | null = 2000000; // 改为 null 时表示无限制
 const TODAY_RECORDS = ALL_RECORDS.filter((r) => r.date === todayStr());
 const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.outputTokens, 0);
-const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
-const IS_GLOBAL_UNLIMITED = GLOBAL_LIMIT === null;
 
 // ─── 进度条 ───────────────────────────────────────────────────────────────────
 function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; max: number | null; showTooltip?: boolean; isUnlimited?: boolean }) {
@@ -187,6 +184,27 @@ export default function TokensMonitor() {
   const [secretId, setSecretId] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [clsEnabled, setClsEnabled] = useState(false);
+  const [globalLimit, setGlobalLimit] = useState<number | null>(() => {
+    const mode = localStorage.getItem("globalLimitMode");
+    if (mode === "unlimited") return null;
+    const value = localStorage.getItem("globalLimit");
+    return value ? parseInt(value, 10) : 2000000;
+  });
+
+  // 监听 localStorage 变化
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const mode = localStorage.getItem("globalLimitMode");
+      if (mode === "unlimited") {
+        setGlobalLimit(null);
+      } else {
+        const value = localStorage.getItem("globalLimit");
+        setGlobalLimit(value ? parseInt(value, 10) : 2000000);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -211,6 +229,10 @@ export default function TokensMonitor() {
     setSecretId("");
     setSecretKey("");
   };
+
+  // 计算全局配额百分比
+  const TODAY_GLOBAL_PCT = globalLimit === null ? "0" : ((TODAY_TOTAL_TOKENS / globalLimit) * 100).toFixed(1);
+  const IS_GLOBAL_UNLIMITED = globalLimit === null;
 
   const handleFromChange = (v: string) => {
     setDateFrom(v);
@@ -406,9 +428,9 @@ export default function TokensMonitor() {
             </div>
             <div className="flex items-center gap-2">
               <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">无限制</span>}
+              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">无限制</span>}
             </div>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
+            <ProgressBar value={TODAY_TOTAL_TOKENS} max={globalLimit} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
           </div>
         </div>
 

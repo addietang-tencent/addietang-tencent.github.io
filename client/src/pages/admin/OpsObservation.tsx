@@ -1,7 +1,7 @@
 /**
  * OpsObservation - 运维观测页面（监控大盘）
  * 包含：顶部指标卡 / 应用日志大盘 / OTEL 指标大盘
- * 风格：浅色主题，与管控端整体保持一致
+ * 风格：浅色主题，与 Token 监控页保持一致
  */
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -17,7 +17,6 @@ const STAT_CARDS = [
     label: "消息处理总量",
     metric: "processed_total",
     value: 13,
-    color: "#22c55e",
     icon: MessageSquare,
     iconBg: "from-green-500 to-green-600",
     status: null,
@@ -26,7 +25,6 @@ const STAT_CARDS = [
     label: "消息入队",
     metric: "queued_total",
     value: 13,
-    color: "#3b82f6",
     icon: Inbox,
     iconBg: "from-blue-500 to-blue-600",
     status: null,
@@ -35,7 +33,6 @@ const STAT_CARDS = [
     label: "执行耗时 P95",
     metric: "run_duration",
     value: "10s",
-    color: "#f59e0b",
     icon: Clock,
     iconBg: "from-amber-400 to-amber-500",
     status: null,
@@ -44,7 +41,6 @@ const STAT_CARDS = [
     label: "队列深度 P95",
     metric: "depth/wait",
     value: 0,
-    color: "#8b5cf6",
     icon: Layers,
     iconBg: "from-violet-500 to-violet-600",
     status: { text: "正常", type: "ok" },
@@ -53,7 +49,6 @@ const STAT_CARDS = [
     label: "卡死会话",
     metric: "stuck_sessions",
     value: 4,
-    color: "#ef4444",
     icon: AlertTriangle,
     iconBg: "from-red-500 to-red-600",
     status: { text: "需关注", type: "warn" },
@@ -99,28 +94,22 @@ const QUEUE_STATE_DATA = TIME_LABELS.map((t) => ({
 
 const EXEC_DURATION_DATA = TIME_LABELS.map((t) => ({
   time: t,
-  avgMs: 60000 + Math.floor(Math.random() * 3000),
+  avgMs: 50000 + Math.floor(Math.random() * 10000),
 }));
 
-// ─── 子组件 ───────────────────────────────────────────────────────────────────
+// ─── 卡片组件 ─────────────────────────────────────────────────────────────────
 
-/** 通用图表卡片容器 */
 function ChartCard({
   title,
   badge,
-  icon,
-  iconBg,
   children,
   footer,
 }: {
   title: string;
   badge: string;
-  icon: React.ElementType;
-  iconBg: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
-  const Icon = icon;
   return (
     <div
       className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
@@ -128,13 +117,8 @@ function ChartCard({
     >
       {/* 卡片头 */}
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-        <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${iconBg} flex items-center justify-center`}>
-            <Icon className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-gray-800">{title}</span>
-        </div>
-        <span className="text-xs font-mono text-violet-500 bg-violet-50 px-2 py-0.5 rounded-md">{badge}</span>
+        <span className="text-sm font-medium text-gray-700">{title}</span>
+        <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">{badge}</span>
       </div>
       {/* 图表区 */}
       <div className="px-4 pt-4 pb-2">{children}</div>
@@ -149,11 +133,11 @@ function ChartCard({
 }
 
 /** 底部指标项 */
-function FooterStat({ label, value, color }: { label: string; value: string | number; color?: string }) {
+function FooterStat({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-gray-400">{label}</span>
-      <span className="text-base font-bold" style={{ color: color ?? "#1f2937" }}>{value}</span>
+      <span className="text-base font-bold text-gray-900">{value}</span>
     </div>
   );
 }
@@ -162,7 +146,7 @@ function FooterStat({ label, value, color }: { label: string; value: string | nu
 
 export default function OpsObservation() {
   return (
-    <div className="page-enter max-w-5xl space-y-8">
+    <div className="page-enter space-y-8">
 
       {/* 页头 */}
       <div>
@@ -186,10 +170,10 @@ export default function OpsObservation() {
                   <Icon className="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: card.color }}>{card.value}</div>
+              <div className="text-2xl font-bold mb-1 text-gray-900">{card.value}</div>
               {card.status ? (
-                <div className={`flex items-center gap-1 text-xs font-medium ${card.status.type === "warn" ? "text-red-500" : "text-green-500"}`}>
-                  {card.status.type === "warn" && <AlertTriangle className="w-3 h-3" />}
+                <div className="flex items-center gap-1 text-xs font-medium text-gray-600">
+                  {card.status.type === "warn" && <AlertTriangle className="w-3 h-3 text-red-500" />}
                   {card.status.text}
                 </div>
               ) : (
@@ -202,20 +186,15 @@ export default function OpsObservation() {
 
       {/* ══ 应用日志大盘 ════════════════════════════════════════════════════════ */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 rounded-full bg-blue-500" />
-          <h2 className="text-base font-bold text-gray-900">应用日志大盘</h2>
-        </div>
+        <p className="text-sm font-medium text-gray-700 mb-4">应用日志大盘</p>
         <div className="grid grid-cols-2 gap-5">
 
           {/* 日志级别分布 */}
           <ChartCard
             title="日志级别分布"
             badge="logLevelName"
-            icon={BarChart2}
-            iconBg="from-blue-500 to-blue-600"
           >
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart data={LOG_LEVEL_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
@@ -236,10 +215,8 @@ export default function OpsObservation() {
           <ChartCard
             title="子系统错误"
             badge="subsystem"
-            icon={AlertTriangle}
-            iconBg="from-red-500 to-red-600"
           >
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={200}>
               <BarChart
                 data={SUBSYSTEM_ERROR_DATA}
                 layout="vertical"
@@ -253,7 +230,7 @@ export default function OpsObservation() {
                   tick={{ fontSize: 12, fill: "#6b7280" }}
                   axisLine={false}
                   tickLine={false}
-                  width={64}
+                  width={76}
                 />
                 <Tooltip
                   contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
@@ -268,45 +245,36 @@ export default function OpsObservation() {
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+
         </div>
       </div>
 
-      {/* ══ OTEL 指标大盘 ═══════════════════════════════════════════════════════ */}
+      {/* ══ OTEL 指标大盘 ════════════════════════════════════════════════════════ */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 rounded-full bg-violet-500" />
-          <h2 className="text-base font-bold text-gray-900">OTEL 指标大盘</h2>
-        </div>
+        <p className="text-sm font-medium text-gray-700 mb-4">OTEL 指标大盘</p>
         <div className="grid grid-cols-3 gap-5">
 
           {/* 消息处理 */}
           <ChartCard
             title="消息处理"
             badge="processed/queued"
-            icon={MessageSquare}
-            iconBg="from-green-500 to-green-600"
             footer={
               <>
-                <FooterStat label="处理量" value={13} color="#22c55e" />
-                <FooterStat label="积压" value={0} color="#3b82f6" />
+                <FooterStat label="处理量" value={13} />
+                <FooterStat label="积压" value={0} />
               </>
             }
           >
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={MSG_PROC_DATA} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+              <LineChart data={MSG_PROC_DATA} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 9, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={2}
-                />
-                <YAxis tick={{ fontSize: 9, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 11 }}
+                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                  cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
                 />
-                <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 10, paddingTop: 4 }} />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Line type="monotone" dataKey="processed" stroke="#22c55e" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
                 <Line type="monotone" dataKey="queued" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
@@ -317,32 +285,25 @@ export default function OpsObservation() {
           <ChartCard
             title="队列状态"
             badge="depth/wait"
-            icon={Layers}
-            iconBg="from-violet-500 to-violet-600"
             footer={
               <>
-                <FooterStat label="depth P95" value="0" color="#8b5cf6" />
-                <FooterStat label="wait P95" value="0s" color="#06b6d4" />
+                <FooterStat label="depth P95" value="0" />
+                <FooterStat label="wait P95" value="0s" />
               </>
             }
           >
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={QUEUE_STATE_DATA} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+              <LineChart data={QUEUE_STATE_DATA} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 9, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={2}
-                />
-                <YAxis tick={{ fontSize: 9, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 11 }}
+                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                  cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
                 />
-                <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 10, paddingTop: 4 }} />
-                <Line type="monotone" dataKey="depthAvg" name="depth avg" stroke="#8b5cf6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                <Line type="monotone" dataKey="waitAvg" name="wait_ms avg" stroke="#06b6d4" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                <Line type="monotone" dataKey="depthAvg" name="depth avg" stroke="#06b6d4" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                <Line type="monotone" dataKey="waitAvg" name="wait_ms avg" stroke="#8b5cf6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -351,30 +312,23 @@ export default function OpsObservation() {
           <ChartCard
             title="执行耗时"
             badge="run_duration"
-            icon={Clock}
-            iconBg="from-amber-400 to-amber-500"
             footer={
               <>
-                <FooterStat label="P50" value="5s" color="#f59e0b" />
-                <FooterStat label="P95" value="10s" color="#f59e0b" />
+                <FooterStat label="P50" value="5s" />
+                <FooterStat label="P95" value="10s" />
               </>
             }
           >
             <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={EXEC_DURATION_DATA} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+              <LineChart data={EXEC_DURATION_DATA} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 9, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={2}
-                />
-                <YAxis tick={{ fontSize: 9, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 11 }}
+                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                  cursor={{ stroke: "#e5e7eb", strokeWidth: 1 }}
                 />
-                <Legend iconType="square" iconSize={8} wrapperStyle={{ fontSize: 10, paddingTop: 4 }} />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Line type="monotone" dataKey="avgMs" name="avg ms" stroke="#f59e0b" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>

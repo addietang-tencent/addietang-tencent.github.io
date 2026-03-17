@@ -464,10 +464,19 @@ function CredentialResultDialog({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function MemberManagement() {
-  const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
+  // 从 localStorage 读取成员数据，如果没有则使用 mock 数据
+  const [members, setMembers] = useState(() => {
+    const saved = localStorage.getItem("members");
+    return saved ? JSON.parse(saved) : MOCK_MEMBERS_BASE;
+  });
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
+
+  // 当 members 变化时，保存到 localStorage
+  React.useEffect(() => {
+    localStorage.setItem("members", JSON.stringify(members));
+  }, [members]);
 
   // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
   const sortedMembers = [...members].sort((a, b) => {
@@ -516,11 +525,14 @@ export default function MemberManagement() {
   const handleAdd = () => {
     if (!newMember.id.trim()) { toast.error("请输入用户 ID"); return; }
     const pwd = generatePassword();
-    setMembers([...members, {
+    const newMembers = [...members, {
       id: newMember.id, role: newMember.role, status: "active",
       clawLimit: newMember.clawLimit, tokenLimit: newMember.tokenLimit,
       clawCount: 0, joinTime: new Date().toISOString().slice(0, 10),
-    }]);
+    }];
+    setMembers(newMembers);
+    // 保存到 localStorage
+    localStorage.setItem("members", JSON.stringify(newMembers));
     setShowAddDialog(false);
     setNewMember({ ...emptyNewMember });
     // 显示创建成功弹窗
@@ -539,7 +551,7 @@ export default function MemberManagement() {
   };
 
   const handleEdit = () => {
-    setMembers(members.map((m) =>
+    setMembers(members.map((m: typeof MOCK_MEMBERS_BASE[0]) =>
       m.id === editMemberId
         ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
         : m
@@ -564,7 +576,7 @@ export default function MemberManagement() {
   };
 
   const handleToggleStatus = (id: string) => {
-    setMembers(members.map((m) =>
+    setMembers(members.map((m: typeof MOCK_MEMBERS_BASE[0]) =>
       m.id === id ? { ...m, status: m.status === "active" ? "disabled" : "active" } : m
     ));
     toast.success("状态已更新");
@@ -579,13 +591,13 @@ export default function MemberManagement() {
   };
 
   const handleDisable = (id: string) => {
-    setMembers(members.map((m) => m.id === id ? { ...m, status: "disabled" } : m));
+    setMembers(members.map((m: typeof MOCK_MEMBERS_BASE[0]) => m.id === id ? { ...m, status: "disabled" } : m));
     setDisableCheckDialog(null);
     toast.success("用户已禁用");
   };
 
   const handleDelete = (id: string) => {
-    setMembers(members.filter((m) => m.id !== id));
+    setMembers(members.filter((m: typeof MOCK_MEMBERS_BASE[0]) => m.id !== id));
     setDeleteConfirmDialog(null);
     toast.success("用户已删除");
   };

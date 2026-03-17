@@ -328,7 +328,7 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>不填任何私有网络和子网（推荐）</strong> — 每个 OpenClaw 实例自动创建不同的私有网络，私有网络之间互相独立，内网不互通；在系统分配的全部可用区中随机部署。</span>
+                <span><strong>自动分配私有网络和子网（推荐）</strong> — 系统会为每个用户自动分配一个私有网络。同一私有网络内网互通，不同私有网络之间内网不互通，即同一用户的 OpenClaw 实例之间内网可互通，不同用户的 OpenClaw 实例之间内网不互通；OpenClaw 实例会在系统分配的全部可用区中随机部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>

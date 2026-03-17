@@ -150,6 +150,9 @@ export default function SecurityGroupManagement() {
     }, 800);
   };
 
+  // 是否至少选了一个子网（选了具体 VPC 时才校验）
+  const hasAtLeastOneSubnet = !config.vpcId || AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
+
   const handleSaveConfirm = () => {
     setSavedConfig(config);
     setShowVpcSaveDialog(false);
@@ -358,7 +361,13 @@ export default function SecurityGroupManagement() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => setShowVpcSaveDialog(true)}
+                    onClick={() => {
+                      if (!hasAtLeastOneSubnet) {
+                        toast.error("请至少选择一个子网");
+                        return;
+                      }
+                      setShowVpcSaveDialog(true);
+                    }}
                     className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     保存
@@ -438,18 +447,13 @@ export default function SecurityGroupManagement() {
 
               {/* 每个可用区一行 */}
               {(() => {
-                // 只要任意区有已选子网，所有行的下拉列表第一项都显示「不分配」
-                const anyZoneSelected = AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
                 return AVAILABLE_ZONES.map((zone, idx) => {
                   const isRefreshing = refreshingZone === zone;
                   const subnetId = config.zoneSubnets[zone] || "";
-                  // 其他可用区（排除当前区）是否有已选子网（用于 trigger 显示）
-                  const otherZoneSelected = AVAILABLE_ZONES.some(z => z !== zone && !!config.zoneSubnets[z]);
-                  // 下拉列表第一项文案：任意区有已选 → 「不分配」，否则 → 「自动分配」
-                  const listDefaultLabel = anyZoneSelected ? "不分配" : "自动分配";
+                  // 选择了具体 VPC 时，子网默认选项和 trigger 均显示「不分配」
+                  const defaultLabel = config.vpcId ? "不分配" : "自动分配";
                   // trigger 中显示的内容
                   const selectedSubnet = subnetId ? availableSubnets.find(s => s.id === subnetId) : null;
-                  const triggerLabel = otherZoneSelected ? "不分配" : "自动分配";
                   return (
                   <div
                     key={zone}
@@ -468,7 +472,7 @@ export default function SecurityGroupManagement() {
                         ) : availableSubnets.length === 0 ? (
                           <span className="text-gray-400 text-sm">{zone}暂无子网</span>
                         ) : !selectedSubnet ? (
-                          <span className="text-gray-400 text-sm">{triggerLabel}</span>
+                          <span className="text-gray-400 text-sm">{defaultLabel}</span>
                         ) : (
                           <span className="flex items-center gap-1 min-w-0 overflow-hidden">
                             <span className="text-sm text-gray-600 shrink-0">{selectedSubnet.id}</span>
@@ -479,7 +483,7 @@ export default function SecurityGroupManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="auto">
-                          <span className="text-gray-400 text-sm">{listDefaultLabel}</span>
+                          <span className="text-gray-400 text-sm">{defaultLabel}</span>
                         </SelectItem>
                         {availableSubnets.map((subnet) => (
                           <SelectItem key={subnet.id} value={subnet.id}>

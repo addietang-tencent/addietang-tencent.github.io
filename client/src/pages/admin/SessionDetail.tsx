@@ -2,7 +2,7 @@
  * SessionDetail - 会话详情页面
  * 展示单个会话的完整信息：成本、Token、交互链路等
  */
-import { useLocation } from "wouter";
+import { useLocation, RouteComponentProps } from "wouter";
 import { ArrowLeft, MessageSquare, DollarSign, Zap } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -120,10 +120,9 @@ const INTERACTION_CHAIN = [
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
-export default function SessionDetail() {
-  const [location] = useLocation();
-  // 从 URL 中提取 session ID
-  const sessionId = location.split("/").pop() || "fb766833";
+export default function SessionDetail({ params }: RouteComponentProps<{ id: string }>) {
+  // 从路由参数中提取 session ID
+  const sessionId = params.id || "fb766833";
 
   // Mock 会话信息
   const sessionInfo = {

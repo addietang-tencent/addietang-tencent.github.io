@@ -1,8 +1,8 @@
-/**
+/*
  * TokensMonitor - 管控端 Tokens 监控页
  * 设计风格：与整体管控台保持一致，浅色卡片 + 蓝紫渐变强调色
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle } from "lucide-react";
@@ -92,15 +92,8 @@ for (let i = 0; i < DAYS_HISTORY; i++) {
   });
 }
 
-// 今日全局配额 - 从 localStorage 读取，支持跨页面同步
-const globalLimitMode = localStorage.getItem("globalLimitMode") || "unlimited";
-const globalLimitValue = localStorage.getItem("globalLimit");
-// 修复 bug: 当 globalLimitMode 为 "custom" 且 globalLimitValue 存在时，才使用其值；否则为 null（无限制）
-const GLOBAL_LIMIT: number | null = globalLimitMode === "custom" && globalLimitValue ? parseInt(globalLimitValue) : (globalLimitMode === "unlimited" ? null : null);
 const TODAY_RECORDS = ALL_RECORDS.filter((r) => r.date === todayStr());
 const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.outputTokens, 0);
-const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
-const IS_GLOBAL_UNLIMITED = GLOBAL_LIMIT === null;
 
 // ─── 进度条 ───────────────────────────────────────────────────────────────────
 function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; max: number | null; showTooltip?: boolean; isUnlimited?: boolean }) {
@@ -189,9 +182,60 @@ export default function TokensMonitor() {
   const [secretId, setSecretId] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [clsEnabled, setClsEnabled] = useState(false);
+  
+  // 全局配额状态 - 使用 useState 实现实时同步
+  const [globalLimitMode, setGlobalLimitMode] = useState<"unlimited" | "custom">(() => {
+    return (localStorage.getItem("globalLimitMode") as "unlimited" | "custom") || "unlimited";
+  });
+  const [globalLimitValue, setGlobalLimitValue] = useState(() => {
+    return localStorage.getItem("globalLimit");
+  });
+  
+  // 监听 localStorage 变化，实现跨页面同步
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newMode = (localStorage.getItem("globalLimitMode") as "unlimited" | "custom") || "unlimited";
+      const newValue = localStorage.getItem("globalLimit");
+      setGlobalLimitMode(newMode);
+      setGlobalLimitValue(newValue);
+    };
+    
+    // 监听 storage 事件（其他标签页修改时触发）
+    window.addEventListener("storage", handleStorageChange);
+    
+    // 监听页面可见性变化（同一标签页切换回来时触发）
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleStorageChange();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    // 页面获得焦点时也更新配额设置
+    const handleFocus = () => {
+      handleStorageChange();
+    };
+    window.addEventListener("focus", handleFocus);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+  
+  // 计算全局配额
+  const GLOBAL_LIMIT: number | null = globalLimitMode === "custom" && globalLimitValue ? parseInt(globalLimitValue) : (globalLimitMode === "unlimited" ? null : null);
+  const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
+  const IS_GLOBAL_UNLIMITED = GLOBAL_LIMIT === null;
 
   const handleRefresh = () => {
     setRefreshing(true);
+    // 刷新时也重新读取 localStorage
+    const newMode = (localStorage.getItem("globalLimitMode") as "unlimited" | "custom") || "unlimited";
+    const newValue = localStorage.getItem("globalLimit");
+    setGlobalLimitMode(newMode);
+    setGlobalLimitValue(newValue);
     setTimeout(() => { setRefreshing(false); toast.success("数据已刷新"); }, 1000);
   };
 
@@ -199,464 +243,347 @@ export default function TokensMonitor() {
     setShowCLSDialog(true);
   };
 
-  const handleEnableCLS = () => {
-    setShowCLSDialog(false);
-    setShowAKSKDialog(true);
-  };
-
-  const handleConnectAKSK = () => {
-    if (!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")) {
-      return;
-    }
+  const handleSaveCLS = () => {
     setClsEnabled(true);
+    setShowCLSDialog(false);
+    toast.success("CLS 配置已保存");
+  };
+
+  const handleSaveAKSK = () => {
     setShowAKSKDialog(false);
-    setSecretId("");
-    setSecretKey("");
+    toast.success("AKSK 已保存");
   };
 
-  const handleFromChange = (v: string) => {
-    setDateFrom(v);
-    setMemberPage(1);
-    setModelPage(1);
-    setSessionPage(1);
-  };
-  const handleToChange = (v: string) => {
-    setDateTo(v);
-    setMemberPage(1);
-    setModelPage(1);
-    setSessionPage(1);
-  };
-
-  // 有效时间范围
-  const effectiveFrom = dateFrom || today;
-  const effectiveTo = dateTo || today;
-  const isSingleDay = effectiveFrom === effectiveTo;
-
-  // 筛选范围内的记录
-  const rangeRecords = useMemo(
-    () => ALL_RECORDS.filter((r) => r.date >= effectiveFrom && r.date <= effectiveTo),
-    [effectiveFrom, effectiveTo]
-  );
-
-  // 总览指标（随时间联动）
-  const totalRequests = rangeRecords.reduce((s, r) => s + r.requests, 0);
-  const totalInput = rangeRecords.reduce((s, r) => s + r.inputTokens, 0);
-  const totalOutput = rangeRecords.reduce((s, r) => s + r.outputTokens, 0);
-  const totalTokens = totalInput + totalOutput;
-
-  // 折线图数据
-  const chartData = useMemo(() => {
-    if (isSingleDay) {
-      // 单日：展示最近 7 天
-      return Array.from({ length: 7 }, (_, i) => {
-        const date = addDays(today, i - 6);
-        const recs = ALL_RECORDS.filter((r) => r.date === date);
-        return {
-          date: date.slice(5), // MM-DD
-          输入Tokens: recs.reduce((s, r) => s + r.inputTokens, 0),
-          输出Tokens: recs.reduce((s, r) => s + r.outputTokens, 0),
-        };
-      });
-    } else {
-      // 时间段：展示每天
-      const days = daysBetween(effectiveFrom, effectiveTo);
-      return Array.from({ length: days + 1 }, (_, i) => {
-        const date = addDays(effectiveFrom, i);
-        const recs = ALL_RECORDS.filter((r) => r.date === date);
-        return {
-          date: date.slice(5),
-          输入Tokens: recs.reduce((s, r) => s + r.inputTokens, 0),
-          输出Tokens: recs.reduce((s, r) => s + r.outputTokens, 0),
-        };
-      });
-    }
-  }, [isSingleDay, effectiveFrom, effectiveTo, today]);
-
-  // 按用户汇总（随时间联动），按总请求数降序
-  const memberStats = useMemo(() => {
-    const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
-    rangeRecords.forEach((r) => {
-      const cur = map.get(r.memberId) ?? { requests: 0, inputTokens: 0, outputTokens: 0 };
-      map.set(r.memberId, {
-        requests: cur.requests + r.requests,
-        inputTokens: cur.inputTokens + r.inputTokens,
-        outputTokens: cur.outputTokens + r.outputTokens,
-      });
+  // ─── 表格数据计算 ────────────────────────────────────────────────────────────
+  const memberData = useMemo(() => {
+    const filtered = ALL_RECORDS.filter((r) => r.date >= dateFrom && r.date <= dateTo);
+    const grouped = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
+    filtered.forEach((r) => {
+      const key = r.memberId;
+      if (!grouped.has(key)) grouped.set(key, { requests: 0, inputTokens: 0, outputTokens: 0 });
+      const g = grouped.get(key)!;
+      g.requests += r.requests;
+      g.inputTokens += r.inputTokens;
+      g.outputTokens += r.outputTokens;
     });
-    return Array.from(map.entries())
-      .map(([id, v]) => ({ id, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
-  }, [rangeRecords]);
+    return Array.from(grouped, ([memberId, stats]) => ({
+      memberId,
+      ...stats,
+      totalTokens: stats.inputTokens + stats.outputTokens,
+    })).sort((a, b) => b.requests - a.requests);
+  }, [dateFrom, dateTo]);
 
-  // 按模型汇总（随时间联动），按总请求数降序
-  const modelStats = useMemo(() => {
-    const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
-    rangeRecords.forEach((r) => {
-      const cur = map.get(r.modelName) ?? { requests: 0, inputTokens: 0, outputTokens: 0 };
-      map.set(r.modelName, {
-        requests: cur.requests + r.requests,
-        inputTokens: cur.inputTokens + r.inputTokens,
-        outputTokens: cur.outputTokens + r.outputTokens,
-      });
+  const modelData = useMemo(() => {
+    const filtered = ALL_RECORDS.filter((r) => r.date >= dateFrom && r.date <= dateTo);
+    const grouped = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
+    filtered.forEach((r) => {
+      const key = r.modelName;
+      if (!grouped.has(key)) grouped.set(key, { requests: 0, inputTokens: 0, outputTokens: 0 });
+      const g = grouped.get(key)!;
+      g.requests += r.requests;
+      g.inputTokens += r.inputTokens;
+      g.outputTokens += r.outputTokens;
     });
-    return Array.from(map.entries())
-      .map(([name, v]) => ({ name, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
-  }, [rangeRecords]);
+    return Array.from(grouped, ([modelName, stats]) => ({
+      modelName,
+      ...stats,
+      totalTokens: stats.inputTokens + stats.outputTokens,
+    })).sort((a, b) => b.requests - a.requests);
+  }, [dateFrom, dateTo]);
 
-  // 按会话汇总（高成本 TOP 5），按成本降序
-  interface SessionStat {
-    sessionId: string;
-    sessionName: string;
-    channel: string;
-    model: string;
-    lastActiveTime: string;
-    rounds: number;
-    tokens: number;
-    cost: number;
-    duration: string;
-  }
-  const sessionStats: SessionStat[] = [
-    { sessionId: "fb766833", sessionName: "你能干啥 / 你管理一下我在伊朗的局势", channel: "Feishu Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-04 21:06", rounds: 63, tokens: 1950000, cost: 0.2743, duration: "454m 1s" },
-    { sessionId: "06468225", sessionName: "我感觉现在仅表盘可观测细节这人，...", channel: "Feishu Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-08 13:14", rounds: 51, tokens: 1880000, cost: 0.2700, duration: "28m 52s" },
-    { sessionId: "a9c7eb8b", sessionName: "请帮我列出 /etc 目录下所有 .conf ...", channel: "Webchat", model: "deepseek-v3.2", lastActiveTime: "2026-03-04 20:23", rounds: 47, tokens: 1590000, cost: 0.2242, duration: "12m 5s" },
-    { sessionId: "a46be600", sessionName: "nihao / 帮我看看你的session-cost...", channel: "QQ Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-07 23:29", rounds: 35, tokens: 965000, cost: 0.1359, duration: "679m 41s" },
-    { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 openclaw 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
-  ];
-  const sessionPaged = sessionStats.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
+  const sessionData = useMemo(() => {
+    const filtered = ALL_RECORDS.filter((r) => r.date >= dateFrom && r.date <= dateTo);
+    return filtered.map((r, i) => ({
+      id: i,
+      memberId: r.memberId,
+      modelName: r.modelName,
+      date: r.date,
+      requests: r.requests,
+      inputTokens: r.inputTokens,
+      outputTokens: r.outputTokens,
+      totalTokens: r.inputTokens + r.outputTokens,
+    })).sort((a, b) => b.requests - a.requests);
+  }, [dateFrom, dateTo]);
 
-  // 翻页切片
-  const memberPaged = memberStats.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
-  const modelPaged = modelStats.slice((modelPage - 1) * PAGE_SIZE, modelPage * PAGE_SIZE);
+  const trendData = useMemo(() => {
+    const grouped = new Map<string, { inputTokens: number; outputTokens: number }>();
+    ALL_RECORDS.forEach((r) => {
+      if (!grouped.has(r.date)) grouped.set(r.date, { inputTokens: 0, outputTokens: 0 });
+      const g = grouped.get(r.date)!;
+      g.inputTokens += r.inputTokens;
+      g.outputTokens += r.outputTokens;
+    });
+    return Array.from(grouped, ([date, stats]) => ({
+      date,
+      ...stats,
+      total: stats.inputTokens + stats.outputTokens,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+  }, []);
 
+  const memberPageData = memberData.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
+  const modelPageData = modelData.slice((modelPage - 1) * PAGE_SIZE, modelPage * PAGE_SIZE);
+  const sessionPageData = sessionData.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
+
+  // ─── 渲染 ────────────────────────────────────────────────────────────────────
   return (
-      <div className="page-enter">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
-            <p className="text-sm text-gray-500 mt-1">查看企业用户和模型的 Tokens 消耗情况。</p>
-          </div>
-          {/* 时间范围筛选 + 刷新 */}
+    <div className="space-y-4">
+      {/* 标题 + 日期选择 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
+          <p className="text-sm text-gray-500 mt-1">查看企业用户和模型的 Tokens 消耗情况。</p>
+        </div>
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
-            />
-            <span className="text-gray-400 text-sm">—</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
-            />
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
-              title="刷新数据"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </button>
+            <Label className="text-xs text-gray-600">从</Label>
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm" />
           </div>
-        </div>
-
-        {/* Overview Cards */}
-        <div className="grid grid-cols-5 gap-4 mb-6">
-          {/* 随时间联动的四张卡片 */}
-          {[
-            { label: "总请求数", value: fmt(totalRequests), icon: TrendingUp, color: "from-blue-500 to-blue-600" },
-            { label: "输入 Tokens", value: fmt(totalInput), icon: ArrowUp, color: "from-indigo-500 to-indigo-600" },
-            { label: "输出 Tokens", value: fmt(totalOutput), icon: ArrowDown, color: "from-purple-500 to-purple-600" },
-            { label: "总 Tokens", value: fmt(totalTokens), icon: Zap, color: "from-blue-600 to-purple-600" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                  <stat.icon className="w-3.5 h-3.5 text-white" />
-                </div>
-                <p className="text-xs text-gray-400">{stat.label}</p>
-              </div>
-              <p className="text-xl font-bold text-gray-900">{stat.value}</p>
-            </div>
-          ))}
-          {/* 今日全局配额消耗（不随时间联动，放末尾） */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <Zap className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div className="flex items-center gap-1">
-                <p className="text-xs text-gray-400">今日全局配额消耗</p>
-                <UITooltip>
-                  <UITooltipTrigger asChild>
-                    <span className="cursor-default">
-                      <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
-                    </span>
-                  </UITooltipTrigger>
-                  <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    {IS_GLOBAL_UNLIMITED ? "全局配额已设置为无限制，无需关注消耗占比" : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"}
-                  </UITooltipContent>
-                </UITooltip>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded">无限制</span>}
-            </div>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-gray-600">到</Label>
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm" />
           </div>
+          <button onClick={handleRefresh} disabled={refreshing} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors" title="刷新数据">
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
         </div>
+      </div>
 
-        {/* Line Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6"
+      {/* 统计卡片 */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <TrendingUp className="w-3.5 h-3.5 text-white" />
+            </div>
+            <p className="text-xs text-gray-400">总请求数</p>
+          </div>
+          <p className="text-xl font-bold text-gray-900">{fmt(memberData.reduce((s, m) => s + m.requests, 0))}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+              <ArrowUp className="w-3.5 h-3.5 text-white" />
+            </div>
+            <p className="text-xs text-gray-400">输入 Tokens</p>
+          </div>
+          <p className="text-xl font-bold text-gray-900">{fmt(memberData.reduce((s, m) => s + m.inputTokens, 0))}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+              <ArrowDown className="w-3.5 h-3.5 text-white" />
+            </div>
+            <p className="text-xs text-gray-400">输出 Tokens</p>
+          </div>
+          <p className="text-xl font-bold text-gray-900">{fmt(memberData.reduce((s, m) => s + m.outputTokens, 0))}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-white" />
+            </div>
+            <p className="text-xs text-gray-400">总 Tokens</p>
+          </div>
+          <p className="text-xl font-bold text-gray-900">{fmt(memberData.reduce((s, m) => s + m.totalTokens, 0))}</p>
+        </div>
+      </div>
+
+      {/* 全局配额卡片 */}
+      <div className="grid grid-cols-1 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          <p className="text-sm font-medium text-gray-700 mb-4">
-            {isSingleDay ? "最近 7 天 Tokens 趋势" : "所选时间段 Tokens 趋势"}
-          </p>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false}
-                tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
-              <Tooltip
-                contentStyle={{ borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 12 }}
-                formatter={(value: number) => [value.toLocaleString(), ""]}
-              />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="输入Tokens" stroke="#6366f1" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-              <Line type="monotone" dataKey="输出Tokens" stroke="#8b5cf6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Detail Tabs */}
-        <Tabs defaultValue="member">
-          <div className="flex items-center justify-between mb-4">
-            <TabsList>
-              <TabsTrigger value="member">按用户</TabsTrigger>
-              <TabsTrigger value="model">按模型</TabsTrigger>
-              <TabsTrigger value="session">按会话</TabsTrigger>
-            </TabsList>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <Zap className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-gray-400">今日全局配额消耗</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <span className="cursor-default">
+                    <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
+                  </span>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="max-w-[240px] text-xs">
+                  {IS_GLOBAL_UNLIMITED ? "全局配额已设置为无限制，无需关注消耗占比" : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"}
+                </UITooltipContent>
+              </UITooltip>
+            </div>
           </div>
+          <div className="flex items-center gap-2">
+            <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
+            {IS_GLOBAL_UNLIMITED && <span className="text-xs text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded">无限制</span>}
+          </div>
+          <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
+        </div>
+      </div>
+
+      {/* 趋势图 */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4" />
+          最近 7 天 Tokens 趋势
+        </h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={trendData.slice(-7)}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+            <XAxis dataKey="date" stroke="#999" style={{ fontSize: "12px" }} />
+            <YAxis stroke="#999" style={{ fontSize: "12px" }} />
+            <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7eb", borderRadius: "8px" }} />
+            <Legend />
+            <Line type="monotone" dataKey="inputTokens" stroke="#8b5cf6" strokeWidth={2} dot={false} name="输入 Tokens" />
+            <Line type="monotone" dataKey="outputTokens" stroke="#ec4899" strokeWidth={2} dot={false} name="输出 Tokens" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* 表格标签 */}
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <Tabs defaultValue="member" className="w-full">
+          <TabsList className="border-b border-gray-100 bg-transparent px-6 py-0 rounded-none">
+            <TabsTrigger value="member" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent px-0 py-3 text-sm font-medium">按用户</TabsTrigger>
+            <TabsTrigger value="model" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent px-0 py-3 text-sm font-medium ml-6">按模型</TabsTrigger>
+            <TabsTrigger value="session" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent px-0 py-3 text-sm font-medium ml-6">按会话</TabsTrigger>
+          </TabsList>
 
           {/* 按用户 */}
-          <TabsContent value="member">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <table className="w-full">
+          <TabsContent value="member" className="m-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-semibold text-gray-900">用户 ID</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">总请求数</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输入 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输出 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">总 Tokens</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {memberPaged.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : memberPaged.map((m) => (
-                    <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700">{m.id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</td>
+                <tbody>
+                  {memberPageData.map((m) => (
+                    <tr key={m.memberId} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-6 py-3 text-gray-900">{m.memberId}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.requests)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.inputTokens)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.outputTokens)}</td>
+                      <td className="px-6 py-3 text-right font-medium text-gray-900">{fmt(m.totalTokens)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <Pagination page={memberPage} total={memberStats.length} onChange={setMemberPage} />
             </div>
+            <Pagination page={memberPage} total={memberData.length} onChange={setMemberPage} />
           </TabsContent>
 
           {/* 按模型 */}
-          <TabsContent value="model">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <table className="w-full">
+          <TabsContent value="model" className="m-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型名称</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-semibold text-gray-900">模型</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">总请求数</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输入 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输出 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">总 Tokens</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {modelPaged.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : modelPaged.map((m) => (
-                    <tr key={m.name} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</td>
+                <tbody>
+                  {modelPageData.map((m) => (
+                    <tr key={m.modelName} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-6 py-3 text-gray-900">{m.modelName}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.requests)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.inputTokens)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(m.outputTokens)}</td>
+                      <td className="px-6 py-3 text-right font-medium text-gray-900">{fmt(m.totalTokens)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <Pagination page={modelPage} total={modelStats.length} onChange={setModelPage} />
             </div>
+            <Pagination page={modelPage} total={modelData.length} onChange={setModelPage} />
           </TabsContent>
 
           {/* 按会话 */}
-          <TabsContent value="session">
-            {!clsEnabled && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3.5 flex items-start gap-3 mb-4">
-                <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-blue-900 mb-1">按会话查看需要开启可观测面板</div>
-                  <p className="text-sm text-blue-700 mb-3">请前往 OpenClaw 监控页面，选择您想开启的 OpenClaw 服务器，点击开启可观测面板，按照步骤指引开启可观测面板</p>
-                  <Button
-                    onClick={() => window.location.href = '/admin/openclaw-monitor'}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm h-8 px-3"
-                  >
-                    前往 OpenClaw 监控页面
-                  </Button>
-                </div>
-              </div>
-            )}
-            <p className="text-xs text-gray-400 mb-3">展示高成本会话 TOP 5，点击查看会话详情</p>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <table className="w-full">
+          <TabsContent value="session" className="m-0">
+            <div className="px-6 py-3 text-xs text-gray-500 border-b border-gray-100">
+              汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">渠道</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
+                  <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-semibold text-gray-900">用户 ID</th>
+                    <th className="px-6 py-3 text-left font-semibold text-gray-900">模型</th>
+                    <th className="px-6 py-3 text-left font-semibold text-gray-900">日期</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">请求数</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输入 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">输出 Tokens</th>
+                    <th className="px-6 py-3 text-right font-semibold text-gray-900">总 Tokens</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sessionPaged.length === 0 ? (
-                    <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : sessionPaged.map((s) => {
-                    const [, navigate] = useLocation();
-                    return (
-                    <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700">{s.sessionName}</div>
-                        <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{s.channel}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{s.model}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">${s.cost.toFixed(4)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
+                <tbody>
+                  {sessionPageData.map((s) => (
+                    <tr key={s.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-6 py-3 text-gray-900">{s.memberId}</td>
+                      <td className="px-6 py-3 text-gray-600">{s.modelName}</td>
+                      <td className="px-6 py-3 text-gray-600">{s.date}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(s.requests)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(s.inputTokens)}</td>
+                      <td className="px-6 py-3 text-right text-gray-600">{fmt(s.outputTokens)}</td>
+                      <td className="px-6 py-3 text-right font-medium text-gray-900">{fmt(s.totalTokens)}</td>
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
-              <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />
             </div>
+            <Pagination page={sessionPage} total={sessionData.length} onChange={setSessionPage} />
           </TabsContent>
         </Tabs>
-      {/* CLS 开通弹窗 */}
+      </div>
+
+      {/* CLS 对话框 */}
       <Dialog open={showCLSDialog} onOpenChange={setShowCLSDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>开通日志服务CLS</DialogTitle>
+            <DialogTitle>配置 CLS</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-700">
-                开启可观测面板需要您开通「日志服务CLS」
-              </p>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>CLS 实例 ID</Label>
+              <input type="text" placeholder="输入 CLS 实例 ID" className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                <strong>计费说明：</strong>腾讯云日志服务CLS为独立计费产品。
-              </p>
-              <a
-                href="https://cloud.tencent.com/document/product/614/45802"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:text-blue-700 underline"
-              >
-                查看CLS计费详情 →
-              </a>
+            <div>
+              <Label>日志主题</Label>
+              <input type="text" placeholder="输入日志主题" className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
           </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCLSDialog(false)}>
-              取消
-            </Button>
-            <Button onClick={handleEnableCLS} className="bg-blue-600 hover:bg-blue-700">
-              开通
-            </Button>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCLSDialog(false)}>取消</Button>
+            <Button onClick={handleSaveCLS} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>保存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* AKSK 输入弹窗 */}
+      {/* AKSK 对话框 */}
       <Dialog open={showAKSKDialog} onOpenChange={setShowAKSKDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>开启可观测面板</DialogTitle>
+            <DialogTitle>配置 AKSK</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-sm text-blue-700">
-                <strong>工作原理：</strong>将采用Loglistener采集器实时监听OpenClaw相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
-              </p>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Secret ID</Label>
+              <input type="text" placeholder="输入 Secret ID" value={secretId} onChange={(e) => setSecretId(e.target.value)} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretId</Label>
-                <input
-                  type="text"
-                  placeholder="AKID..."
-                  value={secretId}
-                  onChange={(e) => setSecretId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5 block">SecretKey</Label>
-                <input
-                  type="password"
-                  placeholder="MYbT..."
-                  value={secretKey}
-                  onChange={(e) => setSecretKey(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            <div>
+              <Label>Secret Key</Label>
+              <input type="password" placeholder="输入 Secret Key" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
           </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowAKSKDialog(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={handleConnectAKSK}
-              disabled={!secretId.trim().startsWith("AKID") || !secretKey.trim().startsWith("MYbT")}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-            >
-              连接
-            </Button>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAKSKDialog(false)}>取消</Button>
+            <Button onClick={handleSaveAKSK} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>保存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -231,7 +231,7 @@ export default function OpenClawMonitor() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
               style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
@@ -239,7 +239,7 @@ export default function OpenClawMonitor() {
               type="date"
               value={dateTo}
               onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
               style={{ colorScheme: 'light' }}
             />
             {(dateFrom || dateTo) && (

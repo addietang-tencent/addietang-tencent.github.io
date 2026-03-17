@@ -289,7 +289,7 @@ export default function ModelQuota() {
                 value={singleDate}
                 max={TODAY}
                 onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
-                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer flex-1"
                 style={{ colorScheme: 'light' }}
               />
             ) : (
@@ -299,7 +299,7 @@ export default function ModelQuota() {
                   value={dateRange.start}
                   max={dateRange.end}
                   onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer flex-1"
                   style={{ colorScheme: 'light' }}
                 />
                 <span className="text-gray-400 text-sm">至</span>
@@ -309,7 +309,7 @@ export default function ModelQuota() {
                   min={dateRange.start}
                   max={TODAY}
                   onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer flex-1"
                   style={{ colorScheme: 'light' }}
                 />
               </div>

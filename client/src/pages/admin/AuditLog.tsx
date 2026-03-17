@@ -238,7 +238,7 @@ export default function AuditLog() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
               title="开始日期"
               style={{ colorScheme: 'light' }}
             />
@@ -247,7 +247,7 @@ export default function AuditLog() {
               type="date"
               value={dateTo}
               onChange={(e) => handleDateTo(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer flex-1"
               title="结束日期"
               style={{ colorScheme: 'light' }}
             />

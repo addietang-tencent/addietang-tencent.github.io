@@ -107,7 +107,7 @@ export default function OpenClawMonitor() {
       setShowAccessDialog(false);
       setSecretId("");
       setSecretKey("");
-      toast.success("OpenClaw 接入成功");
+      toast.success("开启可观测面板成功");
     }, 1500);
   };
 
@@ -350,7 +350,7 @@ export default function OpenClawMonitor() {
       <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>开启可观测面板成功</DialogTitle>
+            <DialogTitle>开启可观测面板</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {/* 原理说明 */}

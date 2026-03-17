@@ -883,28 +883,13 @@ export default function MemberManagement() {
             <DialogTitle>批量导入用户</DialogTitle>
           </DialogHeader>
 
-          {/* 步骤指示器 - 仅在 upload 阶段显示 */}
-          {batchImportStep === "upload" && (
-            <div className="flex items-center gap-0 mb-2">
-              {/* Step 1 */}
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-semibold">1</div>
-                <span className="text-xs font-medium text-blue-600">下载模板</span>
-              </div>
-              <div className="flex-1 h-px bg-gray-200 mx-3" />
-              {/* Step 2 */}
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center font-semibold">2</div>
-                <span className="text-xs text-gray-400">上传文件</span>
-              </div>
-            </div>
-          )}
+
 
           {/* ── 上传阶段 ── */}
           {batchImportStep === "upload" && (
             <div className="space-y-4 py-1">
               {/* Step 1: 下载模板 */}
-              <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 space-y-2">
+              <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">第一步：下载模板并填写用户信息</p>
                 <p className="text-xs text-gray-500 leading-relaxed">下载 CSV 模板，按格式填写用户信息后保存。<span className="text-orange-500 font-medium">单次最多上传 1000 个用户。</span></p>
                 <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
@@ -966,17 +951,8 @@ export default function MemberManagement() {
               </div>
               <div className="text-center space-y-1.5">
                 <p className="text-base font-semibold text-gray-800">正在导入中...</p>
-                <p className="text-sm text-gray-500">预计等待 1 ~ 1.5 分钟，请勿关闭弹窗</p>
-              </div>
-              {/* 进度条 */}
-              <div className="w-full space-y-1.5">
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                    style={{ width: `${batchImportProgress}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 text-right">{batchImportProgress}%</p>
+                <p className="text-sm text-gray-500">预计需要 1 ~ 2 分钟，请勿关闭弹窗</p>
+                <p className="text-xs text-gray-400">导入完成后将自动显示结果通知</p>
               </div>
             </div>
           )}
@@ -1028,16 +1004,19 @@ export default function MemberManagement() {
                             {
                               duration: 10000,
                               action: {
-                                label: "下载失败报告",
+                                label: "下载详情报告",
                                 onClick: () => {
-                                  const rows = ["用户邮箱,失败原因"];
+                                  const rows = ["用户邮箱,导入状态,备注"];
+                                  for (let i = 1; i <= result.success; i++) {
+                                    rows.push(`success_user_${i}@example.com,成功,`);
+                                  }
                                   for (let i = 1; i <= result.fail; i++) {
-                                    rows.push(`fail_user_${i}@example.com,邮箱格式错误`);
+                                    rows.push(`fail_user_${i}@example.com,失败,邮箱格式错误`);
                                   }
                                   const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
                                   const url = URL.createObjectURL(blob);
                                   const a = document.createElement("a");
-                                  a.href = url; a.download = "导入失败报告.csv"; a.click();
+                                  a.href = url; a.download = "导入详情报告.csv"; a.click();
                                   URL.revokeObjectURL(url);
                                 },
                               },
@@ -1052,9 +1031,7 @@ export default function MemberManagement() {
                 </Button>
               </>
             )}
-            {batchImportStep === "importing" && (
-              <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">请勿关闭</Button>
-            )}
+
           </DialogFooter>
         </DialogContent>
       </Dialog>

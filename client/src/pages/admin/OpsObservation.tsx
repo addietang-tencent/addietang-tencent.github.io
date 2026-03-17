@@ -155,7 +155,9 @@ export default function OpsObservation() {
         </div>
       )}
 
-      {/* Metric Cards */}
+      {/* Metric Cards - 仅在 CLS 启用时显示 */}
+      {clsEnabled && (
+        <>
       <div className="grid grid-cols-5 gap-4 mb-8">
         {METRIC_CARDS.map((card, idx) => (
           <div key={idx} className="bg-white rounded-lg border border-gray-100 p-4">
@@ -267,7 +269,8 @@ export default function OpsObservation() {
           </div>
         </div>
       </div>
-
+        </>
+      )}
 
       {/* 关闭 CLS 确认对话框 */}
       <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>

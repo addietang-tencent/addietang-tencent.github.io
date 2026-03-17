@@ -409,7 +409,9 @@ export default function TokensMonitor() {
           </div>
         </div>
 
-        {/* Overview Cards */}
+        {/* Overview Cards - 仅在 CLS 启用时显示 */}
+        {clsEnabled && (
+          <>
         <div className="grid grid-cols-5 gap-4 mb-6">
           {/* 随时间联动的四张卡片 */}
           {[
@@ -480,6 +482,8 @@ export default function TokensMonitor() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+          </>
+        )}
 
         {/* Detail Tabs */}
         <Tabs defaultValue="member">

@@ -38,7 +38,12 @@ export default function OpenClawMonitor() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // CLS 服务开通流程状态
+  const [showClsDialog, setShowClsDialog] = useState(false);
+  const [clsEnabled, setClsEnabled] = useState(false);
   const [showAccessDialog, setShowAccessDialog] = useState(false);
+  
   const [secretId, setSecretId] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +54,30 @@ export default function OpenClawMonitor() {
       setRefreshing(false);
       toast.success("列表已刷新");
     }, 1000);
+  };
+
+  // 打开可观测面板
+  const handleOpenObservability = () => {
+    // Demo 默认未开通 CLS 服务
+    if (!clsEnabled) {
+      setShowClsDialog(true);
+    } else {
+      // 已开通则直接显示接入弹窗
+      setShowAccessDialog(true);
+    }
+  };
+
+  // 开通 CLS 服务
+  const handleEnableCls = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setClsEnabled(true);
+      setShowClsDialog(false);
+      toast.success("CLS 服务已开通");
+      // 开通后显示接入弹窗
+      setShowAccessDialog(true);
+    }, 1500);
   };
 
   const handleAccessOpenClaw = () => {
@@ -115,12 +144,12 @@ export default function OpenClawMonitor() {
           {/* 接入按键 + 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setShowAccessDialog(true)}
+              onClick={handleOpenObservability}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
               className="text-white gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
-              接入 OpenClaw
+              开启可观测面板
             </Button>
             <input
               type="date"
@@ -268,6 +297,58 @@ export default function OpenClawMonitor() {
         </div>
       </div>
 
+      {/* CLS 服务开通弹窗 */}
+      <Dialog open={showClsDialog} onOpenChange={setShowClsDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>开通&授权</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* 第 1 项：开通 CLS 服务 */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-sm font-semibold text-blue-600">1</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">开启访问日志需要您开通「日志服务CLS」</p>
+                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p className="text-xs text-orange-800">
+                      <span className="font-semibold">计费</span> 腾讯云日志服务CLS为独立计费产品，计费标准清参见
+                      <a 
+                        href="https://cloud.tencent.com/document/product/614/45802" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 underline"
+                      >
+                        CLS计费详情
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowClsDialog(false)}
+              disabled={isLoading}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleEnableCls}
+              disabled={isLoading}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+            >
+              {isLoading ? "开通中..." : "开通"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 接入 OpenClaw 弹窗 */}
       <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
         <DialogContent className="max-w-md">
@@ -275,6 +356,14 @@ export default function OpenClawMonitor() {
             <DialogTitle>接入 OpenClaw</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* 原理说明 */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-900 leading-relaxed">
+                将采用 Loglistener 采集器实时监听 Openclaw 相关日志，并上传到日志服务 CLS，同时您可以在管控端实时查看仪表盘数据
+              </p>
+            </div>
+
+            {/* 输入框 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 SecretId <span className="text-red-500">*</span>

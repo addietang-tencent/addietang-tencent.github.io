@@ -301,17 +301,14 @@ export default function OpenClawMonitor() {
       <Dialog open={showClsDialog} onOpenChange={setShowClsDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>开通&授权</DialogTitle>
+            <DialogTitle>开通日志服务CLS</DialogTitle>
           </DialogHeader>
           <div className="space-y-6">
-            {/* 第 1 项：开通 CLS 服务 */}
+            {/* 开通 CLS 服务 */}
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-blue-600">1</span>
-                </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">开启访问日志需要您开通「日志服务CLS」</p>
+                  <p className="text-sm font-medium text-gray-900">开启可观测面板需要您开通「日志服务CLS」</p>
                   <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <p className="text-xs text-orange-800">
                       <span className="font-semibold">计费</span> 腾讯云日志服务CLS为独立计费产品，计费标准清参见

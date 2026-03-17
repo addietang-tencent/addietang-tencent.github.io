@@ -92,9 +92,10 @@ for (let i = 0; i < DAYS_HISTORY; i++) {
   });
 }
 
-// 今日全局配额（固定）
-// 注意：GLOBAL_LIMIT 为 null 表示无限制
-const GLOBAL_LIMIT: number | null = 2000000; // 改为 null 时表示无限制
+// 今日全局配额 - 从 localStorage 读取，支持跨页面同步
+const globalLimitMode = localStorage.getItem("globalLimitMode") || "unlimited";
+const globalLimitValue = localStorage.getItem("globalLimit");
+const GLOBAL_LIMIT: number | null = globalLimitMode === "unlimited" ? null : (globalLimitValue ? parseInt(globalLimitValue) : 2000000);
 const TODAY_RECORDS = ALL_RECORDS.filter((r) => r.date === todayStr());
 const TODAY_TOTAL_TOKENS = TODAY_RECORDS.reduce((s, r) => s + r.inputTokens + r.outputTokens, 0);
 const TODAY_GLOBAL_PCT = GLOBAL_LIMIT === null ? "0" : ((TODAY_TOTAL_TOKENS / GLOBAL_LIMIT) * 100).toFixed(1);
@@ -406,7 +407,7 @@ export default function TokensMonitor() {
             </div>
             <div className="flex items-center gap-2">
               <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">无限制</span>}
+              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-white bg-gradient-to-r from-blue-500 to-blue-600 px-2 py-1 rounded">无限制</span>}
             </div>
             <ProgressBar value={TODAY_TOTAL_TOKENS} max={GLOBAL_LIMIT} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
           </div>

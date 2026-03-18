@@ -129,19 +129,31 @@ function TokenLimitInput({
   );
 }
 
-// ─── 添加用户表单（无密码） ───────────────────────────────────────────────────
+// ─── 添加用户表单（无密码） ────────────────────────
 function AddMemberFormFields({
   values,
   onChange,
+  existingMemberIds = [],
 }: {
   values: typeof emptyNewMember;
   onChange: (v: typeof emptyNewMember) => void;
+  existingMemberIds?: string[];
 }) {
   const [clawStr, setClawStr] = React.useState<string>(String(values.clawLimit));
+  const [idError, setIdError] = React.useState<string>("");
 
   React.useEffect(() => {
     setClawStr(String(values.clawLimit));
   }, [values.clawLimit]);
+
+  // 检查成员ID是否已存在
+  const handleIdBlur = () => {
+    if (values.id.trim() && existingMemberIds.includes(values.id.trim())) {
+      setIdError("成员ID已存在，请使用其他ID");
+    } else {
+      setIdError("");
+    }
+  };
 
   return (
     <div className="py-2 space-y-6">
@@ -165,9 +177,18 @@ function AddMemberFormFields({
             <Input
               placeholder="例如：alice@acompany.com"
               value={values.id}
-              onChange={(e) => onChange({ ...values, id: e.target.value })}
-              className="bg-gray-50"
+              onChange={(e) => {
+                onChange({ ...values, id: e.target.value });
+                setIdError(""); // 清除错误提示
+              }}
+              onBlur={handleIdBlur}
+              className={`bg-gray-50 ${
+                idError ? "border-red-300 focus:ring-red-500 focus:border-red-500" : ""
+              }`}
             />
+            {idError && (
+              <p className="text-xs text-red-500 font-medium">{idError}</p>
+            )}
           </div>
 
           {/* 用户角色 */}
@@ -841,7 +862,7 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle>添加用户</DialogTitle>
           </DialogHeader>
-          <AddMemberFormFields values={newMember} onChange={setNewMember} />
+          <AddMemberFormFields values={newMember} onChange={setNewMember} existingMemberIds={members.map((m) => m.id)} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
             <Button onClick={handleAdd} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>确认添加</Button>

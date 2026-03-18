@@ -49,27 +49,22 @@ export default function ImageManagement() {
 
   const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
 
-  // 点击外部关闭下拉列表
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      // 只在点击下拉列表外部时关闭
-      if (imageListRef.current && !imageListRef.current.contains(target)) {
-        setShowImageList(false);
-      }
-    };
-
-    if (showImageList) {
-      // 延迟添加监听器，避免与其他事件冲突
-      const timer = setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-      }, 50);
-      return () => {
-        clearTimeout(timer);
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
+  // 当 Dialog 关闭时，同时关闭下拉列表
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowImportDialog(open);
+    if (!open) {
+      setSelectedImageId("");
+      setSearchQuery("");
+      setShowImageList(false);
     }
-  }, [showImageList]);
+  };
+
+  // 点击下拉列表外部关闭下拉列表
+  const handleClickOutsideImageList = (e: React.MouseEvent) => {
+    if (imageListRef.current && !imageListRef.current.contains(e.target as Node)) {
+      setShowImageList(false);
+    }
+  };
 
   // 根据搜索词过滤镜像
   const filteredImages = ALL_IMPORTABLE.filter((img) =>
@@ -224,7 +219,7 @@ export default function ImageManagement() {
       </div>
 
       {/* 导入镜像弹窗 */}
-      <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) { setSelectedImageId(""); setSearchQuery(""); setShowImageList(false); } }}>
+      <Dialog open={showImportDialog} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>导入镜像</DialogTitle>
@@ -248,10 +243,10 @@ export default function ImageManagement() {
             </p>
           </div>
 
-          <div className="space-y-4 py-1">
+          <div className="space-y-4 py-1" onClick={handleClickOutsideImageList}>
             <div className="space-y-2">
               <Label>选择镜像</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {/* 选择框 */}
                 <button
                   onClick={() => setShowImageList(!showImageList)}
@@ -273,9 +268,9 @@ export default function ImageManagement() {
 
               {/* 展开的镜像列表 */}
               {showImageList && (
-                <div ref={imageListRef} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+                <div ref={imageListRef} className="border border-gray-200 rounded-lg bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}>
                   {/* 搜索框 */}
-                  <div className="relative p-2 border-b border-gray-100" onClick={(e) => e.stopPropagation()}>
+                  <div className="relative p-2 border-b border-gray-100">
                     <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"

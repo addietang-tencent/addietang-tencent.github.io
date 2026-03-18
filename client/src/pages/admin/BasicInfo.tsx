@@ -84,7 +84,7 @@ export default function BasicInfo() {
                       if (e.target.files?.[0]) {
                         const file = e.target.files[0];
                         if (file.size > MAX_FILE_SIZE) {
-                          setLogoError("图片大小超过 512k 限制");
+                          setLogoError("Logo文件不能超过512KB，请压缩后重试");
                           setForm({ ...form, logo: null });
                         } else {
                           setLogoError(null);

@@ -183,7 +183,8 @@ export default function TokensMonitor() {
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [clsEnabled, setClsEnabled] = useState(() => {
-    return localStorage.getItem("tokensMonitorClsEnabled") === "true";
+    const stored = localStorage.getItem("globalClsEnabled");
+    return stored === null ? true : stored === "true";
   });
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
@@ -196,13 +197,17 @@ export default function TokensMonitor() {
 
   // 监听 localStorage 变化
   useEffect(() => {
-    const handleStorageChange = () => {
-      const mode = localStorage.getItem("globalLimitMode");
-      if (mode === "unlimited") {
-        setGlobalLimit(null);
-      } else {
-        const value = localStorage.getItem("globalLimit");
-        setGlobalLimit(value ? parseInt(value, 10) : 2000000);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "globalClsEnabled") {
+        setClsEnabled(e.newValue === "true");
+      } else if (e.key === "globalLimitMode" || e.key === "globalLimit") {
+        const mode = localStorage.getItem("globalLimitMode");
+        if (mode === "unlimited") {
+          setGlobalLimit(null);
+        } else {
+          const value = localStorage.getItem("globalLimit");
+          setGlobalLimit(value ? parseInt(value, 10) : 2000000);
+        }
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -219,7 +224,7 @@ export default function TokensMonitor() {
     // 模拟 loading 1.5 秒
     setTimeout(() => {
       setClsEnabled(true);
-      localStorage.setItem("tokensMonitorClsEnabled", "true");
+      localStorage.setItem("globalClsEnabled", "true");
       setIsEnablingCls(false);
       setShowSuccessMessage(true);
       // 3 秒后隐藏成功提示
@@ -233,7 +238,7 @@ export default function TokensMonitor() {
     setIsClosingCls(true);
     setTimeout(() => {
       setClsEnabled(false);
-      localStorage.setItem("tokensMonitorClsEnabled", "false");
+      localStorage.setItem("globalClsEnabled", "false");
       setIsClosingCls(false);
       setShowCloseClsConfirm(false);
       toast.success("CLS 日志服务已关闭");

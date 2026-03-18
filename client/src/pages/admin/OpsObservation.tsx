@@ -3,7 +3,7 @@
  * Design: 「流动蓝图」Fluid Blueprint
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertCircle, ArrowUpRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -71,20 +71,31 @@ const METRIC_CARDS = [
 
 export default function OpsObservation() {
   const [clsEnabled, setClsEnabled] = useState(() => {
-    const stored = localStorage.getItem("opsObservationClsEnabled");
-    return stored === null ? true : stored === "true"; // 默认开启
+    const stored = localStorage.getItem("globalClsEnabled");
+    return stored === null ? true : stored === "true";
   });
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
 
+  // 监听 localStorage 变化，实现跨页面同步
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "globalClsEnabled") {
+        setClsEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   const handleOpenCLS = () => {
     setIsEnablingCls(true);
     // 模拟 loading 1.5 秒
     setTimeout(() => {
       setClsEnabled(true);
-      localStorage.setItem("opsObservationClsEnabled", "true");
+      localStorage.setItem("globalClsEnabled", "true");
       setIsEnablingCls(false);
       setShowSuccessMessage(true);
       // 3 秒后隐藏成功提示
@@ -98,7 +109,7 @@ export default function OpsObservation() {
     setIsClosingCls(true);
     setTimeout(() => {
       setClsEnabled(false);
-      localStorage.setItem("opsObservationClsEnabled", "false");
+      localStorage.setItem("globalClsEnabled", "false");
       setIsClosingCls(false);
       setShowCloseClsConfirm(false);
     }, 1000);

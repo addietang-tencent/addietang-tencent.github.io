@@ -3,7 +3,7 @@
  * 包含：顶部指标卡 / 会话列表表格（支持筛选）/ 渠道与模型分布
  * 风格：浅色主题，与 Token 监控页保持一致
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -194,13 +194,24 @@ export default function SessionManagement() {
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "cron" | "groups">("all");
   const [, navigate] = useLocation();
   const [clsEnabled, setClsEnabled] = useState(() => {
-    const stored = localStorage.getItem("sessionManagementClsEnabled");
-    return stored === null ? true : stored === "true"; // 默认开启
+    const stored = localStorage.getItem("globalClsEnabled");
+    return stored === null ? true : stored === "true";
   });
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+
+  // 监听 localStorage 变化，实现跨页面同步
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "globalClsEnabled") {
+        setClsEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // 筛选会话 - 始终显示所有会话
   const filteredSessions = useMemo(() => {
@@ -212,7 +223,7 @@ export default function SessionManagement() {
     // 模拟 loading 1.5 秒
     setTimeout(() => {
       setClsEnabled(true);
-      localStorage.setItem("sessionManagementClsEnabled", "true");
+      localStorage.setItem("globalClsEnabled", "true");
       setIsEnablingCls(false);
       setShowSuccessMessage(true);
       // 3 秒后隐藏成功提示
@@ -226,7 +237,7 @@ export default function SessionManagement() {
     setIsClosingCls(true);
     setTimeout(() => {
       setClsEnabled(false);
-      localStorage.setItem("sessionManagementClsEnabled", "false");
+      localStorage.setItem("globalClsEnabled", "false");
       setIsClosingCls(false);
       setShowCloseClsConfirm(false);
     }, 1000);

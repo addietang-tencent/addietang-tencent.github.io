@@ -70,7 +70,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 公司 Logo
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角，建议尺寸 200×200px，图片大小不超过 512k</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角，建议尺寸 200×200px，图片大小不超过 512KB</span>
               </Label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">

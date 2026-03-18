@@ -49,16 +49,16 @@ const queueStatusData = [
 ];
 
 const runDurationData = [
-  { time: "01:59", avg_ms: 60000 },
-  { time: "02:04", avg_ms: 62000 },
-  { time: "02:09", avg_ms: 59000 },
-  { time: "02:14", avg_ms: 61000 },
-  { time: "02:19", avg_ms: 58000 },
-  { time: "02:24", avg_ms: 60000 },
-  { time: "02:29", avg_ms: 61000 },
-  { time: "02:34", avg_ms: 59000 },
-  { time: "02:39", avg_ms: 62000 },
-  { time: "02:44", avg_ms: 60000 },
+  { time: "01:59", run_duration_p50: 45000, run_duration_p95: 60000 },
+  { time: "02:04", run_duration_p50: 46000, run_duration_p95: 62000 },
+  { time: "02:09", run_duration_p50: 44000, run_duration_p95: 59000 },
+  { time: "02:14", run_duration_p50: 47000, run_duration_p95: 61000 },
+  { time: "02:19", run_duration_p50: 43000, run_duration_p95: 58000 },
+  { time: "02:24", run_duration_p50: 45000, run_duration_p95: 60000 },
+  { time: "02:29", run_duration_p50: 46000, run_duration_p95: 61000 },
+  { time: "02:34", run_duration_p50: 44000, run_duration_p95: 59000 },
+  { time: "02:39", run_duration_p50: 47000, run_duration_p95: 62000 },
+  { time: "02:44", run_duration_p50: 45000, run_duration_p95: 60000 },
 ];
 
 const METRIC_CARDS = [
@@ -254,10 +254,14 @@ export default function OpsObservation() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="processed" stroke="#10B981" dot={false} />
-                <Line type="monotone" dataKey="queued" stroke="#3B82F6" dot={false} />
+                <Line type="monotone" dataKey="processed" name="已处理完成" stroke="#10B981" dot={false} />
+                <Line type="monotone" dataKey="queued" name="等待处理" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p><span className="font-medium">已处理完成：</span>已成功处理完成的消息数量</p>
+              <p><span className="font-medium">等待处理：</span>等待处理的消息数量</p>
+            </div>
           </div>
 
           {/* Queue Status */}
@@ -272,10 +276,14 @@ export default function OpsObservation() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="depth_avg" stroke="#8B5CF6" dot={false} />
-                <Line type="monotone" dataKey="wait_ms_avg" stroke="#06B6D4" dot={false} />
+                <Line type="monotone" dataKey="depth_avg" name="队列长度 P95" stroke="#8B5CF6" dot={false} />
+                <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p className="cursor-help hover:text-gray-700" title="95% 的时间队列长度不超过此值，反映队列拥堵程度"><span className="font-medium">队列长度 P95：</span>95% 的时间队列长度不超过此值，反映队列拥堵程度</p>
+              <p className="cursor-help hover:text-gray-700" title="95% 的消息等待时间不超过此值，反映队列延迟"><span className="font-medium">等待时间 P95：</span>95% 的消息等待时间不超过此值，反映队列延迟</p>
+            </div>
           </div>
 
           {/* Run Duration */}
@@ -289,9 +297,15 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="avg_ms" stroke="#F59E0B" dot={false} />
+                <Legend />
+                <Line type="monotone" dataKey="run_duration_p50" name="处理耗时 P50" stroke="#F59E0B" dot={false} />
+                <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p className="cursor-help hover:text-gray-700" title="50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险"><span className="font-medium">处理耗时 P50：</span>50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</p>
+              <p className="cursor-help hover:text-gray-700" title="95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验"><span className="font-medium">处理耗时 P95：</span>95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</p>
+            </div>
           </div>
         </div>
       </div>

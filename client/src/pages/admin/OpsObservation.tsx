@@ -301,7 +301,7 @@ export default function OpsObservation() {
               <h3 className="text-sm font-semibold text-gray-900">日志模块分布</h3>
             </div>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={logModuleData} layout="vertical" margin={{ left: 30, right: 30, top: 0, bottom: 0 }}>
+              <BarChart data={logModuleData} layout="vertical" margin={{ left: 20, right: 30, top: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={170} tick={{ fontSize: 12 }} />

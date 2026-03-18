@@ -229,14 +229,15 @@ export default function MyOpenClaw() {
               {claws.map((claw) => {
                 // 灰色（已停止）和红色（失败）状态应用禁用样式
                 const isDisabled = ["stopped", "STOPPED", "SHUTDOWN", "LAUNCH_FAILED"].includes(claw.status);
+                const isCreating = ["pending", "PENDING"].includes(claw.status);
                 const isLaunchFailed = claw.status === "LAUNCH_FAILED";
                 const isStopped = claw.status === "stopped" || claw.status === "STOPPED"; // 保持向后兼容
-                const disabledTip = isLaunchFailed ? LAUNCH_FAILED_TIP : DISABLED_TIP;
+                const disabledTip = isLaunchFailed ? LAUNCH_FAILED_TIP : isCreating ? "创建中，无法操作" : DISABLED_TIP;
                 return (
                   <div key={claw.id}
                     className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"} ${isDisabled ? "opacity-60" : ""}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-                    onClick={() => { if (!isDisabled) navigate(`/openclaw/${claw.id}`); }}
+                    onClick={() => { if (!isDisabled && !isCreating) navigate(`/openclaw/${claw.id}`); }}
                   >
                     {/* Card Header */}
                     <div className="p-5">
@@ -266,7 +267,7 @@ export default function MyOpenClaw() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-52">
                               {/* 重启 - 禁用时禁用 */}
-                              {isDisabled ? (
+                              {isDisabled || isCreating ? (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div>
@@ -287,7 +288,7 @@ export default function MyOpenClaw() {
                                 </DropdownMenuItem>
                               )}
                               {/* 更新版本 - 禁用时禁用 */}
-                              {isDisabled ? (
+                              {isDisabled || isCreating ? (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div>
@@ -308,14 +309,30 @@ export default function MyOpenClaw() {
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
-                              {/* 删除 - 始终可用 */}
-                              <DropdownMenuItem
-                                onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: claw.id, name: claw.name }); }}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                删除
-                              </DropdownMenuItem>
+                              {/* 删除 - 创建中禁用 */}
+                              {isCreating ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div>
+                                      <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                        <Trash2 className="w-4 h-4 mr-2 text-gray-400" />
+                                        删除
+                                      </DropdownMenuItem>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="left" className="w-max text-xs">
+                                    创建中，无法操作
+                                  </TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ id: claw.id, name: claw.name }); }}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  删除
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -329,7 +346,7 @@ export default function MyOpenClaw() {
 
                     {/* Card Actions - 详细配置按钮（outline 浅色样式） */}
                     <div className="px-5 pb-4 border-t border-gray-50 pt-3">
-                      {isDisabled ? (
+                      {isDisabled || isCreating ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="w-full">

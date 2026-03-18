@@ -52,14 +52,22 @@ export default function ImageManagement() {
   // 点击外部关闭下拉列表
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (imageListRef.current && !imageListRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // 只在点击下拉列表外部时关闭
+      if (imageListRef.current && !imageListRef.current.contains(target)) {
         setShowImageList(false);
       }
     };
 
     if (showImageList) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      // 延迟添加监听器，避免与其他事件冲突
+      const timer = setTimeout(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 50);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
     }
   }, [showImageList]);
 

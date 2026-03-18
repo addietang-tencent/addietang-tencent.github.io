@@ -69,37 +69,6 @@ const METRIC_CARDS = [
   { title: "卡死会话", value: "4", unit: "需关注", icon: "", color: "#EF4444" },
 ];
 
-// Legend 说明映射
-const legendTooltips: Record<string, string> = {
-  "已处理完成": "已成功处理完成的消息数量",
-  "等待处理": "等待处理的消息数量",
-  "队列长度 P95": "95% 的时间队列长度不超过此值，反映队列拥堵程度",
-  "等待时间 P95": "95% 的消息等待时间不超过此值，反映队列延迟",
-  "处理耗时 P50": "50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险",
-  "处理耗时 P95": "95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验",
-};
-
-const CustomLegend = (props: any) => {
-  const { payload } = props;
-  return (
-    <div className="flex gap-6 justify-center flex-wrap">
-      {payload?.map((entry: any, index: number) => (
-        <div
-          key={index}
-          className="group relative flex items-center gap-2 cursor-help"
-          title={legendTooltips[entry.name] || ""}
-        >
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-xs text-gray-600">{entry.name}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export default function OpsObservation() {
   const [clsEnabled, setClsEnabled] = useState(() => {
     const stored = localStorage.getItem("globalClsEnabled");
@@ -289,7 +258,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
+                <Legend />
                 <Line type="monotone" dataKey="processed" name="已处理完成" stroke="#10B981" dot={false} />
                 <Line type="monotone" dataKey="queued" name="等待处理" stroke="#3B82F6" dot={false} />
               </LineChart>
@@ -313,7 +282,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
+                <Legend />
                 <Line type="monotone" dataKey="depth_avg" name="队列长度 P95" stroke="#8B5CF6" dot={false} />
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
@@ -337,7 +306,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
+                <Legend />
                 <Line type="monotone" dataKey="run_duration_p50" name="处理耗时 P50" stroke="#F59E0B" dot={false} />
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>

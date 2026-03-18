@@ -216,7 +216,7 @@ export default function ImageManagement() {
       </div>
 
       {/* 导入镜像弹窗 */}
-      <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) { setSelectedImageId(""); setSearchQuery(""); } }}>
+      <Dialog open={showImportDialog} onOpenChange={(open) => { setShowImportDialog(open); if (!open) { setSelectedImageId(""); setSearchQuery(""); setShowImageList(false); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>导入镜像</DialogTitle>

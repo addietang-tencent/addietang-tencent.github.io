@@ -342,7 +342,7 @@ export default function OpenClawMonitor() {
               <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-amber-800">
-                  腾讯云日志服务 CLS 是独立计费产品
+                  2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费
                 </p>
               </div>
             </div>

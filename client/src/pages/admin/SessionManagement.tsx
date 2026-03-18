@@ -40,11 +40,11 @@ const STAT_CARDS = [
   },
   {
     label: "活跃渠道",
-    value: 5,
+    value: 0,
     metric: "active_channels",
     icon: Globe,
     iconBg: "from-orange-500 to-orange-600",
-    channels: ["CLI", "Webchat", "Feishu Group", "Feishu Dm", "QQ Dm"],
+    channels: [],
   },
 ];
 

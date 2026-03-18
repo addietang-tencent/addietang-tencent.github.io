@@ -64,9 +64,9 @@ const runDurationData = [
 const METRIC_CARDS = [
   { title: "清单处理总量", value: "13", unit: "", icon: "", color: "#10B981" },
   { title: "清单入队", value: "13", unit: "", icon: "", color: "#3B82F6" },
-  { title: "执行耗时 P95", value: "10s", unit: "正常", icon: "", color: "#F59E0B" },
-  { title: "队列深度 P95", value: "0", unit: "正常", icon: "", color: "#8B5CF6" },
-  { title: "卡死会话", value: "4", unit: "需关注", icon: "", color: "#EF4444" },
+  { title: "执行耗时 P95", value: "10s", unit: "", icon: "", color: "#F59E0B" },
+  { title: "队列深度 P95", value: "0", unit: "", icon: "", color: "#8B5CF6" },
+  { title: "卡死会话", value: "4", unit: "", icon: "", color: "#EF4444" },
 ];
 
 // Legend 说明映射

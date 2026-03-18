@@ -245,7 +245,12 @@ export default function OpsObservation() {
           {/* Message Processing */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">消息处理</h3>
+              <div className="group relative">
+                <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
+                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                  已处理完成：已成功处理完成的消息数量；等待处理：等待处理的消息数量
+                </div>
+              </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={messageProcessData}>
@@ -258,16 +263,18 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="queued" name="等待处理" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="text-xs text-gray-500 mt-2 space-y-1">
-              <p><span className="font-medium">已处理完成：</span>已成功处理完成的消息数量</p>
-              <p><span className="font-medium">等待处理：</span>等待处理的消息数量</p>
-            </div>
           </div>
 
           {/* Queue Status */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">队列状态</h3>
+              <div className="group relative">
+                <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
+                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 z-10 w-max">
+                  <div>队列长度 P95：95% 的时间队列长度不超过此值，反映队列拥堵程度</div>
+                  <div>等待时间 P95：95% 的消息等待时间不超过此值，反映队列延迟</div>
+                </div>
+              </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={queueStatusData}>
@@ -280,16 +287,18 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="text-xs text-gray-500 mt-2 space-y-1">
-              <p className="cursor-help hover:text-gray-700" title="95% 的时间队列长度不超过此值，反映队列拥堵程度"><span className="font-medium">队列长度 P95：</span>95% 的时间队列长度不超过此值，反映队列拥堵程度</p>
-              <p className="cursor-help hover:text-gray-700" title="95% 的消息等待时间不超过此值，反映队列延迟"><span className="font-medium">等待时间 P95：</span>95% 的消息等待时间不超过此值，反映队列延迟</p>
-            </div>
           </div>
 
           {/* Run Duration */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">执行耗时</h3>
+              <div className="group relative">
+                <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
+                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 z-10 w-max">
+                  <div>处理耗时 P50：50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</div>
+                  <div>处理耗时 P95：95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</div>
+                </div>
+              </div>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={runDurationData}>
@@ -302,10 +311,6 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="text-xs text-gray-500 mt-2 space-y-1">
-              <p className="cursor-help hover:text-gray-700" title="50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险"><span className="font-medium">处理耗时 P50：</span>50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</p>
-              <p className="cursor-help hover:text-gray-700" title="95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验"><span className="font-medium">处理耗时 P95：</span>95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</p>
-            </div>
           </div>
         </div>
       </div>

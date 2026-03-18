@@ -87,6 +87,37 @@ const legendTooltips: Record<string, string> = {
   "处理耗时 P95": "处理耗时 P95：95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验",
 };
 
+// Custom Y Axis Tick with Tooltip
+const CustomYAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  const [showTooltip, setShowTooltip] = useState(false);
+  const fullName = logModuleData.find(item => item.name.includes(payload.value.split('...')[0]))?.name || payload.value;
+  
+  return (
+    <g>
+      <text 
+        x={x} 
+        y={y} 
+        textAnchor="end" 
+        fontSize={12} 
+        fill="#6b7280"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        style={{ cursor: 'pointer' }}
+      >
+        {payload.value}
+      </text>
+      {showTooltip && (
+        <foreignObject x={x - 150} y={y - 25} width={140} height={40}>
+          <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-normal break-words">
+            {fullName}
+          </div>
+        </foreignObject>
+      )}
+    </g>
+  );
+};
+
 const CustomLegend = (props: any) => {
   const { payload } = props;
   console.log('CustomLegend payload:', payload);
@@ -273,7 +304,7 @@ export default function OpsObservation() {
               <BarChart data={logModuleData} layout="vertical" margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={110} tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" width={110} tick={<CustomYAxisTick />} />
                 <Tooltip />
                 <Bar dataKey="count" fill="#3B82F6" />
               </BarChart>

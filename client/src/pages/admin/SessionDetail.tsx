@@ -39,7 +39,7 @@ const TOKEN_FLOW = [
 // 交互链数据
 const INTERACTION_CHAIN = [
   {
-    round: 1,
+    timestamp: "2026-03-04 13:32:00",
     role: "user",
     content: "你能干啥",
     model: "—",
@@ -52,7 +52,7 @@ const INTERACTION_CHAIN = [
     duration: "—",
   },
   {
-    round: 2,
+    timestamp: "2026-03-04 13:32:13",
     role: "assistant",
     content: "你好！我是你的 AI 助手。我能帮你做很多事情，包括...",
     model: "deepseek-v3.2",
@@ -65,7 +65,7 @@ const INTERACTION_CHAIN = [
     duration: "13.6s",
   },
   {
-    round: 3,
+    timestamp: "2026-03-04 13:32:45",
     role: "user",
     content: "你管理一下我在伊朗的局势",
     model: "—",
@@ -78,7 +78,7 @@ const INTERACTION_CHAIN = [
     duration: "—",
   },
   {
-    round: 4,
+    timestamp: "2026-03-04 13:32:52",
     role: "assistant",
     content: "我是一个 AI 助手，无法直接管理现实中的政治局势。但我可以帮助你分析...",
     model: "deepseek-v3.2",
@@ -91,7 +91,7 @@ const INTERACTION_CHAIN = [
     duration: "6.8s",
   },
   {
-    round: 5,
+    timestamp: "2026-03-04 13:32:59",
     role: "tool",
     content: '{"status": "error", "tool": "web_fetch", "error": "missing_brave_api_key", "message": "web_sear...',
     model: "—",
@@ -288,7 +288,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-50 bg-gray-50/50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">#</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">时间</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
@@ -304,7 +304,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
               <tbody className="divide-y divide-gray-50">
                 {INTERACTION_CHAIN.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.round}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{item.timestamp}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                         item.role === "user" ? "bg-blue-100 text-blue-700" :

@@ -259,8 +259,8 @@ export default function OpsObservation() {
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="processed" name="已处理完成" stroke="#10B981" dot={false} />
-                <Line type="monotone" dataKey="queued" name="等待处理" stroke="#3B82F6" dot={false} />
+                <Line type="monotone" dataKey="processed" name="已处理完成的消息数量" stroke="#10B981" dot={false} />
+                <Line type="monotone" dataKey="queued" name="等待处理的消息数量" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

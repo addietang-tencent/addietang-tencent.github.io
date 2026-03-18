@@ -563,7 +563,7 @@ export default function TokensMonitor() {
                     <div className="text-xs text-blue-700 mt-3 space-y-1 border-t border-blue-200 pt-3">
                       <p className="font-medium">开启 CLS 后还将获得：</p>
                       <div>• 运维观测：支持通过全链路性能监控采集核心运行指标</div>
-                      <div>• 会话管理：支持通过会话总览、会话链三级下钻还原及渠道模型分布分析</div>
+                      <div>• 会话管理：支持通过会话总览、会话链下钻还原及渠道模型分布分析</div>
                     </div>
                   </div>
                   <Button
@@ -584,7 +584,7 @@ export default function TokensMonitor() {
                     <p className="text-sm font-medium text-green-800">CLS 日志服务开启成功</p>
                     <div className="text-xs text-green-700 mt-2 space-y-1">
                       <div>运维观测：支持通过全链路性能监控采集核心运行指标</div>
-                      <div>会话管理：支持通过会话总览、会话链三级下钻还原及渠道模型分布分析</div>
+                      <div>会话管理：支持通过会话总览、会话链下钻还原及渠道模型分布分析</div>
                       <div>Tokens 监控：支持从按会话、消息维度查看 tokens、费用使用情况</div>
                     </div>
                   </div>
@@ -662,7 +662,7 @@ export default function TokensMonitor() {
               </div>
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">会话管理：</span>
-                <span>支持通过会话总览、会话链三级下钻还原及渠道模型分布分析</span>
+                <span>支持通过会话总览、会话链下钻还原及渠道模型分布分析</span>
               </div>
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">Tokens 监控（按会话）：</span>

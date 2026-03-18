@@ -312,7 +312,7 @@ export default function OpsObservation() {
             variant="outline"
             className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
           >
-            关闭 CLS 日志服务
+            关闭CLS服务按键
           </Button>
         </div>
       )}

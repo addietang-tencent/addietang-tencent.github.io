@@ -600,7 +600,7 @@ export default function TokensMonitor() {
                   variant="outline"
                   className="text-xs h-7 px-3 text-gray-600 hover:text-red-600 hover:border-red-200"
                 >
-                  关闭CLS
+                  关闭CLS服务按键
                 </Button>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"

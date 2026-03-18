@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -218,6 +218,8 @@ export default function SessionManagement() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+  const [sortColumn, setSortColumn] = useState<"tokens" | "cost" | "updatedAt">("updatedAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // 处理日期变化
   const handleFromChange = (value: string) => {
@@ -244,10 +246,57 @@ export default function SessionManagement() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  // 筛选会话 - 始终显示所有会话
+  // 筛选和排序会话
   const filteredSessions = useMemo(() => {
-    return MOCK_SESSIONS;
-  }, []);
+    let sessions = [...MOCK_SESSIONS];
+    
+    // 排序逻辑
+    sessions.sort((a, b) => {
+      let aVal: any = a[sortColumn];
+      let bVal: any = b[sortColumn];
+      
+      // 处理 tokens 和 cost 的数值比较
+      if (sortColumn === "tokens") {
+        aVal = parseFloat(aVal.replace(/[KMB]/g, ""));
+        bVal = parseFloat(bVal.replace(/[KMB]/g, ""));
+        // 处理单位倍数
+        if (a.tokens.includes("M")) aVal *= 1000;
+        if (b.tokens.includes("M")) bVal *= 1000;
+      } else if (sortColumn === "cost") {
+        aVal = parseFloat(aVal.replace(/[$,]/g, ""));
+        bVal = parseFloat(bVal.replace(/[$,]/g, ""));
+      } else if (sortColumn === "updatedAt") {
+        aVal = new Date(aVal).getTime();
+        bVal = new Date(bVal).getTime();
+      }
+      
+      if (sortDirection === "asc") {
+        return aVal > bVal ? 1 : -1;
+      } else {
+        return aVal < bVal ? 1 : -1;
+      }
+    });
+    
+    return sessions;
+  }, [sortColumn, sortDirection]);
+
+  const handleSort = (column: "tokens" | "cost" | "updatedAt") => {
+    if (sortColumn === column) {
+      // 同一列，切换排序方向
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // 不同列，设置新列并默认降序
+      setSortColumn(column);
+      setSortDirection("desc");
+    }
+  };
+
+  const SortIcon = ({ column }: { column: "tokens" | "cost" | "updatedAt" }) => {
+    if (sortColumn !== column) return <div className="w-4 h-4" />;
+    return sortDirection === "asc" ? 
+      <ArrowUp className="w-4 h-4" /> : 
+      <ArrowDown className="w-4 h-4" />;
+  };
 
   const handleOpenCLS = () => {
     setIsEnablingCls(true);
@@ -359,7 +408,7 @@ export default function SessionManagement() {
             variant="outline"
             className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
           >
-            关闭 CLS 日志服务
+            关闭CLS服务按键
           </Button>
         </div>
       )}
@@ -403,10 +452,34 @@ export default function SessionManagement() {
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">预计成本</th>
+                    <th className="text-right px-6 py-3">
+                      <button
+                        onClick={() => handleSort("tokens")}
+                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
+                      >
+                        TOKENS
+                        <SortIcon column="tokens" />
+                      </button>
+                    </th>
+                    <th className="text-right px-6 py-3">
+                      <button
+                        onClick={() => handleSort("cost")}
+                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
+                      >
+                        预计成本
+                        <SortIcon column="cost" />
+                      </button>
+                    </th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后消息</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">更新时间</th>
+                    <th className="text-right px-6 py-3">
+                      <button
+                        onClick={() => handleSort("updatedAt")}
+                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
+                      >
+                        更新时间
+                        <SortIcon column="updatedAt" />
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">

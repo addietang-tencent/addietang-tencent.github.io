@@ -18,10 +18,6 @@ export default function SkillConfig() {
   };
 
   const handleSave = () => {
-    if (!draft.trim()) {
-      toast.error("SkillHub 地址不能为空");
-      return;
-    }
     setSkillhubUrl(draft.trim());
     setEditing(false);
     toast.success("SkillHub 地址已保存");

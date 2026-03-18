@@ -784,17 +784,14 @@ export default function OpenClawDetail() {
 
             {/* Upper: search + install - fixed */}
             <div className="p-5 space-y-3 flex-shrink-0">
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    placeholder="请输入准确 Skill 名称"
-                    value={skillSearch}
-                    onChange={(e) => setSkillSearch(e.target.value)}
-                    className="pl-9 bg-gray-50 border-gray-200 text-xs"
-                  />
-                </div>
-                <p className="text-xs text-gray-400 leading-relaxed">填写的名称必须与SkillHub地址中已包含的skill名称完全一致，包括大小写、标点等</p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="请输入准确 Skill 名称"
+                  value={skillSearch}
+                  onChange={(e) => setSkillSearch(e.target.value)}
+                  className="pl-9 bg-gray-50 border-gray-200 text-xs"
+                />
               </div>
 
               <Button className="w-full text-sm" variant="outline" onClick={() => toast.info("功能开发中")}>

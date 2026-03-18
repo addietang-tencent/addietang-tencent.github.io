@@ -69,6 +69,38 @@ const METRIC_CARDS = [
   { title: "卡死会话", value: "4", unit: "需关注", icon: "", color: "#EF4444" },
 ];
 
+// Legend 说明映射
+const legendTooltips: Record<string, string> = {
+  "已处理完成的消息数量": "已处理完成：已成功处理完成的消息数量",
+  "等待处理的消息数量": "等待处理：等待处理的消息数量",
+  "队列长度 P95": "队列长度 P95：95% 的时间队列长度不超过此值，反映队列拥堵程度",
+  "等待时间 P95": "等待时间 P95：95% 的消息等待时间不超过此值，反映队列延迟",
+  "处理耗时 P50": "处理耗时 P50：50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险",
+  "处理耗时 P95": "处理耗时 P95：95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验",
+};
+
+const CustomLegend = (props: any) => {
+  const { payload } = props;
+  return (
+    <div className="flex gap-6 justify-center flex-wrap">
+      {payload?.map((entry: any, index: number) => (
+        <div key={index} className="group relative flex items-center gap-2 cursor-help">
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-xs text-gray-600">{entry.name}</span>
+          {legendTooltips[entry.name] && (
+            <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+              {legendTooltips[entry.name]}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function OpsObservation() {
   const [clsEnabled, setClsEnabled] = useState(() => {
     const stored = localStorage.getItem("globalClsEnabled");
@@ -258,7 +290,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="processed" name="已处理完成的消息数量" stroke="#10B981" dot={false} />
                 <Line type="monotone" dataKey="queued" name="等待处理的消息数量" stroke="#3B82F6" dot={false} />
               </LineChart>
@@ -282,7 +314,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="depth_avg" name="队列长度 P95" stroke="#8B5CF6" dot={false} />
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
@@ -306,7 +338,7 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend content={<CustomLegend />} wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="run_duration_p50" name="处理耗时 P50" stroke="#F59E0B" dot={false} />
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
@@ -327,35 +359,37 @@ export default function OpsObservation() {
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
               <div className="text-xs text-gray-700">
-                <span className="font-semibold text-red-700">运维观测：</span>
-                <span>支持通过全链路性能监控采集核心运行指标</span>
+                <div className="font-medium text-red-900">运维观测</div>
+                <div className="text-red-700">全链路性能监控采集核心运行指标</div>
               </div>
               <div className="text-xs text-gray-700">
-                <span className="font-semibold text-red-700">会话管理：</span>
-                <span>支持通过会话总览、会话链下钻还原及渠道模型分布分析</span>
+                <div className="font-medium text-red-900">会话管理</div>
+                <div className="text-red-700">会话总览、会话链下钻还原及渠道模型分布分析</div>
               </div>
               <div className="text-xs text-gray-700">
-                <span className="font-semibold text-red-700">Tokens 监控（按会话）：</span>
-                <span>支持从按会话、消息维度查看 tokens、费用使用情况</span>
+                <div className="font-medium text-red-900">Tokens 监控</div>
+                <div className="text-red-700">按会话、消息维度查看 tokens、费用使用情况</div>
               </div>
             </div>
           </div>
-          <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCloseClsConfirm(false)}
+              className="text-xs h-8"
+            >
               取消
             </Button>
             <Button
               onClick={handleCloseCls}
               disabled={isClosingCls}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+              className="bg-red-600 hover:bg-red-700 text-white text-xs h-8 disabled:opacity-50"
             >
               {isClosingCls ? "关闭中..." : "确定关闭"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
     </div>
   );
 }

@@ -19,6 +19,8 @@ export default function BasicInfo() {
     tencentUin: "3205597606",
     logo: null as File | null,
   });
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const MAX_FILE_SIZE = 512 * 1024; // 512KB
 
   const handleSave = () => {
     toast.success("基础信息已保存");
@@ -68,7 +70,7 @@ export default function BasicInfo() {
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">
                 公司 Logo
-                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角，建议尺寸 200×200px</span>
+                <span className="text-xs text-gray-400 font-normal ml-2">将展示在用户端左上角，建议尺寸 200×200px，图片大小不超过 512k</span>
               </Label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
@@ -78,9 +80,26 @@ export default function BasicInfo() {
                   <Upload className="w-4 h-4" />
                   上传公司 Logo
                   <input type="file" accept="image/*" className="hidden"
-                    onChange={(e) => { if (e.target.files?.[0]) { setForm({ ...form, logo: e.target.files[0] }); toast.success("Logo 已上传"); } }} />
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        const file = e.target.files[0];
+                        if (file.size > MAX_FILE_SIZE) {
+                          setLogoError("图片大小超过 512k 限制");
+                          setForm({ ...form, logo: null });
+                        } else {
+                          setLogoError(null);
+                          setForm({ ...form, logo: file });
+                          toast.success("Logo 已上传");
+                        }
+                      }
+                    }} />
                 </label>
               </div>
+              {logoError && (
+                <div className="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+                  {logoError}
+                </div>
+              )}
             </div>
 
             <div className="border-t border-gray-100 pt-6 space-y-6">

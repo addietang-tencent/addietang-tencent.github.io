@@ -323,8 +323,14 @@ export default function ModelConfig() {
                 if (v === "custom") {
                   localStorage.setItem("globalLimit", String(globalLimit));
                 }
-                // 触发 storage 事件，通知其他标签页
-                window.dispatchEvent(new Event("storage"));
+                // 触发 storage 事件，通知其他标签页和当前页面
+                const event = new StorageEvent("storage", {
+                  key: "globalLimitMode",
+                  newValue: v,
+                  oldValue: globalLimitMode,
+                  storageArea: localStorage,
+                });
+                window.dispatchEvent(event);
                 toast.success(v === "unlimited" ? "已设置为无限制" : "已切换为自定义数量");
               }}
             >

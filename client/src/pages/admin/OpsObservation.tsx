@@ -12,14 +12,22 @@ import { Eye, EyeOff } from "lucide-react";
 
 // Mock data for charts
 const logLevelData = [
-  { date: "03-09", ERROR: 8, WARNING: 3, FATAL: 1 },
-  { date: "03-10", ERROR: 5, WARNING: 4, FATAL: 0 },
+  { level: "ERROR", count: 498 },
+  { level: "WARNING", count: 1974 },
+  { level: "INFO", count: 33124 },
+  { level: "DEBUG", count: 56937 },
 ];
 
-const subsystemData = [
-  { name: "openclaw", value: 8 },
-  { name: "subagents", value: 2 },
-  { name: "session", value: 1 },
+const logModuleData = [
+  { name: "gateway/channels/qpo...", count: 62413 },
+  { name: "gateway/health-monit...", count: 11206 },
+  { name: "plugins", count: 1145 },
+  { name: "agent/embedded", count: 630 },
+  { name: "gateway/channels/fei...", count: 95 },
+  { name: "gateway/canvas", count: 9 },
+  { name: "browser/server", count: 9 },
+  { name: "gmail-watcher", count: 1 },
+  { name: "browser/service", count: 1 },
 ];
 
 const messageProcessData = [
@@ -248,29 +256,26 @@ export default function OpsObservation() {
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logLevelData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" />
+                <XAxis dataKey="level" />
                 <YAxis />
                 <Tooltip />
-                <Legend />
-                <Bar dataKey="ERROR" fill="#EF4444" />
-                <Bar dataKey="WARNING" fill="#F59E0B" />
-                <Bar dataKey="FATAL" fill="#DC2626" />
+                <Bar dataKey="count" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Subsystem Errors */}
+          {/* Log Module Distribution */}
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">子系统错误</h3>
+              <h3 className="text-sm font-semibold text-gray-900">日志模块分布</h3>
             </div>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={subsystemData} layout="vertical">
+              <BarChart data={logModuleData} layout="vertical" margin={{ left: 150 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={80} />
+                <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="value" fill="#EF4444" />
+                <Bar dataKey="count" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </div>

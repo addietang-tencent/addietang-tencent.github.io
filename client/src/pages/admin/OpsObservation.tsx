@@ -302,26 +302,6 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="queued" name="等待处理的消息数量" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
-                  <span className="text-gray-600">已处理完成的消息数量</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  已成功处理完成的消息数量
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
-                  <span className="text-gray-600">等待处理的消息数量</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  等待处理的消息数量
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Queue Status */}
@@ -346,26 +326,6 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B5CF6' }} />
-                  <span className="text-gray-600">队列长度 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的时间队列长度不超过此值，反映队列拥堵程度
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06B6D4' }} />
-                  <span className="text-gray-600">等待时间 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的消息等待时间不超过此值，反映队列延迟
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Run Duration */}
@@ -390,26 +350,6 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
-                  <span className="text-gray-600">处理耗时 P50</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
-                  <span className="text-gray-600">处理耗时 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

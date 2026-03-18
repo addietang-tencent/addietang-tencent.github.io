@@ -446,8 +446,8 @@ export default function TokensMonitor() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">无限制</span>}
+              <p className="text-2xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
+              {IS_GLOBAL_UNLIMITED && <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>}
             </div>
             <ProgressBar value={TODAY_TOTAL_TOKENS} max={globalLimit} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
           </div>

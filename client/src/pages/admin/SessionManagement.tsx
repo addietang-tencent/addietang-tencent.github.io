@@ -316,7 +316,7 @@ export default function SessionManagement() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-blue-900">会话管理需要开启 CLS 日志服务</h3>
-              <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持通过会话总览、会话链下钻还原及渠道模型分布分析。CLS 根据用量采用资源包或按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+              <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持通过会话总览、会话链下钻还原及渠道模型分布分析。2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               <div className="text-xs text-blue-700 mt-3 space-y-1 border-t border-blue-200 pt-3">
                 <p className="font-medium">开启 CLS 后还将获得：</p>
                 <div>• 运维观测：支持通过全链路性能监控采集核心运行指标</div>

@@ -245,10 +245,7 @@ export default function ImageManagement() {
 
           <div className="space-y-4 py-1" onClick={handleClickOutsideImageList}>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>选择镜像</Label>
-                <p className="text-xs text-gray-400">镜像大小不允许超过50M</p>
-              </div>
+              <Label>选择镜像</Label>
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {/* 选择框 */}
                 <button
@@ -268,6 +265,7 @@ export default function ImageManagement() {
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
                 </button>
               </div>
+              <p className="text-xs text-gray-400">镜像大小不允许超过50M</p>
 
               {/* 展开的镜像列表 */}
               {showImageList && (

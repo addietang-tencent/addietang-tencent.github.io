@@ -4,7 +4,7 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight } from "lucide-react";
+import { AlertCircle, ArrowUpRight, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -147,7 +147,24 @@ const CustomLegend = (props: any) => {
   );
 };
 
+// 工具函数
+function toDateStr(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+function todayStr() {
+  return toDateStr(new Date());
+}
+function addDays(base: string, n: number) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + n);
+  return toDateStr(d);
+}
+
 export default function OpsObservation() {
+  const today = todayStr();
+  const [dateFrom, setDateFrom] = useState(today);
+  const [dateTo, setDateTo] = useState(today);
+  const [refreshing, setRefreshing] = useState(false);
   const [clsEnabled, setClsEnabled] = useState(() => {
     const stored = localStorage.getItem("globalClsEnabled");
     return stored === "true";
@@ -156,6 +173,20 @@ export default function OpsObservation() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+
+  // 处理日期变化
+  const handleFromChange = (value: string) => {
+    setDateFrom(value);
+  };
+
+  const handleToChange = (value: string) => {
+    setDateTo(value);
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => { setRefreshing(false); }, 1000);
+  };
 
   // 监听 localStorage 变化，实现跨页面同步
   useEffect(() => {
@@ -197,8 +228,35 @@ export default function OpsObservation() {
     <div className="page-enter">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => handleFromChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
+            />
+            <span className="text-gray-400 text-sm">—</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => handleToChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
+            />
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+              title="刷新数据"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
           全方位守护系统稳定运行，从被动救火到主动防御

@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,9 +188,26 @@ const MOCK_SESSIONS = [
   },
 ];
 
+// 工具函数
+function toDateStr(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+function todayStr() {
+  return toDateStr(new Date());
+}
+function addDays(base: string, n: number) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + n);
+  return toDateStr(d);
+}
+
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
 export default function SessionManagement() {
+  const today = todayStr();
+  const [dateFrom, setDateFrom] = useState(today);
+  const [dateTo, setDateTo] = useState(today);
+  const [refreshing, setRefreshing] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "cron" | "groups">("all");
   const [, navigate] = useLocation();
   const [clsEnabled, setClsEnabled] = useState(() => {
@@ -201,6 +218,20 @@ export default function SessionManagement() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+
+  // 处理日期变化
+  const handleFromChange = (value: string) => {
+    setDateFrom(value);
+  };
+
+  const handleToChange = (value: string) => {
+    setDateTo(value);
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => { setRefreshing(false); }, 1000);
+  };
 
   // 监听 localStorage 变化，实现跨页面同步
   useEffect(() => {
@@ -247,9 +278,36 @@ export default function SessionManagement() {
     <div className="page-enter space-y-8">
 
       {/* 页头 */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">会话管理</h1>
-        <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溯、可分析、可优化</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">会话管理</h1>
+          <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溯、可分析、可优化</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => handleFromChange(e.target.value)}
+            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+            style={{ colorScheme: 'light' }}
+          />
+          <span className="text-gray-400 text-sm">—</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => handleToChange(e.target.value)}
+            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+            style={{ colorScheme: 'light' }}
+          />
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+            title="刷新数据"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* CLS 日志服务未开启提示 */}

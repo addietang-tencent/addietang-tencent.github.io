@@ -258,11 +258,15 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="processed" name="已处理完成" stroke="#10B981" dot={false} />
                 <Line type="monotone" dataKey="queued" name="等待处理" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p title="已成功处理完成的消息数量" className="cursor-help hover:text-gray-700"><span className="font-medium">已处理完成：</span>已成功处理完成的消息数量</p>
+              <p title="等待处理的消息数量" className="cursor-help hover:text-gray-700"><span className="font-medium">等待处理：</span>等待处理的消息数量</p>
+            </div>
           </div>
 
           {/* Queue Status */}
@@ -282,11 +286,15 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="depth_avg" name="队列长度 P95" stroke="#8B5CF6" dot={false} />
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p title="95% 的时间队列长度不超过此值，反映队列拥堵程度" className="cursor-help hover:text-gray-700"><span className="font-medium">队列长度 P95：</span>95% 的时间队列长度不超过此值，反映队列拥堵程度</p>
+              <p title="95% 的消息等待时间不超过此值，反映队列延迟" className="cursor-help hover:text-gray-700"><span className="font-medium">等待时间 P95：</span>95% 的消息等待时间不超过此值，反映队列延迟</p>
+            </div>
           </div>
 
           {/* Run Duration */}
@@ -306,11 +314,15 @@ export default function OpsObservation() {
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ paddingTop: '12px' }} />
                 <Line type="monotone" dataKey="run_duration_p50" name="处理耗时 P50" stroke="#F59E0B" dot={false} />
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
             </ResponsiveContainer>
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <p title="50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险" className="cursor-help hover:text-gray-700"><span className="font-medium">处理耗时 P50：</span>50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</p>
+              <p title="95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验" className="cursor-help hover:text-gray-700"><span className="font-medium">处理耗时 P95：</span>95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</p>
+            </div>
           </div>
         </div>
       </div>

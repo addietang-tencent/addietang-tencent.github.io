@@ -273,9 +273,18 @@ export default function SessionManagement() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-center gap-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-5 h-5 text-green-600" />
-          <span className="text-sm font-medium text-green-800">CLS 日志服务开启成功</span>
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-green-800">CLS 日志服务开启成功</p>
+              <div className="text-xs text-green-700 mt-2 space-y-1">
+                <div>运维观测：支持通过全链路性能监控采集核心运行指标</div>
+                <div>会话管理：支持通过会话总览、会话链三级下钻还原及渠道模型分布分析</div>
+                <div>Tokens 监控：支持从按会话、消息维度查看 tokens、费用使用情况</div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -406,7 +415,23 @@ export default function SessionManagement() {
           <DialogHeader>
             <DialogTitle>确定要关闭 CLS 日志服务吗？</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-600 my-4">关闭后将无法查看该页面的数据仪表板。</p>
+          <div className="space-y-3 my-4">
+            <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+              <div className="text-xs text-gray-700">
+                <span className="font-semibold text-red-700">运维观测：</span>
+                <span>支持通过全链路性能监控采集核心运行指标</span>
+              </div>
+              <div className="text-xs text-gray-700">
+                <span className="font-semibold text-red-700">会话管理：</span>
+                <span>支持通过会话总览、会话链三级下钻还原及渠道模型分布分析</span>
+              </div>
+              <div className="text-xs text-gray-700">
+                <span className="font-semibold text-red-700">Tokens 监控（按会话）：</span>
+                <span>支持从按会话、消息维度查看 tokens、费用使用情况</span>
+              </div>
+            </div>
+          </div>
           <DialogFooter className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
               取消

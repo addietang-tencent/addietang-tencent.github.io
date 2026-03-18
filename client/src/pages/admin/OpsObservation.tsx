@@ -295,8 +295,19 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="queued" name="等待处理的消息数量" stroke="#3B82F6" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="bg-gray-900 text-white text-xs rounded px-3 py-2 mt-3">
-              已处理完成：已成功处理完成的消息数量；等待处理：等待处理的消息数量
+            <div className="flex gap-4 mt-3 text-xs">
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">已处理完成的消息数量</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  已成功处理完成的消息数量
+                </div>
+              </div>
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">等待处理的消息数量</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  等待处理的消息数量
+                </div>
+              </div>
             </div>
           </div>
 
@@ -322,8 +333,19 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="bg-gray-900 text-white text-xs rounded px-3 py-2 mt-3">
-              队列长度 P95：95% 的时间队列长度不超过此值，反映队列拥堵程度；等待时间 P95：95% 的消息等待时间不超过此值，反映队列延迟
+            <div className="flex gap-4 mt-3 text-xs">
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">队列长度 P95</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  95% 的时间队列长度不超过此值，反映队列拥堵程度
+                </div>
+              </div>
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">等待时间 P95</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  95% 的消息等待时间不超过此值，反映队列延迟
+                </div>
+              </div>
             </div>
           </div>
 
@@ -349,8 +371,19 @@ export default function OpsObservation() {
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="bg-gray-900 text-white text-xs rounded px-3 py-2 mt-3">
-              处理耗时 P50：50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险；处理耗时 P95：95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验
+            <div className="flex gap-4 mt-3 text-xs">
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">处理耗时 P50</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险
+                </div>
+              </div>
+              <div className="group relative cursor-help flex items-center gap-1">
+                <span className="text-gray-600">处理耗时 P95</span>
+                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap">
+                  95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验
+                </div>
+              </div>
             </div>
           </div>
         </div>

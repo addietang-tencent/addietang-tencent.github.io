@@ -174,7 +174,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalCost}</div>
-          <div className="text-xs text-gray-400 mt-1">total_cost</div>
+
         </div>
 
         <div
@@ -188,7 +188,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.avgCostPerRound}</div>
-          <div className="text-xs text-gray-400 mt-1">avg_cost_per_round</div>
+
         </div>
 
         <div
@@ -202,7 +202,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalTokens}</div>
-          <div className="text-xs text-gray-400 mt-1">total_tokens</div>
+
         </div>
 
         <div
@@ -216,7 +216,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>
-          <div className="text-xs text-gray-400 mt-1">total_rounds</div>
+
         </div>
       </div>
 
@@ -232,7 +232,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-gray-700">每轮成本</span>
-            <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">cost_per_round</span>
+
           </div>
           <div className="px-4 pt-4 pb-2">
             <ResponsiveContainer width="100%" height={200}>
@@ -258,7 +258,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-gray-700">Token 流量</span>
-            <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">input_vs_output</span>
+
           </div>
           <div className="px-4 pt-4 pb-2">
             <ResponsiveContainer width="100%" height={200}>

@@ -763,7 +763,7 @@ export default function MemberManagement() {
                       {/* 三点菜单：重置密码 + 禁用/启用 + 删除 */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0">
+                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
                             <MoreHorizontal className="w-3.5 h-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -782,7 +782,7 @@ export default function MemberManagement() {
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                            <DropdownMenuItem className="text-xs text-gray-500" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                               <Key className="w-3.5 h-3.5 mr-2" />
                               重置密码
                             </DropdownMenuItem>
@@ -791,7 +791,7 @@ export default function MemberManagement() {
                           {member.id === initialAdminId ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
                                   <UserX className="w-3.5 h-3.5 mr-2" />
                                   禁用
                                 </span>
@@ -800,7 +800,7 @@ export default function MemberManagement() {
                             </Tooltip>
                           ) : member.status === "active" ? (
                             <DropdownMenuItem
-                              className="text-orange-600 focus:text-orange-600 focus:bg-orange-50"
+                              className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
                               onClick={() => openDisableConfirm(member)}
                             >
                               <UserX className="w-3.5 h-3.5 mr-2" />
@@ -808,7 +808,7 @@ export default function MemberManagement() {
                             </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem
-                              className="text-green-600 focus:text-green-600 focus:bg-green-50"
+                              className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
                               onClick={() => openEnableConfirm(member)}
                             >
                               <UserCheck className="w-3.5 h-3.5 mr-2" />
@@ -819,7 +819,7 @@ export default function MemberManagement() {
                           {member.id === initialAdminId ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
                                   <Trash2 className="w-3.5 h-3.5 mr-2" />
                                   删除
                                 </span>
@@ -828,7 +828,7 @@ export default function MemberManagement() {
                             </Tooltip>
                           ) : (
                             <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50"
                               onClick={() => openDeleteCheck(member)}
                             >
                               <Trash2 className="w-3.5 h-3.5 mr-2" />
@@ -1148,10 +1148,7 @@ export default function MemberManagement() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Trash2 className="w-4 h-4 text-red-500" />
-              删除用户
-            </DialogTitle>
+            <DialogTitle>删除用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <p className="text-sm text-gray-600">
@@ -1205,10 +1202,7 @@ export default function MemberManagement() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserX className="w-4 h-4 text-orange-500" />
-              禁用用户
-            </DialogTitle>
+            <DialogTitle>禁用用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -1247,10 +1241,7 @@ export default function MemberManagement() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-green-500" />
-              启用用户
-            </DialogTitle>
+            <DialogTitle>启用用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -1289,10 +1280,7 @@ export default function MemberManagement() {
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="w-4 h-4" />
-              确认删除用户
-            </DialogTitle>
+            <DialogTitle>确认删除用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm text-gray-600">

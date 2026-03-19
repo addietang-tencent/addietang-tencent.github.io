@@ -517,31 +517,27 @@ export default function OpsObservation() {
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
               <div className="text-xs text-gray-700">
-                <div className="font-medium text-red-900">运维观测</div>
-                <div className="text-red-700">全链路性能监控采集核心运行指标</div>
+                <span className="font-semibold text-red-700">运维观测：</span>
+                <span>支持通过全链路性能监控采集核心运行指标</span>
               </div>
               <div className="text-xs text-gray-700">
-                <div className="font-medium text-red-900">会话管理</div>
-                <div className="text-red-700">会话总览、会话链下钻还原及渠道模型分布分析</div>
+                <span className="font-semibold text-red-700">会话管理：</span>
+                <span>支持通过会话总览、会话链下钻还原及渠道模型分布分析</span>
               </div>
               <div className="text-xs text-gray-700">
-                <div className="font-medium text-red-900">Tokens 监控</div>
-                <div className="text-red-700">按会话、消息维度查看 tokens、费用使用情况</div>
+                <span className="font-semibold text-red-700">Tokens 监控（按会话）：</span>
+                <span>支持从按会话、消息维度查看 tokens、费用使用情况</span>
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowCloseClsConfirm(false)}
-              className="text-xs h-8"
-            >
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
               取消
             </Button>
             <Button
               onClick={handleCloseCls}
               disabled={isClosingCls}
-              className="bg-red-600 hover:bg-red-700 text-white text-xs h-8 disabled:opacity-50"
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
               {isClosingCls ? "关闭中..." : "确定关闭"}
             </Button>

@@ -215,9 +215,11 @@ export default function OpenClawDetail() {
   // 飞书二维码弹窗
   const [showQrModal, setShowQrModal] = useState(false);
   // 飞书弹窗阶段："loading" | "qr" | "configuring" | "done"
-  const [feishuModalStage, setFeishuModalStage] = useState<"loading" | "qr" | "configuring" | "done">("loading");
+  const [feishuModalStage, setFeishuModalStage] = useState<"loading" | "qr" | "configuring" | "done" | "failed">("loading");
   // 飞书配置步骤完成状态
   const [feishuStepsDone, setFeishuStepsDone] = useState<number>(0);
+  // 飞书授权次数计数（奇数成功，偶数失败）
+  const [feishuToggleCount, setFeishuToggleCount] = useState<number>(0);
   const feishuSteps = [
     "创建应用", "获取应用凭证", "写入配置文件", "开启机器人能力",
     "设置事件模式", "添加消息事件", "配置回调地址", "导入基础权限",
@@ -320,6 +322,9 @@ export default function OpenClawDetail() {
 
     // 飞书快捷配置：点击"前往授权"弹出二维码
     if (ch.feishuMode && feishuConfigMode === "quick") {
+      const newCount = feishuToggleCount + 1;
+      setFeishuToggleCount(newCount);
+      const willSucceed = newCount % 2 === 1; // 奇数成功，偶数失败
       setFeishuModalStage("loading");
       setFeishuStepsDone(0);
       setShowQrModal(true);
@@ -333,7 +338,7 @@ export default function OpenClawDetail() {
           setTimeout(() => {
             setFeishuStepsDone(i);
             if (i === 10) {
-              setTimeout(() => setFeishuModalStage("done"), 600);
+              setTimeout(() => setFeishuModalStage(willSucceed ? "done" : "failed"), 600);
             }
           }, i * 800);
         }
@@ -914,7 +919,7 @@ export default function OpenClawDetail() {
           setShowQrModal(open);
         }
       }}>
-        <DialogContent className="max-w-lg [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none">
+        <DialogContent className="max-w-lg [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none [&>button]:shadow-none [&>button]:border-0 [&>button]:ring-0">
 
           {/* ── 阶段1&2：loading + qr ── */}
           {(feishuModalStage === "loading" || feishuModalStage === "qr") && (
@@ -927,12 +932,12 @@ export default function OpenClawDetail() {
                   <div>
                     <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
                     <DialogDescription className="text-sm text-orange-500 mt-0.5 font-medium">
-                      请使用具有企业管理员权限的飞书账号扫码登录，完成授权后将自动为您创建机器人。
+                      请使用飞书账号扫码登录，完成授权后将自动为您创建机器人。
                     </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
-              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[260px] mt-2">
+              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[240px] mt-1 mb-2">
                 {feishuModalStage === "loading" ? (
                   <>
                     <Loader2 className="w-12 h-12 text-gray-300 animate-spin mb-4" />
@@ -1042,7 +1047,7 @@ export default function OpenClawDetail() {
                   <DialogTitle className="text-base font-semibold text-gray-900">正在配置飞书机器人</DialogTitle>
                 </div>
               </DialogHeader>
-              <div className="mt-3 space-y-2.5 py-2">
+              <div className="mt-1 space-y-2.5 py-1 pb-3">
                 {feishuSteps.map((step, idx) => {
                   const stepNum = idx + 1;
                   const isDone = feishuStepsDone >= stepNum;
@@ -1064,6 +1069,50 @@ export default function OpenClawDetail() {
                     </div>
                   );
                 })}
+              </div>
+            </>
+          )}
+
+          {/* ── 阶段4b：配置失败 ── */}
+          {feishuModalStage === "failed" && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人发布失败</DialogTitle>
+                    <DialogDescription className="text-sm text-red-500 mt-0.5 font-medium">
+                      当前用户权限无法免审批发布飞书机器人，请联系管理员审批通过后再进行手动配置。
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 shrink-0">机器人名称：</span>
+                  <span className="text-gray-800 font-medium">OpenClaw机器人-8791</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-500 shrink-0">管理地址：</span>
+                  <a
+                    href="https://open.feishu.cn/app/cli_a933983f95385cca"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline break-all"
+                  >
+                    https://open.feishu.cn/app/cli_a933983f95385cca
+                  </a>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-center">
+                <Button
+                  onClick={() => setShowQrModal(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8"
+                >
+                  完成
+                </Button>
               </div>
             </>
           )}
@@ -1104,13 +1153,13 @@ export default function OpenClawDetail() {
                   <li>查看、评论和下载云空间中所有文件</li>
                   <li>查看、评论、编辑和管理云空间中所有文件</li>
                 </ol>
-                <div className="flex items-center gap-1 mt-2 ml-6">
-                  <span className="text-sm text-orange-600">如需启用，请联系管理员前往审批：</span>
+                <div className="mt-2 ml-6 space-y-0.5">
+                  <p className="text-sm text-orange-600">如需启用，请联系管理员前往审批：</p>
                   <a
                     href="https://feishu.cn/admin/appCenter/audit"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-500 hover:underline"
+                    className="text-sm text-blue-500 hover:underline block"
                   >
                     https://feishu.cn/admin/appCenter/audit
                   </a>

@@ -6,6 +6,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
+import { DatePickerInput } from "@/components/DatePickerInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -343,20 +344,16 @@ export default function SessionManagement() {
           <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溯、可分析、可优化</p>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            type="date"
+          <DatePickerInput
             value={dateFrom}
-            onChange={(e) => handleFromChange(e.target.value)}
-            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-            style={{ colorScheme: 'light' }}
+            onChange={handleFromChange}
+            className="h-9"
           />
           <span className="text-gray-400 text-sm">—</span>
-          <input
-            type="date"
+          <DatePickerInput
             value={dateTo}
-            onChange={(e) => handleToChange(e.target.value)}
-            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-            style={{ colorScheme: 'light' }}
+            onChange={handleToChange}
+            className="h-9"
           />
           <button
             onClick={handleRefresh}

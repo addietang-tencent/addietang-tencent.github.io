@@ -8,6 +8,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { DatePickerInput } from "@/components/DatePickerInput";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
@@ -234,22 +235,16 @@ export default function AuditLog() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DatePickerInput
               value={dateFrom}
-              onChange={(e) => handleDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              title="开始日期"
-              style={{ colorScheme: 'light' }}
+              onChange={handleDateFrom}
+              className="h-9"
             />
             <span className="text-gray-400 text-sm shrink-0">—</span>
-            <input
-              type="date"
+            <DatePickerInput
               value={dateTo}
-              onChange={(e) => handleDateTo(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              title="结束日期"
-              style={{ colorScheme: 'light' }}
+              onChange={handleDateTo}
+              className="h-9"
             />
           </div>
           {hasFilter && (

@@ -67,7 +67,7 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
     weworkMode: true,
     fields: [
       { key: "botId", label: "企业微信机器人的botId", secret: false },
-      { key: "botSecret", label: "企业微信机器人的secret", secret: true },
+      { key: "secret", label: "企业微信机器人的secret", secret: true },
     ],
   },
   {
@@ -324,7 +324,7 @@ export default function OpenClawDetail() {
         channelValue: "wework",
         status: "running",
         fields: ch.fields || [],
-        fieldValues: { botId: "auto-authorized", botSecret: "auto-secret-key" },
+        fieldValues: { botId: "auto-authorized", secret: "auto-secret-key" },
         weworkConfigMode: "quick",
       };
       setAppliedChannels([...appliedChannels, newEntry]);
@@ -526,20 +526,7 @@ export default function OpenClawDetail() {
               <div key={field.key} className="flex items-center gap-1 text-sm">
                 <span className="text-gray-500 shrink-0">{displayKey}：</span>
                 <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
-                {field.secret && (
-                  <button
-                    onClick={() => toggleAppliedSecretVisibility(chIdx, field.key)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0"
-                    type="button"
-                    title={isVisible ? "隐藏" : "显示"}
-                  >
-                    {isVisible ? (
-                      <Eye className="w-4 h-4" />
-                    ) : (
-                      <EyeOff className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
+
               </div>
             );
           })}
@@ -796,7 +783,7 @@ export default function OpenClawDetail() {
               <p className="text-xs text-gray-400 leading-relaxed">
                 {currentChannelConfig?.descText}
                 <a href={currentChannelConfig?.detailUrl || "#"} className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
-                  查看详情<ExternalLink className="w-3 h-3" />
+                  配置指引<ExternalLink className="w-3 h-3" />
                 </a>
               </p>
 

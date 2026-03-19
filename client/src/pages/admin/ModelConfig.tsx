@@ -398,11 +398,15 @@ export default function ModelConfig() {
 
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          {/* 两列布局：左侧表单 + 右侧模型列表 */}
+          <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
+            {/* 左侧：表单区域 */}
+            <div className="flex-1 overflow-y-auto pr-2">
+              <div className="space-y-4">
             {/* 模型厂商选择（含自定义模型） */}
             <div className="space-y-2">
               <Label>模型厂商</Label>
@@ -506,8 +510,30 @@ export default function ModelConfig() {
                 </div>
               </>
             )}
+              </div>
+            </div>
+
+            {/* 右侧：模型列表 */}
+            {newModel.provider && !isCustomProvider && selectedProviderData && (
+              <div className="w-64 border-l border-gray-200 pl-4 overflow-y-auto flex-shrink-0">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm text-gray-700">模型 {newModel.provider === "tencent-coding" ? "Coding Plan" : "API"}</h3>
+                  <div className="space-y-2">
+                    {selectedProviderData.versions.map((version) => (
+                      <div
+                        key={version}
+                        className="p-2 rounded border border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer text-sm transition-colors"
+                        onClick={() => setNewModel({ ...newModel, version })}
+                      >
+                        {version}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
             <Button
               onClick={handleAddModel}

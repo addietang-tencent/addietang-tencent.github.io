@@ -220,6 +220,8 @@ export default function SessionManagement() {
   const [isClosingCls, setIsClosingCls] = useState(false);
   const [sortColumn, setSortColumn] = useState<"tokens" | "cost" | "updatedAt">("updatedAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // 处理日期变化
   const handleFromChange = (value: string) => {
@@ -279,6 +281,14 @@ export default function SessionManagement() {
     
     return sessions;
   }, [sortColumn, sortDirection]);
+
+  // 分页处理
+  const paginatedSessions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredSessions.slice(start, start + PAGE_SIZE);
+  }, [filteredSessions, currentPage]);
+
+  const totalPages = Math.ceil(filteredSessions.length / PAGE_SIZE);
 
   const handleSort = (column: "tokens" | "cost" | "updatedAt") => {
     if (sortColumn === column) {
@@ -480,11 +490,12 @@ export default function SessionManagement() {
                         <SortIcon column="updatedAt" />
                       </button>
                     </th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filteredSessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
+                  {paginatedSessions.map((session) => (
+                    <tr key={session.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-700 font-medium">{session.name}</div>
                         <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
@@ -495,10 +506,53 @@ export default function SessionManagement() {
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.cost}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 truncate">{session.lastMessage}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.updatedAt}</td>
+                      <td className="px-6 py-4 text-center">
+                        <Button
+                          onClick={() => navigate(`/admin/session/${session.id}`)}
+                          variant="outline"
+                          className="text-xs h-7 px-3"
+                        >
+                          查看详情
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* 翻页控件 */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 bg-gray-50/50">
+              <div className="text-xs text-gray-500">
+                共 {filteredSessions.length} 条记录，第 {currentPage} / {totalPages} 页
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  variant="outline"
+                  className="text-xs h-7 px-2"
+                >
+                  上一页
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    variant={currentPage === page ? "default" : "outline"}
+                    className="text-xs h-7 px-2 min-w-7"
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  variant="outline"
+                  className="text-xs h-7 px-2"
+                >
+                  下一页
+                </Button>
+              </div>
             </div>
           </div>
 

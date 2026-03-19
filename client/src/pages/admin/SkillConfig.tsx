@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Puzzle, Pencil, X, Check } from "lucide-react";
 
 export default function SkillConfig() {
@@ -12,11 +11,11 @@ export default function SkillConfig() {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(skillhubUrl);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showError, setShowError] = useState(false);
 
   const handleEdit = () => {
     setDraft(skillhubUrl);
     setEditing(true);
+    setErrorMessage("");
   };
 
   const handleSave = () => {
@@ -24,8 +23,7 @@ export default function SkillConfig() {
     
     // URL 完整性校验
     if (!trimmedUrl) {
-      setErrorMessage("SkillHub 地址不能为空");
-      setShowError(true);
+      setErrorMessage("请输入完整的 URL 地址（如：https://example.com）");
       return;
     }
     
@@ -34,7 +32,6 @@ export default function SkillConfig() {
       new URL(trimmedUrl);
     } catch (e) {
       setErrorMessage("请输入完整的 URL 地址（如：https://example.com）");
-      setShowError(true);
       return;
     }
     
@@ -46,17 +43,18 @@ export default function SkillConfig() {
   const handleCancel = () => {
     setDraft(skillhubUrl);
     setEditing(false);
+    setErrorMessage("");
+  };
+
+  const handleDraftChange = (value: string) => {
+    setDraft(value);
+    // 清除错误提示
+    if (errorMessage) {
+      setErrorMessage("");
+    }
   };
 
   return (
-      <>
-      <AlertDialog open={showError} onOpenChange={setShowError}>
-        <AlertDialogContent>
-          <AlertDialogTitle>错误</AlertDialogTitle>
-          <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
-          <AlertDialogAction onClick={() => setShowError(false)}>确定</AlertDialogAction>
-        </AlertDialogContent>
-      </AlertDialog>
       <div className="page-enter max-w-3xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
@@ -84,31 +82,36 @@ export default function SkillConfig() {
             </p>
 
             {editing ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder="https://clawhub.yourcompany.com"
-                  className="flex-1 font-mono text-sm"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSave();
-                    if (e.key === "Escape") handleCancel();
-                  }}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  className="gap-1"
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  保存
-                </Button>
-                <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1 text-gray-500">
-                  <X className="w-3.5 h-3.5" />
-                  取消
-                </Button>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={draft}
+                    onChange={(e) => handleDraftChange(e.target.value)}
+                    placeholder="https://clawhub.yourcompany.com"
+                    className={`flex-1 font-mono text-sm ${errorMessage ? "border-red-500" : ""}`}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSave();
+                      if (e.key === "Escape") handleCancel();
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
+                    className="gap-1"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    保存
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1 text-gray-500">
+                    <X className="w-3.5 h-3.5" />
+                    取消
+                  </Button>
+                </div>
+                {errorMessage && (
+                  <p className="text-red-500 text-xs">{errorMessage}</p>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -127,6 +130,5 @@ export default function SkillConfig() {
           </div>
         </div>
       </div>
-      </>
     );
   }

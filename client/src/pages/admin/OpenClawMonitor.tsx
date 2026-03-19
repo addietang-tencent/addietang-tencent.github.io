@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus, AlertCircle } from "lucide-react";
-import { DatePickerInput } from "@/components/DatePickerInput";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
@@ -191,16 +190,20 @@ export default function OpenClawMonitor() {
           </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
-            <DatePickerInput
+            <input
+              type="date"
               value={dateFrom}
-              onChange={(val) => handleFilterChange(() => setDateFrom(val))}
-              className="h-9"
+              onChange={(e) => handleFilterChange(() => setDateFrom(e.target.value))}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <DatePickerInput
+            <input
+              type="date"
               value={dateTo}
-              onChange={(val) => handleFilterChange(() => setDateTo(val))}
-              className="h-9"
+              onChange={(e) => handleFilterChange(() => setDateTo(e.target.value))}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             {(dateFrom || dateTo) && (
               <button

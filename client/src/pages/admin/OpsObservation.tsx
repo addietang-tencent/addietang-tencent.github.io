@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Eye, EyeOff } from "lucide-react";
-import { DatePickerInput } from "@/components/DatePickerInput";
 
 // Mock data for charts
 const logLevelData = [
@@ -234,16 +233,20 @@ export default function OpsObservation() {
             <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
           </div>
           <div className="flex items-center gap-2">
-            <DatePickerInput
+            <input
+              type="date"
               value={dateFrom}
-              onChange={handleFromChange}
-              className="h-9"
+              onChange={(e) => handleFromChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <DatePickerInput
+            <input
+              type="date"
               value={dateTo}
-              onChange={handleToChange}
-              className="h-9"
+              onChange={(e) => handleToChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             <button
               onClick={handleRefresh}

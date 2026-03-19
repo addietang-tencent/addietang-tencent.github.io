@@ -496,8 +496,8 @@ export default function SessionManagement() {
                 <tbody className="divide-y divide-gray-50">
                   {paginatedSessions.map((session) => (
                     <tr key={session.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700 font-medium">{session.name}</div>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
+                        <div className="text-sm text-gray-700 font-medium hover:text-blue-600 transition-colors">{session.name}</div>
                         <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">{session.type}</td>

@@ -6,6 +6,12 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, MessageSquare, DollarSign, Zap } from "lucide-react";
 import {
+  Tooltip as UITooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
@@ -315,15 +321,114 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         {item.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={item.content}>{item.content}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600" title={item.model}>{item.model}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600" title={item.stopReason}>{item.stopReason}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.input}>{item.input}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.output}>{item.output}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.cacheRW}>{item.cacheRW}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono" title={item.tokens}>{item.tokens}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.cost}>{item.cost}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.duration}>{item.duration}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.content}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            {item.content}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.model}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.model}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.stopReason}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.stopReason}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.input}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.input}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.output}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.output}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.cacheRW}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.cacheRW}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.tokens}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.tokens}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.cost}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.cost}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.duration}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.duration}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
                   </tr>
                 ))}
               </tbody>

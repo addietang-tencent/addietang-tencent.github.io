@@ -1145,24 +1145,26 @@ export default function OpenClawDetail() {
               </div>
               {/* 审批提示 */}
               <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
-                <div className="flex items-start gap-2 mb-2">
+                <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-orange-600 font-medium">以下高级权限无法免审批发布，已自动为您提交申请：</p>
-                </div>
-                <ol className="text-sm text-orange-600 ml-6 space-y-1 list-decimal">
-                  <li>查看、评论和下载云空间中所有文件</li>
-                  <li>查看、评论、编辑和管理云空间中所有文件</li>
-                </ol>
-                <div className="mt-2 ml-6 space-y-0.5">
-                  <p className="text-sm text-orange-600">如需启用，请联系管理员前往审批：</p>
-                  <a
-                    href="https://feishu.cn/admin/appCenter/audit"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-500 hover:underline block"
-                  >
-                    https://feishu.cn/admin/appCenter/audit
-                  </a>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-orange-600 font-medium mb-2">以下高级权限无法免审批发布，已自动为您提交申请：</p>
+                    <ol className="text-sm text-orange-600 ml-4 space-y-1 list-decimal">
+                      <li>查看、评论和下载云空间中所有文件</li>
+                      <li>查看、评论、编辑和管理云空间中所有文件</li>
+                    </ol>
+                    <div className="mt-2 space-y-0.5">
+                      <p className="text-sm text-orange-600">如需启用，请联系管理员前往审批：</p>
+                      <a
+                        href="https://feishu.cn/admin/appCenter/audit"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-500 hover:underline block"
+                      >
+                        https://feishu.cn/admin/appCenter/audit
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="mt-5 flex justify-end">

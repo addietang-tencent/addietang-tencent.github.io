@@ -610,11 +610,6 @@ export default function OpenClawDetail() {
                     <SelectItem key={p.value} value={p.value}>
                       <div className="flex items-center gap-2">
                         <span>{p.label}</span>
-                        {p.value === "custom" && (
-                          <span className="text-xs px-1.5 py-0.5 rounded border font-medium bg-amber-50 text-amber-600 border-amber-100">
-                            需自费
-                          </span>
-                        )}
                       </div>
                     </SelectItem>
                   ))}
@@ -684,8 +679,8 @@ export default function OpenClawDetail() {
 
                   <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
-                    <a href="#" className="text-blue-500 hover:underline ml-1 inline-flex items-center gap-0.5">
-                      自定义模型配置请查看详细教程 <ExternalLink className="w-3 h-3" />
+                    <a href="#" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
+                      跳转了解 <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>

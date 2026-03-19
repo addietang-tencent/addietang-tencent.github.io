@@ -33,12 +33,11 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
     ref
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
 
     // 合并 ref
     React.useImperativeHandle(ref, () => inputRef.current!);
 
-    const handleContainerClick = () => {
+    const handleClick = () => {
       if (!disabled && inputRef.current) {
         inputRef.current.click();
       }
@@ -46,20 +45,18 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
 
     return (
       <div
-        ref={containerRef}
-        onClick={handleContainerClick}
         className={`
-          relative flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 
+          relative inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 
           bg-white text-gray-700 cursor-pointer transition-all
           hover:border-blue-300 hover:bg-blue-50/30
           focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-300
           ${disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}
           ${className}
         `}
+        onClick={handleClick}
         title={title}
       >
-        <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        
+        {/* 日期输入框 - 使用 opacity-0 而不是 hidden，这样点击事件可以正常工作 */}
         <input
           ref={inputRef}
           type="date"
@@ -69,18 +66,24 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           max={max}
           disabled={disabled}
           className="
-            flex-1 bg-transparent border-0 outline-none text-sm text-gray-700
-            placeholder-gray-400 cursor-pointer
-            focus:ring-0
+            absolute inset-0 w-full h-full opacity-0 cursor-pointer
             [color-scheme:light]
           "
           style={{ colorScheme: 'light' }}
         />
 
-        {/* 显示选中的日期文本 */}
+        {/* 可见的内容 */}
+        <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0 pointer-events-none" />
+        
         {!value && (
           <span className="text-sm text-gray-400 pointer-events-none">
             {placeholder}
+          </span>
+        )}
+
+        {value && (
+          <span className="text-sm text-gray-700 pointer-events-none">
+            {value}
           </span>
         )}
       </div>

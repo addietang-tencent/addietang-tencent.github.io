@@ -6,6 +6,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight } from "lucide-react";
+import { DateInput } from "@/components/DateInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -378,20 +379,18 @@ export default function TokensMonitor() {
           </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DateInput
               value={dateFrom}
-              onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleFromChange}
+              placeholder="开始日期"
+              className="h-9"
             />
             <span className="text-gray-400 text-sm">—</span>
-            <input
-              type="date"
+            <DateInput
               value={dateTo}
-              onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleToChange}
+              placeholder="结束日期"
+              className="h-9"
             />
             <button
               onClick={handleRefresh}

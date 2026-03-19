@@ -772,7 +772,7 @@ export default function MemberManagement() {
                           {member.id === initialAdminId ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
                                   <Key className="w-3.5 h-3.5 mr-2" />
                                   重置密码
                                 </span>
@@ -782,7 +782,7 @@ export default function MemberManagement() {
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <DropdownMenuItem className="text-xs text-gray-500" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                            <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                               <Key className="w-3.5 h-3.5 mr-2" />
                               重置密码
                             </DropdownMenuItem>

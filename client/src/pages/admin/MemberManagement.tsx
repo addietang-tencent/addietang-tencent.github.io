@@ -1239,7 +1239,7 @@ export default function MemberManagement() {
         open={!!enableConfirmDialog?.open}
         onOpenChange={(open) => { if (!open) setEnableConfirmDialog(null); }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>启用用户</DialogTitle>
           </DialogHeader>

@@ -785,9 +785,9 @@ export default function OpenClawDetail() {
             </div>
             {/* Lower: applied channels - scrollable */}
             <div className="px-5 pb-5 overflow-y-auto flex-1">
-              {appliedChannels.length > 0 && (
-                <div className="pt-2 border-t border-gray-50">
-                  <p className="text-xs text-gray-400 mb-2">已接入通道</p>
+              <div className="pt-2 border-t border-gray-50">
+                <p className="text-xs text-gray-400 mb-2">已接入通道（{appliedChannels.length}）</p>
+                {appliedChannels.length > 0 && (
                   <div className="space-y-1">
                     {appliedChannels.map((ch, chIdx) => (
                       <div key={chIdx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
@@ -824,8 +824,8 @@ export default function OpenClawDetail() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 

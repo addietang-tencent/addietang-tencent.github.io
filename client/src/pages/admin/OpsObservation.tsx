@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { AlertCircle, ArrowUpRight, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DateInput } from "@/components/DateInput";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -233,20 +234,18 @@ export default function OpsObservation() {
             <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DateInput
               value={dateFrom}
-              onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleFromChange}
+              placeholder="开始日期"
+              className="h-9"
             />
             <span className="text-gray-400 text-sm">—</span>
-            <input
-              type="date"
+            <DateInput
               value={dateTo}
-              onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleToChange}
+              placeholder="结束日期"
+              className="h-9"
             />
             <button
               onClick={handleRefresh}

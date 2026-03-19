@@ -598,7 +598,7 @@ export default function TokensMonitor() {
                 <Button
                   onClick={() => setShowCloseClsConfirm(true)}
                   variant="outline"
-                  className="text-xs h-7 px-3 text-gray-600 hover:text-red-600 hover:border-red-200"
+                  className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
                 >
                   关闭CLS服务
                 </Button>

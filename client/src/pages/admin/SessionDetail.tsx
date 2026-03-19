@@ -138,7 +138,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
   // Mock 会话信息
   const sessionInfo = {
     id: sessionId,
-    name: "你能干啥 / 你管理一下我在伊朗的局势",
+    name: "会话详情",
     channel: "Feishu Dm",
     model: "deepseek-v3.2",
     totalCost: "$0.2743",
@@ -164,7 +164,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
       {/* 会话标题 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{sessionInfo.name}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">会话详情</h1>
         <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id}</p>
       </div>
 

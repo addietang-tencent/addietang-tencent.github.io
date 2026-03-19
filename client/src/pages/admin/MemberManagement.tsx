@@ -735,7 +735,7 @@ export default function MemberManagement() {
                       </span>
                     ) : (
                       <span className="badge-stopped text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
                         禁用
                       </span>
                     )}

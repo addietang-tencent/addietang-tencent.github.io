@@ -106,7 +106,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 flex flex-col z-40"
         style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)" }}>
         {/* Logo */}
-        <div className="px-5 border-b border-gray-100">
+        <Link href="/admin/basic-info">
+        <div className="px-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
           <div className="h-16 flex items-center">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
@@ -119,7 +120,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             </div>
           </div>
+        </div>
+        </Link>
           {/* 前往用户端 */}
+          <div className="px-5">
           <Link href="/my-openclaw">
             <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
               <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />

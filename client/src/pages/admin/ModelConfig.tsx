@@ -398,15 +398,11 @@ export default function ModelConfig() {
 
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-5xl max-h-[80vh] flex flex-col">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>
-          {/* 两列布局：左侧表单 + 右侧模型列表 */}
-          <div className="flex gap-6 flex-1 min-h-0 overflow-hidden">
-            {/* 左侧：表单区域 */}
-            <div className="w-96 space-y-4 overflow-y-auto pr-2">
-              <div className="space-y-4">
+          <div className="space-y-4 py-2">
             {/* 模型厂商选择（含自定义模型） */}
             <div className="space-y-2">
               <Label>模型厂商</Label>
@@ -510,44 +506,8 @@ export default function ModelConfig() {
                 </div>
               </>
             )}
-              </div>
-            </div>
-
-            {/* 右侧：模型列表 */}
-            <div className="flex-1 border-l border-gray-200 pl-6 overflow-y-auto">
-              <div className="space-y-6">
-                {/* 模型 Coding Plan - 显示所有 Coding Plan 类型的模型 */}
-                <div>
-                  <h3 className="font-semibold text-sm text-blue-600 mb-3">模型 Coding Plan</h3>
-                  <div className="space-y-2">
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">腾讯云 Coding Plan</div>
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">百炼 Coding Plan</div>
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">MiniMax（国内-Coding Plan）</div>
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">智谱 AI（GLM国内-Coding Plan）</div>
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">智谱 AI（GLM国际-Coding Plan）</div>
-                    <div className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors">方舟（火山引擎）Coding Plan</div>
-                  </div>
-                </div>
-                
-                {/* 模型 API - 显示所有 API 类型的模型 */}
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-700 mb-3">模型 API</h3>
-                  <div className="space-y-2">
-                    {selectedProviderData?.versions?.map((version) => (
-                      <div
-                        key={version}
-                        className="p-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => setNewModel({ ...newModel, version })}
-                      >
-                        {version}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-          <DialogFooter className="mt-4">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
             <Button
               onClick={handleAddModel}

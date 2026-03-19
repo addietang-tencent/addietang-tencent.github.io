@@ -1264,7 +1264,7 @@ export default function MemberManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEnableConfirmDialog(null)}>取消</Button>
             <Button
-              className="bg-green-500 hover:bg-green-600 text-white"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
               onClick={() => handleEnable(enableConfirmDialog!.memberId)}
             >
               确认启用

@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -208,12 +208,21 @@ export default function OpenClawDetail() {
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
   // 密码显示/隐藏状态
   const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
-  // 飞书专用：快捷/手动 Tab
-  const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("manual");
+  // 飞书专用：快捷/手动 Tab（默认快捷配置）
+  const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("quick");
   // 企业微信专用：快捷/手动 Tab
   const [weworkConfigMode, setWeworkConfigMode] = useState<"quick" | "manual">("quick");
   // 飞书二维码弹窗
   const [showQrModal, setShowQrModal] = useState(false);
+  // 飞书弹窗阶段："loading" | "qr" | "configuring" | "done"
+  const [feishuModalStage, setFeishuModalStage] = useState<"loading" | "qr" | "configuring" | "done">("loading");
+  // 飞书配置步骤完成状态
+  const [feishuStepsDone, setFeishuStepsDone] = useState<number>(0);
+  const feishuSteps = [
+    "创建应用", "获取应用凭证", "写入配置文件", "开启机器人能力",
+    "设置事件模式", "添加消息事件", "配置回调地址", "导入基础权限",
+    "发布应用", "导入高级权限"
+  ];
   // 已接入通道密码显示/隐藏状态
   const [visibleAppliedSecrets, setVisibleAppliedSecrets] = useState<Set<string>>(new Set());
   // 已接入通道
@@ -311,7 +320,24 @@ export default function OpenClawDetail() {
 
     // 飞书快捷配置：点击"前往授权"弹出二维码
     if (ch.feishuMode && feishuConfigMode === "quick") {
+      setFeishuModalStage("loading");
+      setFeishuStepsDone(0);
       setShowQrModal(true);
+      // 5秒后显示二维码
+      setTimeout(() => setFeishuModalStage("qr"), 5000);
+      // 再5秒后自动进入配置阶段
+      setTimeout(() => {
+        setFeishuModalStage("configuring");
+        // 每步约0.8秒逐步完成
+        for (let i = 1; i <= 10; i++) {
+          setTimeout(() => {
+            setFeishuStepsDone(i);
+            if (i === 10) {
+              setTimeout(() => setFeishuModalStage("done"), 600);
+            }
+          }, i * 800);
+        }
+      }, 10000);
       return;
     }
 
@@ -421,26 +447,20 @@ export default function OpenClawDetail() {
     if (currentChannelConfig.feishuMode) {
       return (
         <div className="space-y-3">
-          {/* 手动/快捷 Tab（手动在前，快捷置灰禁用） */}
+          {/* 快捷配置在左，手动配置在右 */}
           <div className="flex rounded-lg border border-gray-200">
             <button
-              className={`flex-1 py-2 text-sm font-medium transition-colors border-r border-gray-200 rounded-l-lg ${feishuConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+              className={`flex-1 py-2 text-sm font-medium transition-colors border-r border-gray-200 rounded-l-lg ${feishuConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
+              onClick={() => setFeishuConfigMode("quick")}
+            >
+              快捷配置
+            </button>
+            <button
+              className={`flex-1 py-2 text-sm font-medium transition-colors rounded-r-lg ${feishuConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
               onClick={() => setFeishuConfigMode("manual")}
             >
               手动配置
             </button>
-            <div className="relative flex-1 group">
-              <button
-                disabled
-                className="w-full py-2 text-sm font-medium bg-gray-50 text-gray-300 cursor-not-allowed rounded-r-lg"
-              >
-                快捷配置
-              </button>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100]">
-                扫码一键配置飞书机器人能力即将开放
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-              </div>
-            </div>
           </div>
 
           {feishuConfigMode === "manual" && (
@@ -737,7 +757,7 @@ export default function OpenClawDetail() {
             <div className="p-5 space-y-3 flex-shrink-0">
               {/* 通道下拉 - 固定宽度 */}
               <div className="flex items-center gap-2">
-                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("manual"); setWeworkConfigMode("quick"); }}>
+                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("quick"); setWeworkConfigMode("quick"); }}>
                   <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>
@@ -883,116 +903,246 @@ export default function OpenClawDetail() {
         </div>
       </div>
 
-      {/* ===== 飞书二维码弹窗 ===== */}
-      <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
+      {/* ===== 飞书授权弹窗（三阶段） ===== */}
+      <Dialog open={showQrModal} onOpenChange={(open) => {
+        // 仅在 done 阶段或 loading/qr 阶段允许关闭
+        if (!open && (feishuModalStage === "done" || feishuModalStage === "loading" || feishuModalStage === "qr")) {
+          setShowQrModal(false);
+        } else if (!open && feishuModalStage === "configuring") {
+          // 配置中不允许关闭
+        } else {
+          setShowQrModal(open);
+        }
+      }}>
         <DialogContent className="max-w-lg [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none">
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <Info className="w-5 h-5 text-blue-500" />
+
+          {/* ── 阶段1&2：loading + qr ── */}
+          {(feishuModalStage === "loading" || feishuModalStage === "qr") && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <Info className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
+                    <DialogDescription className="text-sm text-orange-500 mt-0.5 font-medium">
+                      请使用具有企业管理员权限的飞书账号扫码登录，完成授权后将自动为您创建机器人。
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[260px] mt-2">
+                {feishuModalStage === "loading" ? (
+                  <>
+                    <Loader2 className="w-12 h-12 text-gray-300 animate-spin mb-4" />
+                    <p className="text-sm text-gray-500">正在生成二维码...</p>
+                  </>
+                ) : (
+                  <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="180" height="180" fill="white"/>
+                    <rect x="10" y="10" width="50" height="50" fill="black"/>
+                    <rect x="18" y="18" width="34" height="34" fill="white"/>
+                    <rect x="26" y="26" width="18" height="18" fill="black"/>
+                    <rect x="120" y="10" width="50" height="50" fill="black"/>
+                    <rect x="128" y="18" width="34" height="34" fill="white"/>
+                    <rect x="136" y="26" width="18" height="18" fill="black"/>
+                    <rect x="10" y="120" width="50" height="50" fill="black"/>
+                    <rect x="18" y="128" width="34" height="34" fill="white"/>
+                    <rect x="26" y="136" width="18" height="18" fill="black"/>
+                    <rect x="70" y="10" width="8" height="8" fill="black"/>
+                    <rect x="82" y="10" width="8" height="8" fill="black"/>
+                    <rect x="94" y="10" width="8" height="8" fill="black"/>
+                    <rect x="106" y="10" width="8" height="8" fill="black"/>
+                    <rect x="70" y="22" width="8" height="8" fill="black"/>
+                    <rect x="94" y="22" width="8" height="8" fill="black"/>
+                    <rect x="70" y="34" width="8" height="8" fill="black"/>
+                    <rect x="82" y="34" width="8" height="8" fill="black"/>
+                    <rect x="106" y="34" width="8" height="8" fill="black"/>
+                    <rect x="70" y="46" width="8" height="8" fill="black"/>
+                    <rect x="94" y="46" width="8" height="8" fill="black"/>
+                    <rect x="70" y="58" width="8" height="8" fill="black"/>
+                    <rect x="82" y="58" width="8" height="8" fill="black"/>
+                    <rect x="94" y="58" width="8" height="8" fill="black"/>
+                    <rect x="106" y="58" width="8" height="8" fill="black"/>
+                    <rect x="10" y="70" width="8" height="8" fill="black"/>
+                    <rect x="22" y="70" width="8" height="8" fill="black"/>
+                    <rect x="46" y="70" width="8" height="8" fill="black"/>
+                    <rect x="58" y="70" width="8" height="8" fill="black"/>
+                    <rect x="70" y="70" width="8" height="8" fill="black"/>
+                    <rect x="94" y="70" width="8" height="8" fill="black"/>
+                    <rect x="118" y="70" width="8" height="8" fill="black"/>
+                    <rect x="130" y="70" width="8" height="8" fill="black"/>
+                    <rect x="154" y="70" width="8" height="8" fill="black"/>
+                    <rect x="166" y="70" width="8" height="8" fill="black"/>
+                    <rect x="10" y="82" width="8" height="8" fill="black"/>
+                    <rect x="34" y="82" width="8" height="8" fill="black"/>
+                    <rect x="58" y="82" width="8" height="8" fill="black"/>
+                    <rect x="82" y="82" width="8" height="8" fill="black"/>
+                    <rect x="106" y="82" width="8" height="8" fill="black"/>
+                    <rect x="130" y="82" width="8" height="8" fill="black"/>
+                    <rect x="154" y="82" width="8" height="8" fill="black"/>
+                    <rect x="10" y="94" width="8" height="8" fill="black"/>
+                    <rect x="22" y="94" width="8" height="8" fill="black"/>
+                    <rect x="46" y="94" width="8" height="8" fill="black"/>
+                    <rect x="70" y="94" width="8" height="8" fill="black"/>
+                    <rect x="94" y="94" width="8" height="8" fill="black"/>
+                    <rect x="118" y="94" width="8" height="8" fill="black"/>
+                    <rect x="142" y="94" width="8" height="8" fill="black"/>
+                    <rect x="166" y="94" width="8" height="8" fill="black"/>
+                    <rect x="10" y="106" width="8" height="8" fill="black"/>
+                    <rect x="34" y="106" width="8" height="8" fill="black"/>
+                    <rect x="58" y="106" width="8" height="8" fill="black"/>
+                    <rect x="82" y="106" width="8" height="8" fill="black"/>
+                    <rect x="106" y="106" width="8" height="8" fill="black"/>
+                    <rect x="130" y="106" width="8" height="8" fill="black"/>
+                    <rect x="154" y="106" width="8" height="8" fill="black"/>
+                    <rect x="70" y="118" width="8" height="8" fill="black"/>
+                    <rect x="82" y="118" width="8" height="8" fill="black"/>
+                    <rect x="106" y="118" width="8" height="8" fill="black"/>
+                    <rect x="118" y="118" width="8" height="8" fill="black"/>
+                    <rect x="142" y="118" width="8" height="8" fill="black"/>
+                    <rect x="166" y="118" width="8" height="8" fill="black"/>
+                    <rect x="70" y="130" width="8" height="8" fill="black"/>
+                    <rect x="94" y="130" width="8" height="8" fill="black"/>
+                    <rect x="118" y="130" width="8" height="8" fill="black"/>
+                    <rect x="130" y="130" width="8" height="8" fill="black"/>
+                    <rect x="154" y="130" width="8" height="8" fill="black"/>
+                    <rect x="70" y="142" width="8" height="8" fill="black"/>
+                    <rect x="82" y="142" width="8" height="8" fill="black"/>
+                    <rect x="94" y="142" width="8" height="8" fill="black"/>
+                    <rect x="106" y="142" width="8" height="8" fill="black"/>
+                    <rect x="130" y="142" width="8" height="8" fill="black"/>
+                    <rect x="142" y="142" width="8" height="8" fill="black"/>
+                    <rect x="166" y="142" width="8" height="8" fill="black"/>
+                    <rect x="70" y="154" width="8" height="8" fill="black"/>
+                    <rect x="94" y="154" width="8" height="8" fill="black"/>
+                    <rect x="118" y="154" width="8" height="8" fill="black"/>
+                    <rect x="142" y="154" width="8" height="8" fill="black"/>
+                    <rect x="70" y="166" width="8" height="8" fill="black"/>
+                    <rect x="82" y="166" width="8" height="8" fill="black"/>
+                    <rect x="106" y="166" width="8" height="8" fill="black"/>
+                    <rect x="130" y="166" width="8" height="8" fill="black"/>
+                    <rect x="154" y="166" width="8" height="8" fill="black"/>
+                    <rect x="166" y="166" width="8" height="8" fill="black"/>
+                  </svg>
+                )}
               </div>
-              <div>
-                <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
-                <DialogDescription className="text-sm text-gray-400 mt-0.5">
-                  请使用飞书扫描下方二维码完成授权配置
-                </DialogDescription>
+            </>
+          )}
+
+          {/* ── 阶段3：正在配置 ── */}
+          {feishuModalStage === "configuring" && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <Info className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <DialogTitle className="text-base font-semibold text-gray-900">正在配置飞书机器人</DialogTitle>
+                </div>
+              </DialogHeader>
+              <div className="mt-3 space-y-2.5 py-2">
+                {feishuSteps.map((step, idx) => {
+                  const stepNum = idx + 1;
+                  const isDone = feishuStepsDone >= stepNum;
+                  const isActive = feishuStepsDone === idx;
+                  return (
+                    <div key={step} className="flex items-center gap-3">
+                      {isDone ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                      ) : isActive ? (
+                        <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
+                      )}
+                      <span className={`text-sm ${
+                        isDone ? "text-gray-700" : isActive ? "text-blue-600 font-medium" : "text-gray-400"
+                      }`}>
+                        [步骤{stepNum}] {step}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-          </DialogHeader>
-          <div className="flex items-center justify-center bg-gray-50 rounded-xl p-8 mt-2">
-            {/* 模拟二维码 SVG */}
-            <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-              <rect width="180" height="180" fill="white"/>
-              {/* 左上角定位块 */}
-              <rect x="10" y="10" width="50" height="50" fill="black"/>
-              <rect x="18" y="18" width="34" height="34" fill="white"/>
-              <rect x="26" y="26" width="18" height="18" fill="black"/>
-              {/* 右上角定位块 */}
-              <rect x="120" y="10" width="50" height="50" fill="black"/>
-              <rect x="128" y="18" width="34" height="34" fill="white"/>
-              <rect x="136" y="26" width="18" height="18" fill="black"/>
-              {/* 左下角定位块 */}
-              <rect x="10" y="120" width="50" height="50" fill="black"/>
-              <rect x="18" y="128" width="34" height="34" fill="white"/>
-              <rect x="26" y="136" width="18" height="18" fill="black"/>
-              {/* 数据模块 - 随机分布 */}
-              <rect x="70" y="10" width="8" height="8" fill="black"/>
-              <rect x="82" y="10" width="8" height="8" fill="black"/>
-              <rect x="94" y="10" width="8" height="8" fill="black"/>
-              <rect x="106" y="10" width="8" height="8" fill="black"/>
-              <rect x="70" y="22" width="8" height="8" fill="black"/>
-              <rect x="94" y="22" width="8" height="8" fill="black"/>
-              <rect x="70" y="34" width="8" height="8" fill="black"/>
-              <rect x="82" y="34" width="8" height="8" fill="black"/>
-              <rect x="106" y="34" width="8" height="8" fill="black"/>
-              <rect x="70" y="46" width="8" height="8" fill="black"/>
-              <rect x="94" y="46" width="8" height="8" fill="black"/>
-              <rect x="70" y="58" width="8" height="8" fill="black"/>
-              <rect x="82" y="58" width="8" height="8" fill="black"/>
-              <rect x="94" y="58" width="8" height="8" fill="black"/>
-              <rect x="106" y="58" width="8" height="8" fill="black"/>
-              <rect x="10" y="70" width="8" height="8" fill="black"/>
-              <rect x="22" y="70" width="8" height="8" fill="black"/>
-              <rect x="46" y="70" width="8" height="8" fill="black"/>
-              <rect x="58" y="70" width="8" height="8" fill="black"/>
-              <rect x="70" y="70" width="8" height="8" fill="black"/>
-              <rect x="94" y="70" width="8" height="8" fill="black"/>
-              <rect x="118" y="70" width="8" height="8" fill="black"/>
-              <rect x="130" y="70" width="8" height="8" fill="black"/>
-              <rect x="154" y="70" width="8" height="8" fill="black"/>
-              <rect x="166" y="70" width="8" height="8" fill="black"/>
-              <rect x="10" y="82" width="8" height="8" fill="black"/>
-              <rect x="34" y="82" width="8" height="8" fill="black"/>
-              <rect x="58" y="82" width="8" height="8" fill="black"/>
-              <rect x="82" y="82" width="8" height="8" fill="black"/>
-              <rect x="106" y="82" width="8" height="8" fill="black"/>
-              <rect x="130" y="82" width="8" height="8" fill="black"/>
-              <rect x="154" y="82" width="8" height="8" fill="black"/>
-              <rect x="10" y="94" width="8" height="8" fill="black"/>
-              <rect x="22" y="94" width="8" height="8" fill="black"/>
-              <rect x="46" y="94" width="8" height="8" fill="black"/>
-              <rect x="70" y="94" width="8" height="8" fill="black"/>
-              <rect x="94" y="94" width="8" height="8" fill="black"/>
-              <rect x="118" y="94" width="8" height="8" fill="black"/>
-              <rect x="142" y="94" width="8" height="8" fill="black"/>
-              <rect x="166" y="94" width="8" height="8" fill="black"/>
-              <rect x="10" y="106" width="8" height="8" fill="black"/>
-              <rect x="34" y="106" width="8" height="8" fill="black"/>
-              <rect x="58" y="106" width="8" height="8" fill="black"/>
-              <rect x="82" y="106" width="8" height="8" fill="black"/>
-              <rect x="106" y="106" width="8" height="8" fill="black"/>
-              <rect x="130" y="106" width="8" height="8" fill="black"/>
-              <rect x="154" y="106" width="8" height="8" fill="black"/>
-              <rect x="70" y="118" width="8" height="8" fill="black"/>
-              <rect x="82" y="118" width="8" height="8" fill="black"/>
-              <rect x="106" y="118" width="8" height="8" fill="black"/>
-              <rect x="118" y="118" width="8" height="8" fill="black"/>
-              <rect x="142" y="118" width="8" height="8" fill="black"/>
-              <rect x="166" y="118" width="8" height="8" fill="black"/>
-              <rect x="70" y="130" width="8" height="8" fill="black"/>
-              <rect x="94" y="130" width="8" height="8" fill="black"/>
-              <rect x="118" y="130" width="8" height="8" fill="black"/>
-              <rect x="130" y="130" width="8" height="8" fill="black"/>
-              <rect x="154" y="130" width="8" height="8" fill="black"/>
-              <rect x="70" y="142" width="8" height="8" fill="black"/>
-              <rect x="82" y="142" width="8" height="8" fill="black"/>
-              <rect x="94" y="142" width="8" height="8" fill="black"/>
-              <rect x="106" y="142" width="8" height="8" fill="black"/>
-              <rect x="130" y="142" width="8" height="8" fill="black"/>
-              <rect x="142" y="142" width="8" height="8" fill="black"/>
-              <rect x="166" y="142" width="8" height="8" fill="black"/>
-              <rect x="70" y="154" width="8" height="8" fill="black"/>
-              <rect x="94" y="154" width="8" height="8" fill="black"/>
-              <rect x="118" y="154" width="8" height="8" fill="black"/>
-              <rect x="142" y="154" width="8" height="8" fill="black"/>
-              <rect x="70" y="166" width="8" height="8" fill="black"/>
-              <rect x="82" y="166" width="8" height="8" fill="black"/>
-              <rect x="106" y="166" width="8" height="8" fill="black"/>
-              <rect x="130" y="166" width="8" height="8" fill="black"/>
-              <rect x="154" y="166" width="8" height="8" fill="black"/>
-              <rect x="166" y="166" width="8" height="8" fill="black"/>
-            </svg>
-          </div>
+            </>
+          )}
+
+          {/* ── 阶段4：配置完成 ── */}
+          {feishuModalStage === "done" && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-1">
+                  <CheckCircle2 className="w-8 h-8 text-green-500 shrink-0" />
+                  <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人授权配置成功</DialogTitle>
+                </div>
+              </DialogHeader>
+              <div className="mt-3 space-y-1.5 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 shrink-0">机器人名称：</span>
+                  <span className="text-gray-800 font-medium">OpenClaw机器人-4598</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-500 shrink-0">管理地址：</span>
+                  <a
+                    href="https://open.feishu.cn/app/cli_a9317ee80379dbc2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline break-all"
+                  >
+                    https://open.feishu.cn/app/cli_a9317ee80379dbc2
+                  </a>
+                </div>
+              </div>
+              {/* 审批提示 */}
+              <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
+                <div className="flex items-start gap-2 mb-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                  <p className="text-sm text-orange-600 font-medium">以下高级权限无法免审批发布，已自动为您提交申请：</p>
+                </div>
+                <ol className="text-sm text-orange-600 ml-6 space-y-1 list-decimal">
+                  <li>查看、评论和下载云空间中所有文件</li>
+                  <li>查看、评论、编辑和管理云空间中所有文件</li>
+                </ol>
+                <div className="flex items-center gap-1 mt-2 ml-6">
+                  <span className="text-sm text-orange-600">如需启用，请联系管理员前往审批：</span>
+                  <a
+                    href="https://feishu.cn/admin/appCenter/audit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-500 hover:underline"
+                  >
+                    https://feishu.cn/admin/appCenter/audit
+                  </a>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end">
+                <Button
+                  onClick={() => {
+                    setShowQrModal(false);
+                    // 将飞书机器人添加到已接入通道
+                    const feishuConfig = CHANNEL_OPTIONS.find(c => c.value === "feishu");
+                    if (feishuConfig) {
+                      const newEntry: AppliedChannel = {
+                        type: "飞书",
+                        channelValue: "feishu",
+                        status: "running",
+                        fields: feishuConfig.fields || [],
+                        fieldValues: { appId: "cli_a9317ee80379dbc2", appSecret: "auto-authorized" },
+                        feishuConfigMode: "quick",
+                      };
+                      setAppliedChannels(prev => [...prev, newEntry]);
+                    }
+                    toast.success("飞书机器人已添加并应用");
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                >
+                  完成
+                </Button>
+              </div>
+            </>
+          )}
+
         </DialogContent>
       </Dialog>
     </TenantLayout>

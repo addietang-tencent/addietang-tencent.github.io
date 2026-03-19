@@ -1146,7 +1146,7 @@ export default function MemberManagement() {
         open={!!deleteCheckDialog?.open}
         onOpenChange={(open) => { if (!open) setDeleteCheckDialog(null); }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>删除用户</DialogTitle>
           </DialogHeader>
@@ -1200,7 +1200,7 @@ export default function MemberManagement() {
         open={!!disableConfirmDialog?.open}
         onOpenChange={(open) => { if (!open) setDisableConfirmDialog(null); }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>禁用用户</DialogTitle>
           </DialogHeader>
@@ -1278,7 +1278,7 @@ export default function MemberManagement() {
         open={!!deleteConfirmDialog?.open}
         onOpenChange={(open) => { if (!open) setDeleteConfirmDialog(null); }}
       >
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>确认删除用户</DialogTitle>
           </DialogHeader>

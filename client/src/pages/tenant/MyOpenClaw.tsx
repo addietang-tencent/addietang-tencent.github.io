@@ -249,11 +249,11 @@ export default function MyOpenClaw() {
                         <div className="flex items-center gap-1.5 flex-shrink-0 flex-nowrap">
                           <StatusBadge status={claw.status} />
                           <button
-                            className="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                             onClick={(e) => handleRefreshStatus(e, claw.id, claw.name)}
                             title="刷新状态"
                           >
-                            <RefreshCw className={`w-3.5 h-3.5 transition-transform ${refreshingIds.has(claw.id) ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-4 h-4 transition-transform ${refreshingIds.has(claw.id) ? 'animate-spin' : ''}`} />
                           </button>
                           {/* 三个点菜单 */}
                           <DropdownMenu>

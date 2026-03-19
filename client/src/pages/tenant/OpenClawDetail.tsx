@@ -1061,8 +1061,8 @@ export default function OpenClawDetail() {
                       ) : (
                         <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
                       )}
-                      <span className={`text-sm ${
-                        isDone ? "text-gray-700" : isActive ? "text-blue-600 font-medium" : "text-gray-400"
+                      <span className={`text-xs ${
+                        isDone ? "text-gray-600" : isActive ? "text-blue-600 font-medium" : "text-gray-400"
                       }`}>
                         [步骤{stepNum}] {step}
                       </span>
@@ -1103,6 +1103,17 @@ export default function OpenClawDetail() {
                     className="text-blue-500 hover:underline break-all"
                   >
                     https://open.feishu.cn/app/cli_a933983f95385cca
+                  </a>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-500 shrink-0">管理员审批地址：</span>
+                  <a
+                    href="https://feishu.cn/admin/appCenter/audit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline break-all"
+                  >
+                    https://feishu.cn/admin/appCenter/audit
                   </a>
                 </div>
               </div>

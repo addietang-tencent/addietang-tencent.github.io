@@ -400,11 +400,6 @@ export default function SessionManagement() {
             <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-green-800">CLS 日志服务开启成功</p>
-              <div className="text-xs text-green-700 mt-2 space-y-1">
-                <div>运维观测：支持通过全链路性能监控采集核心运行指标</div>
-                <div>会话管理：支持通过会话总览、会话链下钻还原及渠道模型分布分析</div>
-                <div>Tokens 监控：支持从按会话、消息维度查看 tokens、费用使用情况</div>
-              </div>
             </div>
           </div>
         </div>

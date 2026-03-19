@@ -6,14 +6,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
 
 export default function BasicInfo() {
   const [form, setForm] = useState({
     siteName: "A公司企业版OpenClaw",
-    siteDesc: "快速创建属于你的24小时AI私人助理，提升企业团队的工作效率",
     region: "广州",
     domain: "openclaw.acompany.com",
     tencentUin: "3205597606",
@@ -48,21 +46,6 @@ export default function BasicInfo() {
                 onChange={(e) => setForm({ ...form, siteName: e.target.value })}
                 placeholder="例如：A公司企业版OpenClaw"
                 className="bg-gray-50 border-gray-200"
-              />
-            </div>
-
-            {/* Site Description */}
-            <div className="space-y-2">
-              <Label htmlFor="siteDesc" className="text-sm font-medium text-gray-700">
-                网站描述
-              </Label>
-              <Textarea
-                id="siteDesc"
-                value={form.siteDesc}
-                onChange={(e) => setForm({ ...form, siteDesc: e.target.value })}
-                placeholder="请输入网站描述"
-                className="bg-gray-50 border-gray-200 resize-none"
-                rows={3}
               />
             </div>
 

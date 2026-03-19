@@ -105,29 +105,29 @@ export default function BasicInfo() {
             <div className="border-t border-gray-100 pt-6 space-y-6">
               {/* Region — read-only text */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-gray-400">
                   所在地域
                   <span className="text-xs text-gray-400 font-normal ml-2">用户端、管控端及用户 OpenClaw 底层云设备所在的地域</span>
                 </p>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.region}</div>
+                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-500 cursor-not-allowed opacity-60">{form.region}</div>
               </div>
 
               {/* Domain — read-only text */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-gray-400">
                   域名
                   <span className="text-xs text-gray-400 font-normal ml-2">用户端与管控端的访问域名</span>
                 </p>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.domain}</div>
+                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-500 cursor-not-allowed opacity-60">{form.domain}</div>
               </div>
 
               {/* Tencent Cloud UIN — read-only text */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-gray-400">
                   关联腾讯云账号
                   <span className="text-xs text-gray-400 font-normal ml-2">当前平台关联的腾讯云账号 UIN</span>
                 </p>
-                <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-700">{form.tencentUin}</div>
+                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-500 cursor-not-allowed opacity-60">{form.tencentUin}</div>
               </div>
             </div>
           </div>

@@ -54,6 +54,7 @@ type ChannelConfig = {
   hasInfoIcon?: boolean;
   fields?: ChannelField[];
   feishuMode?: true; // 飞书特殊处理
+  weworkMode?: true; // 企业微信特殊处理
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -63,9 +64,10 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
     descText: "企业微信是一款高效协同办公的企业通讯与办公工具。",
     detailUrl: "#",
     hasInfoIcon: true,
+    weworkMode: true,
     fields: [
-      { key: "token", label: "企业微信机器人的Token", secret: true },
-      { key: "encodingAESKey", label: "企业微信机器人的encodingAESKey", secret: true },
+      { key: "botId", label: "企业微信机器人的botId", secret: false },
+      { key: "botSecret", label: "企业微信机器人的secret", secret: true },
     ],
   },
   {
@@ -172,6 +174,7 @@ type AppliedChannel = {
   fields: ChannelField[];
   fieldValues: Record<string, string>;
   feishuConfigMode?: "quick" | "manual"; // 飞书专用
+  weworkConfigMode?: "quick" | "manual"; // 企业微信专用
 };
 
 // ─── 主组件 ──────────────────────────────────────────────────────────────────────
@@ -207,6 +210,8 @@ export default function OpenClawDetail() {
   const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
   // 飞书专用：快捷/手动 Tab
   const [feishuConfigMode, setFeishuConfigMode] = useState<"quick" | "manual">("manual");
+  // 企业微信专用：快捷/手动 Tab
+  const [weworkConfigMode, setWeworkConfigMode] = useState<"quick" | "manual">("quick");
   // 飞书二维码弹窗
   const [showQrModal, setShowQrModal] = useState(false);
   // 已接入通道密码显示/隐藏状态
@@ -310,17 +315,37 @@ export default function OpenClawDetail() {
       return;
     }
 
+    // 企业微信快捷配置：点击"前往授权"弹出提示
+    if (ch.weworkMode && weworkConfigMode === "quick") {
+      toast.info("即将跳转至企业微信授权页面，此功能即将开放");
+      // 快捷配置添加一个企微机器人占位符
+      const newEntry: AppliedChannel = {
+        type: "企微机器人",
+        channelValue: "wework",
+        status: "running",
+        fields: ch.fields || [],
+        fieldValues: { botId: "auto-authorized", botSecret: "auto-secret-key" },
+        weworkConfigMode: "quick",
+      };
+      setAppliedChannels([...appliedChannels, newEntry]);
+      toast.success("企微机器人已添加");
+      return;
+    }
+
+    // 企业微信手动配置：显示为"企微机器人"
+    const channelType = ch.weworkMode ? "企微机器人" : ch.label;
     const newEntry: AppliedChannel = {
-      type: ch.label,
+      type: channelType,
       channelValue: ch.value,
       status: "running",
       fields: ch.fields || [],
       fieldValues: { ...channelFields },
       feishuConfigMode: ch.feishuMode ? feishuConfigMode : undefined,
+      weworkConfigMode: ch.weworkMode ? weworkConfigMode : undefined,
     };
     setAppliedChannels([...appliedChannels, newEntry]);
     setChannelFields({});
-    toast.success(`${ch.label} 通道已添加`);
+    toast.success(`${channelType} 已添加并应用`);
   };
 
 
@@ -335,6 +360,63 @@ export default function OpenClawDetail() {
 
   const renderChannelInputs = () => {
     if (!currentChannelConfig) return null;
+
+    // 企业微信快捷/手动配置
+    if (currentChannelConfig.weworkMode) {
+      return (
+        <div className="space-y-3">
+          {/* 快捷/手动 Tab（快捷默认选中） */}
+          <div className="flex rounded-lg border border-gray-200">
+            <button
+              className={`flex-1 py-2 text-sm font-medium transition-colors rounded-l-lg ${
+                weworkConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+              }`}
+              onClick={() => setWeworkConfigMode("quick")}
+            >
+              快捷配置
+            </button>
+            <button
+              className={`flex-1 py-2 text-sm font-medium transition-colors border-l border-gray-200 rounded-r-lg ${
+                weworkConfigMode === "manual" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+              }`}
+              onClick={() => setWeworkConfigMode("manual")}
+            >
+              手动配置
+            </button>
+          </div>
+
+          {weworkConfigMode === "manual" && (
+            <div className="space-y-2">
+              {currentChannelConfig.fields!.map((field) => (
+                <div key={field.key} className="relative">
+                  <Input
+                    type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
+                    placeholder={field.label}
+                    value={channelFields[field.key] || ""}
+                    onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
+                    className="bg-gray-50 border-gray-200 pr-10"
+                  />
+                  {field.secret && (
+                    <button
+                      onClick={() => toggleSecretVisibility(field.key)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                      type="button"
+                      title={visibleSecrets.has(field.key) ? "隐藏" : "显示"}
+                    >
+                      {visibleSecrets.has(field.key) ? (
+                        <Eye className="w-4 h-4" />
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
 
     if (currentChannelConfig.feishuMode) {
       return (
@@ -429,27 +511,20 @@ export default function OpenClawDetail() {
   // ─── 渲染已接入通道的展开配置项 ───────────────────────────────────────────────
 
   const renderAppliedChannelDetail = (chIdx: number, ch: AppliedChannel) => {
-    // 将字段 label 转换为简短 key 名（如 "飞书应用的App ID" → "appId"）
-    const getShortKey = (field: ChannelField): string => {
-      if (field.key === "appId" || field.key === "clientId") return field.key;
-      if (field.key === "appSecret" || field.key === "clientSecret") return field.key;
-      if (field.key === "token") return "token";
-      if (field.key === "encodingAESKey") return "encodingAESKey";
-      return field.key;
-    };
     return (
       <div className="mx-2 mb-2 space-y-2">
-        {/* 子框Ἷb：appId / appSecret */}
+        {/* 字段展示 */}
         <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
           {ch.fields.map((field) => {
             const val = ch.fieldValues[field.key] || "";
             const uniqueKey = `${chIdx}-${field.key}`;
             const isVisible = visibleAppliedSecrets.has(uniqueKey);
             const displayVal = field.secret && !isVisible ? maskSecret(val) : val;
-            const shortKey = getShortKey(field);
+            // 使用字段的 key 作为显示名称
+            const displayKey = field.key;
             return (
               <div key={field.key} className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500 shrink-0">{shortKey}：</span>
+                <span className="text-gray-500 shrink-0">{displayKey}：</span>
                 <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
                 {field.secret && (
                   <button
@@ -680,7 +755,7 @@ export default function OpenClawDetail() {
             <div className="p-5 space-y-3 flex-shrink-0">
               {/* 通道下拉 - 固定宽度 */}
               <div className="flex items-center gap-2">
-                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("manual"); }}>
+                <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("manual"); setWeworkConfigMode("quick"); }}>
                   <SelectTrigger className="w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>
@@ -714,7 +789,7 @@ export default function OpenClawDetail() {
 
               {/* 操作按钮 */}
               <Button className="w-full text-sm" variant="outline" onClick={handleAddChannel}>
-                {currentChannelConfig?.feishuMode && feishuConfigMode === "quick" ? "前往授权" : "添加并应用"}
+                {(currentChannelConfig?.feishuMode && feishuConfigMode === "quick") || (currentChannelConfig?.weworkMode && weworkConfigMode === "quick") ? "前往授权" : "添加并应用"}
               </Button>
 
               {/* 底部说明 */}

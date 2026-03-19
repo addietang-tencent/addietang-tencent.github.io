@@ -1218,7 +1218,7 @@ export default function MemberManagement() {
               <ul className="space-y-1 list-disc list-inside">
                 <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>
                 <li>名下所有 OpenClaw 实例将<span className="font-semibold">关机</span>（数据保留，不删除）</li>
-                <li>用户将<span className="font-semibold">无法与 AI 机器人对话</span></li>
+                <li>用户将<span className="font-semibold">无法与 OpenClaw 机器人对话</span></li>
               </ul>
             </div>
           </div>

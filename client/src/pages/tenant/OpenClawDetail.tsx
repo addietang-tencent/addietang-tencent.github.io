@@ -854,6 +854,16 @@ export default function OpenClawDetail() {
               <Button className="w-full text-sm" variant="outline" onClick={() => toast.info("功能开发中")}>
                 安装技能
               </Button>
+              
+              <a
+                href="https://skillhub.tencent.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              >
+                浏览 SkillHub
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
             {/* Lower: installed skills - scrollable */}
             <div className="px-5 pb-5 overflow-y-auto flex-1">

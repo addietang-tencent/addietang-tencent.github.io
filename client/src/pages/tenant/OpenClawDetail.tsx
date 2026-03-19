@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -223,8 +223,10 @@ export default function OpenClawDetail() {
   const feishuSteps = [
     "创建应用", "获取应用凭证", "写入配置文件", "开启机器人能力",
     "设置事件模式", "添加消息事件", "配置回调地址", "导入基础权限",
-    "发布应用", "导入高级权限"
+    "发布应用", "导入高级权限", "获取用户信息"
   ];
+  // 步骤10（index 9）为高级权限步骤，无法免审批，需橙色标识
+  const feishuHighPrivilegeStepIdx = 9;
   // 已接入通道密码显示/隐藏状态
   const [visibleAppliedSecrets, setVisibleAppliedSecrets] = useState<Set<string>>(new Set());
   // 已接入通道
@@ -1052,9 +1054,12 @@ export default function OpenClawDetail() {
                   const stepNum = idx + 1;
                   const isDone = feishuStepsDone >= stepNum;
                   const isActive = feishuStepsDone === idx;
+                  const isHighPrivilege = idx === feishuHighPrivilegeStepIdx;
                   return (
                     <div key={step} className="flex items-center gap-3">
-                      {isDone ? (
+                      {isDone && isHighPrivilege ? (
+                        <AlertCircle className="w-5 h-5 text-orange-500 shrink-0" />
+                      ) : isDone ? (
                         <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                       ) : isActive ? (
                         <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
@@ -1062,6 +1067,7 @@ export default function OpenClawDetail() {
                         <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
                       )}
                       <span className={`text-xs ${
+                        isDone && isHighPrivilege ? "text-orange-500 font-medium" :
                         isDone ? "text-gray-600" : isActive ? "text-blue-600 font-medium" : "text-gray-400"
                       }`}>
                         [步骤{stepNum}] {step}
@@ -1178,22 +1184,30 @@ export default function OpenClawDetail() {
                   </div>
                 </div>
               </div>
-              <div className="mt-5 flex justify-end">
+              <div className="mt-5 flex justify-center">
                 <Button
                   onClick={() => {
                     setShowQrModal(false);
-                    // 将飞书机器人添加到已接入通道
+                    // 飞书通道唯一性：有则更新，无则新增
                     const feishuConfig = CHANNEL_OPTIONS.find(c => c.value === "feishu");
                     if (feishuConfig) {
-                      const newEntry: AppliedChannel = {
-                        type: "飞书",
-                        channelValue: "feishu",
-                        status: "running",
-                        fields: feishuConfig.fields || [],
-                        fieldValues: { appId: "cli_a9317ee80379dbc2", appSecret: "auto-authorized" },
-                        feishuConfigMode: "quick",
-                      };
-                      setAppliedChannels(prev => [...prev, newEntry]);
+                      setAppliedChannels(prev => {
+                        const existingIdx = prev.findIndex(c => c.channelValue === "feishu");
+                        const updatedEntry: AppliedChannel = {
+                          type: "飞书",
+                          channelValue: "feishu",
+                          status: "running",
+                          fields: feishuConfig.fields || [],
+                          fieldValues: { appId: "cli_a9317ee80379dbc2", appSecret: "auto-authorized" },
+                          feishuConfigMode: "quick",
+                        };
+                        if (existingIdx >= 0) {
+                          const next = [...prev];
+                          next[existingIdx] = updatedEntry;
+                          return next;
+                        }
+                        return [...prev, updatedEntry];
+                      });
                     }
                     toast.success("飞书机器人已添加并应用");
                   }}

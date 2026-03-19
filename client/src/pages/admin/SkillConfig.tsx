@@ -21,13 +21,15 @@ export default function SkillConfig() {
   const handleSave = () => {
     const trimmedUrl = draft.trim();
     
-    // URL 完整性校验
+    // 如果为空，允许保存（未配置状态）
     if (!trimmedUrl) {
-      setErrorMessage("请输入完整的 URL 地址（如：https://example.com）");
+      setSkillhubUrl("");
+      setEditing(false);
+      setErrorMessage("");
       return;
     }
     
-    // 检查是否是有效的 URL 格式
+    // 如果有内容，必须是有效的 URL 格式
     try {
       new URL(trimmedUrl);
     } catch (e) {

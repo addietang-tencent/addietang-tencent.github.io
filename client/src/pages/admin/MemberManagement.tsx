@@ -1213,7 +1213,7 @@ export default function MemberManagement() {
               <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
               <span className="text-sm font-semibold text-gray-800">{disableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
-            <div className="rounded-lg bg-orange-50 border border-orange-200 px-4 py-3 text-sm text-orange-700 space-y-2">
+            <div className="rounded-lg bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 space-y-2">
               <p className="font-medium">禁用后将产生以下影响：</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>

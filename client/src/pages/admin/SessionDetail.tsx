@@ -2,6 +2,7 @@
  * SessionDetail - 会话详情页面
  * 展示单个会话的完整信息：成本、Token、交互链路等
  */
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, MessageSquare, DollarSign, Zap } from "lucide-react";
 import {
@@ -314,15 +315,15 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         {item.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">{item.content}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.model}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.stopReason}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.input}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.output}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.cacheRW}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono">{item.tokens}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.cost}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{item.duration}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title={item.content}>{item.content}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600" title={item.model}>{item.model}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600" title={item.stopReason}>{item.stopReason}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.input}>{item.input}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.output}>{item.output}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.cacheRW}>{item.cacheRW}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono" title={item.tokens}>{item.tokens}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.cost}>{item.cost}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right" title={item.duration}>{item.duration}</td>
                   </tr>
                 ))}
               </tbody>

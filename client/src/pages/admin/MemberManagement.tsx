@@ -530,8 +530,10 @@ export default function MemberManagement() {
   const [deleteCheckDialog, setDeleteCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
   // 二次确认弹窗
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; memberId: string } | null>(null);
-  // 禁用检查弹窗
-  const [disableCheckDialog, setDisableCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
+  // 禁用确认弹窗（新：所有用户均可禁用，只需二次确认）
+  const [disableConfirmDialog, setDisableConfirmDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
+  // 启用确认弹窗
+  const [enableConfirmDialog, setEnableConfirmDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
 
   const filtered = sortedMembers.filter((m) =>
     m.id.toLowerCase().includes(search.toLowerCase())
@@ -586,14 +588,24 @@ export default function MemberManagement() {
     setDeleteCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
   };
 
-  const openDisableCheck = (member: typeof MOCK_MEMBERS_BASE[0]) => {
-    setDisableCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+  const openDisableConfirm = (member: typeof MOCK_MEMBERS_BASE[0]) => {
+    setDisableConfirmDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+  };
+
+  const openEnableConfirm = (member: typeof MOCK_MEMBERS_BASE[0]) => {
+    setEnableConfirmDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
   };
 
   const handleDisable = (id: string) => {
     setMembers(members.map((m) => m.id === id ? { ...m, status: "disabled" } : m));
-    setDisableCheckDialog(null);
+    setDisableConfirmDialog(null);
     toast.success("用户已禁用");
+  };
+
+  const handleEnable = (id: string) => {
+    setMembers(members.map((m) => m.id === id ? { ...m, status: "active" } : m));
+    setEnableConfirmDialog(null);
+    toast.success("用户已启用");
   };
 
   const handleDelete = (id: string) => {
@@ -748,7 +760,7 @@ export default function MemberManagement() {
                       >
                         <Pencil className="w-3 h-3 mr-1" />编辑
                       </Button>
-                      {/* 三点菜单：重置密码 + 禁用/启用 */}
+                      {/* 三点菜单：重置密码 + 禁用/启用 + 删除 */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0">
@@ -789,7 +801,7 @@ export default function MemberManagement() {
                           ) : member.status === "active" ? (
                             <DropdownMenuItem
                               className="text-orange-600 focus:text-orange-600 focus:bg-orange-50"
-                              onClick={() => openDisableCheck(member)}
+                              onClick={() => openDisableConfirm(member)}
                             >
                               <UserX className="w-3.5 h-3.5 mr-2" />
                               禁用
@@ -797,10 +809,30 @@ export default function MemberManagement() {
                           ) : (
                             <DropdownMenuItem
                               className="text-green-600 focus:text-green-600 focus:bg-green-50"
-                              onClick={() => handleToggleStatus(member.id)}
+                              onClick={() => openEnableConfirm(member)}
                             >
                               <UserCheck className="w-3.5 h-3.5 mr-2" />
                               启用
+                            </DropdownMenuItem>
+                          )}
+                          {/* 删除：初始管理员不可删除 */}
+                          {member.id === initialAdminId ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center px-2 py-1.5 text-sm text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                  删除
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                              onClick={() => openDeleteCheck(member)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 mr-2" />
+                              删除
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -1166,10 +1198,10 @@ export default function MemberManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Disable Check Dialog */}
+      {/* Disable Confirm Dialog（新：所有用户均可禁用，说明后果） */}
       <Dialog
-        open={!!disableCheckDialog?.open}
-        onOpenChange={(open) => { if (!open) setDisableCheckDialog(null); }}
+        open={!!disableConfirmDialog?.open}
+        onOpenChange={(open) => { if (!open) setDisableConfirmDialog(null); }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1179,42 +1211,73 @@ export default function MemberManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-600">
-              禁用后，该用户将无法登录用户端。只有用户名下没有任何 OpenClaw 时，才可以禁用。
-            </p>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
               <span className="text-sm text-gray-500">用户 ID</span>
-              <span className="text-sm font-medium text-gray-900">{disableCheckDialog?.memberId}</span>
+              <span className="text-sm font-medium text-gray-900">{disableConfirmDialog?.memberId}</span>
             </div>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
               <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
-              <span className={`text-sm font-semibold ${
-                (disableCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
-              }`}>
-                {disableCheckDialog?.clawCount ?? 0} 个
-              </span>
+              <span className="text-sm font-semibold text-gray-800">{disableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
-            {(disableCheckDialog?.clawCount ?? 0) > 0 ? (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700 space-y-1">
-                <p className="font-medium">无法禁用该用户</p>
-                <p>请让用户自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该用户名下的所有 OpenClaw 后，再执行禁用操作。</p>
-              </div>
-            ) : (
-              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                该用户名下没有 OpenClaw，可以执行禁用。
-              </div>
-            )}
+            <div className="rounded-lg bg-orange-50 border border-orange-200 px-4 py-3 text-sm text-orange-700 space-y-2">
+              <p className="font-medium">禁用后将产生以下影响：</p>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>
+                <li>名下所有 OpenClaw 实例将<span className="font-semibold">关机</span>（数据保留，不删除）</li>
+                <li>用户将<span className="font-semibold">无法与 AI 机器人对话</span></li>
+              </ul>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDisableCheckDialog(null)}>取消</Button>
-            {(disableCheckDialog?.clawCount ?? 0) === 0 && (
-              <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-                onClick={() => handleDisable(disableCheckDialog!.memberId)}
-              >
-                确认禁用
-              </Button>
-            )}
+            <Button variant="outline" onClick={() => setDisableConfirmDialog(null)}>取消</Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={() => handleDisable(disableConfirmDialog!.memberId)}
+            >
+              确认禁用
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enable Confirm Dialog */}
+      <Dialog
+        open={!!enableConfirmDialog?.open}
+        onOpenChange={(open) => { if (!open) setEnableConfirmDialog(null); }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCheck className="w-4 h-4 text-green-500" />
+              启用用户
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">用户 ID</span>
+              <span className="text-sm font-medium text-gray-900">{enableConfirmDialog?.memberId}</span>
+            </div>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
+            </div>
+            <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 space-y-2">
+              <p className="font-medium">启用后将产生以下影响：</p>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>该用户可以<span className="font-semibold">继续登录</span>用户端</li>
+                <li>名下所有 OpenClaw 实例将<span className="font-semibold">开机</span>，恢复运行</li>
+                <li>用户可以<span className="font-semibold">恢复与 AI 机器人对话</span></li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnableConfirmDialog(null)}>取消</Button>
+            <Button
+              className="bg-green-500 hover:bg-green-600 text-white"
+              onClick={() => handleEnable(enableConfirmDialog!.memberId)}
+            >
+              确认启用
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

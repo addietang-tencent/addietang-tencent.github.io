@@ -190,7 +190,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">开始使用</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成后，即可通过 IM 工具与 AI 对话</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成后，即可通过聊天软件与AI对话</p>
                     </div>
                   </div>
                 </div>

@@ -855,15 +855,12 @@ export default function OpenClawDetail() {
                 安装技能
               </Button>
               
-              <a
-                href="https://skillhub.tencent.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-              >
-                浏览 SkillHub
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                您可以前往 SkillHub 查看您需要安装的技能
+                <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
+                  浏览 SkillHub<ExternalLink className="w-3 h-3" />
+                </a>
+              </p>
             </div>
             {/* Lower: installed skills - scrollable */}
             <div className="px-5 pb-5 overflow-y-auto flex-1">

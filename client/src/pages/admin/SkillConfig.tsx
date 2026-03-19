@@ -4,13 +4,15 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Puzzle, Pencil, X, Check } from "lucide-react";
 
 export default function SkillConfig() {
   const [skillhubUrl, setSkillhubUrl] = useState("https://clawhub.openclaw.com");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(skillhubUrl);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showError, setShowError] = useState(false);
 
   const handleEdit = () => {
     setDraft(skillhubUrl);
@@ -18,9 +20,27 @@ export default function SkillConfig() {
   };
 
   const handleSave = () => {
-    setSkillhubUrl(draft.trim());
+    const trimmedUrl = draft.trim();
+    
+    // URL 完整性校验
+    if (!trimmedUrl) {
+      setErrorMessage("SkillHub 地址不能为空");
+      setShowError(true);
+      return;
+    }
+    
+    // 检查是否是有效的 URL 格式
+    try {
+      new URL(trimmedUrl);
+    } catch (e) {
+      setErrorMessage("请输入完整的 URL 地址（如：https://example.com）");
+      setShowError(true);
+      return;
+    }
+    
+    setSkillhubUrl(trimmedUrl);
     setEditing(false);
-    toast.success("SkillHub 地址已保存");
+    setErrorMessage("");
   };
 
   const handleCancel = () => {
@@ -29,6 +49,14 @@ export default function SkillConfig() {
   };
 
   return (
+      <>
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogTitle>错误</AlertDialogTitle>
+          <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          <AlertDialogAction onClick={() => setShowError(false)}>确定</AlertDialogAction>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="page-enter max-w-3xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
@@ -99,5 +127,6 @@ export default function SkillConfig() {
           </div>
         </div>
       </div>
-  );
-}
+      </>
+    );
+  }

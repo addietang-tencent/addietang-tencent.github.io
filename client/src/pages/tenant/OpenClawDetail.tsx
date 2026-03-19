@@ -680,7 +680,7 @@ export default function OpenClawDetail() {
                   <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
                     <a href="#" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
-                      跳转了解 <ExternalLink className="w-3 h-3" />
+                      自定义模型配置指引 <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>

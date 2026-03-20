@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3 } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -577,7 +577,7 @@ export default function TokensMonitor() {
                 <div className="space-y-6 mb-8">
                   {/* 第一块：高成本会话分析 */}
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
                         <div className="flex items-start gap-3">
@@ -609,16 +609,16 @@ export default function TokensMonitor() {
 
                   {/* 第二块：会话管理功能 */}
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
-                            <AlertCircle className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
+                            <BarChart3 className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">会话全局运行态势监控</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
+                            <h5 className="text-xs font-bold text-gray-900 mb-1">应用日志与 OTEL 指标全景洞察</h5>
+                            <p className="text-xs text-gray-500 leading-relaxed">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
                           </div>
                         </div>
                       </div>
@@ -630,6 +630,28 @@ export default function TokensMonitor() {
                           <div className="flex-1 min-w-0">
                             <h5 className="text-xs font-bold text-gray-900 mb-1">会话成本与交互效率精细化分析</h5>
                             <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗与预计成本，可视化渠道与模型分布特征，精准定位高成本会话，优化资源配置与调用效率</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
+                            <Activity className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-xs font-bold text-gray-900 mb-1">业务运行健康度实时监控</h5>
+                            <p className="text-xs text-gray-500 leading-relaxed">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
+                            <Activity className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-xs font-bold text-gray-900 mb-1">会话全局运行态势监控</h5>
+                            <p className="text-xs text-gray-500 leading-relaxed">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
                           </div>
                         </div>
                       </div>

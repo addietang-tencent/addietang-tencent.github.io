@@ -186,6 +186,9 @@ export default function OpenClawDetail() {
 
   const clawName = claw.name;
 
+  // ── Configuration state ──
+  const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
+
   // ── Model state ──
   const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
   const [selectedModel, setSelectedModel] = useState(MODEL_PROVIDERS[0].versions[0].value);
@@ -585,6 +588,14 @@ export default function OpenClawDetail() {
   return (
     <TooltipProvider delayDuration={200}>
     <TenantLayout>
+      {isConfiguring && (
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            <p className="text-gray-600 font-medium">\u52a0\u8f7d\u4e2d...</p>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-6 py-8 page-enter">
         {/* Back */}
         <div className="flex items-center gap-3 mb-6">
@@ -713,9 +724,23 @@ export default function OpenClawDetail() {
                 </div>
               )}
 
-              <Button className="w-full text-sm" variant="outline" onClick={handleApplyModel}>
-                添加并应用
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    className="w-full text-sm" 
+                    variant="outline" 
+                    onClick={handleApplyModel}
+                    disabled={isConfiguring}
+                  >
+                    添加并应用
+                  </Button>
+                </TooltipTrigger>
+                {isConfiguring && (
+                  <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                    当前TAT状态不在线，无法操作
+                  </TooltipContent>
+                )}
+              </Tooltip>
 
             </div>
             {/* Lower: applied model - scrollable */}

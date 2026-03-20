@@ -269,17 +269,65 @@ export default function OpsObservation() {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-blue-900">运维观测需要开启 CLS 日志服务</h3>
-              <p className="text-xs text-blue-700 mt-2">授权开通后将自动采集日志及指标数据，支持通过全链路性能监控采集核心运行指标。2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
-              <div className="text-xs text-blue-700 mt-3 space-y-1 border-t border-blue-200 pt-3">
-                <p className="font-medium">开启 CLS 后还将获得：</p>
-                <div>• 会话管理：支持通过会话总览、会话链下钻还原及渠道模型分布分析</div>
-                <div>• Tokens 监控（按会话）：支持从按会话、消息维度查看 tokens、费用使用情况</div>
+              <p className="text-xs text-blue-700 mt-2">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+              
+              {/* 卡片布局 */}
+              <div className="relative mt-4 pt-4">
+                {/* 仪表盘背景 - 透明度70% */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 opacity-70 pointer-events-none"></div>
+                
+                {/* 卡片网格 */}
+                <div className="relative grid grid-cols-2 gap-3 z-10">
+                  {/* 资产盘点与风险可视 */}
+                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white flex-shrink-0">🛡️</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900">资产盘点与风险可视</p>
+                        <p className="text-xs text-gray-600 mt-1">自动发现并清点企业内所有 AI Agent 资产，实时侦测大模型调用与敏感凭证泄露，实现安全风险动态可视</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 深度审计与全链路源 */}
+                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white flex-shrink-0">📋</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900">深度审计与全链路源</p>
+                        <p className="text-xs text-gray-600 mt-1">完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 运行管控与环境隔离 */}
+                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white flex-shrink-0">🔒</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900">运行管控与环境隔离</p>
+                        <p className="text-xs text-gray-600 mt-1">通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密钥，实现主机行为与内网环境的主动隔离防护</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Skills 供应链安全扫描 */}
+                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white flex-shrink-0">⏱️</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-900">Skills 供应链安全扫描</p>
+                        <p className="text-xs text-gray-600 mt-1">对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <Button
               onClick={handleOpenCLS}
               disabled={isEnablingCls}
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
+              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
             >
               {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
             </Button>

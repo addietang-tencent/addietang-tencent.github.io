@@ -2,7 +2,7 @@
  * AdminLayout - 管控端布局
  * Design: 「流动蓝图」Fluid Blueprint
  * - 浅灰色背景 (#F0F2F8)
- * - 左侧固定导航栏 (256px)，白色背景
+ * - 左侧固定导航栏 (256px)，白色背景，可缩进
  * - 主色 #007AFF，导航分组
  */
 import { useState } from "react";
@@ -26,6 +26,7 @@ import {
   ExternalLink,
   Puzzle,
   Gauge,
+  ChevronLeft,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -91,6 +92,8 @@ const CURRENT_ADMIN = "alice@acompany.com";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
   const toggleGroup = (label: string) => {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
@@ -103,36 +106,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex min-h-screen" style={{ background: "#F0F2F8" }}>
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-100 flex flex-col z-40"
+      <aside className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 flex flex-col z-40 transition-all duration-300 ${
+        sidebarCollapsed ? "w-12" : "w-64"
+      }`}
         style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)" }}>
         {/* Logo */}
-        <Link href="/">
-        <div className="px-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-          <div className="h-16 flex items-center">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                🦞
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
-                <p className="text-xs text-gray-400">OpenClaw Enterprise</p>
+        {!sidebarCollapsed && (
+          <>
+            <Link href="/">
+            <div className="px-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="h-16 flex items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                    🦞
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
+                    <p className="text-xs text-gray-400">OpenClaw Enterprise</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        </Link>
-          {/* 前往用户端 */}
-          <div className="px-5">
-          <Link href="/my-openclaw">
-            <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
-              <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
-              <span>前往用户端</span>
+            </Link>
+              {/* 前往用户端 */}
+              <div className="px-5">
+              <Link href="/my-openclaw">
+                <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
+                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
+                  <span>前往用户端</span>
+                </div>
+              </Link>
             </div>
-          </Link>
-        </div>
+          </>
+        )}
 
         {/* Navigation */}
+        {!sidebarCollapsed && (
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           {NAV_GROUPS.map((group) => {
             const isCollapsed = collapsedGroups.has(group.label);
@@ -215,8 +225,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
+        )}
+        
+        {/* Collapsed Sidebar - Clickable Area */}
+        {sidebarCollapsed && (
+          <div className="flex-1 flex flex-col items-center py-4 cursor-pointer hover:bg-gray-50 transition-colors" 
+            onClick={() => setSidebarCollapsed(false)}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+              🦞
+            </div>
+          </div>
+        )}
 
         {/* User Footer */}
+        {!sidebarCollapsed && (
         <div className="border-t border-gray-100 p-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -242,14 +265,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        )}
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 flex-1 min-h-screen">
-        <div className="p-6">
+      <main className={`flex-1 min-h-screen transition-all duration-300 ${
+        sidebarCollapsed ? "ml-12" : "ml-64"
+      }`}>
+        {/* Top Bar with Collapse Button */}
+        {sidebarCollapsed && (
+          <div className="h-16 bg-white border-b border-gray-100 flex items-center px-6 sticky top-0 z-30" style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04)" }}>
+            <div className="ml-auto">
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                title="展开侧边栏"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+        <div className={sidebarCollapsed ? "p-6 pt-0" : "p-6"}>
           {children}
         </div>
       </main>
+      
+      {/* Collapse Button in Header when Sidebar is Expanded */}
+      {!sidebarCollapsed && (
+        <button
+          onClick={() => setSidebarCollapsed(true)}
+          className="fixed top-4 left-56 p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900 z-50"
+          title="收起侧边栏"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

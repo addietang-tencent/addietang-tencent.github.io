@@ -669,7 +669,7 @@ export default function MemberManagement() {
               </div>
               {addBtnHovered && (
                 <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
-                  根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户。
+                  根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户
                 </div>
               )}
             </div>

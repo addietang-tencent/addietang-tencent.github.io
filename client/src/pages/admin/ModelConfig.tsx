@@ -424,9 +424,9 @@ export default function ModelConfig() {
             {/* 厂商模型：版本 + API Key + 每日上限 */}
             {newModel.provider && !isCustomProvider && (
               <>
-                {selectedProviderData && selectedProviderData.versions.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>模型名称</Label>
+                <div className="space-y-2">
+                  <Label>模型名称</Label>
+                  {selectedProviderData && selectedProviderData.versions.length > 0 ? (
                     <Select value={newModel.version} onValueChange={(v) => setNewModel({ ...newModel, version: v })}>
                       <SelectTrigger className="bg-gray-50 w-full">
                         <SelectValue placeholder="选择模型版本" />
@@ -437,8 +437,12 @@ export default function ModelConfig() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
+                  ) : (
+                    <div className="bg-gray-50 w-full px-3 py-2 rounded-md border border-gray-200 text-gray-500 text-sm">
+                      暂无可用的模型版本
+                    </div>
+                  )}
+                </div>
                 <div className="space-y-2">
                   <Label>模型 URL</Label>
                   <Input

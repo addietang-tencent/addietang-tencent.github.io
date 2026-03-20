@@ -70,8 +70,8 @@ const runDurationData = [
 ];
 
 const METRIC_CARDS = [
-  { title: "清单处理总量", value: "13", unit: "", icon: BarChart3, color: "#10B981" },
-  { title: "清单入队", value: "13", unit: "", icon: TrendingUp, color: "#3B82F6" },
+  { title: "消息处理总量", value: "13", unit: "", icon: BarChart3, color: "#10B981" },
+  { title: "消息入队", value: "13", unit: "", icon: TrendingUp, color: "#3B82F6" },
   { title: "执行耗时 P95", value: "10s", unit: "", icon: Zap, color: "#F59E0B" },
   { title: "队列深度 P95", value: "0", unit: "", icon: Activity, color: "#8B5CF6" },
   { title: "卡死会话", value: "4", unit: "", icon: AlertCircle, color: "#EF4444" },

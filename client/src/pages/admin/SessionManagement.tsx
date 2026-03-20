@@ -220,6 +220,9 @@ export default function SessionManagement() {
   const [isClosingCls, setIsClosingCls] = useState(false);
   const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
   const [clsAgreed, setClsAgreed] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [sortColumn, setSortColumn] = useState<"tokens" | "cost" | "updatedAt">("updatedAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -311,10 +314,51 @@ export default function SessionManagement() {
   };
 
   const handleOpenCLS = () => {
+    // 检查授权状态（从后台缓存数据中获取）
+    const isAuthorized = localStorage.getItem('clsAuthorized') === 'true';
+    
+    if (!isAuthorized) {
+      // 未授权，显示授权 Dialog
+      setShowAuthDialog(true);
+      // 启动自动检测授权状态
+      setIsCheckingAuth(true);
+      const interval = setInterval(() => {
+        const authorized = localStorage.getItem('clsAuthorized') === 'true';
+        if (authorized) {
+          // 已授权，关闭 Dialog 并继续
+          setShowAuthDialog(false);
+          setIsCheckingAuth(false);
+          clearInterval(interval);
+          // 继续开启 CLS 日志服务
+          proceedWithClsSetup();
+        }
+      }, 2000);
+      setAuthCheckInterval(interval);
+    } else {
+      // 已授权，直接继续
+      proceedWithClsSetup();
+    }
+  };
+
+  const proceedWithClsSetup = () => {
     // 打开腾讯云控制台
     window.open('https://console.cloud.tencent.com/cvm/overview', '_blank');
     // 设置一个标记，表示用户已点击开启CLS
     localStorage.setItem('clsOpenClicked', 'true');
+  };
+
+  const handleGoToAuth = () => {
+    // 打开授权页面
+    window.open('https://console.cloud.tencent.com/cam/role/grant?roleName=CVM_QCSLinkedRoleInClawProAgent&serviceLinkedRole=1', '_blank');
+  };
+
+  const handleCancelAuth = () => {
+    setShowAuthDialog(false);
+    setIsCheckingAuth(false);
+    if (authCheckInterval) {
+      clearInterval(authCheckInterval);
+      setAuthCheckInterval(null);
+    }
   };
 
   const handleConfirmClsAgreement = () => {
@@ -692,7 +736,37 @@ export default function SessionManagement() {
         </div>
       )}
 
-      {/* 关闭 CLS 确认对话框 */}
+      {/* CLS 授权 Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>需要授权</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 my-4">
+            <p className="text-sm text-gray-700">当前 CLS 日志服务需要授权，请点击下方按钮前往腾讯云 CAM 页面进行授权。</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs text-blue-700">授权地址：</p>
+              <p className="text-xs text-blue-600 break-all font-mono mt-1">https://console.cloud.tencent.com/cam/role/grant?roleName=CVM_QCSLinkedRoleInClawProAgent&serviceLinkedRole=1</p>
+            </div>
+            {isCheckingAuth && (
+              <p className="text-xs text-gray-500 text-center">检测中...（授权完成后将自动继续）</p>
+            )}
+          </div>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={handleCancelAuth}>
+              取消
+            </Button>
+            <Button
+              onClick={handleGoToAuth}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              前往授权
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+       {/* 关闭CLS确认对话框 */}
       <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

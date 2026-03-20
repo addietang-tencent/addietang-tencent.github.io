@@ -651,7 +651,9 @@ export default function MemberManagement() {
           <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="border-gray-200 text-gray-700 hover:bg-gray-50"
+            size="icon"
+            className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+            title="导出用户列表"
             onClick={() => {
               const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
               const rows = members.map((m: any) => [
@@ -672,8 +674,7 @@ export default function MemberManagement() {
               toast.success("用户列表已导出");
             }}
           >
-            <Download className="w-4 h-4 mr-1.5" />
-            导出
+            <Download className="w-4 h-4" />
           </Button>
           {members.length >= 15 ? (
             <div

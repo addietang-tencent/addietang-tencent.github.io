@@ -4,7 +4,7 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -75,6 +75,56 @@ const METRIC_CARDS = [
   { title: "执行耗时 P95", value: "10s", unit: "", icon: "", color: "#F59E0B" },
   { title: "队列深度 P95", value: "0", unit: "", icon: "", color: "#8B5CF6" },
   { title: "卡死会话", value: "4", unit: "", icon: "", color: "#EF4444" },
+];
+
+// 现有观测功能卡片
+const EXISTING_OBSERVATION_CARDS = [
+  {
+    id: "health-monitoring",
+    title: "业务运行健康度实时监控",
+    description: "聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行",
+    icon: Activity,
+    color: "#10B981",
+  },
+  {
+    id: "log-metrics-insight",
+    title: "应用日志与 OTEL 指标全景洞察",
+    description: "多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时",
+    icon: BarChart3,
+    color: "#3B82F6",
+  },
+];
+
+// CLS 新增功能卡片
+const CLS_NEW_CARDS = [
+  {
+    id: "high-cost-session",
+    title: "高成本会话实时分析与管控",
+    description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高成本交互，优化模型调用成本与资源效率",
+    icon: TrendingUp,
+    color: "#F59E0B",
+  },
+  {
+    id: "single-session-cost",
+    title: "单会话全链路成本透视",
+    description: "拆解每轮交互的 Token 流量、成本占比与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
+    icon: Zap,
+    color: "#AF52DE",
+  },
+  {
+    id: "session-global-monitoring",
+    title: "会话全局运行态势监控",
+    description: "聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析",
+    icon: Activity,
+    color: "#34C759",
+  },
+  {
+    id: "session-efficiency",
+    title: "会话成本与交互效率精细化分析",
+    description: "聚焦单会话 Token 消耗与预计成本，可视化渠道与模型分布特征，精准定位高成本会话，优化资源配置与调用效率",
+    icon: BarChart3,
+    color: "#FF9500",
+  },
 ];
 
 // Legend 说明映射
@@ -265,60 +315,98 @@ export default function OpsObservation() {
 
       {/* CLS 日志服务未开启提示 */}
       {!clsEnabled && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
-          <div className="flex items-start justify-between">
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
+          <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-blue-900">运维观测需要开启 CLS 日志服务</h3>
-              <p className="text-xs text-blue-700 mt-2">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+              <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
+              <p className="text-xs text-blue-700 mb-6">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               
-              {/* 卡片布局 */}
-              <div className="relative mt-4 pt-4">
+              {/* 卡片布局 - 仪表盘背景 + 两块卡片 */}
+              <div className="relative rounded-lg overflow-hidden">
                 {/* 仪表盘背景 - 透明度70% */}
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 opacity-70 pointer-events-none"></div>
+                <div 
+                  className="absolute inset-0 rounded-lg opacity-70 pointer-events-none"
+                  style={{
+                    backgroundImage: "url('/dashboard_background.webp')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
                 
-                {/* 卡片网格 */}
-                <div className="relative grid grid-cols-2 gap-3 z-10">
-                  {/* 资产盘点与风险可视 */}
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white flex-shrink-0">🛡️</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-900">资产盘点与风险可视</p>
-                        <p className="text-xs text-gray-600 mt-1">自动发现并清点企业内所有 AI Agent 资产，实时侦测大模型调用与敏感凭证泄露，实现安全风险动态可视</p>
-                      </div>
+                {/* 卡片内容 */}
+                <div className="relative z-10 p-6 space-y-6">
+                  {/* 第一块：现有观测功能 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">现有观测功能</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {EXISTING_OBSERVATION_CARDS.map((card) => {
+                        const Icon = card.icon;
+                        return (
+                          <div
+                            key={card.id}
+                            className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                            style={{
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div
+                                className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                                style={{ background: card.color }}
+                              >
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h5 className="text-xs font-bold text-gray-900 mb-1">
+                                  {card.title}
+                                </h5>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                  {card.description}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                  
-                  {/* 深度审计与全链路源 */}
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white flex-shrink-0">📋</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-900">深度审计与全链路源</p>
-                        <p className="text-xs text-gray-600 mt-1">完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* 运行管控与环境隔离 */}
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white flex-shrink-0">🔒</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-900">运行管控与环境隔离</p>
-                        <p className="text-xs text-gray-600 mt-1">通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密钥，实现主机行为与内网环境的主动隔离防护</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Skills 供应链安全扫描 */}
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white flex-shrink-0">⏱️</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-900">Skills 供应链安全扫描</p>
-                        <p className="text-xs text-gray-600 mt-1">对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信</p>
-                      </div>
+
+                  {/* 分割线 */}
+                  <div className="border-t border-gray-200" />
+
+                  {/* 第二块：CLS 新增功能 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {CLS_NEW_CARDS.map((card) => {
+                        const Icon = card.icon;
+                        return (
+                          <div
+                            key={card.id}
+                            className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                            style={{
+                              boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                            }}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div
+                                className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                                style={{ background: card.color }}
+                              >
+                                <Icon className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h5 className="text-xs font-bold text-gray-900 mb-1">
+                                  {card.title}
+                                </h5>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                  {card.description}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

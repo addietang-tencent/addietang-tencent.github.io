@@ -619,6 +619,12 @@ export default function OpenClawDetail() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               运行中
             </span>
+            {isConfiguring && (
+              <div className="flex items-center gap-1 ml-2 px-2 py-1 bg-blue-50 rounded-lg">
+                <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                <span className="text-xs text-blue-600 font-medium">加载中</span>
+              </div>
+            )}
           </div>
         </div>
 

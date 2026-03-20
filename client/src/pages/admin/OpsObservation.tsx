@@ -466,9 +466,9 @@ export default function OpsObservation() {
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logLevelData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="level" />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="level" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
                 <Bar dataKey="count" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
@@ -482,9 +482,9 @@ export default function OpsObservation() {
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logModuleData} layout="vertical" margin={{ left: 20, right: 30, top: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis type="number" />
+                <XAxis type="number" tick={{ fontSize: 12 }} />
                 <YAxis dataKey="name" type="category" width={170} tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
                 <Bar dataKey="count" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
@@ -511,7 +511,7 @@ export default function OpsObservation() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="processed" name="已处理完成的消息数量" stroke="#10B981" dot={false} />
                 <Line type="monotone" dataKey="queued" name="等待处理的消息数量" stroke="#3B82F6" dot={false} />
               </LineChart>
@@ -554,7 +554,7 @@ export default function OpsObservation() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="depth_avg" name="队列长度 P95" stroke="#8B5CF6" dot={false} />
                 <Line type="monotone" dataKey="wait_ms_avg" name="等待时间 P95" stroke="#06B6D4" dot={false} />
               </LineChart>
@@ -597,7 +597,7 @@ export default function OpsObservation() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="time" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
+                <Tooltip contentStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="run_duration_p50" name="处理耗时 P50" stroke="#F59E0B" dot={false} />
                 <Line type="monotone" dataKey="run_duration_p95" name="处理耗时 P95" stroke="#EF4444" dot={false} />
               </LineChart>

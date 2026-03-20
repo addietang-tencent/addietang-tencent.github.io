@@ -335,9 +335,9 @@ export default function OpsObservation() {
 
           {/* 卡片功能展示 - 现有观测功能 + CLS 新增功能 */}
           <div className="space-y-6 mb-8">
-            {/* 第一块：现有观测功能 */}
+            {/* 第一块：CLS 新增功能 */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">现有观测功能</h4>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
                   const Icon = card.icon;

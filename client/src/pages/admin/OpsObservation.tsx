@@ -223,6 +223,8 @@ export default function OpsObservation() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+  const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
+  const [clsAgreed, setClsAgreed] = useState(false);
 
   // 处理日期变化
   const handleFromChange = (value: string) => {
@@ -249,14 +251,50 @@ export default function OpsObservation() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  // 监听 clsOpenClicked 标记，显示协议弹窗
+  useEffect(() => {
+    const checkClsOpen = () => {
+      if (localStorage.getItem('clsOpenClicked') === 'true') {
+        localStorage.removeItem('clsOpenClicked');
+        setShowClsAgreementDialog(true);
+      }
+    };
+    
+    // 页面加载时检查
+    checkClsOpen();
+    
+    // 监听 focus 事件
+    window.addEventListener('focus', checkClsOpen);
+    return () => window.removeEventListener('focus', checkClsOpen);
+  }, []);
+
   const handleOpenCLS = () => {
+    // 打开腾讯云控制台
+    window.open('https://console.cloud.tencent.com/cvm/overview', '_blank');
+    // 设置一个标记，表示用户已点击开启CLS
+    localStorage.setItem('clsOpenClicked', 'true');
+    // 监听页面获得焦点，显示协议弹窗
+    const handleFocus = () => {
+      if (localStorage.getItem('clsOpenClicked') === 'true') {
+        localStorage.removeItem('clsOpenClicked');
+        setShowClsAgreementDialog(true);
+        window.removeEventListener('focus', handleFocus);
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+  };
+
+  const handleConfirmClsAgreement = () => {
+    if (!clsAgreed) return;
     setIsEnablingCls(true);
     // 模拟 loading 1.5 秒
     setTimeout(() => {
       setClsEnabled(true);
-      localStorage.setItem("globalClsEnabled", "true");
+      localStorage.setItem('globalClsEnabled', 'true');
       setIsEnablingCls(false);
       setShowSuccessMessage(true);
+      setShowClsAgreementDialog(false);
+      setClsAgreed(false);
       // 3 秒后隐藏成功提示
       setTimeout(() => {
         setShowSuccessMessage(false);
@@ -332,6 +370,47 @@ export default function OpsObservation() {
               </Button>
             </div>
           </div>
+
+          {/* CLS 协议确认弹窗 */}
+          <Dialog open={showClsAgreementDialog} onOpenChange={setShowClsAgreementDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>确认免费额度</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="cls-agreement"
+                    checked={clsAgreed}
+                    onChange={(e) => setClsAgreed(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1">
+                    为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 OpenClaw 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
+                  </label>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowClsAgreementDialog(false);
+                    setClsAgreed(false);
+                  }}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleConfirmClsAgreement}
+                  disabled={!clsAgreed || isEnablingCls}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                >
+                  {isEnablingCls ? "开启中..." : "确认"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* 卡片功能展示 - 现有观测功能 + CLS 新增功能 */}
           <div className="space-y-6 mb-8">

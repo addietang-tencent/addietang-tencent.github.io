@@ -635,22 +635,38 @@ export default function MemberManagement() {
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
             <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额</p>
           </div>
+        </div>
+
+        {/* Search + Add Button Row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="relative max-w-sm flex-1 mr-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="搜索用户 ID..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="pl-9 bg-white border-gray-200"
+            />
+          </div>
           {members.length >= 15 ? (
             <div
               className="relative inline-block cursor-not-allowed"
               onMouseEnter={() => setAddBtnHovered(true)}
               onMouseLeave={() => setAddBtnHovered(false)}
             >
-              <Button
-                className="opacity-50 pointer-events-none select-none"
-                style={{ background: "#9ca3af" }}
-                tabIndex={-1}
-                aria-disabled="true"
-              >
-                <Plus className="w-4 h-4 mr-1.5" />
-                添加用户
-                <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
+              <div className="relative">
+                <Button
+                  className="pointer-events-none select-none"
+                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  tabIndex={-1}
+                  aria-disabled="true"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  添加用户
+                  <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+                <div className="absolute inset-0 rounded-md bg-white/50 pointer-events-none" />
+              </div>
               {addBtnHovered && (
                 <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
                   根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户。
@@ -678,19 +694,6 @@ export default function MemberManagement() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-        </div>
-
-        {/* Search */}
-        <div className="mb-4">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="搜索用户 ID..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-white border-gray-200"
-            />
-          </div>
         </div>
 
         {/* Table */}

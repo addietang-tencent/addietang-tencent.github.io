@@ -1200,7 +1200,7 @@ export default function MemberManagement() {
             {(deleteCheckDialog?.clawCount ?? 0) > 0 ? (
               <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-1">
                 <p className="font-medium">无法删除该用户</p>
-                <p>请让用户自行删除所有 OpenClaw，或由管理员在 OpenClaw 监控页手动删除该用户名下的所有 OpenClaw 后，再执行删除操作。</p>
+                <p>请先删除该用户名下的所有 OpenClaw 实例后，再执行删除操作。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。</p>
               </div>
             ) : (
               <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">

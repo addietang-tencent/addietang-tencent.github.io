@@ -631,25 +631,42 @@ export default function MemberManagement() {
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
             <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额</p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                <Plus className="w-4 h-4 mr-1.5" />
-                添加用户
-                <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                单个添加
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
-                <Upload className="w-4 h-4 mr-2" />
-                批量导入
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      style={members.length >= 15 ? {} : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                      disabled={members.length >= 15}
+                      className={members.length >= 15 ? "opacity-50 cursor-not-allowed" : ""}
+                    >
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      添加用户
+                      <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {members.length < 15 && (
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        单个添加
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
+                        <Upload className="w-4 h-4 mr-2" />
+                        批量导入
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  )}
+                </DropdownMenu>
+              </div>
+            </TooltipTrigger>
+            {members.length >= 15 && (
+              <TooltipContent side="bottom" className="max-w-xs">
+                根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户。
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
 
         {/* Search */}

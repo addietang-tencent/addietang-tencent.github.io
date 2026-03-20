@@ -315,21 +315,102 @@ export default function OpsObservation() {
 
       {/* CLS 日志服务未开启提示 */}
       {!clsEnabled && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
-              <p className="text-xs text-blue-700">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+        <>
+          {/* CLS 提示弹框 */}
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
+                <p className="text-xs text-blue-700">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费，<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+              </div>
+              <Button
+                onClick={handleOpenCLS}
+                disabled={isEnablingCls}
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
+              >
+                {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
+              </Button>
             </div>
-            <Button
-              onClick={handleOpenCLS}
-              disabled={isEnablingCls}
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
-            >
-              {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
-            </Button>
           </div>
-        </div>
+
+          {/* 卡片功能展示 - 现有观测功能 + CLS 新增功能 */}
+          <div className="space-y-6 mb-8">
+            {/* 第一块：现有观测功能 */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">现有观测功能</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {EXISTING_OBSERVATION_CARDS.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <div
+                      key={card.id}
+                      className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                      style={{
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: card.color }}
+                        >
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="text-xs font-bold text-gray-900 mb-1">
+                            {card.title}
+                          </h5>
+                          <p className="text-xs text-gray-500 leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 分割线 */}
+            <div className="border-t border-gray-200" />
+
+            {/* 第二块：CLS 新增功能 */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {CLS_NEW_CARDS.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <div
+                      key={card.id}
+                      className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                      style={{
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: card.color }}
+                        >
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="text-xs font-bold text-gray-900 mb-1">
+                            {card.title}
+                          </h5>
+                          <p className="text-xs text-gray-500 leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* CLS 开启成功提示 */}

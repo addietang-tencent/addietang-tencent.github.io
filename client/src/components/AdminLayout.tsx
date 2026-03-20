@@ -230,19 +230,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Collapsed Sidebar - Clickable Area */}
         {sidebarCollapsed && (
           <>
-            <div className="h-16 flex items-center justify-center gap-2 border-b border-gray-100 px-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg cursor-pointer hover:opacity-80 transition-opacity"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                onClick={() => setSidebarCollapsed(false)}
-                title="展开侧边栏">
-                🦞
-              </div>
+            <div className="h-16 flex items-center justify-center border-b border-gray-100 px-2">
               <button
                 onClick={() => setSidebarCollapsed(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                className="flex-1 flex items-center justify-center p-2 rounded-lg hover:bg-blue-100 transition-colors"
                 title="展开侧边栏"
               >
-                <ChevronRight className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                  🦞
+                </div>
               </button>
             </div>
             <div className="flex-1" />

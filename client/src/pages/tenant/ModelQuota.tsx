@@ -249,9 +249,13 @@ export default function ModelQuota() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">模型额度</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              查看所选时间范围内的模型 Token 使用情况
-            </p>
+            <div className="text-sm text-gray-600 mt-2 space-y-1 leading-relaxed">
+              <p>查看所选时间范围内的模型 Token使用情况。</p>
+              <p>统计数据为模型API处理的全量Token，包含输入Token(缓存未命中)、输入Token(缓存命中)、输出Token。</p>
+              <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
+              <p>所以页面展示的总 Token数≠等额的实际计费成本。</p>
+              <p>如需了解各模型的缓存输入Token定价，请参考对应模型提供商的官方计费文档。</p>
+            </div>
           </div>
 
           {/* Time Filter + Refresh */}

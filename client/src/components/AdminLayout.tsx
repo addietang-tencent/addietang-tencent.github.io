@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen" style={{ background: "#F0F2F8" }}>
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 flex flex-col z-40 transition-all duration-300 ${
-        sidebarCollapsed ? "w-12" : "w-64"
+        sidebarCollapsed ? "w-20" : "w-64"
       }`}
         style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)" }}>
         {/* Logo */}

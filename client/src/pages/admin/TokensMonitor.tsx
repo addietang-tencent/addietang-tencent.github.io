@@ -476,7 +476,7 @@ export default function TokensMonitor() {
 
         {/* 提示语区域 - 简化版本，第一行 + hover 显示详细文案 */}
         <div className="flex items-center gap-2 mb-6">
-          <span className="text-xs text-gray-700">查看所选时间范围内的模型 Token 使用情况。</span>
+          <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
           <UITooltip>
             <UITooltipTrigger asChild>
               <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">

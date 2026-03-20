@@ -813,6 +813,32 @@ export default function TokensMonitor() {
             )}
             {clsEnabled && (
               <>
+              {/* 提示语区域 - 参考私有网络和子网样式 */}
+              <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
+                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
+                  <li className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>查看所选时间范围内的模型 Token 使用情况。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>因此页面展示的总 Token 数不等于等额的实际计费成本。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="shrink-0">•</span>
+                    <span>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</span>
+                  </li>
+                </ul>
+              </div>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-gray-400">展示高成本会话 TOP 5，点击查看会话详情</p>
                 <Button

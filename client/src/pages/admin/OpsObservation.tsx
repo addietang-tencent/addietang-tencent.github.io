@@ -431,7 +431,7 @@ export default function OpsObservation() {
           <Button
             onClick={() => setShowCloseClsConfirm(true)}
             variant="outline"
-            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-red-50"
+            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
           >
             关闭CLS服务
           </Button>

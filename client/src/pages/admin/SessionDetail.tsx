@@ -176,8 +176,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">会话成本</span>
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <DollarSign className="w-3.5 h-3.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-white" />
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalCost}</div>
@@ -190,8 +190,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">平均轮次成本</span>
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
-              <DollarSign className="w-3.5 h-3.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-white" />
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.avgCostPerRound}</div>
@@ -204,8 +204,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">TOKEN 总量</span>
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalTokens}</div>
@@ -218,8 +218,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">会话轮次</span>
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-              <MessageSquare className="w-3.5 h-3.5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" />
             </div>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>

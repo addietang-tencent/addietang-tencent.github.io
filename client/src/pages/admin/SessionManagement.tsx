@@ -218,6 +218,8 @@ export default function SessionManagement() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+  const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
+  const [clsAgreed, setClsAgreed] = useState(false);
   const [sortColumn, setSortColumn] = useState<"tokens" | "cost" | "updatedAt">("updatedAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -309,13 +311,23 @@ export default function SessionManagement() {
   };
 
   const handleOpenCLS = () => {
+    // 打开腾讯云控制台
+    window.open('https://console.cloud.tencent.com/cvm/overview', '_blank');
+    // 设置一个标记，表示用户已点击开启CLS
+    localStorage.setItem('clsOpenClicked', 'true');
+  };
+
+  const handleConfirmClsAgreement = () => {
+    if (!clsAgreed) return;
     setIsEnablingCls(true);
     // 模拟 loading 1.5 秒
     setTimeout(() => {
       setClsEnabled(true);
-      localStorage.setItem("globalClsEnabled", "true");
+      localStorage.setItem('globalClsEnabled', 'true');
       setIsEnablingCls(false);
       setShowSuccessMessage(true);
+      setShowClsAgreementDialog(false);
+      setClsAgreed(false);
       // 3 秒后隐藏成功提示
       setTimeout(() => {
         setShowSuccessMessage(false);

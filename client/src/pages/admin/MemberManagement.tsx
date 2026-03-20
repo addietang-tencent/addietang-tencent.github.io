@@ -41,6 +41,9 @@ const MOCK_MEMBERS_BASE = [
   { id: "jack@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-20" },
   { id: "kate@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-07-05" },
   { id: "leo@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-22" },
+  { id: "mike@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
+  { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
+  { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
 ];
 
 const LAST_CLAW_LIMIT = 3;
@@ -513,6 +516,7 @@ export default function MemberManagement() {
   const [batchImportResult, setBatchImportResult] = useState<{ success: number; fail: number } | null>(null);
   const [showResetDialog, setShowResetDialog] = useState<string | null>(null);
   const [editMemberId, setEditMemberId] = useState<string | null>(null);
+  const [addBtnHovered, setAddBtnHovered] = useState(false);
 
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
@@ -631,42 +635,49 @@ export default function MemberManagement() {
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
             <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额</p>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      style={members.length >= 15 ? {} : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                      disabled={members.length >= 15}
-                      className={members.length >= 15 ? "opacity-50 cursor-not-allowed" : ""}
-                    >
-                      <Plus className="w-4 h-4 mr-1.5" />
-                      添加用户
-                      <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  {members.length < 15 && (
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        单个添加
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        批量导入
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  )}
-                </DropdownMenu>
-              </div>
-            </TooltipTrigger>
-            {members.length >= 15 && (
-              <TooltipContent side="bottom" className="max-w-xs">
-                根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户。
-              </TooltipContent>
-            )}
-          </Tooltip>
+          {members.length >= 15 ? (
+            <div
+              className="relative inline-block cursor-not-allowed"
+              onMouseEnter={() => setAddBtnHovered(true)}
+              onMouseLeave={() => setAddBtnHovered(false)}
+            >
+              <Button
+                className="opacity-50 pointer-events-none select-none"
+                style={{ background: "#9ca3af" }}
+                tabIndex={-1}
+                aria-disabled="true"
+              >
+                <Plus className="w-4 h-4 mr-1.5" />
+                添加用户
+                <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+              </Button>
+              {addBtnHovered && (
+                <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
+                  根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户。
+                </div>
+              )}
+            </div>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  添加用户
+                  <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  单个添加
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  批量导入
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Search */}

@@ -56,7 +56,7 @@ export const MOCK_OPENCLAW_LIST = [
   {
     id: "oc-004",
     name: "数据分析助手",
-    status: "PENDING",
+    status: "running",
     createdAt: "2026-03-13 08:30:00",
     model: "腾讯云 DeepSeek",
     modelVersion: "DeepSeek V3 0324",

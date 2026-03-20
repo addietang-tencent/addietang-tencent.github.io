@@ -1246,6 +1246,8 @@ export default function OpenClawDetail() {
 
         </DialogContent>
       </Dialog>
+      
+
     </TenantLayout>
     </TooltipProvider>
   );

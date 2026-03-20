@@ -648,6 +648,33 @@ export default function MemberManagement() {
               className="pl-9 bg-white border-gray-200"
             />
           </div>
+          <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="border-gray-200 text-gray-700 hover:bg-gray-50"
+            onClick={() => {
+              const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
+              const rows = members.map((m: any) => [
+                m.id || "",
+                m.name || m.username || "",
+                m.role || "",
+                m.status || "",
+                m.createdAt || m.created_at || "",
+              ]);
+              const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+              const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `用户列表_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success("用户列表已导出");
+            }}
+          >
+            <Download className="w-4 h-4 mr-1.5" />
+            导出
+          </Button>
           {members.length >= 15 ? (
             <div
               className="relative inline-block cursor-not-allowed"
@@ -694,6 +721,7 @@ export default function MemberManagement() {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+          </div>
         </div>
 
         {/* Table */}

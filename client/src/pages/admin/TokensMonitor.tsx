@@ -193,6 +193,8 @@ export default function TokensMonitor() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
+  const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
   const [globalLimit, setGlobalLimit] = useState<number | null>(() => {
     const mode = localStorage.getItem("globalLimitMode");
     if (mode === "unlimited") return null;
@@ -269,10 +271,9 @@ export default function TokensMonitor() {
   };
 
   const proceedWithClsSetup = () => {
-    // 打开腾讯云控制台
-    window.open('https://console.cloud.tencent.com/cvm/overview', '_blank');
-    // 设置一个标记，表示用户已点击开启CLS
-    localStorage.setItem('clsOpenClicked', 'true');
+    // 显示免费额度 Dialog
+    setShowFreeQuotaDialog(true);
+    setFreeQuotaAgreed(false);
   };
 
   const handleGoToAuth = () => {
@@ -287,6 +288,31 @@ export default function TokensMonitor() {
       clearInterval(authCheckInterval);
       setAuthCheckInterval(null);
     }
+  };
+
+  const handleConfirmFreeQuota = () => {
+    if (!freeQuotaAgreed) return;
+    setShowFreeQuotaDialog(false);
+    setIsEnablingCls(true);
+    setTimeout(() => {
+      setClsEnabled(true);
+      localStorage.setItem('globalClsEnabled', 'true');
+      setIsEnablingCls(false);
+      setShowSuccessMessage(true);
+      setFreeQuotaAgreed(false);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    }, 1500);
+  };
+
+  const handleGoToCalcDetail = () => {
+    window.open('https://cloud.tencent.com/document/product/614/45802', '_blank');
+  };
+
+  const handleCancelFreeQuota = () => {
+    setShowFreeQuotaDialog(false);
+    setFreeQuotaAgreed(false);
   };
 
   const handleConfirmClsAgreement = () => {
@@ -883,6 +909,55 @@ export default function TokensMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 免费额度 Dialog */}
+      <Dialog open={showFreeQuotaDialog} onOpenChange={setShowFreeQuotaDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>免费额度说明</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 my-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+              <p className="text-sm text-gray-700">
+                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 <span className="font-semibold text-blue-600">700 台</span> OpenClaw 机器的日志用量；服务到期后，CLS 将按量计费。计费详情请参考{' '}
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleGoToCalcDetail();
+                  }}
+                  className="text-blue-600 hover:text-blue-700 underline"
+                >
+                  计费详情
+                </a>
+                。
+              </p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={freeQuotaAgreed}
+                onChange={(e) => setFreeQuotaAgreed(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">我已阅读并同意免费额度说明</span>
+            </label>
+          </div>
+          <DialogFooter className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={handleCancelFreeQuota}>
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirmFreeQuota}
+              disabled={!freeQuotaAgreed}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300"
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 关闭CLS确认对话框 */}
        <Dialog open={showCloseClsConfirm} onOpenChange={setShowCloseClsConfirm}>
         <DialogContent className="max-w-sm">

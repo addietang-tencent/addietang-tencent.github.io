@@ -766,14 +766,10 @@ export default function SessionManagement() {
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>需要授权</DialogTitle>
+            <DialogTitle>开通服务授权</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-700">当前 CLS 日志服务需要授权，请点击下方按钮前往腾讯云 CAM 页面进行授权。</p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-xs text-blue-700">授权地址：</p>
-              <p className="text-xs text-blue-600 break-all font-mono mt-1">https://console.cloud.tencent.com/cam/role/grant?roleName=CVM_QCSLinkedRoleInClawProAgent&serviceLinkedRole=1</p>
-            </div>
+            <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             {isCheckingAuth && (
               <p className="text-xs text-gray-500 text-center">检测中...（授权完成后将自动继续）</p>
             )}

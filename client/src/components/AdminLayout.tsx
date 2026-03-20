@@ -281,7 +281,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content */}
       <main className={`flex-1 min-h-screen transition-all duration-300 ${
-        sidebarCollapsed ? "ml-12" : "ml-64"
+        sidebarCollapsed ? "ml-20" : "ml-64"
       }`}>
         {/* Top Bar with Collapse Button */}
         {sidebarCollapsed && (

@@ -70,11 +70,11 @@ const runDurationData = [
 ];
 
 const METRIC_CARDS = [
-  { title: "清单处理总量", value: "13", unit: "", icon: "", color: "#10B981" },
-  { title: "清单入队", value: "13", unit: "", icon: "", color: "#3B82F6" },
-  { title: "执行耗时 P95", value: "10s", unit: "", icon: "", color: "#F59E0B" },
-  { title: "队列深度 P95", value: "0", unit: "", icon: "", color: "#8B5CF6" },
-  { title: "卡死会话", value: "4", unit: "", icon: "", color: "#EF4444" },
+  { title: "清单处理总量", value: "13", unit: "", icon: BarChart3, color: "#10B981" },
+  { title: "清单入队", value: "13", unit: "", icon: TrendingUp, color: "#3B82F6" },
+  { title: "执行耗时 P95", value: "10s", unit: "", icon: Zap, color: "#F59E0B" },
+  { title: "队列深度 P95", value: "0", unit: "", icon: Activity, color: "#8B5CF6" },
+  { title: "卡死会话", value: "4", unit: "", icon: AlertCircle, color: "#EF4444" },
 ];
 
 // 现有观测功能卡片
@@ -521,16 +521,21 @@ export default function OpsObservation() {
       {clsEnabled && (
         <>
       <div className="grid grid-cols-5 gap-4 mb-8">
-        {METRIC_CARDS.map((card, idx) => (
-          <div key={idx} className="bg-white rounded-lg border border-gray-100 p-4">
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-xs text-gray-500">{card.title}</span>
-              <span className="text-lg">{card.icon}</span>
+        {METRIC_CARDS.map((card, idx) => {
+          const Icon = card.icon;
+          return (
+            <div key={idx} className="bg-white rounded-lg border border-gray-100 p-4">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-xs text-gray-500">{card.title}</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: card.color }}>
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">{card.value}</div>
+              <div className="text-xs text-gray-400">{card.unit}</div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mb-1">{card.value}</div>
-            <div className="text-xs text-gray-400">{card.unit}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Application Logs Dashboard */}

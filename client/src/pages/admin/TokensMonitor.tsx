@@ -878,7 +878,7 @@ export default function TokensMonitor() {
                 </ul>
               </div>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-gray-400">展示高成本会话 TOP 5，点击查看会话详情</p>
+                <p className="text-xs text-gray-400">全部会话已按成本排序，点击可查看会话详情</p>
                 <Button
                   onClick={() => setShowCloseClsConfirm(true)}
                   variant="outline"

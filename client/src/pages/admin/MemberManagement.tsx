@@ -1466,31 +1466,22 @@ export default function MemberManagement() {
 
             {/* 将被删除的资源列表 */}
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
-              <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1">将被删除的资源</p>
-              {/* 用户账号 - 始终删除 */}
-              <div className="flex items-center gap-2">
+              {/* 标题行：删除 icon + 文字，字号与资源项一致，不加粗 */}
+              <div className="flex items-center gap-2 mb-1">
                 <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                <span className="text-sm text-red-600">
-                  用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
-                </span>
+                <span className="text-sm text-red-600">将被删除的资源</span>
               </div>
-              {/* 自动分配 VPC：一并删除 */}
+              {/* 用户账号 - 始终删除，无 icon */}
+              <span className="text-sm text-red-600 block">
+                用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
+              </span>
+              {/* 自动分配 VPC：一并删除，无 icon */}
               {deleteConfirmDialog?.vpcType === "auto" && deleteConfirmDialog?.vpcName && (
-                <div className="flex items-center gap-2">
-                  <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                  <span className="text-sm text-red-600">
-                    私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
-                  </span>
-                </div>
+                <span className="text-sm text-red-600 block">
+                  私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
+                </span>
               )}
             </div>
-
-            {/* 自定义 VPC 说明 */}
-            {deleteConfirmDialog?.vpcType === "custom" && (
-              <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-600">
-                该用户使用自定义 VPC，私有网络不受影响，不会被删除。
-              </div>
-            )}
 
             <p className="text-sm text-red-600 font-medium">此操作不可撤销，请谨慎确认。</p>
           </div>

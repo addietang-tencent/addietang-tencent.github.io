@@ -316,30 +316,25 @@ export default function SessionManagement() {
   };
 
   const handleOpenCLS = () => {
-    // 检查授权状态（从后台缓存数据中获取）
-    const isAuthorized = localStorage.getItem('clsAuthorized') === 'true';
+    // 每次点击时重置授权状态，以便每次都能显示授权 Dialog
+    localStorage.removeItem('clsAuthorized');
     
-    if (!isAuthorized) {
-      // 未授权，显示授权 Dialog
-      setShowAuthDialog(true);
-      // 启动自动检测授权状态
-      setIsCheckingAuth(true);
-      const interval = setInterval(() => {
-        const authorized = localStorage.getItem('clsAuthorized') === 'true';
-        if (authorized) {
-          // 已授权，关闭 Dialog 并继续
-          setShowAuthDialog(false);
-          setIsCheckingAuth(false);
-          clearInterval(interval);
-          // 继续开启 CLS 日志服务
-          proceedWithClsSetup();
-        }
-      }, 2000);
-      setAuthCheckInterval(interval);
-    } else {
-      // 已授权，直接继续
-      proceedWithClsSetup();
-    }
+    // 显示授权 Dialog
+    setShowAuthDialog(true);
+    // 启动自动检测授权状态
+    setIsCheckingAuth(true);
+    const interval = setInterval(() => {
+      const authorized = localStorage.getItem('clsAuthorized') === 'true';
+      if (authorized) {
+        // 已授权，关闭 Dialog 并继续
+        setShowAuthDialog(false);
+        setIsCheckingAuth(false);
+        clearInterval(interval);
+        // 继续开启 CLS 日志服务
+        proceedWithClsSetup();
+      }
+    }, 2000);
+    setAuthCheckInterval(interval);
   };
 
   const proceedWithClsSetup = () => {
@@ -779,10 +774,9 @@ export default function SessionManagement() {
             <DialogTitle>开通服务授权</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             {isCheckingAuth && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-500 text-center">检测中...(授权完成后将自动继续)</p>
+                <p className="text-xs text-gray-500 text-center">检测到已授权</p>
                 {/* 检测中的加载动画 */}
                 <div className="flex justify-center">
                   <div className="w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>

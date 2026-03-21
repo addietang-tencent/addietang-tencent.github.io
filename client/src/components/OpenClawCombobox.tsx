@@ -140,9 +140,6 @@ export function OpenClawCombobox({
                     )}
                   />
                   {item.name}
-                  <span className="ml-2 text-xs text-gray-400">
-                    (ID: {item.id})
-                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

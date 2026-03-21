@@ -1331,21 +1331,27 @@ export default function MemberManagement() {
                 );
               }
 
-              // 红色框：条件未满足，说明原因和操作指引
+              // 红色框：条件未满足，先说条件再说操作建议，每个问题各一段
               const reasons: React.ReactNode[] = [];
               if (!clawOk) {
                 reasons.push(
-                  <p key="claw">请先删除该用户名下的所有 OpenClaw 实例（当前 {deleteCheckDialog?.clawCount} 个）。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。</p>
+                  <p key="claw">
+                    删除用户需要该用户名下没有任何 OpenClaw 实例，当前该用户名下有 {deleteCheckDialog?.clawCount} 个 OpenClaw。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
+                  </p>
                 );
               }
               if (deleteCheckDialog?.vpcType === "auto" && !vpcOk) {
                 reasons.push(
-                  <p key="vpc">请先前往 <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-700">腾讯云控制台</a>，解除私有网络下所有关联资源后，再刷新检查。</p>
+                  <p key="vpc">
+                    删除用户需要系统为该用户自动分配的私有网络下没有关联云资源，当前该私有网络下仍有关联资源。请前往{" "}
+                    <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-700">腾讯云控制台</a>
+                    {" "}解除该私有网络下所有关联资源后，再刷新检查。
+                  </p>
                 );
               }
 
               return (
-                <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-1.5">
+                <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
                   <p className="font-semibold">无法删除该用户</p>
                   {reasons}
                 </div>

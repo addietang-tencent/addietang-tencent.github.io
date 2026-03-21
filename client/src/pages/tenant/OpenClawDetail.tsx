@@ -1296,10 +1296,12 @@ export default function OpenClawDetail() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
-            <DialogDescription className="text-sm text-gray-500 mt-1 leading-relaxed">
-              OpenClaw 面板（WebUI）是 OpenClaw 官方提供的浏览器操作界面，可直接与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。
-            </DialogDescription>
-            <p className="text-xs text-gray-400 mt-2">开启OpenClaw面板将会依次执行以下操作，确定后将自动执行：</p>
+            <DialogDescription className="sr-only">开启OpenClaw面板</DialogDescription>
+            <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-sm text-blue-700 leading-relaxed">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>OpenClaw 面板（WebUI）是 OpenClaw 官方提供的浏览器操作界面，可直接与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
+            </div>
+            <p className="text-sm text-gray-500 mt-3">开启OpenClaw面板将会依次执行以下操作，确定后将自动执行：</p>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">
             {/* 步骤1：放通端口 */}

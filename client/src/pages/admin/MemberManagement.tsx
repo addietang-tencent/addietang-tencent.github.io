@@ -1228,29 +1228,68 @@ export default function MemberManagement() {
         open={!!deleteCheckDialog?.open}
         onOpenChange={(open) => { if (!open) setDeleteCheckDialog(null); }}
       >
-        <DialogContent className="sm:max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>删除用户</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-4">
+          <div className="py-2 space-y-3">
             {/* 用户 ID */}
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
               <span className="text-sm text-gray-500">用户 ID</span>
               <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
             </div>
 
-            {/* 名下 OpenClaw 数量 + 刷新 */}
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+            {/* 名下 OpenClaw 数量（单行） */}
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-semibold ${
+                  (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
+                }`}>
+                  {deleteCheckDialog?.clawRefreshing
+                    ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    : <>{deleteCheckDialog?.clawCount ?? 0} 个</>
+                  }
+                </span>
+                <button
+                  className="text-gray-400 hover:text-blue-500 transition-colors"
+                  title="刷新"
+                  onClick={() => {
+                    if (!deleteCheckDialog) return;
+                    setDeleteCheckDialog({ ...deleteCheckDialog, clawRefreshing: true });
+                    setTimeout(() => {
+                      const newCount = Math.random() > 0.5 ? deleteCheckDialog.clawCount : 0;
+                      setDeleteCheckDialog({ ...deleteCheckDialog, clawCount: newCount, clawRefreshing: false });
+                    }, 1200);
+                  }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* 自动分配 VPC：私有网络单行，关联资源状态用括号跟在 VPC 名称后 */}
+            {deleteCheckDialog?.vpcType === "auto" && (
+              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-gray-500">私有网络</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-semibold ${
-                    (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
-                  }`}>
-                    {deleteCheckDialog?.clawRefreshing ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                  <span className="text-sm">
+                    <a
+                      href="https://console.cloud.tencent.com/vpc"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      {deleteCheckDialog?.vpcName}
+                    </a>
+                    {deleteCheckDialog?.vpcRefreshing ? (
+                      <span className="text-gray-400 ml-1">(检查中...)</span>
+                    ) : deleteCheckDialog?.hasVpcResources ? (
+                      <span className="text-red-500 ml-1">(有关联云资源)</span>
                     ) : (
-                      <>{deleteCheckDialog?.clawCount ?? 0} 个</>
+                      <span className="text-green-600 ml-1">(无关联资源)</span>
                     )}
                   </span>
                   <button
@@ -1258,11 +1297,10 @@ export default function MemberManagement() {
                     title="刷新"
                     onClick={() => {
                       if (!deleteCheckDialog) return;
-                      setDeleteCheckDialog({ ...deleteCheckDialog, clawRefreshing: true });
+                      setDeleteCheckDialog({ ...deleteCheckDialog, vpcRefreshing: true });
                       setTimeout(() => {
-                        // 模拟刷新：随机返回新数量（实际应调用 API）
-                        const newCount = Math.random() > 0.5 ? deleteCheckDialog.clawCount : 0;
-                        setDeleteCheckDialog({ ...deleteCheckDialog, clawCount: newCount, clawRefreshing: false });
+                        const newHasResources = Math.random() > 0.5 ? deleteCheckDialog.hasVpcResources : false;
+                        setDeleteCheckDialog({ ...deleteCheckDialog, hasVpcResources: newHasResources, vpcRefreshing: false });
                       }, 1200);
                     }}
                   >
@@ -1272,93 +1310,46 @@ export default function MemberManagement() {
                   </button>
                 </div>
               </div>
-              {(deleteCheckDialog?.clawCount ?? 0) > 0 && (
-                <p className="mt-2 text-xs text-red-500">需先删除该用户名下的所有 OpenClaw，可让用户自行删除，或由管理员在 OpenClaw 监控页删除。</p>
-              )}
-            </div>
-
-            {/* 自动分配 VPC：显示私有网络信息 + 刷新 */}
-            {deleteCheckDialog?.vpcType === "auto" && (
-              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">私有网络</span>
-                  <div className="flex items-center gap-2">
-                    <a
-                      href="https://console.cloud.tencent.com/vpc"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                    >
-                      {deleteCheckDialog?.vpcName}
-                    </a>
-                    <button
-                      className="text-gray-400 hover:text-blue-500 transition-colors"
-                      title="刷新"
-                      onClick={() => {
-                        if (!deleteCheckDialog) return;
-                        setDeleteCheckDialog({ ...deleteCheckDialog, vpcRefreshing: true });
-                        setTimeout(() => {
-                          // 模拟刷新：随机返回新状态
-                          const newHasResources = Math.random() > 0.5 ? deleteCheckDialog.hasVpcResources : false;
-                          setDeleteCheckDialog({ ...deleteCheckDialog, hasVpcResources: newHasResources, vpcRefreshing: false });
-                        }, 1200);
-                      }}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center gap-1.5">
-                  {deleteCheckDialog?.vpcRefreshing ? (
-                    <><Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" /><span className="text-xs text-gray-400">检查中...</span></>
-                  ) : deleteCheckDialog?.hasVpcResources ? (
-                    <>
-                      <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
-                      <span className="text-xs text-orange-600">有关联云资源，需先前往《
-                        <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="underline hover:text-orange-700">腾讯云控制台</a>
-                      》解除所有资源绑定</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                      <span className="text-xs text-green-600">无关联云资源，可删除</span>
-                    </>
-                  )}
-                </div>
-              </div>
             )}
 
-            {/* 用户自定义 VPC：说明不影响 */}
-            {deleteCheckDialog?.vpcType === "custom" && (
-              <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-600">
-                该用户使用自定义 VPC，删除用户后私有网络不受影响。
-              </div>
-            )}
+            {/* 状态框：根据条件是否满足显示红色（无法删除）或绿色（可删除） */}
+            {(() => {
+              const clawOk = (deleteCheckDialog?.clawCount ?? 0) === 0;
+              const vpcOk = deleteCheckDialog?.vpcType === "custom" || deleteCheckDialog?.hasVpcResources === false;
+              const allOk = clawOk && vpcOk;
 
-            {/* 删除条件说明 */}
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-1.5">
-              <p className="font-medium">删除前，请确保满足以下条件：</p>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5">
-                  {(deleteCheckDialog?.clawCount ?? 0) === 0
-                    ? <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                    : <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                  }
-                  <span className="text-xs">名下 OpenClaw 数量为 0</span>
-                </div>
-                {deleteCheckDialog?.vpcType === "auto" && (
-                  <div className="flex items-center gap-1.5">
-                    {deleteCheckDialog?.hasVpcResources === false
-                      ? <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                      : <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
+              if (allOk) {
+                // 绿色框：条件已满足
+                return (
+                  <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
+                    {deleteCheckDialog?.vpcType === "auto"
+                      ? `该用户名下没有 OpenClaw，且私有网络无关联资源，可以删除。`
+                      : `该用户名下没有 OpenClaw，可以删除。`
                     }
-                    <span className="text-xs">私有网络下无关联云资源</span>
                   </div>
-                )}
-              </div>
-            </div>
+                );
+              }
+
+              // 红色框：条件未满足，说明原因和操作指引
+              const reasons: React.ReactNode[] = [];
+              if (!clawOk) {
+                reasons.push(
+                  <p key="claw">请先删除该用户名下的所有 OpenClaw 实例（当前 {deleteCheckDialog?.clawCount} 个）。可让用户自行删除，或由管理员在《 OpenClaw 监控》页手动删除。</p>
+                );
+              }
+              if (deleteCheckDialog?.vpcType === "auto" && !vpcOk) {
+                reasons.push(
+                  <p key="vpc">请先前往《<a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-700">腾讯云控制台</a>》，解除私有网络下所有关联资源后，再刷新检查。</p>
+                );
+              }
+
+              return (
+                <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-700 space-y-1.5">
+                  <p className="font-semibold">无法删除该用户</p>
+                  {reasons}
+                </div>
+              );
+            })()}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteCheckDialog(null)}>取消</Button>

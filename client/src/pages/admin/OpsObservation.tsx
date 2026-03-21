@@ -4,7 +4,7 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap } from "lucide-react";
+import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -780,21 +780,31 @@ export default function OpsObservation() {
             <DialogTitle>开通服务授权</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+            {!isCheckingAuth && (
+              <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+            )}
             {isCheckingAuth && (
-              <p className="text-xs text-gray-500 text-center">检测中...（授权完成后将自动继续）</p>
+              <div className="space-y-3 flex flex-col items-center">
+                {/* 检测完成后显示完成 icon */}
+                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+              </div>
             )}
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleCancelAuth}>
-              取消
-            </Button>
-            <Button
-              onClick={handleGoToAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              前往授权
-            </Button>
+            {!isCheckingAuth && (
+              <>
+                <Button variant="outline" onClick={handleCancelAuth}>
+                  取消
+                </Button>
+                <Button
+                  onClick={handleGoToAuth}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  前往授权
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

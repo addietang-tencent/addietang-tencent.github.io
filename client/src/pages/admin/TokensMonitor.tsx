@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -933,21 +933,31 @@ export default function TokensMonitor() {
             <DialogTitle>开通服务授权</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+            {!isCheckingAuth && (
+              <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+            )}
             {isCheckingAuth && (
-              <p className="text-xs text-gray-500 text-center">检测中...（授权完成后将自动继续）</p>
+              <div className="space-y-3 flex flex-col items-center">
+                {/* 检测完成后显示完成 icon */}
+                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+              </div>
             )}
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleCancelAuth}>
-              取消
-            </Button>
-            <Button
-              onClick={handleGoToAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              前往授权
-            </Button>
+            {!isCheckingAuth && (
+              <>
+                <Button variant="outline" onClick={handleCancelAuth}>
+                  取消
+                </Button>
+                <Button
+                  onClick={handleGoToAuth}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  前往授权
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

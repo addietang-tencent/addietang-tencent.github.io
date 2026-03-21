@@ -775,12 +775,10 @@ export default function SessionManagement() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             {isCheckingAuth && (
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col items-center">
+                {/* 检测完成后显示完成 icon */}
+                <CheckCircle2 className="w-8 h-8 text-green-500" />
                 <p className="text-xs text-gray-500 text-center">检测到已授权</p>
-                {/* 检测中的加载动画 */}
-                <div className="flex justify-center">
-                  <div className="w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                </div>
               </div>
             )}
           </div>

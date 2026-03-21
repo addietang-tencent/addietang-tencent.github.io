@@ -647,35 +647,31 @@ export default function OpenClawMonitor() {
             {/* 终端已连接状态 */}
             {terminalConnected && (
               <div
-                className="h-full flex flex-col"
+                className="h-full overflow-auto p-5 text-gray-200 leading-relaxed cursor-text"
                 style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
                 onClick={() => terminalInputRef.current?.focus()}
               >
-                {/* 输出区域 */}
-                <div className="flex-1 p-5 overflow-auto text-gray-200 leading-relaxed">
-                  {/* 欢迎信息 */}
-                  <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
-                  <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
-                  <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
-                  <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
-                  <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
-                  <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
-                  <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
-                  <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
+                {/* 欢迎信息 */}
+                <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
+                <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
+                <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
+                <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
+                <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
+                <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
+                <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
+                <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
 
-                  {/* 历史命令输出 */}
-                  {terminalLines.map((line, i) => (
-                    <p key={i} className={line.type === "cmd" ? "mt-2 text-gray-200" : "text-gray-400 whitespace-pre"}>
-                      {line.type === "cmd" ? (
-                        <><span className="text-green-400">root@openclaw</span><span className="text-gray-500">:</span><span className="text-blue-400">~</span><span className="text-gray-200">#</span> {line.text}</>
-                      ) : line.text}
-                    </p>
-                  ))}
-                  <div ref={terminalEndRef} />
-                </div>
+                {/* 历史命令输出 */}
+                {terminalLines.map((line, i) => (
+                  <p key={i} className={line.type === "cmd" ? "mt-2 text-gray-200" : "text-gray-400 whitespace-pre"}>
+                    {line.type === "cmd" ? (
+                      <><span className="text-green-400">root@openclaw</span><span className="text-gray-500">:</span><span className="text-blue-400">~</span><span className="text-gray-200">#</span> {line.text}</>
+                    ) : line.text}
+                  </p>
+                ))}
 
-                {/* 输入行 */}
-                <div className="flex items-center px-5 py-3 border-t border-[#2a2a3e]">
+                {/* 内联输入行（跟在输出后面） */}
+                <div className="flex items-center mt-2">
                   <span className="text-green-400 whitespace-nowrap">root@openclaw</span>
                   <span className="text-gray-500">:</span>
                   <span className="text-blue-400">~</span>
@@ -686,7 +682,7 @@ export default function OpenClawMonitor() {
                     value={terminalInput}
                     onChange={e => setTerminalInput(e.target.value)}
                     onKeyDown={handleTerminalKeyDown}
-                    className="flex-1 bg-transparent text-gray-200 outline-none caret-green-400"
+                    className="flex-1 bg-transparent text-gray-200 outline-none caret-green-400 min-w-0"
                     style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
                     autoComplete="off"
                     spellCheck={false}
@@ -694,6 +690,7 @@ export default function OpenClawMonitor() {
                     autoCapitalize="off"
                   />
                 </div>
+                <div ref={terminalEndRef} />
               </div>
             )}
           </div>

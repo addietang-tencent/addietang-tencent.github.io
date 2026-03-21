@@ -255,26 +255,48 @@ export default function OpenClawDetail() {
   const [showWebUIProgressDialog, setShowWebUIProgressDialog] = useState(false);
   const [showWebUIResultDialog, setShowWebUIResultDialog] = useState(false);
   const [webUIStep, setWebUIStep] = useState<0 | 1 | 2>(0); // 0=未开始, 1=放通端口完成, 2=生成链接完成
+  // 失败状态："none" | "port" | "link"
+  const [webUIFailedStep, setWebUIFailedStep] = useState<"none" | "port" | "link">("none");
+  // 打开次数计数（奇数成功，偶数失败）
+  const [webUIOpenCount, setWebUIOpenCount] = useState(0);
   const webUIUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af...";
   const webUIToken = "8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
 
-  const handleOpenWebUI = () => {
+  const runWebUIFlow = (isFail: boolean) => {
     setWebUIStep(0);
-    setShowWebUIProgressDialog(true);
-    // 第一步：放通端口，1.5秒后完成
-    setTimeout(() => {
-      setWebUIStep(1);
-      // 第二步：生成链接，再过4秒完成
+    setWebUIFailedStep("none");
+    if (isFail) {
+      // 失败流程：1.5秒后放通端口失败
       setTimeout(() => {
-        setWebUIStep(2);
-        // 两步完成后，等待用户点击「确定」才跳转结果弹窗
-      }, 4000);
-    }, 1500);
+        setWebUIFailedStep("port");
+      }, 1500);
+    } else {
+      // 成功流程：1.5秒后放通端口完成，再4秒后生成链接完成
+      setTimeout(() => {
+        setWebUIStep(1);
+        setTimeout(() => {
+          setWebUIStep(2);
+        }, 4000);
+      }, 1500);
+    }
+  };
+
+  const handleOpenWebUI = () => {
+    const newCount = webUIOpenCount + 1;
+    setWebUIOpenCount(newCount);
+    setShowWebUIProgressDialog(true);
+    runWebUIFlow(newCount % 2 === 0); // 偶数次失败
   };
 
   const handleWebUIProgressConfirm = () => {
     setShowWebUIProgressDialog(false);
     setShowWebUIResultDialog(true);
+  };
+
+  const handleWebUIRetry = () => {
+    const newCount = webUIOpenCount + 1;
+    setWebUIOpenCount(newCount);
+    runWebUIFlow(newCount % 2 === 0);
   };
 
   const handleFeishuPairing = () => {
@@ -1306,20 +1328,29 @@ export default function OpenClawDetail() {
           <div className="mt-1 space-y-2.5 py-1 pb-3">
             {/* 步骤1：放通端口 */}
             <div className="flex items-center gap-3">
-              {webUIStep >= 1 ? (
+              {webUIFailedStep === "port" ? (
+                <AlertCircle className="w-5 h-5 text-orange-500 shrink-0" />
+              ) : webUIStep >= 1 ? (
                 <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
               ) : (
                 <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
               )}
               <span className={`text-xs ${
+                webUIFailedStep === "port" ? "text-orange-500 font-medium" :
                 webUIStep >= 1 ? "text-gray-600" : "text-blue-600 font-medium"
               }`}>
-                放通端口：{webUIStep >= 1 ? "端口38341已放通" : "正在放通端口38341...预计1~2秒"}
+                {webUIFailedStep === "port"
+                  ? "放通端口：放通端口失败，请重试"
+                  : webUIStep >= 1
+                  ? "放通端口：端口38341已放通"
+                  : "放通端口：正在放通端口38341...预计1~2秒"}
               </span>
             </div>
             {/* 步骤2：生成链接 */}
             <div className="flex items-center gap-3">
-              {webUIStep >= 2 ? (
+              {webUIFailedStep === "link" ? (
+                <AlertCircle className="w-5 h-5 text-orange-500 shrink-0" />
+              ) : webUIStep >= 2 ? (
                 <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
               ) : webUIStep === 1 ? (
                 <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
@@ -1327,9 +1358,17 @@ export default function OpenClawDetail() {
                 <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
               )}
               <span className={`text-xs ${
-                webUIStep >= 2 ? "text-gray-600" : webUIStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
+                webUIFailedStep === "link" ? "text-orange-500 font-medium" :
+                webUIStep >= 2 ? "text-gray-600" :
+                webUIStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
               }`}>
-                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成OpenClaw面板访问链接，预计5~10秒..." : "等待放通端口完成"}
+                {webUIFailedStep === "link"
+                  ? "生成链接：生成链接失败，请重试"
+                  : webUIStep >= 2
+                  ? "生成链接：链接已生成"
+                  : webUIStep === 1
+                  ? "生成链接：正在为您生成OpenClaw面板访问链接，预计5~10秒..."
+                  : "生成链接：等待放通端口完成"}
               </span>
             </div>
           </div>
@@ -1344,11 +1383,11 @@ export default function OpenClawDetail() {
             </Button>
             <Button
               size="sm"
-              disabled={webUIStep < 2}
-              onClick={handleWebUIProgressConfirm}
-              className={`px-6 ${webUIStep >= 2 ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 text-white opacity-50 cursor-not-allowed'}`}
+              disabled={webUIStep < 2 && webUIFailedStep === "none"}
+              onClick={webUIFailedStep !== "none" ? handleWebUIRetry : handleWebUIProgressConfirm}
+              className={`px-6 ${(webUIStep >= 2 || webUIFailedStep !== "none") ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 text-white opacity-50 cursor-not-allowed'}`}
             >
-              确定
+              {webUIFailedStep !== "none" ? "重试" : "确定"}
             </Button>
           </div>
         </DialogContent>

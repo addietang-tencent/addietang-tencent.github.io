@@ -1059,7 +1059,7 @@ export default function MemberManagement() {
                       }} />
                   </label>
                 ) : (
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-green-200 bg-green-50">
+                  <div className="flex items-center gap-3 p-3 rounded-xl border border-green-300 bg-green-50">
                     <FileText className="w-8 h-8 text-green-600 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800 truncate">{batchImportFile.name}</p>
@@ -1435,7 +1435,7 @@ export default function MemberManagement() {
               <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
               <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
-            <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700 space-y-2">
+            <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700 space-y-2">
               <p className="font-medium">启用后将产生以下影响：</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>该用户可以<span className="font-semibold">继续登录</span>用户端</li>

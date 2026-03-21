@@ -133,6 +133,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
     totalTokens: "1.95M",
     totalRounds: 63,
     lastActiveTime: "2026-03-04 21:06",
+    openClawName: "OpenClaw-A", // OpenClaw 名称
   };
 
   return (
@@ -152,7 +153,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       {/* 会话标题 */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">会话详情</h1>
-        <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id}</p>
+        <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id} • OpenClaw名称: {sessionInfo.openClawName}</p>
       </div>
 
       {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════ */}

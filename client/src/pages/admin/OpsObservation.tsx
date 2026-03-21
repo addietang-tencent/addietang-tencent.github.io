@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Eye, EyeOff } from "lucide-react";
+import { OpenClawCombobox } from "@/components/OpenClawCombobox";
 
 // Mock data for charts
 const logLevelData = [
@@ -231,6 +232,7 @@ export default function OpsObservation() {
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
+  const [selectedOpenClaw, setSelectedOpenClaw] = useState(""); // OpenClaw 名称筛选
 
   // 处理日期变化
   const handleFromChange = (value: string) => {
@@ -428,6 +430,16 @@ export default function OpsObservation() {
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
           全方位守护系统稳定运行，从被动救火到主动防御
         </p>
+        
+        {/* OpenClaw 名称筛选 */}
+        <div className="mt-4">
+          <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
+          <OpenClawCombobox
+            value={selectedOpenClaw}
+            onValueChange={setSelectedOpenClaw}
+            className="max-w-xs"
+          />
+        </div>
       </div>
 
       {/* CLS 日志服务未开启提示 */}

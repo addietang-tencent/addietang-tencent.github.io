@@ -8,6 +8,7 @@ import { useLocation } from "wouter";
 import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, BarChart3, Activity, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { OpenClawCombobox } from "@/components/OpenClawCombobox";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie,
@@ -226,6 +227,7 @@ export default function SessionManagement() {
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
+  const [selectedOpenClaw, setSelectedOpenClaw] = useState(""); // OpenClaw 名称筛选
   const [sortColumn, setSortColumn] = useState<"tokens" | "cost" | "updatedAt">("updatedAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -434,7 +436,17 @@ export default function SessionManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">会话管理</h1>
-          <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溯、可分析、可优化</p>
+          <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
+          
+          {/* OpenClaw 名称筛选 */}
+          <div className="mt-4">
+            <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
+            <OpenClawCombobox
+              value={selectedOpenClaw}
+              onValueChange={setSelectedOpenClaw}
+              className="max-w-xs"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <input

@@ -9,6 +9,7 @@ import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRig
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { OpenClawCombobox } from "@/components/OpenClawCombobox";
 import {
   Tooltip as UITooltip,
   TooltipContent as UITooltipContent,
@@ -196,6 +197,7 @@ export default function TokensMonitor() {
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
+  const [selectedOpenClaw, setSelectedOpenClaw] = useState(""); // OpenClaw 名称筛选
   const [globalLimit, setGlobalLimit] = useState<number | null>(() => {
     const mode = localStorage.getItem("globalLimitMode");
     if (mode === "unlimited") return null;
@@ -708,6 +710,16 @@ export default function TokensMonitor() {
                       {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
                     </Button>
                   </div>
+                </div>
+
+                {/* OpenClaw 名称筛选 */}
+                <div className="mb-6">
+                  <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
+                  <OpenClawCombobox
+                    value={selectedOpenClaw}
+                    onValueChange={setSelectedOpenClaw}
+                    className="max-w-xs"
+                  />
                 </div>
 
                 {/* CLS 协议确认弹窗 */}

@@ -653,7 +653,7 @@ export default function OpenClawDetail() {
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0, 122, 255, 0.08)')}
             >
               <ExternalLink className="w-3 h-3" />
-              开启WebUI
+              开启OpenClaw面板
             </button>
             {isConfiguring && (
               <div className="flex items-center gap-1 ml-2 px-2 py-1 bg-blue-50 rounded-lg">
@@ -1289,15 +1289,15 @@ export default function OpenClawDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* ===== WebUI 进度弹窗 ===== */}
+      {/* ===== OpenClaw 面板 进度弹窗 ===== */}
       <Dialog open={showWebUIProgressDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIProgressDialog(false);
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
             <DialogDescription className="text-sm text-gray-500 mt-1">
-              开启WebUI将会依次执行以下操作，确定后将自动执行：
+              开启OpenClaw面板将会依次执行以下操作，确定后将自动执行：
             </DialogDescription>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">
@@ -1326,7 +1326,7 @@ export default function OpenClawDetail() {
               <span className={`text-xs ${
                 webUIStep >= 2 ? "text-gray-600" : webUIStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
               }`}>
-                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成WebUI访问链接，预计5~10秒..." : "等待放通端口完成"}
+                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成OpenClaw面板访问链接，预计5~10秒..." : "等待放通端口完成"}
               </span>
             </div>
           </div>
@@ -1351,13 +1351,13 @@ export default function OpenClawDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* ===== WebUI 结果弹窗 ===== */}
+      {/* ===== OpenClaw 面板 结果弹窗 ===== */}
       <Dialog open={showWebUIResultDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIResultDialog(false);
       }}>
         <DialogContent className="w-[90vw] max-w-md overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
           </DialogHeader>
           {/* 警告文字 */}
           <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">

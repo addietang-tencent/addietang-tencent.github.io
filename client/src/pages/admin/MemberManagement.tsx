@@ -1322,7 +1322,7 @@ export default function MemberManagement() {
               if (allOk) {
                 // 绿色框：条件已满足
                 return (
-                  <div className="rounded-lg bg-green-50 border border-green-600 px-4 py-3 text-sm text-green-700">
+                  <div className="rounded-lg bg-green-50 border border-green-400 px-4 py-3 text-sm text-green-700">
                     {deleteCheckDialog?.vpcType === "auto"
                       ? `该用户名下没有 OpenClaw，且私有网络无关联资源，可以删除。`
                       : `该用户名下没有 OpenClaw，可以删除。`

@@ -265,6 +265,7 @@ export default function OpenClawDetail() {
 
   // ── 一键更新状态 ──
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
+  const [showUpdateBubble, setShowUpdateBubble] = useState(true);
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
@@ -757,25 +758,45 @@ export default function OpenClawDetail() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               运行中
             </span>
-            {/* 一键更新按钮 */}
-            {isUpdating ? (
-              <button
-                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
-                title="查看更新进度"
-                onClick={() => setShowUpdateProgressDialog(true)}
-              >
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                更新中
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowUpdateConfirmDialog(true)}
-                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
-              >
-                <ArrowUpCircle className="w-3.5 h-3.5" />
-                一键更新
-              </button>
-            )}
+            {/* 一键更新按钮 + 气泡 */}
+            <div className="relative ml-2">
+              {showUpdateBubble && !isUpdating && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-max max-w-[200px]">
+                  {/* 气泡主体 */}
+                  <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg leading-snug">
+                    <button
+                      onClick={() => setShowUpdateBubble(false)}
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"
+                      style={{ fontSize: "10px", lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                    🎉 重磅来袭！升级版本，一键接入微信！
+                    {/* 向下箭头 */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0"
+                      style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #2563eb" }} />
+                  </div>
+                </div>
+              )}
+              {isUpdating ? (
+                <button
+                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+                  title="查看更新进度"
+                  onClick={() => setShowUpdateProgressDialog(true)}
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  更新中
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowUpdateConfirmDialog(true)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+                >
+                  <ArrowUpCircle className="w-3.5 h-3.5" />
+                  一键更新
+                </button>
+              )}
+            </div>
             {/* 开启面板按钮（纯文字蓝色样式） */}
             <button
               onClick={handleOpenWebUI}

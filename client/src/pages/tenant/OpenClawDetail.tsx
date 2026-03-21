@@ -763,7 +763,7 @@ export default function OpenClawDetail() {
               {showUpdateBubble && !isUpdating && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-max max-w-[200px]">
                   {/* 气泡主体 */}
-                  <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg leading-snug">
+                  <div className="relative bg-white text-gray-800 text-xs rounded-lg px-3 py-2 shadow-lg leading-snug whitespace-nowrap border border-gray-100">
                     <button
                       onClick={() => setShowUpdateBubble(false)}
                       className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"
@@ -771,10 +771,10 @@ export default function OpenClawDetail() {
                     >
                       ×
                     </button>
-                    🎉 重磅来袭！升级版本，一键接入微信！
+                    重磅来袭！升级版本，一键接入微信！
                     {/* 向下箭头 */}
                     <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0"
-                      style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #2563eb" }} />
+                      style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #e5e7eb" }} />
                   </div>
                 </div>
               )}

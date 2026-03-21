@@ -574,7 +574,7 @@ export default function SecurityGroupManagement() {
         </div>        {/* ══ 公网配置板块 ══════════════════════════════════════════════════════════════ */}
         <div className="mb-10">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
               <Wifi className="w-3.5 h-3.5 text-white" />
             </div>
             <h2 className="text-base font-bold text-gray-900">公网</h2>
@@ -610,6 +610,16 @@ export default function SecurityGroupManagement() {
             <div className="px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm font-medium text-gray-700">是否分配公网 IP</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs text-xs leading-relaxed">
+                      云服务器需要外网访问能力的时候，需要为云服务器分配公网IP，如果云服务器不分配公网IP，则不支持外出流量，并且无法使用外网IP对外进行互相通信。
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               <div className="flex items-center gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -642,6 +652,17 @@ export default function SecurityGroupManagement() {
                 <div className="px-6 py-5 border-b border-gray-100">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-sm font-medium text-gray-700">带宽计费模式</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-sm text-xs leading-relaxed space-y-2">
+                          <p><span className="font-semibold">包月带宽：</span>包月的固定带宽是指定公网出方向的带宽的大小，选择单台服务器最大带宽値。固定带宽，流量单价相对于按使用流量的计费方式所使用的费用低，适合网络带宽使用稳定的用户。</p>
+                          <p><span className="font-semibold">按流量计费：</span>使用流量是指服务器使用过程中产生的流量大小，网络费用仅取决于云服务器的出流量。为了防止突然爆发的流量产生较高的费用，可选择设置一个带宽上限，带宽上限对于网络单价完全无影响。</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -671,9 +692,16 @@ export default function SecurityGroupManagement() {
                 <div className="px-6 py-5">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-sm font-medium text-gray-700">带宽上限</span>
-                    <span className="text-xs text-gray-400">
-                      {publicConfig.billingMode === "monthly" ? "1–2000 Mbps" : "1–200 Mbps"}
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-xs text-xs leading-relaxed">
+                          单台实例可以运行到的最高带宽，超过这个带宽上限将默认丢包。不同的网络计费模式，支持的公网带宽上限有所不同。
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center gap-4">
                     {/* 滑块 */}

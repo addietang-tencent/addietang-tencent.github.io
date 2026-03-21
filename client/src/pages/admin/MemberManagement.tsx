@@ -1245,7 +1245,7 @@ export default function MemberManagement() {
               <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-semibold ${
-                  (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
+                  (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-600" : "text-green-600"
                 }`}>
                   {deleteCheckDialog?.clawRefreshing
                     ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -1288,7 +1288,7 @@ export default function MemberManagement() {
                     {deleteCheckDialog?.vpcRefreshing ? (
                       <span className="text-gray-400 ml-1">(检查中...)</span>
                     ) : deleteCheckDialog?.hasVpcResources ? (
-                      <span className="text-red-500 ml-1">(有关联云资源)</span>
+                      <span className="text-red-600 ml-1">(有关联云资源)</span>
                     ) : (
                       <span className="text-green-600 ml-1">(无关联资源)</span>
                     )}
@@ -1345,7 +1345,7 @@ export default function MemberManagement() {
               }
 
               return (
-                <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-700 space-y-1.5">
+                <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-1.5">
                   <p className="font-semibold">无法删除该用户</p>
                   {reasons}
                 </div>
@@ -1466,19 +1466,19 @@ export default function MemberManagement() {
 
             {/* 将被删除的资源列表 */}
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
-              <p className="text-xs font-semibold text-red-700 uppercase tracking-wider mb-1">将被删除的资源</p>
+              <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1">将被删除的资源</p>
               {/* 用户账号 - 始终删除 */}
               <div className="flex items-center gap-2">
-                <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                <span className="text-sm text-red-800">
+                <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <span className="text-sm text-red-600">
                   用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
                 </span>
               </div>
               {/* 自动分配 VPC：一并删除 */}
               {deleteConfirmDialog?.vpcType === "auto" && deleteConfirmDialog?.vpcName && (
                 <div className="flex items-center gap-2">
-                  <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                  <span className="text-sm text-red-800">
+                  <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  <span className="text-sm text-red-600">
                     私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
                   </span>
                 </div>
@@ -1492,7 +1492,7 @@ export default function MemberManagement() {
               </div>
             )}
 
-            <p className="text-sm text-red-500 font-medium">此操作不可撤销，请谨慎确认。</p>
+            <p className="text-sm text-red-600 font-medium">此操作不可撤销，请谨慎确认。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>

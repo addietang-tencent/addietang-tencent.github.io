@@ -776,22 +776,26 @@ export default function SessionManagement() {
           <div className="space-y-4 my-4">
             {isCheckingAuth && (
               <div className="space-y-3 flex flex-col items-center">
-                {/* 检测完成后显示完成 icon */}
-                <CheckCircle2 className="w-8 h-8 text-green-500" />
-                <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+                {/* 检测中的旋转动画 */}
+                <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-xs text-gray-500 text-center">检测中...</p>
               </div>
             )}
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleCancelAuth}>
-              取消
-            </Button>
-            <Button
-              onClick={handleGoToAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              前往授权
-            </Button>
+            {!isCheckingAuth && (
+              <>
+                <Button variant="outline" onClick={handleCancelAuth}>
+                  取消
+                </Button>
+                <Button
+                  onClick={handleGoToAuth}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  前往授权
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

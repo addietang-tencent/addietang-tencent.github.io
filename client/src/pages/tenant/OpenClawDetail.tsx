@@ -251,6 +251,31 @@ export default function OpenClawDetail() {
   // 飞书 pairing code
   const [feishuPairingCode, setFeishuPairingCode] = useState("");
 
+  // ── WebUI 状态 ──
+  const [showWebUIProgressDialog, setShowWebUIProgressDialog] = useState(false);
+  const [showWebUIResultDialog, setShowWebUIResultDialog] = useState(false);
+  const [webUIStep, setWebUIStep] = useState<0 | 1 | 2>(0); // 0=未开始, 1=放通端口完成, 2=生成链接完成
+  const webUIUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af...";
+  const webUIToken = "8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
+
+  const handleOpenWebUI = () => {
+    setWebUIStep(0);
+    setShowWebUIProgressDialog(true);
+    // 第一步：放通端口，1.5秒后完成
+    setTimeout(() => {
+      setWebUIStep(1);
+      // 第二步：生成链接，再过4秒完成
+      setTimeout(() => {
+        setWebUIStep(2);
+        // 1秒后关闭进度弹窗，打开结果弹窗
+        setTimeout(() => {
+          setShowWebUIProgressDialog(false);
+          setShowWebUIResultDialog(true);
+        }, 1000);
+      }, 4000);
+    }, 1500);
+  };
+
   const handleFeishuPairing = () => {
     if (!feishuPairingCode.trim()) {
       toast.error("请输入 pairing code");
@@ -619,6 +644,13 @@ export default function OpenClawDetail() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               运行中
             </span>
+            <button
+              onClick={handleOpenWebUI}
+              className="ml-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors cursor-pointer"
+            >
+              <ExternalLink className="w-3 h-3" />
+              开启WebUI
+            </button>
             {isConfiguring && (
               <div className="flex items-center gap-1 ml-2 px-2 py-1 bg-blue-50 rounded-lg">
                 <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
@@ -1252,7 +1284,122 @@ export default function OpenClawDetail() {
 
         </DialogContent>
       </Dialog>
-      
+
+      {/* ===== WebUI 进度弹窗 ===== */}
+      <Dialog open={showWebUIProgressDialog} onOpenChange={(open) => {
+        if (!open) setShowWebUIProgressDialog(false);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-1">
+              开启WebUI（OpenClaw官方面板）将会依次执行以下操作，确定后将自动执行：
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-1 space-y-2.5 py-1 pb-3">
+            {/* 步骤1：放通端口 */}
+            <div className="flex items-center gap-3">
+              {webUIStep >= 1 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              )}
+              <span className={`text-xs ${
+                webUIStep >= 1 ? "text-gray-600" : "text-blue-600 font-medium"
+              }`}>
+                放通端口：{webUIStep >= 1 ? "端口38341已放通" : "正在放通端口38341...预计1~2秒"}
+              </span>
+            </div>
+            {/* 步骤2：生成链接 */}
+            <div className="flex items-center gap-3">
+              {webUIStep >= 2 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : webUIStep === 1 ? (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
+              )}
+              <span className={`text-xs ${
+                webUIStep >= 2 ? "text-gray-600" : webUIStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
+              }`}>
+                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成WebUI（OpenClaw官方面板）访问链接，预计5~10秒..." : "等待放通端口完成"}
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWebUIProgressDialog(false)}
+              className="text-gray-600"
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              disabled
+              className="bg-blue-600 text-white opacity-50 cursor-not-allowed"
+            >
+              确定
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== WebUI 结果弹窗 ===== */}
+      <Dialog open={showWebUIResultDialog} onOpenChange={(open) => {
+        if (!open) setShowWebUIResultDialog(false);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
+          </DialogHeader>
+          {/* 警告文字 */}
+          <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed">
+            访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失
+          </div>
+          {/* 链接和 Token */}
+          <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
+              <span className="text-xs text-gray-700 flex-1 truncate font-mono">{webUIUrl}</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
+                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+              >
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 shrink-0 w-16">面板Token</span>
+              <span className="text-xs text-gray-700 flex-1 truncate font-mono">{webUIToken}</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
+                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+              >
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* 提示文字 */}
+          <p className="text-xs text-gray-500 mt-1">
+            访问面板链接后，复制并输入上方面板Token，即可进入面板
+          </p>
+          <div className="flex justify-end pt-1">
+            <Button
+              size="sm"
+              onClick={() => { window.open(webUIUrl, "_blank"); }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+            >
+              立即访问
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </TenantLayout>
     </TooltipProvider>

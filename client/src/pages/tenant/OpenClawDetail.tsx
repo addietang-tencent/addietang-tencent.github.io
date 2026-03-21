@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, LayoutDashboard,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, MonitorDot,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -781,7 +781,7 @@ export default function OpenClawDetail() {
               onClick={handleOpenWebUI}
               className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
+              <MonitorDot className="w-3.5 h-3.5" />
               开启OpenClaw面板
             </button>
             {isConfiguring && (

@@ -260,6 +260,8 @@ export default function OpenClawDetail() {
   const [feishuPairingCode, setFeishuPairingCode] = useState("");
   // 微信二维码弹窗
   const [showWechatQrModal, setShowWechatQrModal] = useState(false);
+  // 微信弹窗阶段："checking" | "generating" | "qr"
+  const [wechatModalStage, setWechatModalStage] = useState<"checking" | "generating" | "qr">("checking");
 
   // ── WebUI 状态 ──
   const [showWebUIProgressDialog, setShowWebUIProgressDialog] = useState(false);
@@ -426,9 +428,37 @@ export default function OpenClawDetail() {
       return;
     }
 
-    // 微信：点击"前往授权"弹出二维码
+    // 微信：点击"前往授权"弹出二维码（带 loading 流程）
     if (ch.wechatMode) {
+      setWechatModalStage("checking");
       setShowWechatQrModal(true);
+      // 2秒后切换到"正在生成二维码"
+      setTimeout(() => setWechatModalStage("generating"), 2000);
+      // 再2秒后显示二维码
+      setTimeout(() => {
+        setWechatModalStage("qr");
+        // 二维码出现后5秒自动关闭并添加通道
+        setTimeout(() => {
+          setShowWechatQrModal(false);
+          setAppliedChannels(prev => {
+            const existingIdx = prev.findIndex(c => c.channelValue === "wechat");
+            const newEntry: AppliedChannel = {
+              type: "微信 ClawBot",
+              channelValue: "wechat",
+              status: "running",
+              fields: [],
+              fieldValues: {},
+            };
+            if (existingIdx >= 0) {
+              const next = [...prev];
+              next[existingIdx] = newEntry;
+              return next;
+            }
+            return [...prev, newEntry];
+          });
+          toast.success("微信 ClawBot 已添加");
+        }, 5000);
+      }, 4000);
       return;
     }
 
@@ -931,7 +961,7 @@ export default function OpenClawDetail() {
                         {/* 折叠行 */}
                         <div className="flex items-center justify-between px-2.5 py-2">
                           {ch.channelValue === "wechat" ? (
-                            <span className="text-sm font-medium text-gray-800 truncate flex-1 min-w-0 pl-0.5">{ch.type}</span>
+                            <span className="text-sm font-medium text-gray-800 truncate flex-1 min-w-0 pl-[18px]">{ch.type}</span>
                           ) : (
                             <button
                               className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
@@ -1474,59 +1504,37 @@ export default function OpenClawDetail() {
       </Dialog>
 
       {/* ===== 微信扫码登录弹窗 ===== */}
-      <Dialog open={showWechatQrModal} onOpenChange={setShowWechatQrModal}>
+      <Dialog open={showWechatQrModal} onOpenChange={(open) => {
+        // 仅在 qr 阶段允许手动关闭（loading 阶段不允许）
+        if (!open && wechatModalStage === "qr") setShowWechatQrModal(false);
+      }}>
         <DialogContent className="max-w-sm [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none [&>button]:shadow-none [&>button]:border-0 [&>button]:ring-0">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">微信扫码登录</DialogTitle>
             <DialogDescription className="text-sm text-gray-500 mt-1">
-              使用微信扫描二维码完成登录
+              使用微信（需要 iOS 系统 8.0.70 以上版本）"扫一扫"完成接入
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center py-4">
-            <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+          <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[220px] mt-1 mb-2">
+            {wechatModalStage === "checking" && (
+              <>
+                <Loader2 className="w-10 h-10 text-gray-300 animate-spin mb-3" />
+                <p className="text-sm text-gray-500">正在检查网关…</p>
+              </>
+            )}
+            {wechatModalStage === "generating" && (
+              <>
+                <Loader2 className="w-10 h-10 text-gray-300 animate-spin mb-3" />
+                <p className="text-sm text-gray-500">正在生成二维码…</p>
+              </>
+            )}
+            {wechatModalStage === "qr" && (
               <img
                 src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/gsHEHybeNvVw_9f0461bc.png"
                 alt="微信扫码二维码"
-                className="w-48 h-48 object-cover"
+                className="w-44 h-44 object-cover rounded-lg"
               />
-            </div>
-            <p className="text-xs text-gray-400 mt-3">二维码有效期 5 分钟，过期请刷新</p>
-          </div>
-          <div className="flex justify-center gap-3 pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowWechatQrModal(false)}
-              className="text-gray-600 px-6"
-            >
-              取消
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                setShowWechatQrModal(false);
-                setAppliedChannels(prev => {
-                  const existingIdx = prev.findIndex(c => c.channelValue === "wechat");
-                  const newEntry: AppliedChannel = {
-                    type: "微信 ClawBot",
-                    channelValue: "wechat",
-                    status: "running",
-                    fields: [],
-                    fieldValues: {},
-                  };
-                  if (existingIdx >= 0) {
-                    const next = [...prev];
-                    next[existingIdx] = newEntry;
-                    return next;
-                  }
-                  return [...prev, newEntry];
-                });
-                toast.success("微信 ClawBot 已添加并应用");
-              }}
-              className="bg-green-600 hover:bg-green-700 text-white px-6"
-            >
-              已扫码，完成授权
-            </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

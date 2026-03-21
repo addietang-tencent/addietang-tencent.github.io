@@ -227,6 +227,7 @@ export default function OpsObservation() {
   const [clsAgreed, setClsAgreed] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [authCompleted, setAuthCompleted] = useState(false);
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
@@ -307,8 +308,24 @@ export default function OpsObservation() {
   };
 
   const handleGoToAuth = () => {
-    // 打开授权页面
-    window.open('https://console.cloud.tencent.com/cam/role/grant?roleName=CVM_QCSLinkedRoleInClawProAgent&serviceLinkedRole=1', '_blank');
+    // Mock 授权流程：5 秒后自动检测授权完成
+    // 不真正打开腾讯云页面，而是模拟授权完成
+    // 先显示检测状态
+    setIsCheckingAuth(true);
+    setAuthCompleted(false);
+    
+    setTimeout(() => {
+      localStorage.setItem('clsAuthorized', 'true');
+      // 检测完成，显示完成状态
+      setIsCheckingAuth(false);
+      setAuthCompleted(true);
+      // 1秒后自动关闭Dialog并进入下一步
+      setTimeout(() => {
+        setShowAuthDialog(false);
+        setAuthCompleted(false);
+        proceedWithClsSetup();
+      }, 1000);
+    }, 5000);
   };
 
   const handleConfirmFreeQuota = () => {
@@ -357,6 +374,7 @@ export default function OpsObservation() {
   const handleCancelAuth = () => {
     setShowAuthDialog(false);
     setIsCheckingAuth(false);
+    setAuthCompleted(false);
     if (authCheckInterval) {
       clearInterval(authCheckInterval);
       setAuthCheckInterval(null);
@@ -780,7 +798,7 @@ export default function OpsObservation() {
             <DialogTitle>开通服务授权</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            {!isCheckingAuth && (
+            {!isCheckingAuth && !authCompleted && (
               <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             )}
             <div className="space-y-3 flex flex-col items-center min-h-16 justify-center">
@@ -789,6 +807,12 @@ export default function OpsObservation() {
                   {/* 检测中的旋转动画 */}
                   <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                   <p className="text-xs text-gray-500 text-center">检测中...</p>
+                </>
+              ) : authCompleted ? (
+                <>
+                  {/* 检测完成后显示完成 icon */}
+                  <CheckCircle2 className="w-8 h-8 text-green-500" />
+                  <p className="text-xs text-gray-500 text-center">检测到已授权</p>
                 </>
               ) : null}
             </div>
@@ -799,8 +823,7 @@ export default function OpsObservation() {
             </Button>
             <Button
               onClick={handleGoToAuth}
-              disabled={isCheckingAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               前往授权
             </Button>

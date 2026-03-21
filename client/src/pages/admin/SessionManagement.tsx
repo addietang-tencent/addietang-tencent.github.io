@@ -222,6 +222,7 @@ export default function SessionManagement() {
   const [clsAgreed, setClsAgreed] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [authCompleted, setAuthCompleted] = useState(false);
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
@@ -348,13 +349,19 @@ export default function SessionManagement() {
     // 不真正打开腾讯云页面，而是模拟授权完成
     // 先显示检测状态
     setIsCheckingAuth(true);
+    setAuthCompleted(false);
     
     setTimeout(() => {
       localStorage.setItem('clsAuthorized', 'true');
-      // 检测完成，自动关闭Dialog并进入下一步
-      setShowAuthDialog(false);
+      // 检测完成，显示完成状态
       setIsCheckingAuth(false);
-      proceedWithClsSetup();
+      setAuthCompleted(true);
+      // 1秒后自动关闭Dialog并进入下一步
+      setTimeout(() => {
+        setShowAuthDialog(false);
+        setAuthCompleted(false);
+        proceedWithClsSetup();
+      }, 1000);
     }, 5000);
   };
 
@@ -781,6 +788,12 @@ export default function SessionManagement() {
                   <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                   <p className="text-xs text-gray-500 text-center">检测中...</p>
                 </>
+              ) : authCompleted ? (
+                <>
+                  {/* 检测完成后显示完成 icon */}
+                  <CheckCircle2 className="w-8 h-8 text-green-500" />
+                  <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+                </>
               ) : null}
             </div>
           </div>
@@ -790,8 +803,7 @@ export default function SessionManagement() {
             </Button>
             <Button
               onClick={handleGoToAuth}
-              disabled={isCheckingAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               前往授权
             </Button>

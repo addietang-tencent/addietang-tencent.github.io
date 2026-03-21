@@ -1336,7 +1336,7 @@ export default function MemberManagement() {
               if (!clawOk) {
                 reasons.push(
                   <p key="claw">
-                    删除用户需要该用户名下没有任何 OpenClaw 实例，当前该用户名下有 {deleteCheckDialog?.clawCount} 个 OpenClaw。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
+                    删除用户需要该用户名下没有任何 OpenClaw 实例。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
                   </p>
                 );
               }

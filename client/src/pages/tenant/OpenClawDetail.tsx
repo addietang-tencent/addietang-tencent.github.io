@@ -1529,11 +1529,68 @@ export default function OpenClawDetail() {
               </>
             )}
             {wechatModalStage === "qr" && (
-              <img
-                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/gsHEHybeNvVw_9f0461bc.png"
-                alt="微信扫码二维码"
-                className="w-44 h-44 object-cover rounded-lg"
-              />
+              <svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+                <rect width="180" height="180" fill="white"/>
+                <rect x="10" y="10" width="50" height="50" fill="black"/>
+                <rect x="18" y="18" width="34" height="34" fill="white"/>
+                <rect x="26" y="26" width="18" height="18" fill="black"/>
+                <rect x="120" y="10" width="50" height="50" fill="black"/>
+                <rect x="128" y="18" width="34" height="34" fill="white"/>
+                <rect x="136" y="26" width="18" height="18" fill="black"/>
+                <rect x="10" y="120" width="50" height="50" fill="black"/>
+                <rect x="18" y="128" width="34" height="34" fill="white"/>
+                <rect x="26" y="136" width="18" height="18" fill="black"/>
+                <rect x="82" y="10" width="8" height="8" fill="black"/>
+                <rect x="94" y="10" width="8" height="8" fill="black"/>
+                <rect x="70" y="22" width="8" height="8" fill="black"/>
+                <rect x="106" y="22" width="8" height="8" fill="black"/>
+                <rect x="82" y="34" width="8" height="8" fill="black"/>
+                <rect x="94" y="34" width="8" height="8" fill="black"/>
+                <rect x="70" y="46" width="8" height="8" fill="black"/>
+                <rect x="106" y="46" width="8" height="8" fill="black"/>
+                <rect x="82" y="58" width="8" height="8" fill="black"/>
+                <rect x="10" y="70" width="8" height="8" fill="black"/>
+                <rect x="34" y="70" width="8" height="8" fill="black"/>
+                <rect x="58" y="70" width="8" height="8" fill="black"/>
+                <rect x="82" y="70" width="8" height="8" fill="black"/>
+                <rect x="106" y="70" width="8" height="8" fill="black"/>
+                <rect x="130" y="70" width="8" height="8" fill="black"/>
+                <rect x="154" y="70" width="8" height="8" fill="black"/>
+                <rect x="22" y="82" width="8" height="8" fill="black"/>
+                <rect x="46" y="82" width="8" height="8" fill="black"/>
+                <rect x="70" y="82" width="8" height="8" fill="black"/>
+                <rect x="118" y="82" width="8" height="8" fill="black"/>
+                <rect x="142" y="82" width="8" height="8" fill="black"/>
+                <rect x="166" y="82" width="8" height="8" fill="black"/>
+                <rect x="10" y="94" width="8" height="8" fill="black"/>
+                <rect x="34" y="94" width="8" height="8" fill="black"/>
+                <rect x="94" y="94" width="8" height="8" fill="black"/>
+                <rect x="118" y="94" width="8" height="8" fill="black"/>
+                <rect x="154" y="94" width="8" height="8" fill="black"/>
+                <rect x="22" y="106" width="8" height="8" fill="black"/>
+                <rect x="58" y="106" width="8" height="8" fill="black"/>
+                <rect x="82" y="106" width="8" height="8" fill="black"/>
+                <rect x="130" y="106" width="8" height="8" fill="black"/>
+                <rect x="166" y="106" width="8" height="8" fill="black"/>
+                <rect x="70" y="118" width="8" height="8" fill="black"/>
+                <rect x="94" y="118" width="8" height="8" fill="black"/>
+                <rect x="118" y="118" width="8" height="8" fill="black"/>
+                <rect x="154" y="118" width="8" height="8" fill="black"/>
+                <rect x="82" y="130" width="8" height="8" fill="black"/>
+                <rect x="106" y="130" width="8" height="8" fill="black"/>
+                <rect x="130" y="130" width="8" height="8" fill="black"/>
+                <rect x="70" y="142" width="8" height="8" fill="black"/>
+                <rect x="94" y="142" width="8" height="8" fill="black"/>
+                <rect x="142" y="142" width="8" height="8" fill="black"/>
+                <rect x="166" y="142" width="8" height="8" fill="black"/>
+                <rect x="82" y="154" width="8" height="8" fill="black"/>
+                <rect x="118" y="154" width="8" height="8" fill="black"/>
+                <rect x="142" y="154" width="8" height="8" fill="black"/>
+                <rect x="70" y="166" width="8" height="8" fill="black"/>
+                <rect x="106" y="166" width="8" height="8" fill="black"/>
+                <rect x="130" y="166" width="8" height="8" fill="black"/>
+                <rect x="154" y="166" width="8" height="8" fill="black"/>
+              </svg>
             )}
           </div>
         </DialogContent>

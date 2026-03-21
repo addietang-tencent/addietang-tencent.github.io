@@ -1482,7 +1482,7 @@ export default function MemberManagement() {
                 <div className="flex items-center gap-2">
                   <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
                   <span className="text-sm text-red-600">
-                    私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
+                    私有网络：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
                   </span>
                 </div>
               )}

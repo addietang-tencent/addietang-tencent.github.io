@@ -55,6 +55,7 @@ type ChannelConfig = {
   fields?: ChannelField[];
   feishuMode?: true; // 飞书特殊处理
   weworkMode?: true; // 企业微信特殊处理
+  wechatMode?: true; // 微信特殊处理
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -101,6 +102,13 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
       { key: "clientId", label: "钉钉应用的Client ID", secret: false },
       { key: "clientSecret", label: "钉钉应用的Client Secret", secret: true },
     ],
+  },
+  {
+    value: "wechat",
+    label: "微信",
+    descText: "通过微信扫码授权，将 OpenClaw 接入微信，支持微信消息交互。",
+    detailUrl: "#",
+    wechatMode: true,
   },
 ];
 
@@ -250,6 +258,8 @@ export default function OpenClawDetail() {
   const [expandedChannelIdx, setExpandedChannelIdx] = useState<number | null>(null);
   // 飞书 pairing code
   const [feishuPairingCode, setFeishuPairingCode] = useState("");
+  // 微信二维码弹窗
+  const [showWechatQrModal, setShowWechatQrModal] = useState(false);
 
   // ── WebUI 状态 ──
   const [showWebUIProgressDialog, setShowWebUIProgressDialog] = useState(false);
@@ -416,6 +426,12 @@ export default function OpenClawDetail() {
       return;
     }
 
+    // 微信：点击"前往授权"弹出二维码
+    if (ch.wechatMode) {
+      setShowWechatQrModal(true);
+      return;
+    }
+
     // 企业微信手动配置：显示为"企微机器人"
     const channelType = ch.weworkMode ? "企微机器人" : ch.label;
     const newEntry: AppliedChannel = {
@@ -500,6 +516,11 @@ export default function OpenClawDetail() {
           )}
         </div>
       );
+    }
+
+    // 微信：无需额外输入，直接显示"前往授权"按钮（由外部按钮处理）
+    if (currentChannelConfig.wechatMode) {
+      return null;
     }
 
     if (currentChannelConfig.feishuMode) {
@@ -887,7 +908,7 @@ export default function OpenClawDetail() {
 
               {/* 操作按钮 */}
               <Button className="w-full text-sm" variant="outline" onClick={handleAddChannel}>
-                {(currentChannelConfig?.feishuMode && feishuConfigMode === "quick") || (currentChannelConfig?.weworkMode && weworkConfigMode === "quick") ? "前往授权" : "添加并应用"}
+                {(currentChannelConfig?.feishuMode && feishuConfigMode === "quick") || (currentChannelConfig?.weworkMode && weworkConfigMode === "quick") || currentChannelConfig?.wechatMode ? "前往授权" : "添加并应用"}
               </Button>
 
               {/* 底部说明 */}
@@ -909,16 +930,20 @@ export default function OpenClawDetail() {
                       <div key={chIdx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
                         {/* 折叠行 */}
                         <div className="flex items-center justify-between px-2.5 py-2">
-                          <button
-                            className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
-                            onClick={() => toggleExpandChannel(chIdx)}
-                          >
-                            {expandedChannelIdx === chIdx
-                              ? <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
-                              : <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
-                            }
-                            <span className="text-sm font-medium text-gray-800 truncate">{ch.type}</span>
-                          </button>
+                          {ch.channelValue === "wechat" ? (
+                            <span className="text-sm font-medium text-gray-800 truncate flex-1 min-w-0 pl-0.5">{ch.type}</span>
+                          ) : (
+                            <button
+                              className="flex items-center gap-1.5 flex-1 min-w-0 text-left"
+                              onClick={() => toggleExpandChannel(chIdx)}
+                            >
+                              {expandedChannelIdx === chIdx
+                                ? <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
+                                : <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+                              }
+                              <span className="text-sm font-medium text-gray-800 truncate">{ch.type}</span>
+                            </button>
+                          )}
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="badge-running text-xs">
                               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -935,8 +960,8 @@ export default function OpenClawDetail() {
                             </button>
                           </div>
                         </div>
-                        {/* 展开配置项 */}
-                        {expandedChannelIdx === chIdx && renderAppliedChannelDetail(chIdx, ch)}
+                        {/* 展开配置项（微信无展开） */}
+                        {ch.channelValue !== "wechat" && expandedChannelIdx === chIdx && renderAppliedChannelDetail(chIdx, ch)}
                       </div>
                     ))}
                   </div>
@@ -1443,6 +1468,64 @@ export default function OpenClawDetail() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-8"
             >
               立即访问
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 微信扫码登录弹窗 ===== */}
+      <Dialog open={showWechatQrModal} onOpenChange={setShowWechatQrModal}>
+        <DialogContent className="max-w-sm [&>button]:focus-visible:ring-0 [&>button]:focus-visible:ring-offset-0 [&>button]:outline-none [&>button]:shadow-none [&>button]:border-0 [&>button]:ring-0">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">微信扫码登录</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-1">
+              使用微信扫描二维码完成登录
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center py-4">
+            <div className="rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+              <img
+                src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/gsHEHybeNvVw_9f0461bc.png"
+                alt="微信扫码二维码"
+                className="w-48 h-48 object-cover"
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-3">二维码有效期 5 分钟，过期请刷新</p>
+          </div>
+          <div className="flex justify-center gap-3 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWechatQrModal(false)}
+              className="text-gray-600 px-6"
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowWechatQrModal(false);
+                setAppliedChannels(prev => {
+                  const existingIdx = prev.findIndex(c => c.channelValue === "wechat");
+                  const newEntry: AppliedChannel = {
+                    type: "微信 ClawBot",
+                    channelValue: "wechat",
+                    status: "running",
+                    fields: [],
+                    fieldValues: {},
+                  };
+                  if (existingIdx >= 0) {
+                    const next = [...prev];
+                    next[existingIdx] = newEntry;
+                    return next;
+                  }
+                  return [...prev, newEntry];
+                });
+                toast.success("微信 ClawBot 已添加并应用");
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white px-6"
+            >
+              已扫码，完成授权
             </Button>
           </div>
         </DialogContent>

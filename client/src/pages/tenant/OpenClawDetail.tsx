@@ -647,7 +647,7 @@ export default function OpenClawDetail() {
             </span>
             <button
               onClick={handleOpenWebUI}
-              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-colors cursor-pointer"
+              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full transition-colors cursor-pointer"
             >
               <ExternalLink className="w-3 h-3" />
               开启WebUI
@@ -1358,7 +1358,7 @@ export default function OpenClawDetail() {
           </DialogHeader>
           {/* 警告文字 */}
           <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
-            访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失
+            访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
           </div>
           {/* 链接和 Token */}
           <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">

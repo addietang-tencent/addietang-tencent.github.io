@@ -50,29 +50,11 @@ function DingtalkIcon() {
 
 function WechatIcon() {
   return (
-    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#07C160" }}>
-      {/* WeChat classic double-bubble logo: large bubble top-left, small bubble bottom-right */}
-      <svg viewBox="0 0 100 100" className="w-6 h-6">
-        {/* Large bubble (top-left) */}
-        <path
-          d="M42,14 C23,14 8,26 8,41 C8,49 12,56 19,61 L16,72 L28,65 C32,66 37,67 42,67 C61,67 76,55 76,41 C76,26 61,14 42,14 Z"
-          fill="white"
-        />
-        {/* Large bubble eyes */}
-        <circle cx="33" cy="40" r="4.5" fill="#07C160" />
-        <circle cx="51" cy="40" r="4.5" fill="#07C160" />
-        {/* Small bubble (bottom-right) - overlaps large bubble with green border to cut */}
-        <path
-          d="M62,42 C47,42 35,52 35,64 C35,76 47,86 62,86 C66,86 70,85 73,84 L83,89 L81,80 C86,76 89,70 89,64 C89,52 77,42 62,42 Z"
-          fill="white"
-          stroke="#07C160"
-          strokeWidth="3"
-        />
-        {/* Small bubble eyes */}
-        <circle cx="54" cy="63" r="3.8" fill="#07C160" />
-        <circle cx="70" cy="63" r="3.8" fill="#07C160" />
-      </svg>
-    </div>
+    <img
+      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/pasted_file_ejPp1f_image_2cc88621.png"
+      alt="微信"
+      className="w-10 h-10 rounded-xl object-cover"
+    />
   );
 }
 

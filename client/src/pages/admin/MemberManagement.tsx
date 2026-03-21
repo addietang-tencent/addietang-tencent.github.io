@@ -1343,9 +1343,9 @@ export default function MemberManagement() {
               if (deleteCheckDialog?.vpcType === "auto" && !vpcOk) {
                 reasons.push(
                   <p key="vpc">
-                    删除用户需要系统为该用户自动分配的私有网络下没有关联云资源，当前该私有网络下仍有关联资源。请前往{" "}
+                    删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
                     <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
-                    {" "}解除该私有网络下所有关联资源后，再刷新检查。
+                    {" "}解除后，再刷新检查。
                   </p>
                 );
               }

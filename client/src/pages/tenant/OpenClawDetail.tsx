@@ -267,13 +267,14 @@ export default function OpenClawDetail() {
       // 第二步：生成链接，再过4秒完成
       setTimeout(() => {
         setWebUIStep(2);
-        // 1秒后关闭进度弹窗，打开结果弹窗
-        setTimeout(() => {
-          setShowWebUIProgressDialog(false);
-          setShowWebUIResultDialog(true);
-        }, 1000);
+        // 两步完成后，等待用户点击「确定」才跳转结果弹窗
       }, 4000);
     }, 1500);
+  };
+
+  const handleWebUIProgressConfirm = () => {
+    setShowWebUIProgressDialog(false);
+    setShowWebUIResultDialog(true);
   };
 
   const handleFeishuPairing = () => {
@@ -646,7 +647,7 @@ export default function OpenClawDetail() {
             </span>
             <button
               onClick={handleOpenWebUI}
-              className="ml-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors cursor-pointer"
+              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-full transition-colors cursor-pointer"
             >
               <ExternalLink className="w-3 h-3" />
               开启WebUI
@@ -1326,19 +1327,20 @@ export default function OpenClawDetail() {
               </span>
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex justify-center gap-3 pt-1">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowWebUIProgressDialog(false)}
-              className="text-gray-600"
+              className="text-gray-600 px-6"
             >
               取消
             </Button>
             <Button
               size="sm"
-              disabled
-              className="bg-blue-600 text-white opacity-50 cursor-not-allowed"
+              disabled={webUIStep < 2}
+              onClick={handleWebUIProgressConfirm}
+              className={`px-6 ${webUIStep >= 2 ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-600 text-white opacity-50 cursor-not-allowed'}`}
             >
               确定
             </Button>
@@ -1389,11 +1391,11 @@ export default function OpenClawDetail() {
           <p className="text-xs text-gray-500 mt-1">
             访问面板链接后，复制并输入上方面板Token，即可进入面板
           </p>
-          <div className="flex justify-end pt-1">
+          <div className="flex justify-center pt-1">
             <Button
               size="sm"
               onClick={() => { window.open(webUIUrl, "_blank"); }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8"
             >
               立即访问
             </Button>

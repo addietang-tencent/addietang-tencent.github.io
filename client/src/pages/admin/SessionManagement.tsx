@@ -349,8 +349,11 @@ export default function SessionManagement() {
   };
 
   const handleGoToAuth = () => {
-    // 打开授权页面
-    window.open('https://console.cloud.tencent.com/cam/role/grant?roleName=CVM_QCSLinkedRoleInClawProAgent&serviceLinkedRole=1', '_blank');
+    // Mock 授权流程：5 秒后自动检测授权完成
+    // 不真正打开腾讯云页面，而是模拟授权完成
+    setTimeout(() => {
+      localStorage.setItem('clsAuthorized', 'true');
+    }, 5000);
   };
 
   const handleCancelAuth = () => {

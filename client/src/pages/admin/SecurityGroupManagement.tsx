@@ -19,7 +19,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
@@ -116,7 +117,45 @@ export default function SecurityGroupManagement() {
 
   const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
 
+  // ── 公网配置状态 ──────────────────────────────────────────────────────────────
+  type PublicNetConfig = {
+    assignPublicIp: boolean;        // 是否分配公网 IP
+    billingMode: "monthly" | "traffic"; // 带宽计费模式
+    bandwidth: number;              // 带宽上限 (Mbps)
+  };
+  const initPublicConfig: PublicNetConfig = {
+    assignPublicIp: true,
+    billingMode: "monthly",
+    bandwidth: 5,
+  };
+  const [savedPublicConfig, setSavedPublicConfig] = useState<PublicNetConfig>(initPublicConfig);
+  const [publicConfig, setPublicConfig] = useState<PublicNetConfig>(initPublicConfig);
+  const [showPublicSaveDialog, setShowPublicSaveDialog] = useState(false);
+
+  const isPublicDirty = JSON.stringify(publicConfig) !== JSON.stringify(savedPublicConfig);
+
+  const handlePublicSaveConfirm = () => {
+    setSavedPublicConfig(publicConfig);
+    setShowPublicSaveDialog(false);
+    toast.success("公网配置已保存");
+  };
+
+  const handlePublicDiscard = () => {
+    setPublicConfig(savedPublicConfig);
+  };
+
+  // 切换计费模式时，若当前带宽超出新范围则截断
+  const handleBillingModeChange = (mode: "monthly" | "traffic") => {
+    const maxBw = mode === "traffic" ? 200 : 2000;
+    setPublicConfig((prev) => ({
+      ...prev,
+      billingMode: mode,
+      bandwidth: Math.min(prev.bandwidth, maxBw),
+    }));
+  };
+
   // 是否有未保存的改动
+
   const isDirty = JSON.stringify(config) !== JSON.stringify(savedConfig);
 
   // VPC 改变时，所有可用区子网重置
@@ -532,9 +571,155 @@ export default function SecurityGroupManagement() {
               </p>
             </div>
           </div>
+        </div>        {/* ══ 公网配置板块 ══════════════════════════════════════════════════════════════ */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+              <Wifi className="w-3.5 h-3.5 text-white" />
+            </div>
+            <h2 className="text-base font-bold text-gray-900">公网</h2>
+          </div>
+
+          {/* 公网配置卡片 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          >
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
+              <span className="text-sm font-semibold text-gray-800">公网配置</span>
+              {isPublicDirty && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePublicDiscard}
+                    className="h-7 px-3 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={() => setShowPublicSaveDialog(true)}
+                    className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                  >
+                    保存
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ── 是否分配公网 IP ── */}
+            <div className="px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-medium text-gray-700">是否分配公网 IP</span>
+              </div>
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="assignPublicIp"
+                    checked={publicConfig.assignPublicIp === true}
+                    onChange={() => setPublicConfig((prev) => ({ ...prev, assignPublicIp: true }))}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700">分配</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="assignPublicIp"
+                    checked={publicConfig.assignPublicIp === false}
+                    onChange={() => setPublicConfig((prev) => ({ ...prev, assignPublicIp: false }))}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700">不分配</span>
+                </label>
+              </div>
+            </div>
+
+            {/* 带宽计费模式 + 带宽上限（分配公网 IP 时才显示） */}
+            {publicConfig.assignPublicIp && (
+              <>
+                {/* 带宽计费模式 */}
+                <div className="px-6 py-5 border-b border-gray-100">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm font-medium text-gray-700">带宽计费模式</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="billingMode"
+                        checked={publicConfig.billingMode === "monthly"}
+                        onChange={() => handleBillingModeChange("monthly")}
+                        className="w-4 h-4 accent-blue-600 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-700">包月带宽</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="billingMode"
+                        checked={publicConfig.billingMode === "traffic"}
+                        onChange={() => handleBillingModeChange("traffic")}
+                        className="w-4 h-4 accent-blue-600 cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-700">按流量计费</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* 带宽上限 */}
+                <div className="px-6 py-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-sm font-medium text-gray-700">带宽上限</span>
+                    <span className="text-xs text-gray-400">
+                      {publicConfig.billingMode === "monthly" ? "1–2000 Mbps" : "1–200 Mbps"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {/* 滑块 */}
+                    <div className="flex-1">
+                      <Slider
+                        min={1}
+                        max={publicConfig.billingMode === "monthly" ? 2000 : 200}
+                        step={1}
+                        value={[publicConfig.bandwidth]}
+                        onValueChange={([val]) => setPublicConfig((prev) => ({ ...prev, bandwidth: val }))}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-gray-400">1 Mbps</span>
+                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "2000" : "200"} Mbps</span>
+                      </div>
+                    </div>
+                    {/* 输入框 */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <input
+                        type="number"
+                        min={1}
+                        max={publicConfig.billingMode === "monthly" ? 2000 : 200}
+                        value={publicConfig.bandwidth}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          const maxBw = publicConfig.billingMode === "monthly" ? 2000 : 200;
+                          if (!isNaN(val)) {
+                            setPublicConfig((prev) => ({
+                              ...prev,
+                              bandwidth: Math.max(1, Math.min(val, maxBw)),
+                            }));
+                          }
+                        }}
+                        className="w-20 h-9 text-sm text-center border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <span className="text-sm text-gray-500">Mbps</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════ */}
+        {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════════════════════ */}
         <div className="mb-8">
           <div className="flex items-center gap-2.5 mb-4">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
@@ -666,6 +851,32 @@ export default function SecurityGroupManagement() {
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               {editRule ? "保存修改" : "添加规则"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 公网保存确认弹窗 */}
+      <Dialog open={showPublicSaveDialog} onOpenChange={setShowPublicSaveDialog}>
+        <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>确认保存公网配置</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-gray-700 mb-3">
+              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 实例</span>生效。
+            </p>
+            <p className="text-sm text-gray-500">
+              已有实例保持原有的公网配置不变，不会受影响。
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPublicSaveDialog(false)}>取消</Button>
+            <Button
+              onClick={handlePublicSaveConfirm}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              确认保存
             </Button>
           </DialogFooter>
         </DialogContent>

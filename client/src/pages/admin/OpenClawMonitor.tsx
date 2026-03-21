@@ -2,12 +2,13 @@
  * OpenClawMonitor - 管控端 OpenClaw 监控页
  * 布局：标题行右上角时间筛选器+刷新 → 表格（上方左侧搜索框、右侧统计）
  */
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+
 import { toast } from "sonner";
 import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus, AlertCircle, Terminal } from "lucide-react";
 
@@ -65,11 +66,71 @@ export default function OpenClawMonitor() {
   const [terminalTarget, setTerminalTarget] = useState<{ id: string; name: string } | null>(null);
   const [terminalConnecting, setTerminalConnecting] = useState(false);
   const [terminalConnected, setTerminalConnected] = useState(false);
+  const [terminalInput, setTerminalInput] = useState("");
+  const [terminalLines, setTerminalLines] = useState<{ type: "output" | "cmd" | "welcome"; text: string }[]>([]);
+  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
+  const [historyIdx, setHistoryIdx] = useState(-1);
+  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const terminalInputRef = useRef<HTMLInputElement>(null);
+
+  // 模拟命令响应
+  const getCommandOutput = useCallback((cmd: string): string[] => {
+    const c = cmd.trim();
+    if (!c) return [];
+    if (c === "ls" || c === "ls -la" || c === "ls -l") return [
+      "total 48",
+      "drwxr-xr-x  8 root root 4096 Mar 21 15:30 .",
+      "drwxr-xr-x 20 root root 4096 Mar 21 09:00 ..",
+      "-rw-r--r--  1 root root  570 Mar 20 18:12 .bashrc",
+      "-rw-r--r--  1 root root  161 Mar 20 18:12 .profile",
+      "drwxr-xr-x  2 root root 4096 Mar 21 10:05 config",
+      "drwxr-xr-x  3 root root 4096 Mar 21 11:22 data",
+      "drwxr-xr-x  2 root root 4096 Mar 21 09:15 logs",
+      "-rwxr-xr-x  1 root root 8192 Mar 21 15:00 openclaw",
+    ];
+    if (c === "pwd") return ["/root"];
+    if (c === "whoami") return ["root"];
+    if (c === "hostname") return ["openclaw"];
+    if (c === "date") return [new Date().toString()];
+    if (c === "uname -a") return ["Linux openclaw 6.8.0-55-generic #57-Ubuntu SMP PREEMPT_DYNAMIC Fri Mar 14 18:00:00 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux"];
+    if (c === "uptime") return [" 15:30:01 up 2 days,  4:12,  1 user,  load average: 0.08, 0.12, 0.10"];
+    if (c === "df -h") return [
+      "Filesystem      Size  Used Avail Use% Mounted on",
+      "/dev/vda1        50G   12G   36G  25% /",
+      "tmpfs           2.0G     0  2.0G   0% /dev/shm",
+      "/dev/vdb1       100G   45G   55G  46% /data",
+    ];
+    if (c === "free -h") return [
+      "               total        used        free      shared  buff/cache   available",
+      "Mem:           7.8Gi       2.1Gi       3.2Gi        45Mi       2.5Gi       5.4Gi",
+      "Swap:          2.0Gi          0B       2.0Gi",
+    ];
+    if (c === "ps aux" || c === "ps") return [
+      "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND",
+      "root           1  0.0  0.1 168432 11264 ?        Ss   Mar19   0:05 /sbin/init",
+      "root         512  0.2  1.8 892416 148032 ?       Ssl  Mar19   4:12 /usr/bin/openclaw --config /root/config/app.yaml",
+      "root        1024  0.0  0.0  14224  3072 pts/0    Ss   15:28   0:00 -bash",
+      "root        1089  0.0  0.0  14432  1792 pts/0    R+   15:30   0:00 ps aux",
+    ];
+    if (c.startsWith("cat ")) return [`cat: ${c.slice(4)}: No such file or directory`];
+    if (c.startsWith("cd ")) return [];
+    if (c === "cd") return [];
+    if (c === "clear") return ["__CLEAR__"];
+    if (c === "exit") return ["logout"];
+    if (c === "help") return [
+      "Available commands: ls, pwd, whoami, hostname, date, uname -a, uptime, df -h, free -h, ps aux, clear, exit",
+    ];
+    return [`bash: ${c}: command not found`];
+  }, []);
 
   const handleOpenTerminal = (claw: { id: string; name: string }) => {
     setTerminalTarget(claw);
     setTerminalConnecting(true);
     setTerminalConnected(false);
+    setTerminalInput("");
+    setTerminalLines([]);
+    setCmdHistory([]);
+    setHistoryIdx(-1);
     setTimeout(() => {
       setTerminalConnecting(false);
       setTerminalConnected(true);
@@ -80,7 +141,54 @@ export default function OpenClawMonitor() {
     setTerminalTarget(null);
     setTerminalConnecting(false);
     setTerminalConnected(false);
+    setTerminalInput("");
+    setTerminalLines([]);
   };
+
+  const handleTerminalSubmit = () => {
+    const cmd = terminalInput.trim();
+    const output = getCommandOutput(cmd);
+    if (output[0] === "__CLEAR__") {
+      setTerminalLines([]);
+    } else {
+      setTerminalLines(prev => [
+        ...prev,
+        { type: "cmd", text: cmd },
+        ...output.map(o => ({ type: "output" as const, text: o })),
+      ]);
+    }
+    if (cmd) setCmdHistory(prev => [cmd, ...prev]);
+    setHistoryIdx(-1);
+    setTerminalInput("");
+  };
+
+  const handleTerminalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleTerminalSubmit();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const newIdx = Math.min(historyIdx + 1, cmdHistory.length - 1);
+      setHistoryIdx(newIdx);
+      setTerminalInput(cmdHistory[newIdx] ?? "");
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const newIdx = Math.max(historyIdx - 1, -1);
+      setHistoryIdx(newIdx);
+      setTerminalInput(newIdx === -1 ? "" : cmdHistory[newIdx]);
+    }
+  };
+
+  // 自动滚动到底部
+  useEffect(() => {
+    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [terminalLines, terminalConnected]);
+
+  // 连接完成后自动聚焦输入框
+  useEffect(() => {
+    if (terminalConnected) {
+      setTimeout(() => terminalInputRef.current?.focus(), 100);
+    }
+  }, [terminalConnected]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -508,6 +616,7 @@ export default function OpenClawMonitor() {
           className="p-0 overflow-hidden border-0"
           style={{ width: "90vw", maxWidth: "90vw", height: "88vh", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
         >
+          <DialogTitle className="sr-only">终端连接 {terminalTarget?.name}</DialogTitle>
           {/* 标题栏 */}
           <div className="flex items-center justify-between px-5 py-3 bg-[#1e1e2e] border-b border-[#2a2a3e]">
             <div className="flex items-center gap-2">
@@ -538,21 +647,53 @@ export default function OpenClawMonitor() {
             {/* 终端已连接状态 */}
             {terminalConnected && (
               <div
-                className="h-full p-5 font-mono text-sm text-gray-200 overflow-auto leading-relaxed"
+                className="h-full flex flex-col"
                 style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
+                onClick={() => terminalInputRef.current?.focus()}
               >
-                <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
-                <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
-                <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
-                <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
-                <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
-                <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
-                <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
-                <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
-                <p className="mt-2 text-gray-200">
-                  root@openclaw:~#
-                  <span className="inline-block w-2 h-4 bg-gray-200 ml-1 align-middle animate-pulse"></span>
-                </p>
+                {/* 输出区域 */}
+                <div className="flex-1 p-5 overflow-auto text-gray-200 leading-relaxed">
+                  {/* 欢迎信息 */}
+                  <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
+                  <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
+                  <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
+                  <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
+                  <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
+                  <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
+                  <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
+                  <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
+
+                  {/* 历史命令输出 */}
+                  {terminalLines.map((line, i) => (
+                    <p key={i} className={line.type === "cmd" ? "mt-2 text-gray-200" : "text-gray-400 whitespace-pre"}>
+                      {line.type === "cmd" ? (
+                        <><span className="text-green-400">root@openclaw</span><span className="text-gray-500">:</span><span className="text-blue-400">~</span><span className="text-gray-200">#</span> {line.text}</>
+                      ) : line.text}
+                    </p>
+                  ))}
+                  <div ref={terminalEndRef} />
+                </div>
+
+                {/* 输入行 */}
+                <div className="flex items-center px-5 py-3 border-t border-[#2a2a3e]">
+                  <span className="text-green-400 whitespace-nowrap">root@openclaw</span>
+                  <span className="text-gray-500">:</span>
+                  <span className="text-blue-400">~</span>
+                  <span className="text-gray-200 mr-2">#</span>
+                  <input
+                    ref={terminalInputRef}
+                    type="text"
+                    value={terminalInput}
+                    onChange={e => setTerminalInput(e.target.value)}
+                    onKeyDown={handleTerminalKeyDown}
+                    className="flex-1 bg-transparent text-gray-200 outline-none caret-green-400"
+                    style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
+                    autoComplete="off"
+                    spellCheck={false}
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                  />
+                </div>
               </div>
             )}
           </div>

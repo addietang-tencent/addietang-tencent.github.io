@@ -28,22 +28,25 @@ import {
 const PAGE_SIZE = 10;
 
 // 生成更多 mock 数据以演示翻页
+// vpcType: "auto" = 我们帮用户创建的 VPC（自动分配）；"custom" = 用户指定 VPC
+// vpcName: 自动分配时形如 "openclaw/{username}"，自定义时为 null
+// hasVpcResources: 自动分配 VPC 下是否有关联云资源（null 表示自定义 VPC 不适用）
 const MOCK_MEMBERS_BASE = [
-  { id: "alice@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-01-10" },
-  { id: "bob@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-02-15" },
-  { id: "carol@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-03-01" },
-  { id: "david@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-03-20" },
-  { id: "eve@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 4, joinTime: "2025-04-05" },
-  { id: "frank@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-04-12" },
-  { id: "grace@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-05-01" },
-  { id: "henry@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-05-18" },
-  { id: "iris@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 3, joinTime: "2025-06-02" },
-  { id: "jack@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-20" },
-  { id: "kate@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-07-05" },
-  { id: "leo@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-22" },
-  { id: "mike@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
-  { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
-  { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20" },
+  { id: "alice@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-01-10", vpcType: "auto" as const, vpcName: "openclaw/alice", hasVpcResources: true },
+  { id: "bob@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-02-15", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },
+  { id: "carol@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-03-01", vpcType: "auto" as const, vpcName: "openclaw/carol", hasVpcResources: false },
+  { id: "david@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-03-20", vpcType: "auto" as const, vpcName: "openclaw/david", hasVpcResources: true },
+  { id: "eve@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 4, joinTime: "2025-04-05", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },
+  { id: "frank@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-04-12", vpcType: "auto" as const, vpcName: "openclaw/frank", hasVpcResources: false },
+  { id: "grace@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-05-01", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },
+  { id: "henry@acompany.com", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-05-18", vpcType: "auto" as const, vpcName: "openclaw/henry", hasVpcResources: false },
+  { id: "iris@acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 80000, clawCount: 3, joinTime: "2025-06-02", vpcType: "auto" as const, vpcName: "openclaw/iris", hasVpcResources: true },
+  { id: "jack@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-20", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },
+  { id: "kate@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-07-05", vpcType: "auto" as const, vpcName: "openclaw/kate", hasVpcResources: false },
+  { id: "leo@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-22", vpcType: "auto" as const, vpcName: "openclaw/leo", hasVpcResources: false },
+  { id: "mike@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },
+  { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/nina", hasVpcResources: true },
+  { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/oscar", hasVpcResources: false },
 ];
 
 const LAST_CLAW_LIMIT = 3;
@@ -531,9 +534,18 @@ export default function MemberManagement() {
   }>({ open: false, title: "", memberId: "", password: "" });
 
   // 删除检查弹窗
-  const [deleteCheckDialog, setDeleteCheckDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
+  const [deleteCheckDialog, setDeleteCheckDialog] = useState<{
+    open: boolean;
+    memberId: string;
+    clawCount: number;
+    vpcType: "auto" | "custom";
+    vpcName: string | null;
+    hasVpcResources: boolean | null;
+    clawRefreshing: boolean;
+    vpcRefreshing: boolean;
+  } | null>(null);
   // 二次确认弹窗
-  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; memberId: string } | null>(null);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; memberId: string; vpcType: "auto" | "custom"; vpcName: string | null } | null>(null);
   // 禁用确认弹窗（新：所有用户均可禁用，只需二次确认）
   const [disableConfirmDialog, setDisableConfirmDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
   // 启用确认弹窗
@@ -553,6 +565,7 @@ export default function MemberManagement() {
       id: newMember.id, role: newMember.role, status: "active",
       clawLimit: newMember.clawLimit, tokenLimit: newMember.tokenLimit,
       clawCount: 0, joinTime: new Date().toISOString().slice(0, 10),
+      vpcType: "auto" as const, vpcName: `openclaw/${newMember.id.split("@")[0]}`, hasVpcResources: false,
     }]);
     setShowAddDialog(false);
     setNewMember({ ...emptyNewMember });
@@ -589,7 +602,16 @@ export default function MemberManagement() {
   };
 
   const openDeleteCheck = (member: typeof MOCK_MEMBERS_BASE[0]) => {
-    setDeleteCheckDialog({ open: true, memberId: member.id, clawCount: member.clawCount });
+    setDeleteCheckDialog({
+      open: true,
+      memberId: member.id,
+      clawCount: member.clawCount,
+      vpcType: member.vpcType,
+      vpcName: member.vpcName,
+      hasVpcResources: member.hasVpcResources,
+      clawRefreshing: false,
+      vpcRefreshing: false,
+    });
   };
 
   const openDisableConfirm = (member: typeof MOCK_MEMBERS_BASE[0]) => {
@@ -697,7 +719,7 @@ export default function MemberManagement() {
               </div>
               {addBtnHovered && (
                 <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
-                  根据您购买的席位套餐，目前用户数已达席位上限，无法再添加用户
+                  当前用户数已达上限，无法再添加
                 </div>
               )}
             </div>
@@ -1201,51 +1223,154 @@ export default function MemberManagement() {
         password={credentialDialog.password}
       />
 
-      {/* Delete Check Dialog */}
+      {/* Delete Check Dialog - 第一步：资源情况说明 */}
       <Dialog
         open={!!deleteCheckDialog?.open}
         onOpenChange={(open) => { if (!open) setDeleteCheckDialog(null); }}
       >
-        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-lg" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>删除用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-600">
-              只有当用户名下没有任何 OpenClaw 时，才可以删除用户。
-            </p>
+            {/* 用户 ID */}
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
               <span className="text-sm text-gray-500">用户 ID</span>
               <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
             </div>
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
-              <span className={`text-sm font-semibold ${
-                (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
-              }`}>
-                {deleteCheckDialog?.clawCount ?? 0} 个
-              </span>
-            </div>
-            {(deleteCheckDialog?.clawCount ?? 0) > 0 ? (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-1">
-                <p className="font-medium">无法删除该用户</p>
-                <p>请先删除该用户名下的所有 OpenClaw 实例后，再执行删除操作。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。</p>
+
+            {/* 名下 OpenClaw 数量 + 刷新 */}
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-semibold ${
+                    (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-500" : "text-green-600"
+                  }`}>
+                    {deleteCheckDialog?.clawRefreshing ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    ) : (
+                      <>{deleteCheckDialog?.clawCount ?? 0} 个</>
+                    )}
+                  </span>
+                  <button
+                    className="text-gray-400 hover:text-blue-500 transition-colors"
+                    title="刷新"
+                    onClick={() => {
+                      if (!deleteCheckDialog) return;
+                      setDeleteCheckDialog({ ...deleteCheckDialog, clawRefreshing: true });
+                      setTimeout(() => {
+                        // 模拟刷新：随机返回新数量（实际应调用 API）
+                        const newCount = Math.random() > 0.5 ? deleteCheckDialog.clawCount : 0;
+                        setDeleteCheckDialog({ ...deleteCheckDialog, clawCount: newCount, clawRefreshing: false });
+                      }, 1200);
+                    }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                该用户名下没有 OpenClaw，可以删除。
+              {(deleteCheckDialog?.clawCount ?? 0) > 0 && (
+                <p className="mt-2 text-xs text-red-500">需先删除该用户名下的所有 OpenClaw，可让用户自行删除，或由管理员在 OpenClaw 监控页删除。</p>
+              )}
+            </div>
+
+            {/* 自动分配 VPC：显示私有网络信息 + 刷新 */}
+            {deleteCheckDialog?.vpcType === "auto" && (
+              <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">私有网络</span>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="https://console.cloud.tencent.com/vpc"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      {deleteCheckDialog?.vpcName}
+                    </a>
+                    <button
+                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      title="刷新"
+                      onClick={() => {
+                        if (!deleteCheckDialog) return;
+                        setDeleteCheckDialog({ ...deleteCheckDialog, vpcRefreshing: true });
+                        setTimeout(() => {
+                          // 模拟刷新：随机返回新状态
+                          const newHasResources = Math.random() > 0.5 ? deleteCheckDialog.hasVpcResources : false;
+                          setDeleteCheckDialog({ ...deleteCheckDialog, hasVpcResources: newHasResources, vpcRefreshing: false });
+                        }, 1200);
+                      }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center gap-1.5">
+                  {deleteCheckDialog?.vpcRefreshing ? (
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" /><span className="text-xs text-gray-400">检查中...</span></>
+                  ) : deleteCheckDialog?.hasVpcResources ? (
+                    <>
+                      <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
+                      <span className="text-xs text-orange-600">有关联云资源，需先前往《
+                        <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="underline hover:text-orange-700">腾讯云控制台</a>
+                      》解除所有资源绑定</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                      <span className="text-xs text-green-600">无关联云资源，可删除</span>
+                    </>
+                  )}
+                </div>
               </div>
             )}
+
+            {/* 用户自定义 VPC：说明不影响 */}
+            {deleteCheckDialog?.vpcType === "custom" && (
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-600">
+                该用户使用自定义 VPC，删除用户后私有网络不受影响。
+              </div>
+            )}
+
+            {/* 删除条件说明 */}
+            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-1.5">
+              <p className="font-medium">删除前，请确保满足以下条件：</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  {(deleteCheckDialog?.clawCount ?? 0) === 0
+                    ? <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                    : <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                  }
+                  <span className="text-xs">名下 OpenClaw 数量为 0</span>
+                </div>
+                {deleteCheckDialog?.vpcType === "auto" && (
+                  <div className="flex items-center gap-1.5">
+                    {deleteCheckDialog?.hasVpcResources === false
+                      ? <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                      : <X className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    }
+                    <span className="text-xs">私有网络下无关联云资源</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteCheckDialog(null)}>取消</Button>
-            {(deleteCheckDialog?.clawCount ?? 0) === 0 && (
+            {/* 所有条件满足时才显示确认删除按钮 */}
+            {(deleteCheckDialog?.clawCount ?? 0) === 0 &&
+              (deleteCheckDialog?.vpcType === "custom" || deleteCheckDialog?.hasVpcResources === false) && (
               <Button
                 className="bg-red-500 hover:bg-red-600 text-white"
                 onClick={() => {
-                  const id = deleteCheckDialog!.memberId;
+                  const d = deleteCheckDialog!;
                   setDeleteCheckDialog(null);
-                  setDeleteConfirmDialog({ open: true, memberId: id });
+                  setDeleteConfirmDialog({ open: true, memberId: d.memberId, vpcType: d.vpcType, vpcName: d.vpcName });
                 }}
               >
                 确认删除
@@ -1333,20 +1458,49 @@ export default function MemberManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm Dialog (二次确认) */}
+      {/* Delete Confirm Dialog (二次确认) - 第二步：列出将删除的资源 */}
       <Dialog
         open={!!deleteConfirmDialog?.open}
         onOpenChange={(open) => { if (!open) setDeleteConfirmDialog(null); }}
       >
-        <DialogContent className="sm:max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>确认删除用户</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-3">
+          <div className="py-2 space-y-4">
             <p className="text-sm text-gray-600">
-              确定要删除用户 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span> 吗？
+              即将删除用户 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span>，以下关联资源将被一并删除：
             </p>
-            <p className="text-sm text-red-500 font-medium">此操作不可撤销，删除后该用户将无法登录用户端。</p>
+
+            {/* 将被删除的资源列表 */}
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
+              <p className="text-xs font-semibold text-red-700 uppercase tracking-wider mb-1">将被删除的资源</p>
+              {/* 用户账号 - 始终删除 */}
+              <div className="flex items-center gap-2">
+                <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span className="text-sm text-red-800">
+                  用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
+                </span>
+              </div>
+              {/* 自动分配 VPC：一并删除 */}
+              {deleteConfirmDialog?.vpcType === "auto" && deleteConfirmDialog?.vpcName && (
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                  <span className="text-sm text-red-800">
+                    私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* 自定义 VPC 说明 */}
+            {deleteConfirmDialog?.vpcType === "custom" && (
+              <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-600">
+                该用户使用自定义 VPC，私有网络不受影响，不会被删除。
+              </div>
+            )}
+
+            <p className="text-sm text-red-500 font-medium">此操作不可撤销，请谨慎确认。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>

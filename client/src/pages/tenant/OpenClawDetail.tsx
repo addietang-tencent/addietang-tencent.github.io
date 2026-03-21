@@ -752,14 +752,14 @@ export default function OpenClawDetail() {
             style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
             🦞
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
             <span className="badge-running ml-1">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               运行中
             </span>
             {/* 一键更新按钮 + 气泡 */}
-            <div className="relative ml-2">
+            <div className="relative ml-2 flex items-center">
               {showUpdateBubble && !isUpdating && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
                   {/* 气泡主体 */}
@@ -780,7 +780,7 @@ export default function OpenClawDetail() {
               )}
               {isUpdating ? (
                 <button
-                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
                   title="查看更新进度"
                   onClick={() => setShowUpdateProgressDialog(true)}
                 >
@@ -790,7 +790,7 @@ export default function OpenClawDetail() {
               ) : (
                 <button
                   onClick={() => setShowUpdateConfirmDialog(true)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
                 >
                   <ArrowUpCircle className="w-3.5 h-3.5" />
                   一键更新
@@ -800,7 +800,7 @@ export default function OpenClawDetail() {
             {/* 开启面板按钮（纯文字蓝色样式） */}
             <button
               onClick={handleOpenWebUI}
-              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
             >
               <Monitor className="w-3.5 h-3.5" />
               开启OpenClaw面板

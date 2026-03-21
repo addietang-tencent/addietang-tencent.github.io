@@ -783,28 +783,27 @@ export default function OpsObservation() {
             {!isCheckingAuth && (
               <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             )}
-            {isCheckingAuth && (
-              <div className="space-y-3 flex flex-col items-center">
-                {/* 检测中的旋转动画 */}
-                <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                <p className="text-xs text-gray-500 text-center">检测中...</p>
-              </div>
-            )}
+            <div className="space-y-3 flex flex-col items-center min-h-16 justify-center">
+              {isCheckingAuth ? (
+                <>
+                  {/* 检测中的旋转动画 */}
+                  <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-xs text-gray-500 text-center">检测中...</p>
+                </>
+              ) : null}
+            </div>
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            {!isCheckingAuth && (
-              <>
-                <Button variant="outline" onClick={handleCancelAuth}>
-                  取消
-                </Button>
-                <Button
-                  onClick={handleGoToAuth}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  前往授权
-                </Button>
-              </>
-            )}
+            <Button variant="outline" onClick={handleCancelAuth}>
+              取消
+            </Button>
+            <Button
+              onClick={handleGoToAuth}
+              disabled={isCheckingAuth}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              前往授权
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

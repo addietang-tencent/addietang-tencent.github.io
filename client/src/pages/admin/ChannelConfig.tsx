@@ -11,7 +11,7 @@ const CHANNELS = [
   { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景", icon: "🐧" },
   { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队", icon: "🪶" },
   { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户", icon: "📎" },
-  { id: "wechat", name: "微信", desc: "通过微信个人号接入，需要 iOS 系统 8.0.70 以上版本完成扫码授权", icon: "💚" },
+  { id: "wechat", name: "微信", desc: "通过微信 ClawBot 接入，用户可直接在微信与机器人对话", icon: "💚" },
 ];
 
 export default function ChannelConfig() {

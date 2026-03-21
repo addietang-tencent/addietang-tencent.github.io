@@ -637,24 +637,7 @@ export default function SessionManagement() {
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                    <th className="text-right px-6 py-3">
-                      <button
-                        onClick={() => handleSort("tokens")}
-                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
-                      >
-                        TOKENS
-                        <SortIcon column="tokens" />
-                      </button>
-                    </th>
-                    <th className="text-right px-6 py-3">
-                      <button
-                        onClick={() => handleSort("cost")}
-                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
-                      >
-                        预计成本
-                        <SortIcon column="cost" />
-                      </button>
-                    </th>
+
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后消息</th>
                     <th className="text-right px-6 py-3">
                       <button
@@ -677,8 +660,7 @@ export default function SessionManagement() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">{session.type}</td>
                       <td className="px-6 py-4 text-sm text-gray-700">{session.model}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.tokens}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.cost}</td>
+
                       <td className="px-6 py-4 text-sm text-gray-600 truncate">{session.lastMessage}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.updatedAt}</td>
                       <td className="px-6 py-4 text-center">

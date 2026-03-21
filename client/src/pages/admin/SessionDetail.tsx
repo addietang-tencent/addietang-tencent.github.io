@@ -4,7 +4,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, DollarSign, Zap } from "lucide-react";
+import { ArrowLeft, MessageSquare, Zap } from "lucide-react";
 import {
   Tooltip as UITooltip,
   TooltipContent,
@@ -16,19 +16,6 @@ import {
 } from "recharts";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
-
-// 每轮成本数据
-const COST_PER_ROUND = [
-  { round: 1, cost: 0.0012 },
-  { round: 2, cost: 0.0024 },
-  { round: 3, cost: 0.0018 },
-  { round: 4, cost: 0.0024 },
-  { round: 5, cost: 0.0025 },
-  { round: 6, cost: 0.0025 },
-  { round: 7, cost: 0.0024 },
-  { round: 8, cost: 0.0025 },
-  { round: 9, cost: 0.0024 },
-];
 
 // Token 流量数据
 const TOKEN_FLOW = [
@@ -169,35 +156,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       </div>
 
       {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-4 gap-4">
-        <div
-          className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-        >
-          <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">会话成本</span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-white" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalCost}</div>
-
-        </div>
-
-        <div
-          className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-        >
-          <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">平均轮次成本</span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
-              <DollarSign className="w-4 h-4 text-white" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{sessionInfo.avgCostPerRound}</div>
-
-        </div>
-
+      <div className="grid grid-cols-2 gap-4">
         <div
           className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
@@ -231,32 +190,6 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
       {/* ══ 图表区 ═════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 gap-5">
-
-        {/* 每轮成本 */}
-        <div
-          className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-        >
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-            <span className="text-sm font-medium text-gray-700">每轮成本</span>
-
-          </div>
-          <div className="px-4 pt-4 pb-2">
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={COST_PER_ROUND} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis dataKey="round" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
-                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                  formatter={(value: number) => `$${value.toFixed(4)}`}
-                />
-                <Bar dataKey="cost" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
         {/* Token 流量 */}
         <div
@@ -304,7 +237,6 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">OUTPUT</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">CACHE R/W</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
                 </tr>
               </thead>
@@ -401,18 +333,6 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                           </TooltipTrigger>
                           <TooltipContent side="top">
                             {item.tokens}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.cost}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.cost}
                           </TooltipContent>
                         </UITooltip>
                       </TooltipProvider>

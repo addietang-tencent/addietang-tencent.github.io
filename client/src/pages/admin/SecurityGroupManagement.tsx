@@ -317,7 +317,7 @@ export default function SecurityGroupManagement() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">网络管理</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            管理 OpenClaw 实例的安全组规则与私有网络配置，确保云服务器在安全可控的网络环境中运行。
+            管理 OpenClaw 云服务器的安全组规则、私有网络配置与公网配置，确保云服务器在安全可控的网络环境中运行。
           </p>
         </div>
 
@@ -334,7 +334,7 @@ export default function SecurityGroupManagement() {
           <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
             <p className="text-xs text-blue-600 leading-relaxed">
-              配置安全组规则以管控云服务器的入站与出站端口策略。修改规则后，对已运行中的 OpenClaw 云服务器立即生效，请谨慎操作。
+              配置安全组规则以管控云服务器的入站与出站端口策略。修改规则后，对所有 OpenClaw 云服务器立即生效，请谨慎操作。
             </p>
           </div>
 
@@ -367,11 +367,11 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>自动分配私有网络和子网（推荐）</strong> — 系统会为每个用户自动分配一个私有网络。同一私有网络内网互通，不同私有网络之间内网不互通，即同一用户的 OpenClaw 实例之间内网可互通，不同用户的 OpenClaw 实例之间内网不互通。OpenClaw 实例会在系统分配的全部可用区中随机部署。</span>
+                <span><strong>自动分配私有网络和子网（推荐）</strong> — 系统会为每个用户自动分配一个私有网络。同一私有网络内网互通，不同私有网络之间内网不互通，即同一用户的 OpenClaw 云服务器之间内网可互通，不同用户的 OpenClaw 云服务器之间内网不互通。OpenClaw 云服务器会在系统分配的全部可用区中随机部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><strong>指定私有网络和子网</strong> — 系统会为所有用户的 OpenClaw 实例分配到指定的私有网络，同一个私有网络下的 OpenClaw 实例内网可互通，建议同时将安全组策略设置为内网不互通，以实现 OpenClaw 实例间的隔离。系统按填写了子网的可用区随机部署 OpenClaw 实例，不填的可用区不部署。</span>
+                <span><strong>指定私有网络和子网</strong> — 系统会为所有用户的 OpenClaw 云服务器分配到指定的私有网络，同一个私有网络下的 OpenClaw 云服务器内网可互通，建议同时将安全组策略设置为内网不互通，以实现 OpenClaw 云服务器间的隔离。系统按填写了子网的可用区随机部署 OpenClaw 云服务器，不填的可用区不部署。</span>
               </li>
             </ul>
           </div>
@@ -471,7 +471,7 @@ export default function SecurityGroupManagement() {
                         <Info className="w-3 h-3 text-gray-400 cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-[220px] text-xs">
-                        系统自动选择的 OpenClaw 实例主力可用区，不可修改。可通过指定子网来规定实例部署在哪个可用区。
+                        系统自动选择的 OpenClaw 云服务器主力可用区，不可修改。可通过指定子网来规定云服务器部署在哪个可用区。
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -698,7 +698,7 @@ export default function SecurityGroupManagement() {
                           <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent side="right" className="max-w-xs text-xs leading-relaxed">
-                          单台实例可以运行到的最高带宽，超过这个带宽上限将默认丢包。不同的网络计费模式，支持的公网带宽上限有所不同。
+                          单台云服务器可以运行到的最高带宽，超过这个带宽上限将默认丢包。不同的网络计费模式，支持的公网带宽上限有所不同。
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -892,10 +892,10 @@ export default function SecurityGroupManagement() {
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm text-gray-700 mb-3">
-              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 实例</span>生效。
-            </p>
-            <p className="text-sm text-gray-500">
-              已有实例保持原有的公网配置不变，不会受影响。
+              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 云服务器</span>生效。
+              </p>
+              <p className="text-sm text-gray-500">
+              已有云服务器保持原有的公网配置不变，不会受影响。
             </p>
           </div>
           <DialogFooter>
@@ -918,10 +918,10 @@ export default function SecurityGroupManagement() {
           </DialogHeader>
           <div className="py-2">
             <p className="text-sm text-gray-700 mb-3">
-              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 实例</span>生效。
-            </p>
-            <p className="text-sm text-gray-500">
-              已有实例保持原有网络配置不变，不会受影响。
+              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 云服务器</span>生效。
+              </p>
+              <p className="text-sm text-gray-500">
+              已有云服务器保持原有网络配置不变，不会受影响。
             </p>
           </div>
           <DialogFooter>

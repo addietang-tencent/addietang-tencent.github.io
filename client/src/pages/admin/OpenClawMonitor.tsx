@@ -9,7 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus, AlertCircle } from "lucide-react";
+import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus, AlertCircle, Terminal } from "lucide-react";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
@@ -60,6 +60,27 @@ export default function OpenClawMonitor() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [batchMode, setBatchMode] = useState<"enable" | "disable" | null>(null);
+
+  // 终端弹窗状态
+  const [terminalTarget, setTerminalTarget] = useState<{ id: string; name: string } | null>(null);
+  const [terminalConnecting, setTerminalConnecting] = useState(false);
+  const [terminalConnected, setTerminalConnected] = useState(false);
+
+  const handleOpenTerminal = (claw: { id: string; name: string }) => {
+    setTerminalTarget(claw);
+    setTerminalConnecting(true);
+    setTerminalConnected(false);
+    setTimeout(() => {
+      setTerminalConnecting(false);
+      setTerminalConnected(true);
+    }, 1800);
+  };
+
+  const handleCloseTerminal = () => {
+    setTerminalTarget(null);
+    setTerminalConnecting(false);
+    setTerminalConnected(false);
+  };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -281,14 +302,25 @@ export default function OpenClawMonitor() {
                     <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
                     <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                     <td className="px-6 py-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
-                        onClick={() => setDeleteTarget(claw.id)}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                          onClick={() => handleOpenTerminal(claw)}
+                        >
+                          <Terminal className="w-3 h-3 mr-1" />
+                          终端
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
+                          onClick={() => setDeleteTarget(claw.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -467,6 +499,63 @@ export default function OpenClawMonitor() {
               确认关闭
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 终端弹窗 */}
+      <Dialog open={!!terminalTarget} onOpenChange={(open) => { if (!open) handleCloseTerminal(); }}>
+        <DialogContent
+          className="p-0 overflow-hidden border-0"
+          style={{ width: "90vw", maxWidth: "90vw", height: "88vh", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
+        >
+          {/* 标题栏 */}
+          <div className="flex items-center justify-between px-5 py-3 bg-[#1e1e2e] border-b border-[#2a2a3e]">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium text-gray-200">终端</span>
+              {terminalTarget && (
+                <span className="text-xs text-gray-500 ml-1">— {terminalTarget.name}</span>
+              )}
+            </div>
+            <button
+              onClick={handleCloseTerminal}
+              className="text-gray-500 hover:text-gray-300 transition-colors text-lg leading-none"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* 终端内容区 */}
+          <div className="flex-1 bg-[#1a1a2e] overflow-hidden relative">
+            {/* 连接中状态 */}
+            {terminalConnecting && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <div className="animate-spin rounded-full h-10 w-10 border-2 border-green-400 border-t-transparent"></div>
+                <span className="text-sm text-gray-400 font-mono">连接中...</span>
+              </div>
+            )}
+
+            {/* 终端已连接状态 */}
+            {terminalConnected && (
+              <div
+                className="h-full p-5 font-mono text-sm text-gray-200 overflow-auto leading-relaxed"
+                style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
+              >
+                <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
+                <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
+                <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
+                <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
+                <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
+                <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
+                <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
+                <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
+                <p className="mt-2 text-gray-200">
+                  root@openclaw:~#
+                  <span className="inline-block w-2 h-4 bg-gray-200 ml-1 align-middle animate-pulse"></span>
+                </p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

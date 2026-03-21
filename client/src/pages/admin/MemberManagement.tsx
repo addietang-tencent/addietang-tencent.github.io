@@ -1460,30 +1460,29 @@ export default function MemberManagement() {
             <DialogTitle>确认删除用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-600">
-              即将删除用户 <span className="font-medium text-gray-900">{deleteConfirmDialog?.memberId}</span>，以下关联资源将被一并删除：
-            </p>
+            <p className="text-sm text-gray-600">以下资源将被删除：</p>
 
-            {/* 将被删除的资源列表 */}
+            {/* 资源列表：每行左边有删除 icon */}
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
-              {/* 标题行：删除 icon + 文字，字号与资源项一致，不加粗 */}
-              <div className="flex items-center gap-2 mb-1">
+              {/* 用户账号 */}
+              <div className="flex items-center gap-2">
                 <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
-                <span className="text-sm text-red-600">将被删除的资源</span>
-              </div>
-              {/* 用户账号 - 始终删除，无 icon */}
-              <span className="text-sm text-red-600 block">
-                用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
-              </span>
-              {/* 自动分配 VPC：一并删除，无 icon */}
-              {deleteConfirmDialog?.vpcType === "auto" && deleteConfirmDialog?.vpcName && (
-                <span className="text-sm text-red-600 block">
-                  私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
+                <span className="text-sm text-red-600">
+                  用户账号：<span className="font-medium">{deleteConfirmDialog?.memberId}</span>
                 </span>
+              </div>
+              {/* 自动分配 VPC：一并删除 */}
+              {deleteConfirmDialog?.vpcType === "auto" && deleteConfirmDialog?.vpcName && (
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  <span className="text-sm text-red-600">
+                    私有网络（VPC）：<span className="font-medium">{deleteConfirmDialog.vpcName}</span>
+                  </span>
+                </div>
               )}
             </div>
 
-            <p className="text-sm text-red-600 font-medium">此操作不可撤销，请谨慎确认。</p>
+            <p className="text-sm text-red-600 font-medium">此操作会将资源彻底删除，不可撤销，请谨慎确认。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>

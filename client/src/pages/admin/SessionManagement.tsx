@@ -351,8 +351,15 @@ export default function SessionManagement() {
   const handleGoToAuth = () => {
     // Mock 授权流程：5 秒后自动检测授权完成
     // 不真正打开腾讯云页面，而是模拟授权完成
+    // 先显示检测状态
+    setIsCheckingAuth(true);
+    
     setTimeout(() => {
       localStorage.setItem('clsAuthorized', 'true');
+      // 检测完成，自动关闭Dialog并进入下一步
+      setShowAuthDialog(false);
+      setIsCheckingAuth(false);
+      proceedWithClsSetup();
     }, 5000);
   };
 
@@ -774,7 +781,13 @@ export default function SessionManagement() {
           <div className="space-y-4 my-4">
             <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             {isCheckingAuth && (
-              <p className="text-xs text-gray-500 text-center">检测中...（授权完成后将自动继续）</p>
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 text-center">检测中...(授权完成后将自动继续)</p>
+                {/* 检测中的加载动画 */}
+                <div className="flex justify-center">
+                  <div className="w-6 h-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                </div>
+              </div>
             )}
           </div>
           <DialogFooter className="flex gap-2 justify-end">

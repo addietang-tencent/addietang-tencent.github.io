@@ -506,8 +506,8 @@ export default function SessionManagement() {
                       <BarChart3 className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话成本与交互效率精细化分析</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗与预计成本，可视化渠道与模型分布特征，精准定位高成本会话，优化资源配置与调用效率</p>
+                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话详情与交互效率精细化分析</h5>
+                      <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
                     </div>
                   </div>
                 </div>
@@ -527,8 +527,8 @@ export default function SessionManagement() {
                       <TrendingUp className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">高成本会话实时分析与管控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高成本交互，优化模型调用成本与资源效率</p>
+                      <h5 className="text-xs font-bold text-gray-900 mb-1">高Token会话实时分析与管控</h5>
+                      <p className="text-xs text-gray-500 leading-relaxed">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
                     </div>
                   </div>
                 </div>
@@ -538,8 +538,8 @@ export default function SessionManagement() {
                       <Zap className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">单会话全链路成本透视</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">拆解每轮交互的 Token 流量、成本占比与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
+                      <h5 className="text-xs font-bold text-gray-900 mb-1">单会话全链路Token透视</h5>
+                      <p className="text-xs text-gray-500 leading-relaxed">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
                     </div>
                   </div>
                 </div>

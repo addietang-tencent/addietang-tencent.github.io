@@ -99,15 +99,15 @@ const EXISTING_OBSERVATION_CARDS = [
 const CLS_NEW_CARDS = [
   {
     id: "high-cost-session",
-    title: "高成本会话实时分析与管控",
-    description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高成本交互，优化模型调用成本与资源效率",
+    title: "高Token会话实时分析与管控",
+    description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率",
     icon: TrendingUp,
     color: "#F59E0B",
   },
   {
     id: "single-session-cost",
-    title: "单会话全链路成本透视",
-    description: "拆解每轮交互的 Token 流量、成本占比与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
+    title: "单会话全链路Token透视",
+    description: "拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
     icon: Zap,
     color: "#AF52DE",
   },
@@ -120,8 +120,8 @@ const CLS_NEW_CARDS = [
   },
   {
     id: "session-efficiency",
-    title: "会话成本与交互效率精细化分析",
-    description: "聚焦单会话 Token 消耗与预计成本，可视化渠道与模型分布特征，精准定位高成本会话，优化资源配置与调用效率",
+    title: "会话详情与交互效率精细化分析",
+    description: "聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率",
     icon: BarChart3,
     color: "#FF9500",
   },

@@ -1488,7 +1488,7 @@ export default function MemberManagement() {
               )}
             </div>
 
-            <p className="text-sm text-red-600 font-medium">此操作会将资源彻底删除，不可撤销，请谨慎确认。</p>
+            <p className="text-sm text-red-600 font-medium">删除后无法恢复，请谨慎确认。</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmDialog(null)}>取消</Button>

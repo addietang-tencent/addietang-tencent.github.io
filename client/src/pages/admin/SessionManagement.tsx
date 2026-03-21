@@ -820,7 +820,7 @@ export default function SessionManagement() {
           <div className="space-y-4 my-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
               <p className="text-sm text-gray-700">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 <span className="font-semibold text-blue-600">700 台</span> OpenClaw 机器的日志用量；服务到期后，CLS 将按量计费。计费详情请参考{' '}
+                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">700 台</span> OpenClaw 机器的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
                   onClick={(e) => {

@@ -1395,7 +1395,7 @@ export default function OpenClawDetail() {
           </div>
           {/* 提示文字 */}
           <p className="text-xs text-gray-500 mt-1">
-            用浏览器打开面板链接，如面板需要填入网关令牌，则将面板Token粘贴过去，即可进入面板。
+            用浏览器打开面板链接，如面板需要填入网关令牌，则将面板Token复制并粘贴过去，即可进入面板。
           </p>
           <div className="flex justify-center pt-1">
             <Button

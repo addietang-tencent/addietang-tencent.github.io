@@ -1297,7 +1297,7 @@ export default function OpenClawDetail() {
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
             <DialogDescription className="text-sm text-gray-500 mt-1">
-              开启WebUI（OpenClaw官方面板）将会依次执行以下操作，确定后将自动执行：
+              开启WebUI将会依次执行以下操作，确定后将自动执行：
             </DialogDescription>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">
@@ -1326,7 +1326,7 @@ export default function OpenClawDetail() {
               <span className={`text-xs ${
                 webUIStep >= 2 ? "text-gray-600" : webUIStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
               }`}>
-                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成WebUI（OpenClaw官方面板）访问链接，预计5~10秒..." : "等待放通端口完成"}
+                生成链接：{webUIStep >= 2 ? "链接已生成" : webUIStep === 1 ? "正在为您生成WebUI访问链接，预计5~10秒..." : "等待放通端口完成"}
               </span>
             </div>
           </div>
@@ -1392,7 +1392,7 @@ export default function OpenClawDetail() {
           </div>
           {/* 提示文字 */}
           <p className="text-xs text-gray-500 mt-1">
-            访问面板链接后，复制并输入上方面板Token，即可进入面板
+            用浏览器打开面板链接，如面板需要填入网关令牌，则将面板Token粘贴过去，即可进入面板。
           </p>
           <div className="flex justify-center pt-1">
             <Button

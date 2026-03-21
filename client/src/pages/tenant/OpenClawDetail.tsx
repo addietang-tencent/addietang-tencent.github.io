@@ -647,7 +647,10 @@ export default function OpenClawDetail() {
             </span>
             <button
               onClick={handleOpenWebUI}
-              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full transition-colors cursor-pointer"
+              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors cursor-pointer border"
+              style={{ background: 'rgba(255, 149, 0, 0.1)', color: '#b8640a', borderColor: 'rgba(255, 149, 0, 0.25)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255, 149, 0, 0.18)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255, 149, 0, 0.1)')}
             >
               <ExternalLink className="w-3 h-3" />
               开启WebUI

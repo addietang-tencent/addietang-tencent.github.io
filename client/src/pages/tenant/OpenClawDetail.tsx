@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, RefreshCw,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, LayoutDashboard,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -760,8 +760,8 @@ export default function OpenClawDetail() {
             {/* 一键更新按钮 */}
             {isUpdating ? (
               <button
-                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-default"
-                title="更新进度"
+                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
+                title="查看更新进度"
                 onClick={() => setShowUpdateProgressDialog(true)}
               >
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -770,18 +770,18 @@ export default function OpenClawDetail() {
             ) : (
               <button
                 onClick={() => setShowUpdateConfirmDialog(true)}
-                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <ArrowUpCircle className="w-3.5 h-3.5" />
                 一键更新
               </button>
             )}
             {/* 开启面板按钮（纯文字蓝色样式） */}
             <button
               onClick={handleOpenWebUI}
-              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <LayoutDashboard className="w-3.5 h-3.5" />
               开启OpenClaw面板
             </button>
             {isConfiguring && (
@@ -1596,12 +1596,7 @@ export default function OpenClawDetail() {
       }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <RefreshCw className="w-5 h-5 text-blue-500" />
-              </div>
-              <DialogTitle className="text-base font-semibold text-gray-900">正在更新 OpenClaw</DialogTitle>
-            </div>
+            <DialogTitle className="text-base font-semibold text-gray-900">正在更新 OpenClaw</DialogTitle>
             <DialogDescription className="sr-only">更新进度</DialogDescription>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">

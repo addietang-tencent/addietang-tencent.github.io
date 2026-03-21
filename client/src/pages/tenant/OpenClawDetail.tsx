@@ -1350,19 +1350,19 @@ export default function OpenClawDetail() {
       <Dialog open={showWebUIResultDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIResultDialog(false);
       }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[90vw] max-w-md overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启WebUI（OpenClaw官方面板）</DialogTitle>
           </DialogHeader>
           {/* 警告文字 */}
-          <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed">
+          <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
             访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失
           </div>
           {/* 链接和 Token */}
-          <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3">
-            <div className="flex items-center gap-2">
+          <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+            <div className="flex items-center gap-2 w-full min-w-0">
               <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono">{webUIUrl}</span>
+              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
               <button
                 onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
                 className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
@@ -1372,9 +1372,9 @@ export default function OpenClawDetail() {
                 </svg>
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full min-w-0">
               <span className="text-xs text-gray-500 shrink-0 w-16">面板Token</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono">{webUIToken}</span>
+              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
               <button
                 onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
                 className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"

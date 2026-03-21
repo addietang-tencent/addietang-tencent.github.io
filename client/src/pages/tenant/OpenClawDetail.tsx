@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 
@@ -262,6 +262,45 @@ export default function OpenClawDetail() {
   const [showWechatQrModal, setShowWechatQrModal] = useState(false);
   // 微信弹窗阶段："checking" | "generating" | "qr"
   const [wechatModalStage, setWechatModalStage] = useState<"checking" | "generating" | "qr">("checking");
+
+  // ── 一键更新状态 ──
+  const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
+  const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
+  const updateSteps = [
+    "环境准备",
+    "OpenClaw 安装",
+    "Doctor 修复",
+    "Gateway 安装",
+    "Clawhub 安装",
+    "插件安装",
+    "Skills 安装",
+    "安装收尾",
+  ];
+  const handleStartUpdate = () => {
+    setShowUpdateConfirmDialog(false);
+    setIsUpdating(true);
+    setUpdateStepsDone(0);
+    setShowUpdateProgressDialog(true);
+    // 随机间隔逐步完成 8 步
+    let done = 0;
+    const runNext = () => {
+      if (done >= updateSteps.length) {
+        setIsUpdating(false);
+        setShowUpdateProgressDialog(false);
+        toast.success("OpenClaw 已更新至最新版本");
+        return;
+      }
+      const delay = 800 + Math.random() * 2200; // 0.8s ~ 3s 随机
+      setTimeout(() => {
+        done += 1;
+        setUpdateStepsDone(done);
+        runNext();
+      }, delay);
+    };
+    runNext();
+  };
 
   // ── WebUI 状态 ──
   const [showWebUIProgressDialog, setShowWebUIProgressDialog] = useState(false);
@@ -718,14 +757,31 @@ export default function OpenClawDetail() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
               运行中
             </span>
+            {/* 一键更新按钮 */}
+            {isUpdating ? (
+              <button
+                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-default"
+                title="更新进度"
+                onClick={() => setShowUpdateProgressDialog(true)}
+              >
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                更新中
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowUpdateConfirmDialog(true)}
+                className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                一键更新
+              </button>
+            )}
+            {/* 开启面板按钮（纯文字蓝色样式） */}
             <button
               onClick={handleOpenWebUI}
-              className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors cursor-pointer border"
-              style={{ background: 'rgba(0, 122, 255, 0.08)', color: '#0055cc', borderColor: 'rgba(0, 122, 255, 0.25)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0, 122, 255, 0.15)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0, 122, 255, 0.08)')}
+              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
             >
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-3.5 h-3.5" />
               开启OpenClaw面板
             </button>
             {isConfiguring && (
@@ -1499,6 +1555,77 @@ export default function OpenClawDetail() {
             >
               立即访问
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 一键更新 确认弹窗 ===== */}
+      <Dialog open={showUpdateConfirmDialog} onOpenChange={setShowUpdateConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">更新确认</DialogTitle>
+            <DialogDescription className="sr-only">更新确认</DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-gray-700 leading-relaxed space-y-2 py-1">
+            <p>更新版本预计需要 5～10 分钟不等，请您耐心等待。更新期间 OpenClaw 网关服务暂停，面板不可操作。</p>
+            <p>更新版本后模型（Models）、通道（Channels）、技能（Skills）和记忆均不会丢失。</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowUpdateConfirmDialog(false)}
+              className="text-gray-600 px-5"
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleStartUpdate}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5"
+            >
+              确认
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 一键更新 进度弹窗 ===== */}
+      <Dialog open={showUpdateProgressDialog} onOpenChange={(open) => {
+        if (!open) setShowUpdateProgressDialog(false);
+      }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                <RefreshCw className="w-5 h-5 text-blue-500" />
+              </div>
+              <DialogTitle className="text-base font-semibold text-gray-900">正在更新 OpenClaw</DialogTitle>
+            </div>
+            <DialogDescription className="sr-only">更新进度</DialogDescription>
+          </DialogHeader>
+          <div className="mt-1 space-y-2.5 py-1 pb-3">
+            {updateSteps.map((step, idx) => {
+              const stepNum = idx + 1;
+              const isDone = updateStepsDone >= stepNum;
+              const isActive = updateStepsDone === idx;
+              return (
+                <div key={step} className="flex items-center gap-3">
+                  {isDone ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                  ) : isActive ? (
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
+                  )}
+                  <span className={`text-xs ${
+                    isDone ? "text-gray-600" : isActive ? "text-blue-600 font-medium" : "text-gray-400"
+                  }`}>
+                    [步骤{stepNum}] {step}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>

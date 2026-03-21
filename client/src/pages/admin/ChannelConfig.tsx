@@ -50,11 +50,11 @@ function DingtalkIcon() {
 
 function WechatIcon() {
   return (
-    <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: "#07C160" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center p-1.5" style={{ background: "#07C160" }}>
       <img
-        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/pasted_file_ejPp1f_image_2cc88621.png"
+        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/wechat_logo_transparent_11985bb7.png"
         alt="微信"
-        className="w-7 h-7 object-contain"
+        className="w-full h-full object-contain"
       />
     </div>
   );

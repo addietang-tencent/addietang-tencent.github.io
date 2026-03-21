@@ -712,16 +712,6 @@ export default function TokensMonitor() {
                   </div>
                 </div>
 
-                {/* OpenClaw 名称筛选 */}
-                <div className="mb-6">
-                  <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
-                  <OpenClawCombobox
-                    value={selectedOpenClaw}
-                    onValueChange={setSelectedOpenClaw}
-                    className="max-w-xs"
-                  />
-                </div>
-
                 {/* CLS 协议确认弹窗 */}
                 <Dialog open={showClsAgreementDialog} onOpenChange={setShowClsAgreementDialog}>
                   <DialogContent className="max-w-md">
@@ -889,15 +879,28 @@ export default function TokensMonitor() {
                   </li>
                 </ul>
               </div>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
+              {/* 顶部：关闭 CLS 按钮（右上角）+ OpenClaw 搜索框（左下方）*/}
+              <div className="flex items-start justify-between mb-6 gap-4">
+                {/* 左侧：OpenClaw 名称筛选 */}
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
+                  <OpenClawCombobox
+                    value={selectedOpenClaw}
+                    onValueChange={setSelectedOpenClaw}
+                    className="max-w-xs"
+                  />
+                </div>
+                {/* 右侧：关闭 CLS 按钮 */}
                 <Button
                   onClick={() => setShowCloseClsConfirm(true)}
                   variant="outline"
-                  className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+                  className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white mt-6"
                 >
                   关闭CLS服务
                 </Button>
+              </div>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>

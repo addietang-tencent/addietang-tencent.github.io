@@ -437,16 +437,6 @@ export default function SessionManagement() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">会话管理</h1>
           <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
-          
-          {/* OpenClaw 名称筛选 */}
-          <div className="mt-4">
-            <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
-            <OpenClawCombobox
-              value={selectedOpenClaw}
-              onValueChange={setSelectedOpenClaw}
-              className="max-w-xs"
-            />
-          </div>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -597,13 +587,23 @@ export default function SessionManagement() {
         </div>
       )}
 
-      {/* 已开启时显示关闭按钮 */}
+      {/* 已开启时昺示搜索框 + 关闭按钮 */}
       {clsEnabled && (
-        <div className="flex items-center justify-end mb-6">
+        <div className="flex items-start justify-between mb-6 gap-4">
+          {/* 左侧：OpenClaw 名称筛选 */}
+          <div className="flex-1">
+            <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
+            <OpenClawCombobox
+              value={selectedOpenClaw}
+              onValueChange={setSelectedOpenClaw}
+              className="max-w-xs"
+            />
+          </div>
+          {/* 右侧：关闭 CLS 按钮 */}
           <Button
             onClick={() => setShowCloseClsConfirm(true)}
             variant="outline"
-            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white mt-6"
           >
             关闭CLS服务
           </Button>

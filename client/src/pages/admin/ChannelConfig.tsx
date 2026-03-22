@@ -98,7 +98,7 @@ export default function ChannelConfig() {
             </div>            <h2 className="font-semibold text-gray-900">可用通道列表</h2>
           </div>
           <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-            <p className="text-xs text-gray-500">开启「用户可见」后，用户可在 OpenClaw 配置中选择并接入对应通道。</p>
+            <p className="text-xs text-gray-500">通过微信、QQ 等机器人接入，可实现与对应渠道的智能机器人对话，满足全场景下的个人沟通与企业服务需求，覆盖不同团队多样化协作场景</p>
           </div>
 
           <div className="divide-y divide-gray-50">

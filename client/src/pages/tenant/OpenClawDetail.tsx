@@ -1148,17 +1148,10 @@ export default function OpenClawDetail() {
           {(feishuModalStage === "loading" || feishuModalStage === "qr") && (
             <>
               <DialogHeader>
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                    <Info className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
-                    <DialogDescription className="text-sm text-orange-500 mt-0.5 font-medium">
-                      请使用飞书账号扫码登录，完成授权后将自动为您创建机器人。
-                    </DialogDescription>
-                  </div>
-                </div>
+                <DialogTitle className="text-base font-semibold text-gray-900">扫码配置飞书机器人</DialogTitle>
+                <DialogDescription className="text-sm text-gray-500 mt-1">
+                  请使用飞书账号扫码登录，完成授权后将自动为您创建机器人。
+                </DialogDescription>
               </DialogHeader>
               <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[240px] mt-1 mb-2">
                 {feishuModalStage === "loading" ? (

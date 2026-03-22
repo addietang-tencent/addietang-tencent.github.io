@@ -69,16 +69,16 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CHANNELS = [
-  { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力" },
-  { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景" },
-  { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队" },
-  { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户" },
   { id: "wechat", name: "微信", desc: "通过微信 ClawBot 接入，用户可直接在微信与机器人对话" },
+  { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景" },
+  { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力" },
+  { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户" },
+  { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队" },
 ];
 
 export default function ChannelConfig() {
   const [visibility, setVisibility] = useState<Record<string, boolean>>({
-    wework: true, qq: true, feishu: true, dingtalk: false, wechat: false,
+    wechat: true, qq: true, wework: true, dingtalk: false, feishu: true,
   });
 
   return (

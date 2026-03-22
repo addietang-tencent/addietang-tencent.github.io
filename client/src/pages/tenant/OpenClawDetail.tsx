@@ -1256,12 +1256,7 @@ export default function OpenClawDetail() {
           {feishuModalStage === "configuring" && (
             <>
               <DialogHeader>
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                    <Info className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <DialogTitle className="text-base font-semibold text-gray-900">正在配置飞书机器人</DialogTitle>
-                </div>
+                <DialogTitle className="text-base font-semibold text-gray-900">正在配置飞书机器人</DialogTitle>
               </DialogHeader>
               <div className="mt-1 space-y-2.5 py-1 pb-3">
                 {feishuSteps.map((step, idx) => {

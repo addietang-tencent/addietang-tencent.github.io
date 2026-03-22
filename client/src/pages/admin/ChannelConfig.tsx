@@ -95,9 +95,12 @@ export default function ChannelConfig() {
           <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
-            </div>
-            <h2 className="font-semibold text-gray-900">可用通道列表</h2>
+            </div>            <h2 className="font-semibold text-gray-900">可用通道列表</h2>
           </div>
+          <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+            <p className="text-xs text-gray-500">开启「用户可见」后，用户可在 OpenClaw 配置中选择并接入对应通道。</p>
+          </div>
+
           <div className="divide-y divide-gray-50">
             {CHANNELS.map((ch) => (
               <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
@@ -105,7 +108,6 @@ export default function ChannelConfig() {
                   {CHANNEL_ICONS[ch.id]}
                   <div>
                     <p className="text-sm font-medium text-gray-900">{ch.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{ch.desc}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

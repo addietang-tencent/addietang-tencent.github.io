@@ -1352,7 +1352,7 @@ export default function OpenClawDetail() {
                   <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人授权配置成功</DialogTitle>
                 </div>
               </DialogHeader>
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-1.5 text-sm">
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
                   <span className="text-gray-800 font-medium">OpenClaw机器人-4598</span>

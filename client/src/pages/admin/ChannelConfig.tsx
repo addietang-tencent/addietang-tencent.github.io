@@ -69,7 +69,7 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CHANNELS = [
-  { id: "wechat", name: "微信", desc: "通过微信 ClawBot 接入，用户可直接在微信与机器人对话" },
+  { id: "wechat", name: "微信", desc: "通过微信机器人接入，覆盖全场景下的个人沟通、企业服务与生态连接需求" },
   { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景" },
   { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力" },
   { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户" },

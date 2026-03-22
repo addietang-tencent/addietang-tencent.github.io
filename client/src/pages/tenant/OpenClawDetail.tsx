@@ -1293,16 +1293,12 @@ export default function OpenClawDetail() {
             <>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-1">
-                  <div className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                    <AlertTriangle className="w-5 h-5 text-red-500" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人发布失败</DialogTitle>
-                    <DialogDescription className="text-sm text-red-500 mt-0.5 font-medium">
-                      当前用户权限无法免审批发布飞书机器人，请联系管理员审批通过后再进行手动配置。
-                    </DialogDescription>
-                  </div>
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                  <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人发布失败</DialogTitle>
                 </div>
+                <DialogDescription className="text-sm text-red-500 mt-1 font-medium">
+                  当前用户权限无法免审批发布飞书机器人，请联系管理员审批通过后再进行手动配置。
+                </DialogDescription>
               </DialogHeader>
               <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center gap-2">

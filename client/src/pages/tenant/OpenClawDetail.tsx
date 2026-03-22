@@ -56,6 +56,7 @@ type ChannelConfig = {
   feishuMode?: true; // 飞书特殊处理
   weworkMode?: true; // 企业微信特殊处理
   wechatMode?: true; // 微信特殊处理
+  customMode?: true; // 自定义通道
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -109,6 +110,18 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
     descText: "通过微信扫码授权，将 OpenClaw 接入微信，支持微信消息交互。",
     detailUrl: "#",
     wechatMode: true,
+  },
+  {
+    value: "custom",
+    label: "自定义通道",
+    descText: "通过自定义 SDK 接入任意通道，填入 SDKAppID、SecretKey 和鉴权 Token 即可完成接入。",
+    detailUrl: "#",
+    customMode: true,
+    fields: [
+      { key: "sdkAppId", label: "SDKAppID", secret: false },
+      { key: "secretKey", label: "SecretKey", secret: true },
+      { key: "authToken", label: "鉴权 Token", secret: true },
+    ],
   },
 ];
 
@@ -682,24 +695,35 @@ export default function OpenClawDetail() {
   const renderAppliedChannelDetail = (chIdx: number, ch: AppliedChannel) => {
     return (
       <div className="mx-2 mb-2 space-y-2">
-        {/* 字段展示 */}
-        <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
-          {ch.fields.map((field) => {
-            const val = ch.fieldValues[field.key] || "";
-            const uniqueKey = `${chIdx}-${field.key}`;
-            const isVisible = visibleAppliedSecrets.has(uniqueKey);
-            const displayVal = field.secret && !isVisible ? maskSecret(val) : val;
-            // 使用字段的 key 作为显示名称
-            const displayKey = field.key;
-            return (
-              <div key={field.key} className="flex items-center gap-1 text-sm">
-                <span className="text-gray-500 shrink-0">{displayKey}：</span>
-                <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
-
-              </div>
-            );
-          })}
-        </div>
+        {/* 自定义通道：仅展示 SDKAppID 和加密 SecretKey */}
+        {ch.channelValue === "custom" ? (
+          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+            <div className="flex items-center gap-1 text-sm">
+              <span className="text-gray-500 shrink-0">SDKAppID：</span>
+              <span className="text-gray-800 font-mono break-all flex-1">{ch.fieldValues["sdkAppId"] || "—"}</span>
+            </div>
+            <div className="flex items-center gap-1 text-sm">
+              <span className="text-gray-500 shrink-0">SecretKey：</span>
+              <span className="text-gray-800 font-mono break-all flex-1">{maskSecret(ch.fieldValues["secretKey"] || "") || "—"}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+            {ch.fields.map((field) => {
+              const val = ch.fieldValues[field.key] || "";
+              const uniqueKey = `${chIdx}-${field.key}`;
+              const isVisible = visibleAppliedSecrets.has(uniqueKey);
+              const displayVal = field.secret && !isVisible ? maskSecret(val) : val;
+              const displayKey = field.key;
+              return (
+                <div key={field.key} className="flex items-center gap-1 text-sm">
+                  <span className="text-gray-500 shrink-0">{displayKey}：</span>
+                  <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
         {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
           <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">

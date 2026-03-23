@@ -100,8 +100,10 @@ export default function MyOpenClaw() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ name: string } | null>(null);
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
-  // 从管控端同步的「允许成员进入终端」开关（前端模拟，实际应从全局状态/API获取）
-  const [allowTerminal] = useState(true);
+  // 从管控端同步的「允许成员进入终端」开关（从 localStorage 读取，与管控端开关联动）
+  const [allowTerminal] = useState(() => {
+    return localStorage.getItem("admin_allow_terminal") === "true";
+  });
 
   const handleRefreshStatus = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();

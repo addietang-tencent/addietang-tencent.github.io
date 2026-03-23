@@ -62,8 +62,10 @@ export default function OpenClawMonitor() {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [batchMode, setBatchMode] = useState<"enable" | "disable" | null>(null);
 
-  // 允许成员进入终端开关
-  const [allowTerminal, setAllowTerminal] = useState(false);
+  // 允许成员进入终端开关 - 持久化到 localStorage，路由切换后不丢失
+  const [allowTerminal, setAllowTerminal] = useState(() => {
+    return localStorage.getItem("admin_allow_terminal") === "true";
+  });
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -356,6 +358,7 @@ export default function OpenClawMonitor() {
               checked={allowTerminal}
               onCheckedChange={(v) => {
                 setAllowTerminal(v);
+                localStorage.setItem("admin_allow_terminal", String(v));
                 toast.success(v ? "已允许成员进入终端" : "已禁止成员进入终端");
               }}
             />

@@ -1663,7 +1663,7 @@ export default function OpenClawDetail() {
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">微信扫码登录</DialogTitle>
             <DialogDescription className="text-sm text-gray-500 mt-1">
-              使用微信（需要 iOS 系统 8.0.70 以上版本）"扫一扫"完成接入
+              使用微信（需要 iOS、Android系统 8.0.70 以上版本）"扫一扫"完成接入
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[220px] mt-1 mb-2">

@@ -344,8 +344,8 @@ export default function OpenClawMonitor() {
           {/* 允许成员进入 OpenClaw 终端 */}
           <div className="flex items-center justify-between px-6 py-5">
             <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-                <UserRoundCog className="text-orange-500" style={{ width: "18px", height: "18px" }} />
+              <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+                <UserRoundCog className="text-white" style={{ width: "18px", height: "18px" }} />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">允许成员进入 OpenClaw 终端</p>

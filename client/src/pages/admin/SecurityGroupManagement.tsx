@@ -615,7 +615,7 @@ export default function SecurityGroupManagement() {
                     <TooltipTrigger asChild>
                       <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
                     </TooltipTrigger>
-                    <TooltipContent side="right" className="max-w-xs w-fit text-xs leading-relaxed">
+                    <TooltipContent side="right" className="w-64 text-xs leading-relaxed text-justify">
                       云服务器需要外网访问能力的时候，需要为云服务器分配公网IP，如果云服务器不分配公网IP，则不支持外出流量，并且无法使用外网IP对外进行互相通信。
                     </TooltipContent>
                   </Tooltip>
@@ -697,7 +697,7 @@ export default function SecurityGroupManagement() {
                         <TooltipTrigger asChild>
                           <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-xs w-fit text-xs leading-relaxed">
+                        <TooltipContent side="right" className="w-64 text-xs leading-relaxed text-justify">
                           单台云服务器可以运行到的最高带宽，超过这个带宽上限将默认丢包。不同的网络计费模式，支持的公网带宽上限有所不同。
                         </TooltipContent>
                       </Tooltip>

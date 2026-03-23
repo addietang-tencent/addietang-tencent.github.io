@@ -6,6 +6,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +21,7 @@ import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
   { id: "2",  name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", observableStatus: "off" },
-  { id: "3",  name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", observableStatus: "off" },
+  { id: "3",  name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", observableStatus: "off", powerStatus: "off" },
   { id: "4",  name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", observableStatus: "off" },
   { id: "5",  name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", observableStatus: "off" },
   { id: "6",  name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", observableStatus: "off" },
@@ -187,7 +193,7 @@ export default function OpenClawMonitor() {
   };
 
   return (
-    <>
+    <TooltipProvider delayDuration={200}>
       <div className="page-enter">
         {/* Header：标题左，时间筛选器+刷新右 */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
@@ -289,15 +295,36 @@ export default function OpenClawMonitor() {
                     <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
-                          onClick={() => handleOpenTerminal(claw)}
-                        >
-                          <Terminal className="w-3 h-3 mr-1" />
-                          终端
-                        </Button>
+                        {claw.powerStatus === "off" ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-7 px-2.5 text-gray-300 border-gray-200 cursor-not-allowed"
+                                  disabled
+                                >
+                                  <Terminal className="w-3 h-3 mr-1" />
+                                  终端
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              不支持已关机的实例登录终端
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                            onClick={() => handleOpenTerminal(claw)}
+                          >
+                            <Terminal className="w-3 h-3 mr-1" />
+                            终端
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
@@ -539,6 +566,6 @@ export default function OpenClawMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 }

@@ -2,15 +2,15 @@
  * OpenClawMonitor - 管控端 OpenClaw 监控页
  * 布局：标题行右上角时间筛选器+刷新 → 表格（上方左侧搜索框、右侧统计）
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, Plus, AlertCircle, Terminal } from "lucide-react";
+import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle, Terminal } from "lucide-react";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
@@ -39,156 +39,31 @@ export default function OpenClawMonitor() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // 三步骤开启流程状态
   const [showSetupDialog, setShowSetupDialog] = useState(false);
-  const [setupStep, setSetupStep] = useState<1 | 2 | 3>(1); // 1: 开通 CLS, 2: 设置主题, 3: 安装 Agent
-  
+  const [setupStep, setSetupStep] = useState<1 | 2 | 3>(1);
+
   // 第一步: CLS 开通
   const [clsEnabled, setClsEnabled] = useState(false);
-  
+
   // 第二步: 主题设置
   const [logTopic, setLogTopic] = useState("openclaw_log_topic");
   const [metricTopic, setMetricTopic] = useState("openclaw_metric_topic");
-  
+
   // 第三步: Agent 安装
   const [isInstallingAgent, setIsInstallingAgent] = useState(false);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [allObservableEnabled, setAllObservableEnabled] = useState(false);
-  
+
   // 批量选择状态
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [batchMode, setBatchMode] = useState<"enable" | "disable" | null>(null);
 
-  // 终端弹窗状态
-  const [terminalTarget, setTerminalTarget] = useState<{ id: string; name: string } | null>(null);
-  const [terminalConnecting, setTerminalConnecting] = useState(false);
-  const [terminalConnected, setTerminalConnected] = useState(false);
-  const [terminalInput, setTerminalInput] = useState("");
-  const [terminalLines, setTerminalLines] = useState<{ type: "output" | "cmd" | "welcome"; text: string }[]>([]);
-  const [cmdHistory, setCmdHistory] = useState<string[]>([]);
-  const [historyIdx, setHistoryIdx] = useState(-1);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-  const terminalInputRef = useRef<HTMLInputElement>(null);
-
-  // 模拟命令响应
-  const getCommandOutput = useCallback((cmd: string): string[] => {
-    const c = cmd.trim();
-    if (!c) return [];
-    if (c === "ls" || c === "ls -la" || c === "ls -l") return [
-      "total 48",
-      "drwxr-xr-x  8 root root 4096 Mar 21 15:30 .",
-      "drwxr-xr-x 20 root root 4096 Mar 21 09:00 ..",
-      "-rw-r--r--  1 root root  570 Mar 20 18:12 .bashrc",
-      "-rw-r--r--  1 root root  161 Mar 20 18:12 .profile",
-      "drwxr-xr-x  2 root root 4096 Mar 21 10:05 config",
-      "drwxr-xr-x  3 root root 4096 Mar 21 11:22 data",
-      "drwxr-xr-x  2 root root 4096 Mar 21 09:15 logs",
-      "-rwxr-xr-x  1 root root 8192 Mar 21 15:00 openclaw",
-    ];
-    if (c === "pwd") return ["/root"];
-    if (c === "whoami") return ["root"];
-    if (c === "hostname") return ["openclaw"];
-    if (c === "date") return [new Date().toString()];
-    if (c === "uname -a") return ["Linux openclaw 6.8.0-55-generic #57-Ubuntu SMP PREEMPT_DYNAMIC Fri Mar 14 18:00:00 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux"];
-    if (c === "uptime") return [" 15:30:01 up 2 days,  4:12,  1 user,  load average: 0.08, 0.12, 0.10"];
-    if (c === "df -h") return [
-      "Filesystem      Size  Used Avail Use% Mounted on",
-      "/dev/vda1        50G   12G   36G  25% /",
-      "tmpfs           2.0G     0  2.0G   0% /dev/shm",
-      "/dev/vdb1       100G   45G   55G  46% /data",
-    ];
-    if (c === "free -h") return [
-      "               total        used        free      shared  buff/cache   available",
-      "Mem:           7.8Gi       2.1Gi       3.2Gi        45Mi       2.5Gi       5.4Gi",
-      "Swap:          2.0Gi          0B       2.0Gi",
-    ];
-    if (c === "ps aux" || c === "ps") return [
-      "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND",
-      "root           1  0.0  0.1 168432 11264 ?        Ss   Mar19   0:05 /sbin/init",
-      "root         512  0.2  1.8 892416 148032 ?       Ssl  Mar19   4:12 /usr/bin/openclaw --config /root/config/app.yaml",
-      "root        1024  0.0  0.0  14224  3072 pts/0    Ss   15:28   0:00 -bash",
-      "root        1089  0.0  0.0  14432  1792 pts/0    R+   15:30   0:00 ps aux",
-    ];
-    if (c.startsWith("cat ")) return [`cat: ${c.slice(4)}: No such file or directory`];
-    if (c.startsWith("cd ")) return [];
-    if (c === "cd") return [];
-    if (c === "clear") return ["__CLEAR__"];
-    if (c === "exit") return ["logout"];
-    if (c === "help") return [
-      "Available commands: ls, pwd, whoami, hostname, date, uname -a, uptime, df -h, free -h, ps aux, clear, exit",
-    ];
-    return [`bash: ${c}: command not found`];
-  }, []);
-
-  const handleOpenTerminal = (claw: { id: string; name: string }) => {
-    setTerminalTarget(claw);
-    setTerminalConnecting(true);
-    setTerminalConnected(false);
-    setTerminalInput("");
-    setTerminalLines([]);
-    setCmdHistory([]);
-    setHistoryIdx(-1);
-    setTimeout(() => {
-      setTerminalConnecting(false);
-      setTerminalConnected(true);
-    }, 1800);
-  };
-
-  const handleCloseTerminal = () => {
-    setTerminalTarget(null);
-    setTerminalConnecting(false);
-    setTerminalConnected(false);
-    setTerminalInput("");
-    setTerminalLines([]);
-  };
-
-  const handleTerminalSubmit = () => {
-    const cmd = terminalInput.trim();
-    const output = getCommandOutput(cmd);
-    if (output[0] === "__CLEAR__") {
-      setTerminalLines([]);
-    } else {
-      setTerminalLines(prev => [
-        ...prev,
-        { type: "cmd", text: cmd },
-        ...output.map(o => ({ type: "output" as const, text: o })),
-      ]);
-    }
-    if (cmd) setCmdHistory(prev => [cmd, ...prev]);
-    setHistoryIdx(-1);
-    setTerminalInput("");
-  };
-
-  const handleTerminalKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleTerminalSubmit();
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      const newIdx = Math.min(historyIdx + 1, cmdHistory.length - 1);
-      setHistoryIdx(newIdx);
-      setTerminalInput(cmdHistory[newIdx] ?? "");
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      const newIdx = Math.max(historyIdx - 1, -1);
-      setHistoryIdx(newIdx);
-      setTerminalInput(newIdx === -1 ? "" : cmdHistory[newIdx]);
-    }
-  };
-
-  // 自动滚动到底部
-  useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [terminalLines, terminalConnected]);
-
-  // 连接完成后自动聚焦输入框
-  useEffect(() => {
-    if (terminalConnected) {
-      setTimeout(() => terminalInputRef.current?.focus(), 100);
-    }
-  }, [terminalConnected]);
+  // 允许成员进入终端开关
+  const [allowTerminal, setAllowTerminal] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -198,7 +73,6 @@ export default function OpenClawMonitor() {
     }, 1000);
   };
 
-  // 打开可观测面板
   // 打开三步骤设置弹窗
   const handleOpenSetupDialog = () => {
     setSetupStep(1);
@@ -226,7 +100,7 @@ export default function OpenClawMonitor() {
     setIsInstallingAgent(true);
     setTimeout(() => {
       setIsInstallingAgent(false);
-      setClaws(claws.map(c => 
+      setClaws(claws.map(c =>
         selectedIds.has(c.id) ? { ...c, observableStatus: "on" } : c
       ));
       setShowSetupDialog(false);
@@ -234,8 +108,6 @@ export default function OpenClawMonitor() {
       toast.success("可观测面板开启成功");
     }, 2000);
   };
-
-
 
   // 时间筛选后的数据（用于统计卡片）
   const timeFiltered = claws.filter((c) => {
@@ -284,7 +156,6 @@ export default function OpenClawMonitor() {
       toast.error("请先选择要开启的 OpenClaw");
       return;
     }
-    // 批量开启也需要经过三步流程
     handleOpenSetupDialog();
   };
 
@@ -299,13 +170,18 @@ export default function OpenClawMonitor() {
 
   // 确认关闭
   const confirmDisable = () => {
-    setClaws(claws.map(c => 
+    setClaws(claws.map(c =>
       selectedIds.has(c.id) ? { ...c, observableStatus: "off" } : c
     ));
     const count = selectedIds.size;
     setSelectedIds(new Set());
     setShowCloseConfirm(false);
     toast.success(`已关闭 ${count} 个 OpenClaw 的可观测面板`);
+  };
+
+  // 打开终端（跳转新链接）
+  const handleOpenTerminal = (claw: { id: string; name: string }) => {
+    window.open(`/terminal/${claw.id}`, "_blank");
   };
 
   return (
@@ -461,6 +337,30 @@ export default function OpenClawMonitor() {
             </div>
           </div>
         </div>
+
+        {/* 底部权限开关区域 */}
+        <div className="mt-6 bg-white rounded-2xl border border-gray-100 overflow-hidden"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          {/* 允许成员进入 OpenClaw 终端 */}
+          <div className="flex items-center justify-between px-6 py-5">
+            <div className="flex items-center gap-4">
+              <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                <Terminal className="w-4.5 h-4.5 text-orange-500" style={{ width: "18px", height: "18px" }} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">允许成员进入 OpenClaw 终端</p>
+                <p className="text-xs text-gray-400 mt-0.5">开启后，所有用户在用户端可看到「进入终端」选项，进入对应 OpenClaw 云服务器的终端</p>
+              </div>
+            </div>
+            <Switch
+              checked={allowTerminal}
+              onCheckedChange={(v) => {
+                setAllowTerminal(v);
+                toast.success(v ? "已允许成员进入终端" : "已禁止成员进入终端");
+              }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* 三步骤开启流程弹窗 */}
@@ -469,7 +369,7 @@ export default function OpenClawMonitor() {
           <DialogHeader>
             <DialogTitle>开启可观测面板</DialogTitle>
           </DialogHeader>
-          
+
           {/* 第一步: 开通 CLS */}
           {setupStep === 1 && (
             <div className="space-y-4">
@@ -487,7 +387,7 @@ export default function OpenClawMonitor() {
               </div>
             </div>
           )}
-          
+
           {/* 第二步: 主题设置 */}
           {setupStep === 2 && (
             <div className="space-y-4">
@@ -519,7 +419,7 @@ export default function OpenClawMonitor() {
               </div>
             </div>
           )}
-          
+
           {/* 第三步: 安装 Agent */}
           {setupStep === 3 && (
             <div className="space-y-4">
@@ -536,27 +436,27 @@ export default function OpenClawMonitor() {
               )}
             </div>
           )}
-          
+
           <DialogFooter className="gap-2">
             {setupStep > 1 && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setSetupStep((prev) => (prev - 1) as 1 | 2 | 3)}
                 disabled={isLoading || isInstallingAgent}
               >
                 上一步
               </Button>
             )}
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowSetupDialog(false)}
               disabled={isLoading || isInstallingAgent}
             >
               取消
             </Button>
             {setupStep === 1 && (
-              <Button 
-                onClick={handleStep1EnableCls} 
+              <Button
+                onClick={handleStep1EnableCls}
                 disabled={isLoading}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -564,7 +464,7 @@ export default function OpenClawMonitor() {
               </Button>
             )}
             {setupStep === 2 && (
-              <Button 
+              <Button
                 onClick={handleStep2Continue}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -572,8 +472,8 @@ export default function OpenClawMonitor() {
               </Button>
             )}
             {setupStep === 3 && (
-              <Button 
-                onClick={handleStep3InstallAgent} 
+              <Button
+                onClick={handleStep3InstallAgent}
                 disabled={isInstallingAgent}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -583,7 +483,9 @@ export default function OpenClawMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* 关闭确认弹窗 */}     <Dialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+
+      {/* 关闭确认弹窗 */}
+      <Dialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>关闭可观测面板</DialogTitle>
@@ -600,100 +502,13 @@ export default function OpenClawMonitor() {
             <Button variant="outline" onClick={() => setShowCloseConfirm(false)}>
               取消
             </Button>
-            <Button 
+            <Button
               onClick={confirmDisable}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               确认关闭
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 终端弹窗 */}
-      <Dialog open={!!terminalTarget} onOpenChange={(open) => { if (!open) handleCloseTerminal(); }}>
-        <DialogContent
-          className="p-0 overflow-hidden border-0"
-          style={{ width: "90vw", maxWidth: "90vw", height: "88vh", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
-        >
-          <DialogTitle className="sr-only">终端连接 {terminalTarget?.name}</DialogTitle>
-          {/* 标题栏 */}
-          <div className="flex items-center justify-between px-5 py-3 bg-[#1e1e2e] border-b border-[#2a2a3e]">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-green-400" />
-              <span className="text-sm font-medium text-gray-200">终端</span>
-              {terminalTarget && (
-                <span className="text-xs text-gray-500 ml-1">— {terminalTarget.name}</span>
-              )}
-            </div>
-            <button
-              onClick={handleCloseTerminal}
-              className="text-gray-500 hover:text-gray-300 transition-colors text-lg leading-none"
-            >
-              ✕
-            </button>
-          </div>
-
-          {/* 终端内容区 */}
-          <div className="flex-1 bg-[#1a1a2e] overflow-hidden relative">
-            {/* 连接中状态 */}
-            {terminalConnecting && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                <div className="animate-spin rounded-full h-10 w-10 border-2 border-green-400 border-t-transparent"></div>
-                <span className="text-sm text-gray-400 font-mono">连接中...</span>
-              </div>
-            )}
-
-            {/* 终端已连接状态 */}
-            {terminalConnected && (
-              <div
-                className="h-full overflow-auto p-5 text-gray-200 leading-relaxed cursor-text"
-                style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
-                onClick={() => terminalInputRef.current?.focus()}
-              >
-                {/* 欢迎信息 */}
-                <p className="text-green-300">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.8.0-55-generic x86_64)</p>
-                <p className="mt-3 text-gray-400"> * Documentation:  https://help.ubuntu.com</p>
-                <p className="text-gray-400"> * Management:     https://landscape.canonical.com</p>
-                <p className="text-gray-400"> * Support:        https://ubuntu.com/pro</p>
-                <p className="mt-3 text-gray-400"> * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s</p>
-                <p className="text-gray-400">   just raised the bar for easy, resilient and secure K8s cluster deployment.</p>
-                <p className="mt-1 text-blue-400">   https://ubuntu.com/engage/secure-kubernetes-at-the-edge</p>
-                <p className="mt-4 text-gray-400">Last login: {new Date().toDateString()} from 100.74.63.190</p>
-
-                {/* 历史命令输出 */}
-                {terminalLines.map((line, i) => (
-                  <p key={i} className={line.type === "cmd" ? "mt-2 text-gray-200" : "text-gray-400 whitespace-pre"}>
-                    {line.type === "cmd" ? (
-                      <><span className="text-green-400">root@openclaw</span><span className="text-gray-500">:</span><span className="text-blue-400">~</span><span className="text-gray-200">#</span> {line.text}</>
-                    ) : line.text}
-                  </p>
-                ))}
-
-                {/* 内联输入行（跟在输出后面） */}
-                <div className="flex items-center mt-2">
-                  <span className="text-green-400 whitespace-nowrap">root@openclaw</span>
-                  <span className="text-gray-500">:</span>
-                  <span className="text-blue-400">~</span>
-                  <span className="text-gray-200 mr-2">#</span>
-                  <input
-                    ref={terminalInputRef}
-                    type="text"
-                    value={terminalInput}
-                    onChange={e => setTerminalInput(e.target.value)}
-                    onKeyDown={handleTerminalKeyDown}
-                    className="flex-1 bg-transparent text-gray-200 outline-none caret-green-400 min-w-0"
-                    style={{ fontFamily: "'Courier New', Courier, monospace", fontSize: "13px" }}
-                    autoComplete="off"
-                    spellCheck={false}
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                  />
-                </div>
-                <div ref={terminalEndRef} />
-              </div>
-            )}
-          </div>
         </DialogContent>
       </Dialog>
 
@@ -708,7 +523,7 @@ export default function OpenClawMonitor() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               取消
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 setClaws(claws.filter(c => c.id !== deleteTarget));
                 setDeleteTarget(null);

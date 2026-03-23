@@ -34,7 +34,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw
+  Zap, Bot, X, RotateCcw, Terminal
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
 
@@ -100,6 +100,8 @@ export default function MyOpenClaw() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ name: string } | null>(null);
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
+  // 从管控端同步的「允许成员进入终端」开关（前端模拟，实际应从全局状态/API获取）
+  const [allowTerminal] = useState(true);
 
   const handleRefreshStatus = (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
@@ -307,6 +309,33 @@ export default function MyOpenClaw() {
                                    <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
                                    重新安装 OpenClaw
                                 </DropdownMenuItem>
+                              )}
+                              {/* 进入终端 - 仅当管控端开启「允许成员进入终端」时显示 */}
+                              {allowTerminal && (
+                                <>
+                                  {isDisabled || isCreating ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div>
+                                          <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                            <Terminal className="w-4 h-4 mr-2 text-gray-400" />
+                                            进入终端
+                                          </DropdownMenuItem>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left" className="w-max text-xs">
+                                        {disabledTip}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}
+                                    >
+                                      <Terminal className="w-4 h-4 mr-2 text-gray-500" />
+                                      进入终端
+                                    </DropdownMenuItem>
+                                  )}
+                                </>
                               )}
                               <DropdownMenuSeparator />
                               {/* 删除 - 创建中禁用 */}

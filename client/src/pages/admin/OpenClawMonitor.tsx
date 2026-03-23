@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle, Terminal } from "lucide-react";
+import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle, Terminal, UserRoundCog } from "lucide-react";
 
 const MOCK_CLAWS = [
   { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
@@ -345,7 +345,7 @@ export default function OpenClawMonitor() {
           <div className="flex items-center justify-between px-6 py-5">
             <div className="flex items-center gap-4">
               <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-                <Terminal className="w-4.5 h-4.5 text-orange-500" style={{ width: "18px", height: "18px" }} />
+                <UserRoundCog className="text-orange-500" style={{ width: "18px", height: "18px" }} />
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">允许成员进入 OpenClaw 终端</p>

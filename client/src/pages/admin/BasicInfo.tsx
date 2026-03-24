@@ -61,12 +61,12 @@ export default function BasicInfo() {
       <Dialog open={showTencentIdentityDialog} onOpenChange={setShowTencentIdentityDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900 text-center">用户管理全新升级</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900 text-center">初始化设置</DialogTitle>
             <DialogDescription className="sr-only">引导管理员前往腾讯统一身份平台</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              请前往腾讯统一身份平台进行用户新增和登录方式设置。
+              首次登录请先前往腾讯统一身份平台进行<span className="font-semibold text-gray-900">用户新增</span>和<span className="font-semibold text-gray-900">登录方式设置</span>。
             </p>
             <div className="flex items-center gap-3 pt-2">
               <Button

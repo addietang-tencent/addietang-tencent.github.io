@@ -350,7 +350,14 @@ export default function OpenClawDetail() {
     }
   };
 
+  // 从 localStorage 读取管理员是否开启了用户端访问权限
+  const allowPanelAccess = localStorage.getItem("admin_allow_panel_access") === "true";
+
   const handleOpenWebUI = () => {
+    if (!allowPanelAccess) {
+      toast.error("管理员未开启访问权限");
+      return;
+    }
     const newCount = webUIOpenCount + 1;
     setWebUIOpenCount(newCount);
     setShowWebUIProgressDialog(true);
@@ -909,13 +916,29 @@ export default function OpenClawDetail() {
               )}
             </div>
             {/* 开启面板按钮（纯文字蓝色样式） */}
-            <button
-              onClick={handleOpenWebUI}
-              className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
-            >
-              <Monitor className="w-3.5 h-3.5" />
-              开启OpenClaw面板
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleOpenWebUI}
+                    disabled={!allowPanelAccess}
+                    className={`ml-1 inline-flex items-center gap-1 text-xs font-medium leading-none ${
+                      allowPanelAccess
+                        ? "text-blue-600 cursor-pointer hover:text-blue-700"
+                        : "text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    <Monitor className="w-3.5 h-3.5" />
+                    开启OpenClaw面板
+                  </button>
+                </TooltipTrigger>
+                {!allowPanelAccess && (
+                  <TooltipContent side="top" className="text-xs">
+                    管理员未开启访问权限
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             {isConfiguring && (
               <div className="flex items-center gap-1 ml-2 px-2 py-1 bg-blue-50 rounded-lg">
                 <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />

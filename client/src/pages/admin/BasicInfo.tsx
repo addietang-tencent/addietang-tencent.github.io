@@ -31,11 +31,15 @@ export default function BasicInfo() {
   const [showTencentIdentityDialog, setShowTencentIdentityDialog] = useState(false);
 
   useEffect(() => {
-    // 检查是否首次登录
-    const hasShownDialog = localStorage.getItem("admin_tencent_identity_dialog_shown");
-    if (!hasShownDialog) {
+    // 使用 sessionStorage 检查当前会话是否已在基础信息配置页显示过提示框
+    // 每次进入管控端（新会话）且首次进入基础信息配置页时弹出
+    // 页面刷新时也会弹出（因为 useEffect 会重新执行）
+    const sessionKey = "admin_tencent_identity_dialog_shown_this_session";
+    const hasShownInThisSession = sessionStorage.getItem(sessionKey);
+    
+    if (!hasShownInThisSession) {
       setShowTencentIdentityDialog(true);
-      localStorage.setItem("admin_tencent_identity_dialog_shown", "true");
+      sessionStorage.setItem(sessionKey, "true");
     }
   }, []);
 

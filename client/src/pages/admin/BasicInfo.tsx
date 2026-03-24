@@ -59,9 +59,9 @@ export default function BasicInfo() {
     <>
       {/* 首次登录提示框 */}
       <Dialog open={showTencentIdentityDialog} onOpenChange={setShowTencentIdentityDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-900">员工账号管理</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900 text-center">用户管理全新升级</DialogTitle>
             <DialogDescription className="sr-only">引导管理员前往腾讯统一身份平台</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

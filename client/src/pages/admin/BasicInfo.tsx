@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -61,12 +61,17 @@ export default function BasicInfo() {
       <Dialog open={showTencentIdentityDialog} onOpenChange={setShowTencentIdentityDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900 text-center">初始化设置</DialogTitle>
+            <div className="flex flex-col items-center gap-3 pb-2">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-100">
+                <Users className="w-8 h-8 text-blue-500" />
+              </div>
+              <DialogTitle className="text-lg font-semibold text-gray-900 text-center">欢迎使用</DialogTitle>
+            </div>
             <DialogDescription className="sr-only">引导管理员前往腾讯统一身份平台</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              首次登录请先前往腾讯统一身份平台进行<span className="font-semibold text-gray-900">用户新增</span>和<span className="font-semibold text-gray-900">登录方式设置</span>。
+            <p className="text-sm text-gray-600 text-center">
+              首次登录请先前往腾讯统一身份平台进行用户新增和登录方式设置。
             </p>
             <div className="flex items-center gap-3 pt-2">
               <Button

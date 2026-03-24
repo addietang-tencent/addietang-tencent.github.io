@@ -368,8 +368,8 @@ export default function SecurityGroupManagement() {
                   <Lock className="text-white" style={{ width: "18px", height: "18px" }} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">用户端访问 OpenClaw 面板</p>
-                  <p className="text-xs text-gray-400 mt-0.5">开启后，系统会为企业分配一个随机端口，用户可通过该端口访问 OpenClaw 管理面板</p>
+                  <p className="text-sm font-semibold text-gray-900">允许成员访问 OpenClaw 面板</p>
+                  <p className="text-xs text-gray-400 mt-0.5">开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问OpenClaw面板</p>
                 </div>
               </div>
               <Switch
@@ -381,13 +381,13 @@ export default function SecurityGroupManagement() {
                     setPanelPort(randomPort);
                     localStorage.setItem("admin_allow_panel_access", "true");
                     localStorage.setItem("admin_panel_port", randomPort);
-                    toast.success(`已开启用户端访问，分配端口：${randomPort}`);
+                    toast.success(`已开启用户端访问OpenClaw面板`);
                   } else {
                     setAllowPanelAccess(false);
                     setPanelPort(null);
                     localStorage.setItem("admin_allow_panel_access", "false");
                     localStorage.removeItem("admin_panel_port");
-                    toast.success("已关闭用户端访问");
+                    toast.success("已禁止用户端访问OpenClaw面板");
                   }
                 }}
               />

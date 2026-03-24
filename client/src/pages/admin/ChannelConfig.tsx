@@ -349,21 +349,21 @@ export default function ChannelConfig() {
                           {ch.channelId}
                         </span>
                       </div>
+                      {/* 详情展开按钮：放在通道名称下方 */}
+                      <button
+                        className="mt-1 text-xs text-gray-400 hover:text-blue-500 flex items-center gap-0.5 transition-colors"
+                        onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                        title="查看详情"
+                      >
+                        {expandedCustomId === ch.id
+                          ? <ChevronDown className="w-3 h-3" />
+                          : <ChevronRight className="w-3 h-3" />
+                        }
+                        <span>详情</span>
+                      </button>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {/* 展开/折叠按钮 */}
-                    <button
-                      className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
-                      onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
-                      title="查看详情"
-                    >
-                      {expandedCustomId === ch.id
-                        ? <ChevronDown className="w-3.5 h-3.5" />
-                        : <ChevronRight className="w-3.5 h-3.5" />
-                      }
-                      <span>详情</span>
-                    </button>
                     <span className="text-xs text-gray-400">用户可见</span>
                     <Switch
                       checked={ch.visible}

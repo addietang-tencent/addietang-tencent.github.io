@@ -61,7 +61,6 @@ type ChannelConfig = {
   feishuMode?: true; // 飞书特殊处理
   weworkMode?: true; // 企业微信特殊处理
   wechatMode?: true; // 微信特殊处理
-  customMode?: true; // 自定义通道（旧版 SDK 通道）
   adminCustomMode?: true; // 管控端配置的自定义通道
   adminCustomId?: string; // 对应的自定义通道 ID
 };
@@ -117,18 +116,6 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
     descText: "通过微信扫码授权，将 OpenClaw 接入微信，支持微信消息交互。",
     detailUrl: "#",
     wechatMode: true,
-  },
-  {
-    value: "custom",
-    label: "自定义通道",
-    descText: "通过自定义 SDK 接入任意通道，填入 SDKAppID、SecretKey 和鉴权 Token 即可完成接入。",
-    detailUrl: "#",
-    customMode: true,
-    fields: [
-      { key: "sdkAppId", label: "SDKAppID", secret: false },
-      { key: "secretKey", label: "SecretKey", secret: true },
-      { key: "authToken", label: "鉴权 Token", secret: true },
-    ],
   },
 ];
 
@@ -789,19 +776,7 @@ export default function OpenClawDetail() {
 
     return (
       <div className="mx-2 mb-2 space-y-2">
-        {/* 自定义通道：仅展示 SDKAppID 和加密 SecretKey */}
-        {ch.channelValue === "custom" ? (
-          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
-            <div className="flex items-center gap-1 text-sm">
-              <span className="text-gray-500 shrink-0">SDKAppID：</span>
-              <span className="text-gray-800 font-mono break-all flex-1">{ch.fieldValues["sdkAppId"] || "—"}</span>
-            </div>
-            <div className="flex items-center gap-1 text-sm">
-              <span className="text-gray-500 shrink-0">SecretKey：</span>
-              <span className="text-gray-800 font-mono break-all flex-1">{maskSecret(ch.fieldValues["secretKey"] || "") || "—"}</span>
-            </div>
-          </div>
-        ) : isAdminCustom ? (
+        {isAdminCustom ? (
           /* 管控端自定义通道：用字段 label 显示，内容加密 */
           <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
             {ch.fields.length === 0 ? (
@@ -1127,7 +1102,7 @@ export default function OpenClawDetail() {
                     ))}
                     {visibleCustomChannels.length > 0 && (
                       <>
-                        <div className="px-2 py-1.5 text-xs text-gray-400 font-medium border-t border-gray-100 mt-1 pt-2">企业自定义通道</div>
+                        <div className="px-2 py-1.5 text-xs text-gray-400 font-medium border-t border-gray-100 mt-1 pt-2">自定义通道</div>
                         {visibleCustomChannels.map((cc) => (
                           <SelectItem key={`admin_custom_${cc.id}`} value={`admin_custom_${cc.id}`}>{cc.name}</SelectItem>
                         ))}

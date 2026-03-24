@@ -533,7 +533,7 @@ export default function ChannelConfig() {
                       <div key={field.id} className="flex items-center gap-2">
                         <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
                         <Input
-                          placeholder={FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}
+                          placeholder={`字段名称，如「${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}」`}
                           value={field.label}
                           onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
                           className="bg-gray-50 border-gray-200 text-sm flex-1"
@@ -550,7 +550,7 @@ export default function ChannelConfig() {
                   </div>
                 )}
                 <p className="text-xs text-gray-400 leading-relaxed pt-1">
-                  这些字段和名称会展示在用户端，用户选择该通道后会看到对应的输入框。
+                  用户凭证字段和名称会展示在用户端，用户选择该通道后会看到对应的输入框
                 </p>
               </div>
             </div>

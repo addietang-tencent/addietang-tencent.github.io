@@ -568,13 +568,13 @@ export default function ChannelConfig() {
                         <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
                         <div className="flex gap-2 flex-1">
                           <Input
-                            placeholder={FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}
+                            placeholder={`如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
                             value={field.key}
                             onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
                             className="flex-1 bg-gray-50 border-gray-200 text-sm font-mono"
                           />
                           <Input
-                            placeholder={idx % 2 === 0 ? "访问公鉅" : "访问私鉅"}
+                            placeholder={idx % 2 === 0 ? "如「访问公鑰」" : "如「访问私鑰」"}
                             value={field.label}
                             onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
                             className="flex-1 bg-gray-50 border-gray-200 text-sm"

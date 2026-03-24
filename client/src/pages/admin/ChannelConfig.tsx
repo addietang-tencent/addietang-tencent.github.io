@@ -592,7 +592,7 @@ export default function ChannelConfig() {
                   </div>
                 )}
                 <p className="text-xs text-gray-400 leading-relaxed pt-1">
-                  用户凭证字段和名称会展示在用户端，用户选择该通道后会看到对应的输入框
+                  用户凭证的字段名称会展示在用户端，用户选择该通道后会看到对应的输入框
                 </p>
               </div>
             </div>

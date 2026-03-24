@@ -1,7 +1,7 @@
 /**
  * ChannelConfig - 管控端通道配置页
  * 支持内置通道（微信/QQ/企业微信/钉钉/飞书）可见性管理
- * 以及自定义通道的添加、编辑、可见性控制
+ * 以及自定义通道的添加、可见性控制（不支持编辑，仅删除）
  */
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
@@ -15,7 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MessageSquare, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Settings2 } from "lucide-react";
+import { MessageSquare, Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle } from "lucide-react";
 import {
   type CustomChannel,
   type CredentialField,
@@ -103,11 +103,11 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
 // ─── 内置通道列表 ─────────────────────────────────────────────────────────────────
 
 const BUILTIN_CHANNELS = [
-  { id: "wechat", name: "微信", desc: "通过微信机器人接入，覆盖全场景下的个人沟通、企业服务与生态连接需求" },
-  { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景" },
-  { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力" },
-  { id: "dingtalk", name: "钉钉", desc: "通过钉钉机器人接入，适合阿里系企业用户" },
-  { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队" },
+  { id: "wechat", name: "微信" },
+  { id: "qq", name: "QQ" },
+  { id: "wework", name: "企业微信" },
+  { id: "dingtalk", name: "钉钉" },
+  { id: "feishu", name: "飞书" },
 ];
 
 // 预设颜色列表
@@ -115,6 +115,9 @@ const ICON_COLORS = [
   "#6366F1", "#8B5CF6", "#EC4899", "#F59E0B",
   "#10B981", "#3B82F6", "#EF4444", "#14B8A6",
 ];
+
+// 凭证字段 placeholder 循环列表
+const FIELD_PLACEHOLDERS = ["accessKey", "secretKey"];
 
 let colorIdx = 0;
 function nextColor() {
@@ -162,9 +165,8 @@ export default function ChannelConfig() {
     return unsub;
   }, []);
 
-  // 弹窗状态
+  // 弹窗状态（仅用于新增）
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   // 表单状态
   const [form, setForm] = useState<FormState>(emptyForm());
@@ -172,7 +174,7 @@ export default function ChannelConfig() {
   // 删除确认弹窗
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  // 展开/折叠凭证字段预览
+  // 展开/折叠通道详情（展示 IM 服务器地址 + 用户凭证字段）
   const [expandedCustomId, setExpandedCustomId] = useState<string | null>(null);
 
   // ── 同步到 localStorage ──
@@ -183,25 +185,11 @@ export default function ChannelConfig() {
 
   // ── 打开新增弹窗 ──
   const openAddDialog = () => {
-    setEditingId(null);
     setForm(emptyForm());
     setDialogOpen(true);
   };
 
-  // ── 打开编辑弹窗 ──
-  const openEditDialog = (ch: CustomChannel) => {
-    setEditingId(ch.id);
-    setForm({
-      name: ch.name,
-      channelId: ch.channelId,
-      serverUrl: ch.serverUrl,
-      wsUrl: ch.wsUrl,
-      credentialFields: ch.credentialFields.map(f => ({ ...f })),
-    });
-    setDialogOpen(true);
-  };
-
-  // ── 保存（新增或编辑） ──
+  // ── 保存（仅新增） ──
   const handleSave = () => {
     if (!form.name.trim()) { toast.error("请填写通道名称"); return; }
     if (!form.channelId.trim()) { toast.error("请填写 Channel ID"); return; }
@@ -211,28 +199,18 @@ export default function ChannelConfig() {
       if (!f.label.trim()) { toast.error("凭证字段名称不能为空"); return; }
     }
 
-    if (editingId) {
-      const updated = customChannels.map(ch =>
-        ch.id === editingId
-          ? { ...ch, name: form.name, channelId: form.channelId, serverUrl: form.serverUrl, wsUrl: form.wsUrl, credentialFields: form.credentialFields }
-          : ch
-      );
-      updateChannels(updated);
-      toast.success(`「${form.name}」已更新`);
-    } else {
-      const newCh: CustomChannel = {
-        id: `custom_${Date.now()}`,
-        name: form.name,
-        channelId: form.channelId,
-        serverUrl: form.serverUrl,
-        wsUrl: form.wsUrl,
-        credentialFields: form.credentialFields,
-        visible: false,
-        color: nextColor(),
-      };
-      updateChannels([...customChannels, newCh]);
-      toast.success(`「${form.name}」已添加，默认不可见，开启「用户可见」后用户即可选择`);
-    }
+    const newCh: CustomChannel = {
+      id: `custom_${Date.now()}`,
+      name: form.name,
+      channelId: form.channelId,
+      serverUrl: form.serverUrl,
+      wsUrl: form.wsUrl,
+      credentialFields: form.credentialFields,
+      visible: false,
+      color: nextColor(),
+    };
+    updateChannels([...customChannels, newCh]);
+    toast.success(`「${form.name}」已添加，默认不可见，开启「用户可见」后用户即可选择`);
     setDialogOpen(false);
   };
 
@@ -341,9 +319,10 @@ export default function ChannelConfig() {
             添加通道
           </Button>
         </div>
+        {/* ① 修改1：补充「仅支持长连接」说明 */}
         <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
           <p className="text-xs text-gray-500">
-            企业可配置自研 IM 通道信息，添加后用户可在 OpenClaw 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。
+            企业可配置自研 IM 通道信息，添加后用户可在 OpenClaw 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。目前自定义通道仅支持 WebSocket 长连接方式接入。
           </p>
         </div>
 
@@ -359,7 +338,7 @@ export default function ChannelConfig() {
           <div className="divide-y divide-gray-50">
             {customChannels.map((ch) => (
               <div key={ch.id} className="hover:bg-gray-50/30 transition-colors">
-                {/* 主行 */}
+                {/* 主行：仅展示通道名称 + Channel ID + 操作 */}
                 <div className="flex items-center justify-between px-6 py-4">
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <CustomChannelIcon name={ch.name} color={ch.color} />
@@ -370,37 +349,27 @@ export default function ChannelConfig() {
                           {ch.channelId}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{ch.serverUrl}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-4">
-                    {ch.credentialFields.length > 0 ? (
-                      <button
-                        className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
-                        onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
-                        title="查看凭证字段"
-                      >
-                        {expandedCustomId === ch.id
-                          ? <ChevronDown className="w-3.5 h-3.5" />
-                          : <ChevronRight className="w-3.5 h-3.5" />
-                        }
-                        <span>{ch.credentialFields.length} 个凭证字段</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-gray-300">无凭证字段</span>
-                    )}
+                    {/* 展开/折叠按钮 */}
+                    <button
+                      className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
+                      onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                      title="查看详情"
+                    >
+                      {expandedCustomId === ch.id
+                        ? <ChevronDown className="w-3.5 h-3.5" />
+                        : <ChevronRight className="w-3.5 h-3.5" />
+                      }
+                      <span>详情</span>
+                    </button>
                     <span className="text-xs text-gray-400">用户可见</span>
                     <Switch
                       checked={ch.visible}
                       onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
                     />
-                    <button
-                      className="text-gray-400 hover:text-blue-500 transition-colors"
-                      onClick={() => openEditDialog(ch)}
-                      title="编辑"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
+                    {/* ⑦ 修改7：去掉编辑按钮，只保留删除 */}
                     <button
                       className="text-gray-400 hover:text-red-500 transition-colors"
                       onClick={() => setDeleteConfirmId(ch.id)}
@@ -411,21 +380,42 @@ export default function ChannelConfig() {
                   </div>
                 </div>
 
-                {/* 展开：凭证字段预览 */}
-                {expandedCustomId === ch.id && ch.credentialFields.length > 0 && (
+                {/* ⑥ 修改6：展开后展示两部分：IM 服务器地址 + 用户凭证字段 */}
+                {expandedCustomId === ch.id && (
                   <div className="px-6 pb-4">
-                    <div className="ml-14 rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
-                      <p className="text-xs text-gray-400 mb-2">用户凭证字段（用户端将展示以下输入框）</p>
-                      <div className="flex flex-wrap gap-2">
-                        {ch.credentialFields.map((f, idx) => (
-                          <span
-                            key={f.id}
-                            className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
-                          >
-                            <span className="text-gray-400">{idx + 1}.</span>
-                            {f.label}
-                          </span>
-                        ))}
+                    <div className="ml-14 space-y-3">
+                      {/* IM 服务器地址 */}
+                      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                        <p className="text-xs font-medium text-gray-500 mb-2">IM 服务器地址</p>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-gray-400 w-24 shrink-0">Server URL</span>
+                            <span className="text-gray-700 font-mono break-all">{ch.serverUrl || "—"}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-gray-400 w-24 shrink-0">WebSocket URL</span>
+                            <span className="text-gray-700 font-mono break-all">{ch.wsUrl || "—"}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* 用户凭证字段 */}
+                      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                        <p className="text-xs font-medium text-gray-500 mb-2">用户凭证字段</p>
+                        {ch.credentialFields.length === 0 ? (
+                          <p className="text-xs text-gray-400">无凭证字段</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {ch.credentialFields.map((f, idx) => (
+                              <span
+                                key={f.id}
+                                className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
+                              >
+                                <span className="text-gray-400">{idx + 1}.</span>
+                                {f.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -436,17 +426,25 @@ export default function ChannelConfig() {
         )}
       </div>
 
-      {/* ── 新增/编辑自定义通道弹窗 ── */}
+      {/* ── 新增自定义通道弹窗 ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? "编辑自定义通道" : "添加自定义通道"}</DialogTitle>
+            <DialogTitle>添加自定义通道</DialogTitle>
             <DialogDescription>
               配置企业自研 IM 通道信息，保存后可在通道列表中管理可见性。
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 pt-2">
+          <div className="space-y-5 pt-1">
+            {/* ② 修改2：顶部提醒条 */}
+            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-amber-700 leading-relaxed">
+                使用自定义通道前，企业需先开发与 OpenClaw 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
+              </p>
+            </div>
+
             {/* ── 第一部分：通道基础信息 ── */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -485,8 +483,9 @@ export default function ChannelConfig() {
               <div className="space-y-2 pl-7">
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Server URL <span className="text-red-400">*</span></label>
+                  {/* ③ 修改3：Server URL 不举例 */}
                   <Input
-                    placeholder="自定义 IM 的 HTTP API 地址，如 https://im.example.com/api"
+                    placeholder="自定义 IM 的 HTTP API 地址"
                     value={form.serverUrl}
                     onChange={(e) => setForm(f => ({ ...f, serverUrl: e.target.value }))}
                     className="bg-gray-50 border-gray-200 text-sm font-mono"
@@ -527,7 +526,6 @@ export default function ChannelConfig() {
                 {form.credentialFields.length === 0 ? (
                   <div className="rounded-lg bg-gray-50 border border-dashed border-gray-200 px-4 py-3 text-center">
                     <p className="text-xs text-gray-400">暂未添加凭证字段</p>
-                    <p className="text-xs text-gray-400 mt-0.5">添加字段后，用户选择该通道时会看到对应的输入框</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -535,7 +533,7 @@ export default function ChannelConfig() {
                       <div key={field.id} className="flex items-center gap-2">
                         <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
                         <Input
-                          placeholder={`字段名称，如「Access Token」`}
+                          placeholder={FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}
                           value={field.label}
                           onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
                           className="bg-gray-50 border-gray-200 text-sm flex-1"

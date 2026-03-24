@@ -2,12 +2,19 @@
  * BasicInfo - 管控端基础信息配置页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side (浅灰背景)
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Upload } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function BasicInfo() {
   const [form, setForm] = useState({
@@ -20,11 +27,56 @@ export default function BasicInfo() {
   const [logoError, setLogoError] = useState<string | null>(null);
   const MAX_FILE_SIZE = 512 * 1024; // 512KB
 
+  // 首次登录提示框状态
+  const [showTencentIdentityDialog, setShowTencentIdentityDialog] = useState(false);
+
+  useEffect(() => {
+    // 检查是否首次登录
+    const hasShownDialog = localStorage.getItem("admin_tencent_identity_dialog_shown");
+    if (!hasShownDialog) {
+      setShowTencentIdentityDialog(true);
+      localStorage.setItem("admin_tencent_identity_dialog_shown", "true");
+    }
+  }, []);
+
+  const handleGoToTencentIdentity = () => {
+    window.open(
+      "https://ci-741.account.tencentcs.com/?redirectUrl=https%3A%2F%2Fe17himtkr0083u.ci-741.workspace.tencentcs.com%2Fadmin%2F%23%2Fusers#/login",
+      "_blank"
+    );
+    setShowTencentIdentityDialog(false);
+  };
+
   const handleSave = () => {
     toast.success("基础信息已保存");
   };
 
   return (
+    <>
+      {/* 首次登录提示框 */}
+      <Dialog open={showTencentIdentityDialog} onOpenChange={setShowTencentIdentityDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900">员工账号管理</DialogTitle>
+            <DialogDescription className="sr-only">引导管理员前往腾讯统一身份平台</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              请前往腾讯统一身份平台进行用户新增和登录方式设置。
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                onClick={handleGoToTencentIdentity}
+                className="flex-1"
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              >
+                前往腾讯统一身份
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="max-w-3xl page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">基础信息配置</h1>
@@ -130,5 +182,6 @@ export default function BasicInfo() {
           </div>
         </div>
       </div>
+    </>
   );
 }

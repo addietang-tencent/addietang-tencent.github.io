@@ -4,7 +4,7 @@
  * - 三栏布局：模型 | 通道 | 技能
  * - 参考图片风格：白色卡片，标题带彩色图标
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,11 @@ import {
   ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
+import {
+  type CustomChannel as AdminCustomChannel,
+  loadVisibleCustomChannels,
+  onCustomChannelsChange,
+} from "@/lib/customChannelStore";
 
 // ─── 通道配置定义 ───────────────────────────────────────────────────────────────
 
@@ -56,7 +61,9 @@ type ChannelConfig = {
   feishuMode?: true; // 飞书特殊处理
   weworkMode?: true; // 企业微信特殊处理
   wechatMode?: true; // 微信特殊处理
-  customMode?: true; // 自定义通道
+  customMode?: true; // 自定义通道（旧版 SDK 通道）
+  adminCustomMode?: true; // 管控端配置的自定义通道
+  adminCustomId?: string; // 对应的自定义通道 ID
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -226,6 +233,16 @@ export default function OpenClawDetail() {
     const provider = MODEL_PROVIDERS.find(p => p.value === providerValue);
     if (provider) setSelectedModel(provider.versions[0].value);
   };
+
+  // ── 自定义通道（从管控端 localStorage 读取可见的自定义通道） ──
+  const [visibleCustomChannels, setVisibleCustomChannels] = useState<AdminCustomChannel[]>(() => loadVisibleCustomChannels());
+
+  useEffect(() => {
+    const unsub = onCustomChannelsChange(() => {
+      setVisibleCustomChannels(loadVisibleCustomChannels());
+    });
+    return unsub;
+  }, []);
 
   // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("wework");
@@ -435,8 +452,24 @@ export default function OpenClawDetail() {
   };
 
   const handleAddChannel = () => {
-    const ch = CHANNEL_OPTIONS.find((c) => c.value === selectedChannel);
+    // 先在全部通道选项（包括自定义）中查找
+    const ch = allChannelOptions.find((c) => c.value === selectedChannel);
     if (!ch) return;
+
+    // 管控端自定义通道处理
+    if (ch.adminCustomMode) {
+      const newEntry: AppliedChannel = {
+        type: ch.label,
+        channelValue: ch.value,
+        status: "running",
+        fields: ch.fields || [],
+        fieldValues: { ...channelFields },
+      };
+      setAppliedChannels([...appliedChannels, newEntry]);
+      setChannelFields({});
+      toast.success(`${ch.label} 已添加并应用`);
+      return;
+    }
 
     // 飞书快捷配置：点击"前往授权"弹出二维码
     if (ch.feishuMode && feishuConfigMode === "quick") {
@@ -537,7 +570,25 @@ export default function OpenClawDetail() {
     s.toLowerCase().includes(skillSearch.toLowerCase())
   );
 
-  const currentChannelConfig = CHANNEL_OPTIONS.find((c) => c.value === selectedChannel);
+  // 合并内置通道 + 可见的自定义通道（动态构建 ChannelConfig）
+  const allChannelOptions: ChannelConfig[] = [
+    ...CHANNEL_OPTIONS,
+    ...visibleCustomChannels.map((cc) => ({
+      value: `admin_custom_${cc.id}`,
+      label: cc.name,
+      descText: `企业自定义通道（Channel ID: ${cc.channelId}）`,
+      detailUrl: "#",
+      adminCustomMode: true as const,
+      adminCustomId: cc.id,
+      fields: cc.credentialFields.map((f) => ({
+        key: f.id,
+        label: f.label,
+        secret: true, // 凭证字段默认加密显示
+      })),
+    } as ChannelConfig & { adminCustomMode: true; adminCustomId: string })),
+  ];
+
+  const currentChannelConfig = allChannelOptions.find((c) => c.value === selectedChannel);
 
   // ─── 渲染通道配置输入区 ───────────────────────────────────────────────────────
 
@@ -658,6 +709,46 @@ export default function OpenClawDetail() {
       );
     }
 
+    // 管控端自定义通道：渲染管理员定义的凭证字段
+    if (currentChannelConfig.adminCustomMode) {
+      if (!currentChannelConfig.fields || currentChannelConfig.fields.length === 0) {
+        return (
+          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+            <p className="text-xs text-gray-400">该通道无需额外凭证信息</p>
+          </div>
+        );
+      }
+      return (
+        <div className="space-y-2">
+          {currentChannelConfig.fields.map((field) => (
+            <div key={field.key} className="relative">
+              <Input
+                type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
+                placeholder={field.label}
+                value={channelFields[field.key] || ""}
+                onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
+                className="bg-gray-50 border-gray-200 pr-10"
+              />
+              {field.secret && (
+                <button
+                  onClick={() => toggleSecretVisibility(field.key)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                  type="button"
+                  title={visibleSecrets.has(field.key) ? "隐藏" : "显示"}
+                >
+                  {visibleSecrets.has(field.key) ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     // 普通通道
     return (
       <div className="space-y-2">
@@ -690,9 +781,12 @@ export default function OpenClawDetail() {
     );
   };
 
-  // ─── 渲染已接入通道的展开配置项 ───────────────────────────────────────────────
+  // ─── 渲染已接入通道的展开配置项 ─────────────────────────────────────────────
 
   const renderAppliedChannelDetail = (chIdx: number, ch: AppliedChannel) => {
+    // 判断是否是管控端自定义通道（value 以 admin_custom_ 开头）
+    const isAdminCustom = ch.channelValue.startsWith("admin_custom_");
+
     return (
       <div className="mx-2 mb-2 space-y-2">
         {/* 自定义通道：仅展示 SDKAppID 和加密 SecretKey */}
@@ -706,6 +800,24 @@ export default function OpenClawDetail() {
               <span className="text-gray-500 shrink-0">SecretKey：</span>
               <span className="text-gray-800 font-mono break-all flex-1">{maskSecret(ch.fieldValues["secretKey"] || "") || "—"}</span>
             </div>
+          </div>
+        ) : isAdminCustom ? (
+          /* 管控端自定义通道：用字段 label 显示，内容加密 */
+          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+            {ch.fields.length === 0 ? (
+              <p className="text-xs text-gray-400">无凭证字段</p>
+            ) : (
+              ch.fields.map((field) => {
+                const val = ch.fieldValues[field.key] || "";
+                const displayVal = maskSecret(val);
+                return (
+                  <div key={field.key} className="flex items-center gap-1 text-sm">
+                    <span className="text-gray-500 shrink-0">{field.label}：</span>
+                    <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
+                  </div>
+                );
+              })
+            )}
           </div>
         ) : (
           <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
@@ -724,7 +836,7 @@ export default function OpenClawDetail() {
             })}
           </div>
         )}
-        {/* 子框2：飞书 pairing code */}
+         {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
           <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">
             <Input
@@ -1013,6 +1125,14 @@ export default function OpenClawDetail() {
                     {CHANNEL_OPTIONS.map((ch) => (
                       <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
                     ))}
+                    {visibleCustomChannels.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs text-gray-400 font-medium border-t border-gray-100 mt-1 pt-2">企业自定义通道</div>
+                        {visibleCustomChannels.map((cc) => (
+                          <SelectItem key={`admin_custom_${cc.id}`} value={`admin_custom_${cc.id}`}>{cc.name}</SelectItem>
+                        ))}
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
                 {currentChannelConfig?.hasInfoIcon && (

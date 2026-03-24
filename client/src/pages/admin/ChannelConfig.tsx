@@ -1,12 +1,31 @@
 /**
  * ChannelConfig - 管控端通道配置页
+ * 支持内置通道（微信/QQ/企业微信/钉钉/飞书）可见性管理
+ * 以及自定义通道的添加、编辑、可见性控制
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Plus, Pencil, Trash2, ChevronDown, ChevronRight, Settings2 } from "lucide-react";
+import {
+  type CustomChannel,
+  type CredentialField,
+  loadCustomChannels,
+  saveCustomChannels,
+  onCustomChannelsChange,
+} from "@/lib/customChannelStore";
 
-// SVG icon components for each channel
+// ─── 图标组件 ────────────────────────────────────────────────────────────────────
+
 function WeworkIcon() {
   return (
     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1EB955" }}>
@@ -60,6 +79,19 @@ function WechatIcon() {
   );
 }
 
+/** 自定义通道图标（用首字母生成彩色图标） */
+function CustomChannelIcon({ name, color }: { name: string; color: string }) {
+  const letter = name ? name.charAt(0).toUpperCase() : "C";
+  return (
+    <div
+      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base select-none"
+      style={{ background: color }}
+    >
+      {letter}
+    </div>
+  );
+}
+
 const CHANNEL_ICONS: Record<string, React.ReactNode> = {
   wework: <WeworkIcon />,
   qq: <QQIcon />,
@@ -68,7 +100,9 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
   wechat: <WechatIcon />,
 };
 
-const CHANNELS = [
+// ─── 内置通道列表 ─────────────────────────────────────────────────────────────────
+
+const BUILTIN_CHANNELS = [
   { id: "wechat", name: "微信", desc: "通过微信机器人接入，覆盖全场景下的个人沟通、企业服务与生态连接需求" },
   { id: "qq", name: "QQ", desc: "通过 QQ 机器人接入，适合个人和非正式沟通场景" },
   { id: "wework", name: "企业微信", desc: "通过企业微信机器人或自建应用接入，支持群消息通知与丰富交互能力" },
@@ -76,54 +110,496 @@ const CHANNELS = [
   { id: "feishu", name: "飞书", desc: "通过飞书机器人接入，适合使用飞书办公套件的团队" },
 ];
 
+// 预设颜色列表
+const ICON_COLORS = [
+  "#6366F1", "#8B5CF6", "#EC4899", "#F59E0B",
+  "#10B981", "#3B82F6", "#EF4444", "#14B8A6",
+];
+
+let colorIdx = 0;
+function nextColor() {
+  const c = ICON_COLORS[colorIdx % ICON_COLORS.length];
+  colorIdx++;
+  return c;
+}
+
+// ─── 空白表单 ─────────────────────────────────────────────────────────────────────
+
+type FormState = {
+  name: string;
+  channelId: string;
+  serverUrl: string;
+  wsUrl: string;
+  credentialFields: CredentialField[];
+};
+
+function emptyForm(): FormState {
+  return {
+    name: "",
+    channelId: "",
+    serverUrl: "",
+    wsUrl: "",
+    credentialFields: [],
+  };
+}
+
+// ─── 主组件 ──────────────────────────────────────────────────────────────────────
+
 export default function ChannelConfig() {
-  const [visibility, setVisibility] = useState<Record<string, boolean>>({
+  // 内置通道可见性
+  const [builtinVisibility, setBuiltinVisibility] = useState<Record<string, boolean>>({
     wechat: true, qq: true, wework: true, dingtalk: false, feishu: true,
   });
 
+  // 自定义通道列表（从 localStorage 初始化）
+  const [customChannels, setCustomChannels] = useState<CustomChannel[]>(() => loadCustomChannels());
+
+  // 监听其他标签页的变更
+  useEffect(() => {
+    const unsub = onCustomChannelsChange(() => {
+      setCustomChannels(loadCustomChannels());
+    });
+    return unsub;
+  }, []);
+
+  // 弹窗状态
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // 表单状态
+  const [form, setForm] = useState<FormState>(emptyForm());
+
+  // 删除确认弹窗
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // 展开/折叠凭证字段预览
+  const [expandedCustomId, setExpandedCustomId] = useState<string | null>(null);
+
+  // ── 同步到 localStorage ──
+  const updateChannels = (channels: CustomChannel[]) => {
+    setCustomChannels(channels);
+    saveCustomChannels(channels);
+  };
+
+  // ── 打开新增弹窗 ──
+  const openAddDialog = () => {
+    setEditingId(null);
+    setForm(emptyForm());
+    setDialogOpen(true);
+  };
+
+  // ── 打开编辑弹窗 ──
+  const openEditDialog = (ch: CustomChannel) => {
+    setEditingId(ch.id);
+    setForm({
+      name: ch.name,
+      channelId: ch.channelId,
+      serverUrl: ch.serverUrl,
+      wsUrl: ch.wsUrl,
+      credentialFields: ch.credentialFields.map(f => ({ ...f })),
+    });
+    setDialogOpen(true);
+  };
+
+  // ── 保存（新增或编辑） ──
+  const handleSave = () => {
+    if (!form.name.trim()) { toast.error("请填写通道名称"); return; }
+    if (!form.channelId.trim()) { toast.error("请填写 Channel ID"); return; }
+    if (!form.serverUrl.trim()) { toast.error("请填写 Server URL"); return; }
+    if (!form.wsUrl.trim()) { toast.error("请填写 WebSocket URL"); return; }
+    for (const f of form.credentialFields) {
+      if (!f.label.trim()) { toast.error("凭证字段名称不能为空"); return; }
+    }
+
+    if (editingId) {
+      const updated = customChannels.map(ch =>
+        ch.id === editingId
+          ? { ...ch, name: form.name, channelId: form.channelId, serverUrl: form.serverUrl, wsUrl: form.wsUrl, credentialFields: form.credentialFields }
+          : ch
+      );
+      updateChannels(updated);
+      toast.success(`「${form.name}」已更新`);
+    } else {
+      const newCh: CustomChannel = {
+        id: `custom_${Date.now()}`,
+        name: form.name,
+        channelId: form.channelId,
+        serverUrl: form.serverUrl,
+        wsUrl: form.wsUrl,
+        credentialFields: form.credentialFields,
+        visible: false,
+        color: nextColor(),
+      };
+      updateChannels([...customChannels, newCh]);
+      toast.success(`「${form.name}」已添加，默认不可见，开启「用户可见」后用户即可选择`);
+    }
+    setDialogOpen(false);
+  };
+
+  // ── 删除自定义通道 ──
+  const handleDelete = (id: string) => {
+    updateChannels(customChannels.filter(ch => ch.id !== id));
+    setDeleteConfirmId(null);
+    if (expandedCustomId === id) setExpandedCustomId(null);
+    toast.success("通道已删除");
+  };
+
+  // ── 切换自定义通道可见性 ──
+  const toggleCustomVisible = (id: string, v: boolean) => {
+    const updated = customChannels.map(ch => ch.id === id ? { ...ch, visible: v } : ch);
+    updateChannels(updated);
+    const ch = customChannels.find(c => c.id === id);
+    toast.success(`「${ch?.name}」已${v ? "开启用户可见" : "关闭用户可见"}`);
+  };
+
+  // ── 凭证字段操作 ──
+  const addCredentialField = () => {
+    setForm(f => ({
+      ...f,
+      credentialFields: [...f.credentialFields, { id: `field_${Date.now()}`, label: "" }],
+    }));
+  };
+
+  const removeCredentialField = (fieldId: string) => {
+    setForm(f => ({ ...f, credentialFields: f.credentialFields.filter(x => x.id !== fieldId) }));
+  };
+
+  const updateCredentialFieldLabel = (fieldId: string, label: string) => {
+    setForm(f => ({
+      ...f,
+      credentialFields: f.credentialFields.map(x => x.id === fieldId ? { ...x, label } : x),
+    }));
+  };
+
   return (
-      <div className="page-enter max-w-3xl">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            配置用户可以为 OpenClaw 选择接入的即时通讯工具。开启「用户可见」后，用户可在 OpenClaw 配置中选择对应通道。
+    <div className="page-enter max-w-3xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          配置用户可以为 OpenClaw 选择接入的即时通讯工具。开启「用户可见」后，用户可在 OpenClaw 配置中选择对应通道。
+        </p>
+      </div>
+
+      {/* ── 内置通道 ── */}
+      <div
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      >
+        <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <MessageSquare className="w-4 h-4 text-white" />
+          </div>
+          <h2 className="font-semibold text-gray-900">内置通道</h2>
+        </div>
+        <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+          <p className="text-xs text-gray-500">通过微信、QQ 等机器人接入，可实现与对应渠道的智能机器人对话，满足全场景下的个人沟通与企业服务需求，覆盖不同团队多样化协作场景</p>
+        </div>
+
+        <div className="divide-y divide-gray-50">
+          {BUILTIN_CHANNELS.map((ch) => (
+            <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
+              <div className="flex items-center gap-4">
+                {CHANNEL_ICONS[ch.id]}
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gray-400">用户可见</span>
+                <Switch
+                  checked={builtinVisibility[ch.id] || false}
+                  onCheckedChange={(v) => {
+                    setBuiltinVisibility({ ...builtinVisibility, [ch.id]: v });
+                    toast.success(`${ch.name} 已${v ? "开启" : "关闭"}`);
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 自定义通道 ── */}
+      <div
+        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      >
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+              <Settings2 className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="font-semibold text-gray-900">自定义通道</h2>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-1.5 text-sm"
+            onClick={openAddDialog}
+          >
+            <Plus className="w-4 h-4" />
+            添加通道
+          </Button>
+        </div>
+        <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
+          <p className="text-xs text-gray-500">
+            企业可配置自研 IM 通道信息，添加后用户可在 OpenClaw 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-white" />
-            </div>            <h2 className="font-semibold text-gray-900">可用通道列表</h2>
+        {customChannels.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+              <Settings2 className="w-6 h-6 text-gray-300" />
+            </div>
+            <p className="text-sm text-gray-500 mb-1">暂无自定义通道</p>
+            <p className="text-xs text-gray-400">点击「添加通道」配置企业自研 IM 通道</p>
           </div>
-          <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-            <p className="text-xs text-gray-500">通过微信、QQ 等机器人接入，可实现与对应渠道的智能机器人对话，满足全场景下的个人沟通与企业服务需求，覆盖不同团队多样化协作场景</p>
-          </div>
-
+        ) : (
           <div className="divide-y divide-gray-50">
-            {CHANNELS.map((ch) => (
-              <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-4">
-                  {CHANNEL_ICONS[ch.id]}
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+            {customChannels.map((ch) => (
+              <div key={ch.id} className="hover:bg-gray-50/30 transition-colors">
+                {/* 主行 */}
+                <div className="flex items-center justify-between px-6 py-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <CustomChannelIcon name={ch.name} color={ch.color} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{ch.name}</p>
+                        <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+                          {ch.channelId}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{ch.serverUrl}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 ml-4">
+                    {ch.credentialFields.length > 0 ? (
+                      <button
+                        className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
+                        onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                        title="查看凭证字段"
+                      >
+                        {expandedCustomId === ch.id
+                          ? <ChevronDown className="w-3.5 h-3.5" />
+                          : <ChevronRight className="w-3.5 h-3.5" />
+                        }
+                        <span>{ch.credentialFields.length} 个凭证字段</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-300">无凭证字段</span>
+                    )}
+                    <span className="text-xs text-gray-400">用户可见</span>
+                    <Switch
+                      checked={ch.visible}
+                      onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
+                    />
+                    <button
+                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      onClick={() => openEditDialog(ch)}
+                      title="编辑"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      onClick={() => setDeleteConfirmId(ch.id)}
+                      title="删除"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">用户可见</span>
-                  <Switch
-                    checked={visibility[ch.id] || false}
-                    onCheckedChange={(v) => {
-                      setVisibility({ ...visibility, [ch.id]: v });
-                      toast.success(`${ch.name} 已${v ? "开启" : "关闭"}`);
-                    }}
-                  />
-                </div>
+
+                {/* 展开：凭证字段预览 */}
+                {expandedCustomId === ch.id && ch.credentialFields.length > 0 && (
+                  <div className="px-6 pb-4">
+                    <div className="ml-14 rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                      <p className="text-xs text-gray-400 mb-2">用户凭证字段（用户端将展示以下输入框）</p>
+                      <div className="flex flex-wrap gap-2">
+                        {ch.credentialFields.map((f, idx) => (
+                          <span
+                            key={f.id}
+                            className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
+                          >
+                            <span className="text-gray-400">{idx + 1}.</span>
+                            {f.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
+
+      {/* ── 新增/编辑自定义通道弹窗 ── */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "编辑自定义通道" : "添加自定义通道"}</DialogTitle>
+            <DialogDescription>
+              配置企业自研 IM 通道信息，保存后可在通道列表中管理可见性。
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 pt-2">
+            {/* ── 第一部分：通道基础信息 ── */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-md bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">1</div>
+                <h3 className="text-sm font-semibold text-gray-800">通道基础信息</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">通道名称 <span className="text-red-400">*</span></label>
+                  <Input
+                    placeholder="展示给用户的通道名字，如「内部 IM」"
+                    value={form.name}
+                    onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                    className="bg-gray-50 border-gray-200 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Channel ID <span className="text-red-400">*</span></label>
+                  <Input
+                    placeholder="写入 openclaw.json 的 key，需与插件名一致"
+                    value={form.channelId}
+                    onChange={(e) => setForm(f => ({ ...f, channelId: e.target.value }))}
+                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 第二部分：IM 服务器地址 ── */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-5 h-5 rounded-md bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">2</div>
+                <h3 className="text-sm font-semibold text-gray-800">IM 服务器地址</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Server URL <span className="text-red-400">*</span></label>
+                  <Input
+                    placeholder="自定义 IM 的 HTTP API 地址，如 https://im.example.com/api"
+                    value={form.serverUrl}
+                    onChange={(e) => setForm(f => ({ ...f, serverUrl: e.target.value }))}
+                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">WebSocket URL <span className="text-red-400">*</span></label>
+                  <Input
+                    placeholder="自定义 IM 的长连接地址，可与 Server URL 相同"
+                    value={form.wsUrl}
+                    onChange={(e) => setForm(f => ({ ...f, wsUrl: e.target.value }))}
+                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 第三部分：用户凭证字段 ── */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">3</div>
+                  <h3 className="text-sm font-semibold text-gray-800">用户凭证字段</h3>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2.5 text-xs flex items-center gap-1"
+                  onClick={addCredentialField}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  添加字段
+                </Button>
+              </div>
+
+              <div className="pl-7 space-y-2">
+                {form.credentialFields.length === 0 ? (
+                  <div className="rounded-lg bg-gray-50 border border-dashed border-gray-200 px-4 py-3 text-center">
+                    <p className="text-xs text-gray-400">暂未添加凭证字段</p>
+                    <p className="text-xs text-gray-400 mt-0.5">添加字段后，用户选择该通道时会看到对应的输入框</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {form.credentialFields.map((field, idx) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
+                        <Input
+                          placeholder={`字段名称，如「Access Token」`}
+                          value={field.label}
+                          onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
+                          className="bg-gray-50 border-gray-200 text-sm flex-1"
+                        />
+                        <button
+                          className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
+                          onClick={() => removeCredentialField(field.id)}
+                          title="删除此字段"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-400 leading-relaxed pt-1">
+                  这些字段和名称会展示在用户端，用户选择该通道后会看到对应的输入框。
+                </p>
+              </div>
+            </div>
+
+            {/* ── 操作按钮 ── */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setDialogOpen(false)}
+              >
+                取消
+              </Button>
+              <Button
+                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                onClick={handleSave}
+              >
+                保存
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── 删除确认弹窗 ── */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 OpenClaw 配置不受影响。此操作不可撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirmId(null)}>
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+            >
+              确认删除
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

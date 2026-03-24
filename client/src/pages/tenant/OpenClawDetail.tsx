@@ -777,7 +777,7 @@ export default function OpenClawDetail() {
     return (
       <div className="mx-2 mb-2 space-y-2">
         {isAdminCustom ? (
-          /* 管控端自定义通道：用字段 label 显示，内容加密 */
+          /* 管控端自定义通道：展示字段 key，内容加密 */
           <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
             {ch.fields.length === 0 ? (
               <p className="text-xs text-gray-400">无凭证字段</p>
@@ -787,7 +787,7 @@ export default function OpenClawDetail() {
                 const displayVal = maskSecret(val);
                 return (
                   <div key={field.key} className="flex items-center gap-1 text-sm">
-                    <span className="text-gray-500 shrink-0">{field.label}：</span>
+                    <span className="text-gray-500 font-mono shrink-0">{field.key}：</span>
                     <span className="text-gray-800 font-mono break-all flex-1">{displayVal || "—"}</span>
                   </div>
                 );

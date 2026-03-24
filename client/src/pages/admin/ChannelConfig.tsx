@@ -574,7 +574,7 @@ export default function ChannelConfig() {
                             className="flex-1 bg-gray-50 border-gray-200 text-sm font-mono"
                           />
                           <Input
-                            placeholder={idx % 2 === 0 ? "如「访问公鑰」" : "如「访问私鑰」"}
+                            placeholder={idx % 2 === 0 ? "如「访问公钥」" : "如「访问私钥」"}
                             value={field.label}
                             onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
                             className="flex-1 bg-gray-50 border-gray-200 text-sm"

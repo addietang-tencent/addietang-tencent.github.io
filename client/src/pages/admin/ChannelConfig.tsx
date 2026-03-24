@@ -546,39 +546,52 @@ export default function ChannelConfig() {
                     <p className="text-xs text-gray-400">暂未添加凭证字段</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {form.credentialFields.map((field, idx) => (
-                      <div key={field.id} className="space-y-1.5">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
-                          <div className="flex gap-1.5 flex-1">
-                            <div className="flex-1 min-w-0">
-                              <Input
-                                placeholder={`字段 Key，如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
-                                value={field.key}
-                                onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
-                                className="bg-gray-50 border-gray-200 text-sm font-mono w-full"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <Input
-                                placeholder={idx % 2 === 0 ? "字段名称，如「访问公鉅」" : "字段名称，如「访问私鉅」"}
-                                value={field.label}
-                                onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
-                                className="bg-gray-50 border-gray-200 text-sm w-full"
-                              />
-                            </div>
-                          </div>
-                          <button
-                            className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
-                            onClick={() => removeCredentialField(field.id)}
-                            title="删除此字段"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                  <div className="rounded-lg border border-gray-200 overflow-hidden">
+                    {/* 表头 */}
+                    <div className="flex items-stretch bg-gray-50 border-b border-gray-200">
+                      <div className="flex-1 px-3 py-2 border-r border-gray-200">
+                        <p className="text-xs font-medium text-gray-700">字段 Key</p>
+                        <p className="text-xs text-gray-400 mt-0.5">写入配置文件的字段名</p>
                       </div>
-                    ))}
+                      <div className="flex-1 px-3 py-2">
+                        <p className="text-xs font-medium text-gray-700">字段名称</p>
+                        <p className="text-xs text-gray-400 mt-0.5">用户看到的字段名称</p>
+                      </div>
+                      {/* 占位，对齐删除按钮宽度 */}
+                      <div className="w-8 shrink-0" />
+                    </div>
+                    {/* 字段行 */}
+                    <div className="divide-y divide-gray-100">
+                      {form.credentialFields.map((field, idx) => (
+                        <div key={field.id} className="flex items-center">
+                          <div className="flex-1 px-3 py-2 border-r border-gray-200">
+                            <Input
+                              placeholder={FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}
+                              value={field.key}
+                              onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
+                              className="bg-transparent border-0 shadow-none text-sm font-mono px-0 h-7 focus-visible:ring-0"
+                            />
+                          </div>
+                          <div className="flex-1 px-3 py-2">
+                            <Input
+                              placeholder={idx % 2 === 0 ? "访问公鉅" : "访问私鉅"}
+                              value={field.label}
+                              onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
+                              className="bg-transparent border-0 shadow-none text-sm px-0 h-7 focus-visible:ring-0"
+                            />
+                          </div>
+                          <div className="w-8 shrink-0 flex items-center justify-center">
+                            <button
+                              className="text-gray-300 hover:text-red-500 transition-colors"
+                              onClick={() => removeCredentialField(field.id)}
+                              title="删除此字段"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <p className="text-xs text-gray-400 leading-relaxed pt-1">

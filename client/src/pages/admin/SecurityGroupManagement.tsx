@@ -19,9 +19,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,14 @@ export default function SecurityGroupManagement() {
   // 安全组状态
   const [inboundRules, setInboundRules] = useState<Rule[]>(DEFAULT_INBOUND);
   const [outboundRules, setOutboundRules] = useState<Rule[]>(DEFAULT_OUTBOUND);
+
+  // 用户端访问 OpenClaw 面板开关 - 持久化到 localStorage
+  const [allowPanelAccess, setAllowPanelAccess] = useState(() => {
+    return localStorage.getItem("admin_allow_panel_access") === "true";
+  });
+  const [panelPort, setPanelPort] = useState<string | null>(() => {
+    return localStorage.getItem("admin_panel_port");
+  });
   const [showRuleDialog, setShowRuleDialog] = useState(false);
   const [ruleType, setRuleType] = useState<"inbound" | "outbound">("inbound");
   const [editRule, setEditRule] = useState<Rule | null>(null);
@@ -350,6 +359,40 @@ export default function SecurityGroupManagement() {
               <RuleTable rules={outboundRules} type="outbound" />
             </TabsContent>
           </Tabs>
+
+          {/* 用户端访问 OpenClaw 面板开关 */}
+          <div className="mt-5 bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="flex items-center justify-between px-6 py-5">
+              <div className="flex items-center gap-4">
+                <div className="w-9 h-9 rounded-xl bg-purple-500 flex items-center justify-center shrink-0">
+                  <Lock className="text-white" style={{ width: "18px", height: "18px" }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">用户端访问 OpenClaw 面板</p>
+                  <p className="text-xs text-gray-400 mt-0.5">开启后，系统会为企业分配一个随机端口，用户可通过该端口访问 OpenClaw 管理面板</p>
+                </div>
+              </div>
+              <Switch
+                checked={allowPanelAccess}
+                onCheckedChange={(v) => {
+                  if (v) {
+                    const randomPort = String(Math.floor(Math.random() * 1000) + 9000);
+                    setAllowPanelAccess(true);
+                    setPanelPort(randomPort);
+                    localStorage.setItem("admin_allow_panel_access", "true");
+                    localStorage.setItem("admin_panel_port", randomPort);
+                    toast.success(`已开启用户端访问，分配端口：${randomPort}`);
+                  } else {
+                    setAllowPanelAccess(false);
+                    setPanelPort(null);
+                    localStorage.setItem("admin_allow_panel_access", "false");
+                    localStorage.removeItem("admin_panel_port");
+                    toast.success("已关闭用户端访问");
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* ══ 第二块：VPC 和子网 ══════════════════════════════════════════════ */}

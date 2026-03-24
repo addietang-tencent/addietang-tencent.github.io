@@ -7,7 +7,8 @@
 
 export type CredentialField = {
   id: string;
-  label: string;
+  key: string;   // 写入配置文件的字段名，如 accessKey
+  label: string; // 用户看到的标签，如「访问公鉅」
 };
 
 export type CustomChannel = {

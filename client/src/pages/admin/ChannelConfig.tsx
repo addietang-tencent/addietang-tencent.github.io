@@ -196,6 +196,7 @@ export default function ChannelConfig() {
     if (!form.serverUrl.trim()) { toast.error("请填写 Server URL"); return; }
     if (!form.wsUrl.trim()) { toast.error("请填写 WebSocket URL"); return; }
     for (const f of form.credentialFields) {
+      if (!f.key.trim()) { toast.error("凭证字段 Key 不能为空"); return; }
       if (!f.label.trim()) { toast.error("凭证字段名称不能为空"); return; }
     }
 
@@ -234,12 +235,19 @@ export default function ChannelConfig() {
   const addCredentialField = () => {
     setForm(f => ({
       ...f,
-      credentialFields: [...f.credentialFields, { id: `field_${Date.now()}`, label: "" }],
+      credentialFields: [...f.credentialFields, { id: `field_${Date.now()}`, key: "", label: "" }],
     }));
   };
 
   const removeCredentialField = (fieldId: string) => {
     setForm(f => ({ ...f, credentialFields: f.credentialFields.filter(x => x.id !== fieldId) }));
+  };
+
+  const updateCredentialFieldKey = (fieldId: string, key: string) => {
+    setForm(f => ({
+      ...f,
+      credentialFields: f.credentialFields.map(x => x.id === fieldId ? { ...x, key } : x),
+    }));
   };
 
   const updateCredentialFieldLabel = (fieldId: string, label: string) => {
@@ -419,6 +427,8 @@ export default function ChannelConfig() {
                                 className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
                               >
                                 <span className="text-gray-400">{idx + 1}.</span>
+                                <span className="font-mono text-gray-500">{f.key}</span>
+                                <span className="text-gray-300">/</span>
                                 {f.label}
                               </span>
                             ))}
@@ -538,21 +548,35 @@ export default function ChannelConfig() {
                 ) : (
                   <div className="space-y-2">
                     {form.credentialFields.map((field, idx) => (
-                      <div key={field.id} className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
-                        <Input
-                          placeholder={`字段名称，如「${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}」`}
-                          value={field.label}
-                          onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
-                          className="bg-gray-50 border-gray-200 text-sm flex-1"
-                        />
-                        <button
-                          className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
-                          onClick={() => removeCredentialField(field.id)}
-                          title="删除此字段"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div key={field.id} className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
+                          <div className="flex gap-1.5 flex-1">
+                            <div className="flex-1 min-w-0">
+                              <Input
+                                placeholder={`字段 Key，如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
+                                value={field.key}
+                                onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
+                                className="bg-gray-50 border-gray-200 text-sm font-mono w-full"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <Input
+                                placeholder={idx % 2 === 0 ? "字段名称，如「访问公鉅」" : "字段名称，如「访问私鉅」"}
+                                value={field.label}
+                                onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
+                                className="bg-gray-50 border-gray-200 text-sm w-full"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            className="text-gray-300 hover:text-red-500 transition-colors shrink-0"
+                            onClick={() => removeCredentialField(field.id)}
+                            title="删除此字段"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

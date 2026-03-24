@@ -568,9 +568,9 @@ export default function OpenClawDetail() {
       adminCustomMode: true as const,
       adminCustomId: cc.id,
       fields: cc.credentialFields.map((f) => ({
-        key: f.id,
-        label: f.label,
-        secret: true, // 凭证字段默认加密显示
+        key: f.key || f.id, // 使用管控端配置的 key，写入配置文件
+        label: f.label,     // 用户看到的标签
+        secret: true,       // 凭证字段默认加密显示
       })),
     } as ChannelConfig & { adminCustomMode: true; adminCustomId: string })),
   ];

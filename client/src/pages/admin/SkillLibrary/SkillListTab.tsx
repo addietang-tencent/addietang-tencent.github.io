@@ -167,10 +167,16 @@ export default function SkillListTab({ onSelectSkill, skills: propsSkills, onAdd
       {/* 空状态 */}
       {sortedSkills.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">还没有发布任何 SKILL</p>
-          <Button onClick={() => setUploadDialogOpen(true)} className="mt-4">
-            + 发布 SKILL
-          </Button>
+          {skillsToUse.length === 0 ? (
+            <>
+              <p className="text-gray-500 mb-4">还没有发布任何 SKILL</p>
+              <Button onClick={() => setUploadDialogOpen(true)}>
+                + 发布 SKILL
+              </Button>
+            </>
+          ) : (
+            <p className="text-gray-500">该分类下没有 SKILL</p>
+          )}
         </div>
       )}
 

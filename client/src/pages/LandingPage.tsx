@@ -6,6 +6,7 @@
  * - 第三屏：企业版功能与特色
  * - 未登录用户可访问，已登录用户跳转到「我的 OpenClaw」
  */
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/mockData";
@@ -14,6 +15,7 @@ import {
   MessageSquare, Brain, Puzzle, Clock, CheckCircle2
 } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import LoginPage from "./LoginPage";
 
 const CONCEPT_POINTS = [
   {
@@ -83,6 +85,7 @@ const FEATURE_POINTS = [
 
 export default function LandingPage() {
   const { isAdmin } = useUserRole();
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Bar */}
@@ -96,9 +99,14 @@ export default function LandingPage() {
             <span className="font-semibold text-gray-900 text-sm">{SITE_CONFIG.name}</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/my-openclaw">
-              <Button variant="ghost" size="sm" className="text-gray-600">进入我的OpenClaw</Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-600"
+              onClick={() => setLoginDialogOpen(true)}
+            >
+              进入我的OpenClaw
+            </Button>
             {isAdmin && (
               <Link href="/admin/basic-info">
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
@@ -146,17 +154,15 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="flex items-center justify-center gap-4">
-            <Link href="/my-openclaw">
-              <Button
-                size="lg"
-                className="px-8 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              >
-                立刻创建
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-
+            <Button
+              size="lg"
+              className="px-8 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              onClick={() => setLoginDialogOpen(true)}
+            >
+              立刻创建
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
           </div>
 
           {/* Quick steps */}
@@ -281,6 +287,9 @@ export default function LandingPage() {
           <p className="text-xs text-gray-400">© 2026 企业版 OpenClaw. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Login Dialog */}
+      <LoginPage open={loginDialogOpen} onOpenChange={setLoginDialogOpen} />
     </div>
   );
 }

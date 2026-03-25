@@ -62,7 +62,7 @@ const PRESET_CARDS = [
     id: "manage",
     title: "灵活管理技能增删",
     description:
-      "随时对初始技能包进行技能的添加和移除，灵活调整每台新建 OpenClaw 云服务器的预装技能组合，满足不同团队或场景的差异化需求",
+      "随时对初始技能包进行技能的添加和移除，灵活调整每个 OpenClaw 的预装技能组合，适应企业需求变化",
     icon: RefreshCw,
     color: "#34C759",
   },

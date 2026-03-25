@@ -13,13 +13,24 @@ interface EnterpriseSkillLibraryProps {
 }
 
 export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkillLibraryProps) {
-  const [cosEnabled, setCosEnabled] = useState(false);
+  const [cosEnabled, setCosEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cos_enabled') === 'true';
+    }
+    return false;
+  });
   const [enableDialogOpen, setEnableDialogOpen] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   const handleEnableCOS = () => {
     setCosEnabled(true);
+    localStorage.setItem('cos_enabled', 'true');
     setEnableDialogOpen(false);
+  };
+
+  // 当返回到列表时，清空 selectedSkillId
+  const handleBackFromDetail = () => {
+    setSelectedSkillId(null);
   };
 
   if (!cosEnabled) {
@@ -94,17 +105,7 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
         </TabsList>
 
         <TabsContent value="skills">
-          {selectedSkillId ? (
-            <SkillDetail
-              skillId={selectedSkillId}
-              onBack={() => {
-                setSelectedSkillId(null);
-                if (onSelectSkill) onSelectSkill('');
-              }}
-            />
-          ) : (
-            <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
-          )}
+          <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
         </TabsContent>
 
         <TabsContent value="categories">

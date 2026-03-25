@@ -20,6 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
+import SkillDetail from "./SkillLibrary/SkillDetail";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
@@ -268,6 +269,7 @@ function SkillSourceTab() {
 // ── 主页面 ────────────────────────────────────────────────
 export default function SkillConfig() {
   const [activeTab, setActiveTab] = useState("source");
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   const currentTab = TABS.find((t) => t.id === activeTab)!;
 
@@ -310,7 +312,14 @@ export default function SkillConfig() {
       {activeTab === "preset" && <ComingSoonCards cards={PRESET_CARDS} />}
       {activeTab === "source" && <SkillSourceTab />}
       {activeTab === "public" && <ComingSoonCards cards={PUBLIC_CARDS} />}
-      {activeTab === "library" && <EnterpriseSkillLibrary />}
+      {activeTab === "library" && (selectedSkillId ? (
+        <SkillDetail
+          skillId={selectedSkillId}
+          onBack={() => setSelectedSkillId(null)}
+        />
+      ) : (
+        <EnterpriseSkillLibrary onSelectSkill={setSelectedSkillId} />
+      ))}
     </div>
   );
 }

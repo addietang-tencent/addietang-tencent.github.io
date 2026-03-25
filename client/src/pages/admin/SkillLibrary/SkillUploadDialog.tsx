@@ -79,6 +79,11 @@ const parseZipFile = async (file: File): Promise<{
         return;
       }
 
+      // 跳过系统文件（Mac 系统文件）
+      if (relativePath.startsWith('__MACOSX/') || relativePath.endsWith('.DS_Store')) {
+        return;
+      }
+
       // 检查是否是根目录下的 SKILL.md（不区分大小写）
       const pathParts = relativePath.split('/');
       if (pathParts.length === 1 && pathParts[0].toLowerCase() === 'skill.md') {

@@ -21,14 +21,16 @@ import {
 } from "lucide-react";
 import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import SkillDetail from "./SkillLibrary/SkillDetail";
+import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
+import SkillInitialPackageTab from "./SkillLibrary/SkillInitialPackageTab";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
   {
     id: "preset",
-    label: "初始技能包",
+    label: "技能初始包",
     description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共技能库和企业技能库中挑选。",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "source",
@@ -39,14 +41,14 @@ const TABS = [
   {
     id: "public",
     label: "公共技能库",
-    description: "接入多个公共技能库，为用户提供丰富的开箱即用技能资源。",
-    comingSoon: true,
+    description: "浏览公共技能市场，收藏技能并加入初始技能包，为用户提供丰富的开箱即用技能资源。",
+    comingSoon: false,
   },
   {
     id: "library",
     label: "企业技能库",
     description: "",
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
 
@@ -270,6 +272,13 @@ function SkillSourceTab() {
 export default function SkillConfig() {
   const [activeTab, setActiveTab] = useState("source");
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [packages, setPackages] = useState<Array<{ id: string; name: string; isActive: boolean }>>(
+    [
+      { id: 'pkg-1', name: '全员通用技能包', isActive: true },
+      { id: 'pkg-2', name: '高级开发技能包', isActive: false },
+    ]
+  );
+  const [packagesDraft, setPackagesDraft] = useState<Record<string, boolean>>({});
 
   const currentTab = TABS.find((t) => t.id === activeTab)!;
 
@@ -309,9 +318,19 @@ export default function SkillConfig() {
       <p className="text-sm text-gray-500 mt-3 mb-6 leading-relaxed">{currentTab.description}</p>
 
       {/* Tab 内容 */}
-      {activeTab === "preset" && <ComingSoonCards cards={PRESET_CARDS} />}
+      {activeTab === "preset" && (
+        <SkillInitialPackageTab onPackagesChange={setPackages} />
+      )}
       {activeTab === "source" && <SkillSourceTab />}
-      {activeTab === "public" && <ComingSoonCards cards={PUBLIC_CARDS} />}
+      {activeTab === "public" && (
+        <PublicSkillLibraryTab
+          packages={packages}
+          onAddSkillToPackage={(skillId, packageId) => {
+            // 标记该技能包有未发布修改
+            setPackagesDraft(prev => ({ ...prev, [packageId]: true }));
+          }}
+        />
+      )}
       {activeTab === "library" && (selectedSkillId ? (
         <SkillDetail
           skillId={selectedSkillId}

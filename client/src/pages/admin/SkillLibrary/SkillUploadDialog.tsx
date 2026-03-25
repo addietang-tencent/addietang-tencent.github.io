@@ -84,9 +84,8 @@ const parseZipFile = async (file: File): Promise<{
         return;
       }
 
-      // 检查是否是根目录下的 SKILL.md（不区分大小写）
-      const pathParts = relativePath.split('/');
-      if (pathParts.length === 1 && pathParts[0].toLowerCase() === 'skill.md') {
+      // 检查是否是 SKILL.md（不区分大小写）
+      if (relativePath.toLowerCase().endsWith('skill.md')) {
         skillmdFound = true;
       }
 
@@ -107,7 +106,7 @@ const parseZipFile = async (file: File): Promise<{
     // 如果找到 SKILL.md，读取其内容
     if (skillmdFound) {
       const skillmdEntry = Object.keys(loaded.files).find(
-        key => key.toLowerCase() === 'skill.md'
+        key => key.toLowerCase().endsWith('skill.md')
       );
       if (skillmdEntry) {
         skillmdContent = await loaded.file(skillmdEntry)!.async('text');
@@ -204,7 +203,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
       const parseResult = await parseZipFile(file);
       
       // 检查是否存在 SKILL.md
-      const hasSKILLMd = parseResult.files.some(f => f.name.toLowerCase() === 'skill.md');
+      const hasSKILLMd = parseResult.files.some(f => f.name.toLowerCase().endsWith('skill.md'));
       
       setUploadedFiles(prev => {
         const updated = [...prev];
@@ -225,7 +224,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
               name: file.name,
               size: file.size,
               status: 'error',
-              error: '不存在 SKILL.md 文件或者不在根目录下，请修改后重试',
+              error: '不存在 SKILL.md 文件，请修改后重试',
               files: parseResult.files,
             };
           } else {

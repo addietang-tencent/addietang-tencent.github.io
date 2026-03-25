@@ -68,6 +68,9 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                   </span>
                 ))}
               </div>
+              {skill.description && (
+                <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
+              )}
             </div>
           </div>
           <div className="text-right">
@@ -244,7 +247,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mt-8">
               <h3 className="font-semibold text-gray-900">下发记录</h3>
               <div className="text-center py-8 bg-gray-50 rounded-lg">
                 <p className="text-gray-500">还没有下发记录</p>

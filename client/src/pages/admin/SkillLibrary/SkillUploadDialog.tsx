@@ -132,6 +132,7 @@ const parseZipFile = async (file: File): Promise<{
 export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: SkillUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 当对话框关闭时，清空上传状态
@@ -373,6 +374,10 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
 
     onConfirm(newSkill);
 
+    // 显示成功横幅
+    setShowSuccessBanner(true);
+    setTimeout(() => setShowSuccessBanner(false), 2000);
+
     // 重置表单
     setUploadedFiles([]);
     setFormData({
@@ -403,11 +408,19 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>发布新技能</DialogTitle>
-        </DialogHeader>
+    <>
+      {showSuccessBanner && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg text-sm font-medium">
+            技能发布成功
+          </div>
+        </div>
+      )}
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>发布新技能</DialogTitle>
+          </DialogHeader>
 
         <div className="space-y-6">
           {/* 文件上传区域 */}
@@ -677,7 +690,8 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
             发布 Skill
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }

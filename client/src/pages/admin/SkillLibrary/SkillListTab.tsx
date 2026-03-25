@@ -12,6 +12,7 @@ import { Search, Grid3x3, List } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
+import SkillDetail from './SkillDetail';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
@@ -60,9 +61,19 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     if (onSelectSkill) {
       onSelectSkill(skillId);
     } else {
-      setLocation(`/admin/skill-detail/${skillId}`);
+      setSelectedSkillId(skillId);
     }
   };
+
+  // 如果选中了 Skill，显示详情页
+  if (selectedSkillId) {
+    return (
+      <SkillDetail
+        skillId={selectedSkillId}
+        onBack={() => setSelectedSkillId(null)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">

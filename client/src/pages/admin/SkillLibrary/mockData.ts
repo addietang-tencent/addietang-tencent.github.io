@@ -1,5 +1,53 @@
 import { Skill, Category, OpenClawInstance } from './types';
 
+// 为 GitHub Skill 创建额外的文件内容
+const githubSkillFiles: Record<string, string> = {
+  'SKILL.md': `---
+name: github
+description: "Interact with GitHub using the \`gh\` CLI. Use \`gh issue\`, \`gh pr\`, \`gh run\`, and \`gh api\` for issues, PRs, CI runs, and advanced queries."
+---
+
+# GitHub Skill
+
+Use the \`gh\` CLI to interact with GitHub. Always specify \`--repo owner/repo\` when not in a git directory, or use URLs directly.
+
+## Pull Requests
+
+Check CI status on a PR:
+\`\`\`bash
+gh pr checks 55 --repo owner/repo
+\`\`\`
+
+List recent workflow runs:
+\`\`\`bash
+gh run list --repo owner/repo --limit 10
+\`\`\`
+
+View a run and see which steps failed:
+\`\`\`bash
+gh run view <run-id> --repo owner/repo
+\`\`\`
+
+View logs for failed steps only:
+\`\`\`bash
+gh run view <run-id> --repo owner/repo --log-failed
+\`\`\`
+
+## API for Advanced Queries
+
+The \`gh api\` command is useful for accessing data not available through other subcommands.`,
+  'hha/ha.md': `## 我好
+### niha
+**默认有：**
+通用办公  研发工具  系统运维   质量测试   需求设计    信息检索    项目管理    数据分析    安全合规
+支持新增和删除。
+
+|**序号**|**分类名称**|**描述（核心定位、覆盖范围）**|
+|:-:|:-:|:-:|
+|**1**|**通用办公**|文档总结、邮件润色、PPT 大纲、翻译助手|
+|**2**|**研发工具**|代码 Review、接口调试、技术文档解析、架构建议|`,
+};
+
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: '1', name: '通用办公', description: '文档总结、邮件润色、PPT 大纲、翻译助手' },
   { id: '2', name: '研发工具', description: '代码 Review、接口调试、技术文档解析、架构建议' },
@@ -43,6 +91,53 @@ export const MOCK_SKILLS: Skill[] = [
     categories: ['3'],
     uploadTime: new Date('2025-03-15'),
     content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...',
+  },
+  {
+    id: 'skill-4',
+    slug: 'github',
+    name: 'GitHub',
+    description: 'Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.',
+    version: '1.0.0',
+    categories: ['2'],
+    uploadTime: new Date('2025-03-20'),
+    content: `---
+name: github
+description: "Interact with GitHub using the \`gh\` CLI. Use \`gh issue\`, \`gh pr\`, \`gh run\`, and \`gh api\` for issues, PRs, CI runs, and advanced queries."
+---
+
+# GitHub Skill
+
+Use the \`gh\` CLI to interact with GitHub. Always specify \`--repo owner/repo\` when not in a git directory, or use URLs directly.
+
+## Pull Requests
+
+Check CI status on a PR:
+\`\`\`bash
+gh pr checks 55 --repo owner/repo
+\`\`\`
+
+List recent workflow runs:
+\`\`\`bash
+gh run list --repo owner/repo --limit 10
+\`\`\`
+
+View a run and see which steps failed:
+\`\`\`bash
+gh run view <run-id> --repo owner/repo
+\`\`\`
+
+View logs for failed steps only:
+\`\`\`bash
+gh run view <run-id> --repo owner/repo --log-failed
+\`\`\`
+
+## API for Advanced Queries
+
+The \`gh api\` command is useful for accessing data not available through other subcommands.`,
+    files: [
+      { name: 'SKILL.md', size: 1024 },
+      { name: 'hha/ha.md', size: 512 },
+    ],
   },
 ];
 

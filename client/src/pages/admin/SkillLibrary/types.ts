@@ -8,6 +8,7 @@ export interface Skill {
   uploadTime: Date;
   content?: string;
   fileContent?: string;
+  files?: Array<{ name: string; size: number }>;
 }
 
 export interface Category {

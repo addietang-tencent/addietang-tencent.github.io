@@ -1,10 +1,20 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, ChevronDown, ChevronRight } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
+import { renderMarkdown, removeFrontmatter } from '@/lib/markdownRenderer';
+
+interface DistributionRecord {
+  id: string;
+  timestamp: Date;
+  totalCount: number;
+  successCount: number;
+  failedCount: number;
+  status: 'completed' | 'partial' | 'in_progress';
+  instances: Array<{ id: string; name: string; status?: string }>;
+}
 
 interface SkillDetailProps {
   skillId: string;
@@ -15,8 +25,13 @@ interface SkillDetailProps {
 export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
+  const [distributionRecords, setDistributionRecords] = useState<DistributionRecord[]>([]);
   const skillsArray = skills || MOCK_SKILLS;
   const skill = skillsArray.find(s => s.id === skillId);
+  
+  const handleDistributionComplete = (record: DistributionRecord) => {
+    setDistributionRecords(prev => [record, ...prev]);
+  };
 
   if (!skill) {
     return (
@@ -109,36 +124,10 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-2 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <div className="prose prose-sm max-w-none">
-              <ReactMarkdown
-                components={{
-                  h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-3" {...props} />,
-                  h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-5 mb-2" {...props} />,
-                  h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-                  table: ({ node, ...props }) => (
-                    <table className="w-full border-collapse border border-gray-300 my-4" {...props} />
-                  ),
-                  thead: ({ node, ...props }) => (
-                    <thead className="bg-gray-100" {...props} />
-                  ),
-                  th: ({ node, ...props }) => (
-                    <th className="border border-gray-300 px-3 py-2 text-left font-semibold" {...props} />
-                  ),
-                  td: ({ node, ...props }) => (
-                    <td className="border border-gray-300 px-3 py-2" {...props} />
-                  ),
-                  p: ({ node, ...props }: any) => <p className="text-gray-600 mb-3" {...props} />,
-                  ul: ({ node, ...props }: any) => <ul className="list-disc list-inside mb-3" {...props} />,
-                  ol: ({ node, ...props }: any) => <ol className="list-decimal list-inside mb-3" {...props} />,
-                  li: ({ node, ...props }: any) => <li className="text-gray-600 mb-1" {...props} />,
-                  code: ({ node, ...props }: any) => (
-                    <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
-                  ),
-                }}
-              >
-                {skill.content}
-              </ReactMarkdown>
-            </div>
+              <div 
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(skill.content || '') }}
+              />
             </div>
           </TabsContent>
 
@@ -183,34 +172,10 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                     </div>
                     <div className="flex-1 overflow-y-auto p-4">
                       {files.find(f => f.name === expandedFile)?.name.toLowerCase().endsWith('.md') ? (
-                        <ReactMarkdown
-                          components={{
-                            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-3" {...props} />,
-                            h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-5 mb-2" {...props} />,
-                            h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-                            table: ({ node, ...props }) => (
-                              <table className="w-full border-collapse border border-gray-300 my-4" {...props} />
-                            ),
-                            thead: ({ node, ...props }) => (
-                              <thead className="bg-gray-100" {...props} />
-                            ),
-                            th: ({ node, ...props }) => (
-                              <th className="border border-gray-300 px-3 py-2 text-left font-semibold" {...props} />
-                            ),
-                            td: ({ node, ...props }) => (
-                              <td className="border border-gray-300 px-3 py-2" {...props} />
-                            ),
-                            p: ({ node, ...props }: any) => <p className="text-gray-600 mb-3" {...props} />,
-                            ul: ({ node, ...props }: any) => <ul className="list-disc list-inside mb-3" {...props} />,
-                            ol: ({ node, ...props }: any) => <ol className="list-decimal list-inside mb-3" {...props} />,
-                            li: ({ node, ...props }: any) => <li className="text-gray-600 mb-1" {...props} />,
-                            code: ({ node, ...props }: any) => (
-                              <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
-                            ),
-                          }}
-                        >
-                          {files.find(f => f.name === expandedFile)?.content || ''}
-                        </ReactMarkdown>
+                        <div 
+                          className="prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(files.find(f => f.name === expandedFile)?.content || '') }}
+                        />
                       ) : (
                         <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
                           {files.find(f => f.name === expandedFile)?.content}
@@ -249,9 +214,57 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
 
             <div className="space-y-3 mt-8">
               <h3 className="font-semibold text-gray-900">下发记录</h3>
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">还没有下发记录</p>
-              </div>
+              {distributionRecords.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-gray-500">还没有下发记录</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {distributionRecords.map((record) => (
+                    <div key={record.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {record.timestamp.toLocaleString('zh-CN')}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            下发至 {record.totalCount} 个实例
+                          </p>
+                        </div>
+                        <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
+                          record.status === 'completed' ? 'bg-green-50 text-green-700' :
+                          record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
+                          'bg-blue-50 text-blue-700'
+                        }`}>
+                          {record.status === 'completed' ? '成功' :
+                           record.status === 'partial' ? '部分成功' :
+                           '进行中'}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">成功：</span>
+                          <span className="font-semibold text-green-600">{record.successCount}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">失败：</span>
+                          <span className="font-semibold text-red-600">{record.failedCount}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <p className="text-xs font-medium text-gray-700 mb-2">下发实例：</p>
+                        <div className="flex flex-wrap gap-2">
+                          {record.instances.map((instance) => (
+                            <span key={instance.id} className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                              {instance.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             </div>
           </TabsContent>
@@ -263,6 +276,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
         open={distributeDialogOpen}
         onOpenChange={setDistributeDialogOpen}
         skillName={skill.name}
+        onDistributionComplete={handleDistributionComplete}
       />
     </div>
   );

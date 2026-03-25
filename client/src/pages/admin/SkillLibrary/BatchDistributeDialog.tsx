@@ -17,6 +17,17 @@ interface BatchDistributeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   skillName: string;
+  onDistributionComplete?: (record: DistributionRecord) => void;
+}
+
+interface DistributionRecord {
+  id: string;
+  timestamp: Date;
+  totalCount: number;
+  successCount: number;
+  failedCount: number;
+  status: 'completed' | 'partial' | 'in_progress';
+  instances: Array<{ id: string; name: string; status?: string }>;
 }
 
 // 模拟 OpenClaw 实例列表
@@ -32,6 +43,7 @@ export default function BatchDistributeDialog({
   open,
   onOpenChange,
   skillName,
+  onDistributionComplete,
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -69,6 +81,24 @@ export default function BatchDistributeDialog({
           clearInterval(interval);
           setIsDistributing(false);
           setDistributionResult('success');
+          
+          // 创建分发记录
+          const selectedInstancesData = MOCK_OPENCLAW_INSTANCES.filter(i => selectedInstances.includes(i.id));
+          const record: DistributionRecord = {
+            id: 'dist-' + Date.now(),
+            timestamp: new Date(),
+            totalCount: selectedInstances.length,
+            successCount: selectedInstances.length,
+            failedCount: 0,
+            status: 'completed',
+            instances: selectedInstancesData,
+          };
+          
+          // 调用回调函数
+          if (onDistributionComplete) {
+            onDistributionComplete(record);
+          }
+          
           return 100;
         }
         return prev + Math.random() * 30;
@@ -175,7 +205,10 @@ export default function BatchDistributeDialog({
               </p>
             </div>
             <DialogFooter>
-              <Button onClick={() => onOpenChange(false)}>完成</Button>
+              <Button onClick={() => {
+                onOpenChange(false);
+                setSelectedInstances([]);
+              }}>完成</Button>
             </DialogFooter>
           </div>
         )}

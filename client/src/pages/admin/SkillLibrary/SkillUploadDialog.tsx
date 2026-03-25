@@ -333,6 +333,14 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
 
   const handleRemoveFile = (fileName: string) => {
     setUploadedFiles(uploadedFiles.filter(f => f.name !== fileName));
+    // 删除文件时，也清空表单数据
+    setFormData({
+      slug: '',
+      name: '',
+      description: '',
+      version: '1.0.0',
+      categories: [],
+    });
   };
 
   const handlePublish = () => {

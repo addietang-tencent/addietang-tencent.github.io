@@ -33,7 +33,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
         <div className="space-y-6">
           {/* 说明文字 */}
           <div className="text-sm text-gray-700">
-            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取存储费和上传下载流量费。</p>
+            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取<span className="font-semibold bg-blue-100 px-1 rounded">存储费和上传下载流量费</span>。</p>
           </div>
 
           {/* COS 桶名称 */}
@@ -52,7 +52,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
 
           {/* 多 AZ 功能 */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <label className="text-sm font-semibold text-gray-900">多 AZ 特性</label>
               <Switch
                 checked={multiAZ}

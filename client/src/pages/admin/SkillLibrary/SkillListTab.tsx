@@ -71,7 +71,7 @@ export default function SkillListTab() {
             placeholder="搜索技能名称或描述..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-white"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -106,7 +106,7 @@ export default function SkillListTab() {
             className={`px-3 py-1 rounded-full text-sm transition-colors ${
               selectedCategories.includes(cat.id)
                 ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
             }`}
           >
             {cat.name}

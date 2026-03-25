@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, Grid3x3, List } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Search } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import { Skill } from './types';
 import SkillUploadDialog from './SkillUploadDialog';
@@ -57,7 +64,7 @@ export default function SkillListTab() {
   return (
     <div className="space-y-4">
       {/* 工具栏 */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
@@ -67,24 +74,19 @@ export default function SkillListTab() {
             className="pl-10"
           />
         </div>
-        <Button onClick={() => setUploadDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          上传
-        </Button>
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3x3 className="w-4 h-4" />
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">上传时间倒序</SelectItem>
+              <SelectItem value="asc">上传时间顺序</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            上传
           </Button>
         </div>
       </div>
@@ -112,85 +114,42 @@ export default function SkillListTab() {
         ))}
       </div>
 
-      {/* 排序 */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm text-gray-600">排序：</span>
-        <button
-          onClick={() => setSortBy('desc')}
-          className={`px-3 py-1 rounded text-sm ${
-            sortBy === 'desc'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-700'
-          }`}
-        >
-          上传时间倒序
-        </button>
-        <button
-          onClick={() => setSortBy('asc')}
-          className={`px-3 py-1 rounded text-sm ${
-            sortBy === 'asc'
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-700'
-          }`}
-        >
-          上传时间顺序
-        </button>
-      </div>
-
-      {/* 列表/网格视图 */}
-      {viewMode === 'list' ? (
-        <div className="space-y-3">
-          {sortedSkills.map(skill => (
-            <div
-              key={skill.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div>
+      {/* 列表视图（卡片式）*/}
+      <div className="space-y-3">
+        {sortedSkills.map(skill => (
+          <div
+            key={skill.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900">{skill.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    版本 {skill.version} • {skill.uploadTime.toLocaleDateString('zh-CN')}
-                  </p>
+                  <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                    v{skill.version}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{skill.description}</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    {skill.categories.map(catId => (
+                      <span
+                        key={catId}
+                        className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                      >
+                        {getCategoryName(catId)}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-3">{skill.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {skill.categories.map(catId => (
-                  <span
-                    key={catId}
-                    className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                  >
-                    {getCategoryName(catId)}
-                  </span>
-                ))}
+              <div className="text-right text-xs text-gray-500 ml-4 shrink-0">
+                {skill.uploadTime.toLocaleDateString('zh-CN')}
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-4">
-          {sortedSkills.map(skill => (
-            <div
-              key={skill.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <h3 className="font-semibold text-gray-900 mb-2">{skill.name}</h3>
-              <p className="text-xs text-gray-500 mb-3">v{skill.version}</p>
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">{skill.description}</p>
-              <div className="flex flex-wrap gap-1">
-                {skill.categories.map(catId => (
-                  <span
-                    key={catId}
-                    className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                  >
-                    {getCategoryName(catId)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
       <SkillUploadDialog
         open={uploadDialogOpen}

@@ -80,6 +80,12 @@ export default function EnterpriseSkillLibrary() {
 
   return (
     <div className="page-enter">
+      {/* 页面标题和说明 */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">企业技能库</h1>
+        <p className="text-sm text-gray-600">上传和管理企业内部私有技能，可用于初始技能包配置和用户端技能安装</p>
+      </div>
+
       <Tabs defaultValue="skills" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="skills">Skill 列表</TabsTrigger>

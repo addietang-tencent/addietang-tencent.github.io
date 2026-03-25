@@ -8,58 +8,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
-import { Skill } from './types';
 import SkillUploadDialog from './SkillUploadDialog';
 
 export default function SkillListTab() {
-  const [skills, setSkills] = useState<Skill[]>(MOCK_SKILLS);
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [skills, setSkills] = useState(MOCK_SKILLS);
 
-  const filteredSkills = skills.filter(skill => {
+  const getCategoryName = (catId: string) => {
+    return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
+  };
+
+  const filteredSkills = skills.filter((skill: any) => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategories.length === 0 ||
-      skill.categories.some(cat => selectedCategories.includes(cat));
+      skill.categories.some((catId: string) => selectedCategories.includes(catId));
     return matchesSearch && matchesCategory;
   });
 
   const sortedSkills = [...filteredSkills].sort((a, b) => {
-    const timeA = a.uploadTime.getTime();
-    const timeB = b.uploadTime.getTime();
-    return sortBy === 'desc' ? timeB - timeA : timeA - timeB;
+    if (sortBy === 'desc') {
+      return b.uploadTime.getTime() - a.uploadTime.getTime();
+    } else {
+      return a.uploadTime.getTime() - b.uploadTime.getTime();
+    }
   });
 
-  const handleUploadSkill = (newSkill: Skill) => {
+  const handleUploadSkill = (skillData: any) => {
+    const newSkill = {
+      id: `skill-${Date.now()}`,
+      ...skillData,
+      uploadTime: new Date(),
+    };
     setSkills([...skills, newSkill]);
-    setUploadDialogOpen(false);
   };
-
-  const getCategoryName = (id: string) => {
-    return DEFAULT_CATEGORIES.find(cat => cat.id === id)?.name || id;
-  };
-
-  if (skills.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-gray-600 mb-4">还没有发布任何 SKILL</p>
-        <Button onClick={() => setUploadDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          +发布SKILL
-        </Button>
-        <SkillUploadDialog
-          open={uploadDialogOpen}
-          onOpenChange={setUploadDialogOpen}
-          onConfirm={handleUploadSkill}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -76,7 +63,7 @@ export default function SkillListTab() {
         </div>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-40 bg-white border border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -85,15 +72,14 @@ export default function SkillListTab() {
             </SelectContent>
           </Select>
           <Button onClick={() => setUploadDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            上传
+            + 发布 Skill
           </Button>
         </div>
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {DEFAULT_CATEGORIES.map(cat => (
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {DEFAULT_CATEGORIES.map((cat: any) => (
           <button
             key={cat.id}
             onClick={() => {
@@ -114,39 +100,47 @@ export default function SkillListTab() {
         ))}
       </div>
 
+      {/* 空状态 */}
+      {sortedSkills.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">还没有发布任何 SKILL</p>
+          <Button onClick={() => setUploadDialogOpen(true)} className="mt-4">
+            + 发布 SKILL
+          </Button>
+        </div>
+      )}
+
       {/* 列表视图（卡片式）*/}
       <div className="space-y-3">
         {sortedSkills.map(skill => (
           <div
             key={skill.id}
-            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
           >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900">{skill.name}</h3>
-                  <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
-                    v{skill.version}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{skill.description}</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-wrap gap-1">
-                    {skill.categories.map(catId => (
-                      <span
-                        key={catId}
-                        className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                      >
-                        {getCategoryName(catId)}
-                      </span>
-                    ))}
-                  </div>
+            {/* 第一行：名称 + 版本 + 分类 + 查看详情按钮 */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 flex-1">
+                <h3 className="font-semibold text-gray-900">{skill.name}</h3>
+                <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                  v{skill.version}
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {skill.categories.map((catId: string) => (
+                    <span
+                      key={catId}
+                      className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                    >
+                      {getCategoryName(catId)}
+                    </span>
+                  ))}
                 </div>
               </div>
-              <div className="text-right text-xs text-gray-500 ml-4 shrink-0">
-                {skill.uploadTime.toLocaleDateString('zh-CN')}
-              </div>
+              <Button variant="outline" size="sm" className="shrink-0 cursor-pointer ml-2">
+                查看详情
+              </Button>
             </div>
+            {/* 第二行：描述 */}
+            <p className="text-sm text-gray-600 line-clamp-2">{skill.description}</p>
           </div>
         ))}
       </div>

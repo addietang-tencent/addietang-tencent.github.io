@@ -46,7 +46,8 @@ export default function CategoryManagementTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-900">分类管理</h2>
         <Button onClick={() => setAddDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           新增分类

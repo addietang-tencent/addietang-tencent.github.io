@@ -326,7 +326,7 @@ export default function MyOpenClaw() {
                                         </div>
                                       </TooltipTrigger>
                                       <TooltipContent side="left" className="w-max text-xs">
-                                        {isStopped ? "不支持已关机的实例登录终端" : disabledTip}
+                                        {isStopped ? "不支持已关机的云服务器登录终端" : disabledTip}
                                       </TooltipContent>
                                     </Tooltip>
                                   ) : (

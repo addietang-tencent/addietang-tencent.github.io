@@ -199,7 +199,7 @@ export default function OpenClawMonitor() {
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
-            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 实例。</p>
+            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 云服务器。</p>
           </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
@@ -311,7 +311,7 @@ export default function OpenClawMonitor() {
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              不支持已关机的实例登录终端
+                              不支持已关机的云服务器登录终端
                             </TooltipContent>
                           </Tooltip>
                         ) : (

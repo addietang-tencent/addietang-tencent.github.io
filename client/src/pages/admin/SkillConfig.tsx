@@ -25,7 +25,7 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每个新建 OpenClaw 实例自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
+    description: "配置每台新建云服务器自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
     comingSoon: true,
   },
   {
@@ -54,7 +54,7 @@ const PRESET_CARDS = [
     id: "pick",
     title: "从多来源挑选技能",
     description:
-      "从腾讯云 SkillHub、官方 ClawHub 公共技能库以及企业私有技能库中自由挑选技能，组合成每个 OpenClaw 实例开箱即用的初始技能集合",
+      "从腾讯云 SkillHub、官方 ClawHub 等多个公共技能库以及企业私有技能库中自由挑选技能，组合成每台云服务器开箱即用的初始技能集合",
     icon: PackagePlus,
     color: "#007AFF",
   },
@@ -62,7 +62,7 @@ const PRESET_CARDS = [
     id: "manage",
     title: "灵活管理技能增删",
     description:
-      "随时对初始技能包进行技能的添加和移除，调整后可立即生效于新建实例，也可选择同步至所有现有实例",
+      "随时对初始技能包进行技能的添加和移除，调整后可立即生效于新建云服务器",
     icon: RefreshCw,
     color: "#34C759",
   },
@@ -74,7 +74,7 @@ const PUBLIC_CARDS = [
     id: "browse",
     title: "多渠道公共技能市场",
     description:
-      "一站式接入腾讯云 SkillHub 和官方 ClawHub 等公共技能库，管理员可集中管控用户可访问的技能来源，统一企业技能获取渠道",
+      "从腾讯云 SkillHub、官方 ClawHub 等多个公共技能库中挑选技能，形成适合企业的公共技能库，统一成员的技能获取渠道",
     icon: Globe,
     color: "#007AFF",
   },
@@ -110,7 +110,7 @@ const LIBRARY_CARDS = [
     id: "broadcast",
     title: "一键批量下发",
     description:
-      "将企业技能库中的最新技能批量下发至所有 OpenClaw 实例，统一技能环境，分钟级配置同步，大幅降低运维成本",
+      "将企业技能库中的最新技能批量下发至所有云服务器，统一技能环境，分钟级配置同步，大幅降低运维成本",
     icon: Download,
     color: "#FF9500",
   },

@@ -5,9 +5,11 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, BarChart3, Activity, TrendingUp } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, BarChart3, Activity, TrendingUp, AlertTriangle, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { OpenClawCombobox } from "@/components/OpenClawCombobox";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -219,6 +221,7 @@ export default function SessionManagement() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
+  const [deleteLogTopic, setDeleteLogTopic] = useState(false);
   const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
   const [clsAgreed, setClsAgreed] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -426,7 +429,15 @@ export default function SessionManagement() {
       localStorage.setItem("globalClsEnabled", "false");
       setIsClosingCls(false);
       setShowCloseClsConfirm(false);
+      setDeleteLogTopic(false);
+      const message = deleteLogTopic ? "CLS 日志服务已关闭，日志主题资源已删除" : "CLS 日志服务已关闭";
+      // toast.success(message);
     }, 1000);
+  };
+
+  const handleCloseClsConfirmCancel = () => {
+    setShowCloseClsConfirm(false);
+    setDeleteLogTopic(false);
   };
 
   return (
@@ -859,7 +870,7 @@ export default function SessionManagement() {
           <DialogHeader>
             <DialogTitle>确定要关闭 CLS 日志服务吗？</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 my-4">
+          <div className="space-y-4 my-4">
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
               <div className="text-xs text-gray-700">
@@ -875,9 +886,36 @@ export default function SessionManagement() {
                 <span>支持从按会话、消息维度查看 tokens、费用使用情况</span>
               </div>
             </div>
+
+            {/* 删除日志主题资源选项 */}
+            <div className="border-t pt-3 space-y-2">
+              <div className="flex items-start gap-3">
+                <Checkbox 
+                  id="deleteLogTopic" 
+                  checked={deleteLogTopic}
+                  onCheckedChange={(checked) => setDeleteLogTopic(checked === true)}
+                  className="mt-1"
+                />
+                <div className="flex-1 space-y-1">
+                  <Label htmlFor="deleteLogTopic" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    删除关联的日志主题资源
+                  </Label>
+                  <div className="space-y-1.5">
+                    <div className="flex gap-2 text-xs text-red-700 bg-red-50 p-2 rounded">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                      <span>勾选后将永久删除该日志主题及所有日志数据，数据不可恢复。</span>
+                    </div>
+                    <div className="flex gap-2 text-xs text-blue-700 bg-blue-50 p-2 rounded">
+                      <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                      <span>未删除的日志主题资源会持续产生存储费用。</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCloseClsConfirm(false)}>
+            <Button variant="outline" onClick={handleCloseClsConfirmCancel}>
               取消
             </Button>
             <Button

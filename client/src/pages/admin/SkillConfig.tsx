@@ -19,6 +19,7 @@ import {
   Globe,
   Zap,
 } from "lucide-react";
+import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
@@ -309,7 +310,7 @@ export default function SkillConfig() {
       {activeTab === "preset" && <ComingSoonCards cards={PRESET_CARDS} />}
       {activeTab === "source" && <SkillSourceTab />}
       {activeTab === "public" && <ComingSoonCards cards={PUBLIC_CARDS} />}
-      {activeTab === "library" && <ComingSoonCards cards={LIBRARY_CARDS} />}
+      {activeTab === "library" && <EnterpriseSkillLibrary />}
     </div>
   );
 }

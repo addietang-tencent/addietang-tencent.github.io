@@ -420,18 +420,21 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                     {/* 文件项头部 */}
                     <div className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-3 flex-1">
-                        <button
-                          onClick={() => setExpandedFile(expandedFile === file.name ? null : file.name)}
-                          className="flex items-center gap-1"
-                        >
-                          {file.status === 'parsing' ? (
-                            <Loader className="w-4 h-4 text-blue-600 animate-spin" />
-                          ) : expandedFile === file.name ? (
-                            <ChevronDown className="w-4 h-4 text-gray-600" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-600" />
-                          )}
-                        </button>
+                        {file.status !== 'parsing' && (
+                          <button
+                            onClick={() => setExpandedFile(expandedFile === file.name ? null : file.name)}
+                            className="flex items-center gap-1"
+                          >
+                            {expandedFile === file.name ? (
+                              <ChevronDown className="w-4 h-4 text-gray-600" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-gray-600" />
+                            )}
+                          </button>
+                        )}
+                        {file.status === 'parsing' && (
+                          <Loader className="w-4 h-4 text-blue-600 animate-spin" />
+                        )}
 
                         <div className="flex items-center gap-2">
                           {file.status === 'success' && (

@@ -19,12 +19,6 @@ export default function EnterpriseSkillLibrary() {
   if (!cosEnabled) {
     return (
       <div className="space-y-6">
-        {/* 标题和说明 */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">企业技能库</h2>
-          <p className="text-sm text-gray-600">上传和管理企业内部私有技能，可用于初始技能包配置和用户端技能安装</p>
-        </div>
-
         {/* 提示区域 */}
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
           <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
@@ -81,12 +75,6 @@ export default function EnterpriseSkillLibrary() {
 
   return (
     <div className="space-y-6">
-      {/* 标题和说明 */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">企业技能库</h2>
-        <p className="text-sm text-gray-600">上传和管理企业内部私有技能，可用于初始技能包配置和用户端技能安装</p>
-      </div>
-
       <Tabs defaultValue="skills" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="skills">Skill 列表</TabsTrigger>

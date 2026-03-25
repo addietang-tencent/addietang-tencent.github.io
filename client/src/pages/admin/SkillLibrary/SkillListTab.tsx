@@ -8,9 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search } from 'lucide-react';
+import { Search, Grid3x3, List } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
+import SkillDetail from './SkillDetail';
 
 export default function SkillListTab() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,10 @@ export default function SkillListTab() {
   const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [skills, setSkills] = useState(MOCK_SKILLS);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailSkillId, setDetailSkillId] = useState<string | null>(null);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -48,6 +53,16 @@ export default function SkillListTab() {
     setSkills([...skills, newSkill]);
   };
 
+  const handleViewDetail = (skillId: string) => {
+    setDetailSkillId(skillId);
+    setShowDetail(true);
+  };
+
+  const closeDetail = () => {
+    setShowDetail(false);
+    setDetailSkillId(null);
+  };
+
   return (
     <div className="space-y-4">
       {/* 工具栏 */}
@@ -71,6 +86,33 @@ export default function SkillListTab() {
               <SelectItem value="asc">上传时间顺序</SelectItem>
             </SelectContent>
           </Select>
+          
+          {/* 视图切换 */}
+          <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'card'
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title="卡片视图"
+            >
+              <Grid3x3 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+              title="列表视图"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+
           <Button onClick={() => setUploadDialogOpen(true)}>
             + 发布 Skill
           </Button>
@@ -110,46 +152,118 @@ export default function SkillListTab() {
         </div>
       )}
 
-      {/* 列表视图（卡片式）*/}
-      <div className="space-y-3">
-        {sortedSkills.map(skill => (
-          <div
-            key={skill.id}
-            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
-          >
-            {/* 第一行：名称 + 版本 + 分类 + 查看详情按钮 */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 flex-1">
-                <h3 className="font-semibold text-gray-900">{skill.name}</h3>
+      {/* 卡片视图 */}
+      {viewMode === 'card' && sortedSkills.length > 0 && (
+        <div className="grid grid-cols-3 gap-4">
+          {sortedSkills.map(skill => (
+            <div
+              key={skill.id}
+              onClick={() => setSelectedSkillId(skill.id)}
+              className={`rounded-lg border p-4 transition-all cursor-pointer ${
+                selectedSkillId === skill.id
+                  ? 'border-blue-500 bg-blue-50 shadow-md'
+                  : 'border-gray-200 bg-white hover:shadow-md'
+              }`}
+            >
+              {/* 名称 + 版本 */}
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-semibold text-gray-900 flex-1">{skill.name}</h3>
                 <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
                   v{skill.version}
                 </span>
-                <div className="flex flex-wrap gap-1">
-                  {skill.categories.map((catId: string) => (
-                    <span
-                      key={catId}
-                      className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                    >
-                      {getCategoryName(catId)}
-                    </span>
-                  ))}
-                </div>
               </div>
-              <Button variant="outline" size="sm" className="shrink-0 cursor-pointer ml-2">
+
+              {/* 分类 */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {skill.categories.map((catId: string) => (
+                  <span
+                    key={catId}
+                    className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                  >
+                    {getCategoryName(catId)}
+                  </span>
+                ))}
+              </div>
+
+              {/* 描述 */}
+              <p className="text-sm text-gray-600 line-clamp-2 mb-3">{skill.description}</p>
+
+              {/* 查看详情按钮 */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDetail(skill.id);
+                }}
+                className="w-full cursor-pointer"
+              >
                 查看详情
               </Button>
             </div>
-            {/* 第二行：描述 */}
-            <p className="text-sm text-gray-600 line-clamp-2">{skill.description}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* 列表视图 */}
+      {viewMode === 'list' && sortedSkills.length > 0 && (
+        <div className="space-y-3">
+          {sortedSkills.map(skill => (
+            <div
+              key={skill.id}
+              onClick={() => setSelectedSkillId(skill.id)}
+              className={`rounded-lg border p-4 transition-all cursor-pointer ${
+                selectedSkillId === skill.id
+                  ? 'border-blue-500 bg-blue-50 shadow-md'
+                  : 'border-gray-200 bg-white hover:shadow-md'
+              }`}
+            >
+              {/* 第一行：名称 + 版本 + 分类 + 查看详情按钮 */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1">
+                  <h3 className="font-semibold text-gray-900">{skill.name}</h3>
+                  <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                    v{skill.version}
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {skill.categories.map((catId: string) => (
+                      <span
+                        key={catId}
+                        className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                      >
+                        {getCategoryName(catId)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewDetail(skill.id);
+                  }}
+                  className="shrink-0 cursor-pointer ml-2"
+                >
+                  查看详情
+                </Button>
+              </div>
+              {/* 第二行：描述 */}
+              <p className="text-sm text-gray-600 line-clamp-2">{skill.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <SkillUploadDialog
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
         onConfirm={handleUploadSkill}
       />
+
+      {showDetail && detailSkillId && (
+        <SkillDetail skillId={detailSkillId} onBack={closeDetail} />
+      )}
     </div>
   );
 }

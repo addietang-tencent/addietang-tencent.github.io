@@ -32,6 +32,8 @@ import SecurityManagement from "./pages/admin/SecurityManagement";
 import SessionManagement from "./pages/admin/SessionManagement";
 import SessionDetail from "./pages/admin/SessionDetail";
 import OpsObservation from "./pages/admin/OpsObservation";
+import MemoryManagement from "./pages/admin/MemoryManagement";
+import FileManagement from "./pages/admin/FileManagement";
 
 function Router() {
   return (
@@ -61,6 +63,8 @@ function Router() {
       <Route path="/admin/session-management" component={() => <AdminLayout><SessionManagement /></AdminLayout>} />
       <Route path="/admin/ops-observation" component={() => <AdminLayout><OpsObservation /></AdminLayout>} />
       <Route path="/admin/audit-log" component={() => <AdminLayout><AuditLog /></AdminLayout>} />
+      <Route path="/admin/memory-management" component={() => <AdminLayout><MemoryManagement /></AdminLayout>} />
+      <Route path="/admin/file-management" component={() => <AdminLayout><FileManagement /></AdminLayout>} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

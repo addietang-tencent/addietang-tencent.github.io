@@ -27,6 +27,8 @@ import {
   Puzzle,
   Gauge,
   ChevronLeft,
+  MemoryStick,
+  FolderOpen,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -43,6 +45,8 @@ const COMING_SOON_PATHS = new Set([
   "/admin/ops-observation",
   "/admin/security-management",
   "/admin/session-management",
+  "/admin/memory-management",
+  "/admin/file-management",
 ]);
 
 const NAV_GROUPS = [
@@ -59,6 +63,8 @@ const NAV_GROUPS = [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
       { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
+      { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
+      { label: "文件管理", path: "/admin/file-management", icon: FolderOpen },
     ],
   },
   {

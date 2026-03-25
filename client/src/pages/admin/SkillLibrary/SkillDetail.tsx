@@ -104,7 +104,8 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
           </TabsList>
 
           {/* 概述 Tab */}
-          <TabsContent value="overview" className="mt-6 p-0">
+          <TabsContent value="overview" className="mt-2 p-0">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="prose prose-sm max-w-none">
               <ReactMarkdown
                 components={{
@@ -135,10 +136,12 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                 {skill.content}
               </ReactMarkdown>
             </div>
+            </div>
           </TabsContent>
 
           {/* 文件列表 Tab */}
-          <TabsContent value="files" className="mt-6 p-0">
+          <TabsContent value="files" className="mt-2 p-0">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="flex gap-4 h-96">
               {/* 左侧：文件列表 */}
               <div className="w-1/4 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
@@ -219,10 +222,12 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                 )}
               </div>
             </div>
+            </div>
           </TabsContent>
 
           {/* 安装方式 Tab */}
-          <TabsContent value="install" className="mt-6 p-0">
+          <TabsContent value="install" className="mt-2 p-0">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">安装方式</h3>
               <div className="flex gap-3">
@@ -245,10 +250,12 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                 <p className="text-gray-500">还没有下发记录</p>
               </div>
             </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
 
+      {/* 批量下发对话框 */}
       <BatchDistributeDialog
         open={distributeDialogOpen}
         onOpenChange={setDistributeDialogOpen}

@@ -106,6 +106,19 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
     );
   }
 
+  // 如果选中了 Skill，显示详情页
+  if (selectedSkillId) {
+    return (
+      <div className="page-enter">
+        <SkillDetail
+          skillId={selectedSkillId}
+          onBack={handleBackFromDetail}
+          skills={skills}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="page-enter">
       <Tabs defaultValue="skills" className="w-full">

@@ -489,9 +489,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                           {file.status === 'parsing' && (
                             <Loader className="w-5 h-5 text-blue-600 animate-spin" />
                           )}
-                          {file.status === 'pending' && (
-                            <div className="w-5 h-5 rounded-full border-2 border-gray-300 border-t-blue-600 animate-spin" />
-                          )}
                           <div className="text-left">
                             <p className="text-sm font-medium text-gray-900">{file.name}</p>
                             <p className="text-xs text-gray-500">
@@ -563,7 +560,10 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
 
           {/* 技能信息表单 - 只有在上传成功后才启用 */}
           <div className={`space-y-4 border-t border-gray-200 pt-4 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
-            <Label className="text-base font-semibold">技能信息</Label>
+            <div>
+              <Label className="text-base font-semibold">技能信息</Label>
+              <p className="text-xs text-gray-500 mt-1">请先上传 Skill 文件，然后填写技能信息</p>
+            </div>
 
             <div>
               <Label htmlFor="slug" className="text-sm">

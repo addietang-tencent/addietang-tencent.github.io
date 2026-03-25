@@ -216,10 +216,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       return (
                         <Link key={item.path} href={item.path}>
                           <div
-                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${bgClass} ${textClass}`}
+                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
                             style={borderStyle}
                           >
-                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0 relative z-10">
                               <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
                               <span className="truncate">{item.label}</span>
                               {isComingSoon && (
@@ -228,8 +228,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </span>
                               )}
                             {isNewFeature && (
-                                <span className="font-medium px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1" style={{ fontSize: '10px', color: '#D97706', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(217,119,6,0.3)' }}>
-                                  功能上新
+                                <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#007AFF', letterSpacing: '0.02em' }}>
+                                  new
                                 </span>
                               )}
                             </div>

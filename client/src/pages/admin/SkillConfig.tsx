@@ -25,7 +25,7 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每台新建云服务器自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
+    description: "配置每台新建 OpenClaw 云服务器自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
     comingSoon: true,
   },
   {
@@ -62,7 +62,7 @@ const PRESET_CARDS = [
     id: "manage",
     title: "灵活管理技能增删",
     description:
-      "随时对初始技能包进行技能的添加和移除，调整后可立即生效于新建云服务器",
+      "随时对初始技能包进行技能的添加和移除，灵活调整每台新建 OpenClaw 云服务器的预装技能组合，满足不同团队或场景的差异化需求",
     icon: RefreshCw,
     color: "#34C759",
   },

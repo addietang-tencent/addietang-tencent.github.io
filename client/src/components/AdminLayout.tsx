@@ -62,7 +62,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "OpenClaw 权限配置",
+    label: "OpenClaw 配置",
     items: [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },

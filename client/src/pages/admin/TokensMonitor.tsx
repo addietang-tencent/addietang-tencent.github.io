@@ -623,7 +623,7 @@ export default function TokensMonitor() {
               <TabsTrigger value="model">按模型</TabsTrigger>
               <TabsTrigger value="session" className="relative">
                 按会话
-                <span className="absolute -top-1.5 -right-1.5 text-[9px] font-bold leading-none bg-blue-500 text-white rounded px-1 py-0.5 tracking-wide shadow-sm">new</span>
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full shadow-sm" />
               </TabsTrigger>
             </TabsList>
           </div>

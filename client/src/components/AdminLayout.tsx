@@ -40,13 +40,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
-// 标记为"即将开放"的菜单项路径
+// 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
+  "/admin/memory-management",
+  "/admin/file-management",
+]);
+
+// 标记为「功能上新」的菜单项路径（蓝色选中态，标签文案「功能上新」，橙色标签）
+const NEW_FEATURE_PATHS = new Set([
   "/admin/ops-observation",
   "/admin/security-management",
   "/admin/session-management",
-  "/admin/memory-management",
-  "/admin/file-management",
 ]);
 
 const NAV_GROUPS = [
@@ -85,7 +89,7 @@ const NAV_GROUPS = [
   {
     label: "安全审计",
     items: [
-      { label: "安全管理", path: "/admin/security-management", icon: Shield },
+      { label: "AI Agent 安全", path: "/admin/security-management", icon: Shield },
       { label: "会话管理", path: "/admin/session-management", icon: MessageSquare },
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
     ],
@@ -170,6 +174,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {group.items.map((item) => {
                       const isActive = location === item.path || location.startsWith(item.path + "/");
                       const isComingSoon = COMING_SOON_PATHS.has(item.path);
+                      const isNewFeature = NEW_FEATURE_PATHS.has(item.path);
                       const Icon = item.icon;
 
                       // 确定样式
@@ -178,13 +183,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       let iconClass = "";
                       let borderStyle = {};
 
-                      // 始终保留 2px 左边框占位（transparent），active 时显示颜色，避免宽度变化导致抖动
+                      // 始终保留 2px 左边框占位（transparent），active 时显示颜色
                       const borderColor = isComingSoon
                         ? (isActive ? "#D1D5DB" : "transparent")
                         : (isActive ? "#007AFF" : "transparent");
                       borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: "calc(0.75rem - 2px)" };
 
                       if (isComingSoon) {
+                        // 即将开放：选中灰色
                         if (isActive) {
                           bgClass = "bg-gray-100";
                           textClass = "text-gray-600";
@@ -195,6 +201,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           iconClass = "text-gray-400";
                         }
                       } else {
+                        // 正常项 & 功能上新：选中蓝色
                         if (isActive) {
                           bgClass = "bg-blue-50";
                           textClass = "text-blue-600";
@@ -217,6 +224,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                               <span className="truncate">{item.label}</span>
                               {isComingSoon && (
                                 <span className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1" style={{ fontSize: '10px' }}>
+                                  即将开放
+                                </span>
+                              )}
+                            {isNewFeature && (
+                                <span className="font-medium px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1" style={{ fontSize: '10px', color: '#D97706', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(217,119,6,0.3)' }}>
                                   功能上新
                                 </span>
                               )}

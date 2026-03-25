@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader } from 'lucide-react';
+import JSZip from 'jszip';
 import { Skill } from './types';
 import { DEFAULT_CATEGORIES } from './mockData';
 
@@ -56,39 +57,64 @@ const parseSkillMd = (content: string): { name?: string; description?: string } 
   return Object.keys(result).length > 0 ? result : null;
 };
 
-// 模拟 ZIP 文件解析
+// 真实 ZIP 文件解析
 const parseZipFile = async (file: File): Promise<{
   files: Array<{ name: string; size: number }>;
   skillmdContent?: string;
   skillmdParsed?: { name?: string; description?: string };
   error?: string;
 }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockFiles = [
-        { name: 'SKILL.md', size: 2.5 },
-        { name: 'config.yaml', size: 1.2 },
-        { name: 'README.md', size: 0.8 },
-      ];
+  try {
+    const zip = new JSZip();
+    const loaded = await zip.loadAsync(file);
+    
+    const files: Array<{ name: string; size: number }> = [];
+    let skillmdContent: string | undefined;
+    let skillmdFound = false;
 
-      const skillmdContent = `---
-name: 文档总结助手
-description: 自动总结文档内容
----
+    // 遍历 ZIP 中的所有文件
+    loaded.forEach((relativePath, zipEntry) => {
+      // 跳过文件夹
+      if (zipEntry.dir) {
+        return;
+      }
 
-# 文档总结助手
+      // 检查是否是根目录下的 SKILL.md（不区分大小写）
+      const pathParts = relativePath.split('/');
+      if (pathParts.length === 1 && pathParts[0].toLowerCase() === 'skill.md') {
+        skillmdFound = true;
+      }
 
-这是一个强大的文档总结工具。`;
-
-      const skillmdParsed = parseSkillMd(skillmdContent);
-
-      resolve({
-        files: mockFiles,
-        skillmdContent,
-        skillmdParsed: skillmdParsed || undefined,
+      // 记录文件信息
+      files.push({
+        name: relativePath,
+        size: (zipEntry as any)._data ? (zipEntry as any)._data.uncompressedSize : 0,
       });
-    }, 1500); // 模拟 1.5 秒解析时间
-  });
+    });
+
+    // 如果找到 SKILL.md，读取其内容
+    if (skillmdFound) {
+      const skillmdEntry = Object.keys(loaded.files).find(
+        key => key.toLowerCase() === 'skill.md'
+      );
+      if (skillmdEntry) {
+        skillmdContent = await loaded.file(skillmdEntry)!.async('text');
+      }
+    }
+
+    const skillmdParsed = skillmdContent ? parseSkillMd(skillmdContent) : undefined;
+
+    return {
+      files,
+      skillmdContent,
+      skillmdParsed: skillmdParsed || undefined,
+    };
+  } catch (error) {
+    return {
+      files: [],
+      error: `ZIP 文件解析失败: ${error instanceof Error ? error.message : '未知错误'}`,
+    };
+  }
 };
 
 export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: SkillUploadDialogProps) {
@@ -153,30 +179,41 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
         const fileIndex = updated.findIndex(f => f.name === file.name);
         
         if (fileIndex !== -1) {
-          updated[fileIndex] = {
-            name: file.name,
-            size: file.size,
-            status: 'pending',
-            files: parseResult.files,
-            skillmdContent: parseResult.skillmdContent,
-            skillmdParsed: parseResult.skillmdParsed,
-          };
+          if (parseResult.error) {
+            // ZIP 解析失败
+            updated[fileIndex] = {
+              name: file.name,
+              size: file.size,
+              status: 'error',
+              error: parseResult.error,
+            };
+          } else if (!hasSKILLMd) {
+            // 没有 SKILL.md
+            updated[fileIndex] = {
+              name: file.name,
+              size: file.size,
+              status: 'error',
+              error: '不存在 SKILL.md 文件或者不在根目录下，请修改后重试',
+              files: parseResult.files,
+            };
+          } else {
+            // 解析成功
+            updated[fileIndex] = {
+              name: file.name,
+              size: file.size,
+              status: 'success',
+              files: parseResult.files,
+              skillmdContent: parseResult.skillmdContent,
+              skillmdParsed: parseResult.skillmdParsed,
+            };
 
-          // 校验 SKILL.md
-          if (!hasSKILLMd) {
-            updated[fileIndex].status = 'error';
-            updated[fileIndex].error = '不存在 SKILL.md 文件或者不在根目录下，请修改后重试';
-          } else if (parseResult.skillmdParsed) {
-            updated[fileIndex].status = 'success';
             // 自动填充表单数据
-            if (parseResult.skillmdParsed.name && !formData.name) {
+            if (parseResult.skillmdParsed?.name && !formData.name) {
               setFormData(prev => ({ ...prev, name: parseResult.skillmdParsed!.name! }));
             }
-            if (parseResult.skillmdParsed.description && !formData.description) {
+            if (parseResult.skillmdParsed?.description && !formData.description) {
               setFormData(prev => ({ ...prev, description: parseResult.skillmdParsed!.description! }));
             }
-          } else {
-            updated[fileIndex].status = 'success';
           }
         }
         
@@ -186,7 +223,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   };
 
   const handleFolderSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // 文件夹上传逻辑
+    // 文件夹上传逻辑 - 暂时为占位符
     console.log('Folder upload:', event.target.files);
   };
 
@@ -378,7 +415,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                           {file.files.map((f) => (
                             <div key={f.name} className="flex justify-between text-xs text-gray-600">
                               <span>{f.name}</span>
-                              <span>{f.size} KB</span>
+                              <span>{(f.size / 1024).toFixed(2)} KB</span>
                             </div>
                           ))}
                         </div>

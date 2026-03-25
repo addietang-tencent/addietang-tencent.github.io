@@ -78,31 +78,31 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
       </div>
 
       {/* Tab 页面 */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div>
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-gray-50 p-0">
+          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               安装方式
             </TabsTrigger>
           </TabsList>
 
           {/* 概述 Tab */}
-          <TabsContent value="overview" className="p-6">
+          <TabsContent value="overview" className="mt-6 p-0">
             <div className="prose prose-sm max-w-none">
               <ReactMarkdown
                 components={{
@@ -136,7 +136,7 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
           </TabsContent>
 
           {/* 文件列表 Tab */}
-          <TabsContent value="files" className="p-6">
+          <TabsContent value="files" className="mt-6 p-0">
             <div className="flex gap-4 h-96">
               {/* 左侧：文件列表 */}
               <div className="w-1/4 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
@@ -220,7 +220,7 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
           </TabsContent>
 
           {/* 安装方式 Tab */}
-          <TabsContent value="install" className="p-6 space-y-6">
+          <TabsContent value="install" className="mt-6 p-0">
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">安装方式</h3>
               <div className="flex gap-3">

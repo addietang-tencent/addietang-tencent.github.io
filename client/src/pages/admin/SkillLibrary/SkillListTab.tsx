@@ -13,11 +13,7 @@ import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 
-interface SkillListTabProps {
-  onSelectSkill?: (skillId: string) => void;
-}
-
-export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
+export default function SkillListTab() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -57,11 +53,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   };
 
   const handleViewDetail = (skillId: string) => {
-    if (onSelectSkill) {
-      onSelectSkill(skillId);
-    } else {
-      setLocation(`/admin/skill-detail/${skillId}`);
-    }
+    setLocation(`/admin/skill-detail/${skillId}`);
   };
 
   return (

@@ -18,9 +18,9 @@ export default function EnterpriseSkillLibrary() {
 
   if (!cosEnabled) {
     return (
-      <div className="space-y-6">
+      <div className="page-enter">
         {/* 提示区域 */}
-        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
           <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-blue-900">企业专属 Skill 库需要开启 COS 对象存储服务</p>
@@ -69,12 +69,17 @@ export default function EnterpriseSkillLibrary() {
             </div>
           </div>
         </div>
+        <EnableCOSDialog
+          open={enableDialogOpen}
+          onOpenChange={setEnableDialogOpen}
+          onConfirm={handleEnableCOS}
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="page-enter">
       <Tabs defaultValue="skills" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="skills">Skill 列表</TabsTrigger>

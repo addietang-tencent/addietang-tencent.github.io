@@ -233,67 +233,79 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
     const files = event.target.files;
     if (!files) return;
 
-    const newFiles: UploadedFile[] = [];
+    const folderName = '文件夹上传';
+    
+    // 创建解析中的文件夹项
+    setUploadedFiles([...uploadedFiles, {
+      name: folderName,
+      size: 0,
+      status: 'parsing',
+    }]);
 
-    // 处理文件夹上传 - 使用 FormData 来收集文件
-    const fileList: { name: string; size: number }[] = [];
-    let skillmdContent: string | undefined;
-    let skillmdFound = false;
+    // 异步处理文件夹上传
+    setTimeout(async () => {
+      const fileList: { name: string; size: number }[] = [];
+      let skillmdContent: string | undefined;
+      let skillmdFound = false;
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      fileList.push({
-        name: file.webkitRelativePath || file.name,
-        size: file.size,
-      });
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        fileList.push({
+          name: file.webkitRelativePath || file.name,
+          size: file.size,
+        });
 
-      // 检查是否是 SKILL.md
-      if ((file.webkitRelativePath || file.name).toLowerCase().endsWith('skill.md')) {
-        const pathParts = (file.webkitRelativePath || file.name).split('/');
-        if (pathParts.length === 2 && pathParts[0] && pathParts[1].toLowerCase() === 'skill.md') {
-          skillmdFound = true;
-          skillmdContent = await file.text();
+        // 检查是否是 SKILL.md
+        if ((file.webkitRelativePath || file.name).toLowerCase().endsWith('skill.md')) {
+          const pathParts = (file.webkitRelativePath || file.name).split('/');
+          if (pathParts.length === 2 && pathParts[0] && pathParts[1].toLowerCase() === 'skill.md') {
+            skillmdFound = true;
+            skillmdContent = await file.text();
+          }
         }
       }
-    }
 
-    // 排序文件列表，SKILL.md 放第一个
-    fileList.sort((a, b) => {
-      if (a.name.toLowerCase().endsWith('skill.md')) return -1;
-      if (b.name.toLowerCase().endsWith('skill.md')) return 1;
-      return a.name.localeCompare(b.name);
-    });
+      // 只保留 SKILL.md 文件在列表中显示
+      const skillmdFile = fileList.find(f => f.name.toLowerCase().endsWith('skill.md'));
+      const displayFiles = skillmdFile ? [{ name: 'SKILL.md', size: skillmdFile.size }] : [];
 
-    const skillmdParsed = skillmdContent ? parseSkillMd(skillmdContent) : undefined;
+      const skillmdParsed = skillmdContent ? parseSkillMd(skillmdContent) : undefined;
 
-    if (!skillmdFound) {
-      newFiles.push({
-        name: '文件夹上传',
-        size: 0,
-        status: 'error',
-        error: '不存在 Skill.md 文件或者不在根目录下，请修改后重试',
-        files: fileList,
-      });
-    } else {
-      newFiles.push({
-        name: '文件夹上传',
-        size: 0,
-        status: 'success',
-        files: fileList,
-        skillmdContent,
-        skillmdParsed: skillmdParsed || undefined,
-      });
+      if (!skillmdFound) {
+        setUploadedFiles(prev => prev.map(f => 
+          f.name === folderName 
+            ? {
+                name: folderName,
+                size: 0,
+                status: 'error',
+                error: '不存在 Skill.md 文件或者不在根目录下，请修改后重试',
+                files: displayFiles,
+              }
+            : f
+        ));
+      } else {
+        setUploadedFiles(prev => prev.map(f => 
+          f.name === folderName 
+            ? {
+                name: folderName,
+                size: 0,
+                status: 'success',
+                files: displayFiles,
+                skillmdContent,
+                skillmdParsed: skillmdParsed || undefined,
+              }
+            : f
+        ));
 
-      // 自动填充表单数据
-      if (skillmdParsed?.name && !formData.name) {
-        setFormData(prev => ({ ...prev, name: skillmdParsed.name! }));
+        // 自动填充表单数据
+        if (skillmdParsed?.name && !formData.name) {
+          setFormData(prev => ({ ...prev, name: skillmdParsed.name! }));
+        }
+        if (skillmdParsed?.description && !formData.description) {
+          setFormData(prev => ({ ...prev, description: skillmdParsed.description! }));
+        }
       }
-      if (skillmdParsed?.description && !formData.description) {
-        setFormData(prev => ({ ...prev, description: skillmdParsed.description! }));
-      }
-    }
-
-    setUploadedFiles([...uploadedFiles, ...newFiles]);
+    }, 0);
   };
 
   const handleRemoveFile = (fileName: string) => {

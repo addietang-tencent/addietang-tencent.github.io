@@ -6,6 +6,7 @@ import SkillListTab from './SkillLibrary/SkillListTab';
 import CategoryManagementTab from './SkillLibrary/CategoryManagementTab';
 import BucketManagementTab from './SkillLibrary/BucketManagementTab';
 import EnableCOSDialog from './SkillLibrary/EnableCOSDialog';
+import SkillDetail from './SkillLibrary/SkillDetail';
 
 interface EnterpriseSkillLibraryProps {
   onSelectSkill?: (skillId: string) => void;
@@ -93,7 +94,17 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
         </TabsList>
 
         <TabsContent value="skills">
-          <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
+          {selectedSkillId ? (
+            <SkillDetail
+              skillId={selectedSkillId}
+              onBack={() => {
+                setSelectedSkillId(null);
+                if (onSelectSkill) onSelectSkill('');
+              }}
+            />
+          ) : (
+            <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
+          )}
         </TabsContent>
 
         <TabsContent value="categories">

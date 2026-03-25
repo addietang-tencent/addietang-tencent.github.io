@@ -16,23 +16,28 @@ import SkillDetail from './SkillDetail';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
+  skills?: any[];
+  onAddSkill?: (skillData: any) => void;
 }
 
-export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
+export default function SkillListTab({ onSelectSkill, skills: propsSkills, onAddSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [skills, setSkills] = useState(MOCK_SKILLS);
+  const [skills, setSkills] = useState(propsSkills || MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+
+  // 如果从 props 接收到 skills，使用 props 中的 skills
+  const skillsToUse = propsSkills || skills;
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
   };
 
-  const filteredSkills = skills.filter((skill: any) => {
+  const filteredSkills = skillsToUse.filter((skill: any) => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategories.length === 0 ||
@@ -40,7 +45,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     return matchesSearch && matchesCategory;
   });
 
-  const sortedSkills = [...filteredSkills].sort((a, b) => {
+  const sortedSkills = [...filteredSkills].sort((a: any, b: any) => {
     if (sortBy === 'desc') {
       return b.uploadTime.getTime() - a.uploadTime.getTime();
     } else {
@@ -49,12 +54,16 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   });
 
   const handleUploadSkill = (skillData: any) => {
-    const newSkill = {
-      id: `skill-${Date.now()}`,
-      ...skillData,
-      uploadTime: new Date(),
-    };
-    setSkills([...skills, newSkill]);
+    if (onAddSkill) {
+      onAddSkill(skillData);
+    } else {
+      const newSkill = {
+        id: `skill-${Date.now()}`,
+        ...skillData,
+        uploadTime: new Date(),
+      };
+      setSkills([...skills, newSkill]);
+    }
   };
 
   const handleViewDetail = (skillId: string) => {
@@ -71,7 +80,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       <SkillDetail
         skillId={selectedSkillId}
         onBack={() => setSelectedSkillId(null)}
-        skills={skills}
+        skills={skillsToUse}
       />
     );
   }

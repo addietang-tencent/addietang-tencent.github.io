@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
@@ -7,6 +8,7 @@ import CategoryManagementTab from './SkillLibrary/CategoryManagementTab';
 import BucketManagementTab from './SkillLibrary/BucketManagementTab';
 import EnableCOSDialog from './SkillLibrary/EnableCOSDialog';
 import SkillDetail from './SkillLibrary/SkillDetail';
+import { MOCK_SKILLS } from './SkillLibrary/mockData';
 
 interface EnterpriseSkillLibraryProps {
   onSelectSkill?: (skillId: string) => void;
@@ -21,6 +23,16 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
   });
   const [enableDialogOpen, setEnableDialogOpen] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [skills, setSkills] = useState(MOCK_SKILLS);
+
+  const handleAddSkill = (skillData: any) => {
+    const newSkill = {
+      id: `skill-${Date.now()}`,
+      ...skillData,
+      uploadTime: new Date(),
+    };
+    setSkills([...skills, newSkill]);
+  };
 
   const handleEnableCOS = () => {
     setCosEnabled(true);
@@ -105,7 +117,11 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
         </TabsList>
 
         <TabsContent value="skills">
-          <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
+          <SkillListTab 
+            onSelectSkill={onSelectSkill || setSelectedSkillId}
+            skills={skills}
+            onAddSkill={handleAddSkill}
+          />
         </TabsContent>
 
         <TabsContent value="categories">

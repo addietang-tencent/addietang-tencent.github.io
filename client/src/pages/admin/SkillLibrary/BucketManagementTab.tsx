@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { BucketInfo } from './types';
@@ -8,6 +9,12 @@ export default function BucketManagementTab() {
     name: 'clawpro-skills-1-1251783334',
     region: 'ap-guangzhou',
     storageGB: 2.5,
+  };
+
+  const handleTestToggleCOS = () => {
+    const currentState = localStorage.getItem('cos_enabled') === 'true';
+    localStorage.setItem('cos_enabled', String(!currentState));
+    window.location.reload();
   };
 
   const handleViewDetails = () => {
@@ -39,10 +46,17 @@ export default function BucketManagementTab() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex gap-3">
           <Button onClick={handleViewDetails} className="flex items-center gap-2">
             查看详情
             <ExternalLink className="w-4 h-4" />
+          </Button>
+          <Button 
+            onClick={handleTestToggleCOS}
+            variant="outline"
+            className="text-xs text-gray-500 border-gray-300"
+          >
+            【测试用按钮，正式环境需要删除】
           </Button>
         </div>
       </div>

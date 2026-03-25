@@ -25,7 +25,7 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
+    description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共技能库和企业技能库中挑选。",
     comingSoon: true,
   },
   {
@@ -74,7 +74,7 @@ const PUBLIC_CARDS = [
     id: "browse",
     title: "多渠道公共技能市场",
     description:
-      "从多个公共技能库中挑选技能，形成适合企业的公共技能库，统一成员的技能获取渠道",
+      "从多个公共技能库中浏览和挑选技能，按需组合形成适合企业实际场景的公共技能库，统一成员的技能获取渠道，避免团队自行搜索安装的重复劳动",
     icon: Globe,
     color: "#007AFF",
   },
@@ -102,7 +102,7 @@ const LIBRARY_CARDS = [
     id: "bucket",
     title: "自有存储桶",
     description:
-      "一键授权创建企业专属存储空间，技能资产完全自持，数据物理隔离存储，支持内网高速互联",
+      "采用企业私有存储模式，一键授权创建腾讯云专属存储桶，数据物理隔离，支持内网高速互联",
     icon: HardDrive,
     color: "#AF52DE",
   },

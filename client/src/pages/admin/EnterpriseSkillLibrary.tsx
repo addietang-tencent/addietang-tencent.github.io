@@ -16,6 +16,7 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
   const [cosEnabled, setCosEnabled] = useState(false);
   const [enableDialogOpen, setEnableDialogOpen] = useState(false);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState('skills');
 
   const handleEnableCOS = () => {
     setCosEnabled(true);
@@ -33,48 +34,20 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
             <p className="text-xs text-blue-800 mt-2">
               开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取存储费和上传下载流量费。
               <a href="https://cloud.tencent.com/document/product/436/16871" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline ml-1 hover:text-blue-900">
-                计费详情
+                了解详情
               </a>
             </p>
           </div>
-          <Button
-            onClick={() => setEnableDialogOpen(true)}
-            className="shrink-0"
-          >
-            开启 COS 对象存储服务
-          </Button>
         </div>
 
-        {/* 卡片区域 */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                <span className="text-xl">📤</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">上传企业 Skill</h3>
-                <p className="text-sm text-gray-600">
-                  支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用。
-                </p>
-              </div>
-            </div>
-          </div>
+        {/* 开启按钮 */}
+        <Button
+          onClick={() => setEnableDialogOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          开启 COS 对象存储服务
+        </Button>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
-                <span className="text-xl">📢</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">批量下发控制</h3>
-                <p className="text-sm text-gray-600">
-                  支持多个 OpenClaw 批量下发 Skill 列表至 OpenClaw 终端，实现分钟级配置同步
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
         <EnableCOSDialog
           open={enableDialogOpen}
           onOpenChange={setEnableDialogOpen}
@@ -86,35 +59,64 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
 
   return (
     <div className="page-enter">
-      <Tabs defaultValue="skills" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-50">
-          <TabsTrigger value="skills">Skill 列表</TabsTrigger>
-          <TabsTrigger value="categories">分类管理</TabsTrigger>
-          <TabsTrigger value="bucket">存储桶管理</TabsTrigger>
-        </TabsList>
+      {/* 第二层 Tab 始终显示 */}
+      <div className="mb-6 flex gap-4 border-b border-gray-200">
+        <button
+          onClick={() => {
+            setActiveSubTab('skills');
+            setSelectedSkillId(null);
+            if (onSelectSkill) onSelectSkill('');
+          }}
+          className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${
+            activeSubTab === 'skills'
+              ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Skill 列表
+        </button>
+        <button
+          onClick={() => setActiveSubTab('categories')}
+          className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${
+            activeSubTab === 'categories'
+              ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          分类管理
+        </button>
+        <button
+          onClick={() => setActiveSubTab('bucket')}
+          className={`px-4 py-3 font-medium transition-colors whitespace-nowrap ${
+            activeSubTab === 'bucket'
+              ? 'text-blue-600 border-b-2 border-blue-600 -mb-px'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          存储桶管理
+        </button>
+      </div>
 
-        <TabsContent value="skills">
-          {selectedSkillId ? (
-            <SkillDetail
-              skillId={selectedSkillId}
-              onBack={() => {
-                setSelectedSkillId(null);
-                if (onSelectSkill) onSelectSkill('');
-              }}
-            />
-          ) : (
-            <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
-          )}
-        </TabsContent>
-
-        <TabsContent value="categories">
-          <CategoryManagementTab />
-        </TabsContent>
-
-        <TabsContent value="bucket">
-          <BucketManagementTab />
-        </TabsContent>
-      </Tabs>
+      {/* 内容区域 */}
+      <div>
+        {activeSubTab === 'skills' && (
+          <>
+            {selectedSkillId ? (
+              <SkillDetail
+                skillId={selectedSkillId}
+                onBack={() => {
+                  setSelectedSkillId(null);
+                  if (onSelectSkill) onSelectSkill('');
+                }}
+              />
+            ) : (
+              <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
+            )}
+          </>
+        )}
+        {activeSubTab === 'categories' && <CategoryManagementTab />}
+        {activeSubTab === 'bucket' && <BucketManagementTab />}
+      </div>
 
       <EnableCOSDialog
         open={enableDialogOpen}

@@ -20,13 +20,13 @@ export default function EnterpriseSkillLibrary() {
     return (
       <div className="space-y-6">
         {/* 提示区域 */}
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-900">企业专属 Skill 库需要开启 COS 对象存储服务</p>
-            <p className="text-xs text-amber-700 mt-2">
+            <p className="text-sm font-semibold text-blue-900">企业专属 Skill 库需要开启 COS 对象存储服务</p>
+            <p className="text-xs text-blue-800 mt-2">
               开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取存储费和上传下载流量费。
-              <a href="https://buy.cloud.tencent.com/price/cos/overview" target="_blank" rel="noopener noreferrer" className="text-amber-700 underline ml-1 hover:text-amber-900">
+              <a href="https://cloud.tencent.com/document/product/436/16871" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline ml-1 hover:text-blue-900">
                 计费详情
               </a>
             </p>

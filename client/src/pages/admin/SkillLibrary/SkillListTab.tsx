@@ -71,6 +71,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       <SkillDetail
         skillId={selectedSkillId}
         onBack={() => setSelectedSkillId(null)}
+        skills={skills}
       />
     );
   }

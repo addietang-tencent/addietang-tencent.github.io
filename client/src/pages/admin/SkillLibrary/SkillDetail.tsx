@@ -9,12 +9,14 @@ import BatchDistributeDialog from './BatchDistributeDialog';
 interface SkillDetailProps {
   skillId: string;
   onBack: () => void;
+  skills?: any[];
 }
 
-export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
+export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
-  const skill = MOCK_SKILLS.find(s => s.id === skillId);
+  const skillsArray = skills || MOCK_SKILLS;
+  const skill = skillsArray.find(s => s.id === skillId);
 
   if (!skill) {
     return (

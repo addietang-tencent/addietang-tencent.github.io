@@ -92,6 +92,13 @@ const parseZipFile = async (file: File): Promise<{
       });
     });
 
+    // 排序文件列表，SKILL.md 放第一个
+    files.sort((a, b) => {
+      if (a.name.toLowerCase() === 'skill.md') return -1;
+      if (b.name.toLowerCase() === 'skill.md') return 1;
+      return a.name.localeCompare(b.name);
+    });
+
     // 如果找到 SKILL.md，读取其内容
     if (skillmdFound) {
       const skillmdEntry = Object.keys(loaded.files).find(
@@ -222,9 +229,71 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
     }
   };
 
-  const handleFolderSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // 文件夹上传逻辑 - 暂时为占位符
-    console.log('Folder upload:', event.target.files);
+  const handleFolderSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newFiles: UploadedFile[] = [];
+
+    // 处理文件夹上传 - 使用 FormData 来收集文件
+    const fileList: { name: string; size: number }[] = [];
+    let skillmdContent: string | undefined;
+    let skillmdFound = false;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      fileList.push({
+        name: file.webkitRelativePath || file.name,
+        size: file.size,
+      });
+
+      // 检查是否是 SKILL.md
+      if ((file.webkitRelativePath || file.name).toLowerCase().endsWith('skill.md')) {
+        const pathParts = (file.webkitRelativePath || file.name).split('/');
+        if (pathParts.length === 2 && pathParts[0] && pathParts[1].toLowerCase() === 'skill.md') {
+          skillmdFound = true;
+          skillmdContent = await file.text();
+        }
+      }
+    }
+
+    // 排序文件列表，SKILL.md 放第一个
+    fileList.sort((a, b) => {
+      if (a.name.toLowerCase().endsWith('skill.md')) return -1;
+      if (b.name.toLowerCase().endsWith('skill.md')) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    const skillmdParsed = skillmdContent ? parseSkillMd(skillmdContent) : undefined;
+
+    if (!skillmdFound) {
+      newFiles.push({
+        name: '文件夹上传',
+        size: 0,
+        status: 'error',
+        error: '不存在 Skill.md 文件或者不在根目录下，请修改后重试',
+        files: fileList,
+      });
+    } else {
+      newFiles.push({
+        name: '文件夹上传',
+        size: 0,
+        status: 'success',
+        files: fileList,
+        skillmdContent,
+        skillmdParsed: skillmdParsed || undefined,
+      });
+
+      // 自动填充表单数据
+      if (skillmdParsed?.name && !formData.name) {
+        setFormData(prev => ({ ...prev, name: skillmdParsed.name! }));
+      }
+      if (skillmdParsed?.description && !formData.description) {
+        setFormData(prev => ({ ...prev, description: skillmdParsed.description! }));
+      }
+    }
+
+    setUploadedFiles([...uploadedFiles, ...newFiles]);
   };
 
   const handleRemoveFile = (fileName: string) => {
@@ -462,6 +531,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                 placeholder="e.g., doc-summarizer"
                 className="mt-1"
               />
+              <p className="text-xs text-gray-500 mt-1">Skill 的唯一标识符，仅允许小写字母、数字和连字符</p>
             </div>
 
             <div>

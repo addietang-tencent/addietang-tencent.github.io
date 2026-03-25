@@ -50,7 +50,7 @@ export default function EnterpriseSkillLibrary() {
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 mb-1">上传企业 Skill</h3>
                 <p className="text-sm text-gray-600">
-                  支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用
+                  支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用。
                 </p>
               </div>
             </div>

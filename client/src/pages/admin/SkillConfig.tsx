@@ -25,7 +25,7 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每台新建 OpenClaw 云服务器自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
+    description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共市场和企业技能库中挑选。",
     comingSoon: true,
   },
   {
@@ -37,7 +37,7 @@ const TABS = [
   {
     id: "public",
     label: "公共技能库",
-    description: "接入腾讯云 SkillHub 和官方 ClawHub 等公共技能库，为用户提供丰富的开箱即用技能资源。",
+    description: "接入多个公共技能库，为用户提供丰富的开箱即用技能资源。",
     comingSoon: true,
   },
   {
@@ -54,7 +54,7 @@ const PRESET_CARDS = [
     id: "pick",
     title: "从多来源挑选技能",
     description:
-      "从腾讯云 SkillHub、官方 ClawHub 等多个公共技能库以及企业私有技能库中自由挑选技能，组合成每台云服务器开箱即用的初始技能集合",
+      "从多个公共技能库以及企业私有技能库中自由挑选技能，组合成每个 OpenClaw 开箱即用的初始技能集合",
     icon: PackagePlus,
     color: "#007AFF",
   },
@@ -74,15 +74,15 @@ const PUBLIC_CARDS = [
     id: "browse",
     title: "多渠道公共技能市场",
     description:
-      "从腾讯云 SkillHub、官方 ClawHub 等多个公共技能库中挑选技能，形成适合企业的公共技能库，统一成员的技能获取渠道",
+      "从多个公共技能库中挑选技能，形成适合企业的公共技能库，统一成员的技能获取渠道",
     icon: Globe,
     color: "#007AFF",
   },
   {
     id: "speed",
-    title: "国内访问加速",
+    title: "海量技能自由选配",
     description:
-      "针对国内用户进行网络链路优化，技能包下载和安装速度大幅提升，告别跨境访问延迟，保障企业内网环境下的流畅体验",
+      "汇聚数万个开箱即用的 Skill，涉及文件处理、代码执行、数据分析等多个领域，按需挑选组合，打造专属于企业的定制化 OpenClaw 数字助理",
     icon: Zap,
     color: "#FF9500",
   },
@@ -102,7 +102,7 @@ const LIBRARY_CARDS = [
     id: "bucket",
     title: "自有存储桶",
     description:
-      "采用「Bring Your Own Bucket」模式，一键授权创建腾讯云专属存储桶，数据物理隔离，支持内网高速互联",
+      "一键授权创建企业专属存储空间，技能资产完全自持，数据物理隔离存储，支持内网高速互联",
     icon: HardDrive,
     color: "#AF52DE",
   },

@@ -27,17 +27,87 @@ interface UploadedFile {
   files?: Array<{ name: string; size: number }>;
 }
 
+// 解析 SKILL.md 文件内容
+const parseSkillMd = (content: string): { name?: string; description?: string } | null => {
+  const lines = content.split('\n').map(line => line.trim());
+  
+  // 检查第一行是否为 ---
+  if (lines[0] !== '---') {
+    return null;
+  }
+
+  const result: { name?: string; description?: string } = {};
+  
+  // 从第二行开始解析 name 和 description
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    
+    if (line.startsWith('---')) {
+      break;
+    }
+    
+    if (line.startsWith('name:')) {
+      result.name = line.substring(5).trim();
+    } else if (line.startsWith('description:')) {
+      result.description = line.substring(12).trim();
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : null;
+};
+
+// 模拟 ZIP 文件解析（实际应该使用 jszip 库）
+const parseZipFile = async (file: File): Promise<{
+  files: Array<{ name: string; size: number }>;
+  skillmdContent?: string;
+  skillmdParsed?: { name?: string; description?: string };
+  error?: string;
+}> => {
+  // 这里模拟解析 ZIP 文件
+  // 实际应该使用 jszip 库来解析
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      // 模拟 ZIP 文件内容
+      const mockFiles = [
+        { name: 'SKILL.md', size: 2.5 },
+        { name: 'config.yaml', size: 1.2 },
+        { name: 'README.md', size: 0.8 },
+      ];
+
+      // 模拟 SKILL.md 内容
+      const skillmdContent = `---
+name: 文档总结助手
+description: 自动总结文档内容
+---
+
+# 文档总结助手
+
+这是一个强大的文档总结工具。`;
+
+      const skillmdParsed = parseSkillMd(skillmdContent);
+
+      resolve({
+        files: mockFiles,
+        skillmdContent,
+        skillmdParsed: skillmdParsed || undefined,
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
+
 export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: SkillUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     slug: '',
     name: '',
     description: '',
     version: '1.0.0',
     categories: [] as string[],
-    skillDescription: '',
   });
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,38 +130,49 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
         continue;
       }
 
-      // 模拟 ZIP 文件解析
+      // 解析 ZIP 文件
+      const parseResult = await parseZipFile(file);
+      
+      // 检查是否存在 SKILL.md
+      const hasSKILLMd = parseResult.files.some(f => f.name.toLowerCase() === 'skill.md');
+      
       const uploadedFile: UploadedFile = {
         name: fileName,
         size: file.size,
         status: 'pending',
-        files: [
-          { name: 'SKILL.md', size: 2.5 },
-          { name: '_meta.json', size: 0.5 },
-          { name: 'config.yaml', size: 1.2 },
-        ],
+        files: parseResult.files,
+        skillmdContent: parseResult.skillmdContent,
+        skillmdParsed: parseResult.skillmdParsed,
       };
 
-      // 模拟 SKILL.md 解析
-      const skillmdContent = `# ${fileName.replace('.zip', '')}\n\nThis is a sample skill description.`;
-      uploadedFile.skillmdContent = skillmdContent;
-      uploadedFile.skillmdParsed = {
-        name: fileName.replace('.zip', ''),
-        description: 'Sample skill description',
-      };
-
-      // 检查 SKILL.md 是否包含 description
-      if (uploadedFile.skillmdParsed?.description) {
-        uploadedFile.status = 'success';
-      } else {
+      // 校验 SKILL.md
+      if (!hasSKILLMd) {
         uploadedFile.status = 'error';
-        uploadedFile.error = 'SKILL.md 必须包含 description 字段';
+        uploadedFile.error = '不存在 SKILL.md 文件或者不在根目录下，请修改后重试';
+      } else if (parseResult.skillmdParsed) {
+        uploadedFile.status = 'success';
+        // 如果解析成功，自动填充表单数据
+        if (parseResult.skillmdParsed.name && !formData.name) {
+          setFormData(prev => ({ ...prev, name: parseResult.skillmdParsed!.name! }));
+        }
+        if (parseResult.skillmdParsed.description && !formData.description) {
+          setFormData(prev => ({ ...prev, description: parseResult.skillmdParsed!.description! }));
+        }
+      } else {
+        // SKILL.md 存在但解析失败，仍然允许上传
+        uploadedFile.status = 'success';
+        uploadedFile.error = undefined;
       }
 
       newFiles.push(uploadedFile);
     }
 
     setUploadedFiles([...uploadedFiles, ...newFiles]);
+  };
+
+  const handleFolderSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // 文件夹上传逻辑
+    console.log('Folder upload:', event.target.files);
   };
 
   const handleRemoveFile = (fileName: string) => {
@@ -118,7 +199,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
       version: formData.version,
       categories: formData.categories,
       uploadTime: new Date(),
-      content: formData.skillDescription,
+      content: `# ${formData.name}\n\n${formData.description}`,
     };
 
     onConfirm(newSkill);
@@ -131,7 +212,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
       description: '',
       version: '1.0.0',
       categories: [],
-      skillDescription: '',
     });
     onOpenChange(false);
   };
@@ -182,7 +262,10 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                 >
                   上传 ZIP
                 </Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => folderInputRef.current?.click()}
+                >
                   选择文件夹
                 </Button>
               </div>
@@ -194,6 +277,14 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"
+              />
+              <input
+                ref={folderInputRef}
+                type="file"
+                multiple
+                onChange={handleFolderSelect}
+                className="hidden"
+                {...({ webkitdirectory: '' } as any)}
               />
             </div>
           </div>
@@ -272,13 +363,17 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                           <div className="mt-3 pt-3 border-t border-gray-200">
                             <p className="text-xs font-semibold text-gray-700 mb-2">SKILL.md 校验通过</p>
                             <div className="text-xs text-green-600 space-y-1">
-                              <p>
-                                <span className="font-medium">name:</span> {file.skillmdParsed.name}
-                              </p>
-                              <p>
-                                <span className="font-medium">description:</span>{' '}
-                                {file.skillmdParsed.description}
-                              </p>
+                              {file.skillmdParsed.name && (
+                                <p>
+                                  <span className="font-medium">name:</span> {file.skillmdParsed.name}
+                                </p>
+                              )}
+                              {file.skillmdParsed.description && (
+                                <p>
+                                  <span className="font-medium">description:</span>{' '}
+                                  {file.skillmdParsed.description}
+                                </p>
+                              )}
                             </div>
                           </div>
                         )}
@@ -324,12 +419,13 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
               <Label htmlFor="description" className="text-sm">
                 描述
               </Label>
-              <Input
+              <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="技能的简要描述"
                 className="mt-1"
+                rows={2}
               />
             </div>
 
@@ -370,20 +466,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="skillDescription" className="text-sm">
-                技能描述
-              </Label>
-              <Textarea
-                id="skillDescription"
-                value={formData.skillDescription}
-                onChange={(e) => setFormData({ ...formData, skillDescription: e.target.value })}
-                placeholder="技能的详细描述（支持 Markdown 格式）"
-                className="mt-1"
-                rows={3}
-              />
             </div>
           </div>
         </div>

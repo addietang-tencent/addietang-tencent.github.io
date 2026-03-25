@@ -9,11 +9,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Search, Grid3x3, List } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
-import SkillDetail from './SkillDetail';
 
 export default function SkillListTab() {
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
@@ -21,8 +22,6 @@ export default function SkillListTab() {
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
-  const [showDetail, setShowDetail] = useState(false);
-  const [detailSkillId, setDetailSkillId] = useState<string | null>(null);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -54,13 +53,7 @@ export default function SkillListTab() {
   };
 
   const handleViewDetail = (skillId: string) => {
-    setDetailSkillId(skillId);
-    setShowDetail(true);
-  };
-
-  const closeDetail = () => {
-    setShowDetail(false);
-    setDetailSkillId(null);
+    setLocation(`/admin/skill-detail/${skillId}`);
   };
 
   return (
@@ -158,12 +151,7 @@ export default function SkillListTab() {
           {sortedSkills.map(skill => (
             <div
               key={skill.id}
-              onClick={() => setSelectedSkillId(skill.id)}
-              className={`rounded-lg border p-4 transition-all cursor-pointer ${
-                selectedSkillId === skill.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 bg-white hover:shadow-md'
-              }`}
+              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md"
             >
               {/* 名称 + 版本 */}
               <div className="flex items-center gap-2 mb-2">
@@ -211,12 +199,7 @@ export default function SkillListTab() {
           {sortedSkills.map(skill => (
             <div
               key={skill.id}
-              onClick={() => setSelectedSkillId(skill.id)}
-              className={`rounded-lg border p-4 transition-all cursor-pointer ${
-                selectedSkillId === skill.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 bg-white hover:shadow-md'
-              }`}
+              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md"
             >
               {/* 第一行：名称 + 版本 + 分类 + 查看详情按钮 */}
               <div className="flex items-center justify-between mb-2">
@@ -260,10 +243,6 @@ export default function SkillListTab() {
         onOpenChange={setUploadDialogOpen}
         onConfirm={handleUploadSkill}
       />
-
-      {showDetail && detailSkillId && (
-        <SkillDetail skillId={detailSkillId} onBack={closeDetail} />
-      )}
     </div>
   );
 }

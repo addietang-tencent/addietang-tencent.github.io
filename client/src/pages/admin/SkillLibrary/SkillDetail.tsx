@@ -78,24 +78,24 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
       </div>
 
       {/* Tab 页面 */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-transparent p-0">
+          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-gray-50 p-0">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 data-[state=active]:border-blue-600 data-[state=active]:bg-white data-[state=active]:text-blue-600 transition-colors"
             >
               安装方式
             </TabsTrigger>
@@ -137,34 +137,85 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="p-6">
-            <div className="space-y-2">
-              {files.map((file) => (
-                <div key={file.name} className="border border-gray-200 rounded-lg overflow-hidden">
-                  {/* 文件项头部 */}
-                  <button
-                    onClick={() => setExpandedFile(expandedFile === file.name ? null : file.name)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      {expandedFile === file.name ? (
-                        <ChevronDown className="w-4 h-4 text-gray-600" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-gray-600" />
-                      )}
-                      <span className="text-sm font-medium text-gray-900">{file.name}</span>
-                    </div>
-                  </button>
-
-                  {/* 文件内容预览 */}
-                  {expandedFile === file.name && (
-                    <div className="border-t border-gray-200 bg-gray-50 p-3">
-                      <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words">
-                        {file.content}
-                      </pre>
-                    </div>
-                  )}
+            <div className="flex gap-4 h-96">
+              {/* 左侧：文件列表 */}
+              <div className="w-1/4 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                  <p className="text-xs font-semibold text-gray-700">Files</p>
                 </div>
-              ))}
+                <div className="flex-1 overflow-y-auto">
+                  {files.map((file) => (
+                    <button
+                      key={file.name}
+                      onClick={() => file.name.toLowerCase().endsWith('.md') && setExpandedFile(expandedFile === file.name ? null : file.name)}
+                      disabled={!file.name.toLowerCase().endsWith('.md')}
+                      className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
+                        expandedFile === file.name
+                          ? 'bg-blue-50 text-blue-600 font-medium'
+                          : file.name.toLowerCase().endsWith('.md')
+                          ? 'hover:bg-gray-50 text-gray-700 cursor-pointer'
+                          : 'text-gray-500 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs">{file.name.toLowerCase().endsWith('.md') ? '📄' : '📋'}</span>
+                        <span className="truncate">{file.name}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 右侧：文件详情 */}
+              <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
+                {expandedFile ? (
+                  <>
+                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-900">{expandedFile}</p>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4">
+                      {files.find(f => f.name === expandedFile)?.name.toLowerCase().endsWith('.md') ? (
+                        <ReactMarkdown
+                          components={{
+                            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-3" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-5 mb-2" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
+                            table: ({ node, ...props }) => (
+                              <table className="w-full border-collapse border border-gray-300 my-4" {...props} />
+                            ),
+                            thead: ({ node, ...props }) => (
+                              <thead className="bg-gray-100" {...props} />
+                            ),
+                            th: ({ node, ...props }) => (
+                              <th className="border border-gray-300 px-3 py-2 text-left font-semibold" {...props} />
+                            ),
+                            td: ({ node, ...props }) => (
+                              <td className="border border-gray-300 px-3 py-2" {...props} />
+                            ),
+                            p: ({ node, ...props }: any) => <p className="text-gray-600 mb-3" {...props} />,
+                            ul: ({ node, ...props }: any) => <ul className="list-disc list-inside mb-3" {...props} />,
+                            ol: ({ node, ...props }: any) => <ol className="list-decimal list-inside mb-3" {...props} />,
+                            li: ({ node, ...props }: any) => <li className="text-gray-600 mb-1" {...props} />,
+                            code: ({ node, ...props }: any) => (
+                              <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
+                            ),
+                          }}
+                        >
+                          {files.find(f => f.name === expandedFile)?.content || ''}
+                        </ReactMarkdown>
+                      ) : (
+                        <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
+                          {files.find(f => f.name === expandedFile)?.content}
+                        </pre>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-500">
+                    <p className="text-sm">选择一个 MD 文件查看详情</p>
+                  </div>
+                )}
+              </div>
             </div>
           </TabsContent>
 

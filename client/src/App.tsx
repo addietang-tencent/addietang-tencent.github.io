@@ -34,6 +34,7 @@ import SessionDetail from "./pages/admin/SessionDetail";
 import OpsObservation from "./pages/admin/OpsObservation";
 import MemoryManagement from "./pages/admin/MemoryManagement";
 import FileManagement from "./pages/admin/FileManagement";
+import SkillDetailPage from "./pages/admin/SkillDetailPage";
 
 function Router() {
   return (
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/admin/audit-log" component={() => <AdminLayout><AuditLog /></AdminLayout>} />
       <Route path="/admin/memory-management" component={() => <AdminLayout><MemoryManagement /></AdminLayout>} />
       <Route path="/admin/file-management" component={() => <AdminLayout><FileManagement /></AdminLayout>} />
+      <Route path="/admin/skill-detail/:id" component={({ params }) => <AdminLayout><SkillDetailPage skillId={params.id} /></AdminLayout>} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

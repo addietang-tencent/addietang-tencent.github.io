@@ -10,6 +10,7 @@ import EnableCOSDialog from './SkillLibrary/EnableCOSDialog';
 export default function EnterpriseSkillLibrary() {
   const [cosEnabled, setCosEnabled] = useState(false);
   const [enableDialogOpen, setEnableDialogOpen] = useState(false);
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
 
   const handleEnableCOS = () => {
     setCosEnabled(true);
@@ -88,7 +89,19 @@ export default function EnterpriseSkillLibrary() {
         </TabsList>
 
         <TabsContent value="skills">
-          <SkillListTab />
+          <div className="flex gap-4 h-[600px]">
+            <div className="flex-1 overflow-auto">
+              <SkillListTab onSelectSkill={setSelectedSkillId} />
+            </div>
+            {selectedSkillId && (
+              <div className="w-96 border border-gray-200 rounded-lg bg-white p-6 overflow-y-auto flex-shrink-0">
+                <div className="text-center text-gray-500">
+                  <p className="font-semibold mb-2">在这里放详情</p>
+                  <p className="text-xs text-gray-400">Skill ID: {selectedSkillId}</p>
+                </div>
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="categories">

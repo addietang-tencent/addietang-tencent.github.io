@@ -1666,7 +1666,7 @@ export default function OpenClawDetail() {
           {/* 链接和 Token */}
           <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
             <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
+              <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
               <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
               <button
                 onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
@@ -1678,7 +1678,7 @@ export default function OpenClawDetail() {
               </button>
             </div>
             <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">面板Token</span>
+              <span className="text-xs text-gray-500 shrink-0 w-16">网关令牌</span>
               <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
               <button
                 onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
@@ -1692,7 +1692,7 @@ export default function OpenClawDetail() {
           </div>
           {/* 提示文字 */}
           <p className="text-xs text-gray-500 mt-1">
-            用浏览器打开面板链接，如面板需要填入网关令牌，则将面板Token复制并粘贴过去，即可进入面板。
+            用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。
           </p>
           <div className="flex justify-center pt-1">
             <Button

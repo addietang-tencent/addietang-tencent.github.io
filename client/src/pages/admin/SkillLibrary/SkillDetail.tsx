@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, ChevronDown, ChevronRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 
@@ -49,7 +50,8 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{skill.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
+            <p className="text-sm text-gray-500 mb-3">slug: {skill.slug}</p>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded">
                 v{skill.version}
@@ -102,7 +104,34 @@ export default function SkillDetail({ skillId, onBack }: SkillDetailProps) {
           {/* 概述 Tab */}
           <TabsContent value="overview" className="p-6">
             <div className="prose prose-sm max-w-none">
-              <p className="text-gray-600 whitespace-pre-wrap">{skill.content}</p>
+              <ReactMarkdown
+                components={{
+                  h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mt-6 mb-3" {...props} />,
+                  h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-5 mb-2" {...props} />,
+                  h3: ({ node, ...props }) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
+                  table: ({ node, ...props }) => (
+                    <table className="w-full border-collapse border border-gray-300 my-4" {...props} />
+                  ),
+                  thead: ({ node, ...props }) => (
+                    <thead className="bg-gray-100" {...props} />
+                  ),
+                  th: ({ node, ...props }) => (
+                    <th className="border border-gray-300 px-3 py-2 text-left font-semibold" {...props} />
+                  ),
+                  td: ({ node, ...props }) => (
+                    <td className="border border-gray-300 px-3 py-2" {...props} />
+                  ),
+                  p: ({ node, ...props }: any) => <p className="text-gray-600 mb-3" {...props} />,
+                  ul: ({ node, ...props }: any) => <ul className="list-disc list-inside mb-3" {...props} />,
+                  ol: ({ node, ...props }: any) => <ol className="list-decimal list-inside mb-3" {...props} />,
+                  li: ({ node, ...props }: any) => <li className="text-gray-600 mb-1" {...props} />,
+                  code: ({ node, ...props }: any) => (
+                    <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono" {...props} />
+                  ),
+                }}
+              >
+                {skill.content}
+              </ReactMarkdown>
             </div>
           </TabsContent>
 

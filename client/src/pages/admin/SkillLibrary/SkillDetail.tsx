@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, ChevronDown, ChevronRight, Filter } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
-import { renderMarkdown, removeFrontmatter } from '@/lib/markdownRenderer';
+import MDXRenderer from '@/components/MDXRenderer';
 import {
   Dialog,
   DialogContent,
@@ -246,10 +246,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-2 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(skill.content || '') }}
-              />
+              <MDXRenderer content={skill.content || ''} />
             </div>
           </TabsContent>
 
@@ -294,10 +291,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                     </div>
                     <div className="flex-1 overflow-y-auto p-4">
                       {files.find(f => f.name === expandedFile)?.name.toLowerCase().endsWith('.md') ? (
-                        <div 
-                          className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: renderMarkdown(files.find(f => f.name === expandedFile)?.content || '') }}
-                        />
+                        <MDXRenderer content={files.find(f => f.name === expandedFile)?.content || ''} />
                       ) : (
                         <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
                           {files.find(f => f.name === expandedFile)?.content}

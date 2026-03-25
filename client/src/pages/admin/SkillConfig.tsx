@@ -1,7 +1,7 @@
 /**
  * SkillConfig - 管控端技能配置页
  * Design: 「流动蓝图」Fluid Blueprint
- * 三个 Tab：初始技能包（即将开放）、技能安装来源（现有功能）、企业技能库（即将开放）
+ * 四个 Tab：初始技能包（即将开放）、技能安装来源（现有功能）、公共技能库（即将开放）、企业技能库（即将开放）
  */
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,12 @@ import {
   X,
   Check,
   PackagePlus,
-  Layers,
-  Database,
+  RefreshCw,
   Upload,
   HardDrive,
   Download,
-  RefreshCw,
+  Globe,
+  Zap,
 } from "lucide-react";
 
 // ── Tab 定义 ──────────────────────────────────────────────
@@ -35,6 +35,12 @@ const TABS = [
     comingSoon: false,
   },
   {
+    id: "public",
+    label: "公共技能库",
+    description: "接入腾讯云 SkillHub 和官方 ClawHub 等公共技能库，为用户提供丰富的开箱即用技能资源。",
+    comingSoon: true,
+  },
+  {
     id: "library",
     label: "企业技能库",
     description: "上传和管理企业内部私有技能，可用于初始技能包配置和用户端技能安装。",
@@ -42,49 +48,53 @@ const TABS = [
   },
 ];
 
-// ── 初始技能包 介绍卡片 ───────────────────────────────────
+// ── 初始技能包 介绍卡片（2张）────────────────────────────
 const PRESET_CARDS = [
   {
-    id: "market-pick",
-    title: "从公共市场挑选技能",
+    id: "pick",
+    title: "从多来源挑选技能",
     description:
-      "从腾讯云 SkillHub 和 ClaWHub 公共技能库中浏览和挑选技能，一键加入初始技能包，让每个 OpenClaw 实例开箱即用。",
-    icon: Layers,
-    color: "#007AFF",
-  },
-  {
-    id: "private-pick",
-    title: "引用企业私有技能",
-    description:
-      "将企业技能库中上传的私有技能加入初始技能包，确保每个 OpenClaw 实例在启动时即具备企业核心业务能力。",
+      "从腾讯云 SkillHub、官方 ClawHub 公共技能库以及企业私有技能库中自由挑选技能，组合成每个 OpenClaw 实例开箱即用的初始技能集合",
     icon: PackagePlus,
-    color: "#AF52DE",
+    color: "#007AFF",
   },
   {
     id: "manage",
     title: "灵活管理技能增删",
     description:
-      "随时对初始技能包进行技能的添加和移除，调整后可立即生效于新建实例，也可选择批量下发至所有现有实例。",
+      "随时对初始技能包进行技能的添加和移除，调整后可立即生效于新建实例，也可选择同步至所有现有实例",
     icon: RefreshCw,
     color: "#34C759",
   },
+];
+
+// ── 公共技能库 介绍卡片（2张）────────────────────────────
+const PUBLIC_CARDS = [
   {
-    id: "broadcast",
-    title: "一键批量下发",
+    id: "browse",
+    title: "多渠道公共技能市场",
     description:
-      "将最新的初始技能包配置批量下发至所有现有 OpenClaw 实例，统一技能环境，降低运维成本。",
-    icon: Download,
+      "一站式接入腾讯云 SkillHub 和官方 ClawHub 等公共技能库，管理员可集中管控用户可访问的技能来源，统一企业技能获取渠道",
+    icon: Globe,
+    color: "#007AFF",
+  },
+  {
+    id: "speed",
+    title: "国内访问加速",
+    description:
+      "针对国内用户进行网络链路优化，技能包下载和安装速度大幅提升，告别跨境访问延迟，保障企业内网环境下的流畅体验",
+    icon: Zap,
     color: "#FF9500",
   },
 ];
 
-// ── 企业技能库 介绍卡片 ───────────────────────────────────
+// ── 企业技能库 介绍卡片（3张）────────────────────────────
 const LIBRARY_CARDS = [
   {
     id: "upload",
     title: "上传企业 Skill",
     description:
-      "支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用。",
+      "支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用",
     icon: Upload,
     color: "#007AFF",
   },
@@ -92,50 +102,53 @@ const LIBRARY_CARDS = [
     id: "bucket",
     title: "自有存储桶",
     description:
-      "采用「Bring Your Own Bucket」模式，一键授权创建腾讯云专属存储桶。数据物理隔离，支持内网高速互联。",
+      "采用「Bring Your Own Bucket」模式，一键授权创建腾讯云专属存储桶，数据物理隔离，支持内网高速互联",
     icon: HardDrive,
     color: "#AF52DE",
+  },
+  {
+    id: "broadcast",
+    title: "一键批量下发",
+    description:
+      "将企业技能库中的最新技能批量下发至所有 OpenClaw 实例，统一技能环境，分钟级配置同步，大幅降低运维成本",
+    icon: Download,
+    color: "#FF9500",
   },
 ];
 
 // ── 介绍卡片组件 ──────────────────────────────────────────
 function ComingSoonCards({
-  subtitle,
   cards,
 }: {
-  subtitle: string;
   cards: { id: string; title: string; description: string; icon: React.ElementType; color: string }[];
 }) {
   return (
-    <div>
-      <p className="text-sm text-gray-500 mb-6 leading-relaxed">{subtitle}</p>
-      <div className="grid grid-cols-2 gap-6">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.id}
-              className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
-              style={{
-                boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
-              }}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: card.color }}
-                >
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">{card.title}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{card.description}</p>
-                </div>
+    <div className="grid grid-cols-2 gap-6">
+      {cards.map((card) => {
+        const Icon = card.icon;
+        return (
+          <div
+            key={card.id}
+            className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            style={{
+              boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: card.color }}
+              >
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 mb-1">{card.title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">{card.description}</p>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -289,25 +302,14 @@ export default function SkillConfig() {
         ))}
       </div>
 
-      {/* Tab 描述 */}
+      {/* Tab 描述（仅一行） */}
       <p className="text-sm text-gray-500 mt-3 mb-6 leading-relaxed">{currentTab.description}</p>
 
       {/* Tab 内容 */}
-      {activeTab === "preset" && (
-        <ComingSoonCards
-          subtitle="初始技能包功能即将上线。届时，你可以从公共市场和企业技能库中挑选技能，组合成每个 OpenClaw 实例开箱即用的技能集合，并支持一键批量下发至所有现有实例。"
-          cards={PRESET_CARDS}
-        />
-      )}
-
+      {activeTab === "preset" && <ComingSoonCards cards={PRESET_CARDS} />}
       {activeTab === "source" && <SkillSourceTab />}
-
-      {activeTab === "library" && (
-        <ComingSoonCards
-          subtitle="企业级 Skill 资产全生命周期管理，实现从安全存储到批量分发的一站式治理。"
-          cards={LIBRARY_CARDS}
-        />
-      )}
+      {activeTab === "public" && <ComingSoonCards cards={PUBLIC_CARDS} />}
+      {activeTab === "library" && <ComingSoonCards cards={LIBRARY_CARDS} />}
     </div>
   );
 }

@@ -1655,7 +1655,7 @@ export default function OpenClawDetail() {
       <Dialog open={showWebUIResultDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIResultDialog(false);
       }}>
-        <DialogContent className="w-[90vw] max-w-md overflow-hidden">
+        <DialogContent className="w-[90vw] max-w-lg overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
           </DialogHeader>

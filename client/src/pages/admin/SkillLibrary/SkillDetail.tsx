@@ -1,10 +1,31 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown, ChevronRight, Filter } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import { renderMarkdown, removeFrontmatter } from '@/lib/markdownRenderer';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface DistributionInstance {
+  id: string;
+  name: string;
+  createdBy: string;
+  status: 'success' | 'failed' | 'in_progress';
+}
 
 interface DistributionRecord {
   id: string;
@@ -12,8 +33,9 @@ interface DistributionRecord {
   totalCount: number;
   successCount: number;
   failedCount: number;
+  inProgressCount: number;
   status: 'completed' | 'partial' | 'in_progress';
-  instances: Array<{ id: string; name: string; status?: string }>;
+  instances: DistributionInstance[];
 }
 
 interface SkillDetailProps {
@@ -26,11 +48,104 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
   const [distributionRecords, setDistributionRecords] = useState<DistributionRecord[]>([]);
+  const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'in_progress'>('all');
   const skillsArray = skills || MOCK_SKILLS;
   const skill = skillsArray.find(s => s.id === skillId);
   
-  const handleDistributionComplete = (record: DistributionRecord) => {
-    setDistributionRecords(prev => [record, ...prev]);
+  const handleDistributionStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    // 创建新的分发记录
+    const newRecord: DistributionRecord = {
+      id: 'dist-' + Date.now(),
+      timestamp: new Date(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'in_progress',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: 'admin', // 模拟数据
+        status: 'in_progress',
+      })),
+    };
+    
+    setDistributionRecords(prev => [newRecord, ...prev]);
+    setActiveDistributionId(newRecord.id);
+    setDistributeDialogOpen(false);
+    
+    // 模拟下发进度
+    simulateDistribution(newRecord.id, selectedInstanceIds.length);
+  };
+  
+  const simulateDistribution = (recordId: string, totalCount: number) => {
+    let completed = 0;
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+        
+        // 更新记录为完成
+        setDistributionRecords(prev => prev.map(record => {
+          if (record.id === recordId) {
+            // 模拟随机失败一些实例
+            const failedCount = Math.floor(Math.random() * 2);
+            const successCount = totalCount - failedCount;
+            return {
+              ...record,
+              successCount,
+              failedCount,
+              inProgressCount: 0,
+              status: failedCount === 0 ? 'completed' : 'partial',
+              instances: record.instances.map((inst, idx) => ({
+                ...inst,
+                status: idx < successCount ? 'success' : 'failed',
+              })),
+            };
+          }
+          return record;
+        }));
+      } else {
+        // 更新进度
+        setDistributionRecords(prev => prev.map(record => {
+          if (record.id === recordId) {
+            return {
+              ...record,
+              successCount: completed,
+              inProgressCount: totalCount - completed,
+            };
+          }
+          return record;
+        }));
+      }
+    }, 800);
+  };
+  
+  const handleRetry = (recordId: string) => {
+    const record = distributionRecords.find(r => r.id === recordId);
+    if (!record) return;
+    
+    const failedInstances = record.instances.filter(inst => inst.status === 'failed');
+    simulateDistribution(recordId, failedInstances.length);
+    
+    // 重置失败的实例状态
+    setDistributionRecords(prev => prev.map(r => {
+      if (r.id === recordId) {
+        return {
+          ...r,
+          status: 'in_progress',
+          inProgressCount: failedInstances.length,
+          instances: r.instances.map(inst => ({
+            ...inst,
+            status: inst.status === 'failed' ? 'in_progress' : inst.status,
+          })),
+        };
+      }
+      return r;
+    }));
   };
 
   if (!skill) {
@@ -51,6 +166,13 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
     { name: 'README.md', content: '# README\n\n这是 Skill 的说明文档...' },
     { name: 'config.yaml', content: 'name: ' + skill.name + '\nversion: ' + skill.version },
   ];
+
+  const activeDistribution = distributionRecords.find(r => r.id === activeDistributionId);
+  const filteredInstances = activeDistribution 
+    ? activeDistribution.instances.filter(inst => 
+        statusFilter === 'all' || inst.status === statusFilter
+      )
+    : [];
 
   return (
     <div className="space-y-6">
@@ -213,56 +335,91 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
             </div>
 
             <div className="space-y-3 mt-8">
-              <h3 className="font-semibold text-gray-900">下发记录</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">下发记录</h3>
+              </div>
               {distributionRecords.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <p className="text-gray-500">还没有下发记录</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {distributionRecords.map((record) => (
-                    <div key={record.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {record.timestamp.toLocaleString('zh-CN')}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            下发至 {record.totalCount} 个实例
-                          </p>
+                  {distributionRecords.map((record, idx) => {
+                    const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
+                    return (
+                      <div key={record.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                              #{distributionRecords.length - idx} · {record.timestamp.toLocaleString('zh-CN')}
+                            </p>
+                          </div>
+                          <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
+                            record.status === 'completed' ? 'bg-green-50 text-green-700' :
+                            record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
+                            'bg-blue-50 text-blue-700'
+                          }`}>
+                            {record.status === 'completed' ? '已全部完成' :
+                             record.status === 'partial' ? '下发完成' :
+                             '进行中'}
+                          </span>
                         </div>
-                        <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                          record.status === 'completed' ? 'bg-green-50 text-green-700' :
-                          record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
-                          'bg-blue-50 text-blue-700'
-                        }`}>
-                          {record.status === 'completed' ? '成功' :
-                           record.status === 'partial' ? '部分成功' :
-                           '进行中'}
-                        </span>
-                      </div>
-                      <div className="flex gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-600">成功：</span>
-                          <span className="font-semibold text-green-600">{record.successCount}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">失败：</span>
-                          <span className="font-semibold text-red-600">{record.failedCount}</span>
-                        </div>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <p className="text-xs font-medium text-gray-700 mb-2">下发实例：</p>
-                        <div className="flex flex-wrap gap-2">
-                          {record.instances.map((instance) => (
-                            <span key={instance.id} className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                              {instance.name}
+                        
+                        {record.status === 'in_progress' && (
+                          <>
+                            <div className="mb-2">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-gray-700">
+                                  {progress}% ({record.successCount}个已完成/{record.totalCount}个)
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 mt-2">
+                                如果某个openclaw已安装该skill，也视为下发成功。
+                              </p>
+                            </div>
+                          </>
+                        )}
+                        
+                        {record.status === 'completed' && (
+                          <div className="text-sm text-green-700 mb-3">✓ 已全部完成</div>
+                        )}
+                        
+                        {record.status === 'partial' && (
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm text-gray-600">
+                              下发完成，{record.successCount}个已完成，{record.failedCount}个失败
                             </span>
-                          ))}
-                        </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleRetry(record.id)}
+                            >
+                              重试
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => {
+                            setActiveDistributionId(record.id);
+                            setStatusFilter('all');
+                            setDetailsOpen(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          查看详情
+                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -276,8 +433,93 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
         open={distributeDialogOpen}
         onOpenChange={setDistributeDialogOpen}
         skillName={skill.name}
-        onDistributionComplete={handleDistributionComplete}
+        onDistributionStart={handleDistributionStart}
       />
+
+      {/* 分发详情对话框 */}
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-w-2xl max-h-96">
+          <DialogHeader>
+            <DialogTitle>下发详情</DialogTitle>
+          </DialogHeader>
+          
+          {activeDistribution && (
+            <div className="space-y-4">
+              {/* 筛选器 */}
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-600" />
+                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部</SelectItem>
+                    <SelectItem value="success">成功</SelectItem>
+                    <SelectItem value="failed">失败</SelectItem>
+                    <SelectItem value="in_progress">进行中</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 实例列表 */}
+              <div className="border border-gray-200 rounded-lg overflow-y-auto max-h-64">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">OpenClaw 名称</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">创建人</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredInstances.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                          没有符合条件的记录
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredInstances.map((instance) => (
+                        <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-2 text-gray-900">{instance.name}</td>
+                          <td className="px-4 py-2 text-gray-600">{instance.createdBy}</td>
+                          <td className="px-4 py-2">
+                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                              instance.status === 'success' ? 'bg-green-50 text-green-700' :
+                              instance.status === 'failed' ? 'bg-red-50 text-red-700' :
+                              'bg-blue-50 text-blue-700'
+                            }`}>
+                              {instance.status === 'success' ? '成功' :
+                               instance.status === 'failed' ? '失败' :
+                               '进行中'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2">
+                            {instance.status === 'failed' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-blue-600 hover:text-blue-700 h-auto p-0"
+                                onClick={() => {
+                                  // 重试单个实例
+                                  handleRetry(activeDistribution.id);
+                                }}
+                              >
+                                重试
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

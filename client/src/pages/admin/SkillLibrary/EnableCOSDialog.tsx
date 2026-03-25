@@ -33,7 +33,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
         <div className="space-y-6">
           {/* 说明文字 */}
           <div className="text-sm text-gray-700">
-            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取<span className="font-semibold bg-blue-100 px-1 rounded">存储费和上传下载流量费</span>。</p>
+            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取<span className="font-bold text-blue-600">存储费和上传下载流量费</span>。</p>
           </div>
 
           {/* COS 桶名称 */}
@@ -67,7 +67,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
                 <div>
                   <p className="font-semibold text-gray-900">【说明】</p>
                   <p>多 AZ 特性允许用户将数据存储在同地理区域内的不同物理位置，提供同城容灾功能，推荐开启。
-                    <a href="https://cloud.tencent.com/document/product/436/40548" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                    <a href="https://cloud.tencent.com/document/product/436/多-az-存储和单-az-存储对比" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
                       了解更多
                     </a>
                   </p>
@@ -91,7 +91,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
                 <div>
                   <p className="font-semibold text-gray-900">【注意】</p>
                   <p>多 AZ 特性 开启后无法关闭，数据将存储为多 AZ 类型。若关闭，将存储为单 AZ 类型，请根据业务需求谨慎选择，避免后续产生迁移成本。多 AZ 和单 AZ 存储的对比请见
-                    <a href="https://cloud.tencent.com/document/product/436/40548" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                    <a href="https://cloud.tencent.com/document/product/436/40548#.E5.A4.9A-az-.E7.9A.84.E4.BC.98.E5.8A.BF" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
                       文档
                     </a>
                   </p>

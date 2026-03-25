@@ -20,7 +20,7 @@ export default function SkillListTab() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
   const [showDetail, setShowDetail] = useState(false);
   const [detailSkillId, setDetailSkillId] = useState<string | null>(null);
 

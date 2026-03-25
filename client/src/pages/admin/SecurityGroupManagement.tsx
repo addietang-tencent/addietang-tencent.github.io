@@ -394,9 +394,11 @@ export default function SecurityGroupManagement() {
             </div>
             {/* 开启后的提示语 */}
             {allowPanelAccess && (
-              <div className="border-t border-gray-100 px-6 py-4 bg-blue-50 flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <p className="text-xs text-blue-700 leading-relaxed">已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口</p>
+              <div className="border-t border-gray-100 px-6 py-4">
+                <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-blue-700 leading-relaxed">已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口</p>
+                </div>
               </div>
             )}
           </div>

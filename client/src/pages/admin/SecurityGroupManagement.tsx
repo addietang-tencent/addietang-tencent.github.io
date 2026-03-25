@@ -393,6 +393,13 @@ export default function SecurityGroupManagement() {
               />
             </div>
           </div>
+          {/* 开启后的提示语 */}
+          {allowPanelAccess && (
+            <div className="mt-4 mx-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-700 leading-relaxed">已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口</p>
+            </div>
+          )}
         </div>
 
         {/* ══ 第二块：VPC 和子网 ══════════════════════════════════════════════ */}

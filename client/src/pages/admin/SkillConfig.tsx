@@ -44,7 +44,7 @@ const TABS = [
   {
     id: "library",
     label: "企业技能库",
-    description: "上传和管理企业内部私有技能，可用于初始技能包配置和用户端技能安装。",
+    description: "",
     comingSoon: true,
   },
 ];

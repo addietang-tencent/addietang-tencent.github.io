@@ -128,6 +128,22 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 当对话框关闭时，清空上传状态
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setUploadedFiles([]);
+      setExpandedFile(null);
+      setFormData({
+        slug: '',
+        name: '',
+        description: '',
+        version: '1.0.0',
+        categories: [],
+      });
+    }
+    onOpenChange(newOpen);
+  };
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     slug: '',
@@ -140,6 +156,9 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // 新上传时删除旧的
+    setUploadedFiles([]);
+    setExpandedFile(null);
     const files = event.target.files;
     if (!files) return;
 
@@ -233,10 +252,14 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
     const files = event.target.files;
     if (!files) return;
 
+    // 新上传时删除旧的
+    setUploadedFiles([]);
+    setExpandedFile(null);
+
     const folderName = '文件夹上传';
     
     // 创建解析中的文件夹项
-    setUploadedFiles([...uploadedFiles, {
+    setUploadedFiles([{
       name: folderName,
       size: 0,
       status: 'parsing',
@@ -367,7 +390,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>发布新技能</DialogTitle>

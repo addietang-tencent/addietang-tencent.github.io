@@ -256,14 +256,17 @@ export default function MyOpenClaw() {
 
   // 初始化通知（模拟）
   useEffect(() => {
-    // Mock 通知消息：仅有 2 种场景
+    // Mock 通知消息：7 条删除相关通知
     const mockNotifications: Notification[] = [
       // 场景 1: 被管理员在腾讯云控制台删除
       { id: "notif-1", message: "「Noah的分析助手」已被删除", timestamp: "2026-03-26 10:30" },
       { id: "notif-2", message: "「Eve的编程助手」已被删除", timestamp: "2026-03-26 09:15" },
+      { id: "notif-3", message: "「Leo的创意助手」已被删除", timestamp: "2026-03-26 08:45" },
+      { id: "notif-4", message: "「Alice的工作助手」已被删除", timestamp: "2026-03-26 07:20" },
       // 场景 2: 被管理员在管控端删除
-      { id: "notif-3", message: "「Leo的创意助手」已被管理员删除", timestamp: "2026-03-26 08:45" },
-      { id: "notif-4", message: "「Alice的工作助手」已被管理员删除", timestamp: "2026-03-25 18:20" },
+      { id: "notif-5", message: "「Bob的数据分析」已被管理员删除", timestamp: "2026-03-25 18:20" },
+      { id: "notif-6", message: "「Carol的内容创作」已被管理员删除", timestamp: "2026-03-25 15:45" },
+      { id: "notif-7", message: "「David的代码生成」已被管理员删除", timestamp: "2026-03-25 12:10" },
     ];
     setNotifications(mockNotifications);
     setHasUnread(true);

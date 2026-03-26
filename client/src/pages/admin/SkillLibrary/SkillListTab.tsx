@@ -10,22 +10,14 @@ import {
 } from '@/components/ui/select';
 import { Search, Grid3x3, List, Send } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
+import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
-import BatchDistributeDialog from './BatchDistributeDialog';
 import DistributeDialog from './DistributeDialog';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
 }
-
-// Mock OpenClaw instances
-const MOCK_INSTANCES = [
-  { id: 'instance-1', name: 'OpenClaw-Dev', createdBy: 'admin' },
-  { id: 'instance-2', name: 'OpenClaw-Test', createdBy: 'dev-team' },
-  { id: 'instance-3', name: 'OpenClaw-Prod', createdBy: 'ops-team' },
-];
 
 export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
@@ -415,25 +407,13 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           open={distributeDialogOpen}
           onOpenChange={setDistributeDialogOpen}
           skillName={skills.find(s => s.id === distributeSkillId)?.name || ''}
-          instances={MOCK_INSTANCES}
+          instances={MOCK_OPENCLAW_INSTANCES}
           onDistribute={handleDistributeStart}
           onViewProgress={handleViewDistributeProgress}
         />
       )}
 
-      {batchDistributeSkillId && (
-        <BatchDistributeDialog
-          open={batchDistributeDialogOpen}
-          onOpenChange={setBatchDistributeDialogOpen}
-          skillId={batchDistributeSkillId}
-          skillName={skills.find(s => s.id === batchDistributeSkillId)?.name || ''}
-          onDistributionStart={() => {
-            // 跳转到详情页的安装方式 Tab
-            handleViewDetail(batchDistributeSkillId);
-            setBatchDistributeDialogOpen(false);
-          }}
-        />
-      )}
+
     </div>
   );
 }

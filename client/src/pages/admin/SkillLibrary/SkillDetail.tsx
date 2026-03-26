@@ -224,36 +224,36 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
       {/* Tab 页面 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto">
+          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto gap-3">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-none border-b-2 border-transparent px-4 py-3 text-gray-600 hover:text-gray-900 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
             >
               安装方式
             </TabsTrigger>
           </TabsList>
 
           {/* 概述 Tab */}
-          <TabsContent value="overview" className="mt-2 p-0">
+          <TabsContent value="overview" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <MDXRenderer content={skill.content || ''} />
             </div>
           </TabsContent>
 
           {/* 文件列表 Tab */}
-          <TabsContent value="files" className="mt-2 p-0">
+          <TabsContent value="files" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="flex gap-4 h-96">
               {/* 左侧：文件列表 */}
@@ -312,7 +312,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           </TabsContent>
 
           {/* 安装方式 Tab */}
-          <TabsContent value="install" className="mt-2 p-0">
+          <TabsContent value="install" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900">安装方式</h3>

@@ -120,8 +120,10 @@ export default function MyOpenClaw() {
       toast.error("请输入 OpenClaw 名称");
       return;
     }
+    const ts = Date.now();
     const newClaw = {
-      id: `oc-${Date.now()}`,
+      id: `oc-${ts}`,
+      instanceId: `ins-${ts.toString(36).slice(-8)}`,
       name: newName.trim(),
       status: "pending",
       createdAt: new Date().toLocaleString("zh-CN"),
@@ -369,9 +371,10 @@ export default function MyOpenClaw() {
                         </div>
                       </div>
                       {/* 只展示名称和创建时间 */}
-                      <h3 className={`font-semibold text-base mb-1 transition-colors ${isDisabled ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
+                      <h3 className={`font-semibold text-base mb-0.5 transition-colors ${isDisabled ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
+                      <p className="text-xs text-gray-400 font-mono mb-0.5">{claw.instanceId}</p>
                       <p className="text-xs text-gray-400">创建于 {claw.createdAt}</p>
                     </div>
 

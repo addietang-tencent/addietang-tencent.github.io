@@ -865,11 +865,12 @@ export default function OpenClawDetail() {
         </div>
 
         {/* Title */}
-        <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
             style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
             🦞
           </div>
+          <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
             <span className="badge-running ml-1">
@@ -945,6 +946,8 @@ export default function OpenClawDetail() {
                 <span className="text-xs text-blue-600 font-medium">加载中</span>
               </div>
             )}
+          </div>
+          <p className="text-sm text-gray-400 font-mono mt-1">{claw.instanceId}</p>
           </div>
         </div>
 

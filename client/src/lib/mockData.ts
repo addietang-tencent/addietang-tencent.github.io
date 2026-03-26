@@ -14,6 +14,7 @@ export const SITE_CONFIG = {
 export const MOCK_OPENCLAW_LIST = [
   {
     id: "oc-1",
+    instanceId: "ins-s03n7heo",
     name: "工作助手",
     status: "running",
     createdAt: "2026-03-01 10:23:45",
@@ -35,6 +36,7 @@ export const MOCK_OPENCLAW_LIST = [
   },
   {
     id: "oc-002",
+    instanceId: "ins-r92m6gdn",
     name: "代码助手",
     status: "running",
     createdAt: "2026-03-03 14:12:00",
@@ -45,6 +47,7 @@ export const MOCK_OPENCLAW_LIST = [
   },
   {
     id: "oc-003",
+    instanceId: "ins-k7p2xf1a",
     name: "文档整理助手",
     status: "STOPPED",
     createdAt: "2026-03-05 09:00:00",
@@ -55,6 +58,7 @@ export const MOCK_OPENCLAW_LIST = [
   },
   {
     id: "oc-004",
+    instanceId: "ins-b5fcm1l5",
     name: "数据分析助手",
     status: "running",
     createdAt: "2026-03-13 08:30:00",
@@ -65,6 +69,7 @@ export const MOCK_OPENCLAW_LIST = [
   },
   {
     id: "oc-005",
+    instanceId: "ins-x4ebl9qw",
     name: "客服助手",
     status: "RESCUE_MODE",
     createdAt: "2026-03-10 16:45:00",
@@ -75,6 +80,7 @@ export const MOCK_OPENCLAW_LIST = [
   },
   {
     id: "oc-006",
+    instanceId: "ins-n6gdn2yt",
     name: "运营助手",
     status: "LAUNCH_FAILED",
     createdAt: "2026-03-12 11:20:00",

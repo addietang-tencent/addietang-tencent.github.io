@@ -626,21 +626,15 @@ export default function OpenClawMonitor() {
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>删除 OpenClaw</DialogTitle>
-            <DialogDescription>
-              此操作无法撤销，请谨慎操作。
-            </DialogDescription>
+            <DialogTitle className="text-lg font-bold">删除 OpenClaw</DialogTitle>
           </DialogHeader>
-          <div className="flex gap-3 p-3 bg-red-50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">
-              确定要删除 <strong>{claws.find(c => c.id === deleteTarget)?.name}</strong> 吗？删除后数据将无法恢复。
-            </p>
-          </div>
-          <DialogFooter className="gap-2">
+          <p className="text-sm text-gray-500 -mt-1">
+            确定要删除这个 OpenClaw 吗？此操作无法撤销。
+          </p>
+          <DialogFooter className="gap-2 mt-2">
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
-            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
-              确认删除
+            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-5">
+              删除
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -220,7 +220,6 @@ export default function OpenClawMonitor() {
       setDrawerFading(false);
       setTimeout(() => {
         setDrawerLoading(false);
-        toast.success("信息已刷新");
       }, 400);
     }, 800);
   };
@@ -484,7 +483,7 @@ export default function OpenClawMonitor() {
                           {/* 关机 */}
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span>
+                              <span className="inline-flex items-center leading-none">
                                 <button
                                   className={`inline-flex items-center gap-1 text-xs leading-none ${
                                     isRunning
@@ -791,7 +790,7 @@ export default function OpenClawMonitor() {
                     <div>
                       <div className="text-base font-semibold text-gray-900">{selectedClaw.name}</div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 font-mono">{selectedClaw.instanceId}</span>
+                        <span className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</span>
                         <a
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"

@@ -609,19 +609,19 @@ export default function OpsObservation() {
 
       {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
       <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
           <div className="overflow-y-auto max-h-80">
-            <table className="w-full text-xs">
+            <table className="w-full text-xs whitespace-nowrap">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">版本号</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">发布日期</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">更新内容</th>
-                  <th className="text-center px-3 py-2 font-semibold text-gray-700">状态</th>
+                <tr className="border-b border-gray-200 bg-gray-50 sticky top-0">
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700 w-16">版本号</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700 w-32">发布日期</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700 flex-1">更新内容</th>
+                  <th className="text-center px-3 py-2 font-semibold text-gray-700 w-20">状态</th>
                 </tr>
               </thead>
               <tbody>
@@ -635,12 +635,12 @@ export default function OpsObservation() {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900">{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600">{v.releaseDate}</td>
-                    <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{v.changelog}</td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-3 py-2 font-medium text-gray-900 w-16">{v.version}</td>
+                    <td className="px-3 py-2 text-gray-600 w-32">{v.releaseDate}</td>
+                    <td className="px-3 py-2 text-gray-600 flex-1">{v.changelog}</td>
+                    <td className="px-3 py-2 text-center w-20">
                       {v.status === 'current' && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded inline-block">当前版本</span>
                       )}
                     </td>
                   </tr>

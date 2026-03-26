@@ -14,10 +14,18 @@ import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
 import BatchDistributeDialog from './BatchDistributeDialog';
+import DistributeDialog from './DistributeDialog';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
 }
+
+// Mock OpenClaw instances
+const MOCK_INSTANCES = [
+  { id: 'instance-1', name: 'OpenClaw-Dev', createdBy: 'admin' },
+  { id: 'instance-2', name: 'OpenClaw-Test', createdBy: 'dev-team' },
+  { id: 'instance-3', name: 'OpenClaw-Prod', createdBy: 'ops-team' },
+];
 
 export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
@@ -30,6 +38,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
   const [batchDistributeSkillId, setBatchDistributeSkillId] = useState<string | null>(null);
   const [batchDistributeDialogOpen, setBatchDistributeDialogOpen] = useState(false);
+  const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+  const [distributeSkillId, setDistributeSkillId] = useState<string | null>(null);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -73,31 +83,120 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     setBatchDistributeDialogOpen(true);
   };
 
+  const handleDistribute = (skillId: string) => {
+    setDistributeSkillId(skillId);
+    setDistributeDialogOpen(true);
+  };
+
+  const handleDistributeStart = (selectedInstanceIds: string[]) => {
+    // 更新 skill 的下发状态
+    setSkills(skills.map(skill =>
+      skill.id === distributeSkillId
+        ? {
+            ...skill,
+            lastDistributionStatus: 'in_progress',
+            lastDistributionProgress: 0,
+            lastDistributionTime: new Date(),
+          }
+        : skill
+    ));
+
+    // 模拟进度更新
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 30;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        // 完成下发
+        setSkills(prevSkills =>
+          prevSkills.map(skill =>
+            skill.id === distributeSkillId
+              ? {
+                  ...skill,
+                  lastDistributionStatus: 'success',
+                  lastDistributionProgress: 100,
+                }
+              : skill
+          )
+        );
+      } else {
+        setSkills(prevSkills =>
+          prevSkills.map(skill =>
+            skill.id === distributeSkillId
+              ? {
+                  ...skill,
+                  lastDistributionProgress: Math.min(progress, 99),
+                }
+              : skill
+          )
+        );
+      }
+    }, 1000);
+  };
+
+  const handleViewDistributeProgress = () => {
+    // 跳转到详情页的安装方式 Tab
+    if (distributeSkillId) {
+      handleViewDetail(distributeSkillId);
+      setDistributeDialogOpen(false);
+    }
+  };
+
+  const getDistributionStatusDisplay = (skill: any) => {
+    if (!skill.lastDistributionStatus) return null;
+
+    const statusConfig: Record<string, { label: string; color: string }> = {
+      'in_progress': { label: `下发中 ${skill.lastDistributionProgress || 0}%`, color: 'text-blue-600 bg-blue-50' },
+      'success': { label: '下发成功', color: 'text-green-600 bg-green-50' },
+      'partial': { label: '部分成功', color: 'text-yellow-600 bg-yellow-50' },
+      'failed': { label: '下发失败', color: 'text-red-600 bg-red-50' },
+    };
+
+    const config = statusConfig[skill.lastDistributionStatus];
+    if (!config) return null;
+
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleViewDetail(skill.id);
+        }}
+        className={`inline-block px-3 py-1 rounded text-sm font-medium ${config.color} cursor-pointer hover:opacity-80 transition-opacity`}
+      >
+        {config.label}
+      </button>
+    );
+  };
+
   // 如果选中了 Skill，显示详情页
   if (selectedSkillId) {
     return (
       <SkillDetail
         skillId={selectedSkillId}
-        onBack={() => setSelectedSkillId(null)}
         skills={skills}
+        onBack={() => setSelectedSkillId(null)}
       />
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* 工具栏 */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* 搜索和工具栏 */}
+      <div className="space-y-4">
+        {/* 搜索框 */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="搜索技能名称或描述..."
+            placeholder="搜索 Skill 名称或描述..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white"
+            className="pl-10"
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* 排序和视图切换 */}
+        <div className="flex items-center justify-between gap-4">
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
             <SelectTrigger className="w-40 bg-white border border-gray-200">
               <SelectValue />
@@ -205,18 +304,31 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               {/* 描述 */}
               <p className="text-sm text-gray-600 line-clamp-2 mb-3">{skill.description}</p>
 
-              {/* 批量下发按钮 */}
+              {/* 下发状态 */}
+              {getDistributionStatusDisplay(skill) && (
+                <div className="mb-3">
+                  {getDistributionStatusDisplay(skill)}
+                </div>
+              )}
+
+              {/* 下发按钮 */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleBatchDistribute(skill.id);
+                  handleDistribute(skill.id);
                 }}
-                className="w-full cursor-pointer"
+                disabled={skill.lastDistributionStatus === 'in_progress'}
+                className={`w-full cursor-pointer ${
+                  skill.lastDistributionStatus === 'in_progress'
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
               >
                 <Send className="w-4 h-4 mr-2" />
-                批量下发
+                下发
               </Button>
             </div>
           ))}
@@ -232,7 +344,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               onClick={() => handleViewDetail(skill.id)}
               className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
             >
-              {/* 第一行：名称 + 版本 + 分类 + 批量下发按钮 */}
+              {/* 第一行：名称 + 版本 + 分类 + 状态 + 下发按钮 */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 flex-1">
                   <h3 className="font-semibold text-gray-900">{skill.name}</h3>
@@ -250,14 +362,29 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     ))}
                   </div>
                 </div>
+
+                {/* 下发状态 */}
+                {getDistributionStatusDisplay(skill) && (
+                  <div className="mx-3">
+                    {getDistributionStatusDisplay(skill)}
+                  </div>
+                )}
+
+                {/* 下发按钮 */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleBatchDistribute(skill.id);
+                    handleDistribute(skill.id);
                   }}
-                  className="shrink-0 cursor-pointer ml-2"
+                  disabled={skill.lastDistributionStatus === 'in_progress'}
+                  className={`shrink-0 cursor-pointer ml-2 ${
+                    skill.lastDistributionStatus === 'in_progress'
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                  title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
                 >
                   <Send className="w-4 h-4 mr-2" />
                   下发
@@ -276,11 +403,30 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         onConfirm={handleUploadSkill}
       />
 
-      <BatchDistributeDialog
-        open={batchDistributeDialogOpen}
-        onOpenChange={setBatchDistributeDialogOpen}
-        skillId={batchDistributeSkillId || ''}
-      />
+      {distributeSkillId && (
+        <DistributeDialog
+          open={distributeDialogOpen}
+          onOpenChange={setDistributeDialogOpen}
+          skillName={skills.find(s => s.id === distributeSkillId)?.name || ''}
+          instances={MOCK_INSTANCES}
+          onDistribute={handleDistributeStart}
+          onViewProgress={handleViewDistributeProgress}
+        />
+      )}
+
+      {batchDistributeSkillId && (
+        <BatchDistributeDialog
+          open={batchDistributeDialogOpen}
+          onOpenChange={setBatchDistributeDialogOpen}
+          skillId={batchDistributeSkillId}
+          skillName={skills.find(s => s.id === batchDistributeSkillId)?.name || ''}
+          onDistributionStart={() => {
+            // 跳转到详情页的安装方式 Tab
+            handleViewDetail(batchDistributeSkillId);
+            setBatchDistributeDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

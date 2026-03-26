@@ -9,6 +9,9 @@ export interface Skill {
   content?: string;
   fileContent?: string;
   files?: Array<{ name: string; size: number }>;
+  lastDistributionStatus?: 'in_progress' | 'success' | 'partial' | 'failed';
+  lastDistributionProgress?: number; // 0-100
+  lastDistributionTime?: Date;
 }
 
 export interface Category {

@@ -401,13 +401,13 @@ export default function OpenClawMonitor() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50 relative">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">名称 / ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
-                  <div className="flex items-center gap-2 relative">
+                  <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
                       className="p-1 hover:bg-gray-200 rounded"
@@ -416,7 +416,7 @@ export default function OpenClawMonitor() {
                       <Filter className="w-3.5 h-3.5 text-gray-400" />
                     </button>
                     {showStatusFilter && (
-                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-[9999] will-change-transform" style={{ pointerEvents: 'auto' }}>
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" style={{ pointerEvents: 'auto' }}>
                         <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
                           {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => (
                             <label key={status} className="flex items-center gap-2 cursor-pointer">

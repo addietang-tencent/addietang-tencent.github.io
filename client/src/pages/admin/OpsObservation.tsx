@@ -474,26 +474,13 @@ export default function OpsObservation() {
                 <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
                 <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 OpenClaw 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  onClick={handleOpenCLS}
-                  disabled={isEnablingCls}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
-                >
-                  {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setSelectedPluginVersion(CLS_PLUGIN_VERSIONS[0]);
-                    setShowPluginUpgradeDialog(true);
-                  }}
-                  variant="outline"
-                  className="text-xs h-8 px-4 whitespace-nowrap"
-                >
-                  <Download className="w-3 h-3 mr-1" />
-                  升级 CLS 采集插件
-                </Button>
-              </div>
+              <Button
+                onClick={handleOpenCLS}
+                disabled={isEnablingCls}
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
+              >
+                {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
+              </Button>
             </div>
           </div>
 
@@ -711,14 +698,27 @@ export default function OpsObservation() {
               className="max-w-xs"
             />
           </div>
-          {/* 右侧：关闭 CLS 按钮 */}
-          <Button
-            onClick={() => setShowCloseClsConfirm(true)}
-            variant="outline"
-            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white mt-6"
-          >
-            关闭CLS服务
-          </Button>
+            {/* 右侧：升级和关闭CLS按钮 */}
+          <div className="flex gap-2 mt-6">
+            <Button
+              onClick={() => {
+                setSelectedPluginVersion(CLS_PLUGIN_VERSIONS[0]);
+                setShowPluginUpgradeDialog(true);
+              }}
+              variant="outline"
+              className="text-xs h-8 px-4 whitespace-nowrap"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              升级 CLS 采集插件
+            </Button>
+            <Button
+              onClick={() => setShowCloseClsConfirm(true)}
+              variant="outline"
+              className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+            >
+              关闭CLS服务
+            </Button>
+          </div>
         </div>
       )}
 

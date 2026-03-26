@@ -793,9 +793,9 @@ export default function OpenClawMonitor() {
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{selectedClaw.name}</div>
+                      <div className="text-base font-semibold text-gray-900">{selectedClaw.name}</div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</span>
+                        <span className="text-sm text-gray-500 font-mono">{selectedClaw.instanceId}</span>
                         <a
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"
@@ -843,11 +843,11 @@ export default function OpenClawMonitor() {
                           <div className="px-4 pb-3 space-y-2">
                             <div className="flex items-baseline gap-2 text-sm">
                               <span className="text-gray-400">appId:</span>
-                              <span className="font-mono text-gray-800">{channel.appId}</span>
+                              <span className="font-mono text-gray-800 tracking-wider">{channel.appId}</span>
                             </div>
                             <div className="flex items-baseline gap-2 text-sm">
                               <span className="text-gray-400">appSecret:</span>
-                              <span className="font-mono text-gray-800 tracking-wide">{channel.appSecret}<span className="tracking-widest">●●●●●●</span></span>
+                              <span className="font-mono text-gray-800 tracking-wider">{channel.appSecret}<span className="tracking-widest ml-0.5">●●●●●●</span></span>
                             </div>
                           </div>
                         )}

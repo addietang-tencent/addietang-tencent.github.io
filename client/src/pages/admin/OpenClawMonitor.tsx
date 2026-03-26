@@ -480,8 +480,8 @@ export default function OpenClawMonitor() {
                             </button>
                           )}
 
-                          {/* 关机 */}
-                          <Tooltip>
+                          {/* 关机 - 暂时隐藏，明天恢复 */}
+                          {/* <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex items-center leading-none">
                                 <button
@@ -503,7 +503,7 @@ export default function OpenClawMonitor() {
                                 仅运行中的实例可关机
                               </TooltipContent>
                             )}
-                          </Tooltip>
+                          </Tooltip> */}
 
                           {/* 删除 */}
                           <button
@@ -514,8 +514,8 @@ export default function OpenClawMonitor() {
                             删除
                           </button>
 
-                          {/* 更多操作 */}
-                          <DropdownMenu>
+                          {/* 更多操作 - 暂时隐藏，明天恢复 */}
+                          {/* <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className="inline-flex items-center text-xs text-gray-400 hover:text-gray-600 leading-none">
                                 <MoreHorizontal className="w-3.5 h-3.5" />
@@ -537,7 +537,7 @@ export default function OpenClawMonitor() {
                                 重新安装 OpenClaw
                               </DropdownMenuItem>
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                          </DropdownMenu> */}
                         </div>
                       </td>
                     </tr>

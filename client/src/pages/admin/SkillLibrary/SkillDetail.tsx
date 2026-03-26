@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+'use client';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Download, ChevronDown, ChevronRight, Filter } from 'lucide-react';
@@ -52,9 +53,53 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
   const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'in_progress'>('all');
-  const [activeTab, setActiveTab] = useState(defaultTab || '概述');
+  const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
+  const [selectedVersion, setSelectedVersion] = useState<string>('');
   const skillsArray = skills || MOCK_SKILLS;
   const skill = skillsArray.find(s => s.id === skillId);
+  
+  useEffect(() => {
+    if (skill?.versions && skill.versions.length > 0 && !selectedVersion) {
+      setSelectedVersion(skill.versions[0]);
+    }
+  }, [skill?.versions, selectedVersion]);
+  
+  const renderFileTree = (files: Array<{ name: string; size?: number }>) => {
+    return files.map((file) => {
+      const isDir = !file.name.toLowerCase().endsWith('.md');
+      const parts = file.name.split('/');
+      const isNested = parts.length > 1;
+      
+      return (
+        <button
+          key={file.name}
+          onClick={() => !isDir && setExpandedFile(expandedFile === file.name ? null : file.name)}
+          disabled={isDir}
+          className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
+            expandedFile === file.name
+              ? 'bg-blue-50 text-blue-600 font-medium'
+              : !isDir
+              ? 'hover:bg-gray-50 text-gray-700 cursor-pointer'
+              : 'text-gray-500 cursor-not-allowed opacity-60'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isNested && <span className="text-xs ml-2">└</span>}
+            <span className="text-xs">{isDir ? '📁' : '📄'}</span>
+            <span className="truncate text-xs">{parts[parts.length - 1]}</span>
+          </div>
+        </button>
+      );
+    });
+  };
+  
+  const getFileContent = (fileName: string): string => {
+    if (fileName === 'SKILL.md') return skill?.content || '';
+    if (fileName === 'hha/ha.md') {
+      return `## 我好\n### niha\n**默认有：**\n通用办公  研发工具  系统运维   质量测试   需求设计    信息检索    项目管理    数据分析    安全合规\n支持新增和删除。`;
+    }
+    return '';
+  };
   
   const handleDistributionStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
     // 创建新的分发记录
@@ -255,59 +300,63 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <div className="flex gap-4 h-96">
-              {/* 左侧：文件列表 */}
-              <div className="w-1/4 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                  <p className="text-xs font-semibold text-gray-700">Files</p>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  {files.map((file) => (
-                    <button
-                      key={file.name}
-                      onClick={() => file.name.toLowerCase().endsWith('.md') && setExpandedFile(expandedFile === file.name ? null : file.name)}
-                      disabled={!file.name.toLowerCase().endsWith('.md')}
-                      className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
-                        expandedFile === file.name
-                          ? 'bg-blue-50 text-blue-600 font-medium'
-                          : file.name.toLowerCase().endsWith('.md')
-                          ? 'hover:bg-gray-50 text-gray-700 cursor-pointer'
-                          : 'text-gray-500 cursor-not-allowed opacity-60'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs">{file.name.toLowerCase().endsWith('.md') ? '📄' : '📋'}</span>
-                        <span className="truncate">{file.name}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 右侧：文件详情 */}
-              <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
-                {expandedFile ? (
-                  <>
-                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <p className="text-sm font-semibold text-gray-900">{expandedFile}</p>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4">
-                      {files.find(f => f.name === expandedFile)?.name.toLowerCase().endsWith('.md') ? (
-                        <MDXRenderer content={files.find(f => f.name === expandedFile)?.content || ''} />
-                      ) : (
-                        <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
-                          {files.find(f => f.name === expandedFile)?.content}
-                        </pre>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    <p className="text-sm">选择一个 MD 文件查看详情</p>
+              <div className="flex gap-4 h-96">
+                {/* 左列：版本号选择 (1) */}
+                <div className="w-1/6 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <p className="text-xs font-semibold text-gray-700">版本号</p>
                   </div>
-                )}
+                  <div className="flex-1 overflow-y-auto">
+                    {skill.versions?.map((ver: string) => (
+                      <button
+                        key={ver}
+                        onClick={() => setSelectedVersion(ver)}
+                        className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
+                          selectedVersion === ver
+                            ? 'bg-blue-50 text-blue-600 font-medium'
+                            : 'hover:bg-gray-50 text-gray-700 cursor-pointer'
+                        }`}
+                      >
+                        v{ver}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 中列：文件列表 (1) */}
+                <div className="w-1/6 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <p className="text-xs font-semibold text-gray-700">文件</p>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    {renderFileTree(skill.files || [])}
+                  </div>
+                </div>
+
+                {/* 右列：文件详情 (3) */}
+                <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
+                  {expandedFile ? (
+                    <>
+                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <p className="text-sm font-semibold text-gray-900">{expandedFile}</p>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-4">
+                        {expandedFile.toLowerCase().endsWith('.md') ? (
+                          <MDXRenderer content={getFileContent(expandedFile)} />
+                        ) : (
+                          <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
+                            {getFileContent(expandedFile)}
+                          </pre>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p className="text-sm">选择一个 MD 文件查看详情</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
             </div>
           </TabsContent>
 

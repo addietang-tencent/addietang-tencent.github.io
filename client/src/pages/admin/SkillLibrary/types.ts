@@ -8,10 +8,12 @@ export interface Skill {
   uploadTime: Date;
   content?: string;
   fileContent?: string;
+  versions?: string[];
   files?: Array<{ name: string; size: number }>;
   lastDistributionStatus?: 'in_progress' | 'success' | 'partial' | 'failed';
   lastDistributionProgress?: number; // 0-100
   lastDistributionTime?: Date;
+  lastDistributionInstanceCount?: number;
 }
 
 export interface Category {

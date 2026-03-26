@@ -71,6 +71,7 @@ export const MOCK_SKILLS: Skill[] = [
     categories: ['1', '6'],
     uploadTime: new Date('2025-03-20'),
     content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...',
+    versions: ['1.0.0', '0.9.0'],
   },
   {
     id: 'skill-2',
@@ -81,6 +82,7 @@ export const MOCK_SKILLS: Skill[] = [
     categories: ['2'],
     uploadTime: new Date('2025-03-18'),
     content: '# 代码审查工具\n\n这是一个用于代码审查的 Skill...',
+    versions: ['2.1.0', '2.0.0', '1.0.0'],
   },
   {
     id: 'skill-3',
@@ -91,6 +93,7 @@ export const MOCK_SKILLS: Skill[] = [
     categories: ['3'],
     uploadTime: new Date('2025-03-15'),
     content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...',
+    versions: ['1.5.2', '1.5.0', '1.0.0'],
   },
   {
     id: 'skill-4',
@@ -134,6 +137,7 @@ gh run view <run-id> --repo owner/repo --log-failed
 ## API for Advanced Queries
 
 The \`gh api\` command is useful for accessing data not available through other subcommands.`,
+    versions: ['1.0.0', '0.9.0', '0.8.0'],
     files: [
       { name: 'SKILL.md', size: 1024 },
       { name: 'hha/ha.md', size: 512 },

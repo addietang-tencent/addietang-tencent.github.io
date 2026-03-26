@@ -222,6 +222,9 @@ export default function SessionManagement() {
   const [showCloseClsConfirm, setShowCloseClsConfirm] = useState(false);
   const [isClosingCls, setIsClosingCls] = useState(false);
   const [deleteLogTopic, setDeleteLogTopic] = useState(false);
+  const [showPluginUpgradeDialog, setShowPluginUpgradeDialog] = useState(false);
+  const [selectedPluginVersion, setSelectedPluginVersion] = useState<any>(null);
+  const [isUpgradingPlugin, setIsUpgradingPlugin] = useState(false);
   const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
   const [clsAgreed, setClsAgreed] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -610,14 +613,23 @@ export default function SessionManagement() {
               className="max-w-xs"
             />
           </div>
-          {/* 右侧：关闭 CLS 按钮 */}
-          <Button
-            onClick={() => setShowCloseClsConfirm(true)}
-            variant="outline"
-            className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white mt-6"
-          >
-            关闭CLS服务
-          </Button>
+           {/* 右侧：升级CLS插件 + 关闭CLS按钮 */}
+          <div className="flex items-center gap-2 mt-6">
+            <Button
+              onClick={() => setShowPluginUpgradeDialog(true)}
+              variant="outline"
+              className="text-xs h-8 px-3 text-blue-600 border-blue-200 hover:bg-blue-50 bg-white"
+            >
+              升级CLS采集插件
+            </Button>
+            <Button
+              onClick={() => setShowCloseClsConfirm(true)}
+              variant="outline"
+              className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+            >
+              关闭CLS服务
+            </Button>
+          </div>
         </div>
       )}
 

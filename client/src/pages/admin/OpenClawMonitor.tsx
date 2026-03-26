@@ -452,21 +452,14 @@ export default function OpenClawMonitor() {
                       <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                       {/* 操作 */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-3">
                           {/* 终端 */}
                           {!isRunning ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="text-xs h-7 px-2.5 text-gray-300 border-gray-200 cursor-not-allowed"
-                                    disabled
-                                  >
-                                    <Terminal className="w-3 h-3 mr-1" />
-                                    终端
-                                  </Button>
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed">
+                                  <Terminal className="w-3.5 h-3.5" />
+                                  终端
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs">
@@ -474,31 +467,31 @@ export default function OpenClawMonitor() {
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                            <button
+                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
                               onClick={() => handleOpenTerminal(claw)}
                             >
-                              <Terminal className="w-3 h-3 mr-1" />
+                              <Terminal className="w-3.5 h-3.5" />
                               终端
-                            </Button>
+                            </button>
                           )}
 
                           {/* 关机 */}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs h-7 px-2.5 text-orange-600 border-orange-200 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                <button
+                                  className={`inline-flex items-center gap-1 text-xs ${
+                                    isRunning
+                                      ? "text-gray-600 hover:text-gray-900"
+                                      : "text-gray-300 cursor-not-allowed"
+                                  }`}
                                   disabled={!isRunning}
-                                  onClick={() => setShutdownTarget(claw.id)}
+                                  onClick={() => isRunning && setShutdownTarget(claw.id)}
                                 >
-                                  <Power className="w-3 h-3 mr-1" />
+                                  <Power className="w-3.5 h-3.5" />
                                   关机
-                                </Button>
+                                </button>
                               </span>
                             </TooltipTrigger>
                             {!isRunning && (
@@ -509,25 +502,20 @@ export default function OpenClawMonitor() {
                           </Tooltip>
 
                           {/* 删除 */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2.5 text-red-500 border-red-200 hover:bg-red-50"
+                          <button
+                            className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
                             onClick={() => setDeleteTarget(claw.id)}
                           >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                            <Trash2 className="w-3.5 h-3.5" />
+                            删除
+                          </button>
 
-                          {/* 三点菜单 */}
+                          {/* 更多操作 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs h-7 w-7 px-0 text-gray-500 border-gray-200 hover:bg-gray-50"
-                              >
-                                <MoreHorizontal className="w-3.5 h-3.5" />
-                              </Button>
+                              <button className="inline-flex items-center text-xs text-gray-500 hover:text-gray-800">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
@@ -840,14 +828,14 @@ export default function OpenClawMonitor() {
                           </div>
                         </button>
                         {expandedChannels.has(idx) && (
-                          <div className="px-4 pb-3 space-y-2">
+                          <div className="px-4 pt-2 pb-3 space-y-2">
                             <div className="flex items-baseline gap-2 text-sm">
                               <span className="text-gray-400">appId:</span>
                               <span className="font-mono text-gray-800 tracking-wider">{channel.appId}</span>
                             </div>
                             <div className="flex items-baseline gap-2 text-sm">
                               <span className="text-gray-400">appSecret:</span>
-                              <span className="font-mono text-gray-800 tracking-wider">{channel.appSecret}<span className="tracking-widest ml-0.5">●●●●●●</span></span>
+                              <span className="font-mono text-gray-800 tracking-wider">{channel.appSecret}<span className="text-[0.55em] tracking-widest align-middle ml-0.5">●●●●●●</span></span>
                             </div>
                           </div>
                         )}

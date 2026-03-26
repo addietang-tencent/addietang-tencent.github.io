@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
-  Activity, Loader2
+  Activity, Loader2, ExternalLink, ChevronDown
 } from "lucide-react";
 
 type ClawStatus = "running" | "stopped" | "error" | "starting" | "stopping";
@@ -140,19 +140,31 @@ export default function OpenClawMonitor() {
     };
     const skillSets: Record<string, { name: string; version: string }[]> = {
       "1": [
-        { name: "github", version: "1.0.0" },
+        { name: "tavily-search", version: "1.0.0" },
+        { name: "summarize", version: "1.0.0" },
         { name: "agent-browser", version: "0.2.0" },
-        { name: "doc-summary", version: "1.3.2" },
+        { name: "find-skills", version: "0.1.0" },
+        { name: "github", version: "1.0.0" },
+        { name: "obsidian", version: "1.0.0" },
+        { name: "notion", version: "1.0.0" },
+        { name: "weather", version: "1.0.0" },
+        { name: "tencentcloud-lighthouse-skill", version: "1.0.0" },
+        { name: "tencent-docs", version: "1.0.3" },
       ],
       "2": [
         { name: "code-review", version: "2.1.0" },
         { name: "agent-browser", version: "0.2.0" },
+        { name: "github", version: "1.0.0" },
+        { name: "summarize", version: "1.0.0" },
       ],
       "3": [
         { name: "github", version: "1.0.0" },
         { name: "meeting-notes", version: "0.5.1" },
         { name: "translate-pro", version: "1.1.0" },
         { name: "data-analyst", version: "0.8.3" },
+        { name: "tavily-search", version: "1.0.0" },
+        { name: "tencent-docs", version: "1.0.3" },
+        { name: "weather", version: "1.0.0" },
       ],
     };
     const models: Record<string, { name: string; version: string }> = {
@@ -781,9 +793,10 @@ export default function OpenClawMonitor() {
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
+                          className="inline-flex items-center gap-0.5 text-xs text-blue-500 underline hover:text-blue-700"
                         >
                           去腾讯云控制台管理
+                          <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>
                     </div>
@@ -812,18 +825,21 @@ export default function OpenClawMonitor() {
                           onClick={() => toggleChannel(idx)}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-400 text-xs">{expandedChannels.has(idx) ? "∨" : ">"}</span>
+                            {expandedChannels.has(idx)
+                              ? <ChevronDown className="w-4 h-4 text-gray-400" />
+                              : <ChevronRight className="w-4 h-4 text-gray-400" />
+                            }
                             <span className="text-sm font-medium text-gray-900">{channel.name}</span>
                           </div>
                         </button>
                         {expandedChannels.has(idx) && (
-                          <div className="px-4 pb-3 space-y-1.5 border-t border-gray-100 pt-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-gray-400 w-20 flex-shrink-0">appId：</span>
+                          <div className="mx-4 mb-3 rounded-lg bg-gray-50 px-4 py-3 space-y-2">
+                            <div className="flex items-baseline gap-3 text-sm">
+                              <span className="text-gray-400 font-mono w-20 flex-shrink-0">appId:</span>
                               <span className="text-gray-700 font-mono">{channel.appId}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-gray-400 w-20 flex-shrink-0">appSecret：</span>
+                            <div className="flex items-baseline gap-3 text-sm">
+                              <span className="text-gray-400 font-mono w-20 flex-shrink-0">appSecret:</span>
                               <span className="text-gray-700 font-mono">{channel.appSecret}●●●●●●</span>
                             </div>
                           </div>
@@ -835,8 +851,10 @@ export default function OpenClawMonitor() {
 
                 {/* 已安装技能 */}
                 <div>
-                  <div className="text-xs text-gray-400 mb-2">已安装技能</div>
-                  <div className="space-y-1.5">
+                  <div className="text-xs text-gray-400 mb-2">
+                    已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）
+                  </div>
+                  <div className="max-h-56 overflow-y-auto space-y-1.5 pr-0.5">
                     {getClawDetail(selectedClaw.id).installedSkills.map((skill, idx) => (
                       <div key={idx} className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
                         <span className="text-sm text-gray-800">{skill.name} {skill.version}</span>

@@ -820,7 +820,17 @@ export default function OpenClawMonitor() {
                 {/* 已应用模型 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">已应用模型</div>
-                  {getClawDetail(selectedClaw.id).appliedModel ? (
+                  {channelSkillLoading ? (
+                    <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-36 mb-1.5" />
+                      <div className="h-3 bg-gray-200 rounded w-48" />
+                    </div>
+                  ) : selectedClaw.status !== "running" ? (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-center">
+                      <div className="text-sm font-medium text-gray-500">无法获取信息</div>
+                      <div className="text-xs text-gray-400 mt-0.5">实例当前未在运行中，请启动实例后重试</div>
+                    </div>
+                  ) : getClawDetail(selectedClaw.id).appliedModel ? (
                     <div className="px-4 py-3 bg-white rounded-xl border border-gray-200">
                       <div className="text-sm font-medium text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
                       <div className="text-xs text-gray-400 mt-0.5">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
@@ -835,7 +845,7 @@ export default function OpenClawMonitor() {
                 {/* 已接入通道 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">
-                    已接入通道{!channelSkillLoading && `（${getClawDetail(selectedClaw.id).connectedChannels.length}）`}
+                    已接入通道{!channelSkillLoading && selectedClaw.status === "running" && `（${getClawDetail(selectedClaw.id).connectedChannels.length}）`}
                   </div>
                   {channelSkillLoading ? (
                     <div className="space-y-2">
@@ -844,6 +854,11 @@ export default function OpenClawMonitor() {
                           <div className="h-4 bg-gray-200 rounded w-24" />
                         </div>
                       ))}
+                    </div>
+                  ) : selectedClaw.status !== "running" ? (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-center">
+                      <div className="text-sm font-medium text-gray-500">无法获取信息</div>
+                      <div className="text-xs text-gray-400 mt-0.5">实例当前未在运行中，请启动实例后重试</div>
                     </div>
                   ) : getClawDetail(selectedClaw.id).connectedChannels.length === 0 ? (
                     <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">
@@ -886,7 +901,7 @@ export default function OpenClawMonitor() {
                 {/* 已安装技能 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">
-                    已安装技能{!channelSkillLoading && `（${getClawDetail(selectedClaw.id).installedSkills.length}）`}
+                    已安装技能{!channelSkillLoading && selectedClaw.status === "running" && `（${getClawDetail(selectedClaw.id).installedSkills.length}）`}
                   </div>
                   {channelSkillLoading ? (
                     <div className="space-y-1.5">
@@ -895,6 +910,11 @@ export default function OpenClawMonitor() {
                           <div className="h-4 bg-gray-200 rounded w-32" />
                         </div>
                       ))}
+                    </div>
+                  ) : selectedClaw.status !== "running" ? (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-center">
+                      <div className="text-sm font-medium text-gray-500">无法获取信息</div>
+                      <div className="text-xs text-gray-400 mt-0.5">实例当前未在运行中，请启动实例后重试</div>
                     </div>
                   ) : getClawDetail(selectedClaw.id).installedSkills.length === 0 ? (
                     <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">

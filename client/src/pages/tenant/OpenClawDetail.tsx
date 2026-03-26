@@ -890,8 +890,8 @@ export default function OpenClawDetail() {
             {/* 一键更新按鈕 + 气泡 */}
             <div className="relative flex items-center">
               {showUpdateBubble && !isUpdating && (
-                <div className="absolute bottom-full right-0 mb-2 z-50" style={{ transform: "translateX(2rem)" }}>
-                  <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-sm leading-none whitespace-nowrap">
+                <div className="absolute bottom-full right-0 mb-2 z-50">
+                    <div className="relative bg-blue-600 text-white text-xs rounded-lg pl-3 pr-10 py-2 shadow-sm leading-none whitespace-nowrap">
                     <button
                       onClick={() => setShowUpdateBubble(false)}
                       className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"

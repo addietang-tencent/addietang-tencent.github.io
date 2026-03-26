@@ -4,7 +4,7 @@
  * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap, CheckCircle2, AlertTriangle, Info } from "lucide-react";
+import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap, CheckCircle2, AlertTriangle, Info, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Eye, EyeOff } from "lucide-react";
 import { OpenClawCombobox } from "@/components/OpenClawCombobox";
+import { toast } from "sonner";
 
 // Mock data for charts
 const logLevelData = [
@@ -130,6 +131,22 @@ const CLS_NEW_CARDS = [
   },
 ];
 
+// CLS 采集插件版本历史
+interface CLSPluginVersion {
+  version: string;
+  releaseDate: string;
+  changelog: string;
+  status: 'current' | 'available' | 'deprecated';
+}
+
+const CLS_PLUGIN_VERSIONS: CLSPluginVersion[] = [
+  { version: "3.24", releaseDate: "2026-03-24", changelog: "修复会话追踪精度问题，优化 Token 计算算法", status: "available" },
+  { version: "3.23", releaseDate: "2026-03-17", changelog: "新增会话全局监控功能，支持多渠道分析", status: "available" },
+  { version: "3.22", releaseDate: "2026-03-10", changelog: "优化日志采集性能，降低 CPU 占用率", status: "current" },
+  { version: "3.21", releaseDate: "2026-03-03", changelog: "修复 CLS 连接超时问题", status: "deprecated" },
+  { version: "3.20", releaseDate: "2026-02-24", changelog: "首次发布 CLS 采集插件", status: "deprecated" },
+];
+
 // Legend 说明映射
 const legendTooltips: Record<string, string> = {
   "已处理完成的消息数量": "已处理完成：已成功处理完成的消息数量",
@@ -236,6 +253,9 @@ export default function OpsObservation() {
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
   const [selectedOpenClaw, setSelectedOpenClaw] = useState(""); // OpenClaw 名称筛选
+  const [showPluginUpgradeDialog, setShowPluginUpgradeDialog] = useState(false);
+  const [selectedPluginVersion, setSelectedPluginVersion] = useState<CLSPluginVersion | null>(null);
+  const [isUpgradingPlugin, setIsUpgradingPlugin] = useState(false);
 
   // 处理日期变化
   const handleFromChange = (value: string) => {
@@ -454,15 +474,97 @@ export default function OpsObservation() {
                 <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
                 <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 OpenClaw 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               </div>
-              <Button
-                onClick={handleOpenCLS}
-                disabled={isEnablingCls}
-                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
-              >
-                {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
-              </Button>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  onClick={handleOpenCLS}
+                  disabled={isEnablingCls}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
+                >
+                  {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setSelectedPluginVersion(CLS_PLUGIN_VERSIONS[0]);
+                    setShowPluginUpgradeDialog(true);
+                  }}
+                  variant="outline"
+                  className="text-xs h-8 px-4 whitespace-nowrap"
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  升级 CLS 采集插件
+                </Button>
+              </div>
             </div>
           </div>
+
+          {/* CLS 采集插件升级对话框 */}
+          <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>升级 CLS 采集插件</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* 版本列表 */}
+                <div>
+                  <Label className="text-xs font-semibold text-gray-700 mb-2 block">选择版本</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {CLS_PLUGIN_VERSIONS.map((v) => (
+                      <button
+                        key={v.version}
+                        onClick={() => setSelectedPluginVersion(v)}
+                        className={`w-full text-left p-2 rounded border transition-colors ${
+                          selectedPluginVersion?.version === v.version
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-white border-gray-200 hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">v{v.version}</div>
+                            <div className="text-xs text-gray-500">{v.releaseDate}</div>
+                          </div>
+                          {v.status === 'current' && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 版本详情 */}
+                {selectedPluginVersion && (
+                  <div className="bg-gray-50 rounded p-3 border border-gray-200">
+                    <div className="text-xs font-semibold text-gray-700 mb-2">更新内容</div>
+                    <div className="text-xs text-gray-600">{selectedPluginVersion.changelog}</div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPluginUpgradeDialog(false)}
+                  disabled={isUpgradingPlugin}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsUpgradingPlugin(true);
+                    setTimeout(() => {
+                      setIsUpgradingPlugin(false);
+                      setShowPluginUpgradeDialog(false);
+                      toast.success(`成功升级到 v${selectedPluginVersion?.version}`);
+                    }, 2000);
+                  }}
+                  disabled={isUpgradingPlugin || selectedPluginVersion?.status === 'current'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                >
+                  {isUpgradingPlugin ? "升级中..." : "确认升级"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* CLS 协议确认弹窗 */}
           <Dialog open={showClsAgreementDialog} onOpenChange={setShowClsAgreementDialog}>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { Category } from './types';
-import { DEFAULT_CATEGORIES } from './mockData';
+import { DEFAULT_CATEGORIES, MOCK_SKILLS } from './mockData';
 import AddCategoryDialog from './AddCategoryDialog';
 import EditCategoryDialog from './EditCategoryDialog';
 import {
@@ -21,6 +21,11 @@ export default function CategoryManagementTab() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [newCategoryForSkills, setNewCategoryForSkills] = useState<string>('');
+
+  // 计算每个分类下的技能数量
+  const getSkillCountByCategory = (categoryId: string) => {
+    return MOCK_SKILLS.filter((skill: any) => skill.categories.includes(categoryId)).length;
+  };
 
   const handleAddCategory = (newCategory: Category) => {
     setCategories([...categories, newCategory]);
@@ -72,6 +77,7 @@ export default function CategoryManagementTab() {
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">序号</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">分类名称</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">描述</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">技能数量</th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">操作</th>
             </tr>
           </thead>
@@ -81,6 +87,7 @@ export default function CategoryManagementTab() {
                 <td className="px-6 py-4 text-sm text-gray-900">{index + 1}</td>
                 <td className="px-6 py-4 text-sm text-gray-900">{category.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{category.description}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{getSkillCountByCategory(category.id)}</td>
                 <td className="px-6 py-4 text-sm">
                   <div className="flex gap-2">
                     <button
@@ -126,30 +133,44 @@ export default function CategoryManagementTab() {
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">删除分类</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  该分类下共有 0 个技能，删除此分类后对应skill将移除该分类，可选择为对应skill增加新分类。
-                </p>
+                
+                {(() => {
+                  const skillCount = getSkillCountByCategory(selectedCategory?.id || '');
+                  const otherCategories = categories.filter(cat => cat.id !== selectedCategory?.id);
+                  
+                  return (
+                    <>
+                      <p className="text-sm text-gray-600 mb-4">
+                        {skillCount === 0 ? (
+                          `该分类下共有 ${skillCount} 个技能，可删除该分类。`
+                        ) : (
+                          `该分类下共有 ${skillCount} 个技能，删除此分类后对应skill将移除该分类，可选择为对应skill增加新分类。`
+                        )}
+                      </p>
 
-                {/* 新分类选择 */}
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <Label className="text-sm font-medium text-gray-900 mb-3 block">
-                    新分类（可选）
-                  </Label>
-                  <Select value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
-                    <SelectTrigger className="w-full bg-white border border-gray-200">
-                      <SelectValue placeholder="选择新分类" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories
-                        .filter(cat => cat.id !== selectedCategory?.id)
-                        .map(category => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      {/* 新分类选择 - 只在有其他分类且有技能时显示 */}
+                      {skillCount > 0 && otherCategories.length > 0 && (
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                          <Label className="text-sm font-medium text-gray-900 mb-3 block">
+                            新分类（可选）
+                          </Label>
+                          <Select value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
+                            <SelectTrigger className="w-full bg-white border border-gray-200">
+                              <SelectValue placeholder="选择新分类" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {otherCategories.map(category => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 <div className="flex justify-end gap-2">
                   <Button
@@ -165,7 +186,7 @@ export default function CategoryManagementTab() {
                     variant="destructive"
                     onClick={handleDeleteCategory}
                   >
-                    删除
+                    确认删除
                   </Button>
                 </div>
               </div>

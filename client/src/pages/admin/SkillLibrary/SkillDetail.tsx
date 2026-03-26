@@ -272,19 +272,19 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="overview"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border-0 data-[state=active]:bg-gray-100 data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border-0 data-[state=active]:bg-gray-100 data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border-0 data-[state=active]:bg-gray-100 data-[state=active]:text-blue-600 transition-colors"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               安装方式
             </TabsTrigger>

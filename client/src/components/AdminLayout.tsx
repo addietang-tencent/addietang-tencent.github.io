@@ -81,7 +81,7 @@ const NAV_GROUPS = [
   {
     label: "运营监控",
     items: [
-      { label: "OpenClaw 监控", path: "/admin/openclaw-monitor", icon: Activity },
+      { label: "OpenClaw 列表", path: "/admin/openclaw-monitor", icon: Activity },
       { label: "Tokens 监控", path: "/admin/tokens-monitor", icon: BarChart3 },
       { label: "运维观测", path: "/admin/ops-observation", icon: Gauge },
     ],

@@ -1,6 +1,8 @@
 /**
- * OpenClawMonitor - 管控端 OpenClaw 监控页
- * 布局：标题行右上角时间筛选器+刷新 → 表格（上方左侧搜索框、右侧统计）
+ * OpenClawList - 管控端 OpenClaw 列表页
+ * 布局：标题行右上角时间筛选器+刷新 → 数据概览卡片 → 表格
+ * 表格列：名称/ID、创建人、状态、创建时间、操作
+ * 操作栏：终端、关机（二次确认）、删除（二次确认）；三点菜单：重启、重新安装
  */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,66 +14,100 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle, Terminal, UserRoundCog } from "lucide-react";
+import {
+  Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
+  Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
+  Activity, CheckCircle2, XCircle, Loader2, Server
+} from "lucide-react";
 
-const MOCK_CLAWS = [
-  { id: "1",  name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off" },
-  { id: "2",  name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", observableStatus: "off" },
-  { id: "3",  name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", observableStatus: "off", powerStatus: "off" },
-  { id: "4",  name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", observableStatus: "off" },
-  { id: "5",  name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", observableStatus: "off" },
-  { id: "6",  name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", observableStatus: "off" },
-  { id: "7",  name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", observableStatus: "off" },
-  { id: "8",  name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", observableStatus: "off" },
-  { id: "9",  name: "Ivy的客服务助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", observableStatus: "off" },
-  { id: "10", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", observableStatus: "off" },
-  { id: "11", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", observableStatus: "off" },
-  { id: "12", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", observableStatus: "off" },
+type ClawStatus = "running" | "stopped" | "error" | "starting" | "stopping";
+
+interface Claw {
+  id: string;
+  instanceId: string;
+  name: string;
+  creator: string;
+  createTime: string;
+  observableStatus: "on" | "off";
+  powerStatus?: "off";
+  status: ClawStatus;
+}
+
+const STATUS_CONFIG: Record<ClawStatus, { label: string; color: string; bg: string; dot: string }> = {
+  running:  { label: "运行中", color: "text-green-700",  bg: "bg-green-50",  dot: "bg-green-500" },
+  stopped:  { label: "已关机", color: "text-gray-500",   bg: "bg-gray-100",  dot: "bg-gray-400" },
+  error:    { label: "异常",   color: "text-red-700",    bg: "bg-red-50",    dot: "bg-red-500" },
+  starting: { label: "启动中", color: "text-yellow-700", bg: "bg-yellow-50", dot: "bg-yellow-500" },
+  stopping: { label: "关机中", color: "text-orange-700", bg: "bg-orange-50", dot: "bg-orange-500" },
+};
+
+const MOCK_CLAWS: Claw[] = [
+  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", observableStatus: "off", status: "running" },
+  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", observableStatus: "off", status: "running" },
+  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", observableStatus: "off", powerStatus: "off", status: "stopped" },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", observableStatus: "off", status: "running" },
+  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", observableStatus: "off", status: "error" },
+  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", observableStatus: "off", status: "running" },
+  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", observableStatus: "off", status: "starting" },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", observableStatus: "off", status: "running" },
+  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", observableStatus: "off", status: "stopping" },
+  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", observableStatus: "off", status: "running" },
+  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", observableStatus: "off", status: "error" },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", observableStatus: "off", status: "running" },
 ];
 
 const PAGE_SIZE = 10;
 
 export default function OpenClawMonitor() {
-  const [claws, setClaws] = useState(
+  const [claws, setClaws] = useState<Claw[]>(
     [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime))
   );
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [shutdownTarget, setShutdownTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
 
   // 三步骤开启流程状态
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const [setupStep, setSetupStep] = useState<1 | 2 | 3>(1);
-
-  // 第一步: CLS 开通
   const [clsEnabled, setClsEnabled] = useState(false);
-
-  // 第二步: 主题设置
   const [logTopic, setLogTopic] = useState("openclaw_log_topic");
   const [metricTopic, setMetricTopic] = useState("openclaw_metric_topic");
-
-  // 第三步: Agent 安装
   const [isInstallingAgent, setIsInstallingAgent] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
-  const [allObservableEnabled, setAllObservableEnabled] = useState(false);
 
-  // 批量选择状态
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
-  const [batchMode, setBatchMode] = useState<"enable" | "disable" | null>(null);
 
-  // 允许成员进入终端开关 - 持久化到 localStorage，路由切换后不丢失
   const [allowTerminal, setAllowTerminal] = useState(() => {
     return localStorage.getItem("admin_allow_terminal") === "true";
   });
+
+  // 统计数据
+  const totalCount = claws.length;
+  const runningCount = claws.filter(c => c.status === "running").length;
+  const errorCount = claws.filter(c => c.status === "error").length;
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -81,13 +117,11 @@ export default function OpenClawMonitor() {
     }, 1000);
   };
 
-  // 打开三步骤设置弹窗
   const handleOpenSetupDialog = () => {
     setSetupStep(1);
     setShowSetupDialog(true);
   };
 
-  // 第一步: 开通 CLS
   const handleStep1EnableCls = () => {
     setIsLoading(true);
     setTimeout(() => {
@@ -98,12 +132,10 @@ export default function OpenClawMonitor() {
     }, 1500);
   };
 
-  // 第二步: 主题设置完成后进入第三步
   const handleStep2Continue = () => {
     setSetupStep(3);
   };
 
-  // 第三步: 安装 Agent
   const handleStep3InstallAgent = () => {
     setIsInstallingAgent(true);
     setTimeout(() => {
@@ -117,39 +149,18 @@ export default function OpenClawMonitor() {
     }, 2000);
   };
 
-  // 时间筛选后的数据（用于统计卡片）
-  const timeFiltered = claws.filter((c) => {
-    const matchFrom = !dateFrom || c.createTime >= dateFrom;
-    const matchTo = !dateTo || c.createTime <= dateTo;
-    return matchFrom && matchTo;
-  });
-
-  // 搜索进一步过滤（用于列表）
-  const filtered = timeFiltered.filter((c) => {
-    return !search || c.name.includes(search) || c.creator.includes(search);
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
   const handleFilterChange = (fn: () => void) => {
     fn();
     setPage(1);
   };
 
-  // 切换单个选中状态
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
     setSelectedIds(newSelected);
   };
 
-  // 全选/取消全选
   const toggleSelectAll = () => {
     if (selectedIds.size === filtered.length && filtered.length > 0) {
       setSelectedIds(new Set());
@@ -158,25 +169,34 @@ export default function OpenClawMonitor() {
     }
   };
 
-  // 批量开启可观测面板
-  const handleBatchEnable = () => {
-    if (selectedIds.size === 0) {
-      toast.error("请先选择要开启的 OpenClaw");
-      return;
-    }
-    handleOpenSetupDialog();
+  const handleOpenTerminal = (claw: Claw) => {
+    window.open(`/terminal/${claw.id}`, "_blank");
   };
 
-  // 批量关闭可观测面板
-  const handleBatchDisable = () => {
-    if (selectedIds.size === 0) {
-      toast.error("请先选择要关闭的 OpenClaw");
-      return;
-    }
-    setShowCloseConfirm(true);
+  const handleRestart = (claw: Claw) => {
+    toast.success(`正在重启 ${claw.name}...`);
   };
 
-  // 确认关闭
+  const handleReinstall = (claw: Claw) => {
+    toast.success(`正在重新安装 ${claw.name} 的 OpenClaw...`);
+  };
+
+  const confirmShutdown = () => {
+    if (!shutdownTarget) return;
+    setClaws(claws.map(c => c.id === shutdownTarget ? { ...c, status: "stopped" as ClawStatus, powerStatus: "off" } : c));
+    const claw = claws.find(c => c.id === shutdownTarget);
+    setShutdownTarget(null);
+    toast.success(`已关机 ${claw?.name}`);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    const claw = claws.find(c => c.id === deleteTarget);
+    setClaws(claws.filter(c => c.id !== deleteTarget));
+    setDeleteTarget(null);
+    toast.success(`已删除 ${claw?.name}`);
+  };
+
   const confirmDisable = () => {
     setClaws(claws.map(c =>
       selectedIds.has(c.id) ? { ...c, observableStatus: "off" } : c
@@ -187,21 +207,37 @@ export default function OpenClawMonitor() {
     toast.success(`已关闭 ${count} 个 OpenClaw 的可观测面板`);
   };
 
-  // 打开终端（跳转新链接）
-  const handleOpenTerminal = (claw: { id: string; name: string }) => {
-    window.open(`/terminal/${claw.id}`, "_blank");
+  // 筛选逻辑
+  const timeFiltered = claws.filter((c) => {
+    const matchFrom = !dateFrom || c.createTime >= dateFrom;
+    const matchTo = !dateTo || c.createTime <= dateTo;
+    return matchFrom && matchTo;
+  });
+
+  const filtered = timeFiltered.filter((c) => {
+    const matchSearch = !search || c.name.includes(search) || c.creator.includes(search) || c.instanceId.includes(search);
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // 点击概览卡片筛选
+  const handleCardFilter = (status: string) => {
+    handleFilterChange(() => setStatusFilter(status));
   };
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="page-enter">
-        {/* Header：标题左，时间筛选器+刷新右 */}
-        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">OpenClaw 监控</h1>
+            <h1 className="text-2xl font-bold text-gray-900">OpenClaw 列表</h1>
             <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 云服务器。</p>
           </div>
-          {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
             <input
               type="date"
@@ -237,29 +273,96 @@ export default function OpenClawMonitor() {
           </div>
         </div>
 
+        {/* 数据概览卡片 */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {/* 总数 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            onClick={() => handleCardFilter("all")}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">OpenClaw 总数</span>
+              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                <Server className="w-4.5 h-4.5 text-blue-600" style={{ width: "18px", height: "18px" }} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{totalCount}</div>
+            <div className="text-xs text-gray-400 mt-1">全部实例</div>
+          </div>
+
+          {/* 运行中 */}
+          <div
+            className={`bg-white rounded-2xl border transition-all cursor-pointer hover:shadow-md p-5 ${statusFilter === "running" ? "border-green-300 ring-1 ring-green-200" : "border-gray-100 hover:border-green-200"}`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            onClick={() => handleCardFilter(statusFilter === "running" ? "all" : "running")}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">运行中</span>
+              <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
+                <CheckCircle2 className="text-green-600" style={{ width: "18px", height: "18px" }} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-green-600">{runningCount}</div>
+            <div className="text-xs text-gray-400 mt-1">点击筛选运行中实例</div>
+          </div>
+
+          {/* 状态异常 */}
+          <div
+            className={`bg-white rounded-2xl border transition-all cursor-pointer hover:shadow-md p-5 ${statusFilter === "error" ? "border-red-300 ring-1 ring-red-200" : "border-gray-100 hover:border-red-200"}`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            onClick={() => handleCardFilter(statusFilter === "error" ? "all" : "error")}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-500">状态异常</span>
+              <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
+                <XCircle className="text-red-500" style={{ width: "18px", height: "18px" }} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-red-500">{errorCount}</div>
+            <div className="text-xs text-gray-400 mt-1">点击筛选异常实例</div>
+          </div>
+        </div>
+
         {/* 表格卡片 */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
 
-          {/* 表格上方工具栏：左侧搜索框，右侧统计 + 批量操作 */}
+          {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
-            {/* 左：搜索框 */}
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="搜索名称或创建人"
-                value={search}
-                onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
-                className="pl-9 bg-gray-50 border-gray-200 h-9"
-              />
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {/* 搜索框 */}
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="搜索名称、ID 或创建人"
+                  value={search}
+                  onChange={(e) => handleFilterChange(() => setSearch(e.target.value))}
+                  className="pl-9 bg-gray-50 border-gray-200 h-9"
+                />
+              </div>
+              {/* 状态筛选 */}
+              <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v))}>
+                <SelectTrigger className="w-32 h-9 bg-gray-50 border-gray-200 text-sm">
+                  <SelectValue placeholder="全部状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部状态</SelectItem>
+                  <SelectItem value="running">运行中</SelectItem>
+                  <SelectItem value="stopped">已关机</SelectItem>
+                  <SelectItem value="error">异常</SelectItem>
+                  <SelectItem value="starting">启动中</SelectItem>
+                  <SelectItem value="stopping">关机中</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            {/* 右：统计 */}
+            {/* 统计 */}
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
                 <Bot className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-sm text-gray-500">
-                共计 <span className="text-lg font-bold text-gray-900">{timeFiltered.length}</span> 个 OpenClaw
+                共计 <span className="text-lg font-bold text-gray-900">{filtered.length}</span> 个 OpenClaw
               </span>
             </div>
           </div>
@@ -267,76 +370,158 @@ export default function OpenClawMonitor() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">OpenClaw 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">创建人的用户 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">创建时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">名称 / ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">创建人</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">状态</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
               ) : (
-                paginated.map((claw) => (
-                  <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                          <Bot className="w-3.5 h-3.5 text-white" />
+                paginated.map((claw) => {
+                  const statusCfg = STATUS_CONFIG[claw.status];
+                  const isRunning = claw.status === "running";
+                  return (
+                    <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
+                      {/* 名称/ID */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                            <Bot className="w-3.5 h-3.5 text-white" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
+                            <a
+                              href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${claw.instanceId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-500 hover:text-blue-700 hover:underline font-mono"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {claw.instanceId}
+                            </a>
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{claw.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5">
-                        {claw.powerStatus === "off" ? (
+                      </td>
+                      {/* 创建人 */}
+                      <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
+                      {/* 状态 */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${statusCfg.bg} ${statusCfg.color}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot} ${claw.status === "starting" || claw.status === "stopping" ? "animate-pulse" : ""}`} />
+                          {statusCfg.label}
+                        </span>
+                      </td>
+                      {/* 创建时间 */}
+                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
+                      {/* 操作 */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                          {/* 终端 */}
+                          {!isRunning ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7 px-2.5 text-gray-300 border-gray-200 cursor-not-allowed"
+                                    disabled
+                                  >
+                                    <Terminal className="w-3 h-3 mr-1" />
+                                    终端
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                仅运行中的实例可进入终端
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                              onClick={() => handleOpenTerminal(claw)}
+                            >
+                              <Terminal className="w-3 h-3 mr-1" />
+                              终端
+                            </Button>
+                          )}
+
+                          {/* 关机 */}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="text-xs h-7 px-2.5 text-gray-300 border-gray-200 cursor-not-allowed"
-                                  disabled
+                                  className="text-xs h-7 px-2.5 text-orange-600 border-orange-200 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  disabled={!isRunning}
+                                  onClick={() => setShutdownTarget(claw.id)}
                                 >
-                                  <Terminal className="w-3 h-3 mr-1" />
-                                  终端
+                                  <Power className="w-3 h-3 mr-1" />
+                                  关机
                                 </Button>
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs">
-                              不支持已关机的云服务器登录终端
-                            </TooltipContent>
+                            {!isRunning && (
+                              <TooltipContent side="top" className="text-xs">
+                                仅运行中的实例可关机
+                              </TooltipContent>
+                            )}
                           </Tooltip>
-                        ) : (
+
+                          {/* 删除 */}
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 px-2.5 text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
-                            onClick={() => handleOpenTerminal(claw)}
+                            className="text-xs h-7 px-2.5 text-red-500 border-red-200 hover:bg-red-50"
+                            onClick={() => setDeleteTarget(claw.id)}
                           >
-                            <Terminal className="w-3 h-3 mr-1" />
-                            终端
+                            <Trash2 className="w-3 h-3" />
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-7 text-red-500 border-red-200 hover:bg-red-50"
-                          onClick={() => setDeleteTarget(claw.id)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+
+                          {/* 三点菜单 */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7 w-7 px-0 text-gray-500 border-gray-200 hover:bg-gray-50"
+                              >
+                                <MoreHorizontal className="w-3.5 h-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem
+                                className="text-sm cursor-pointer"
+                                onClick={() => handleRestart(claw)}
+                              >
+                                <RotateCcw className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                                重启
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-sm cursor-pointer"
+                                onClick={() => handleReinstall(claw)}
+                              >
+                                <HardDriveDownload className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                                重新安装 OpenClaw
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -370,7 +555,6 @@ export default function OpenClawMonitor() {
         {/* 底部权限开关区域 */}
         <div className="mt-6 bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          {/* 允许成员进入 OpenClaw 终端 */}
           <div className="flex items-center justify-between px-6 py-5">
             <div className="flex items-center gap-4">
               <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
@@ -393,71 +577,99 @@ export default function OpenClawMonitor() {
         </div>
       </div>
 
+      {/* 关机确认弹窗 */}
+      <Dialog open={!!shutdownTarget} onOpenChange={() => setShutdownTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>确认关机</DialogTitle>
+            <DialogDescription>
+              关机后该 OpenClaw 将无法使用，直到重新启动。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 p-3 bg-orange-50 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-orange-800">
+              确定要关闭 <strong>{claws.find(c => c.id === shutdownTarget)?.name}</strong> 吗？关机后该实例将停止运行。
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
+            <Button onClick={confirmShutdown} className="bg-orange-600 hover:bg-orange-700 text-white">
+              确认关机
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 删除确认弹窗 */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>删除 OpenClaw</DialogTitle>
+            <DialogDescription>
+              此操作无法撤销，请谨慎操作。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 p-3 bg-red-50 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800">
+              确定要删除 <strong>{claws.find(c => c.id === deleteTarget)?.name}</strong> 吗？删除后数据将无法恢复。
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
+            <Button onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 三步骤开启流程弹窗 */}
       <Dialog open={showSetupDialog} onOpenChange={setShowSetupDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>开启可观测面板</DialogTitle>
+            <DialogDescription>按照步骤完成可观测面板的配置</DialogDescription>
           </DialogHeader>
 
-          {/* 第一步: 开通 CLS */}
           {setupStep === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-900">1. 开通 CLS</h3>
-                <p className="text-sm text-gray-600">
-                  开启可观测面板需要您开通日志服务 CLS
-                </p>
+                <p className="text-sm text-gray-600">开启可观测面板需要您开通日志服务 CLS</p>
               </div>
               <div className="flex gap-3 p-3 bg-amber-50 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800">
-                  2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费
-                </p>
+                <p className="text-sm text-amber-800">2025年6月15日前该功能免费使用，2025年6月15日后CLS将按量计费</p>
               </div>
             </div>
           )}
 
-          {/* 第二步: 主题设置 */}
           {setupStep === 2 && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-900">2. 设置主题</h3>
-                <p className="text-sm text-gray-600">
-                  配置日志主题和指标主题
-                </p>
+                <p className="text-sm text-gray-600">配置日志主题和指标主题</p>
               </div>
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700">日志主题</label>
-                  <Input
-                    placeholder="日志主题名称"
-                    value={logTopic}
-                    onChange={(e) => setLogTopic(e.target.value)}
-                    className="mt-1"
-                  />
+                  <Input placeholder="日志主题名称" value={logTopic} onChange={(e) => setLogTopic(e.target.value)} className="mt-1" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">指标主题</label>
-                  <Input
-                    placeholder="指标主题名称"
-                    value={metricTopic}
-                    onChange={(e) => setMetricTopic(e.target.value)}
-                    className="mt-1"
-                  />
+                  <Input placeholder="指标主题名称" value={metricTopic} onChange={(e) => setMetricTopic(e.target.value)} className="mt-1" />
                 </div>
               </div>
             </div>
           )}
 
-          {/* 第三步: 安装 Agent */}
           {setupStep === 3 && (
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-900">3. 安装 Agent</h3>
-                <p className="text-sm text-gray-600">
-                  正在安装日志采集 Agent…
-                </p>
+                <p className="text-sm text-gray-600">正在安装日志采集 Agent…</p>
               </div>
               {isInstallingAgent && (
                 <div className="flex items-center justify-center py-6">
@@ -469,44 +681,21 @@ export default function OpenClawMonitor() {
 
           <DialogFooter className="gap-2">
             {setupStep > 1 && (
-              <Button
-                variant="outline"
-                onClick={() => setSetupStep((prev) => (prev - 1) as 1 | 2 | 3)}
-                disabled={isLoading || isInstallingAgent}
-              >
+              <Button variant="outline" onClick={() => setSetupStep((prev) => (prev - 1) as 1 | 2 | 3)} disabled={isLoading || isInstallingAgent}>
                 上一步
               </Button>
             )}
-            <Button
-              variant="outline"
-              onClick={() => setShowSetupDialog(false)}
-              disabled={isLoading || isInstallingAgent}
-            >
-              取消
-            </Button>
+            <Button variant="outline" onClick={() => setShowSetupDialog(false)} disabled={isLoading || isInstallingAgent}>取消</Button>
             {setupStep === 1 && (
-              <Button
-                onClick={handleStep1EnableCls}
-                disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+              <Button onClick={handleStep1EnableCls} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 text-white">
                 {isLoading ? "开通中..." : "下一步"}
               </Button>
             )}
             {setupStep === 2 && (
-              <Button
-                onClick={handleStep2Continue}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                下一步
-              </Button>
+              <Button onClick={handleStep2Continue} className="bg-blue-600 hover:bg-blue-700 text-white">下一步</Button>
             )}
             {setupStep === 3 && (
-              <Button
-                onClick={handleStep3InstallAgent}
-                disabled={isInstallingAgent}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+              <Button onClick={handleStep3InstallAgent} disabled={isInstallingAgent} className="bg-blue-600 hover:bg-blue-700 text-white">
                 {isInstallingAgent ? "安装中..." : "确认"}
               </Button>
             )}
@@ -514,55 +703,20 @@ export default function OpenClawMonitor() {
         </DialogContent>
       </Dialog>
 
-      {/* 关闭确认弹窗 */}
+      {/* 关闭可观测面板确认弹窗 */}
       <Dialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>关闭可观测面板</DialogTitle>
+            <DialogDescription>关闭后将无法查看详细日志和对话数据</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="flex gap-3 p-3 bg-red-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">
-                关闭后将无法查看详细日志和对话数据，请谨慎操作
-              </p>
-            </div>
+          <div className="flex gap-3 p-3 bg-red-50 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800">关闭后将无法查看详细日志和对话数据，请谨慎操作</p>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowCloseConfirm(false)}>
-              取消
-            </Button>
-            <Button
-              onClick={confirmDisable}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              确认关闭
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 删除确认弹窗 */}
-      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>删除 OpenClaw</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-600">确定要删除这个 OpenClaw 吗？此操作无法撤销。</p>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              取消
-            </Button>
-            <Button
-              onClick={() => {
-                setClaws(claws.filter(c => c.id !== deleteTarget));
-                setDeleteTarget(null);
-                toast.success("已删除");
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              删除
-            </Button>
+            <Button variant="outline" onClick={() => setShowCloseConfirm(false)}>取消</Button>
+            <Button onClick={confirmDisable} className="bg-red-600 hover:bg-red-700 text-white">确认关闭</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

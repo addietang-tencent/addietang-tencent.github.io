@@ -248,7 +248,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <div 
                 className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(skill.content || '') }}
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(removeFrontmatter(skill.content || '')) }}
               />
             </div>
           </TabsContent>
@@ -296,7 +296,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                       {files.find(f => f.name === expandedFile)?.name.toLowerCase().endsWith('.md') ? (
                         <div 
                           className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: renderMarkdown(files.find(f => f.name === expandedFile)?.content || '') }}
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(removeFrontmatter(files.find(f => f.name === expandedFile)?.content || '')) }}
                         />
                       ) : (
                         <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
@@ -326,10 +326,6 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   批量下发
-                </Button>
-                <Button variant="outline">
-                  <Download className="w-4 h-4 mr-2" />
-                  下载 ZIP 包
                 </Button>
               </div>
             </div>

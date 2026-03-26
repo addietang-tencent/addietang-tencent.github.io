@@ -15,7 +15,8 @@ import { Search } from 'lucide-react';
 interface BatchDistributeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  skillName: string;
+  skillId?: string;
+  skillName?: string;
   onDistributionStart?: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
 }
 

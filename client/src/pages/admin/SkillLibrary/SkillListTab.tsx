@@ -8,11 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Grid3x3, List } from 'lucide-react';
+import { Search, Grid3x3, List, Send } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
+import BatchDistributeDialog from './BatchDistributeDialog';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
@@ -27,6 +28,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  const [batchDistributeSkillId, setBatchDistributeSkillId] = useState<string | null>(null);
+  const [batchDistributeDialogOpen, setBatchDistributeDialogOpen] = useState(false);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -63,6 +66,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     } else {
       setSelectedSkillId(skillId);
     }
+  };
+
+  const handleBatchDistribute = (skillId: string) => {
+    setBatchDistributeSkillId(skillId);
+    setBatchDistributeDialogOpen(true);
   };
 
   // 如果选中了 Skill，显示详情页
@@ -171,7 +179,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           {sortedSkills.map(skill => (
             <div
               key={skill.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md"
+              onClick={() => handleViewDetail(skill.id)}
+              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
             >
               {/* 名称 + 版本 */}
               <div className="flex items-center gap-2 mb-2">
@@ -196,17 +205,18 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               {/* 描述 */}
               <p className="text-sm text-gray-600 line-clamp-2 mb-3">{skill.description}</p>
 
-              {/* 查看详情按钮 */}
+              {/* 批量下发按钮 */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewDetail(skill.id);
+                  handleBatchDistribute(skill.id);
                 }}
                 className="w-full cursor-pointer"
               >
-                查看详情
+                <Send className="w-4 h-4 mr-2" />
+                批量下发
               </Button>
             </div>
           ))}
@@ -219,9 +229,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           {sortedSkills.map(skill => (
             <div
               key={skill.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md"
+              onClick={() => handleViewDetail(skill.id)}
+              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
             >
-              {/* 第一行：名称 + 版本 + 分类 + 查看详情按钮 */}
+              {/* 第一行：名称 + 版本 + 分类 + 批量下发按钮 */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 flex-1">
                   <h3 className="font-semibold text-gray-900">{skill.name}</h3>
@@ -244,11 +255,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleViewDetail(skill.id);
+                    handleBatchDistribute(skill.id);
                   }}
                   className="shrink-0 cursor-pointer ml-2"
                 >
-                  查看详情
+                  <Send className="w-4 h-4 mr-2" />
+                  下发
                 </Button>
               </div>
               {/* 第二行：描述 */}
@@ -262,6 +274,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
         onConfirm={handleUploadSkill}
+      />
+
+      <BatchDistributeDialog
+        open={batchDistributeDialogOpen}
+        onOpenChange={setBatchDistributeDialogOpen}
+        skillId={batchDistributeSkillId || ''}
       />
     </div>
   );

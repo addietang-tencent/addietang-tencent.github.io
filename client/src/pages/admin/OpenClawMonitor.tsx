@@ -108,6 +108,7 @@ export default function OpenClawMonitor() {
   // 监控抽屉
   const [showMonitorDrawer, setShowMonitorDrawer] = useState(false);
   const [selectedClaw, setSelectedClaw] = useState<Claw | null>(null);
+  const [clsEnabled, setClsEnabled] = useState(false); // CLS 日志服务是否开启
 
   // 权限开关
   const [allowTerminal, setAllowTerminal] = useState(() => {
@@ -786,12 +787,21 @@ export default function OpenClawMonitor() {
           <div className="absolute right-0 top-0 bottom-0 w-[640px] bg-white shadow-lg overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
               <h2 className="text-lg font-semibold text-gray-900">{selectedClaw.name} - 监控</h2>
-              <button
-                onClick={() => setShowMonitorDrawer(false)}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-5 h-5 text-gray-400" />
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600">CLS 日志服务</span>
+                  <Switch
+                    checked={clsEnabled}
+                    onCheckedChange={setClsEnabled}
+                  />
+                </div>
+                <button
+                  onClick={() => setShowMonitorDrawer(false)}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
             </div>
 
             <div className="p-6 space-y-6">
@@ -820,61 +830,63 @@ export default function OpenClawMonitor() {
                 </button>
               </div>
 
-              {/* 会话记录区 */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">会话记录</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">总会话数</div>
-                    <div className="text-lg font-bold text-gray-900">42</div>
+              {/* 会话记录区 - 仅当 CLS 日志服务开启时显示 */}
+              {clsEnabled && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">会话记录</h3>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-500 mb-1">总会话数</div>
+                      <div className="text-lg font-bold text-gray-900">42</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <div className="text-xs text-gray-500 mb-1">平均轮次</div>
+                      <div className="text-lg font-bold text-gray-900">8.5</div>
+                    </div>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">平均轮次</div>
-                    <div className="text-lg font-bold text-gray-900">8.5</div>
+                  
+                  {/* 会话摘要表格 */}
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium text-gray-700">会话</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-700">类型</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-700">模型</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-700">最新时间</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-900">c3b2ac3c</td>
+                          <td className="px-4 py-3 text-gray-600">Feishu Dm</td>
+                          <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
+                          <td className="px-4 py-3 text-gray-600">2026-03-09 17:49</td>
+                        </tr>
+                        <tr className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-900">81c87c7b</td>
+                          <td className="px-4 py-3 text-gray-600">QQ Dm</td>
+                          <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
+                          <td className="px-4 py-3 text-gray-600">2026-03-09 10:07</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-gray-900">267e462d</td>
+                          <td className="px-4 py-3 text-gray-600">CLI</td>
+                          <td className="px-4 py-3 text-gray-600">deepseek-v3.2</td>
+                          <td className="px-4 py-3 text-gray-600">2026-03-08 12:54</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
+                  
+                  <button 
+                    onClick={() => setLocation('/admin/session-management')}
+                    className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    查看完整会话管理 <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                
-                {/* 会话摘要表格 */}
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">会话</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">类型</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">模型</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">最新时间</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">c3b2ac3c</td>
-                        <td className="px-4 py-3 text-gray-600">Feishu Dm</td>
-                        <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-09 17:49</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">81c87c7b</td>
-                        <td className="px-4 py-3 text-gray-600">QQ Dm</td>
-                        <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-09 10:07</td>
-                      </tr>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">267e462d</td>
-                        <td className="px-4 py-3 text-gray-600">CLI</td>
-                        <td className="px-4 py-3 text-gray-600">deepseek-v3.2</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-08 12:54</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                
-                <button 
-                  onClick={() => setLocation('/admin/session-management')}
-                  className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
-                >
-                  查看完整会话管理 <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>

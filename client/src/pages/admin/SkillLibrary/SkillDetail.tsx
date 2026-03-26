@@ -224,22 +224,22 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
       {/* Tab 页面 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto gap-3">
+          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-full px-4 py-1.5 text-sm text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-full px-4 py-1.5 text-sm text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
+              className="rounded-full px-4 py-1.5 text-sm text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:border-blue-600 transition-colors"
             >
               安装方式
             </TabsTrigger>

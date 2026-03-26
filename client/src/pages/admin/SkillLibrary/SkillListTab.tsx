@@ -197,7 +197,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         {/* 排序、视图切换、发布按钮 */}
         <div className="flex items-center justify-end gap-4">
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
-            <SelectTrigger className="w-32 bg-white border border-gray-200">
+            <SelectTrigger className="w-36 bg-white border border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

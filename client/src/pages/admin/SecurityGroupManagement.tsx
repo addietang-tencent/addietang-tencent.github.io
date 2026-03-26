@@ -19,7 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
@@ -107,6 +107,7 @@ export default function SecurityGroupManagement() {
   const [panelPort, setPanelPort] = useState<string | null>(() => {
     return localStorage.getItem("admin_panel_port");
   });
+  const [panelAccessLoading, setPanelAccessLoading] = useState(false);
   const [showRuleDialog, setShowRuleDialog] = useState(false);
   const [ruleType, setRuleType] = useState<"inbound" | "outbound">("inbound");
   const [editRule, setEditRule] = useState<Rule | null>(null);
@@ -372,25 +373,39 @@ export default function SecurityGroupManagement() {
                   <p className="text-xs text-gray-400 mt-0.5">开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问OpenClaw面板</p>
                 </div>
               </div>
-              <Switch
-                checked={allowPanelAccess}
-                onCheckedChange={(v) => {
-                  if (v) {
-                    const randomPort = String(Math.floor(Math.random() * 1000) + 9000);
-                    setAllowPanelAccess(true);
-                    setPanelPort(randomPort);
-                    localStorage.setItem("admin_allow_panel_access", "true");
-                    localStorage.setItem("admin_panel_port", randomPort);
-                    toast.success(`已开启用户端访问OpenClaw面板`);
-                  } else {
-                    setAllowPanelAccess(false);
-                    setPanelPort(null);
-                    localStorage.setItem("admin_allow_panel_access", "false");
-                    localStorage.removeItem("admin_panel_port");
-                    toast.success("已禁止用户端访问OpenClaw面板");
-                  }
-                }}
-              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={allowPanelAccess}
+                  disabled={panelAccessLoading}
+                  onCheckedChange={(v) => {
+                    if (v) {
+                      setPanelAccessLoading(true);
+                      // 模拟后端初始化延迟（3-5 秒）
+                      setTimeout(() => {
+                        const randomPort = String(Math.floor(Math.random() * 1000) + 9000);
+                        setAllowPanelAccess(true);
+                        setPanelPort(randomPort);
+                        localStorage.setItem("admin_allow_panel_access", "true");
+                        localStorage.setItem("admin_panel_port", randomPort);
+                        setPanelAccessLoading(false);
+                        toast.success(`已开启用户端访问OpenClaw面板`);
+                      }, 3000);
+                    } else {
+                      setAllowPanelAccess(false);
+                      setPanelPort(null);
+                      localStorage.setItem("admin_allow_panel_access", "false");
+                      localStorage.removeItem("admin_panel_port");
+                      toast.success("已禁止用户端访问OpenClaw面板");
+                    }
+                  }}
+                />
+                {panelAccessLoading && (
+                  <div className="flex items-center gap-1.5">
+                    <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                    <span className="text-xs text-blue-500 font-medium">初始化中...</span>
+                  </div>
+                )}
+              </div>
             </div>
             {/* 开启后的提示语 */}
             {allowPanelAccess && (

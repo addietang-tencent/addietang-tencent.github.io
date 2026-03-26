@@ -484,75 +484,7 @@ export default function OpsObservation() {
             </div>
           </div>
 
-          {/* CLS 采集插件升级对话框 */}
-          <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>升级 CLS 采集插件</DialogTitle>
-                <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                {/* 版本列表 */}
-                <div>
-                  <Label className="text-xs font-semibold text-gray-700 mb-2 block">选择版本</Label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {CLS_PLUGIN_VERSIONS.map((v) => (
-                      <button
-                        key={v.version}
-                        onClick={() => setSelectedPluginVersion(v)}
-                        className={`w-full text-left p-2 rounded border transition-colors ${
-                          selectedPluginVersion?.version === v.version
-                            ? "bg-blue-50 border-blue-200"
-                            : "bg-white border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">v{v.version}</div>
-                            <div className="text-xs text-gray-500">{v.releaseDate}</div>
-                          </div>
-                          {v.status === 'current' && (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
-                {/* 版本详情 */}
-                {selectedPluginVersion && (
-                  <div className="bg-gray-50 rounded p-3 border border-gray-200">
-                    <div className="text-xs font-semibold text-gray-700 mb-2">更新内容</div>
-                    <div className="text-xs text-gray-600">{selectedPluginVersion.changelog}</div>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowPluginUpgradeDialog(false)}
-                  disabled={isUpgradingPlugin}
-                >
-                  取消
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsUpgradingPlugin(true);
-                    setTimeout(() => {
-                      setIsUpgradingPlugin(false);
-                      setShowPluginUpgradeDialog(false);
-                      toast.success(`成功升级到 v${selectedPluginVersion?.version}`);
-                    }, 2000);
-                  }}
-                  disabled={isUpgradingPlugin || selectedPluginVersion?.status === 'current'}
-                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                >
-                  {isUpgradingPlugin ? "升级中..." : "确认升级"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
           {/* CLS 协议确认弹窗 */}
           <Dialog open={showClsAgreementDialog} onOpenChange={setShowClsAgreementDialog}>
@@ -674,6 +606,76 @@ export default function OpsObservation() {
           </div>
         </>
       )}
+
+      {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
+      <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>升级 CLS 采集插件</DialogTitle>
+            <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* 版本列表 */}
+            <div>
+              <Label className="text-xs font-semibold text-gray-700 mb-2 block">选择版本</Label>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {CLS_PLUGIN_VERSIONS.map((v) => (
+                  <button
+                    key={v.version}
+                    onClick={() => setSelectedPluginVersion(v)}
+                    className={`w-full text-left p-2 rounded border transition-colors ${
+                      selectedPluginVersion?.version === v.version
+                        ? "bg-blue-50 border-blue-200"
+                        : "bg-white border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">v{v.version}</div>
+                        <div className="text-xs text-gray-500">{v.releaseDate}</div>
+                      </div>
+                      {v.status === 'current' && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 版本详情 */}
+            {selectedPluginVersion && (
+              <div className="bg-gray-50 rounded p-3 border border-gray-200">
+                <div className="text-xs font-semibold text-gray-700 mb-2">更新内容</div>
+                <div className="text-xs text-gray-600">{selectedPluginVersion.changelog}</div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPluginUpgradeDialog(false)}
+              disabled={isUpgradingPlugin}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                setIsUpgradingPlugin(true);
+                setTimeout(() => {
+                  setIsUpgradingPlugin(false);
+                  setShowPluginUpgradeDialog(false);
+                  toast.success(`成功升级到 v${selectedPluginVersion?.version}`);
+                }, 2000);
+              }}
+              disabled={isUpgradingPlugin || selectedPluginVersion?.status === 'current'}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+            >
+              {isUpgradingPlugin ? "升级中..." : "确认升级"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (

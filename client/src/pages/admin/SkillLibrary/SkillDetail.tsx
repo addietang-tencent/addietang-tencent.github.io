@@ -300,9 +300,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <div className="flex gap-4 h-96">
+              <div className="flex gap-2 h-96">
                 {/* 左列：版本号选择 (1) */}
-                <div className="w-1/6 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                <div className="w-1/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
                   <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
                     <p className="text-xs font-semibold text-gray-700">版本号</p>
                   </div>
@@ -311,7 +311,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
+                        className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-100 transition-colors ${
                           selectedVersion === ver
                             ? 'bg-blue-50 text-blue-600 font-medium'
                             : 'hover:bg-gray-50 text-gray-700 cursor-pointer'
@@ -323,8 +323,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                   </div>
                 </div>
 
-                {/* 中列：文件列表 (1) */}
-                <div className="w-1/6 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                {/* 中列：文件列表 (2) */}
+                <div className="w-2/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
                   <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
                     <p className="text-xs font-semibold text-gray-700">文件</p>
                   </div>
@@ -333,8 +333,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                   </div>
                 </div>
 
-                {/* 右列：文件详情 (3) */}
-                <div className="flex-1 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
+                {/* 右列：文件详情 (4) */}
+                <div className="w-4/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
                   {expandedFile ? (
                     <>
                       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">

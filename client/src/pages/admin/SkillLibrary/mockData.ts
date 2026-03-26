@@ -72,6 +72,11 @@ export const MOCK_SKILLS: Skill[] = [
     uploadTime: new Date('2025-03-20'),
     content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...',
     versions: ['1.0.0', '0.9.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024 },
+      { name: 'README.md', size: 512 },
+      { name: 'docs/guide.md', size: 768 },
+    ],
   },
   {
     id: 'skill-2',
@@ -83,6 +88,11 @@ export const MOCK_SKILLS: Skill[] = [
     uploadTime: new Date('2025-03-18'),
     content: '# 代码审查工具\n\n这是一个用于代码审查的 Skill...',
     versions: ['2.1.0', '2.0.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024 },
+      { name: 'README.md', size: 512 },
+      { name: 'config/rules.md', size: 768 },
+    ],
   },
   {
     id: 'skill-3',
@@ -94,6 +104,11 @@ export const MOCK_SKILLS: Skill[] = [
     uploadTime: new Date('2025-03-15'),
     content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...',
     versions: ['1.5.2', '1.5.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024 },
+      { name: 'README.md', size: 512 },
+      { name: 'examples/usage.md', size: 768 },
+    ],
   },
   {
     id: 'skill-4',

@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Search, Grid3x3, List, Send } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
@@ -23,7 +17,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
@@ -46,11 +39,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   });
 
   const sortedSkills = [...filteredSkills].sort((a, b) => {
-    if (sortBy === 'desc') {
-      return b.uploadTime.getTime() - a.uploadTime.getTime();
-    } else {
-      return a.uploadTime.getTime() - b.uploadTime.getTime();
-    }
+    return b.uploadTime.getTime() - a.uploadTime.getTime();
   });
 
   const handleUploadSkill = (skillData: any) => {
@@ -184,7 +173,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       {/* 搜索和工具栏 */}
       <div className="flex items-center justify-between gap-6">
         {/* 搜索框 */}
-        <div className="relative flex-1 max-w-2xl">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             placeholder="搜索技能名称或描述..."
@@ -194,17 +183,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           />
         </div>
 
-        {/* 排序、视图切换、发布按钮 */}
+        {/* 视图切换、发布按钮 */}
         <div className="flex items-center justify-end gap-4">
-          <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
-            <SelectTrigger className="w-36 bg-white border border-gray-200">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">上传时间倒序</SelectItem>
-              <SelectItem value="asc">上传时间顺序</SelectItem>
-            </SelectContent>
-          </Select>
           
           {/* 视图切换 */}
           <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">

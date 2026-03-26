@@ -899,7 +899,7 @@ export default function OpenClawDetail() {
                     >
                       ×
                     </button>
-                    重磅来襲！升级版本，一键接入微信！
+                    重磅来袭！升级版本，一键接入微信！
                     <div className="absolute top-full right-4 w-0 h-0"
                       style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #2563eb" }} />
                   </div>

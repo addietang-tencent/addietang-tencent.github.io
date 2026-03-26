@@ -201,6 +201,17 @@ export default function OpenClawDetail() {
 
   const clawName = claw.name;
 
+  // ── Instance status loading state ──
+  const [statusLoading, setStatusLoading] = useState(true);
+  
+  useEffect(() => {
+    // 模拟加载状态，1.8秒后显示运行中
+    const timer = setTimeout(() => {
+      setStatusLoading(false);
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, []);
+
   // ── Configuration state ──
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
 
@@ -876,10 +887,17 @@ export default function OpenClawDetail() {
               {/* 第一行：名称 + 状态 badge */}
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
-                <span className="badge-running">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                  运行中
-                </span>
+                {statusLoading ? (
+                  <span className="badge-running inline-flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                    <span className="text-blue-600">加载中...</span>
+                  </span>
+                ) : (
+                  <span className="badge-running">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                    运行中
+                  </span>
+                )}
               </div>
               {/* 第二行：实例 ID */}
               <p className="text-xs text-gray-400 mt-0.5">{claw.instanceId}</p>

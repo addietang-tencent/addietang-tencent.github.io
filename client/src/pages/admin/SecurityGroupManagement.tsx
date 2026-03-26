@@ -343,9 +343,10 @@ export default function SecurityGroupManagement() {
           {/* 统一提示说明 */}
           <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-relaxed">
-              出站规则为空时，所有出站流量将被拒绝，可能导致用户无法使用OpenClaw；修改规则后，对所有 OpenClaw 云服务器立即生效，请谨慎操作
-            </p>
+            <div className="text-xs text-amber-700 leading-relaxed space-y-1.5">
+              <p>出站规则为空时，所有出站流量将被拒绝，可能导致用户无法使用OpenClaw</p>
+              <p>修改规则后，对所有 OpenClaw 云服务器立即生效，请谨慎操作。</p>
+            </div>
           </div>
 
           <Tabs defaultValue="outbound">

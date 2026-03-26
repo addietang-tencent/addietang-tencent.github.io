@@ -402,7 +402,7 @@ export default function SecurityGroupManagement() {
                 {panelAccessLoading && (
                   <div className="flex items-center gap-1.5">
                     <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-                    <span className="text-xs text-blue-500 font-medium">初始化中...</span>
+                    <span className="text-xs text-blue-500 font-medium">配置中，请勿关闭...</span>
                   </div>
                 )}
               </div>

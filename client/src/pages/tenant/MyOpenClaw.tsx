@@ -631,7 +631,7 @@ export default function MyOpenClaw() {
         {/* Notification Panel */}
         {showNotificationPanel && (
           <div className="fixed inset-0 z-50" onClick={() => setShowNotificationPanel(false)}>
-            <div className="absolute left-1/2 transform -translate-x-1/2 top-16 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50"
+            <div className="absolute right-6 top-24 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50"
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
               <div className="p-3 border-b border-gray-100">
@@ -649,7 +649,7 @@ export default function MyOpenClaw() {
               {/* Notifications List */}
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="p-8 text-center">
+                  <div className="p-6 text-center">
                     <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                     <p className="text-xs text-gray-400">暂无消息</p>
                   </div>

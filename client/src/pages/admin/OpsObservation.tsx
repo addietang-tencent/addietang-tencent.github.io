@@ -614,50 +614,39 @@ export default function OpsObservation() {
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
-          <div className="flex gap-4 h-64">
-            {/* 左列：版本列表 */}
-            <div className="flex-1 flex flex-col">
-              <Label className="text-xs font-semibold text-gray-700 mb-2 block">选择版本</Label>
-              <div className="space-y-2 overflow-y-auto flex-1">
+          <div className="overflow-y-auto max-h-80">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700">版本号</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700">发布日期</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700">更新内容</th>
+                  <th className="text-center px-3 py-2 font-semibold text-gray-700">状态</th>
+                </tr>
+              </thead>
+              <tbody>
                 {CLS_PLUGIN_VERSIONS.map((v) => (
-                  <button
+                  <tr
                     key={v.version}
                     onClick={() => setSelectedPluginVersion(v)}
-                    className={`w-full text-left p-2 rounded border transition-colors ${
+                    className={`border-b border-gray-100 cursor-pointer transition-colors ${
                       selectedPluginVersion?.version === v.version
-                        ? "bg-blue-50 border-blue-200"
-                        : "bg-white border-gray-200 hover:bg-gray-50"
+                        ? "bg-blue-50"
+                        : "hover:bg-gray-50"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">v{v.version}</div>
-                        <div className="text-xs text-gray-500">{v.releaseDate}</div>
-                      </div>
+                    <td className="px-3 py-2 font-medium text-gray-900">v{v.version}</td>
+                    <td className="px-3 py-2 text-gray-600">{v.releaseDate}</td>
+                    <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{v.changelog}</td>
+                    <td className="px-3 py-2 text-center">
                       {v.status === 'current' && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
                       )}
-                    </div>
-                  </button>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-
-            {/* 右列：版本详情 */}
-            <div className="flex-1 flex flex-col">
-              {selectedPluginVersion ? (
-                <>
-                  <Label className="text-xs font-semibold text-gray-700 mb-2 block">更新内容</Label>
-                  <div className="bg-gray-50 rounded p-3 border border-gray-200 flex-1 overflow-y-auto">
-                    <div className="text-xs text-gray-600 whitespace-pre-wrap">{selectedPluginVersion.changelog}</div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full text-xs text-gray-400">
-                  请选择版本查看更新内容
-                </div>
-              )}
-            </div>
+              </tbody>
+            </table>
           </div>
           <DialogFooter>
             <Button

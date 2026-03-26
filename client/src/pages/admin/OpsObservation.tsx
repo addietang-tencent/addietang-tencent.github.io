@@ -619,7 +619,6 @@ export default function OpsObservation() {
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>版本号</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ width: '150px' }}>发布日期</th>
                   <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ flex: 1 }}>更新内容</th>
                   <th className="text-center px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>状态</th>
                 </tr>
@@ -636,7 +635,6 @@ export default function OpsObservation() {
                     }`}
                   >
                     <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap" style={{ width: '100px' }}>{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ width: '150px' }}>{v.releaseDate}</td>
                     <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ flex: 1 }}>{v.changelog}</td>
                     <td className="px-3 py-2 text-center" style={{ width: '100px' }}>
                       {v.status === 'current' && (

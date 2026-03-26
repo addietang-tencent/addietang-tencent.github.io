@@ -10,6 +10,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { MOCK_OPENCLAW_INSTANCES } from './mockData';
 
@@ -67,11 +74,11 @@ export default function BatchDistributeDialog({
 
   const getStatusDisplay = (status?: string) => {
     if (status === 'distributed') {
-      return <span className="text-green-600 font-medium">已下发</span>;
+      return <span className="text-green-600 font-medium text-xs">已下发</span>;
     } else if (status === 'not_distributed') {
-      return <span className="text-gray-500">未下发</span>;
+      return <span className="text-gray-500 text-xs">未下发</span>;
     }
-    return <span className="text-gray-500">未下发</span>;
+    return <span className="text-gray-500 text-xs">未下发</span>;
   };
 
   return (
@@ -84,46 +91,33 @@ export default function BatchDistributeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* 搜索框 */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="搜索 OpenClaw 云服务器..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* 筛选按钮 */}
+        {/* 搜索框 + 筛选 */}
         <div className="flex gap-2 mb-4">
-          <Button
-            variant={distributionFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setDistributionFilter('all')}
-          >
-            全部
-          </Button>
-          <Button
-            variant={distributionFilter === 'distributed' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setDistributionFilter('distributed')}
-          >
-            已下发
-          </Button>
-          <Button
-            variant={distributionFilter === 'not_distributed' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setDistributionFilter('not_distributed')}
-          >
-            未下发
-          </Button>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="搜索 OpenClaw 云服务器..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={distributionFilter} onValueChange={(value: any) => setDistributionFilter(value)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部</SelectItem>
+              <SelectItem value="distributed">已下发</SelectItem>
+              <SelectItem value="not_distributed">未下发</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 实例列表 */}
         <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
           {/* 全选复选框 */}
-          <div className="flex items-center gap-3 p-3 border-b border-gray-200 bg-gray-50 sticky top-0">
+          <div className="flex items-center gap-3 p-2 border-b border-gray-200 bg-gray-50 sticky top-0">
             <Checkbox
               checked={selectedInstances.length === filteredInstances.length && filteredInstances.length > 0}
               onCheckedChange={handleSelectAll}
@@ -137,17 +131,17 @@ export default function BatchDistributeDialog({
           {filteredInstances.map(instance => (
             <div
               key={instance.id}
-              className="flex items-center gap-3 p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
+              className="flex items-center gap-3 p-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
             >
               <Checkbox
                 checked={selectedInstances.includes(instance.id)}
                 onCheckedChange={() => handleSelectInstance(instance.id)}
               />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{instance.name}</p>
-                <p className="text-xs text-gray-500">
-                  状态: {getStatusDisplay(instance.distributionStatus)}
-                </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{instance.name}</p>
+              </div>
+              <div className="flex-shrink-0">
+                {getStatusDisplay(instance.distributionStatus)}
               </div>
             </div>
           ))}

@@ -108,7 +108,21 @@ export default function OpenClawMonitor() {
   // 监控抽屉
   const [showMonitorDrawer, setShowMonitorDrawer] = useState(false);
   const [selectedClaw, setSelectedClaw] = useState<Claw | null>(null);
-  const [clsEnabled, setClsEnabled] = useState(false); // CLS 日志服务是否开启
+  const [clsEnabled, setClsEnabled] = useState(() => {
+    const stored = localStorage.getItem("globalClsEnabled");
+    return stored === "true";
+  });
+
+  // 监听 localStorage 变化，实现跨页面同步
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "globalClsEnabled") {
+        setClsEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   // 权限开关
   const [allowTerminal, setAllowTerminal] = useState(() => {
@@ -787,21 +801,12 @@ export default function OpenClawMonitor() {
           <div className="absolute right-0 top-0 bottom-0 w-[640px] bg-white shadow-lg overflow-y-auto">
             <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
               <h2 className="text-lg font-semibold text-gray-900">{selectedClaw.name} - 监控</h2>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">CLS 日志服务</span>
-                  <Switch
-                    checked={clsEnabled}
-                    onCheckedChange={setClsEnabled}
-                  />
-                </div>
-                <button
-                  onClick={() => setShowMonitorDrawer(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
-                >
-                  <X className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
+              <button
+                onClick={() => setShowMonitorDrawer(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
 
             <div className="p-6 space-y-6">

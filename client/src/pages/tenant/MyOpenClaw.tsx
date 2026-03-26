@@ -256,15 +256,14 @@ export default function MyOpenClaw() {
 
   // 初始化通知（模拟）
   useEffect(() => {
-    // Mock 7 条通知消息
+    // Mock 通知消息：仅有 2 种场景
     const mockNotifications: Notification[] = [
-      { id: "notif-1", message: "您的 OpenClaw 实例已成功创建", timestamp: "2026-03-26 10:30" },
-      { id: "notif-2", message: "系统维护通知：今晚 22:00-23:00 进行定期维护", timestamp: "2026-03-26 09:15" },
-      { id: "notif-3", message: "您的 OpenClaw 实例已重启完成", timestamp: "2026-03-26 08:45" },
-      { id: "notif-4", message: "新功能发布：支持自定义模型配置", timestamp: "2026-03-25 18:20" },
-      { id: "notif-5", message: "安全警告：检测到异常登录尝试", timestamp: "2026-03-25 14:10" },
-      { id: "notif-6", message: "您的配额已更新，现在可使用更多资源", timestamp: "2026-03-25 10:00" },
-      { id: "notif-7", message: "OpenClaw 服务升级完成，性能提升 30%", timestamp: "2026-03-24 20:30" },
+      // 场景 1: 被管理员在腾讯云控制台删除
+      { id: "notif-1", message: "「Noah的分析助手」已被删除", timestamp: "2026-03-26 10:30" },
+      { id: "notif-2", message: "「Eve的编程助手」已被删除", timestamp: "2026-03-26 09:15" },
+      // 场景 2: 被管理员在管控端删除
+      { id: "notif-3", message: "「Leo的创意助手」已被管理员删除", timestamp: "2026-03-26 08:45" },
+      { id: "notif-4", message: "「Alice的工作助手」已被管理员删除", timestamp: "2026-03-25 18:20" },
     ];
     setNotifications(mockNotifications);
     setHasUnread(true);
@@ -632,12 +631,12 @@ export default function MyOpenClaw() {
         {/* Notification Panel */}
         {showNotificationPanel && (
           <div className="fixed inset-0 z-50" onClick={() => setShowNotificationPanel(false)}>
-            <div className="absolute right-6 top-20 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50"
+            <div className="absolute left-1/2 transform -translate-x-1/2 top-16 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50"
               onClick={(e) => e.stopPropagation()}>
               {/* Header */}
-              <div className="p-4 border-b border-gray-100">
+              <div className="p-3 border-b border-gray-100">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">消息通知</h3>
+                  <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
                   <button
                     onClick={() => handleClearAllNotifications()}
                     className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
@@ -652,14 +651,14 @@ export default function MyOpenClaw() {
                 {notifications.length === 0 ? (
                   <div className="p-8 text-center">
                     <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-400">暂无消息</p>
+                    <p className="text-xs text-gray-400">暂无消息</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
                     {notifications.slice(0, 5).map((notif) => (
-                      <div key={notif.id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm text-gray-700 flex-1">{notif.message}</p>
+                          <p className="text-xs text-gray-700 flex-1">{notif.message}</p>
                           <button
                             onClick={() => handleDeleteNotification(notif.id)}
                             className="text-gray-400 hover:text-gray-900 transition-colors flex-shrink-0"
@@ -667,7 +666,7 @@ export default function MyOpenClaw() {
                             <X className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">{notif.timestamp}</p>
+                        <p className="text-xs text-gray-400 mt-1" style={{fontSize: '11px'}}>{notif.timestamp}</p>
                       </div>
                     ))}
                   </div>

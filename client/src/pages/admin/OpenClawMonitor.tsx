@@ -71,6 +71,7 @@ const MOCK_CLAWS: Claw[] = [
   { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", observableStatus: "off", status: "running" },
   { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", observableStatus: "off", status: "error" },
   { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", observableStatus: "off", status: "running" },
+  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", observableStatus: "off", status: "running" },
 ];
 
 const PAGE_SIZE = 10;
@@ -118,8 +119,8 @@ export default function OpenClawMonitor() {
   }
 
   interface ClawDetail {
-    appliedModel: string;
-    appliedModelVersion: string;
+    appliedModel: string | null;
+    appliedModelVersion: string | null;
     connectedChannels: ChannelDetail[];
     installedSkills: { name: string; version: string }[];
   }
@@ -175,22 +176,23 @@ export default function OpenClawMonitor() {
         { name: "weather", version: "1.0.0" },
       ],
     };
-    const models: Record<string, { name: string; version: string }> = {
+    const models: Record<string, { name: string; version: string } | null> = {
       "1": { name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324" },
       "2": { name: "GPT-4 Turbo", version: "gpt-4-turbo-2024-04-09" },
       "3": { name: "Claude 3.5 Sonnet", version: "claude-3-5-sonnet-20241022" },
+      "13": null,
     };
-    const model = models[clawId] ?? { name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324" };
+    const model = clawId in models ? models[clawId] : { name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324" };
     return {
-      appliedModel: model.name,
-      appliedModelVersion: model.version,
-      connectedChannels: channelSets[clawId] ?? [
+      appliedModel: model?.name ?? null,
+      appliedModelVersion: model?.version ?? null,
+      connectedChannels: clawId === "13" ? [] : (channelSets[clawId] ?? [
         { name: "企业微信", appId: "wx9988776655", appSecret: "stu", expanded: false },
-      ],
-      installedSkills: skillSets[clawId] ?? [
+      ]),
+      installedSkills: clawId === "13" ? [] : (skillSets[clawId] ?? [
         { name: "github", version: "1.0.0" },
         { name: "agent-browser", version: "0.2.0" },
-      ],
+      ]),
     };
   };
 
@@ -206,10 +208,16 @@ export default function OpenClawMonitor() {
     });
   };
 
+  const [channelSkillLoading, setChannelSkillLoading] = useState(false);
+
   const handleOpenDrawer = (claw: Claw) => {
     setSelectedClaw(claw);
     setExpandedChannels(new Set());
+    setChannelSkillLoading(true);
     setShowDetailDrawer(true);
+    setTimeout(() => {
+      setChannelSkillLoading(false);
+    }, 1800);
   };
 
   const handleRefreshDrawer = () => {
@@ -802,61 +810,95 @@ export default function OpenClawMonitor() {
                 {/* 已应用模型 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">已应用模型</div>
-                  <div className="px-4 py-3 bg-white rounded-xl border border-gray-200">
-                    <div className="text-sm font-medium text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
-                    <div className="text-xs text-gray-400 mt-0.5">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
-                  </div>
+                  {getClawDetail(selectedClaw.id).appliedModel ? (
+                    <div className="px-4 py-3 bg-white rounded-xl border border-gray-200">
+                      <div className="text-sm font-medium text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">
+                      暂未配置模型
+                    </div>
+                  )}
                 </div>
 
                 {/* 已接入通道 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">
-                    已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）
+                    已接入通道{!channelSkillLoading && `（${getClawDetail(selectedClaw.id).connectedChannels.length}）`}
                   </div>
-                  <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel, idx) => (
-                      <div key={idx} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-                        <button
-                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
-                          onClick={() => toggleChannel(idx)}
-                        >
-                          <div className="flex items-center gap-2">
-                            {expandedChannels.has(idx)
-                              ? <ChevronDown className="w-4 h-4 text-gray-400" />
-                              : <ChevronRight className="w-4 h-4 text-gray-400" />
-                            }
-                            <span className="text-sm font-medium text-gray-900">{channel.name}</span>
-                          </div>
-                        </button>
-                        {expandedChannels.has(idx) && (
-                          <div className="px-4 pt-2 pb-3 space-y-2">
-                            <div className="flex items-center gap-1 text-sm">
-                              <span className="text-gray-500 shrink-0">appId：</span>
-                              <span className="font-mono text-gray-800 break-all">{channel.appId}</span>
+                  {channelSkillLoading ? (
+                    <div className="space-y-2">
+                      {[1, 2].map(i => (
+                        <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-24" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : getClawDetail(selectedClaw.id).connectedChannels.length === 0 ? (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">
+                      暂未接入通道
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {getClawDetail(selectedClaw.id).connectedChannels.map((channel, idx) => (
+                        <div key={idx} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+                          <button
+                            className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                            onClick={() => toggleChannel(idx)}
+                          >
+                            <div className="flex items-center gap-2">
+                              {expandedChannels.has(idx)
+                                ? <ChevronDown className="w-4 h-4 text-gray-400" />
+                                : <ChevronRight className="w-4 h-4 text-gray-400" />
+                              }
+                              <span className="text-sm font-medium text-gray-900">{channel.name}</span>
                             </div>
-                            <div className="flex items-center gap-1 text-sm">
-                              <span className="text-gray-500 shrink-0">appSecret：</span>
-                              <span className="font-mono text-gray-800 break-all">{channel.appSecret}••••••</span>
+                          </button>
+                          {expandedChannels.has(idx) && (
+                            <div className="px-4 pt-2 pb-3 space-y-2">
+                              <div className="flex items-center gap-1 text-sm">
+                                <span className="text-gray-500 shrink-0">appId：</span>
+                                <span className="font-mono text-gray-800 break-all">{channel.appId}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-sm">
+                                <span className="text-gray-500 shrink-0">appSecret：</span>
+                                <span className="font-mono text-gray-800 break-all">{channel.appSecret}••••••</span>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* 已安装技能 */}
                 <div>
                   <div className="text-xs text-gray-400 mb-2">
-                    已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）
+                    已安装技能{!channelSkillLoading && `（${getClawDetail(selectedClaw.id).installedSkills.length}）`}
                   </div>
-                  <div className="max-h-56 overflow-y-auto space-y-1.5 pr-0.5">
-                    {getClawDetail(selectedClaw.id).installedSkills.map((skill, idx) => (
-                      <div key={idx} className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                        <span className="text-sm text-gray-800">{skill.name} {skill.version}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {channelSkillLoading ? (
+                    <div className="space-y-1.5">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-2.5 animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-32" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : getClawDetail(selectedClaw.id).installedSkills.length === 0 ? (
+                    <div className="px-4 py-3 rounded-xl border border-dashed border-gray-200 text-sm text-gray-400 text-center">
+                      暂未安装技能
+                    </div>
+                  ) : (
+                    <div className="max-h-56 overflow-y-auto space-y-1.5 pr-0.5">
+                      {getClawDetail(selectedClaw.id).installedSkills.map((skill, idx) => (
+                        <div key={idx} className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                          <span className="text-sm text-gray-800">{skill.name} {skill.version}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

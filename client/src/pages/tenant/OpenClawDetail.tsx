@@ -947,7 +947,7 @@ export default function OpenClawDetail() {
               </div>
             )}
           </div>
-          <p className="text-sm text-gray-400 font-mono mt-1">{claw.instanceId}</p>
+          <p className="text-sm text-gray-400 mt-1">{claw.instanceId}</p>
           </div>
         </div>
 

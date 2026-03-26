@@ -374,7 +374,7 @@ export default function MyOpenClaw() {
                       <h3 className={`font-semibold text-base mb-0.5 transition-colors ${isDisabled ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
-                      <p className="text-xs text-gray-400 font-mono mb-0.5">{claw.instanceId}</p>
+                      <p className="text-xs text-gray-400 mb-0.5">{claw.instanceId}</p>
                       <p className="text-xs text-gray-400">创建于 {claw.createdAt}</p>
                     </div>
 

@@ -782,7 +782,13 @@ export default function OpenClawMonitor() {
             </div>
 
             {/* 抽屉内容 */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto relative">
+              {/* 刷新时居中转圈 */}
+              {drawerFading && (
+                <div className="absolute inset-0 flex items-center justify-center z-10 bg-white/60">
+                  <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+                </div>
+              )}
               <div
                 className="p-6 space-y-6 transition-opacity duration-400"
                 style={{ opacity: drawerFading ? 0 : 1 }}

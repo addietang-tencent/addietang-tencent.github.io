@@ -5,7 +5,13 @@ import { Category } from './types';
 import { DEFAULT_CATEGORIES } from './mockData';
 import AddCategoryDialog from './AddCategoryDialog';
 import EditCategoryDialog from './EditCategoryDialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
 export default function CategoryManagementTab() {
@@ -129,18 +135,20 @@ export default function CategoryManagementTab() {
                   <Label className="text-sm font-medium text-gray-900 mb-3 block">
                     新分类（可选）
                   </Label>
-                  <RadioGroup value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
-                    {categories
-                      .filter(cat => cat.id !== selectedCategory?.id)
-                      .map(category => (
-                        <div key={category.id} className="flex items-center gap-2 mb-2">
-                          <RadioGroupItem value={category.id} id={`cat-${category.id}`} />
-                          <Label htmlFor={`cat-${category.id}`} className="text-sm text-gray-700 cursor-pointer">
+                  <Select value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
+                    <SelectTrigger className="w-full bg-white border border-gray-200">
+                      <SelectValue placeholder="选择新分类" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories
+                        .filter(cat => cat.id !== selectedCategory?.id)
+                        .map(category => (
+                          <SelectItem key={category.id} value={category.id}>
                             {category.name}
-                          </Label>
-                        </div>
-                      ))}
-                  </RadioGroup>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex justify-end gap-2">

@@ -182,9 +182,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   return (
     <div className="space-y-4">
       {/* 搜索和工具栏 */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-6">
         {/* 搜索框 */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 max-w-2xl">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             placeholder="搜索技能名称或描述..."
@@ -195,7 +195,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         </div>
 
         {/* 排序、视图切换、发布按钮 */}
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-4">
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
             <SelectTrigger className="w-32 bg-white border border-gray-200">
               <SelectValue />
@@ -239,7 +239,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-3 mb-4 flex-wrap border-t border-gray-200 pt-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
         {DEFAULT_CATEGORIES.map((cat: any) => (
           <button
             key={cat.id}
@@ -250,10 +250,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   : [...prev, cat.id]
               );
             }}
-            className={`px-3 py-1 text-sm transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded transition-colors ${
               selectedCategories.includes(cat.id)
-                ? 'text-blue-600 border-b-2 border-blue-600 font-medium'
-                : 'text-gray-600 border-b-2 border-transparent hover:text-gray-900'
+                ? 'bg-blue-600 text-white font-medium'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
           >
             {cat.name}

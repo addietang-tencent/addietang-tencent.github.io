@@ -795,7 +795,8 @@ export default function OpenClawMonitor() {
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 text-xs text-blue-500 underline hover:text-blue-700"
+                          className="inline-flex items-center gap-0.5 text-xs text-blue-500 underline hover:text-blue-700 leading-none"
+                          style={{ fontSize: 'inherit' }}
                         >
                           去腾讯云控制台管理
                           <ExternalLink className="w-3 h-3" />
@@ -836,13 +837,13 @@ export default function OpenClawMonitor() {
                         </button>
                         {expandedChannels.has(idx) && (
                           <div className="px-4 pt-2 pb-3 space-y-2">
-                            <div className="flex items-baseline gap-2 text-sm">
-                              <span className="text-gray-400">appId:</span>
-                              <span className="font-mono text-gray-800 tracking-wider">{channel.appId}</span>
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="text-gray-500 font-mono shrink-0">appId：</span>
+                              <span className="font-mono text-gray-800 break-all">{channel.appId}</span>
                             </div>
-                            <div className="flex items-baseline gap-2 text-sm">
-                              <span className="text-gray-400">appSecret:</span>
-                              <span className="font-mono text-gray-800 tracking-wider">{channel.appSecret}<span className="text-[0.55em] tracking-widest align-middle ml-0.5">●●●●●●</span></span>
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="text-gray-500 font-mono shrink-0">appSecret：</span>
+                              <span className="font-mono text-gray-800 break-all">{channel.appSecret}••••••</span>
                             </div>
                           </div>
                         )}

@@ -150,6 +150,13 @@ export default function OpenClawMonitor() {
         { name: "weather", version: "1.0.0" },
         { name: "tencentcloud-lighthouse-skill", version: "1.0.0" },
         { name: "tencent-docs", version: "1.0.3" },
+        { name: "code-interpreter", version: "0.3.1" },
+        { name: "sql-query", version: "1.2.0" },
+        { name: "email-sender", version: "0.9.0" },
+        { name: "calendar-sync", version: "1.0.1" },
+        { name: "image-analyzer", version: "0.4.2" },
+        { name: "pdf-reader", version: "1.1.0" },
+        { name: "slack-integration", version: "0.6.0" },
       ],
       "2": [
         { name: "code-review", version: "2.1.0" },
@@ -833,14 +840,14 @@ export default function OpenClawMonitor() {
                           </div>
                         </button>
                         {expandedChannels.has(idx) && (
-                          <div className="mx-4 mb-3 rounded-lg bg-gray-50 px-4 py-3 space-y-2">
-                            <div className="flex items-baseline gap-3 text-sm">
-                              <span className="text-gray-400 font-mono w-20 flex-shrink-0">appId:</span>
-                              <span className="text-gray-700 font-mono">{channel.appId}</span>
+                          <div className="px-4 pb-3 space-y-2">
+                            <div className="flex items-baseline gap-2 text-sm">
+                              <span className="text-gray-400">appId:</span>
+                              <span className="font-mono text-gray-800">{channel.appId}</span>
                             </div>
-                            <div className="flex items-baseline gap-3 text-sm">
-                              <span className="text-gray-400 font-mono w-20 flex-shrink-0">appSecret:</span>
-                              <span className="text-gray-700 font-mono">{channel.appSecret}●●●●●●</span>
+                            <div className="flex items-baseline gap-2 text-sm">
+                              <span className="text-gray-400">appSecret:</span>
+                              <span className="font-mono text-gray-800 tracking-wide">{channel.appSecret}<span className="tracking-widest">●●●●●●</span></span>
                             </div>
                           </div>
                         )}

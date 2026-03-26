@@ -790,7 +790,7 @@ export default function OpenClawMonitor() {
                     <div>
                       <div className="text-base font-semibold text-gray-900">{selectedClaw.name}</div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[0.7rem] text-gray-500 font-mono">{selectedClaw.instanceId}</span>
+                        <span className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</span>
                         <a
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"
@@ -837,11 +837,11 @@ export default function OpenClawMonitor() {
                         {expandedChannels.has(idx) && (
                           <div className="px-4 pt-2 pb-3 space-y-2">
                             <div className="flex items-center gap-1 text-sm">
-                              <span className="text-gray-500 font-mono shrink-0">appId：</span>
+                              <span className="text-gray-500 shrink-0">appId：</span>
                               <span className="font-mono text-gray-800 break-all">{channel.appId}</span>
                             </div>
                             <div className="flex items-center gap-1 text-sm">
-                              <span className="text-gray-500 font-mono shrink-0">appSecret：</span>
+                              <span className="text-gray-500 shrink-0">appSecret：</span>
                               <span className="font-mono text-gray-800 break-all">{channel.appSecret}••••••</span>
                             </div>
                           </div>

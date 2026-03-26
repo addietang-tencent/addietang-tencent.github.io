@@ -19,6 +19,7 @@ import ResetPassword from "./pages/tenant/ResetPassword";
 // Admin
 import AdminLayout from "./components/AdminLayout";
 import BasicInfo from "./pages/admin/BasicInfo";
+import PlatformPolicy from "./pages/admin/PlatformPolicy";
 import MemberManagement from "./pages/admin/MemberManagement";
 import ModelConfig from "./pages/admin/ModelConfig";
 import ChannelConfig from "./pages/admin/ChannelConfig";
@@ -51,6 +52,7 @@ function Router() {
 
       {/* Admin Routes - 使用顶层路由避免 wouter 嵌套路由匹配问题 */}
       <Route path="/admin/basic-info" component={() => <AdminLayout><BasicInfo /></AdminLayout>} />
+      <Route path="/admin/platform-policy" component={() => <AdminLayout><PlatformPolicy /></AdminLayout>} />
       <Route path="/admin/members" component={() => <AdminLayout><MemberManagement /></AdminLayout>} />
       <Route path="/admin/model-config" component={() => <AdminLayout><ModelConfig /></AdminLayout>} />
       <Route path="/admin/channel-config" component={() => <AdminLayout><ChannelConfig /></AdminLayout>} />

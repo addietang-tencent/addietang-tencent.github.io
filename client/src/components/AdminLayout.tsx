@@ -59,6 +59,7 @@ const NAV_GROUPS = [
     items: [
       { label: "基础信息配置", path: "/admin/basic-info", icon: Settings },
       { label: "用户管理", path: "/admin/members", icon: Users },
+      { label: "平台策略", path: "/admin/platform-policy", icon: Shield },
     ],
   },
   {

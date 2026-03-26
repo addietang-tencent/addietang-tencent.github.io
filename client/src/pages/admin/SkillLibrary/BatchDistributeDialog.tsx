@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search } from 'lucide-react';
+import { MOCK_OPENCLAW_INSTANCES } from './mockData';
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -20,15 +21,6 @@ interface BatchDistributeDialogProps {
   onDistributionStart?: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
 }
 
-// 模拟 OpenClaw 实例列表
-const MOCK_OPENCLAW_INSTANCES = [
-  { id: '1', name: 'OpenClaw-生产环境-1', status: 'online' },
-  { id: '2', name: 'OpenClaw-生产环境-2', status: 'online' },
-  { id: '3', name: 'OpenClaw-测试环境-1', status: 'online' },
-  { id: '4', name: 'OpenClaw-开发环境-1', status: 'offline' },
-  { id: '5', name: 'OpenClaw-预发布环境-1', status: 'online' },
-];
-
 export default function BatchDistributeDialog({
   open,
   onOpenChange,
@@ -37,10 +29,15 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
+  const [distributionFilter, setDistributionFilter] = useState<'all' | 'distributed' | 'not_distributed'>('all');
 
-  const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance =>
-    instance.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance => {
+    const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = 
+      distributionFilter === 'all' ||
+      instance.distributionStatus === distributionFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   const handleSelectAll = () => {
     if (selectedInstances.length === filteredInstances.length) {
@@ -59,14 +56,22 @@ export default function BatchDistributeDialog({
   const handleDistribute = () => {
     const selectedInstancesData = MOCK_OPENCLAW_INSTANCES.filter(i => selectedInstances.includes(i.id));
     
-    // 调用回调函数，传递选中的实例 ID 和数据
     if (onDistributionStart) {
       onDistributionStart(selectedInstances, selectedInstancesData);
     }
     
-    // 重置状态
     setSelectedInstances([]);
     setSearchQuery('');
+    setDistributionFilter('all');
+  };
+
+  const getStatusDisplay = (status?: string) => {
+    if (status === 'distributed') {
+      return <span className="text-green-600 font-medium">已下发</span>;
+    } else if (status === 'not_distributed') {
+      return <span className="text-gray-500">未下发</span>;
+    }
+    return <span className="text-gray-500">未下发</span>;
   };
 
   return (
@@ -88,6 +93,31 @@ export default function BatchDistributeDialog({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
+        </div>
+
+        {/* 筛选按钮 */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            variant={distributionFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDistributionFilter('all')}
+          >
+            全部
+          </Button>
+          <Button
+            variant={distributionFilter === 'distributed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDistributionFilter('distributed')}
+          >
+            已下发
+          </Button>
+          <Button
+            variant={distributionFilter === 'not_distributed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setDistributionFilter('not_distributed')}
+          >
+            未下发
+          </Button>
         </div>
 
         {/* 实例列表 */}
@@ -116,9 +146,7 @@ export default function BatchDistributeDialog({
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{instance.name}</p>
                 <p className="text-xs text-gray-500">
-                  状态: <span className={instance.status === 'online' ? 'text-green-600' : 'text-gray-400'}>
-                    {instance.status === 'online' ? '在线' : '离线'}
-                  </span>
+                  状态: {getStatusDisplay(instance.distributionStatus)}
                 </p>
               </div>
             </div>

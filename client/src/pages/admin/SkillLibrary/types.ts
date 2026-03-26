@@ -27,6 +27,7 @@ export interface OpenClawInstance {
   name: string;
   createdBy: string;
   status?: 'success' | 'failed' | 'pending';
+  distributionStatus?: 'distributed' | 'not_distributed';
 }
 
 export interface DistributionRecord {

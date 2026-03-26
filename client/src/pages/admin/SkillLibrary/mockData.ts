@@ -161,9 +161,9 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin' },
-  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer' },
-  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops' },
-  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin' },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', distributionStatus: 'distributed' },
+  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', distributionStatus: 'not_distributed' },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', distributionStatus: 'distributed' },
+  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', distributionStatus: 'not_distributed' },
+  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', distributionStatus: 'distributed' },
 ];

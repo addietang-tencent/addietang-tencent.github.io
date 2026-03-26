@@ -103,6 +103,41 @@ export default function OpenClawMonitor() {
     return localStorage.getItem("admin_allow_terminal") === "true";
   });
 
+  // 抽屉状态
+  const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+  const [selectedClaw, setSelectedClaw] = useState<Claw | null>(null);
+  const [drawerLoading, setDrawerLoading] = useState(false);
+
+  // 模拟 OpenClaw 详情数据
+  interface ClawDetail {
+    appliedModel: string;
+    connectedChannels: string[];
+    installedSkills: string[];
+  }
+
+  const getClawDetail = (clawId: string): ClawDetail => {
+    // 模拟数据
+    return {
+      appliedModel: "GPT-4 Turbo",
+      connectedChannels: ["企业微信", "飞书", "钉钉"],
+      installedSkills: ["文档总结助手", "代码审查", "需求分析", "技术方案设计", "会议记录"],
+    };
+  };
+
+  const handleOpenDrawer = (claw: Claw) => {
+    setSelectedClaw(claw);
+    setShowDetailDrawer(true);
+  };
+
+  const handleRefreshDrawer = () => {
+    if (!selectedClaw) return;
+    setDrawerLoading(true);
+    setTimeout(() => {
+      setDrawerLoading(false);
+      toast.success("信息已刷新");
+    }, 1500);
+  };
+
   const handleRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -320,15 +355,12 @@ export default function OpenClawMonitor() {
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">{claw.name}</div>
-                            <a
-                              href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${claw.instanceId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-500 hover:text-blue-700 hover:underline font-mono"
-                              onClick={(e) => e.stopPropagation()}
+                            <button
+                              onClick={() => handleOpenDrawer(claw)}
+                              className="text-xs text-blue-500 hover:text-blue-700 hover:underline font-mono cursor-pointer"
                             >
                               {claw.instanceId}
-                            </a>
+                            </button>
                           </div>
                         </div>
                       </td>
@@ -635,6 +667,106 @@ export default function OpenClawMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* OpenClaw 详情抽屉 */}
+      {showDetailDrawer && selectedClaw && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* 半透明背景 */}
+          <div
+            className="flex-1 bg-black/20"
+            onClick={() => setShowDetailDrawer(false)}
+          />
+          {/* 抽屉 */}
+          <div className="w-96 bg-white shadow-lg flex flex-col">
+            {/* 抽屉头 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900">OpenClaw 详情</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={handleRefreshDrawer}
+                  disabled={drawerLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${drawerLoading ? "animate-spin" : ""}`} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowDetailDrawer(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+
+            {/* 抽屉内容 */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 space-y-6">
+                {/* 名称/ID 部分 */}
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{selectedClaw.name}</div>
+                      <div className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs h-8"
+                    onClick={() => {
+                      window.open(
+                        `https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`,
+                        "_blank"
+                      );
+                    }}
+                  >
+                    去腾讯云控制台管理
+                  </Button>
+                </div>
+
+                {/* 已应用模型 */}
+                <div>
+                  <div className="text-xs font-semibold text-gray-700 mb-2">已应用模型</div>
+                  <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="text-sm text-blue-900 font-medium">{getClawDetail(selectedClaw.id).appliedModel}</div>
+                  </div>
+                </div>
+
+                {/* 已接入通道 */}
+                <div>
+                  <div className="text-xs font-semibold text-gray-700 mb-2">已接入通道</div>
+                  <div className="flex flex-wrap gap-2">
+                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => (
+                      <span key={channel} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        {channel}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 已安装技能 */}
+                <div>
+                  <div className="text-xs font-semibold text-gray-700 mb-2">已安装技能</div>
+                  <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 p-3 space-y-2">
+                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
+                      <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                        {skill}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </TooltipProvider>
   );
 }

@@ -227,19 +227,19 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto gap-3">
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="install"
-              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:font-medium data-[state=active]:bg-transparent transition-colors"
+              className="rounded-none border-b-2 border-transparent px-3 py-2 text-sm text-gray-600 hover:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-transparent transition-colors"
             >
               安装方式
             </TabsTrigger>

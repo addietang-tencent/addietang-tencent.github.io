@@ -174,7 +174,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         skillId={selectedSkillId}
         skills={skills}
         onBack={() => setSelectedSkillId(null)}
-        defaultTab="安装方式"
+        defaultTab="overview"
       />
     );
   }

@@ -2,7 +2,7 @@
  * OpenClawList - 管控端 OpenClaw 列表页
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,8 @@ export default function OpenClawMonitor() {
   // 状态列筛选
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set());
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+  const [filterPosition, setFilterPosition] = useState<{ top: number; left: number } | null>(null);
 
   // 操作对话框
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -410,36 +412,60 @@ export default function OpenClawMonitor() {
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
+                      ref={filterButtonRef}
                       className="p-1 hover:bg-gray-200 rounded"
-                      onClick={() => setShowStatusFilter(!showStatusFilter)}
+                      onClick={() => {
+                        if (filterButtonRef.current) {
+                          const rect = filterButtonRef.current.getBoundingClientRect();
+                          setFilterPosition({
+                            top: rect.bottom + window.scrollY + 8,
+                            left: rect.left + window.scrollX
+                          });
+                        }
+                        setShowStatusFilter(!showStatusFilter);
+                      }}
                     >
                       <Filter className="w-3.5 h-3.5 text-gray-400" />
                     </button>
-                    {showStatusFilter && (
-                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" style={{ pointerEvents: 'auto' }}>
-                        <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
-                          {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => (
-                            <label key={status} className="flex items-center gap-2 cursor-pointer">
-                              <Checkbox
-                                checked={selectedStatuses.has(status as ClawStatus)}
-                                onCheckedChange={(checked) => handleStatusFilterChange(status as ClawStatus, !!checked)}
-                                disabled={isStatusDisabled(status as ClawStatus)}
-                              />
-                              <span className={`text-sm ${isStatusDisabled(status as ClawStatus) ? "text-gray-300" : "text-gray-700"}`}>
-                                {STATUS_CONFIG[status as ClawStatus].label}
-                              </span>
-                            </label>
-                          ))}
+                    {showStatusFilter && filterPosition && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setShowStatusFilter(false)}
+                          style={{ pointerEvents: 'auto' }}
+                        />
+                        <div 
+                          className="fixed w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" 
+                          style={{
+                            top: `${filterPosition.top}px`,
+                            left: `${filterPosition.left}px`,
+                            pointerEvents: 'auto'
+                          }}
+                        >
+                          <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
+                            {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => (
+                              <label key={status} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={selectedStatuses.has(status as ClawStatus)}
+                                  onCheckedChange={(checked) => handleStatusFilterChange(status as ClawStatus, !!checked)}
+                                  disabled={isStatusDisabled(status as ClawStatus)}
+                                />
+                                <span className={`text-sm ${isStatusDisabled(status as ClawStatus) ? "text-gray-300" : "text-gray-700"}`}>
+                                  {STATUS_CONFIG[status as ClawStatus].label}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="border-t border-gray-100 p-2 flex gap-2">
+                            <Button variant="outline" size="sm" onClick={handleStatusFilterReset} className="flex-1">
+                              重置
+                            </Button>
+                            <Button size="sm" onClick={handleStatusFilterConfirm} className="flex-1">
+                              确认
+                            </Button>
+                          </div>
                         </div>
-                        <div className="border-t border-gray-100 p-2 flex gap-2">
-                          <Button variant="outline" size="sm" onClick={handleStatusFilterReset} className="flex-1">
-                            重置
-                          </Button>
-                          <Button size="sm" onClick={handleStatusFilterConfirm} className="flex-1">
-                            确认
-                          </Button>
-                        </div>
-                      </div>
+                      </>
                     )}
                   </div>
                 </th>

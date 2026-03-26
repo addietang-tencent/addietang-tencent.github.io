@@ -256,8 +256,18 @@ export default function MyOpenClaw() {
 
   // 初始化通知（模拟）
   useEffect(() => {
-    // 可以从后端加载通知
-    setHasUnread(false);
+    // Mock 7 条通知消息
+    const mockNotifications: Notification[] = [
+      { id: "notif-1", message: "您的 OpenClaw 实例已成功创建", timestamp: "2026-03-26 10:30" },
+      { id: "notif-2", message: "系统维护通知：今晚 22:00-23:00 进行定期维护", timestamp: "2026-03-26 09:15" },
+      { id: "notif-3", message: "您的 OpenClaw 实例已重启完成", timestamp: "2026-03-26 08:45" },
+      { id: "notif-4", message: "新功能发布：支持自定义模型配置", timestamp: "2026-03-25 18:20" },
+      { id: "notif-5", message: "安全警告：检测到异常登录尝试", timestamp: "2026-03-25 14:10" },
+      { id: "notif-6", message: "您的配额已更新，现在可使用更多资源", timestamp: "2026-03-25 10:00" },
+      { id: "notif-7", message: "OpenClaw 服务升级完成，性能提升 30%", timestamp: "2026-03-24 20:30" },
+    ];
+    setNotifications(mockNotifications);
+    setHasUnread(true);
   }, []);
 
   // 自动轮询逻辑

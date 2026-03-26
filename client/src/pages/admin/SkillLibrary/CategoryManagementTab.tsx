@@ -5,6 +5,8 @@ import { Category } from './types';
 import { DEFAULT_CATEGORIES } from './mockData';
 import AddCategoryDialog from './AddCategoryDialog';
 import EditCategoryDialog from './EditCategoryDialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function CategoryManagementTab() {
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
@@ -12,6 +14,7 @@ export default function CategoryManagementTab() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [newCategoryForSkills, setNewCategoryForSkills] = useState<string>('');
 
   const handleAddCategory = (newCategory: Category) => {
     setCategories([...categories, newCategory]);
@@ -31,6 +34,7 @@ export default function CategoryManagementTab() {
       setCategories(categories.filter(cat => cat.id !== selectedCategory.id));
       setDeleteConfirmOpen(false);
       setSelectedCategory(null);
+      setNewCategoryForSkills('');
     }
   };
 
@@ -42,6 +46,7 @@ export default function CategoryManagementTab() {
   const openDeleteConfirm = (category: Category) => {
     setSelectedCategory(category);
     setDeleteConfirmOpen(true);
+    setNewCategoryForSkills('');
   };
 
   return (
@@ -113,15 +118,38 @@ export default function CategoryManagementTab() {
           {/* 删除确认对话框 */}
           {deleteConfirmOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">删除分类</h3>
+              <div className="bg-white rounded-lg p-6 max-w-md">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">删除分类</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  该分类下共有 0 个技能，请谨慎操作。
+                  该分类下共有 0 个技能，删除此分类后对应skill将移除该分类，可选择为对应skill增加新分类。
                 </p>
+
+                {/* 新分类选择 */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <Label className="text-sm font-medium text-gray-900 mb-3 block">
+                    新分类（可选）
+                  </Label>
+                  <RadioGroup value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
+                    {categories
+                      .filter(cat => cat.id !== selectedCategory?.id)
+                      .map(category => (
+                        <div key={category.id} className="flex items-center gap-2 mb-2">
+                          <RadioGroupItem value={category.id} id={`cat-${category.id}`} />
+                          <Label htmlFor={`cat-${category.id}`} className="text-sm text-gray-700 cursor-pointer">
+                            {category.name}
+                          </Label>
+                        </div>
+                      ))}
+                  </RadioGroup>
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => setDeleteConfirmOpen(false)}
+                    onClick={() => {
+                      setDeleteConfirmOpen(false);
+                      setNewCategoryForSkills('');
+                    }}
                   >
                     取消
                   </Button>

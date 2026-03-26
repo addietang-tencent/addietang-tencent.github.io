@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SkillListTab from './SkillLibrary/SkillListTab';
 import CategoryManagementTab from './SkillLibrary/CategoryManagementTab';
-import BucketManagementTab from './SkillLibrary/BucketManagementTab';
 import SkillDetail from './SkillLibrary/SkillDetail';
 
 interface EnterpriseSkillLibraryProps {
@@ -20,10 +19,9 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
   return (
     <div className="page-enter">
       <Tabs defaultValue="skills" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-50">
+        <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-50">
           <TabsTrigger value="skills">Skill 列表</TabsTrigger>
           <TabsTrigger value="categories">分类管理</TabsTrigger>
-          <TabsTrigger value="bucket">存储桶管理</TabsTrigger>
         </TabsList>
 
         <TabsContent value="skills">
@@ -32,10 +30,6 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
 
         <TabsContent value="categories">
           <CategoryManagementTab />
-        </TabsContent>
-
-        <TabsContent value="bucket">
-          <BucketManagementTab />
         </TabsContent>
       </Tabs>
 

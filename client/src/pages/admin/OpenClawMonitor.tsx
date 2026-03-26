@@ -135,8 +135,15 @@ export default function OpenClawMonitor() {
     setActiveCardFilter(filter);
     setPage(1);
     // 重置状态列筛选为当前卡片允许的全选状态
-    const available = getAvailableStatuses();
-    setSelectedStatuses(new Set(available));
+    const availableStatuses: ClawStatus[] = (() => {
+      switch (filter) {
+        case "running": return ["running"];
+        case "shutdown": return ["shutdown"];
+        case "other": return ["creating", "loading", "createFail", "loadFail", "maintaining", "pending"];
+        case "all": return ["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"];
+      }
+    })();
+    setSelectedStatuses(new Set(availableStatuses));
   };
 
   const handleStatusFilterChange = (status: ClawStatus, checked: boolean) => {
@@ -760,25 +767,25 @@ export default function OpenClawMonitor() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Token 分析区 */}
+              {/* Tokens 分析区 */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Token 分析</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">Tokens 分析</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">Input Token</div>
+                    <div className="text-xs text-gray-500 mb-1">输入 Tokens</div>
                     <div className="text-lg font-bold text-gray-900">1,234</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">Output Token</div>
+                    <div className="text-xs text-gray-500 mb-1">输出 Tokens</div>
                     <div className="text-lg font-bold text-gray-900">5,678</div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">Token 调用总量</div>
+                    <div className="text-xs text-gray-500 mb-1">总 Tokens</div>
                     <div className="text-lg font-bold text-gray-900">6,912</div>
                   </div>
                 </div>
                 <button className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1">
-                  查看完整 Token 监控 <ExternalLink className="w-3.5 h-3.5" />
+                  查看完整 Tokens 监控 <ExternalLink className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -795,7 +802,49 @@ export default function OpenClawMonitor() {
                     <div className="text-lg font-bold text-gray-900">8.5</div>
                   </div>
                 </div>
-                <div className="text-sm text-gray-500 text-center py-8">暂无会话数据</div>
+                
+                {/* 会话摘要表格 */}
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">会话</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">类型</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">模型</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">TOKENS</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">最新时间</th>
+                        <th className="px-4 py-3 text-left font-medium text-gray-700">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-900">session-001</td>
+                        <td className="px-4 py-3 text-gray-600">文本</td>
+                        <td className="px-4 py-3 text-gray-600">GPT-4</td>
+                        <td className="px-4 py-3 text-gray-600">2,345</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-26 10:15</td>
+                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-900">session-002</td>
+                        <td className="px-4 py-3 text-gray-600">代码</td>
+                        <td className="px-4 py-3 text-gray-600">Claude</td>
+                        <td className="px-4 py-3 text-gray-600">1,876</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-26 09:45</td>
+                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                      </tr>
+                      <tr className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-900">session-003</td>
+                        <td className="px-4 py-3 text-gray-600">分析</td>
+                        <td className="px-4 py-3 text-gray-600">GPT-4</td>
+                        <td className="px-4 py-3 text-gray-600">3,421</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-26 08:20</td>
+                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
                 <button className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1">
                   查看完整会话管理 <ExternalLink className="w-3.5 h-3.5" />
                 </button>

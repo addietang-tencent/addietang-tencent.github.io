@@ -140,11 +140,11 @@ interface CLSPluginVersion {
 }
 
 const CLS_PLUGIN_VERSIONS: CLSPluginVersion[] = [
-  { version: "3.24", releaseDate: "2026-03-24", changelog: "修复会话追踪精度问题，优化 Token 计算算法", status: "available" },
-  { version: "3.23", releaseDate: "2026-03-17", changelog: "新增会话全局监控功能，支持多渠道分析", status: "available" },
-  { version: "3.22", releaseDate: "2026-03-10", changelog: "优化日志采集性能，降低 CPU 占用率", status: "current" },
-  { version: "3.21", releaseDate: "2026-03-03", changelog: "修复 CLS 连接超时问题", status: "deprecated" },
-  { version: "3.20", releaseDate: "2026-02-24", changelog: "首次发布 CLS 采集插件", status: "deprecated" },
+  { version: "v5", releaseDate: "2026-03-24", changelog: "修复会话追踪精度问题，优化 Token 计算算法", status: "available" },
+  { version: "v4", releaseDate: "2026-03-17", changelog: "新增会话全局监控功能，支持多渠道分析", status: "available" },
+  { version: "v3", releaseDate: "2026-03-10", changelog: "优化日志采集性能，降低 CPU 占用率", status: "current" },
+  { version: "v2", releaseDate: "2026-03-03", changelog: "修复 CLS 连接超时问题", status: "deprecated" },
+  { version: "v1", releaseDate: "2026-02-24", changelog: "首次发布 CLS 采集插件", status: "deprecated" },
 ];
 
 // Legend 说明映射
@@ -609,7 +609,7 @@ export default function OpsObservation() {
 
       {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
       <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
@@ -635,12 +635,12 @@ export default function OpsObservation() {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900">v{v.version}</td>
+                    <td className="px-3 py-2 font-medium text-gray-900">{v.version}</td>
                     <td className="px-3 py-2 text-gray-600">{v.releaseDate}</td>
                     <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{v.changelog}</td>
                     <td className="px-3 py-2 text-center">
                       {v.status === 'current' && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
                       )}
                     </td>
                   </tr>
@@ -662,7 +662,7 @@ export default function OpsObservation() {
                 setTimeout(() => {
                   setIsUpgradingPlugin(false);
                   setShowPluginUpgradeDialog(false);
-                  toast.success(`成功升级到 v${selectedPluginVersion?.version}`);
+                  toast.success(`成功升级到 ${selectedPluginVersion?.version}`);
                 }, 2000);
               }}
               disabled={isUpgradingPlugin || selectedPluginVersion?.status === 'current'}

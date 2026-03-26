@@ -625,7 +625,7 @@ export default function SessionManagement() {
         </div>
       )}
 
-      {/* 已开启时昺示搜索框 + 关闭按钮 */}
+      {/* 已开启时显示搜索框 + 关闭按钮 */}
       {clsEnabled && (
         <div className="flex items-start justify-between mb-6 gap-4">
           {/* 左侧：OpenClaw 名称筛选 */}

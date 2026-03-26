@@ -364,7 +364,7 @@ export default function OpenClawMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-visible"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
 
           {/* 工具栏 */}
@@ -392,9 +392,10 @@ export default function OpenClawMonitor() {
             </div>
           </div>
 
+          <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
+              <tr className="border-b border-gray-50 bg-gray-50/50 relative">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">名称 / ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
                   <div className="flex items-center gap-2 relative">
@@ -406,7 +407,7 @@ export default function OpenClawMonitor() {
                       <Filter className="w-3.5 h-3.5 text-gray-400" />
                     </button>
                     {showStatusFilter && (
-                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-[9999] will-change-transform" style={{ pointerEvents: 'auto' }}>
                         <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
                           {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => (
                             <label key={status} className="flex items-center gap-2 cursor-pointer">
@@ -553,7 +554,7 @@ export default function OpenClawMonitor() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-gray-50 cursor-pointer ${isRunning ? "text-gray-500 focus:text-gray-700" : "text-gray-300 cursor-not-allowed"}`}
+                                className={`text-xs focus:bg-gray-50 cursor-pointer ${isRunning ? "text-gray-500 focus:text-gray-700" : "text-gray-400 opacity-40 cursor-not-allowed"}`}
                                 disabled={!isRunning}
                                 onClick={() => handleRestart(claw)}
                               >
@@ -561,7 +562,7 @@ export default function OpenClawMonitor() {
                                 重启
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-gray-50 cursor-pointer ${["running", "shutdown"].includes(claw.status) ? "text-gray-500 focus:text-gray-700" : "text-gray-300 cursor-not-allowed"}`}
+                                className={`text-xs focus:bg-gray-50 cursor-pointer ${["running", "shutdown"].includes(claw.status) ? "text-gray-500 focus:text-gray-700" : "text-gray-400 opacity-40 cursor-not-allowed"}`}
                                 disabled={!["running", "shutdown"].includes(claw.status)}
                                 onClick={() => handleReinstallClick(claw)}
                               >
@@ -585,6 +586,7 @@ export default function OpenClawMonitor() {
               )}
             </tbody>
           </table>
+          </div>
 
           {/* Pagination */}
           <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">

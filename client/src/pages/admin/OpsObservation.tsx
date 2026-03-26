@@ -609,7 +609,7 @@ export default function OpsObservation() {
 
       {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
       <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-        <DialogContent className="max-w-7xl">
+        <DialogContent className="max-w-10xl">
           <DialogHeader>
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>

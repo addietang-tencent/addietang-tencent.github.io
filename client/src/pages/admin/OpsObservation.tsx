@@ -614,11 +614,11 @@ export default function OpsObservation() {
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            {/* 版本列表 */}
-            <div>
+          <div className="flex gap-4 h-64">
+            {/* 左列：版本列表 */}
+            <div className="flex-1 flex flex-col">
               <Label className="text-xs font-semibold text-gray-700 mb-2 block">选择版本</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-2 overflow-y-auto flex-1">
                 {CLS_PLUGIN_VERSIONS.map((v) => (
                   <button
                     key={v.version}
@@ -643,13 +643,21 @@ export default function OpsObservation() {
               </div>
             </div>
 
-            {/* 版本详情 */}
-            {selectedPluginVersion && (
-              <div className="bg-gray-50 rounded p-3 border border-gray-200">
-                <div className="text-xs font-semibold text-gray-700 mb-2">更新内容</div>
-                <div className="text-xs text-gray-600">{selectedPluginVersion.changelog}</div>
-              </div>
-            )}
+            {/* 右列：版本详情 */}
+            <div className="flex-1 flex flex-col">
+              {selectedPluginVersion ? (
+                <>
+                  <Label className="text-xs font-semibold text-gray-700 mb-2 block">更新内容</Label>
+                  <div className="bg-gray-50 rounded p-3 border border-gray-200 flex-1 overflow-y-auto">
+                    <div className="text-xs text-gray-600 whitespace-pre-wrap">{selectedPluginVersion.changelog}</div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full text-xs text-gray-400">
+                  请选择版本查看更新内容
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button

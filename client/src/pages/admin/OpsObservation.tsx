@@ -609,19 +609,19 @@ export default function OpsObservation() {
 
       {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
       <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="max-w-6xl">
           <DialogHeader>
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto max-h-80">
-            <table className="w-full text-xs">
+          <div className="overflow-x-auto overflow-y-auto max-h-80">
+            <table className="text-xs" style={{ minWidth: '100%', tableLayout: 'auto' }}>
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">版本号</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">发布日期</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700">更新内容</th>
-                  <th className="text-center px-3 py-2 font-semibold text-gray-700">状态</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ minWidth: '80px' }}>版本号</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ minWidth: '120px' }}>发布日期</th>
+                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ minWidth: '300px' }}>更新内容</th>
+                  <th className="text-center px-3 py-2 font-semibold text-gray-700" style={{ minWidth: '80px' }}>状态</th>
                 </tr>
               </thead>
               <tbody>
@@ -635,10 +635,10 @@ export default function OpsObservation() {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{v.releaseDate}</td>
-                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{v.changelog}</td>
-                    <td className="px-3 py-2 text-center">
+                    <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap" style={{ minWidth: '80px' }}>{v.version}</td>
+                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ minWidth: '120px' }}>{v.releaseDate}</td>
+                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ minWidth: '300px' }}>{v.changelog}</td>
+                    <td className="px-3 py-2 text-center" style={{ minWidth: '80px' }}>
                       {v.status === 'current' && (
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
                       )}

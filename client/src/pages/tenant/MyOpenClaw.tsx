@@ -634,10 +634,10 @@ export default function MyOpenClaw() {
         {/* Notification Panel */}
         {showNotificationPanel && (
           <div className="fixed inset-0 z-50" onClick={() => setShowNotificationPanel(false)}>
-            <div className="absolute right-6 top-24 w-96 bg-white rounded-2xl shadow-lg border border-gray-100 z-50"
+            <div className="absolute right-6 top-24 w-80 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 flex flex-col"
               onClick={(e) => e.stopPropagation()}>
-              {/* Header */}
-              <div className="p-3 border-b border-gray-100">
+              {/* Header - Fixed */}
+              <div className="p-3 border-b border-gray-100 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
                   <button
@@ -649,8 +649,13 @@ export default function MyOpenClaw() {
                 </div>
               </div>
 
-              {/* Notifications List */}
-              <div className="max-h-96 overflow-y-auto">
+              {/* Notifications List - Scrollable */}
+              <div className="overflow-y-auto" style={{
+                maxHeight: notifications.length > 5 ? 'calc(5 * 60px)' : 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#d1d5db #f3f4f6',
+                paddingRight: '4px'
+              }}>
                 {notifications.length === 0 ? (
                   <div className="p-6 text-center">
                     <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
@@ -659,9 +664,9 @@ export default function MyOpenClaw() {
                 ) : (
                   <div className="divide-y divide-gray-100">
                     {notifications.map((notif) => (
-                      <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors">
+                      <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors" style={{minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs text-gray-700 flex-1">{notif.message}</p>
+                          <p className="text-xs text-gray-700 flex-1 line-clamp-2">{notif.message}</p>
                           <button
                             onClick={() => handleDeleteNotification(notif.id)}
                             className="text-gray-400 hover:text-gray-900 transition-colors flex-shrink-0"

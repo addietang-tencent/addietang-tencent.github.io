@@ -609,7 +609,7 @@ export default function OpsObservation() {
 
       {/* CLS 采集插件升级对话框 - 移到条件外以便一直可用 */}
       <Dialog open={showPluginUpgradeDialog} onOpenChange={setShowPluginUpgradeDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-5xl">
           <DialogHeader>
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
@@ -635,9 +635,9 @@ export default function OpsObservation() {
                         : "hover:bg-gray-50"
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900">{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600">{v.releaseDate}</td>
-                    <td className="px-3 py-2 text-gray-600 max-w-xs truncate">{v.changelog}</td>
+                    <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap">{v.version}</td>
+                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{v.releaseDate}</td>
+                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{v.changelog}</td>
                     <td className="px-3 py-2 text-center">
                       {v.status === 'current' && (
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>

@@ -180,6 +180,10 @@
     background: rgba(52, 199, 89, 0.12);
     color: #1a8c3a;
   }
+  .badge-loading {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap;
+    color: #007AFF;
+  }
   .badge-stopped {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
     background: rgba(255, 59, 48, 0.1);

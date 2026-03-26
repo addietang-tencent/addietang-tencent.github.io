@@ -888,9 +888,9 @@ export default function OpenClawDetail() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
                 {statusLoading ? (
-                  <span className="badge-running inline-flex items-center gap-1.5">
-                    <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                    <span className="text-blue-600">加载中...</span>
+                  <span className="badge-loading">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    加载中...
                   </span>
                 ) : (
                   <span className="badge-running">

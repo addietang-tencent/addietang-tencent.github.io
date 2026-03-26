@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
-  Activity, CheckCircle2, XCircle, Loader2, Server
+  Activity, Loader2
 } from "lucide-react";
 
 type ClawStatus = "running" | "stopped" | "error" | "starting" | "stopping";
@@ -82,7 +82,6 @@ export default function OpenClawMonitor() {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [shutdownTarget, setShutdownTarget] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -103,11 +102,6 @@ export default function OpenClawMonitor() {
   const [allowTerminal, setAllowTerminal] = useState(() => {
     return localStorage.getItem("admin_allow_terminal") === "true";
   });
-
-  // 统计数据
-  const totalCount = claws.length;
-  const runningCount = claws.filter(c => c.status === "running").length;
-  const errorCount = claws.filter(c => c.status === "error").length;
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -216,18 +210,12 @@ export default function OpenClawMonitor() {
 
   const filtered = timeFiltered.filter((c) => {
     const matchSearch = !search || c.name.includes(search) || c.creator.includes(search) || c.instanceId.includes(search);
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch;
   });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  // 点击概览卡片筛选
-  const handleCardFilter = (status: string) => {
-    handleFilterChange(() => setStatusFilter(status));
-  };
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -273,57 +261,6 @@ export default function OpenClawMonitor() {
           </div>
         </div>
 
-        {/* 数据概览卡片 */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {/* 总数 */}
-          <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            onClick={() => handleCardFilter("all")}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500">OpenClaw 总数</span>
-              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                <Server className="w-4.5 h-4.5 text-blue-600" style={{ width: "18px", height: "18px" }} />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-gray-900">{totalCount}</div>
-            <div className="text-xs text-gray-400 mt-1">全部实例</div>
-          </div>
-
-          {/* 运行中 */}
-          <div
-            className={`bg-white rounded-2xl border transition-all cursor-pointer hover:shadow-md p-5 ${statusFilter === "running" ? "border-green-300 ring-1 ring-green-200" : "border-gray-100 hover:border-green-200"}`}
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            onClick={() => handleCardFilter(statusFilter === "running" ? "all" : "running")}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500">运行中</span>
-              <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
-                <CheckCircle2 className="text-green-600" style={{ width: "18px", height: "18px" }} />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-green-600">{runningCount}</div>
-            <div className="text-xs text-gray-400 mt-1">点击筛选运行中实例</div>
-          </div>
-
-          {/* 状态异常 */}
-          <div
-            className={`bg-white rounded-2xl border transition-all cursor-pointer hover:shadow-md p-5 ${statusFilter === "error" ? "border-red-300 ring-1 ring-red-200" : "border-gray-100 hover:border-red-200"}`}
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            onClick={() => handleCardFilter(statusFilter === "error" ? "all" : "error")}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500">状态异常</span>
-              <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
-                <XCircle className="text-red-500" style={{ width: "18px", height: "18px" }} />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-red-500">{errorCount}</div>
-            <div className="text-xs text-gray-400 mt-1">点击筛选异常实例</div>
-          </div>
-        </div>
-
         {/* 表格卡片 */}
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
@@ -341,20 +278,7 @@ export default function OpenClawMonitor() {
                   className="pl-9 bg-gray-50 border-gray-200 h-9"
                 />
               </div>
-              {/* 状态筛选 */}
-              <Select value={statusFilter} onValueChange={(v) => handleFilterChange(() => setStatusFilter(v))}>
-                <SelectTrigger className="w-32 h-9 bg-gray-50 border-gray-200 text-sm">
-                  <SelectValue placeholder="全部状态" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部状态</SelectItem>
-                  <SelectItem value="running">运行中</SelectItem>
-                  <SelectItem value="stopped">已关机</SelectItem>
-                  <SelectItem value="error">异常</SelectItem>
-                  <SelectItem value="starting">启动中</SelectItem>
-                  <SelectItem value="stopping">关机中</SelectItem>
-                </SelectContent>
-              </Select>
+
             </div>
             {/* 统计 */}
             <div className="flex items-center gap-2">
@@ -370,23 +294,21 @@ export default function OpenClawMonitor() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">名称 / ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">创建人</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">状态</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">名称 / ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">创建人</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">创建时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
               ) : (
                 paginated.map((claw) => {
-                  const statusCfg = STATUS_CONFIG[claw.status];
                   const isRunning = claw.status === "running";
                   return (
                     <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
@@ -412,13 +334,6 @@ export default function OpenClawMonitor() {
                       </td>
                       {/* 创建人 */}
                       <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
-                      {/* 状态 */}
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${statusCfg.bg} ${statusCfg.color}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot} ${claw.status === "starting" || claw.status === "stopping" ? "animate-pulse" : ""}`} />
-                          {statusCfg.label}
-                        </span>
-                      </td>
                       {/* 创建时间 */}
                       <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                       {/* 操作 */}

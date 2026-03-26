@@ -5,7 +5,7 @@
  */
 import { useState, useEffect } from "react";
 import { AlertCircle, ArrowUpRight, RefreshCw, BarChart3, TrendingUp, Activity, Zap, CheckCircle2, AlertTriangle, Info, Download } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -489,6 +489,7 @@ export default function OpsObservation() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>升级 CLS 采集插件</DialogTitle>
+                <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 {/* 版本列表 */}

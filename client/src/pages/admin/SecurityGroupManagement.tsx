@@ -1,11 +1,6 @@
-/**
+/*
  * SecurityGroupManagement - 管控端网络管理页
- * 三大块：安全组（入站/出站规则）、VPC 和子网配置、敬请期待
- *
- * VPC 和子网配置布局：
- * - VPC 单独一行：全局选一个 VPC + 刷新按钮
- * - 子网按可用区多行：每行一个可用区 + 子网选框 + 刷新按钮
- * - VPC 或子网有改动时，标题栏右上角出现保存/取消按钮，统一保存
+ * 采用 Tab 结构：安全组、私有网络和子网、公网、敬请期待
  */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -89,13 +84,38 @@ type Rule = {
 
 type NetworkConfig = {
   vpcId: string;
-  // 每个可用区对应的子网 ID
   zoneSubnets: Record<string, string>;
 };
+
+// ─── Tab 定义 ──────────────────────────────────────────────
+
+const TABS = [
+  {
+    id: "security",
+    label: "安全组",
+    description: "配置 OpenClaw 云服务器的入站与出站规则，管控网络流量策略。",
+  },
+  {
+    id: "vpc",
+    label: "私有网络和子网",
+    description: "配置 OpenClaw 云服务器的私有网络和子网部署策略。",
+  },
+  {
+    id: "public",
+    label: "公网",
+    description: "配置 OpenClaw 云服务器的公网 IP 和带宽策略。",
+  },
+  {
+    id: "coming",
+    label: "敬请期待",
+    description: "更多功能即将上线。",
+  },
+];
 
 // ─── 组件 ─────────────────────────────────────────────────────────────────────
 
 export default function SecurityGroupManagement() {
+  const [activeTab, setActiveTab] = useState("security");
   // 安全组状态
   const [inboundRules, setInboundRules] = useState<Rule[]>(DEFAULT_INBOUND);
   const [outboundRules, setOutboundRules] = useState<Rule[]>(DEFAULT_OUTBOUND);
@@ -108,238 +128,183 @@ export default function SecurityGroupManagement() {
     return localStorage.getItem("admin_panel_port");
   });
   const [panelAccessLoading, setPanelAccessLoading] = useState(false);
-  const [showRuleDialog, setShowRuleDialog] = useState(false);
-  const [ruleType, setRuleType] = useState<"inbound" | "outbound">("inbound");
-  const [editRule, setEditRule] = useState<Rule | null>(null);
-  const [form, setForm] = useState({ source: "", protocol: "TCP", port: "", policy: "允许", remark: "" });
 
-  // VPC 和子网状态（全局一个 VPC，每个可用区一个子网）
-  const initConfig: NetworkConfig = {
+  // VPC 和子网配置状态
+  const [config, setConfig] = useState<NetworkConfig>({
     vpcId: "",
-    zoneSubnets: Object.fromEntries(AVAILABLE_ZONES.map((z) => [z, ""])),
-  };
-  const [savedConfig, setSavedConfig] = useState<NetworkConfig>(initConfig);
-  const [config, setConfig] = useState<NetworkConfig>(initConfig);
-
-  // 刷新状态：vpc 表示刷新 VPC 列表，zone 名称表示刷新对应可用区子网
+    zoneSubnets: {},
+  });
+  const [isDirty, setIsDirty] = useState(false);
+  const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
   const [refreshingVpc, setRefreshingVpc] = useState(false);
   const [refreshingZone, setRefreshingZone] = useState<string | null>(null);
 
-  const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
-
-  // ── 公网配置状态 ──────────────────────────────────────────────────────────────
-  type PublicNetConfig = {
-    assignPublicIp: boolean;        // 是否分配公网 IP
-    billingMode: "monthly" | "traffic"; // 带宽计费模式
-    bandwidth: number;              // 带宽上限 (Mbps)
-  };
-  const initPublicConfig: PublicNetConfig = {
+  // 公网配置状态
+  const [publicConfig, setPublicConfig] = useState({
     assignPublicIp: true,
-    billingMode: "monthly",
+    billingMode: "monthly" as "monthly" | "traffic",
     bandwidth: 5,
-  };
-  const [savedPublicConfig, setSavedPublicConfig] = useState<PublicNetConfig>(initPublicConfig);
-  const [publicConfig, setPublicConfig] = useState<PublicNetConfig>(initPublicConfig);
-  const [showPublicSaveDialog, setShowPublicSaveDialog] = useState(false);
+  });
 
-  const isPublicDirty = JSON.stringify(publicConfig) !== JSON.stringify(savedPublicConfig);
+  // 编辑规则状态
+  const [editingRule, setEditingRule] = useState<{ id: string; type: "inbound" | "outbound" } | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<Rule>>({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState<{ id: string; type: "inbound" | "outbound" } | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState<"inbound" | "outbound" | null>(null);
+  const [addDraft, setAddDraft] = useState<Partial<Rule>>({});
 
-  const handlePublicSaveConfirm = () => {
-    setSavedPublicConfig(publicConfig);
-    setShowPublicSaveDialog(false);
-    toast.success("公网配置已保存");
-  };
-
-  const handlePublicDiscard = () => {
-    setPublicConfig(savedPublicConfig);
-  };
-
-  // 切换计费模式时，若当前带宽超出新范围则截断
-  const handleBillingModeChange = (mode: "monthly" | "traffic") => {
-    const maxBw = mode === "traffic" ? 200 : 2000;
-    setPublicConfig((prev) => ({
-      ...prev,
-      billingMode: mode,
-      bandwidth: Math.min(prev.bandwidth, maxBw),
-    }));
-  };
-
-  // 是否有未保存的改动
-
-  const isDirty = JSON.stringify(config) !== JSON.stringify(savedConfig);
-
-  // VPC 改变时，所有可用区子网重置
-  const handleVpcChange = (vpcId: string) => {
-    setConfig((prev) => ({
-      vpcId,
-      zoneSubnets: Object.fromEntries(AVAILABLE_ZONES.map((z) => [z, ""])),
-    }));
-  };
-
-  const handleSubnetChange = (zone: string, subnetId: string) => {
+  // ── VPC 和子网处理函数 ──
+  const handleVpcChange = (val: string) => {
     setConfig((prev) => ({
       ...prev,
-      zoneSubnets: { ...prev.zoneSubnets, [zone]: subnetId },
+      vpcId: val,
+      zoneSubnets: {},
     }));
+    setIsDirty(true);
+  };
+
+  const handleSubnetChange = (zone: string, val: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      zoneSubnets: { ...prev.zoneSubnets, [zone]: val },
+    }));
+    setIsDirty(true);
   };
 
   const handleRefreshVpc = () => {
     setRefreshingVpc(true);
-    setTimeout(() => {
-      setRefreshingVpc(false);
-      toast.success("VPC 列表已刷新");
-    }, 800);
+    setTimeout(() => setRefreshingVpc(false), 1000);
   };
 
   const handleRefreshZone = (zone: string) => {
     setRefreshingZone(zone);
-    setTimeout(() => {
-      setRefreshingZone(null);
-      toast.success(`${zone} 子网列表已刷新`);
-    }, 800);
-  };
-
-  // 是否至少选了一个子网（选了具体 VPC 时才校验）
-  const hasAtLeastOneSubnet = !config.vpcId || AVAILABLE_ZONES.some(z => !!config.zoneSubnets[z]);
-
-  const handleSaveConfirm = () => {
-    setSavedConfig(config);
-    setShowVpcSaveDialog(false);
-    toast.success("VPC 和子网配置已保存");
+    setTimeout(() => setRefreshingZone(null), 1000);
   };
 
   const handleDiscard = () => {
-    setConfig(savedConfig);
+    setConfig({ vpcId: "", zoneSubnets: {} });
+    setIsDirty(false);
   };
 
-  // ── 安全组操作 ──────────────────────────────────────────────────────────────
-
-  const handleSaveRule = () => {
-    if (!form.source.trim()) { toast.error(`请填写${ruleType === "inbound" ? "来源" : "目标"}`); return; }
-    const rule: Rule = { ...form, id: editRule ? editRule.id : String(Date.now()) };
-    if (editRule) {
-      if (ruleType === "inbound") setInboundRules((prev) => prev.map((r) => r.id === editRule.id ? rule : r));
-      else setOutboundRules((prev) => prev.map((r) => r.id === editRule.id ? rule : r));
-      toast.success("规则已更新");
-    } else {
-      if (ruleType === "inbound") setInboundRules((prev) => [...prev, rule]);
-      else setOutboundRules((prev) => [...prev, rule]);
-      toast.success("规则已添加");
-    }
-    setShowRuleDialog(false);
-    setEditRule(null);
-    setForm({ source: "", protocol: "TCP", port: "", policy: "允许", remark: "" });
+  const handleSaveVpc = () => {
+    toast.success("VPC 和子网配置已保存");
+    setShowVpcSaveDialog(false);
+    setIsDirty(false);
   };
 
-  const openAdd = (type: "inbound" | "outbound") => {
-    setRuleType(type);
-    setEditRule(null);
-    setForm({ source: "", protocol: "TCP", port: "", policy: "允许", remark: "" });
-    setShowRuleDialog(true);
+  const hasAtLeastOneSubnet = Object.values(config.zoneSubnets).some((v) => v);
+
+  // ── 公网配置处理函数 ──
+  const handleBillingModeChange = (mode: "monthly" | "traffic") => {
+    setPublicConfig((prev) => ({
+      ...prev,
+      billingMode: mode,
+      bandwidth: Math.min(prev.bandwidth, mode === "monthly" ? 2000 : 200),
+    }));
   };
 
-  const openEdit = (rule: Rule, type: "inbound" | "outbound") => {
-    setRuleType(type);
-    setEditRule(rule);
-    setForm({ source: rule.source, protocol: rule.protocol, port: rule.port, policy: rule.policy, remark: rule.remark });
-    setShowRuleDialog(true);
-  };
-
-  // ── 子组件：规则表格 ────────────────────────────────────────────────────────
-
-  const RuleTable = ({ rules, type }: { rules: Rule[]; type: "inbound" | "outbound" }) => (
-    <div
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-    >
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-        <span className="text-sm font-medium text-gray-700">
-          {type === "inbound" ? "入站规则" : "出站规则"}
-        </span>
-        <Button size="sm" variant="outline" onClick={() => openAdd(type)}>
-          <Plus className="w-3.5 h-3.5 mr-1" />
-          添加规则
-        </Button>
-      </div>
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-50 bg-gray-50/50">
-            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">
-              {type === "inbound" ? "来源" : "目标"}
-            </th>
-            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">协议</th>
-            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">端口</th>
-            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">策略</th>
-            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">备注</th>
-            <th className="text-right px-6 py-3 text-xs font-medium text-gray-500">操作</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {rules.map((rule) => (
-            <tr key={rule.id} className="hover:bg-gray-50/50 transition-colors">
-              <td className="px-6 py-3 text-sm text-gray-700 font-mono">{rule.source}</td>
-              <td className="px-6 py-3 text-sm text-gray-600">{rule.protocol}</td>
-              <td className="px-6 py-3 text-sm text-gray-600">{rule.port}</td>
-              <td className="px-6 py-3">
-                <span className={`text-sm font-medium ${rule.policy === "允许" ? "text-green-600" : "text-red-500"}`}>
-                  {rule.policy}
-                </span>
-              </td>
-              <td className="px-6 py-3 text-sm text-gray-400">{rule.remark || "—"}</td>
-              <td className="px-6 py-3">
-                <div className="flex items-center justify-end gap-3">
-                  <button
-                    onClick={() => openEdit(rule, type)}
-                    className="text-gray-400 hover:text-blue-600 transition-colors"
-                    title="编辑"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (type === "inbound") setInboundRules((prev) => prev.filter((r) => r.id !== rule.id));
-                      else setOutboundRules((prev) => prev.filter((r) => r.id !== rule.id));
-                      toast.success("规则已删除");
-                    }}
-                    className="text-gray-300 hover:text-red-500 transition-colors"
-                    title="删除"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </td>
+  // ── 规则表格组件 ──
+  function RuleTable({ rules, type }: { rules: Rule[]; type: "inbound" | "outbound" }) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <span className="text-sm font-semibold text-gray-800">{type === "inbound" ? "入站规则" : "出站规则"}</span>
+          <Button size="sm" onClick={() => setShowAddDialog(type)} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="w-3.5 h-3.5" />
+            添加规则
+          </Button>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              <th className="px-6 py-3 text-left font-medium text-gray-600">目标</th>
+              <th className="px-6 py-3 text-left font-medium text-gray-600">协议</th>
+              <th className="px-6 py-3 text-left font-medium text-gray-600">端口</th>
+              <th className="px-6 py-3 text-left font-medium text-gray-600">策略</th>
+              <th className="px-6 py-3 text-left font-medium text-gray-600">备注</th>
+              <th className="px-6 py-3 text-left font-medium text-gray-600">操作</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  // ── 渲染 ────────────────────────────────────────────────────────────────────
+          </thead>
+          <tbody>
+            {rules.map((rule) => (
+              <tr key={rule.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <td className="px-6 py-3 text-gray-700">{rule.source}</td>
+                <td className="px-6 py-3 text-gray-700">{rule.protocol}</td>
+                <td className="px-6 py-3 text-gray-700">{rule.port}</td>
+                <td className="px-6 py-3">
+                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${rule.policy === "允许" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    {rule.policy}
+                  </span>
+                </td>
+                <td className="px-6 py-3 text-gray-700">{rule.remark || "—"}</td>
+                <td className="px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingRule({ id: rule.id, type });
+                        setEditDraft(rule);
+                      }}
+                      className="text-gray-300 hover:text-blue-500 transition-colors"
+                      title="编辑"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (type === "inbound") setInboundRules((prev) => prev.filter((r) => r.id !== rule.id));
+                        else setOutboundRules((prev) => prev.filter((r) => r.id !== rule.id));
+                        toast.success("规则已删除");
+                      }}
+                      className="text-gray-300 hover:text-red-500 transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   const availableSubnets = config.vpcId ? (MOCK_SUBNETS[config.vpcId] ?? []) : [];
+  const currentTab = TABS.find((t) => t.id === activeTab)!;
 
   return (
     <>
       <div className="page-enter max-w-5xl">
 
         {/* 页头 */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">网络管理</h1>
-          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            管理 OpenClaw 云服务器的安全组规则、私有网络配置与公网配置，确保云服务器在安全可控的网络环境中运行。
-          </p>
         </div>
 
-        {/* ══ 第一块：安全组 ══════════════════════════════════════════════════ */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <Network className="w-3.5 h-3.5 text-white" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">安全组</h2>
-          </div>
+        {/* Tab 切换器 */}
+        <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
+        {/* Tab 描述 */}
+        <p className="text-sm text-gray-500 mt-3 mb-6 leading-relaxed">{currentTab.description}</p>
+
+        {/* Tab 内容 */}
+        {activeTab === "security" && (
+        <div>
           {/* 统一提示说明 */}
           <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
@@ -381,7 +346,6 @@ export default function SecurityGroupManagement() {
                   onCheckedChange={(v) => {
                     if (v) {
                       setPanelAccessLoading(true);
-                      // 模拟后端初始化延迟（3-5 秒）
                       setTimeout(() => {
                         const randomPort = String(Math.floor(Math.random() * 1000) + 9000);
                         setAllowPanelAccess(true);
@@ -408,7 +372,6 @@ export default function SecurityGroupManagement() {
                 )}
               </div>
             </div>
-            {/* 开启后的提示语 */}
             {allowPanelAccess && (
               <div className="border-t border-gray-100 px-6 py-4">
                 <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
@@ -419,16 +382,10 @@ export default function SecurityGroupManagement() {
             )}
           </div>
         </div>
+        )}
 
-        {/* ══ 第二块：VPC 和子网 ══════════════════════════════════════════════ */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-              <Globe className="w-3.5 h-3.5 text-white" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">私有网络和子网</h2>
-          </div>
-
+        {activeTab === "vpc" && (
+        <div>
           {/* 说明文字区域 */}
           <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
@@ -553,9 +510,7 @@ export default function SecurityGroupManagement() {
                 return AVAILABLE_ZONES.map((zone, idx) => {
                   const isRefreshing = refreshingZone === zone;
                   const subnetId = config.zoneSubnets[zone] || "";
-                  // 选择了具体 VPC 时，子网默认选项和 trigger 均显示「不分配」
                   const defaultLabel = config.vpcId ? "不分配" : "自动分配";
-                  // trigger 中显示的内容
                   const selectedSubnet = subnetId ? availableSubnets.find(s => s.id === subnetId) : null;
                   return (
                   <div
@@ -573,15 +528,9 @@ export default function SecurityGroupManagement() {
                         {!config.vpcId ? (
                           <span className="text-gray-400 text-sm">自动分配</span>
                         ) : availableSubnets.length === 0 ? (
-                          <span className="text-gray-400 text-sm">{zone}暂无子网</span>
-                        ) : !selectedSubnet ? (
-                          <span className="text-gray-400 text-sm">{defaultLabel}</span>
+                          <span className="text-gray-400 text-sm">暂无子网</span>
                         ) : (
-                          <span className="flex items-center gap-1 min-w-0 overflow-hidden">
-                            <span className="text-sm text-gray-600 shrink-0">{selectedSubnet.id}</span>
-                            <span className="text-sm text-gray-600 shrink-0">| {selectedSubnet.name}</span>
-                            <span className="text-sm text-gray-600 shrink-0">| {selectedSubnet.cidr}</span>
-                          </span>
+                          <SelectValue placeholder={defaultLabel} />
                         )}
                       </SelectTrigger>
                       <SelectContent>
@@ -601,77 +550,29 @@ export default function SecurityGroupManagement() {
                     <div className="flex justify-end">
                       <button
                         onClick={() => handleRefreshZone(zone)}
-                        disabled={!config.vpcId}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-gray-400 disabled:hover:border-gray-200"
-                        title={config.vpcId ? `刷新 ${zone} 子网列表` : "请先选择私有网络"}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
+                        title="刷新子网列表"
                       >
                         <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
                       </button>
                     </div>
                   </div>
-                );
+                  );
                 });
               })()}
             </div>
-
-            {/* 底部提示 */}
-            <div className="px-6 py-3 border-t border-gray-50 bg-gray-50/30">
-              <p className="text-xs text-gray-400 leading-relaxed">
-                如现有私有网络/子网不符合要求，可以去控制台{" "}
-                <a
-                  href="https://console.cloud.tencent.com/vpc/vpc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                >
-                  新建私有网络<ExternalLink className="w-3 h-3" />
-                </a>
-                {" "}或{" "}
-                <a
-                  href="https://console.cloud.tencent.com/vpc/subnet"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
-                >
-                  新建子网<ExternalLink className="w-3 h-3" />
-                </a>
-                。
-              </p>
-            </div>
           </div>
-        </div>        {/* ══ 公网配置板块 ══════════════════════════════════════════════════════════════ */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-              <Wifi className="w-3.5 h-3.5 text-white" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">公网</h2>
-          </div>
+        </div>
+        )}
 
-          {/* 公网配置卡片 */}
+        {activeTab === "public" && (
+        <div>
           <div
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            {/* 标题栏 */}
-            <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
+            <div className="px-6 py-5 border-b border-gray-100">
               <span className="text-sm font-semibold text-gray-800">公网配置</span>
-              {isPublicDirty && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handlePublicDiscard}
-                    className="h-7 px-3 text-xs text-gray-500 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    取消
-                  </button>
-                  <button
-                    onClick={() => setShowPublicSaveDialog(true)}
-                    className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                  >
-                    保存
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* ── 是否分配公网 IP ── */}
@@ -814,192 +715,75 @@ export default function SecurityGroupManagement() {
             )}
           </div>
         </div>
+        )}
 
-        {/* ══ 第三块：敬请期待 ════════════════════════════════════════════════════════════════ */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
+        {activeTab === "coming" && (
+        <div className="grid grid-cols-3 gap-6">
+          {/* 模型加速服务 */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "#007AFF" }}>
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  为 OpenClaw 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
+                </p>
+              </div>
             </div>
-            <h2 className="text-base font-bold text-gray-900">敬请期待</h2>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
-            {/* 模型加速服务 */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "#007AFF" }}>
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    为 OpenClaw 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
-                  </p>
-                </div>
+          {/* 公网高效接入 */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "#34C759" }}>
+                <Globe className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 mb-1">公网极速接入</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 OpenClaw 各场景下极速、灵活、稳定的网络接入体验
+                </p>
               </div>
             </div>
+          </div>
 
-            {/* 公网高效接入 */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "#34C759" }}>
-                  <Globe className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">公网极速接入</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 OpenClaw 各场景下极速、灵活、稳定的网络接入体验
-                  </p>
-                </div>
+          {/* 企业网络环境互通 */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "#FF9500" }}>
+                <Link className="w-6 h-6 text-white" />
               </div>
-            </div>
-
-            {/* 企业网络环境互通 */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "#FF9500" }}>
-                  <Link className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    为 OpenClaw 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同
-                  </p>
-                </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  为 OpenClaw 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同
+                </p>
               </div>
             </div>
           </div>
         </div>
+        )}
 
       </div>
 
-      {/* ── 添加/编辑规则弹窗 ─────────────────────────────────────────────── */}
-      <Dialog open={showRuleDialog} onOpenChange={setShowRuleDialog}>
-        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>
-              {editRule ? "编辑规则" : `添加${ruleType === "inbound" ? "入站" : "出站"}规则`}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">{ruleType === "inbound" ? "来源" : "目标"}</Label>
-              <Input
-                placeholder="例如：0.0.0.0/0"
-                value={form.source}
-                onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))}
-                className="text-sm"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">协议</Label>
-                <Select value={form.protocol} onValueChange={(v) => setForm((f) => ({ ...f, protocol: v }))}>
-                  <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {["TCP", "UDP", "ICMP", "ICMPv6", "ALL"].map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs text-gray-500">端口</Label>
-                <Input
-                  placeholder="例如：80 或 ALL"
-                  value={form.port}
-                  onChange={(e) => setForm((f) => ({ ...f, port: e.target.value }))}
-                  className="text-sm"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">策略</Label>
-              <Select value={form.policy} onValueChange={(v) => setForm((f) => ({ ...f, policy: v }))}>
-                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="允许">允许</SelectItem>
-                  <SelectItem value="拒绝">拒绝</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-gray-500">备注（选填）</Label>
-              <Input
-                placeholder="规则用途说明"
-                value={form.remark}
-                onChange={(e) => setForm((f) => ({ ...f, remark: e.target.value }))}
-                className="text-sm"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRuleDialog(false)}>取消</Button>
-            <Button
-              onClick={handleSaveRule}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-            >
-              {editRule ? "保存修改" : "添加规则"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 公网保存确认弹窗 */}
-      <Dialog open={showPublicSaveDialog} onOpenChange={setShowPublicSaveDialog}>
-        <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>确认保存公网配置</DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <p className="text-sm text-gray-700 mb-3">
-              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 云服务器</span>生效。
-              </p>
-              <p className="text-sm text-gray-500">
-              已有云服务器保持原有的公网配置不变，不会受影响。
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPublicSaveDialog(false)}>取消</Button>
-            <Button
-              onClick={handlePublicSaveConfirm}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              确认保存
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* VPC 保存确认弹窗 */}
+      {/* VPC 保存确认对话框 */}
       <Dialog open={showVpcSaveDialog} onOpenChange={setShowVpcSaveDialog}>
-        <DialogContent className="max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认保存 VPC 和子网配置</DialogTitle>
+            <DialogTitle>确认保存</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
-            <p className="text-sm text-gray-700 mb-3">
-              此配置修改仅对<span className="font-semibold">后续新增的 OpenClaw 云服务器</span>生效。
-              </p>
-              <p className="text-sm text-gray-500">
-              已有云服务器保持原有网络配置不变，不会受影响。
-            </p>
-          </div>
+          <p className="text-sm text-gray-600">确认保存 VPC 和子网配置？修改后将对所有新创建的 OpenClaw 云服务器生效。</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowVpcSaveDialog(false)}>取消</Button>
-            <Button
-              onClick={handleSaveConfirm}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              确认保存
-            </Button>
+            <Button onClick={handleSaveVpc} className="bg-blue-600 hover:bg-blue-700 text-white">确认</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

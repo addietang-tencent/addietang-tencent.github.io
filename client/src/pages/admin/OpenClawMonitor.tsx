@@ -107,6 +107,7 @@ export default function OpenClawMonitor() {
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [selectedClaw, setSelectedClaw] = useState<Claw | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerFading, setDrawerFading] = useState(false);
 
   // 模拟 OpenClaw 详情数据
   interface ChannelDetail {
@@ -214,10 +215,14 @@ export default function OpenClawMonitor() {
   const handleRefreshDrawer = () => {
     if (!selectedClaw) return;
     setDrawerLoading(true);
+    setDrawerFading(true);
     setTimeout(() => {
-      setDrawerLoading(false);
-      toast.success("信息已刷新");
-    }, 1500);
+      setDrawerFading(false);
+      setTimeout(() => {
+        setDrawerLoading(false);
+        toast.success("信息已刷新");
+      }, 400);
+    }, 800);
   };
 
   const handleRefresh = () => {
@@ -452,13 +457,13 @@ export default function OpenClawMonitor() {
                       <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{claw.createTime}</td>
                       {/* 操作 */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 h-5">
                           {/* 终端 */}
                           {!isRunning ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed">
-                                  <Terminal className="w-3.5 h-3.5" />
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none">
+                                  <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
                                   终端
                                 </span>
                               </TooltipTrigger>
@@ -468,10 +473,10 @@ export default function OpenClawMonitor() {
                             </Tooltip>
                           ) : (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900"
+                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none"
                               onClick={() => handleOpenTerminal(claw)}
                             >
-                              <Terminal className="w-3.5 h-3.5" />
+                              <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
                               终端
                             </button>
                           )}
@@ -481,7 +486,7 @@ export default function OpenClawMonitor() {
                             <TooltipTrigger asChild>
                               <span>
                                 <button
-                                  className={`inline-flex items-center gap-1 text-xs ${
+                                  className={`inline-flex items-center gap-1 text-xs leading-none ${
                                     isRunning
                                       ? "text-gray-600 hover:text-gray-900"
                                       : "text-gray-300 cursor-not-allowed"
@@ -489,7 +494,7 @@ export default function OpenClawMonitor() {
                                   disabled={!isRunning}
                                   onClick={() => isRunning && setShutdownTarget(claw.id)}
                                 >
-                                  <Power className="w-3.5 h-3.5" />
+                                  <Power className="w-3.5 h-3.5 flex-shrink-0" />
                                   关机
                                 </button>
                               </span>
@@ -503,33 +508,33 @@ export default function OpenClawMonitor() {
 
                           {/* 删除 */}
                           <button
-                            className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
+                            className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none"
                             onClick={() => setDeleteTarget(claw.id)}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
                             删除
                           </button>
 
                           {/* 更多操作 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="inline-flex items-center text-xs text-gray-500 hover:text-gray-800">
-                                <MoreHorizontal className="w-4 h-4" />
+                              <button className="inline-flex items-center text-xs text-gray-400 hover:text-gray-600 leading-none">
+                                <MoreHorizontal className="w-3.5 h-3.5" />
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
-                                className="text-sm cursor-pointer"
+                                className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50 cursor-pointer"
                                 onClick={() => handleRestart(claw)}
                               >
-                                <RotateCcw className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                                <RotateCcw className="w-3.5 h-3.5 mr-2" />
                                 重启
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className="text-sm cursor-pointer"
+                                className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50 cursor-pointer"
                                 onClick={() => handleReinstall(claw)}
                               >
-                                <HardDriveDownload className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                                <HardDriveDownload className="w-3.5 h-3.5 mr-2" />
                                 重新安装 OpenClaw
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -773,7 +778,10 @@ export default function OpenClawMonitor() {
 
             {/* 抽屉内容 */}
             <div className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-6">
+              <div
+                className="p-6 space-y-6 transition-opacity duration-400"
+                style={{ opacity: drawerFading ? 0 : 1 }}
+              >
                 {/* 名称/ID 部分 */}
                 <div>
                   <div className="flex items-center gap-3">

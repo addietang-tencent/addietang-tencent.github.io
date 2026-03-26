@@ -8,9 +8,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircle } from 'lucide-react';
-import { MOCK_OPENCLAW_INSTANCES } from './mockData';
+import { Search } from 'lucide-react';
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -20,133 +20,109 @@ interface BatchDistributeDialogProps {
   onDistributionStart?: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
 }
 
+// 模拟 OpenClaw 实例列表
+const MOCK_OPENCLAW_INSTANCES = [
+  { id: '1', name: 'OpenClaw-生产环境-1', status: 'online' },
+  { id: '2', name: 'OpenClaw-生产环境-2', status: 'online' },
+  { id: '3', name: 'OpenClaw-测试环境-1', status: 'online' },
+  { id: '4', name: 'OpenClaw-开发环境-1', status: 'offline' },
+  { id: '5', name: 'OpenClaw-预发布环境-1', status: 'online' },
+];
+
 export default function BatchDistributeDialog({
   open,
   onOpenChange,
   skillName,
   onDistributionStart,
 }: BatchDistributeDialogProps) {
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [isDistributing, setIsDistributing] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedInstances(MOCK_OPENCLAW_INSTANCES.map(i => i.id));
-    } else {
+  const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance =>
+    instance.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSelectAll = () => {
+    if (selectedInstances.length === filteredInstances.length) {
       setSelectedInstances([]);
-    }
-  };
-
-  const handleSelectInstance = (instanceId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedInstances([...selectedInstances, instanceId]);
     } else {
-      setSelectedInstances(selectedInstances.filter(id => id !== instanceId));
+      setSelectedInstances(filteredInstances.map(i => i.id));
     }
   };
 
-  const handleStartDistribute = () => {
-    setIsDistributing(true);
+  const handleSelectInstance = (id: string) => {
+    setSelectedInstances(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleDistribute = () => {
     const selectedInstancesData = MOCK_OPENCLAW_INSTANCES.filter(i => selectedInstances.includes(i.id));
     
+    // 调用回调函数，传递选中的实例 ID 和数据
     if (onDistributionStart) {
       onDistributionStart(selectedInstances, selectedInstancesData);
     }
     
-    setTimeout(() => {
-      setShowSuccessMessage(true);
-    }, 500);
-  };
-
-  const handleConfirm = () => {
-    setShowSuccessMessage(false);
-    setIsDistributing(false);
+    // 重置状态
     setSelectedInstances([]);
-    onOpenChange(false);
+    setSearchQuery('');
   };
-
-  if (showSuccessMessage) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>下发 {skillName}</DialogTitle>
-          </DialogHeader>
-          <div className="py-6">
-            <div className="flex items-start gap-3">
-              <div className="text-green-600 mt-1">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">已开始安装流程</p>
-                <p className="text-sm text-gray-600 mt-1">
-                  已向 {selectedInstances.length} 个 OpenClaw 实例下发 {skillName}
-                </p>
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={handleConfirm}>
-              确认
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>下发 {skillName}</DialogTitle>
+          <DialogTitle>批量下发 Skill</DialogTitle>
           <DialogDescription>
-            选择要下发该 Skill 的 OpenClaw 实例
+            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {/* 全选 */}
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        {/* 搜索框 */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="搜索 OpenClaw 云服务器..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* 实例列表 */}
+        <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
+          {/* 全选复选框 */}
+          <div className="flex items-center gap-3 p-3 border-b border-gray-200 bg-gray-50 sticky top-0">
             <Checkbox
-              checked={selectedInstances.length === MOCK_OPENCLAW_INSTANCES.length && MOCK_OPENCLAW_INSTANCES.length > 0}
+              checked={selectedInstances.length === filteredInstances.length && filteredInstances.length > 0}
               onCheckedChange={handleSelectAll}
             />
-            <label className="text-sm font-medium text-gray-900 cursor-pointer flex-1">
-              全选 ({selectedInstances.length}/{MOCK_OPENCLAW_INSTANCES.length})
-            </label>
+            <span className="text-sm font-medium text-gray-900">
+              全选 ({selectedInstances.length}/{filteredInstances.length})
+            </span>
           </div>
 
-          {/* 实例列表 */}
-          <div className="space-y-2">
-            {MOCK_OPENCLAW_INSTANCES.map(instance => (
-              <div
-                key={instance.id}
-                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-              >
-                <Checkbox
-                  checked={selectedInstances.includes(instance.id)}
-                  onCheckedChange={(checked) =>
-                    handleSelectInstance(instance.id, checked as boolean)
-                  }
-                />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{instance.name}</p>
-                  <p className="text-xs text-gray-600">创建人: {instance.createdBy}</p>
-                </div>
+          {/* 实例项 */}
+          {filteredInstances.map(instance => (
+            <div
+              key={instance.id}
+              className="flex items-center gap-3 p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
+            >
+              <Checkbox
+                checked={selectedInstances.includes(instance.id)}
+                onCheckedChange={() => handleSelectInstance(instance.id)}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">{instance.name}</p>
+                <p className="text-xs text-gray-500">
+                  状态: <span className={instance.status === 'online' ? 'text-green-600' : 'text-gray-400'}>
+                    {instance.status === 'online' ? '在线' : '离线'}
+                  </span>
+                </p>
               </div>
-            ))}
-          </div>
-
-          {MOCK_OPENCLAW_INSTANCES.length === 0 && (
-            <div className="flex items-center gap-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600" />
-              <p className="text-sm text-yellow-800">暂无可用的 OpenClaw 实例</p>
             </div>
-          )}
+          ))}
         </div>
 
         <DialogFooter>
@@ -154,10 +130,10 @@ export default function BatchDistributeDialog({
             取消
           </Button>
           <Button
-            onClick={handleStartDistribute}
-            disabled={selectedInstances.length === 0 || isDistributing}
+            onClick={handleDistribute}
+            disabled={selectedInstances.length === 0}
           >
-            {isDistributing ? '下发中...' : '确认下发'}
+            确认下发 ({selectedInstances.length})
           </Button>
         </DialogFooter>
       </DialogContent>

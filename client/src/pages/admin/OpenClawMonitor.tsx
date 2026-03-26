@@ -109,23 +109,86 @@ export default function OpenClawMonitor() {
   const [drawerLoading, setDrawerLoading] = useState(false);
 
   // 模拟 OpenClaw 详情数据
+  interface ChannelDetail {
+    name: string;
+    appId: string;
+    appSecret: string;
+    expanded: boolean;
+  }
+
   interface ClawDetail {
     appliedModel: string;
-    connectedChannels: string[];
-    installedSkills: string[];
+    appliedModelVersion: string;
+    connectedChannels: ChannelDetail[];
+    installedSkills: { name: string; version: string }[];
   }
 
   const getClawDetail = (clawId: string): ClawDetail => {
-    // 模拟数据
-    return {
-      appliedModel: "GPT-4 Turbo",
-      connectedChannels: ["企业微信", "飞书", "钉钉"],
-      installedSkills: ["文档总结助手", "代码审查", "需求分析", "技术方案设计", "会议记录"],
+    // 模拟数据（不同实例返回不同数据）
+    const channelSets: Record<string, ChannelDetail[]> = {
+      "1": [
+        { name: "企业微信", appId: "wx1234567890", appSecret: "abc", expanded: false },
+        { name: "飞书", appId: "cli_9876543210", appSecret: "xyz", expanded: false },
+      ],
+      "2": [
+        { name: "钉钉", appId: "ding_abcdef1234", appSecret: "def", expanded: false },
+      ],
+      "3": [
+        { name: "QQ", appId: "1234567890", appSecret: "xyz", expanded: false },
+        { name: "飞书", appId: "cli_1122334455", appSecret: "pqr", expanded: false },
+      ],
     };
+    const skillSets: Record<string, { name: string; version: string }[]> = {
+      "1": [
+        { name: "github", version: "1.0.0" },
+        { name: "agent-browser", version: "0.2.0" },
+        { name: "doc-summary", version: "1.3.2" },
+      ],
+      "2": [
+        { name: "code-review", version: "2.1.0" },
+        { name: "agent-browser", version: "0.2.0" },
+      ],
+      "3": [
+        { name: "github", version: "1.0.0" },
+        { name: "meeting-notes", version: "0.5.1" },
+        { name: "translate-pro", version: "1.1.0" },
+        { name: "data-analyst", version: "0.8.3" },
+      ],
+    };
+    const models: Record<string, { name: string; version: string }> = {
+      "1": { name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324" },
+      "2": { name: "GPT-4 Turbo", version: "gpt-4-turbo-2024-04-09" },
+      "3": { name: "Claude 3.5 Sonnet", version: "claude-3-5-sonnet-20241022" },
+    };
+    const model = models[clawId] ?? { name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324" };
+    return {
+      appliedModel: model.name,
+      appliedModelVersion: model.version,
+      connectedChannels: channelSets[clawId] ?? [
+        { name: "企业微信", appId: "wx9988776655", appSecret: "stu", expanded: false },
+      ],
+      installedSkills: skillSets[clawId] ?? [
+        { name: "github", version: "1.0.0" },
+        { name: "agent-browser", version: "0.2.0" },
+      ],
+    };
+  };
+
+  // 通道展开状态（本地 UI 状态）
+  const [expandedChannels, setExpandedChannels] = useState<Set<number>>(new Set());
+
+  const toggleChannel = (idx: number) => {
+    setExpandedChannels(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
   };
 
   const handleOpenDrawer = (claw: Claw) => {
     setSelectedClaw(claw);
+    setExpandedChannels(new Set());
     setShowDetailDrawer(true);
   };
 
@@ -676,7 +739,7 @@ export default function OpenClawMonitor() {
             onClick={() => setShowDetailDrawer(false)}
           />
           {/* 抽屉 */}
-          <div className="w-96 bg-white shadow-lg flex flex-col">
+          <div className="w-[576px] bg-white shadow-lg flex flex-col">
             {/* 抽屉头 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">OpenClaw 详情</h2>
@@ -706,58 +769,77 @@ export default function OpenClawMonitor() {
               <div className="p-6 space-y-6">
                 {/* 名称/ID 部分 */}
                 <div>
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <div className="text-sm font-medium text-gray-900">{selectedClaw.name}</div>
-                      <div className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</span>
+                        <a
+                          href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
+                        >
+                          去腾讯云控制台管理
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full text-xs h-8"
-                    onClick={() => {
-                      window.open(
-                        `https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`,
-                        "_blank"
-                      );
-                    }}
-                  >
-                    去腾讯云控制台管理
-                  </Button>
                 </div>
 
                 {/* 已应用模型 */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-700 mb-2">已应用模型</div>
-                  <div className="px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
-                    <div className="text-sm text-blue-900 font-medium">{getClawDetail(selectedClaw.id).appliedModel}</div>
+                  <div className="text-xs text-gray-400 mb-2">已应用模型</div>
+                  <div className="px-4 py-3 bg-white rounded-xl border border-gray-200">
+                    <div className="text-sm font-medium text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
                   </div>
                 </div>
 
                 {/* 已接入通道 */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-700 mb-2">已接入通道</div>
-                  <div className="flex flex-wrap gap-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => (
-                      <span key={channel} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        {channel}
-                      </span>
+                  <div className="text-xs text-gray-400 mb-2">
+                    已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）
+                  </div>
+                  <div className="space-y-2">
+                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel, idx) => (
+                      <div key={idx} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+                        <button
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                          onClick={() => toggleChannel(idx)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-400 text-xs">{expandedChannels.has(idx) ? "∨" : ">"}</span>
+                            <span className="text-sm font-medium text-gray-900">{channel.name}</span>
+                          </div>
+                        </button>
+                        {expandedChannels.has(idx) && (
+                          <div className="px-4 pb-3 space-y-1.5 border-t border-gray-100 pt-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-gray-400 w-20 flex-shrink-0">appId：</span>
+                              <span className="text-gray-700 font-mono">{channel.appId}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-gray-400 w-20 flex-shrink-0">appSecret：</span>
+                              <span className="text-gray-700 font-mono">{channel.appSecret}●●●●●●</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 {/* 已安装技能 */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-700 mb-2">已安装技能</div>
-                  <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg bg-gray-50 p-3 space-y-2">
-                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
-                      <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-                        {skill}
+                  <div className="text-xs text-gray-400 mb-2">已安装技能</div>
+                  <div className="space-y-1.5">
+                    {getClawDetail(selectedClaw.id).installedSkills.map((skill, idx) => (
+                      <div key={idx} className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                        <span className="text-sm text-gray-800">{skill.name} {skill.version}</span>
                       </div>
                     ))}
                   </div>

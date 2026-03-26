@@ -865,91 +865,87 @@ export default function OpenClawDetail() {
         </div>
 
         {/* Title */}
-          <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
-            🦞
-          </div>
-          <div>
-            {/* 第一行：名称 + ID */}
-            <div className="flex items-center gap-3 mb-1.5">
-              <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
-              <span className="text-sm text-gray-400 leading-none mt-0.5">{claw.instanceId}</span>
+          <div className="flex items-center justify-between gap-4 mb-8">
+          {/* 左侧：图标 + 名称/ID/badge */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
+              🦞
             </div>
-            {/* 第二行：状态 badge + 按鈕 */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="badge-running">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                运行中
-              </span>
-              {/* 一键更新按鈕 + 气泡 */}
-              <div className="relative flex items-center">
-                {showUpdateBubble && !isUpdating && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
-                    <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-sm leading-none whitespace-nowrap">
-                      <button
-                        onClick={() => setShowUpdateBubble(false)}
-                        className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"
-                        style={{ fontSize: "10px", lineHeight: 1 }}
-                      >
-                        ×
-                      </button>
-                      重磅来襲！升级版本，一键接入微信！
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0"
-                        style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #2563eb" }} />
-                    </div>
-                  </div>
-                )}
-                {isUpdating ? (
-                  <button
-                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
-                    title="查看更新进度"
-                    onClick={() => setShowUpdateProgressDialog(true)}
-                  >
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    更新中
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowUpdateConfirmDialog(true)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 cursor-pointer leading-none"
-                  >
-                    <ArrowUpCircle className="w-3.5 h-3.5" />
-                    一键更新
-                  </button>
-                )}
+            <div>
+              {/* 第一行：名称 + 状态 badge */}
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
+                <span className="badge-running">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                  运行中
+                </span>
               </div>
-              {/* 开启面板按鈕 */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              {/* 第二行：实例 ID */}
+              <p className="text-xs text-gray-400 mt-0.5">{claw.instanceId}</p>
+            </div>
+          </div>
+          {/* 右侧：操作按鈕 */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* 一键更新按鈕 + 气泡 */}
+            <div className="relative flex items-center">
+              {showUpdateBubble && !isUpdating && (
+                <div className="absolute bottom-full right-0 mb-2 z-50">
+                  <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-sm leading-none whitespace-nowrap">
                     <button
-                      onClick={handleOpenWebUI}
-                      disabled={!allowPanelAccess}
-                      className={`inline-flex items-center gap-1 text-xs font-medium leading-none ${
-                        allowPanelAccess
-                          ? "text-blue-600 cursor-pointer hover:text-blue-700"
-                          : "text-gray-400 cursor-not-allowed"
-                      }`}
+                      onClick={() => setShowUpdateBubble(false)}
+                      className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"
+                      style={{ fontSize: "10px", lineHeight: 1 }}
                     >
-                      <Monitor className="w-3.5 h-3.5" />
-                      开启OpenClaw面板
+                      ×
                     </button>
-                  </TooltipTrigger>
-                  {!allowPanelAccess && (
-                    <TooltipContent side="top" className="text-xs">
-                      管理员未开启访问权限
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
-              {isConfiguring && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded-lg">
-                  <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-                  <span className="text-xs text-blue-600 font-medium">加载中</span>
+                    重磅来襲！升级版本，一键接入微信！
+                    <div className="absolute top-full right-4 w-0 h-0"
+                      style={{ borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #2563eb" }} />
+                  </div>
                 </div>
               )}
+              {isUpdating ? (
+                <button
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+                  title="查看更新进度"
+                  onClick={() => setShowUpdateProgressDialog(true)}
+                >
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
+                  更新中
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowUpdateConfirmDialog(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+                >
+                  <ArrowUpCircle className="w-3.5 h-3.5" />
+                  一键更新
+                </button>
+              )}
             </div>
+            {/* 开启面板按鈕 */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleOpenWebUI}
+                  disabled={!allowPanelAccess}
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors leading-none ${
+                    allowPanelAccess
+                      ? "text-gray-600 bg-white border-gray-200 hover:bg-gray-50 cursor-pointer"
+                      : "text-gray-400 bg-white border-gray-200 cursor-not-allowed opacity-60"
+                  }`}
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                  开启OpenClaw面板
+                </button>
+              </TooltipTrigger>
+              {!allowPanelAccess && (
+                <TooltipContent side="top" className="text-xs">
+                  管理员未开启访问权限
+                </TooltipContent>
+              )}
+            </Tooltip>
           </div>
         </div>
 

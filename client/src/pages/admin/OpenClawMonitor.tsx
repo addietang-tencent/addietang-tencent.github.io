@@ -395,6 +395,7 @@ export default function OpenClawMonitor() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">名称 / ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
                   <div className="flex items-center gap-2 relative">
                     当前状态
@@ -432,7 +433,6 @@ export default function OpenClawMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">名称 / ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建人</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建时间</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">操作</th>
@@ -453,17 +453,6 @@ export default function OpenClawMonitor() {
 
                   return (
                     <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
-                      {/* 状态列 */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {claw.status === "loading" ? (
-                            <div className="w-2 h-2 rounded-full border-2 border-blue-400 border-t-transparent animate-spin"></div>
-                          ) : (
-                            <div className={`w-2 h-2 rounded-full ${statusConfig.dotClass}`}></div>
-                          )}
-                          <span className={`text-sm ${statusConfig.color}`}>{statusConfig.label}</span>
-                        </div>
-                      </td>
                       {/* 名称/ID */}
                       <td className={`px-6 py-4 ${isGrayed ? "opacity-50" : ""}`}>
                         <div className="flex items-center gap-2.5">
@@ -479,6 +468,17 @@ export default function OpenClawMonitor() {
                               {claw.instanceId}
                             </button>
                           </div>
+                        </div>
+                      </td>
+                      {/* 状态列 */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {claw.status === "loading" ? (
+                            <div className="w-2 h-2 rounded-full border-2 border-blue-400 border-t-transparent animate-spin"></div>
+                          ) : (
+                            <div className={`w-2 h-2 rounded-full ${statusConfig.dotClass}`}></div>
+                          )}
+                          <span className={`text-sm ${statusConfig.color}`}>{statusConfig.label}</span>
                         </div>
                       </td>
                       {/* 创建人 */}
@@ -569,8 +569,7 @@ export default function OpenClawMonitor() {
                                 重新安装 OpenClaw
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-gray-50 cursor-pointer ${isRunning || claw.status === "shutdown" ? "text-gray-500 focus:text-gray-700" : "text-gray-300 cursor-not-allowed"}`}
-                                disabled={!isRunning && claw.status !== "shutdown"}
+                                className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50 cursor-pointer"
                                 onClick={() => handleOpenMonitor(claw)}
                               >
                                 <Activity className="w-3.5 h-3.5 mr-2" />

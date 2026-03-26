@@ -242,6 +242,13 @@ export default function SessionManagement() {
   const [showPluginUpgradeDialog, setShowPluginUpgradeDialog] = useState(false);
   const [selectedPluginVersion, setSelectedPluginVersion] = useState<any>(null);
   const [isUpgradingPlugin, setIsUpgradingPlugin] = useState(false);
+
+  // 当弹窗打开时，自动选中最新版本
+  useEffect(() => {
+    if (showPluginUpgradeDialog && !selectedPluginVersion) {
+      setSelectedPluginVersion(CLS_PLUGIN_VERSIONS[0]); // v5 是最新版本
+    }
+  }, [showPluginUpgradeDialog]);
   const [showClsAgreementDialog, setShowClsAgreementDialog] = useState(false);
   const [clsAgreed, setClsAgreed] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -975,14 +982,19 @@ export default function SessionManagement() {
                 </tr>
               </thead>
               <tbody>
-                {CLS_PLUGIN_VERSIONS.map((v) => (
+                {CLS_PLUGIN_VERSIONS.map((v) => {
+                  // 只允许选择比当前版本（v3）更高的版本
+                  const isUpgradeable = v.status !== 'current' && v.status !== 'deprecated';
+                  return (
                   <tr
                     key={v.version}
-                    onClick={() => setSelectedPluginVersion(v)}
-                    className={`border-b border-gray-100 cursor-pointer transition-colors ${
+                    onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
+                    className={`border-b border-gray-100 ${
+                      isUpgradeable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                    } transition-colors ${
                       selectedPluginVersion?.version === v.version
                         ? "bg-blue-50"
-                        : "hover:bg-gray-50"
+                        : isUpgradeable ? "hover:bg-gray-50" : ""
                     }`}
                   >
                     <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap" style={{ width: '100px' }}>{v.version}</td>
@@ -993,14 +1005,18 @@ export default function SessionManagement() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowPluginUpgradeDialog(false)}
+              onClick={() => {
+                setShowPluginUpgradeDialog(false);
+                setSelectedPluginVersion(null);
+              }}
               disabled={isUpgradingPlugin}
             >
               取消
@@ -1011,10 +1027,12 @@ export default function SessionManagement() {
                 setTimeout(() => {
                   setIsUpgradingPlugin(false);
                   setShowPluginUpgradeDialog(false);
-                  toast.success(`成功升级到 ${selectedPluginVersion?.version}`);
+                  if (selectedPluginVersion) {
+                    toast.success(`成功升级到 ${selectedPluginVersion?.version}`);
+                  }
                 }, 2000);
               }}
-              disabled={isUpgradingPlugin || selectedPluginVersion?.status === 'current'}
+              disabled={isUpgradingPlugin || !selectedPluginVersion || selectedPluginVersion?.status === 'current'}
               className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
             >
               {isUpgradingPlugin ? "升级中..." : "确认升级"}

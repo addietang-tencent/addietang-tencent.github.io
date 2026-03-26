@@ -224,12 +224,16 @@ export default function OpenClawMonitor() {
     if (!selectedClaw) return;
     setDrawerLoading(true);
     setDrawerFading(true);
+    setChannelSkillLoading(true);
     setTimeout(() => {
       setDrawerFading(false);
       setTimeout(() => {
         setDrawerLoading(false);
       }, 400);
     }, 800);
+    setTimeout(() => {
+      setChannelSkillLoading(false);
+    }, 1800);
   };
 
   const handleRefresh = () => {

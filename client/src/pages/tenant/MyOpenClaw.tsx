@@ -650,7 +650,7 @@ export default function MyOpenClaw() {
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto">
                 {notifications.length === 0 ? (
                   <div className="p-6 text-center">
                     <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
@@ -658,7 +658,7 @@ export default function MyOpenClaw() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
-                    {notifications.slice(0, 5).map((notif) => (
+                    {notifications.map((notif) => (
                       <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs text-gray-700 flex-1">{notif.message}</p>

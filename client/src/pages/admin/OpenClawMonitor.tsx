@@ -3,6 +3,7 @@
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -78,6 +79,7 @@ const MOCK_CLAWS: Claw[] = [
 const PAGE_SIZE = 10;
 
 export default function OpenClawMonitor() {
+  const [, setLocation] = useLocation();
   const [claws, setClaws] = useState<Claw[]>(
     [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime))
   );
@@ -784,7 +786,10 @@ export default function OpenClawMonitor() {
                     <div className="text-lg font-bold text-gray-900">6,912</div>
                   </div>
                 </div>
-                <button className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                <button 
+                  onClick={() => setLocation('/admin/tokens-monitor')}
+                  className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                >
                   查看完整 Tokens 监控 <ExternalLink className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -811,41 +816,36 @@ export default function OpenClawMonitor() {
                         <th className="px-4 py-3 text-left font-medium text-gray-700">会话</th>
                         <th className="px-4 py-3 text-left font-medium text-gray-700">类型</th>
                         <th className="px-4 py-3 text-left font-medium text-gray-700">模型</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">TOKENS</th>
                         <th className="px-4 py-3 text-left font-medium text-gray-700">最新时间</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700">操作</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">session-001</td>
-                        <td className="px-4 py-3 text-gray-600">文本</td>
-                        <td className="px-4 py-3 text-gray-600">GPT-4</td>
-                        <td className="px-4 py-3 text-gray-600">2,345</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-26 10:15</td>
-                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                        <td className="px-4 py-3 text-gray-900">c3b2ac3c</td>
+                        <td className="px-4 py-3 text-gray-600">Feishu Dm</td>
+                        <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-09 17:49</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">session-002</td>
-                        <td className="px-4 py-3 text-gray-600">代码</td>
-                        <td className="px-4 py-3 text-gray-600">Claude</td>
-                        <td className="px-4 py-3 text-gray-600">1,876</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-26 09:45</td>
-                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                        <td className="px-4 py-3 text-gray-900">81c87c7b</td>
+                        <td className="px-4 py-3 text-gray-600">QQ Dm</td>
+                        <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-09 10:07</td>
                       </tr>
                       <tr className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-900">session-003</td>
-                        <td className="px-4 py-3 text-gray-600">分析</td>
-                        <td className="px-4 py-3 text-gray-600">GPT-4</td>
-                        <td className="px-4 py-3 text-gray-600">3,421</td>
-                        <td className="px-4 py-3 text-gray-600">2026-03-26 08:20</td>
-                        <td className="px-4 py-3"><button className="text-blue-500 hover:text-blue-700 text-xs">view</button></td>
+                        <td className="px-4 py-3 text-gray-900">267e462d</td>
+                        <td className="px-4 py-3 text-gray-600">CLI</td>
+                        <td className="px-4 py-3 text-gray-600">deepseek-v3.2</td>
+                        <td className="px-4 py-3 text-gray-600">2026-03-08 12:54</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 
-                <button className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                <button 
+                  onClick={() => setLocation('/admin/session-management')}
+                  className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
+                >
                   查看完整会话管理 <ExternalLink className="w-3.5 h-3.5" />
                 </button>
               </div>

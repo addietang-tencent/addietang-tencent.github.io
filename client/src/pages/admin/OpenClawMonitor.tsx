@@ -790,13 +790,12 @@ export default function OpenClawMonitor() {
                     <div>
                       <div className="text-base font-semibold text-gray-900">{selectedClaw.name}</div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500 font-mono">{selectedClaw.instanceId}</span>
+                        <span className="text-[0.7rem] text-gray-500 font-mono">{selectedClaw.instanceId}</span>
                         <a
                           href={`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 text-xs text-blue-500 underline hover:text-blue-700 leading-none"
-                          style={{ fontSize: 'inherit' }}
+                          className="inline-flex items-center gap-0.5 text-xs text-blue-500 underline hover:text-blue-700"
                         >
                           去腾讯云控制台管理
                           <ExternalLink className="w-3 h-3" />

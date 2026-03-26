@@ -147,7 +147,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     if (!skill.lastDistributionStatus) return null;
 
     const statusConfig: Record<string, { label: string; color: string }> = {
-      'in_progress': { label: `下发中 ${skill.lastDistributionProgress || 0}%`, color: 'text-blue-600 bg-blue-50' },
+      'in_progress': { label: `下发中 ${(skill.lastDistributionProgress || 0).toFixed(1)}%`, color: 'text-blue-600 bg-blue-50' },
       'success': { label: '下发成功', color: 'text-green-600 bg-green-50' },
       'partial': { label: '部分成功', color: 'text-yellow-600 bg-yellow-50' },
       'failed': { label: '下发失败', color: 'text-red-600 bg-red-50' },
@@ -160,7 +160,13 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          handleViewDetail(skill.id);
+          // 跳转到详情-安装方式 Tab
+          setSelectedSkillId(skill.id);
+          // 设置默认 Tab 为安装方式
+          setTimeout(() => {
+            const tabTrigger = document.querySelector('[value="安装方式"]') as HTMLElement;
+            if (tabTrigger) tabTrigger.click();
+          }, 100);
         }}
         className={`inline-block px-3 py-1 rounded text-sm font-medium ${config.color} cursor-pointer hover:opacity-80 transition-opacity`}
       >
@@ -176,6 +182,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         skillId={selectedSkillId}
         skills={skills}
         onBack={() => setSelectedSkillId(null)}
+        defaultTab="安装方式"
       />
     );
   }
@@ -183,22 +190,22 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   return (
     <div className="space-y-4">
       {/* 搜索和工具栏 */}
-      <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
         {/* 搜索框 */}
-        <div className="relative">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="搜索 Skill 名称或描述..."
+            placeholder="搜索技能名称或描述..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-white border border-gray-200"
           />
         </div>
 
-        {/* 排序和视图切换 */}
-        <div className="flex items-center justify-between gap-4">
+        {/* 排序、视图切换、发布按钮 */}
+        <div className="flex items-center justify-end gap-3">
           <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'asc' | 'desc')}>
-            <SelectTrigger className="w-40 bg-white border border-gray-200">
+            <SelectTrigger className="w-32 bg-white border border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -208,13 +215,13 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           </Select>
           
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-1">
+          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'card'
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="卡片视图"
             >
@@ -224,8 +231,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="列表视图"
             >
@@ -233,14 +240,14 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             </button>
           </div>
 
-          <Button onClick={() => setUploadDialogOpen(true)}>
+          <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
             + 发布 Skill
           </Button>
         </div>
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="flex items-center gap-3 mb-4 flex-wrap border-t border-gray-200 pt-4">
         {DEFAULT_CATEGORIES.map((cat: any) => (
           <button
             key={cat.id}
@@ -251,10 +258,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   : [...prev, cat.id]
               );
             }}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
+            className={`px-3 py-1 text-sm transition-colors ${
               selectedCategories.includes(cat.id)
-                ? 'bg-blue-500 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                ? 'text-blue-600 border-b-2 border-blue-600 font-medium'
+                : 'text-gray-600 border-b-2 border-transparent hover:text-gray-900'
             }`}
           >
             {cat.name}
@@ -328,7 +335,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
               >
                 <Send className="w-4 h-4 mr-2" />
-                下发
+                {skill.lastDistributionStatus === 'in_progress' ? '安装中' : '下发'}
               </Button>
             </div>
           ))}
@@ -387,7 +394,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  下发
+                  {skill.lastDistributionStatus === 'in_progress' ? '安装中' : '下发'}
                 </Button>
               </div>
               {/* 第二行：描述 */}

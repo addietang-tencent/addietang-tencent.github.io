@@ -42,15 +42,17 @@ interface SkillDetailProps {
   skillId: string;
   onBack: () => void;
   skills?: any[];
+  defaultTab?: string;
 }
 
-export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProps) {
+export default function SkillDetail({ skillId, onBack, skills, defaultTab }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
   const [distributionRecords, setDistributionRecords] = useState<DistributionRecord[]>([]);
   const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'in_progress'>('all');
+  const [activeTab, setActiveTab] = useState(defaultTab || '概述');
   const skillsArray = skills || MOCK_SKILLS;
   const skill = skillsArray.find(s => s.id === skillId);
   
@@ -221,7 +223,7 @@ export default function SkillDetail({ skillId, onBack, skills }: SkillDetailProp
 
       {/* Tab 页面 */}
       <div>
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-white p-0 h-auto">
             <TabsTrigger
               value="overview"

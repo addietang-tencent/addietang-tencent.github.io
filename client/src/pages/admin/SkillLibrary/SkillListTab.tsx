@@ -26,7 +26,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [distributeSkillId, setDistributeSkillId] = useState<string | null>(null);
   const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false);
+  const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [editingSkillCategories, setEditingSkillCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -253,15 +256,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             </button>
           ))}
         </div>
-        {categories.length > 0 && (
-          <button
-            onClick={() => setEditCategoryDialogOpen(true)}
-            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-            title="编辑分类"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-        )}
+
       </div>
 
       {/* 空状态 */}
@@ -292,7 +287,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               </div>
 
               {/* 分类 */}
-              <div className="flex flex-wrap gap-1 mb-3">
+              <div className="flex flex-wrap gap-1 mb-3 items-center">
                 {skill.categories.map((catId: string) => (
                   <span
                     key={catId}
@@ -301,6 +296,20 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     {getCategoryName(catId)}
                   </span>
                 ))}
+                {skill.categories.length > 0 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingSkillId(skill.id);
+                      setEditingSkillCategories(skill.categories);
+                      setEditCategoryDialogOpen(true);
+                    }}
+                    className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                    title="编辑分类"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </button>
+                )}
               </div>
 
               {/* 描述 */}
@@ -353,7 +362,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
                     v{skill.version}
                   </span>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 items-center">
                     {skill.categories.map((catId: string) => (
                       <span
                         key={catId}
@@ -362,6 +371,20 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                         {getCategoryName(catId)}
                       </span>
                     ))}
+                    {skill.categories.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingSkillId(skill.id);
+                          setEditingSkillCategories(skill.categories);
+                          setEditCategoryDialogOpen(true);
+                        }}
+                        className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                        title="编辑分类"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -414,17 +437,45 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         />
       )}
 
-      {/* 编辑分类弹窗 */}
+       {/* 编辑分类弹窗 */}
       <EditCategoriesDialog
         open={editCategoryDialogOpen}
-        onOpenChange={setEditCategoryDialogOpen}
+        onOpenChange={(open) => {
+          setEditCategoryDialogOpen(open);
+          if (!open) {
+            setEditingSkillId(null);
+            setEditingSkillCategories([]);
+          }
+        }}
         categories={categories}
-        selectedCategoryIds={selectedCategories}
+        selectedCategoryIds={editingSkillCategories}
         onConfirm={(selectedCategoryIds) => {
-          setSelectedCategories(selectedCategoryIds);
+          if (editingSkillId) {
+            setSkills(prev => prev.map(skill => 
+              skill.id === editingSkillId 
+                ? { ...skill, categories: selectedCategoryIds }
+                : skill
+            ));
+            setNotification({ message: '分类修改成功', type: 'success' });
+            setEditCategoryDialogOpen(false);
+            setEditingSkillId(null);
+            setEditingSkillCategories([]);
+            
+            setTimeout(() => {
+              setNotification(null);
+            }, 2000);
+          }
         }}
       />
 
+      {/* 提示横幅 */}
+      {notification && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-white z-50 ${
+          notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        }`}>
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }

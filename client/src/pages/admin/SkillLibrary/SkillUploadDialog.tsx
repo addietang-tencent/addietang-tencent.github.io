@@ -435,23 +435,33 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
             <Label className="text-base font-semibold">选择上传方式</Label>
 
             <div
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+              onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
+              onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                uploadedFiles.length > 0
+                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                  : 'border-gray-300 hover:border-blue-400'
+              }`}
             >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 mb-2">点击或拖拽文件上传</p>
+              <Upload className={`w-8 h-8 mx-auto mb-2 ${
+                uploadedFiles.length > 0 ? 'text-gray-300' : 'text-gray-400'
+              }`} />
+              <p className={`text-sm mb-2 ${
+                uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'
+              }`}>点击或拖拽文件上传</p>
 
               <div className="flex gap-3 justify-center">
                 <Button
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadedFiles.length > 0}
                 >
                   上传 ZIP
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={() => folderInputRef.current?.click()}
+                  disabled={uploadedFiles.length > 0}
                 >
                   选择文件夹
                 </Button>
@@ -582,7 +592,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
           {/* 技能信息表单 - 只有在上传成功后才启用 */}
           <div className={`space-y-4 border-t border-gray-200 pt-4 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
             <div className="mb-4">
-              <p className="text-sm text-blue-600">请先上传 Skill 文件，然后填写技能信息</p>
+              <p className="text-sm text-blue-700 font-medium">请先上传 Skill 文件，然后填写技能信息</p>
             </div>
             <div>
               <Label className="text-base font-semibold">技能信息</Label>

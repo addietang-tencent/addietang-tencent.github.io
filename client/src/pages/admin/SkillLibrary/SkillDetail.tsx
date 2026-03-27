@@ -424,22 +424,11 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                           </>
                         )}
                         
-                        {record.status === 'completed' && (
-                          <div className="text-sm text-green-700 mb-3">✓ 已全部完成（共{record.totalCount}个实例）</div>
-                        )}
-                        
                         {record.status === 'partial' && (
                           <div className="flex items-center justify-between mb-3">
                             <span className="text-sm text-gray-600">
                               下发完成，{record.successCount}个已完成，{record.failedCount}个失败
                             </span>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleRetry(record.id)}
-                            >
-                              重试
-                            </Button>
                           </div>
                         )}
                         

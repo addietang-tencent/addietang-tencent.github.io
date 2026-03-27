@@ -36,7 +36,7 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [distributionFilter, setDistributionFilter] = useState<'all' | 'distributed' | 'not_distributed'>('not_distributed');
+  const [distributionFilter, setDistributionFilter] = useState<'all' | 'not_distributed' | 'distribution_failed'>('not_distributed');
 
   // 当打开弹窗时，默认选中所有未下发的实例
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function BatchDistributeDialog({
   const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance => {
     const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = 
-      distributionFilter === 'all' ||
+      distributionFilter === 'all' ? (instance.distributionStatus === 'not_distributed' || instance.distributionStatus === 'distribution_failed') :
       instance.distributionStatus === distributionFilter;
     return matchesSearch && matchesFilter;
   });
@@ -80,13 +80,14 @@ export default function BatchDistributeDialog({
     setSelectedInstances([]);
     setSearchQuery('');
     setDistributionFilter('not_distributed');
+    onOpenChange(false);
   };
 
   const getStatusDisplay = (status?: string) => {
-    if (status === 'distributed') {
-      return <span className="text-green-600 font-medium text-xs">已下发</span>;
-    } else if (status === 'not_distributed') {
+    if (status === 'not_distributed') {
       return <span className="text-gray-500 text-xs">未下发</span>;
+    } else if (status === 'distribution_failed') {
+      return <span className="text-red-600 font-medium text-xs">下发失败</span>;
     }
     return <span className="text-gray-500 text-xs">未下发</span>;
   };
@@ -97,7 +98,7 @@ export default function BatchDistributeDialog({
         <DialogHeader>
           <DialogTitle>批量下发 Skill</DialogTitle>
           <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器
+            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持未下发或下发失败的实例。
           </DialogDescription>
         </DialogHeader>
 
@@ -118,8 +119,8 @@ export default function BatchDistributeDialog({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="distributed">已下发</SelectItem>
               <SelectItem value="not_distributed">未下发</SelectItem>
+              <SelectItem value="distribution_failed">下发失败</SelectItem>
             </SelectContent>
           </Select>
         </div>

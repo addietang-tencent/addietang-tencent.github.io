@@ -425,7 +425,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
           {/* 文件上传区域 */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">选择上传方式</Label>
-            <p className="text-sm text-gray-600">支持 ZIP 文件或选择整个文件夹上传</p>
 
             <div
               onDragOver={handleDragOver}
@@ -434,7 +433,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
             >
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600 mb-2">点击或拖拽文件上传</p>
-              <p className="text-xs text-gray-500 mb-3">支持 ZIP 文件或选择整个文件夹上传</p>
 
               <div className="flex gap-3 justify-center">
                 <Button
@@ -577,8 +575,8 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
 
           {/* 技能信息表单 - 只有在上传成功后才启用 */}
           <div className={`space-y-4 border-t border-gray-200 pt-4 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-              <p className="text-sm text-blue-700">请先上传 Skill 文件，然后填写技能信息</p>
+            <div className="mb-4">
+              <p className="text-sm text-blue-600">请先上传 Skill 文件，然后填写技能信息</p>
             </div>
             <div>
               <Label className="text-base font-semibold">技能信息</Label>
@@ -596,7 +594,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                 placeholder="e.g., doc-summarizer"
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">Skill 的唯一标识符，仅允许小写字母、数字和连字符</p>
+              <p className="text-xs text-gray-500 mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。举例改为doc-summarizer-1</p>
             </div>
 
             <div>

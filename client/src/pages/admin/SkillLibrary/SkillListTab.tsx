@@ -120,41 +120,54 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   };
 
   const handleViewDistributeProgress = () => {
-    // 跳转到详情页的安装方式 Tab
+    // 跳转到详情页的下发记录 Tab
     if (distributeSkillId) {
-      handleViewDetail(distributeSkillId);
+      setSelectedSkillId(distributeSkillId);
       setDistributeDialogOpen(false);
+      // 设置默认 Tab 为下发记录
+      setTimeout(() => {
+        const tabTrigger = document.querySelector('[value="distribution"]') as HTMLElement;
+        if (tabTrigger) tabTrigger.click();
+      }, 100);
     }
   };
 
   const getDistributionStatusDisplay = (skill: any) => {
     if (!skill.lastDistributionStatus) return null;
 
-    const statusConfig: Record<string, { label: string; color: string }> = {
-      'in_progress': { label: `下发中 ${(skill.lastDistributionProgress || 0).toFixed(1)}%`, color: 'text-blue-600 bg-blue-50' },
-      'success': { label: '下发成功', color: 'text-green-600 bg-green-50' },
-      'partial': { label: '部分成功', color: 'text-yellow-600 bg-yellow-50' },
-      'failed': { label: '下发失败', color: 'text-red-600 bg-red-50' },
-    };
+    let label = '';
+    let color = '';
 
-    const config = statusConfig[skill.lastDistributionStatus];
-    if (!config) return null;
+    if (skill.lastDistributionStatus === 'in_progress') {
+      label = `进行中 ${(skill.lastDistributionProgress || 0).toFixed(0)}%`;
+      color = 'text-blue-600 bg-blue-50';
+    } else if (skill.lastDistributionStatus === 'success') {
+      // 假设成功下发了 100/101 个实例
+      label = `已下发(100/101成功)`;
+      color = 'text-green-600 bg-green-50';
+    } else if (skill.lastDistributionStatus === 'partial') {
+      label = `已下发(100/101成功)`;
+      color = 'text-yellow-600 bg-yellow-50';
+    } else if (skill.lastDistributionStatus === 'failed') {
+      label = '下发失败';
+      color = 'text-red-600 bg-red-50';
+    }
 
     return (
       <button
         onClick={(e) => {
           e.stopPropagation();
-          // 跳转到详情-安装方式 Tab
+          // 跳转到详情-下发记录 Tab
           setSelectedSkillId(skill.id);
-          // 设置默认 Tab 为安装方式
+          // 设置默认 Tab 为下发记录
           setTimeout(() => {
-            const tabTrigger = document.querySelector('[value="安装方式"]') as HTMLElement;
+            const tabTrigger = document.querySelector('[value="distribution"]') as HTMLElement;
             if (tabTrigger) tabTrigger.click();
           }, 100);
         }}
-        className={`inline-block px-3 py-1 rounded text-sm font-medium ${config.color} cursor-pointer hover:opacity-80 transition-opacity`}
+        className={`inline-block px-3 py-1 rounded text-sm font-medium ${color} cursor-pointer hover:opacity-80 transition-opacity`}
       >
-        {config.label}
+        {label}
       </button>
     );
   };

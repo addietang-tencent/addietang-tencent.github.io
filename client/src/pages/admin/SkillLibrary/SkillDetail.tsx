@@ -483,13 +483,12 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">操作</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInstances.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                        <td colSpan={3} className="px-4 py-4 text-center text-gray-500">
                           没有符合条件的记录
                         </td>
                       </tr>
@@ -509,21 +508,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                                '进行中'}
                             </span>
                           </td>
-                          <td className="px-4 py-2">
-                            {instance.status === 'failed' && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-blue-600 hover:text-blue-700 h-auto p-0"
-                                onClick={() => {
-                                  // 重试单个实例
-                                  handleRetry(activeDistribution.id);
-                                }}
-                              >
-                                重试
-                              </Button>
-                            )}
-                          </td>
+
                         </tr>
                       ))
                     )}

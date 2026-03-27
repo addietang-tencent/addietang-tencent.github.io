@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BenchmarkTable } from './BenchmarkTable';
-import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { EnableConfirmDialog } from './EnableConfirmDialog';
 import { DisableConfirmDialog } from './DisableConfirmDialog';
 
@@ -76,15 +76,11 @@ export const FreeVersionCard: React.FC = () => {
         }`}>
           {isEnabled ? '已启用' : '未启用'}
         </span>
-        {!isEnabled && (
-          <Button
-            onClick={() => setEnableDialogOpen(true)}
-            disabled={enableDialogOpen || disableDialogOpen}
-            className="bg-[#007AFF] text-white hover:bg-[#0051d5] px-6 py-2 h-auto text-[13px] font-medium"
-          >
-            启用
-          </Button>
-        )}
+        <Switch
+          checked={isEnabled}
+          onCheckedChange={handleToggleChange}
+          disabled={enableDialogOpen || disableDialogOpen}
+        />
       </div>
 
       {/* 确认弹窗 */}

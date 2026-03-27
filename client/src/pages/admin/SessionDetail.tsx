@@ -235,7 +235,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-            <span className="text-sm font-medium text-gray-700">成本趋势（按分钟）</span>
+            <span className="text-sm font-medium text-gray-700">成本趋势</span>
 
           </div>
           <div className="px-4 pt-4 pb-2">

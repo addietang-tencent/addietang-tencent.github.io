@@ -21,6 +21,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [defaultTabForDetail, setDefaultTabForDetail] = useState<string>('overview');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [distributeSkillId, setDistributeSkillId] = useState<string | null>(null);
@@ -154,12 +155,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         onClick={(e) => {
           e.stopPropagation();
           // 跳转到详情-下发记录 Tab
+          setDefaultTabForDetail('distribution');
           setSelectedSkillId(skill.id);
-          // 设置默认 Tab 为下发记录
-          setTimeout(() => {
-            const tabTrigger = document.querySelector('[value="distribution"]') as HTMLElement;
-            if (tabTrigger) tabTrigger.click();
-          }, 100);
         }}
         className={`inline-block px-3 py-1 rounded text-sm font-medium ${color} cursor-pointer hover:opacity-80 transition-opacity`}
       >
@@ -174,8 +171,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       <SkillDetail
         skillId={selectedSkillId}
         skills={skills}
-        onBack={() => setSelectedSkillId(null)}
-        defaultTab="overview"
+        onBack={() => {
+          setSelectedSkillId(null);
+          setDefaultTabForDetail('overview');
+        }}
+        defaultTab={defaultTabForDetail}
       />
     );
   }

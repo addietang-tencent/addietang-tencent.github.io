@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Edit2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
 import DistributeDialog from './DistributeDialog';
+import EditCategoriesDialog from './EditCategoriesDialog';
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
@@ -25,6 +26,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [batchDistributeDialogOpen, setBatchDistributeDialogOpen] = useState(false);
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [distributeSkillId, setDistributeSkillId] = useState<string | null>(null);
+  const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -220,25 +223,36 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
       {/* 分类筛选 */}
       <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
-        {DEFAULT_CATEGORIES.map((cat: any) => (
+        <div className="flex items-center gap-2 flex-wrap flex-1">
+          {categories.map((cat: any) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setSelectedCategories(prev =>
+                  prev.includes(cat.id)
+                    ? prev.filter(id => id !== cat.id)
+                    : [...prev, cat.id]
+                );
+              }}
+              className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                selectedCategories.includes(cat.id)
+                  ? 'bg-blue-600 text-white font-medium'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+        {categories.length > 0 && (
           <button
-            key={cat.id}
-            onClick={() => {
-              setSelectedCategories(prev =>
-                prev.includes(cat.id)
-                  ? prev.filter(id => id !== cat.id)
-                  : [...prev, cat.id]
-              );
-            }}
-            className={`px-3 py-1.5 text-sm rounded transition-colors ${
-              selectedCategories.includes(cat.id)
-                ? 'bg-blue-600 text-white font-medium'
-                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
+            onClick={() => setEditCategoryDialogOpen(true)}
+            className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
+            title="编辑分类"
           >
-            {cat.name}
+            <Edit2 className="w-4 h-4" />
           </button>
-        ))}
+        )}
       </div>
 
       {/* 空状态 */}
@@ -393,6 +407,16 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         />
       )}
 
+      {/* 编辑分类弹窗 */}
+      <EditCategoriesDialog
+        open={editCategoryDialogOpen}
+        onOpenChange={setEditCategoryDialogOpen}
+        categories={categories}
+        selectedCategoryIds={selectedCategories}
+        onConfirm={(selectedCategoryIds) => {
+          setSelectedCategories(selectedCategoryIds);
+        }}
+      />
 
     </div>
   );

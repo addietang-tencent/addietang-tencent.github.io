@@ -42,6 +42,7 @@ import {
   loadVisibleCustomChannels,
   onCustomChannelsChange,
 } from "@/lib/customChannelStore";
+import MemoryCard from "@/components/MemoryCard";
 
 // ─── 通道配置定义 ───────────────────────────────────────────────────────────────
 
@@ -1289,6 +1290,13 @@ export default function OpenClawDetail() {
               </div>
             </div>
           </div>
+
+          {/* ===== Memory Column ===== */}
+          <MemoryCard
+            clawId={clawId}
+            clawName={clawName}
+            onNavigateToAdmin={() => window.location.href = "/admin/memory-management"}
+          />
         </div>
       </div>
 

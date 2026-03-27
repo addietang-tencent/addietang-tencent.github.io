@@ -48,7 +48,7 @@ export const DisableConfirmDialog: React.FC<DisableConfirmDialogProps> = ({
                 <ul className="text-sm text-[#92400e] space-y-1">
                   <li>• 新创建的 OpenClaw 实例将<strong>不再默认安装</strong>记忆插件</li>
                   <li>• 已有的存量实例不受影响，用户可在龙虾端自行关闭</li>
-                  <li>• 已有记忆数据不会删除</li>
+                  <li>• 已有记忆数据不会删除，但是记忆不会被引用</li>
                 </ul>
               </div>
             </div>

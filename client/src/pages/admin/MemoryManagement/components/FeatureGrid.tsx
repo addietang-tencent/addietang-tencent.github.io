@@ -20,7 +20,7 @@ export const FeatureGrid: React.FC = () => {
     {
       icon: '🔄',
       title: '支持记忆迁移',
-      description: '记忆与应用实例解耦，换壳不换脑，跨应用迁移记忆，体验无缝延续',
+      description: '记忆与应用实例解耦，载体可换，认知不丢，体验不断',
       bgGradient: 'linear-gradient(135deg, #D1FAE5, #ECFDF5)',
     },
     {

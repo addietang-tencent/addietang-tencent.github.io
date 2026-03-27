@@ -174,12 +174,12 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
         >
           <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">会话轮次</span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-white" />
+            <span className="text-xs text-gray-500">成本总量</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>
+          <div className="text-2xl font-bold text-gray-900">$0.2743</div>
 
         </div>
 
@@ -188,12 +188,12 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
         >
           <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">成本总量</span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
+            <span className="text-xs text-gray-500">会话轮次</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+              <MessageSquare className="w-4 h-4 text-white" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-gray-900">$0.2743</div>
+          <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>
 
         </div>
       </div>

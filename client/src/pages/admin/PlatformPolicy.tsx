@@ -5,7 +5,7 @@
  * 风格：与管控端其他页面保持一致（白色卡片、浅色边框、圆角）
  */
 import { useState } from "react";
-import { Users, Zap, ToggleRight, Pencil, Check, X, Terminal, LayoutDashboard, Loader2 } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, LayoutDashboard, Loader2, Cpu } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,8 +89,8 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
       </div>
 
-      {/* 描述文字 */}
-      <p className="text-xs text-gray-400 mb-5 leading-relaxed pl-12">{description}</p>
+      {/* 描述文字：左侧与 icon 容器左侧对齐（pl-0），右侧对称 */}
+      <p className="text-xs text-gray-400 mb-5 leading-relaxed">{description}</p>
 
       {/* 分隔线 */}
       <div className="border-t border-gray-100 mb-5" />
@@ -168,7 +168,7 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
   );
 }
 
-// ─── 子组件：功能开关卡片 ─────────────────────────────────────────────────────
+// ─── 子组件：功能开关卡片（方形，与配额卡片一致） ─────────────────────────────
 
 interface ToggleCardProps {
   icon: React.ReactNode;
@@ -184,36 +184,39 @@ interface ToggleCardProps {
 function ToggleCard({ icon, iconBg, title, description, checked, loading, onToggle, extraContent }: ToggleCardProps) {
   return (
     <div
-      className={`bg-white rounded-2xl border overflow-hidden transition-colors ${
-        checked ? "border-gray-100" : "border-gray-100 bg-gray-50/50"
-      }`}
+      className="bg-white rounded-2xl border border-gray-100 p-6"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
     >
-      <div className="flex items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-4">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
-            {icon}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">{title}</p>
-            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
-          </div>
+      {/* 卡片头部：icon + 标题 + 开关 */}
+      <div className="flex items-center gap-3 mb-2">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+          {icon}
         </div>
-        <div className="flex items-center gap-2 ml-4 shrink-0">
-          <Switch
-            checked={checked}
-            disabled={loading}
-            onCheckedChange={onToggle}
-          />
+        <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
+        <div className="flex items-center gap-2 shrink-0">
           {loading && (
             <div className="flex items-center gap-1.5">
               <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
               <span className="text-xs text-blue-500 font-medium">配置中，请勿关闭...</span>
             </div>
           )}
+          <Switch
+            checked={checked}
+            disabled={loading}
+            onCheckedChange={onToggle}
+          />
         </div>
       </div>
-      {extraContent}
+
+      {/* 描述文字：左侧与 icon 容器左侧对齐，右侧对称 */}
+      <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+
+      {/* 额外内容（如端口信息） */}
+      {extraContent && (
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          {extraContent}
+        </div>
+      )}
     </div>
   );
 }
@@ -242,6 +245,9 @@ export default function PlatformPolicy() {
   });
 
   // ── 功能权限开关状态 ──
+  const [allowCustomModel, setAllowCustomModel] = useState(() => {
+    return localStorage.getItem("admin_allow_custom_model") === "true";
+  });
   const [allowTerminal, setAllowTerminal] = useState(() => {
     return localStorage.getItem("admin_allow_terminal") === "true";
   });
@@ -282,6 +288,12 @@ export default function PlatformPolicy() {
     }
   };
 
+  const handleToggleCustomModel = (v: boolean) => {
+    setAllowCustomModel(v);
+    localStorage.setItem("admin_allow_custom_model", String(v));
+    toast.success(v ? "已允许用户添加自定义模型" : "已禁止用户添加自定义模型");
+  };
+
   const handleToggleTerminal = (v: boolean) => {
     setAllowTerminal(v);
     localStorage.setItem("admin_allow_terminal", String(v));
@@ -310,22 +322,19 @@ export default function PlatformPolicy() {
   };
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="space-y-6 max-w-4xl">
       {/* 页面标题 */}
-      <div className="mb-8">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
         <p className="text-sm text-gray-500 mt-1">管理平台默认配额、全局限制和功能权限开关</p>
       </div>
 
       {/* ── 板块一：用户配额 ── */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-4 h-4 text-gray-400" />
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">用户配额</h2>
-        </div>
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">用户配额</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <QuotaCard
-            icon={<Users className="w-4 h-4 text-white" />}
+            icon={<Zap className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
             title="OpenClaw 数量上限"
             description="单个企业用户最多可以创建的 OpenClaw 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
@@ -346,11 +355,8 @@ export default function PlatformPolicy() {
       </section>
 
       {/* ── 板块二：模型配额 ── */}
-      <section className="mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap className="w-4 h-4 text-gray-400" />
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">模型配额</h2>
-        </div>
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">模型配额</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <QuotaCard
             icon={<Zap className="w-4 h-4 text-white" />}
@@ -366,14 +372,20 @@ export default function PlatformPolicy() {
 
       {/* ── 板块三：功能权限开关 ── */}
       <section>
-        <div className="flex items-center gap-2 mb-4">
-          <ToggleRight className="w-4 h-4 text-gray-400" />
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">功能权限开关</h2>
-        </div>
-        <div className="space-y-4">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 第一个：允许用户添加自定义模型 */}
+          <ToggleCard
+            icon={<Cpu className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-sky-500 to-sky-600"
+            title="允许用户添加自定义模型"
+            description="开启后，用户可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内"
+            checked={allowCustomModel}
+            onToggle={handleToggleCustomModel}
+          />
           <ToggleCard
             icon={<Terminal className="w-4 h-4 text-white" />}
-            iconBg="bg-orange-500"
+            iconBg="bg-gradient-to-br from-orange-500 to-orange-600"
             title="允许成员进入 OpenClaw 终端"
             description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 OpenClaw 云服务器的终端"
             checked={allowTerminal}
@@ -381,7 +393,7 @@ export default function PlatformPolicy() {
           />
           <ToggleCard
             icon={<LayoutDashboard className="w-4 h-4 text-white" />}
-            iconBg="bg-purple-500"
+            iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
             title="允许成员访问 OpenClaw 面板"
             description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 OpenClaw 面板"
             checked={allowPanelAccess}
@@ -389,12 +401,10 @@ export default function PlatformPolicy() {
             onToggle={handleTogglePanelAccess}
             extraContent={
               allowPanelAccess && panelPort ? (
-                <div className="border-t border-gray-100 px-6 py-4">
-                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
-                    <span className="text-xs text-blue-700 leading-relaxed">
-                      已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口
-                    </span>
-                  </div>
+                <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
+                  <span className="text-xs text-blue-700 leading-relaxed">
+                    已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口
+                  </span>
                 </div>
               ) : null
             }

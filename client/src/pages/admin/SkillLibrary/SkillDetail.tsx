@@ -398,8 +398,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                               record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
                               'bg-blue-50 text-blue-700'
                             }`}>
-                              {record.status === 'completed' ? `下发完成，${record.totalCount}个已下发，0个失败` :
-                               record.status === 'partial' ? `下发完成，${record.successCount}个已下发，${record.failedCount}个失败` :
+                              {record.status === 'completed' ? `下发完成，${record.totalCount}个下发成功，0个失败` :
+                               record.status === 'partial' ? `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败` :
                                '下发中'}
                             </span>
                             <Button 

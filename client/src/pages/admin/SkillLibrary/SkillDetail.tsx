@@ -397,7 +397,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                             record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
                             'bg-blue-50 text-blue-700'
                           }`}>
-                            {record.status === 'completed' ? '已全部完成' :
+                            {record.status === 'completed' ? `已全部完成（共${record.totalCount}个实例）` :
                              record.status === 'partial' ? '下发完成' :
                              '进行中'}
                           </span>
@@ -425,7 +425,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                         )}
                         
                         {record.status === 'completed' && (
-                          <div className="text-sm text-green-700 mb-3">✓ 已全部完成</div>
+                          <div className="text-sm text-green-700 mb-3">✓ 已全部完成（共{record.totalCount}个实例）</div>
                         )}
                         
                         {record.status === 'partial' && (

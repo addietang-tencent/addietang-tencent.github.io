@@ -417,10 +417,8 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   return (
     <>
       {showSuccessBanner && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
-          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg text-sm font-medium">
-            技能发布成功
-          </div>
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg flex items-center gap-3 z-50 bg-green-50 text-green-700 border border-green-200">
+          <span className="text-sm font-medium">技能发布成功</span>
         </div>
       )}
       <Dialog open={open} onOpenChange={handleOpenChange}>

@@ -86,6 +86,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
     // 关闭对话框
     setDistributeDialogOpen(false);
+    
+    // 显示下发开始通知
+    setNotification({ message: '已开始下发流程', type: 'success' });
 
     // 模拟进度更新
     let progress = 0;
@@ -516,14 +519,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         }}
       />
 
-      {/* 提示横幅 */}
-      {notification && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-white z-50 ${
-          notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'
-        }`}>
-          {notification.message}
-        </div>
-      )}
     </div>
   );
 }

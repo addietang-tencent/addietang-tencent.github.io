@@ -36,15 +36,15 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [distributionFilter, setDistributionFilter] = useState<'all' | 'not_distributed' | 'distribution_failed'>('not_distributed');
+  const [distributionFilter, setDistributionFilter] = useState<'all' | 'not_distributed' | 'distribution_failed'>('all');
 
-  // 当打开弹窗时，默认选中所有未下发的实例
+  // 当打开弹窗时，默认选中所有未下发或下发失败的实例
   useEffect(() => {
     if (open) {
-      const notDistributedIds = MOCK_OPENCLAW_INSTANCES
-        .filter(i => i.distributionStatus === 'not_distributed')
+      const validIds = MOCK_OPENCLAW_INSTANCES
+        .filter(i => i.distributionStatus === 'not_distributed' || i.distributionStatus === 'distribution_failed')
         .map(i => i.id);
-      setSelectedInstances(notDistributedIds);
+      setSelectedInstances(validIds);
     }
   }, [open]);
 
@@ -79,7 +79,7 @@ export default function BatchDistributeDialog({
     
     setSelectedInstances([]);
     setSearchQuery('');
-    setDistributionFilter('not_distributed');
+    setDistributionFilter('all');
     onOpenChange(false);
   };
 

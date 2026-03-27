@@ -392,15 +392,29 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                               #{distributionRecords.length - idx} · {record.timestamp.toLocaleString('zh-CN')}
                             </p>
                           </div>
-                          <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                            record.status === 'completed' ? 'bg-green-50 text-green-700' :
-                            record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
-                            'bg-blue-50 text-blue-700'
-                          }`}>
-                            {record.status === 'completed' ? `已全部完成（共${record.totalCount}个实例）` :
-                             record.status === 'partial' ? '下发完成' :
-                             '进行中'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
+                              record.status === 'completed' ? 'bg-green-50 text-green-700' :
+                              record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
+                              'bg-blue-50 text-blue-700'
+                            }`}>
+                              {record.status === 'completed' ? `已全部完成（共${record.totalCount}个实例）` :
+                               record.status === 'partial' ? '下发完成' :
+                               '进行中'}
+                            </span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => {
+                                setActiveDistributionId(record.id);
+                                setStatusFilter('all');
+                                setDetailsOpen(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
+                            >
+                              查看详惃
+                            </Button>
+                          </div>
                         </div>
                         
                         {record.status === 'in_progress' && (
@@ -417,9 +431,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
-                              <p className="text-xs text-gray-500 mt-2">
-                                如果某个openclaw已安装该skill，也视为下发成功。
-                              </p>
+
                             </div>
                           </>
                         )}
@@ -431,19 +443,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                             </span>
                           </div>
                         )}
-                        
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => {
-                            setActiveDistributionId(record.id);
-                            setStatusFilter('all');
-                            setDetailsOpen(true);
-                          }}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          查看详情
-                        </Button>
                       </div>
                     );
                   })}

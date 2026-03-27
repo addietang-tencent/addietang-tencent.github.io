@@ -697,8 +697,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
               </div>
             </div>
           </div>
-
-
         </div>
 
         <DialogFooter>

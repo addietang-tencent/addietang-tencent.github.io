@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -36,10 +36,20 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [distributionFilter, setDistributionFilter] = useState<'all' | 'distributed' | 'not_distributed'>('all');
+  const [distributionFilter, setDistributionFilter] = useState<'all' | 'distributed' | 'not_distributed'>('not_distributed');
+
+  // 当打开弹窗时，默认选中所有未下发的实例
+  useEffect(() => {
+    if (open) {
+      const notDistributedIds = MOCK_OPENCLAW_INSTANCES
+        .filter(i => i.distributionStatus === 'not_distributed')
+        .map(i => i.id);
+      setSelectedInstances(notDistributedIds);
+    }
+  }, [open]);
 
   const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance => {
-    const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = 
       distributionFilter === 'all' ||
       instance.distributionStatus === distributionFilter;
@@ -69,7 +79,7 @@ export default function BatchDistributeDialog({
     
     setSelectedInstances([]);
     setSearchQuery('');
-    setDistributionFilter('all');
+    setDistributionFilter('not_distributed');
   };
 
   const getStatusDisplay = (status?: string) => {
@@ -138,7 +148,10 @@ export default function BatchDistributeDialog({
                 onCheckedChange={() => handleSelectInstance(instance.id)}
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{instance.name}</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-sm font-medium text-gray-900 truncate min-w-fit">{instance.name}</p>
+                  <p className="text-xs text-gray-500 font-mono">{instance.id}</p>
+                </div>
               </div>
               <div className="flex-shrink-0">
                 {getStatusDisplay(instance.distributionStatus)}

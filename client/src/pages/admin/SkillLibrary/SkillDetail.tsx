@@ -283,10 +283,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
               文件列表
             </TabsTrigger>
             <TabsTrigger
-              value="install"
+              value="distribution"
               className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
-              安装方式
+              下发记录
             </TabsTrigger>
           </TabsList>
 
@@ -360,12 +360,12 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
             </div>
           </TabsContent>
 
-          {/* 安装方式 Tab */}
-          <TabsContent value="install" className="mt-4 p-0">
+          {/* 下发记录 Tab */}
+          <TabsContent value="distribution" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900">安装方式</h3>
-              <div className="flex gap-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">下发记录</h3>
                 <Button
                   onClick={() => setDistributeDialogOpen(true)}
                   className="bg-blue-600 hover:bg-blue-700"
@@ -375,10 +375,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
               </div>
             </div>
 
-            <div className="space-y-3 mt-8">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">下发记录</h3>
-              </div>
+            <div className="space-y-3 mt-4">
               {distributionRecords.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <p className="text-gray-500">还没有下发记录</p>
@@ -507,8 +504,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">OpenClaw 名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">创建人</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">操作</th>
                     </tr>
@@ -524,7 +521,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                       filteredInstances.map((instance) => (
                         <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="px-4 py-2 text-gray-900">{instance.name}</td>
-                          <td className="px-4 py-2 text-gray-600">{instance.createdBy}</td>
+                          <td className="px-4 py-2 text-gray-600 font-mono">{instance.id}</td>
                           <td className="px-4 py-2">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                               instance.status === 'success' ? 'bg-green-50 text-green-700' :

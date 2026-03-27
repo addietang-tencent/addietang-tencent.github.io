@@ -55,7 +55,7 @@ const INTERACTION_CHAIN = [
     output: "315",
     cacheRW: "0/0",
     tokens: "17K",
-    cost: "$0.0024",
+    cost: "0.0024",
     duration: "13.6s",
   },
   {
@@ -81,7 +81,7 @@ const INTERACTION_CHAIN = [
     output: "100",
     cacheRW: "0/0",
     tokens: "17K",
-    cost: "$0.0024",
+    cost: "0.0024",
     duration: "6.8s",
   },
   {
@@ -107,7 +107,7 @@ const INTERACTION_CHAIN = [
     output: "185",
     cacheRW: "0/0",
     tokens: "18K",
-    cost: "$0.0025",
+    cost: "0.0025",
     duration: "7.5s",
   },
 ];
@@ -367,10 +367,32 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.cost}</span>
+                            <span className="cursor-help">{(() => {
+                              if (item.input === "—" || item.output === "—") return "—";
+                              const inputNum = parseInt(item.input as string);
+                              const outputNum = parseInt(item.output as string);
+                              return (inputNum + outputNum).toLocaleString();
+                            })()}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            {item.cost}
+                            {(() => {
+                              if (item.input === "—" || item.output === "—") return "—";
+                              const inputNum = parseInt(item.input as string);
+                              const outputNum = parseInt(item.output as string);
+                              return (inputNum + outputNum).toLocaleString();
+                            })()}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.cost === "—" ? "—" : `$${item.cost}`}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.cost === "—" ? "—" : `$${item.cost}`}
                           </TooltipContent>
                         </UITooltip>
                       </TooltipProvider>

@@ -139,7 +139,7 @@ export default function MemoryCard({
         className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
         style={{
           boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
-          height: "680px",
+          height: "476px",
         }}
       >
         {/* ── Header ── */}
@@ -148,7 +148,7 @@ export default function MemoryCard({
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
               <Brain className="w-3.5 h-3.5 text-white" />
             </div>
-            <h2 className="font-semibold text-gray-900">Memory 记忆功能</h2>
+            <h2 className="font-semibold text-gray-900">记忆 (TDAI-Memory)</h2>
           </div>
         </div>
 
@@ -187,16 +187,7 @@ export default function MemoryCard({
             />
           </div>
 
-          {/* Action Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 justify-start px-0"
-            onClick={onNavigateToAdmin}
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            查看详情
-          </Button>
+
         </div>
       </div>
 

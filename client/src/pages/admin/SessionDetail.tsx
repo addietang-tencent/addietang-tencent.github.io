@@ -275,7 +275,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">CACHE R/W</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
+
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -369,7 +369,9 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                           <TooltipTrigger asChild>
                             <span className="cursor-help">{(() => {
                               if (item.input === "—" || item.output === "—") return "—";
-                              const inputNum = parseInt(item.input as string);
+                              // Handle input with K suffix (e.g., "17K" -> 17000)
+                              const inputStr = (item.input as string).replace('K', '');
+                              const inputNum = parseInt(inputStr) * 1000;
                               const outputNum = parseInt(item.output as string);
                               return (inputNum + outputNum).toLocaleString();
                             })()}</span>
@@ -377,7 +379,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                           <TooltipContent side="top">
                             {(() => {
                               if (item.input === "—" || item.output === "—") return "—";
-                              const inputNum = parseInt(item.input as string);
+                              const inputStr = (item.input as string).replace('K', '');
+                              const inputNum = parseInt(inputStr) * 1000;
                               const outputNum = parseInt(item.output as string);
                               return (inputNum + outputNum).toLocaleString();
                             })()}
@@ -393,30 +396,6 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                           </TooltipTrigger>
                           <TooltipContent side="top">
                             {item.cost === "—" ? "—" : `$${item.cost}`}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.duration}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.duration}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.duration}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.duration}
                           </TooltipContent>
                         </UITooltip>
                       </TooltipProvider>

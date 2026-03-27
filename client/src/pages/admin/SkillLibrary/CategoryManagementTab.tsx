@@ -20,7 +20,6 @@ export default function CategoryManagementTab() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [newCategoryForSkills, setNewCategoryForSkills] = useState<string>('');
 
   // 计算每个分类下的技能数量
   const getSkillCountByCategory = (categoryId: string) => {
@@ -45,7 +44,6 @@ export default function CategoryManagementTab() {
       setCategories(categories.filter(cat => cat.id !== selectedCategory.id));
       setDeleteConfirmOpen(false);
       setSelectedCategory(null);
-      setNewCategoryForSkills('');
     }
   };
 
@@ -57,7 +55,6 @@ export default function CategoryManagementTab() {
   const openDeleteConfirm = (category: Category) => {
     setSelectedCategory(category);
     setDeleteConfirmOpen(true);
-    setNewCategoryForSkills('');
   };
 
   return (
@@ -89,20 +86,20 @@ export default function CategoryManagementTab() {
                 <td className="px-6 py-4 text-sm text-gray-600">{category.description}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{getSkillCountByCategory(category.id)}</td>
                 <td className="px-6 py-4 text-sm">
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     <button
                       onClick={() => openEditDialog(category)}
-                      className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      title="编辑"
                     >
                       <Edit2 className="w-4 h-4" />
-                      编辑
                     </button>
                     <button
                       onClick={() => openDeleteConfirm(category)}
-                      className="text-red-600 hover:text-red-700 flex items-center gap-1"
+                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      title="删除"
                     >
                       <Trash2 className="w-4 h-4" />
-                      删除
                     </button>
                   </div>
                 </td>
@@ -136,38 +133,12 @@ export default function CategoryManagementTab() {
                 
                 {(() => {
                   const skillCount = getSkillCountByCategory(selectedCategory?.id || '');
-                  const otherCategories = categories.filter(cat => cat.id !== selectedCategory?.id);
                   
                   return (
                     <>
-                      <p className="text-sm text-gray-600 mb-4">
-                        {skillCount === 0 ? (
-                          `该分类下共有 ${skillCount} 个技能，可删除该分类。`
-                        ) : (
-                          `该分类下共有 ${skillCount} 个技能，删除此分类后对应skill将移除该分类，可选择为对应skill增加新分类。`
-                        )}
+                      <p className="text-sm text-gray-600 mb-6">
+                        该分类下共有 {skillCount} 个技能，删除此分类后对应skill将移除该分类。
                       </p>
-
-                      {/* 新分类选择 - 只在有其他分类且有技能时显示 */}
-                      {skillCount > 0 && otherCategories.length > 0 && (
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                          <Label className="text-sm font-medium text-gray-900 mb-3 block">
-                            新分类（可选）
-                          </Label>
-                          <Select value={newCategoryForSkills} onValueChange={setNewCategoryForSkills}>
-                            <SelectTrigger className="w-full bg-white border border-gray-200">
-                              <SelectValue placeholder="选择新分类" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {otherCategories.map(category => (
-                                <SelectItem key={category.id} value={category.id}>
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
                     </>
                   );
                 })()}
@@ -177,7 +148,6 @@ export default function CategoryManagementTab() {
                     variant="outline"
                     onClick={() => {
                       setDeleteConfirmOpen(false);
-                      setNewCategoryForSkills('');
                     }}
                   >
                     取消
@@ -186,7 +156,7 @@ export default function CategoryManagementTab() {
                     variant="destructive"
                     onClick={handleDeleteCategory}
                   >
-                    确认删除
+                    确认
                   </Button>
                 </div>
               </div>

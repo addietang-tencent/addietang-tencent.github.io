@@ -67,20 +67,22 @@ export const FreeVersionCard: React.FC = () => {
       {/* 评测表格 */}
       <BenchmarkTable />
 
-      {/* 底部 - 状态标签 + 启用按钮 */}
+      {/* 底部 - 状态标签 + 启用按颁 */}
       <div className="mt-5 pt-5 border-t border-[#f0f0f5] flex items-center justify-between">
-        <span className={`inline-block px-3 py-1 rounded text-[12px] font-medium ${
+        <span className={`inline-block px-4 py-2 rounded-lg text-[13px] font-semibold ${
           isEnabled
             ? 'bg-[#dcfce7] text-[#166534]'
-            : 'bg-[#f0f0f5] text-[#8c8ca1]'
+            : 'bg-[#fef3c7] text-[#92400e] border border-[#fcd34d]'
         }`}>
           {isEnabled ? '已启用' : '未启用'}
         </span>
-        <Switch
-          checked={isEnabled}
-          onCheckedChange={handleToggleChange}
-          disabled={enableDialogOpen || disableDialogOpen}
-        />
+        <div className="scale-125 origin-right">
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={handleToggleChange}
+            disabled={enableDialogOpen || disableDialogOpen}
+          />
+        </div>
       </div>
 
       {/* 确认弹窗 */}

@@ -960,13 +960,14 @@ export default function TokensMonitor() {
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
                       <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
                       <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
                       <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
                       <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {sessionPaged.length === 0 ? (
-                      <tr><td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                      <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
                     ) : sessionPaged.map((s) => {
                       return (
                       <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
@@ -979,6 +980,7 @@ export default function TokensMonitor() {
                         <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">${s.cost.toFixed(4)}</td>
                         <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
                         <td className="px-6 py-4 text-center">
                           <Button

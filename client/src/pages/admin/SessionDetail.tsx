@@ -154,11 +154,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">会话详情</h1>
         <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id} • OpenClaw名称: {sessionInfo.openClawName}</p>
-      </div>
-
-      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-2 gap-4">
-        <div
+      </div>      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-3 gap-4">       <div
           className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
         >
@@ -185,11 +182,25 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>
 
         </div>
+
+        <div
+          className="bg-white rounded-2xl border border-gray-100 px-4 py-4"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+        >
+          <div className="flex items-start justify-between mb-2">
+            <span className="text-xs text-gray-500">成本总量</span>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">$0.2743</div>
+
+        </div>
       </div>
 
 
 
-      {/* ══ 图表区 ═════════════════════════════════════════════════════════════ */}
+      {/* ══ 图表区 ══════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-2 gap-5">
 
         {/* Token 流量 */}
@@ -218,6 +229,31 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           </div>
         </div>
 
+        {/* 成本趋势 */}
+        <div
+          className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+        >
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
+            <span className="text-sm font-medium text-gray-700">成本趋势（按分钟）</span>
+
+          </div>
+          <div className="px-4 pt-4 pb-2">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={TOKEN_FLOW.map((item, idx) => ({ minute: idx + 1, cost: (0.0024 * (item.input + item.output) / 1000).toFixed(4) }))} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey="minute" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, fontSize: 12 }}
+                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                />
+                <Bar dataKey="cost" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
       </div>
 
       {/* ══ 交互链 ═════════════════════════════════════════════════════════════ */}
@@ -238,6 +274,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">OUTPUT</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">CACHE R/W</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
                 </tr>
               </thead>
@@ -330,10 +367,22 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.tokens}</span>
+                            <span className="cursor-help">{item.cost}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top">
-                            {item.tokens}
+                            {item.cost}
+                          </TooltipContent>
+                        </UITooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                      <TooltipProvider>
+                        <UITooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{item.duration}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            {item.duration}
                           </TooltipContent>
                         </UITooltip>
                       </TooltipProvider>

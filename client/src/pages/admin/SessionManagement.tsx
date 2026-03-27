@@ -694,10 +694,11 @@ export default function SessionManagement() {
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话 ID</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后消息</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
                     <th className="text-right px-6 py-3">
                       <button
                         onClick={() => handleSort("updatedAt")}
@@ -715,12 +716,12 @@ export default function SessionManagement() {
                     <tr key={session.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
                         <div className="text-sm text-gray-700 font-medium hover:text-blue-600 transition-colors">{session.name}</div>
-                        <div className="text-xs text-gray-400 font-mono mt-0.5">{session.id}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{session.type}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 font-mono">{session.id}</td>
                       <td className="px-6 py-4 text-sm text-gray-700">{session.model}</td>
-
-                      <td className="px-6 py-4 text-sm text-gray-600 truncate">{session.lastMessage}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">28</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.tokens}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.cost}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.updatedAt}</td>
                       <td className="px-6 py-4 text-center">
                         <Button

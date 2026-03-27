@@ -589,11 +589,15 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
             </div>
           )}
 
+          {/* 提示文字 - 只有在没有上传文件时显示 */}
+          {uploadedFiles.length === 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-blue-500 font-medium">请先上传 Skill 文件，然后填写技能信息</p>
+            </div>
+          )}
+
           {/* 技能信息表单 - 只有在上传成功后才启用 */}
           <div className={`space-y-4 border-t border-gray-200 pt-4 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
-            <div className="mb-4">
-              <p className="text-sm text-blue-700 font-medium">请先上传 Skill 文件，然后填写技能信息</p>
-            </div>
             <div>
               <Label className="text-base font-semibold">技能信息</Label>
             </div>

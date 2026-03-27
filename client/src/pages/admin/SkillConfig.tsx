@@ -33,6 +33,12 @@ const TABS = [
     comingSoon: false,
   },
   {
+    id: "roles",
+    label: "角色设定",
+    description: "创建和管理角色预设，用户在创建 OpenClaw 时可选择管理员配置好的角色，快速获得对应技能组合。",
+    comingSoon: false,
+  },
+  {
     id: "source",
     label: "技能安装来源",
     description: "控制用户在 OpenClaw 配置页中可以从哪些来源浏览和安装新技能。",
@@ -320,6 +326,9 @@ export default function SkillConfig() {
       {/* Tab 内容 */}
       {activeTab === "preset" && (
         <SkillInitialPackageTab onPackagesChange={setPackages} />
+      )}
+      {activeTab === "roles" && (
+        <div />
       )}
       {activeTab === "source" && <SkillSourceTab />}
       {activeTab === "public" && (

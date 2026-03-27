@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, Edit2 } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Edit2, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLocation } from 'wouter';
+import { useEffect } from 'react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
@@ -105,6 +106,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               : skill
           )
         );
+        // 显示成功通知
+        setNotification({ message: '下发成功', type: 'success' });
       } else {
         setSkills(prevSkills =>
           prevSkills.map(skill =>
@@ -125,6 +128,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     if (distributeSkillId) {
       setSelectedSkillId(distributeSkillId);
       setDistributeDialogOpen(false);
+      setDefaultTabForDetail('distribution');
       // 设置默认 Tab 为下发记录
       setTimeout(() => {
         const tabTrigger = document.querySelector('[value="distribution"]') as HTMLElement;
@@ -132,6 +136,16 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       }, 100);
     }
   };
+
+  // 自动关闭通知
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   const getDistributionStatusDisplay = (skill: any) => {
     if (!skill.lastDistributionStatus) return null;
@@ -186,6 +200,22 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
   return (
     <div className="space-y-4">
+      {/* 通知横幅 */}
+      {notification && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg flex items-center gap-3 z-50 ${
+          notification.type === 'success' 
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          <span className="text-sm font-medium">{notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className="ml-2 text-current hover:opacity-70"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* 搜索和工具栏 */}
       <div className="flex items-center justify-between gap-6">
         {/* 搜索框 */}
@@ -345,10 +375,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
-                title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
+                title={skill.lastDistributionStatus === 'in_progress' ? '下发中' : ''}
               >
                 <Send className="w-4 h-4 mr-2" />
-                {skill.lastDistributionStatus === 'in_progress' ? '安装中' : '下发'}
+                {skill.lastDistributionStatus === 'in_progress' ? '下发中' : '下发'}
               </Button>
             </div>
           ))}

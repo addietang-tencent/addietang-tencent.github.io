@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Category } from './types';
 import { DEFAULT_CATEGORIES, MOCK_SKILLS } from './mockData';
 import AddCategoryDialog from './AddCategoryDialog';
@@ -20,6 +20,7 @@ export default function CategoryManagementTab() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // 计算每个分类下的技能数量
   const getSkillCountByCategory = (categoryId: string) => {
@@ -32,18 +33,28 @@ export default function CategoryManagementTab() {
   };
 
   const handleEditCategory = (updatedCategory: Category) => {
-    setCategories(categories.map(cat =>
-      cat.id === updatedCategory.id ? updatedCategory : cat
-    ));
-    setEditDialogOpen(false);
-    setSelectedCategory(null);
+    try {
+      setCategories(categories.map(cat =>
+        cat.id === updatedCategory.id ? updatedCategory : cat
+      ));
+      setEditDialogOpen(false);
+      setSelectedCategory(null);
+      setNotification({ type: 'success', message: '分类编辑成功' });
+    } catch (error) {
+      setNotification({ type: 'error', message: '分类编辑失败' });
+    }
   };
 
   const handleDeleteCategory = () => {
     if (selectedCategory) {
-      setCategories(categories.filter(cat => cat.id !== selectedCategory.id));
-      setDeleteConfirmOpen(false);
-      setSelectedCategory(null);
+      try {
+        setCategories(categories.filter(cat => cat.id !== selectedCategory.id));
+        setDeleteConfirmOpen(false);
+        setSelectedCategory(null);
+        setNotification({ type: 'success', message: '分类删除成功' });
+      } catch (error) {
+        setNotification({ type: 'error', message: '分类删除失败' });
+      }
     }
   };
 
@@ -57,8 +68,35 @@ export default function CategoryManagementTab() {
     setDeleteConfirmOpen(true);
   };
 
+  // 自动关闭通知
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   return (
     <div className="space-y-4">
+      {/* 通知横幅 */}
+      {notification && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg flex items-center gap-3 z-50 ${
+          notification.type === 'success' 
+            ? 'bg-green-50 text-green-700 border border-green-200' 
+            : 'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          <span className="text-sm font-medium">{notification.message}</span>
+          <button
+            onClick={() => setNotification(null)}
+            className="ml-2 text-current hover:opacity-70"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">分类管理</h2>
         <Button onClick={() => setAddDialogOpen(true)}>

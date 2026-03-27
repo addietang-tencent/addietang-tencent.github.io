@@ -51,7 +51,7 @@ export default function EditCategoryDialog({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
-              分类名称
+              分类名称 <span className="text-red-600">*</span>
             </label>
             <Input
               value={name}

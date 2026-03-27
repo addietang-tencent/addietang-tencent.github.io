@@ -45,7 +45,7 @@ function FavoriteTagBubble({ onConfirm, onSkip }: FavoriteTagBubbleProps) {
             className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
               selectedTags.includes(tag)
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300'
+                : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'
             }`}
           >
             {tag}
@@ -137,7 +137,7 @@ function SkillCard({ skill, rank, isFavorited, isInPackage, onFavorite, onAddToP
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:border-blue-200 hover:shadow-md transition-all group"
+      className="relative bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >

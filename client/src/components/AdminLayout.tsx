@@ -42,7 +42,6 @@ import { toast } from "sonner";
 
 // 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
-  "/admin/memory-management",
   "/admin/file-management",
 ]);
 

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 import { Search, Grid3x3, List, Send, Edit2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
@@ -297,18 +298,26 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   </span>
                 ))}
                 {skill.categories.length > 0 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingSkillId(skill.id);
-                      setEditingSkillCategories(skill.categories);
-                      setEditCategoryDialogOpen(true);
-                    }}
-                    className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                    title="编辑分类"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                  </button>
+                  <TooltipProvider>
+                    <Tooltip delayDuration={1000}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSkillId(skill.id);
+                            setEditingSkillCategories(skill.categories);
+                            setEditCategoryDialogOpen(true);
+                          }}
+                          className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                        仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
 
@@ -372,18 +381,26 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       </span>
                     ))}
                     {skill.categories.length > 0 && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingSkillId(skill.id);
-                          setEditingSkillCategories(skill.categories);
-                          setEditCategoryDialogOpen(true);
-                        }}
-                        className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                        title="编辑分类"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={1000}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingSkillId(skill.id);
+                                setEditingSkillCategories(skill.categories);
+                                setEditCategoryDialogOpen(true);
+                              }}
+                              className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                            仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                 </div>
@@ -449,6 +466,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         }}
         categories={categories}
         selectedCategoryIds={editingSkillCategories}
+        skillName={editingSkillId ? skills.find(s => s.id === editingSkillId)?.name : undefined}
         onConfirm={(selectedCategoryIds) => {
           if (editingSkillId) {
             setSkills(prev => prev.map(skill => 

@@ -8,6 +8,7 @@ interface EditCategoriesDialogProps {
   onOpenChange: (open: boolean) => void;
   categories: Category[];
   selectedCategoryIds: string[];
+  skillName?: string;
   onConfirm: (selectedCategoryIds: string[]) => void;
 }
 
@@ -16,6 +17,7 @@ export default function EditCategoriesDialog({
   onOpenChange,
   categories,
   selectedCategoryIds,
+  skillName,
   onConfirm,
 }: EditCategoriesDialogProps) {
   const [selected, setSelected] = useState<string[]>([]);
@@ -48,6 +50,9 @@ export default function EditCategoriesDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>修改分类</DialogTitle>
+          {skillName && (
+            <p className="text-sm text-gray-600 mt-2">请选择 {skillName} Skill 的分类</p>
+          )}
         </DialogHeader>
 
         <div className="space-y-3">

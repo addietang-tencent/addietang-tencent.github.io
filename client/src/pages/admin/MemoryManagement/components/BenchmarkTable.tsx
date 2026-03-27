@@ -30,7 +30,7 @@ export const BenchmarkTable: React.FC = () => {
     {
       metric: '总准确率',
       native: '47.85%',
-      memory: '76.10% ↑ 59%',
+      memory: '76.10%',
     },
   ];
 

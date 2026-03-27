@@ -34,14 +34,23 @@ export const MemoryManagement: React.FC = () => {
       {/* Free 版介绍卡片 */}
       <FreeVersionCard />
 
-      {/* Pro 版升级卡片 */}
-      <ProVersionCard />
+      {/* Pro 版 Panel */}
+      <div className="bg-white rounded-[16px] overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.06),_0_4px_12px_rgba(0,0,0,0.04)] p-0 mb-5">
+        {/* Pro 版升级卡片 */}
+        <div className="px-9 py-8">
+          <ProVersionCard />
+        </div>
 
-      {/* Pro 版功能特性网格 */}
-      <FeatureGrid />
+        {/* Pro 版功能特性网格 */}
+        <div className="px-9 py-8 border-t border-gray-100">
+          <FeatureGrid />
+        </div>
 
-      {/* 对比表格 */}
-      <ComparisonTable />
+        {/* 对比表格 */}
+        <div className="px-9 py-8 border-t border-gray-100">
+          <ComparisonTable />
+        </div>
+      </div>
     </div>
   );
 };

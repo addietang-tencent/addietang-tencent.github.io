@@ -7,7 +7,7 @@ import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
-import DistributeDialog from './DistributeDialog';
+import BatchDistributeDialog from './BatchDistributeDialog';
 import EditCategoriesDialog from './EditCategoriesDialog';
 
 interface SkillListTabProps {
@@ -22,8 +22,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [skills, setSkills] = useState(MOCK_SKILLS);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
-  const [batchDistributeSkillId, setBatchDistributeSkillId] = useState<string | null>(null);
-  const [batchDistributeDialogOpen, setBatchDistributeDialogOpen] = useState(false);
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [distributeSkillId, setDistributeSkillId] = useState<string | null>(null);
   const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false);
@@ -62,17 +60,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     }
   };
 
-  const handleBatchDistribute = (skillId: string) => {
-    setBatchDistributeSkillId(skillId);
-    setBatchDistributeDialogOpen(true);
-  };
-
   const handleDistribute = (skillId: string) => {
     setDistributeSkillId(skillId);
     setDistributeDialogOpen(true);
   };
 
-  const handleDistributeStart = (selectedInstanceIds: string[]) => {
+  const handleDistributeStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
     // 更新 skill 的下发状态
     setSkills(skills.map(skill =>
       skill.id === distributeSkillId
@@ -84,6 +77,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           }
         : skill
     ));
+
+    // 关闭对话框
+    setDistributeDialogOpen(false);
 
     // 模拟进度更新
     let progress = 0;
@@ -410,13 +406,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       />
 
       {distributeSkillId && (
-        <DistributeDialog
+        <BatchDistributeDialog
           open={distributeDialogOpen}
           onOpenChange={setDistributeDialogOpen}
           skillName={skills.find(s => s.id === distributeSkillId)?.name || ''}
-          instances={MOCK_OPENCLAW_INSTANCES}
-          onDistribute={handleDistributeStart}
-          onViewProgress={handleViewDistributeProgress}
+          onDistributionStart={handleDistributeStart}
         />
       )}
 

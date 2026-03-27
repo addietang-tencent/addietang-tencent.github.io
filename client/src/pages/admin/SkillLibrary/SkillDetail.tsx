@@ -398,9 +398,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                               record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
                               'bg-blue-50 text-blue-700'
                             }`}>
-                              {record.status === 'completed' ? `已全部完成（共${record.totalCount}个实例）` :
-                               record.status === 'partial' ? '下发完成' :
-                               '进行中'}
+                              {record.status === 'completed' ? `下发完成，${record.totalCount}个已下发，0个失败` :
+                               record.status === 'partial' ? `下发完成，${record.successCount}个已下发，${record.failedCount}个失败` :
+                               '下发中'}
                             </span>
                             <Button 
                               size="sm" 
@@ -412,7 +412,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                               }}
                               className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
                             >
-                              查看详惃
+                              查看详情
                             </Button>
                           </div>
                         </div>
@@ -420,29 +420,17 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                         {record.status === 'in_progress' && (
                           <>
                             <div className="mb-2">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-medium text-gray-700">
-                                  {progress}% ({record.successCount}个已完成/{record.totalCount}个)
-                                </span>
-                              </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
-
                             </div>
                           </>
                         )}
                         
-                        {record.status === 'partial' && (
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm text-gray-600">
-                              下发完成，{record.successCount}个已完成，{record.failedCount}个失败
-                            </span>
-                          </div>
-                        )}
+
                       </div>
                     );
                   })}

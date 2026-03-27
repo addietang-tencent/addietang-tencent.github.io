@@ -459,10 +459,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
                   }`}
-                  title={skill.lastDistributionStatus === 'in_progress' ? '安装中' : ''}
+                  title={skill.lastDistributionStatus === 'in_progress' ? '下发中' : ''}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {skill.lastDistributionStatus === 'in_progress' ? '安装中' : '下发'}
+                  {skill.lastDistributionStatus === 'in_progress' ? '下发中' : '下发'}
                 </Button>
               </div>
               {/* 第二行：描述 */}

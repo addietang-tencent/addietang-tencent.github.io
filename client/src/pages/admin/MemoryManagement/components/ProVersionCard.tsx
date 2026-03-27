@@ -68,13 +68,14 @@ export const ProVersionCard: React.FC = () => {
         {/* 右侧按钮 */}
         <div className="flex-shrink-0">
           <button
-            className="inline-flex items-center gap-2 px-7 py-2.5 rounded-[10px] text-sm font-semibold text-white border border-white border-opacity-30 transition-all duration-200 hover:bg-white hover:bg-opacity-28 hover:border-opacity-50 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,.15)]"
+            disabled
+            className="inline-flex items-center gap-2 px-7 py-2.5 rounded-[10px] text-sm font-semibold text-white border border-white border-opacity-30 transition-all duration-200 opacity-60 cursor-not-allowed"
             style={{
               background: 'rgba(255, 255, 255, 0.18)',
               backdropFilter: 'blur(4px)',
             }}
           >
-            <span>立即升级</span>
+            <span>即将到来</span>
             <svg
               className="w-4 h-4"
               fill="none"

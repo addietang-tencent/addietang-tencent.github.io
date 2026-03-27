@@ -1266,12 +1266,18 @@ export default function OpenClawDetail() {
                 安装技能
               </Button>
               
-              <p className="text-xs text-gray-400 leading-relaxed">
-                您可以前往 SkillHub 查看您需要安装的技能
-                <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
-                  浏览 SkillHub<ExternalLink className="w-3 h-3" />
-                </a>
-              </p>
+              {/* 不支持搜索时的提示信息 */}
+              <div className="flex items-start gap-3 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
+                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 text-xs text-blue-700 leading-relaxed">
+                  管理员配置了
+                  <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline underline-offset-1 font-medium">
+                    SkillHub地址
+                  </a>
+                  ，不支持搜索，请输入准确Skill名称
+                </div>
+                <ExternalLink className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              </div>
             </div>
             {/* Lower: installed skills - scrollable */}
             <div className="px-5 pb-5 overflow-y-auto flex-1">

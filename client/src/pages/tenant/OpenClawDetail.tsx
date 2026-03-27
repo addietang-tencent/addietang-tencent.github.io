@@ -1271,12 +1271,12 @@ export default function OpenClawDetail() {
                 <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 text-xs text-blue-700 leading-relaxed">
                   管理员配置了
-                  <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 underline underline-offset-1 font-medium">
+                  <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 underline underline-offset-1 font-medium">
                     SkillHub地址
+                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
                   </a>
                   ，不支持搜索，请输入准确Skill名称
                 </div>
-                <ExternalLink className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
               </div>
             </div>
             {/* Lower: installed skills - scrollable */}

@@ -373,7 +373,7 @@ export const AVAILABLE_SKILLS = [
   "ai-ppt-generator 1.1.2",
 ];
 
-// 角色数据模型
+// 角色数据
 export interface RoleSkill {
   name: string;
   version: string;
@@ -386,7 +386,6 @@ export interface Role {
   description: string;
   soul: string;
   skills: RoleSkill[];
-  type: "system" | "custom";
   visible: boolean;
 }
 
@@ -401,7 +400,6 @@ export const MOCK_ROLES: Role[] = [
       { name: "Data Visualization", version: "v1.5", source: "公共" },
       { name: "SWOT Analyzer", version: "v1.0", source: "公共" },
     ],
-    type: "system",
     visible: true,
   },
   {
@@ -413,7 +411,6 @@ export const MOCK_ROLES: Role[] = [
       { name: "cloudbase", version: "v1.0", source: "企业" },
       { name: "playwright-cli", version: "v0.2", source: "公共" },
     ],
-    type: "system",
     visible: true,
   },
   {
@@ -428,7 +425,6 @@ export const MOCK_ROLES: Role[] = [
       { name: "Vercel web design", version: "v1.0", source: "公共" },
       { name: "playwright-cli", version: "v0.2", source: "公共" },
     ],
-    type: "system",
     visible: true,
   },
   {
@@ -443,7 +439,6 @@ export const MOCK_ROLES: Role[] = [
       { name: "pm-risk-assessment", version: "v1.0", source: "企业" },
       { name: "pm-retrospective", version: "v1.0", source: "企业" },
     ],
-    type: "system",
     visible: true,
   },
   {
@@ -457,8 +452,7 @@ export const MOCK_ROLES: Role[] = [
       { name: "tencent-meeting-skill", version: "v1.0", source: "企业" },
       { name: "baoyu-infographic", version: "v1.0", source: "公共" },
     ],
-    type: "system",
-    visible: true,
+    visible: false,
   },
   {
     id: "role-006",
@@ -472,7 +466,38 @@ export const MOCK_ROLES: Role[] = [
       { name: "ima-note", version: "v1.0", source: "企业" },
       { name: "baoyu-infographic", version: "v1.0", source: "公共" },
     ],
-    type: "system",
     visible: true,
   },
+];
+
+// 可供角色选择的技能库
+export const PUBLIC_SKILL_POOL = [
+  { name: "Data Analysis", description: "全面的数据分析技能", version: "v2.0" },
+  { name: "Data Visualization", description: "数据可视化图表生成", version: "v1.5" },
+  { name: "SWOT Analyzer", description: "SWOT 分析框架工具", version: "v1.0" },
+  { name: "ui-ux-pro-max", description: "专业 UI/UX 设计辅助", version: "v1.0" },
+  { name: "Impeccable", description: "设计质量检查工具", version: "v1.2" },
+  { name: "taste-skill", description: "审美与品味评估", version: "v1.0" },
+  { name: "Vercel web design", description: "现代 Web 设计最佳实践", version: "v1.0" },
+  { name: "playwright-cli", description: "浏览器自动化测试", version: "v0.2" },
+  { name: "self-improving-agent", description: "自我改进型 Agent 框架", version: "v1.0" },
+  { name: "humanizer", description: "文本人性化润色", version: "v1.0" },
+  { name: "agent-reach", description: "多平台内容分发", version: "v1.0" },
+  { name: "baoyu-infographic", description: "信息图自动生成", version: "v1.0" },
+  { name: "web-search-pro", description: "增强型网络搜索", version: "v3.2" },
+  { name: "github", description: "GitHub 交互工具", version: "v2.1" },
+  { name: "code-reviewer", description: "自动化代码审查", version: "v1.4" },
+];
+
+export const ENTERPRISE_SKILL_POOL = [
+  { name: "cloudbase", description: "腾讯云 CloudBase 开发工具", version: "v1.0" },
+  { name: "pm-project-kickoff", description: "项目启动模板", version: "v1.0" },
+  { name: "pm-meeting-minutes", description: "会议纪要自动生成", version: "v1.0" },
+  { name: "pm-weekly-report", description: "周报自动汇总", version: "v1.0" },
+  { name: "pm-risk-assessment", description: "项目风险评估", version: "v1.0" },
+  { name: "pm-retrospective", description: "项目复盘模板", version: "v1.0" },
+  { name: "office-documents", description: "Office 文档处理", version: "v1.0" },
+  { name: "tencent-docs", description: "腾讯文档集成", version: "v1.0" },
+  { name: "tencent-meeting-skill", description: "腾讯会议技能", version: "v1.0" },
+  { name: "ima-note", description: "即时笔记工具", version: "v1.0" },
 ];

@@ -38,7 +38,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, AlertTriangle, Info
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
 
@@ -562,7 +562,7 @@ export default function MyOpenClaw() {
                               <DropdownMenuSeparator />
 
                               {/* Delete */}
-                              {claw.status === "pending" ? (
+                              {["creating", "loading", "pending"].includes(claw.status) ? (
                                 <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed text-red-600">
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   删除
@@ -686,37 +686,17 @@ export default function MyOpenClaw() {
 
         {/* Restart Confirm Dialog */}
         <Dialog open={!!restartConfirm} onOpenChange={(open) => { if (!open) setRestartConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setRestartConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2">
-                <RotateCcw className="w-4 h-4 text-amber-500" />
-                确认重启
-              </DialogTitle>
+              <DialogTitle className="text-base font-bold text-gray-900">确认重启</DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                确定要重启「<span className="font-medium text-gray-900">{restartConfirm?.name}</span>」吗？
-              </p>
-              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• 重启期间助手将短暂不可用</li>
-                    <li>• 期间 IM 消息无法回复</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="flex justify-end gap-2">
+            <p className="text-sm text-gray-600 leading-relaxed">
+              重启后该 OpenClaw「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
+            </p>
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setRestartConfirm(null)}>取消</Button>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
                 onClick={() => handleRestart(restartConfirm!.id, restartConfirm!.name)}
               >
                 确认重启
@@ -727,50 +707,26 @@ export default function MyOpenClaw() {
 
         {/* Reinstall Confirm Dialog */}
         <Dialog open={!!reinstallConfirm} onOpenChange={(open) => { if (!open) setReinstallConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setReinstallConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2">
-                <HardDriveDownload className="w-4 h-4 text-amber-500" />
-                确认重新安装
-              </DialogTitle>
+              <DialogTitle className="text-base font-bold text-gray-900">确认重新安装</DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                确定要重新安装「<span className="font-medium text-gray-900">{reinstallConfirm?.name}</span>」的 OpenClaw 吗？
-              </p>
-              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• 将使用最新镜像版本重新安装 OpenClaw</li>
-                    <li>• 所有配置和数据将丢失，无法恢复</li>
-                    <li>• 安装完成后需要重新配置模型和通道</li>
-                  </ul>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="reinstall-confirm" className="text-xs text-gray-600">
-                  请输入「<span className="font-medium">重装</span>」以确认操作
-                </Label>
-                <Input
-                  id="reinstall-confirm"
-                  placeholder="输入「重装」"
-                  value={reinstallConfirmInput}
-                  onChange={(e) => setReinstallConfirmInput(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              重新安装后该 OpenClaw「{reinstallConfirm?.name}」的所有配置和数据将丢失且无法恢复，确认重新安装吗？
+            </p>
+            <div>
+              <label className="text-sm font-medium text-gray-700">请输入「重装」以确认</label>
+              <Input
+                placeholder="输入「重装」"
+                value={reinstallConfirmInput}
+                onChange={(e) => setReinstallConfirmInput(e.target.value)}
+                className="mt-2"
+              />
             </div>
-            <DialogFooter className="flex justify-end gap-2">
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
               <Button
-                className="bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50"
+                className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
                 disabled={reinstallConfirmInput !== "重装"}
                 onClick={() => handleReinstall(reinstallConfirm!.id, reinstallConfirm!.name)}
               >
@@ -782,63 +738,29 @@ export default function MyOpenClaw() {
 
         {/* Delete Confirm Dialog */}
         <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2 text-red-600">
-                <Trash2 className="w-4 h-4" />
+              <DialogTitle className="text-base font-bold text-gray-900">
                 {deleteConfirm?.status === "createFail" ? "删除记录" : "确认删除"}
               </DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                {deleteConfirm?.status === "createFail"
-                  ? `确认删除「${deleteConfirm?.name}」的创建失败记录？`
-                  : `删除后「${deleteConfirm?.name}」将被立即彻底销毁，数据无法恢复。`}
-              </p>
-              <div className={`rounded-lg px-4 py-3 border ${deleteConfirm?.status === "createFail" ? "bg-blue-50 border-blue-200" : "bg-red-50 border-red-200"}`}>
-                <div className="flex gap-3">
-                  {deleteConfirm?.status === "createFail" ? (
-                    <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                  )}
-                  <ul className={`text-sm space-y-1 ${deleteConfirm?.status === "createFail" ? "text-blue-700" : "text-red-700"}`}>
-                    {deleteConfirm?.status === "createFail" ? (
-                      <>
-                        <li>• 底层实例将由平台自动回收</li>
-                        <li>• ClawPro 侧记录将被清除</li>
-                      </>
-                    ) : (
-                      <>
-                        <li>• 已配置的模型、通道和插件将全部清除</li>
-                        <li>• 此操作不可撤销</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {deleteConfirm?.status === "createFail"
+                ? `删除后该 OpenClaw「${deleteConfirm?.name}」的创建失败记录将被清除，确认删除吗？`
+                : `删除后该 OpenClaw「${deleteConfirm?.name}」将无法恢复，确认删除吗？`}
+            </p>
+            {deleteConfirm?.status === "running" && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">请输入「删除」以确认</label>
+                <Input
+                  placeholder="输入「删除」"
+                  value={deleteConfirmInput}
+                  onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                  className="mt-2"
+                />
               </div>
-              {deleteConfirm?.status !== "createFail" && deleteConfirm?.status === "running" && (
-                <div>
-                  <Label htmlFor="delete-confirm" className="text-xs text-gray-600">
-                    请输入「<span className="font-medium">删除</span>」以确认操作
-                  </Label>
-                  <Input
-                    id="delete-confirm"
-                    placeholder="输入「删除」"
-                    value={deleteConfirmInput}
-                    onChange={(e) => setDeleteConfirmInput(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-              )}
-            </div>
-            <DialogFooter className="flex justify-end gap-2">
+            )}
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
               <Button
                 className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"

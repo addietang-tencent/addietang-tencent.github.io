@@ -181,7 +181,8 @@
     color: #1a8c3a;
   }
   .badge-loading {
-    @apply inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    background: rgba(0, 122, 255, 0.10);
     color: #007AFF;
   }
   .badge-stopped {
@@ -193,6 +194,11 @@
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
     background: rgba(255, 149, 0, 0.1);
     color: #b8640a;
+  }
+  .badge-shutdown {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    background: rgba(142, 142, 147, 0.12);
+    color: #6b7280;
   }
 
   /* Sidebar nav item */

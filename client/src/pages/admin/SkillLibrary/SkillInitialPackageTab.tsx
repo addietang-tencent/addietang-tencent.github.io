@@ -3,7 +3,9 @@
  * 设计风格：浅色主题，草稿+发布分离，生效开关
  */
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -18,22 +20,295 @@ import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
   CheckCircle2, Clock, ChevronRight, X, AlertCircle
 } from 'lucide-react';
-import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
+import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
+import { Star } from 'lucide-react';
+import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Check } from 'lucide-react';
+
+// ─── 公共技能库添加弹窗 ──────────────────────────────────────────────────────────
+
+// 公共技能库收藏列表（mock）
+const MOCK_FAVORITES: PublicSkill[] = PUBLIC_SKILLS.slice(0, 5);
+
+interface AddPublicSkillDialogProps {
+  open: boolean;
+  existingSkillIds: string[];
+  onConfirm: (skills: PackageSkillItem[]) => void;
+  onCancel: () => void;
+}
+
+function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: AddPublicSkillDialogProps) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSkill = (skillId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(skillId) ? prev.filter(id => id !== skillId) : [...prev, skillId]
+    );
+  };
+
+  const handleConfirm = () => {
+    const newSkills: PackageSkillItem[] = selectedIds.map(id => {
+      const skill = MOCK_FAVORITES.find(s => s.id === id)!;
+      return {
+        skillId: skill.id,
+        skillName: skill.slug,
+        skillNameZh: skill.nameZh,
+        source: 'public' as const,
+        version: skill.version,
+        addedAt: new Date(),
+      };
+    });
+    onConfirm(newSkills);
+    setSelectedIds([]);
+  };
+
+  const handleCancel = () => {
+    setSelectedIds([]);
+    onCancel();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
+      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+          <DialogTitle>从公共技能库添加</DialogTitle>
+        </DialogHeader>
+
+        {/* 收藏分区标题 */}
+        <div className="px-5 pt-4 pb-2 shrink-0">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            我的收藏
+          </div>
+        </div>
+
+        {/* 技能列表 */}
+        <div className="flex-1 overflow-y-auto px-5 pb-3">
+          {MOCK_FAVORITES.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <Star className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">还没有收藏任何技能</p>
+              <p className="text-xs mt-1">可先前往公共技能库收藏技能</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {MOCK_FAVORITES.map(skill => {
+                const isAlreadyAdded = existingSkillIds.includes(skill.id);
+                const isSelected = selectedIds.includes(skill.id);
+                return (
+                  <div
+                    key={skill.id}
+                    onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
+                    className={`relative rounded-lg border p-3 transition-all ${
+                      isAlreadyAdded
+                        ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+                        : isSelected
+                          ? 'border-blue-400 bg-blue-50 cursor-pointer'
+                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                    {isAlreadyAdded && (
+                      <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+                    )}
+                    {/* 技能名称（英文）+ 版本号 */}
+                    <div className="flex items-center gap-2 mb-1.5 pr-8">
+                      <span className="font-mono font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
+                      <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+                    </div>
+                    {/* 描述（中文） */}
+                    <p className="text-xs text-gray-500 line-clamp-2">{skill.descriptionZh}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+          <Button variant="outline" onClick={handleCancel}>取消</Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedIds.length === 0}
+          >
+            确认添加{selectedIds.length > 0 ? `（${selectedIds.length} 个）` : ''}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── 企业技能库添加弹窗 ──────────────────────────────────────────────────────────
+
+interface AddEnterpriseSkillDialogProps {
+  open: boolean;
+  existingSkillIds: string[];
+  onConfirm: (skills: PackageSkillItem[]) => void;
+  onCancel: () => void;
+}
+
+function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: AddEnterpriseSkillDialogProps) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('1');
+
+  const toggleSkill = (skillId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(skillId) ? prev.filter(id => id !== skillId) : [...prev, skillId]
+    );
+  };
+
+  const handleConfirm = () => {
+    const newSkills: PackageSkillItem[] = selectedIds.map(id => {
+      const skill = MOCK_SKILLS.find(s => s.id === id)!;
+      return {
+        skillId: skill.id,
+        skillName: skill.slug,
+        skillNameZh: skill.name,
+        source: 'enterprise' as const,
+        version: skill.version,
+        addedAt: new Date(),
+      };
+    });
+    onConfirm(newSkills);
+    setSelectedIds([]);
+    setActiveCategory('1');
+  };
+
+  const handleCancel = () => {
+    setSelectedIds([]);
+    setActiveCategory('1');
+    onCancel();
+  };
+
+  const skillsByCategory = MOCK_SKILLS.filter(s => s.categories.includes(activeCategory));
+
+  const renderSkillCard = (skill: typeof MOCK_SKILLS[0]) => {
+    const isAlreadyAdded = existingSkillIds.includes(skill.id);
+    const isSelected = selectedIds.includes(skill.id);
+    return (
+      <div
+        key={skill.id}
+        onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
+        className={`relative rounded-lg border p-3 transition-all ${
+          isAlreadyAdded
+            ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+            : isSelected
+              ? 'border-blue-400 bg-blue-50 cursor-pointer'
+              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+        }`}
+      >
+        {isSelected && (
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+            <Check className="w-3 h-3 text-white" />
+          </div>
+        )}
+        {isAlreadyAdded && (
+          <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+        )}
+        <div className="flex items-center gap-2 mb-1.5 pr-8">
+          <span className="font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
+          <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+        </div>
+        <p className="text-xs text-gray-500 line-clamp-2">{skill.description}</p>
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
+      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+          <DialogTitle>从企业技能库添加</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-1 overflow-hidden">
+          {/* 左侧 Tab */}
+          <Tabs defaultValue="all" className="flex flex-col w-full overflow-hidden">
+            <div className="px-5 pt-3 shrink-0">
+              <TabsList className="mb-3">
+                <TabsTrigger value="all">全部 Skill</TabsTrigger>
+                <TabsTrigger value="category">按分类</TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* 全部 Skill */}
+            <TabsContent value="all" className="flex-1 overflow-y-auto px-5 pb-3">
+              <div className="grid grid-cols-2 gap-3">
+                {MOCK_SKILLS.map(skill => renderSkillCard(skill))}
+              </div>
+            </TabsContent>
+
+            {/* 按分类 */}
+            <TabsContent value="category" className="flex-1 overflow-y-auto px-5 pb-3">
+              {/* 分类标签 */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {DEFAULT_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      activeCategory === cat.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+              {/* 技能卡片 */}
+              {skillsByCategory.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {skillsByCategory.map(skill => renderSkillCard(skill))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">该分类下暂无技能</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+          <Button variant="outline" onClick={handleCancel}>取消</Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedIds.length === 0}
+          >
+            确认添加{selectedIds.length > 0 ? `（${selectedIds.length} 个）` : ''}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── 新建技能包对话框 ──────────────────────────────────────────────────────────
 
 interface CreatePackageDialogProps {
   open: boolean;
+  existingNames: string[];
   onConfirm: (name: string) => void;
   onCancel: () => void;
 }
 
-function CreatePackageDialog({ open, onConfirm, onCancel }: CreatePackageDialogProps) {
+function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: CreatePackageDialogProps) {
   const [name, setName] = useState('');
 
+  const trimmed = name.trim();
+
   const handleConfirm = () => {
-    if (!name.trim()) return;
-    onConfirm(name.trim());
+    if (!trimmed) return;
+    if (existingNames.includes(trimmed)) {
+      toast.error('初始技能包名称不可重复');
+      return;
+    }
+    onConfirm(trimmed);
     setName('');
   };
 
@@ -54,14 +329,14 @@ function CreatePackageDialog({ open, onConfirm, onCancel }: CreatePackageDialogP
               autoFocus
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-3 text-xs text-gray-500">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
             <Globe className="w-3.5 h-3.5 shrink-0" />
-            <span>应用范围：全部成员（暂不支持修改）</span>
+            <span>应用范围：全部成员</span>
           </div>
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={() => { setName(''); onCancel(); }}>取消</Button>
-          <Button onClick={handleConfirm} disabled={!name.trim()}>创建</Button>
+          <Button onClick={handleConfirm} disabled={!trimmed}>创建</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -83,27 +358,17 @@ function PublishConfirmDialog({ open, packageName, isActive, onConfirm, onCancel
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>确认发布修改</DialogTitle>
+          <DialogTitle>确认保存修改</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 my-2">
-          {isActive ? (
-            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
-                <p className="font-medium mb-1">发布后将立即对用户生效</p>
-                <p className="text-xs">「{packageName}」当前正在生效中，发布后修改将立即对所有成员生效，请确认无误后再发布。</p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600">
-              将保存「{packageName}」的修改。该技能包当前未生效，发布后等待生效时才对用户可见。
-            </p>
-          )}
+        <div className="my-2">
+          <p className="text-sm text-gray-600">
+            本次修改将<strong className="text-gray-800">应用于新创建的 OpenClaw</strong>，已创建的 OpenClaw 保持原有初始配置不受影响。
+          </p>
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>取消</Button>
-          <Button onClick={onConfirm} className={isActive ? 'bg-amber-600 hover:bg-amber-700' : ''}>
-            确认发布
+          <Button onClick={onConfirm}>
+            确认保存
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -117,15 +382,13 @@ interface ActivateConfirmDialogProps {
   open: boolean;
   currentActiveName: string;
   newPackageName: string;
-  newPackageHasDraft: boolean;
-  onConfirmDirect: () => void;
-  onGoPublish: () => void;
+  onConfirm: () => void;
   onCancel: () => void;
 }
 
 function ActivateConfirmDialog({
-  open, currentActiveName, newPackageName, newPackageHasDraft,
-  onConfirmDirect, onGoPublish, onCancel
+  open, currentActiveName, newPackageName,
+  onConfirm, onCancel
 }: ActivateConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
@@ -133,33 +396,14 @@ function ActivateConfirmDialog({
         <DialogHeader>
           <DialogTitle>确认切换生效技能包</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 my-2">
-          <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p>切换后，「{currentActiveName}」将停止生效，「{newPackageName}」将对所有成员生效。</p>
-            </div>
-          </div>
-          {newPackageHasDraft && (
-            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
-                <p className="font-medium mb-1">「{newPackageName}」有未发布的修改</p>
-                <p className="text-xs">你可以直接用草稿内容生效，或先前往发布修改后再生效。</p>
-              </div>
-            </div>
-          )}
+        <div className="my-2">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            切换后，「{currentActiveName}」将<strong className="text-gray-900">停止生效</strong>，「{newPackageName}」将<strong className="text-gray-900">对所有新创建的 OpenClaw 生效</strong>，已创建的 OpenClaw 保持原有初始配置不受影响。
+          </p>
         </div>
-        <DialogFooter className="flex gap-2 flex-wrap">
-          <Button variant="outline" onClick={onCancel} className="flex-1">取消</Button>
-          {newPackageHasDraft && (
-            <Button variant="outline" onClick={onGoPublish} className="flex-1">
-              前往发布修改
-            </Button>
-          )}
-          <Button onClick={onConfirmDirect} className="flex-1">
-            {newPackageHasDraft ? '直接用草稿生效' : '确认切换'}
-          </Button>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>取消</Button>
+          <Button onClick={onConfirm}>确认</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -207,6 +451,55 @@ interface PackageDetailViewProps {
 
 function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDetailViewProps) {
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [localSkills, setLocalSkills] = useState(pkg.skills);
+  const [showAddEnterpriseDialog, setShowAddEnterpriseDialog] = useState(false);
+  const [showAddPublicDialog, setShowAddPublicDialog] = useState(false);
+
+  // 当 pkg 变化时同步本地技能列表（例如切换包）
+  const handleRemoveLocal = (skillId: string) => {
+    setLocalSkills(prev => prev.filter(s => s.skillId !== skillId));
+    setIsDirty(true);
+  };
+
+  const doSave = () => {
+    // 找出被删除的技能并逐一调用 onRemoveSkill
+    pkg.skills.forEach(s => {
+      if (!localSkills.find(ls => ls.skillId === s.skillId)) {
+        onRemoveSkill(pkg.id, s.skillId);
+      }
+    });
+    setIsDirty(false);
+    setShowPublishConfirm(false);
+    toast.success('保存成功');
+  };
+
+  const handleSave = () => {
+    if (pkg.isActive) {
+      // 已生效的技能包：弹出二次确认
+      setShowPublishConfirm(true);
+    } else {
+      // 未生效的技能包：直接保存
+      doSave();
+    }
+  };
+
+  const handleDiscard = () => {
+    setLocalSkills(pkg.skills);
+    setIsDirty(false);
+  };
+
+  const handleAddPublicSkills = (skills: PackageSkillItem[]) => {
+    setLocalSkills(prev => [...prev, ...skills]);
+    setIsDirty(true);
+    setShowAddPublicDialog(false);
+  };
+
+  const handleAddEnterpriseSkills = (skills: PackageSkillItem[]) => {
+    setLocalSkills(prev => [...prev, ...skills]);
+    setIsDirty(true);
+    setShowAddEnterpriseDialog(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -217,45 +510,25 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          返回技能初始包列表
+          返回初始技能包列表
         </button>
-        <div className="flex items-center gap-2">
-          {pkg.hasDraft && (
-            <Button
-              size="sm"
-              onClick={() => setShowPublishConfirm(true)}
-              className={pkg.isActive ? 'bg-amber-600 hover:bg-amber-700' : ''}
-            >
-              发布修改
-            </Button>
-          )}
-          {!pkg.hasDraft && (
-            <Button size="sm" variant="outline" disabled className="opacity-50">
-              发布修改
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* 技能包信息 */}
       <div className="bg-white rounded-xl border border-gray-100 p-5"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-            <Package className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#007AFF' }}>
+            <Package className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="font-semibold text-gray-900">{pkg.name}</h2>
               {pkg.isActive && (
-                <Badge className="text-[10px] bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-                  🟢 生效中
-                </Badge>
-              )}
-              {pkg.hasDraft && (
-                <Badge className="text-[10px] bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
-                  🟠 有修改未发布
-                </Badge>
+                <span className="badge-running text-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                  生效中
+                </span>
               )}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
@@ -269,25 +542,43 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       {/* 技能列表 */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-4 border-b border-gray-100 flex items-center justify-between" style={{ minHeight: '48px' }}>
           <span className="text-sm font-medium text-gray-700">
-            技能列表（共 {pkg.skills.length} 个）
+            技能列表（共 {localSkills.length} 个）
           </span>
+          {isDirty && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDiscard}
+                className="h-7 px-3 text-xs text-gray-500"
+              >
+                取消
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                保存
+              </Button>
+            </div>
+          )}
         </div>
 
-        {pkg.skills.length > 0 ? (
+        {localSkills.length > 0 ? (
           <div className="divide-y divide-gray-50">
-            {pkg.skills.map(skill => (
+            {localSkills.map(skill => (
               <div key={skill.skillId} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
                   <Package className="w-4 h-4 text-gray-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-gray-800">{skill.skillName}</span>
-                    {skill.skillNameZh && (
-                      <span className="text-xs text-gray-400">{skill.skillNameZh}</span>
-                    )}
+                    <span className="font-mono text-sm font-medium text-gray-800">
+                      {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Badge
@@ -304,7 +595,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                   </div>
                 </div>
                 <button
-                  onClick={() => onRemoveSkill(pkg.id, skill.skillId)}
+                  onClick={() => handleRemoveLocal(skill.skillId)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="从技能包中移除"
                 >
@@ -322,28 +613,45 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
         )}
 
         <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-            <Plus className="w-3.5 h-3.5" />
-            从企业技能库添加
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddPublicDialog(true)}>
             <Plus className="w-3.5 h-3.5" />
             从公共技能库添加
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddEnterpriseDialog(true)}>
+            <Plus className="w-3.5 h-3.5" />
+            从企业技能库添加
           </Button>
         </div>
       </div>
 
-      {/* 发布确认弹窗 */}
+      {/* 公共技能库添加弹窗 */}
+      <AddPublicSkillDialog
+        open={showAddPublicDialog}
+        existingSkillIds={localSkills.map(s => s.skillId)}
+        onConfirm={handleAddPublicSkills}
+        onCancel={() => setShowAddPublicDialog(false)}
+      />
+
+      {/* 企业技能库添加弹窗 */}
+      <AddEnterpriseSkillDialog
+        open={showAddEnterpriseDialog}
+        existingSkillIds={localSkills.map(s => s.skillId)}
+        onConfirm={handleAddEnterpriseSkills}
+        onCancel={() => setShowAddEnterpriseDialog(false)}
+      />
+
+      {/* 保存确认弹窗（仅已生效技能包触发） */}
       <PublishConfirmDialog
         open={showPublishConfirm}
         packageName={pkg.name}
         isActive={pkg.isActive}
-        onConfirm={() => { setShowPublishConfirm(false); onPublish(pkg.id); }}
+        onConfirm={doSave}
         onCancel={() => setShowPublishConfirm(false)}
       />
     </div>
   );
 }
+
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
@@ -452,10 +760,9 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       {/* 顶部操作栏 */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-gray-700">技能初始包</h3>
-          <p className="text-xs text-gray-400 mt-0.5">新建 OpenClaw 时将预装生效中的技能包内所有技能</p>
+          <h3 className="text-sm font-medium text-gray-700">初始技能包列表</h3>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5">
+        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
           <Plus className="w-4 h-4" />
           新建
         </Button>
@@ -467,35 +774,20 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           {packages.map(pkg => (
             <div
               key={pkg.id}
-              className={`bg-white rounded-xl border p-4 transition-all ${
-                pkg.isActive
-                  ? 'border-green-200 shadow-sm'
-                  : 'border-gray-100'
-              }`}
-              style={{ boxShadow: pkg.isActive ? '0 1px 6px rgba(34,197,94,0.1)' : '0 1px 3px rgba(0,0,0,0.04)' }}
+              className="bg-white rounded-xl border border-gray-100 p-4 transition-all cursor-pointer group hover:shadow-md"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+              onClick={() => setSelectedPackageId(pkg.id)}
             >
               <div className="flex items-center gap-3">
                 {/* 图标 */}
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                  pkg.isActive ? 'bg-green-100' : 'bg-gray-100'
-                }`}>
-                  <Package className={`w-5 h-5 ${pkg.isActive ? 'text-green-600' : 'text-gray-500'}`} />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#007AFF' }}>
+                  <Package className="w-5 h-5 text-white" />
                 </div>
 
                 {/* 信息 */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium text-gray-900">{pkg.name}</span>
-                    {pkg.isActive && (
-                      <Badge className="text-[10px] bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
-                        🟢 生效中
-                      </Badge>
-                    )}
-                    {pkg.hasDraft && (
-                      <Badge className="text-[10px] bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">
-                        🟠 有修改未发布
-                      </Badge>
-                    )}
+                    <span className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     <span className="flex items-center gap-1">
@@ -507,42 +799,41 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                 </div>
 
                 {/* 操作区 */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                   {/* 生效开关 */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-gray-400">生效</span>
+                    <span className="text-xs text-gray-400">设为生效</span>
                     <Switch
                       checked={pkg.isActive}
                       onCheckedChange={(v) => handleToggleActive(pkg.id, v)}
                     />
                   </div>
 
-                  {/* 查看详情 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 text-xs"
-                    onClick={() => setSelectedPackageId(pkg.id)}
-                  >
-                    查看
-                    <ChevronRight className="w-3 h-3" />
-                  </Button>
-
                   {/* 删除按钮 */}
-                  <button
-                    onClick={() => {
-                      if (pkg.isActive) return; // 生效中禁止删除
-                      setDeleteTarget(pkg.id);
-                    }}
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                      pkg.isActive
-                        ? 'text-gray-200 cursor-not-allowed'
-                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-                    }`}
-                    title={pkg.isActive ? '生效中的技能包不可删除，请先关闭生效开关' : '删除技能包'}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {pkg.isActive ? (
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => {}}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-gray-900 text-white text-xs max-w-[200px] text-center">
+                          生效中的技能包不可删除
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteTarget(pkg.id)}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -564,6 +855,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       {/* 新建对话框 */}
       <CreatePackageDialog
         open={showCreateDialog}
+        existingNames={packages.map(p => p.name)}
         onConfirm={handleCreate}
         onCancel={() => setShowCreateDialog(false)}
       />
@@ -574,9 +866,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           open={!!activateTarget}
           currentActiveName={activePackage?.name || ''}
           newPackageName={activateTargetPkg.name}
-          newPackageHasDraft={activateTargetPkg.hasDraft}
-          onConfirmDirect={handleActivateConfirm}
-          onGoPublish={handleGoPublish}
+          onConfirm={handleActivateConfirm}
           onCancel={() => setActivateTarget(null)}
         />
       )}

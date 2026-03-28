@@ -372,3 +372,107 @@ export const AVAILABLE_SKILLS = [
   "xhs-skill 1.0.15",
   "ai-ppt-generator 1.1.2",
 ];
+
+// 角色数据模型
+export interface RoleSkill {
+  name: string;
+  version: string;
+  source: "公共" | "企业";
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  soul: string;
+  skills: RoleSkill[];
+  type: "system" | "custom";
+  visible: boolean;
+}
+
+export const MOCK_ROLES: Role[] = [
+  {
+    id: "role-001",
+    name: "行业分析师",
+    description: "结构化分析，输出高质量行业洞察",
+    soul: "具备麦肯锡级别分析能力，擅长 PEST/波特五力/SWOT 等框架，输出结构化行业洞察报告",
+    skills: [
+      { name: "Data Analysis", version: "v2.0", source: "公共" },
+      { name: "Data Visualization", version: "v1.5", source: "公共" },
+      { name: "SWOT Analyzer", version: "v1.0", source: "公共" },
+    ],
+    type: "system",
+    visible: true,
+  },
+  {
+    id: "role-002",
+    name: "开发工程师",
+    description: "精通全栈开发，擅长网站、小程序和应用部署",
+    soul: "面向交付闭环的全栈工程师，遵循 CloudBase 原生最佳实践，擅长从原型到部署的完整链路",
+    skills: [
+      { name: "cloudbase", version: "v1.0", source: "企业" },
+      { name: "playwright-cli", version: "v0.2", source: "公共" },
+    ],
+    type: "system",
+    visible: true,
+  },
+  {
+    id: "role-003",
+    name: "设计师",
+    description: "美感与功能平衡，用设计解决问题",
+    soul: "专业设计师伙伴，遵循信息架构 > 交互逻辑 > 视觉表现的优先级，注重用户体验闭环",
+    skills: [
+      { name: "ui-ux-pro-max", version: "v1.0", source: "公共" },
+      { name: "Impeccable", version: "v1.2", source: "公共" },
+      { name: "taste-skill", version: "v1.0", source: "公共" },
+      { name: "Vercel web design", version: "v1.0", source: "公共" },
+      { name: "playwright-cli", version: "v0.2", source: "公共" },
+    ],
+    type: "system",
+    visible: true,
+  },
+  {
+    id: "role-004",
+    name: "项目经理",
+    description: "覆盖项目全生命周期，从立项到复盘",
+    soul: "项目全生命周期管理，支持启动/会议/周报/风险/复盘全流程，确保项目高质量交付",
+    skills: [
+      { name: "pm-project-kickoff", version: "v1.0", source: "企业" },
+      { name: "pm-meeting-minutes", version: "v1.0", source: "企业" },
+      { name: "pm-weekly-report", version: "v1.0", source: "企业" },
+      { name: "pm-risk-assessment", version: "v1.0", source: "企业" },
+      { name: "pm-retrospective", version: "v1.0", source: "企业" },
+    ],
+    type: "system",
+    visible: true,
+  },
+  {
+    id: "role-005",
+    name: "办公能手",
+    description: "高效办公，熟练处理文档、表格、演示、会议",
+    soul: "高效办公 AI 助手，熟练处理 Word/PDF/PPT/Excel/会议记录，提升日常办公效率",
+    skills: [
+      { name: "office-documents", version: "v1.0", source: "企业" },
+      { name: "tencent-docs", version: "v1.0", source: "企业" },
+      { name: "tencent-meeting-skill", version: "v1.0", source: "企业" },
+      { name: "baoyu-infographic", version: "v1.0", source: "公共" },
+    ],
+    type: "system",
+    visible: true,
+  },
+  {
+    id: "role-006",
+    name: "内容创作者",
+    description: "优秀的图文内容创作者，具备极高审美",
+    soul: "优秀的图文内容创作者，审美极高，擅长搜索+写作+配图+润色+发布全链路内容生产",
+    skills: [
+      { name: "self-improving-agent", version: "v1.0", source: "公共" },
+      { name: "humanizer", version: "v1.0", source: "公共" },
+      { name: "agent-reach", version: "v1.0", source: "公共" },
+      { name: "ima-note", version: "v1.0", source: "企业" },
+      { name: "baoyu-infographic", version: "v1.0", source: "公共" },
+    ],
+    type: "system",
+    visible: true,
+  },
+];

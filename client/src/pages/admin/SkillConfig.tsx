@@ -23,6 +23,7 @@ import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import SkillDetail from "./SkillLibrary/SkillDetail";
 import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
 import SkillInitialPackageTab from "./SkillLibrary/SkillInitialPackageTab";
+import SkillRolesTab from "./SkillRolesTab";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
@@ -328,7 +329,7 @@ export default function SkillConfig() {
         <SkillInitialPackageTab onPackagesChange={setPackages} />
       )}
       {activeTab === "roles" && (
-        <div />
+        <SkillRolesTab />
       )}
       {activeTab === "source" && <SkillSourceTab />}
       {activeTab === "public" && (

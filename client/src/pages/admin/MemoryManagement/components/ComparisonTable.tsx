@@ -28,45 +28,40 @@ export const ComparisonTable: React.FC = () => {
       pro: '✓ 无限制',
     },
     {
-      feature: 'Embedding 能力',
+      feature: 'Embedding 能力（语义理解能力）',
       free: '无',
-      pro: '✓ 内置专业 Embedding',
+      pro: '✓ 内置专业 Embedding能力（语义匹配）',
     },
   ];
 
   return (
     <div>
-      {/* 表格标题 */}
-      <h3 className="text-[15px] font-semibold text-[#5c5c7a] mb-3.5 text-center">
-        Free 版 vs Pro 版
-      </h3>
-
       {/* 对比表格 */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse rounded-[12px] overflow-hidden border border-[#E8EAF0]">
           <thead>
             <tr>
-              <th className="px-[18px] py-[14px] text-left text-[13.5px] font-semibold bg-[#F9FAFB] text-[#6B7280] w-[34%]">
+              <th className="px-[18px] py-[14px] text-left text-[13.5px] font-semibold bg-[#f3f4f6] text-[#374151] w-[34%]">
                 对比项
               </th>
-              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#F0FDF4] text-[#16A34A]">
-                🧠 Free 版
+              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#d1fae5] text-[#065f46]">
+                Free 版
               </th>
-              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#FAF5FF] text-[#7C3AED]">
-                ⚡ Pro 版
+              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#ede9fe] text-[#5b21b6]">
+                Pro 版
               </th>
             </tr>
           </thead>
           <tbody>
             {comparisonData.map((row, index) => (
-              <tr key={index} className="border-t border-[#F0F0F5]">
-                <td className="px-[18px] py-[12px] text-left text-[13px] font-medium text-[#374151] bg-[#FAFBFE]">
+              <tr key={index} className="border-t border-[#E8EAF0] hover:bg-[#fafbfc] transition-colors">
+                <td className="px-[18px] py-[14px] text-left text-[13px] font-medium text-[#374151] bg-white">
                   {row.feature}
                 </td>
-                <td className="px-[18px] py-[12px] text-center text-[13px] text-[#5c5c7a] bg-white">
+                <td className="px-[18px] py-[14px] text-center text-[13px] text-[#374151] bg-white">
                   {row.free}
                 </td>
-                <td className="px-[18px] py-[12px] text-center text-[13px] font-semibold text-[#7C3AED] bg-white">
+                <td className="px-[18px] py-[14px] text-center text-[13px] font-medium text-[#5b21b6] bg-white">
                   {row.pro}
                 </td>
               </tr>

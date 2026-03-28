@@ -47,7 +47,7 @@ const TABS = [
   {
     id: "public",
     label: "公共技能库",
-    description: "浏览公共技能市场，收藏技能并加入初始技能包，为用户提供丰富的开箱即用技能资源。",
+    description: "浏览公共技能市场，收藏技能并加入初始技能包，形成适合企业实际场景的公共技能库。",
     comingSoon: false,
   },
   {

@@ -2,13 +2,13 @@
  * 公共技能库 Tab
  * 设计风格：浅色主题，卡片式布局，精选排行榜
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Search, Download, Star, Heart, Package, ChevronRight,
-  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen
+  Search, Download, Star, Heart, ChevronRight,
+  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw
 } from 'lucide-react';
 import {
   PUBLIC_SKILLS, PUBLIC_SKILL_CATEGORIES, type PublicSkill, type FavoriteSkill, type PublicSkillFile
@@ -16,52 +16,70 @@ import {
 import { renderMarkdown } from '@/lib/markdownRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
 
-// ─── 收藏标签气泡 ─────────────────────────────────────────────────────────────
+// ─── 分页组件 ─────────────────────────────────────────────────────────────────
 
-interface FavoriteTagBubbleProps {
-  onConfirm: (tags: string[]) => void;
-  onSkip: () => void;
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
 }
 
-function FavoriteTagBubble({ onConfirm, onSkip }: FavoriteTagBubbleProps) {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const availableTags = ['研发工具', '数据分析', '通用办公', '运维工具', '安全合规'];
+function Pagination({ currentPage, totalPages, totalCount, onPageChange }: PaginationProps) {
+  const pages: (number | '...')[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('...');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('...');
+    pages.push(totalPages);
+  }
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
+  const btnBase = 'min-w-[28px] h-7 px-2 flex items-center justify-center rounded-lg text-xs font-medium transition-all';
+  const btnActive = 'text-white shadow-sm';
+  const btnInactive = 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50';
+  const btnArrow = `${btnBase} border border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed`;
 
   return (
-    <div className="absolute z-50 bottom-full mb-2 right-0 bg-white rounded-xl shadow-lg border border-gray-100 p-3 w-56"
-      style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
-      <p className="text-xs font-medium text-gray-700 mb-2">为该技能添加标签分类</p>
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {availableTags.map(tag => (
-          <button
-            key={tag}
-            onClick={() => toggleTag(tag)}
-            className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
-              selectedTags.includes(tag)
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            {tag}
-          </button>
-        ))}
+    <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-2">
+      {/* 左侧：数据总览 */}
+      <span className="text-xs text-gray-400">
+        共 {totalCount} 个技能，第 {currentPage} / {totalPages} 页
+      </span>
+
+      {/* 右侧：翻页按钮组 */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={btnArrow}
+        >
+          ‹
+        </button>
+        {pages.map((p, i) =>
+          p === '...' ? (
+            <span key={`ellipsis-${i}`} className="min-w-[28px] h-7 flex items-center justify-center text-gray-400 text-xs">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p as number)}
+              className={`${btnBase} ${currentPage === p ? btnActive : btnInactive}`}
+              style={currentPage === p ? { backgroundColor: '#007AFF' } : undefined}
+            >
+              {p}
+            </button>
+          )
+        )}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={btnArrow}
+        >
+          ›
+        </button>
       </div>
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" className="flex-1 h-7 text-xs" onClick={onSkip}>
-          跳过
-        </Button>
-        <Button size="sm" className="flex-1 h-7 text-xs" onClick={() => onConfirm(selectedTags)}>
-          确认
-        </Button>
-      </div>
-      {/* 气泡箭头 */}
-      <div className="absolute bottom-[-6px] right-4 w-3 h-3 bg-white border-r border-b border-gray-100 rotate-45" />
     </div>
   );
 }
@@ -70,23 +88,23 @@ function FavoriteTagBubble({ onConfirm, onSkip }: FavoriteTagBubbleProps) {
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) return (
-    <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md z-10">
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md z-10">
       <span className="text-white text-xs font-bold">1</span>
     </div>
   );
   if (rank === 2) return (
-    <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md z-10">
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md z-10">
       <span className="text-white text-xs font-bold">2</span>
     </div>
   );
   if (rank === 3) return (
-    <div className="absolute -top-1.5 -left-1.5 w-7 h-7 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-md z-10">
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-md z-10">
       <span className="text-white text-xs font-bold">3</span>
     </div>
   );
   return (
-    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center z-10">
-      <span className="text-gray-500 text-xs font-medium">{rank}</span>
+    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center z-10 shadow-sm">
+      <span className="text-gray-500 font-medium" style={{ fontSize: '10px', lineHeight: 1 }}>{rank}</span>
     </div>
   );
 }
@@ -97,107 +115,71 @@ interface SkillCardProps {
   skill: PublicSkill;
   rank: number;
   isFavorited: boolean;
-  isInPackage: boolean;
   onFavorite: (skillId: string) => void;
-  onAddToPackage: (skillId: string) => void;
   onClick: () => void;
 }
 
-function SkillCard({ skill, rank, isFavorited, isInPackage, onFavorite, onAddToPackage, onClick }: SkillCardProps) {
-  const [showFavBubble, setShowFavBubble] = useState(false);
-
+function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardProps) {
   const formatCount = (n: number) => {
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+    if (n >= 10000) {
+      const v = n / 10000;
+      return `${parseFloat(v.toFixed(1))}万`;
+    }
+    if (n >= 1000) {
+      const v = n / 1000;
+      return `${parseFloat(v.toFixed(1))}千`;
+    }
     return String(n);
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isFavorited) {
-      setShowFavBubble(true);
-    } else {
-      onFavorite(skill.id);
-    }
-  };
-
-  const handleFavConfirm = (tags: string[]) => {
-    setShowFavBubble(false);
     onFavorite(skill.id);
-  };
-
-  const handleFavSkip = () => {
-    setShowFavBubble(false);
-    onFavorite(skill.id);
-  };
-
-  const handleAddToPackage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddToPackage(skill.id);
   };
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-gray-100 p-4 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group"
+      className="relative bg-white rounded-xl border border-gray-100 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group flex flex-col"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >
-      <RankBadge rank={rank} />
+      {rank > 0 && <RankBadge rank={rank} />}
 
-      <div className="pl-3">
+      <div className="p-4 pl-4 flex flex-col flex-1">
         {/* 技能名称 */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight">
-            {skill.name}
-          </h3>
-        </div>
+        <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight mb-1 pl-3">
+          {skill.name}
+        </h3>
 
-        {/* 中文简介 */}
-        <p className="text-xs text-gray-500 mb-3 line-clamp-2 leading-relaxed">{skill.descriptionZh}</p>
+        {/* 中文简介 - 固定两行高度 */}
+        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
+          {skill.descriptionZh}
+        </p>
 
-        {/* 统计数据 */}
-        <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
-          <span className="flex items-center gap-1">
-            <Download className="w-3 h-3" />
-            {formatCount(skill.downloads)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Star className="w-3 h-3" />
-            {formatCount(skill.stars)}
-          </span>
-          <span className="font-mono text-gray-300">v{skill.version}</span>
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="flex items-center justify-end gap-1 relative">
-          {/* 收藏按钮 */}
-          <div className="relative">
-            <button
-              onClick={handleFavoriteClick}
-              className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                isFavorited
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-              }`}
-              title={isFavorited ? '取消收藏' : '添加到我的收藏'}
-            >
-              <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-current' : ''}`} />
-            </button>
-            {showFavBubble && (
-              <FavoriteTagBubble onConfirm={handleFavConfirm} onSkip={handleFavSkip} />
-            )}
+        {/* 统计数据 + 收藏按钮 - 常驻第三行 */}
+        <div className="flex items-center justify-between mt-3 pl-3">
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <span className="flex items-center gap-1">
+              <Download className="w-3 h-3" />
+              {formatCount(skill.downloads)}
+            </span>
+            <span className="flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              {formatCount(skill.stars)}
+            </span>
+            <span className="font-mono text-gray-300">v{skill.version}</span>
           </div>
-
-          {/* 加入初始技能包按钮 */}
+          {/* 收藏按钮 - 右下角 */}
           <button
-            onClick={handleAddToPackage}
+            onClick={handleFavoriteClick}
             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-              isInPackage
-                ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+              isFavorited
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
             }`}
-            title={isInPackage ? '已加入初始技能包' : '加入初始技能包'}
+            title={isFavorited ? '取消收藏' : '添加到我的收藏'}
           >
-            <Package className={`w-3.5 h-3.5 ${isInPackage ? 'fill-current' : ''}`} />
+            <Heart className={`w-3.5 h-3.5 ${isFavorited ? 'fill-current' : ''}`} />
           </button>
         </div>
       </div>
@@ -274,19 +256,20 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
     // 默认选中 SKILL.md
     return skill.files.find(f => f.name === 'SKILL.md') || skill.files[0] || null;
   });
-  const [showFavBubble, setShowFavBubble] = useState(false);
-
   const formatCount = (n: number) => {
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+    if (n >= 10000) {
+      const v = n / 10000;
+      return `${parseFloat(v.toFixed(1))}万`;
+    }
+    if (n >= 1000) {
+      const v = n / 1000;
+      return `${parseFloat(v.toFixed(1))}千`;
+    }
     return String(n);
   };
 
   const handleFavoriteClick = () => {
-    if (!isFavorited) {
-      setShowFavBubble(true);
-    } else {
-      onFavorite(skill.id);
-    }
+    onFavorite(skill.id);
   };
 
   return (
@@ -333,14 +316,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                 <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
                 {isFavorited ? '已收藏' : '收藏'}
               </Button>
-              {showFavBubble && (
-                <div className="absolute z-50 top-full mt-2 right-0">
-                  <FavoriteTagBubble
-                    onConfirm={(tags) => { setShowFavBubble(false); onFavorite(skill.id); }}
-                    onSkip={() => { setShowFavBubble(false); onFavorite(skill.id); }}
-                  />
-                </div>
-              )}
+
             </div>
 
             {/* 加入初始技能包 */}
@@ -446,14 +422,17 @@ interface PublicSkillLibraryTabProps {
   onAddSkillToPackage: (skillId: string, packageId: string) => void;
 }
 
+const PAGE_SIZE = 24;
+
 export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }: PublicSkillLibraryTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('featured');
-  const [favoriteTags, setFavoriteTags] = useState<string[]>([]); // 我的收藏二级标签筛选
   const [favorites, setFavorites] = useState<FavoriteSkill[]>([]);
   const [inPackageSkills, setInPackageSkills] = useState<Set<string>>(new Set());
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [addToPackageSkillId, setAddToPackageSkillId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 精选 Top 50：按下载量+收藏量综合排序
   const featuredSkills = useMemo(() => {
@@ -466,18 +445,13 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
   const filteredSkills = useMemo(() => {
     let list: PublicSkill[] = [];
 
-    if (activeCategory === 'featured') {
+    if (activeCategory === 'all') {
+      list = [...PUBLIC_SKILLS];
+    } else if (activeCategory === 'featured') {
       list = featuredSkills;
     } else if (activeCategory === 'favorites') {
       const favIds = new Set(favorites.map(f => f.skillId));
       list = PUBLIC_SKILLS.filter(s => favIds.has(s.id));
-      // 二级标签筛选
-      if (favoriteTags.length > 0) {
-        const taggedIds = new Set(
-          favorites.filter(f => f.tags.some(t => favoriteTags.includes(t))).map(f => f.skillId)
-        );
-        list = list.filter(s => taggedIds.has(s.id));
-      }
     } else {
       list = PUBLIC_SKILLS.filter(s => s.category === activeCategory);
     }
@@ -492,7 +466,7 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
     }
 
     return list;
-  }, [activeCategory, searchQuery, favorites, favoriteTags, featuredSkills]);
+  }, [activeCategory, searchQuery, favorites, featuredSkills]);
 
   // 收藏操作
   const handleFavorite = (skillId: string) => {
@@ -502,17 +476,6 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
         return prev.filter(f => f.skillId !== skillId);
       }
       return [...prev, { skillId, tags: [], addedAt: new Date() }];
-    });
-  };
-
-  // 收藏时带标签
-  const handleFavoriteWithTags = (skillId: string, tags: string[]) => {
-    setFavorites(prev => {
-      const exists = prev.find(f => f.skillId === skillId);
-      if (exists) {
-        return prev.map(f => f.skillId === skillId ? { ...f, tags } : f);
-      }
-      return [...prev, { skillId, tags, addedAt: new Date() }];
     });
   };
 
@@ -531,12 +494,22 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
 
   const isFavorited = (skillId: string) => favorites.some(f => f.skillId === skillId);
 
-  // 收藏的二级标签（从已收藏技能中提取）
-  const allFavTags = useMemo(() => {
-    const tags = new Set<string>();
-    favorites.forEach(f => f.tags.forEach(t => tags.add(t)));
-    return Array.from(tags);
-  }, [favorites]);
+  // 分页计算
+  const totalPages = Math.ceil(filteredSkills.length / PAGE_SIZE);
+  const pagedSkills = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredSkills.slice(start, start + PAGE_SIZE);
+  }, [filteredSkills, currentPage]);
+
+  // 切换分类或搜索时重置到第一页
+  const handleCategoryChange = (catId: string) => {
+    setActiveCategory(catId);
+    setCurrentPage(1);
+  };
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    setCurrentPage(1);
+  };
 
   // 如果选中了技能，显示详情页
   if (selectedSkillId) {
@@ -566,15 +539,31 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
 
   return (
     <div className="space-y-4">
-      {/* 搜索框 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <Input
-          placeholder="搜索技能名称或描述..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="pl-9 bg-white"
-        />
+      {/* 搜索框 + 刷新按钮 */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="搜索技能名称或关键词..."
+            value={searchQuery}
+            onChange={e => handleSearchChange(e.target.value)}
+            className="pl-9 bg-white"
+          />
+        </div>
+        <button
+          onClick={() => {
+            setIsRefreshing(true);
+            setTimeout(() => {
+              handleSearchChange('');
+              setCurrentPage(1);
+              setTimeout(() => setIsRefreshing(false), 50);
+            }, 250);
+          }}
+          title="刷新"
+          className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
       </div>
 
       {/* 分类 Tab */}
@@ -582,75 +571,47 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
         {PUBLIC_SKILL_CATEGORIES.map(cat => (
           <button
             key={cat.id}
-            onClick={() => { setActiveCategory(cat.id); setFavoriteTags([]); }}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
               activeCategory === cat.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'text-white border-transparent'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
+            style={activeCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
           >
             {cat.name}
           </button>
         ))}
       </div>
 
-      {/* 我的收藏二级标签 */}
-      {activeCategory === 'favorites' && allFavTags.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap pl-1">
-          <span className="text-xs text-gray-400">筛选：</span>
-          <button
-            onClick={() => setFavoriteTags([])}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-              favoriteTags.length === 0
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            全部
-          </button>
-          {allFavTags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => setFavoriteTags(prev =>
-                prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-              )}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                favoriteTags.includes(tag)
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      )}
 
-      {/* 列表标题 */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500">
-          {activeCategory === 'featured' && `精选 Top 50 · 按下载量+收藏量综合排序`}
-          {activeCategory === 'favorites' && `我的收藏 · 共 ${filteredSkills.length} 个技能`}
-          {!['featured', 'favorites'].includes(activeCategory) && `共 ${filteredSkills.length} 个技能`}
-        </span>
-      </div>
 
       {/* 技能卡片网格 */}
       {filteredSkills.length > 0 ? (
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredSkills.map((skill, index) => (
-            <SkillCard
-              key={skill.id}
-              skill={skill}
-              rank={index + 1}
-              isFavorited={isFavorited(skill.id)}
-              isInPackage={inPackageSkills.has(skill.id)}
-              onFavorite={handleFavorite}
-              onAddToPackage={handleAddToPackage}
-              onClick={() => setSelectedSkillId(skill.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-4" style={{ opacity: isRefreshing ? 0 : 1, transition: 'opacity 0.25s ease' }}>
+            {pagedSkills.map((skill, index) => {
+              const globalRank = (currentPage - 1) * PAGE_SIZE + index + 1;
+              const isFeatured = activeCategory === 'featured';
+              return (
+                <SkillCard
+                  key={skill.id}
+                  skill={skill}
+                  rank={isFeatured ? globalRank : 0}
+                  isFavorited={isFavorited(skill.id)}
+                  onFavorite={handleFavorite}
+                  onClick={() => setSelectedSkillId(skill.id)}
+                />
+              );
+            })}
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={filteredSkills.length}
+            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
+        </>
       ) : (
         <div className="text-center py-16 text-gray-400">
           <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
@@ -661,15 +622,6 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
           </p>
         </div>
       )}
-
-      {/* 加入初始技能包弹窗 */}
-      <AddToPackageDialog
-        open={!!addToPackageSkillId}
-        skillName={PUBLIC_SKILLS.find(s => s.id === addToPackageSkillId)?.nameZh || ''}
-        packages={packages}
-        onConfirm={handlePackageSelected}
-        onCancel={() => setAddToPackageSkillId(null)}
-      />
     </div>
   );
 }

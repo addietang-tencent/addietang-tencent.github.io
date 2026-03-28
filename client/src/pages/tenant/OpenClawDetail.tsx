@@ -629,46 +629,49 @@ export default function OpenClawDetail() {
     { id: "ps-12", name: "chart-generator 1.0.0", status: "pending" },
   ]);
 
-  // 串行安装：当前只有一个 installing，完成后根据是否失败决定移入已安装或标记失败
+  // 并行安装：页面加载后所有 pending 技能同时变为 installing，同时出结果
   useEffect(() => {
-    const installingSkill = pendingSkills.find(s => s.status === "installing");
-    if (!installingSkill) {
-      // 没有安装中的，找第一个 pending 开始安装（跳过 failed）
-      const nextPending = pendingSkills.find(s => s.status === "pending");
-      if (nextPending) {
-        setPendingSkills(prev =>
-          prev.map(s => s.id === nextPending.id ? { ...s, status: "installing" as PendingSkillStatus } : s)
-        );
-      }
-      return;
-    }
-    // 有安装中的，3秒后模拟完成：失败的标记为 failed，其余移入已安装
+    const pendingList = pendingSkills.filter(s => s.status === "pending");
+    if (pendingList.length === 0) return;
+    // 所有 pending 同时变为 installing
+    setPendingSkills(prev =>
+      prev.map(s => s.status === "pending" ? { ...s, status: "installing" as PendingSkillStatus } : s)
+    );
+  }, []);
+
+  // 监听 installing 技能，3秒后一次性批量更新所有结果
+  useEffect(() => {
+    const installingSkills = pendingSkills.filter(s => s.status === "installing");
+    if (installingSkills.length === 0) return;
     const timer = setTimeout(() => {
-      if (MOCK_FAIL_IDS.has(installingSkill.id)) {
-        // 模拟安装失败，留在列表中
-        setPendingSkills(prev =>
-          prev.map(s => s.id === installingSkill.id ? { ...s, status: "failed" as PendingSkillStatus } : s)
-        );
-      } else {
-        // 安装成功，移入已安装
-        setPendingSkills(prev => prev.filter(s => s.id !== installingSkill.id));
-        setInstalledSkills(prev => [installingSkill.name, ...prev]);
+      const successSkills = installingSkills.filter(s => !MOCK_FAIL_IDS.has(s.id));
+      const failedIds = new Set(installingSkills.filter(s => MOCK_FAIL_IDS.has(s.id)).map(s => s.id));
+      // 一次性更新 pendingSkills：删除成功的，失败的标记 failed
+      setPendingSkills(prev =>
+        prev
+          .filter(s => !successSkills.some(ss => ss.id === s.id))
+          .map(s => failedIds.has(s.id) ? { ...s, status: "failed" as PendingSkillStatus } : s)
+      );
+      // 一次性批量添加到已安装列表
+      if (successSkills.length > 0) {
+        setInstalledSkills(prev => [...successSkills.map(s => s.name), ...prev]);
       }
     }, 3000);
     return () => clearTimeout(timer);
-  }, [pendingSkills]);
+  }, [pendingSkills.filter(s => s.status === "installing").map(s => s.id).join()]);
 
-  // 重试安装失败的技能：若当前有 installing 则排队（置为 pending），否则立即开始安装
-  const handleRetrySkill = (id: string) => {
-    const hasInstalling = pendingSkills.some(s => s.status === "installing" && s.id !== id);
-    // 重试时从失败列表移除，不再模拟失败
-    MOCK_FAIL_IDS.delete(id);
+  // 全部重试：所有失败技能同时重新安装
+  const handleRetryAllFailed = () => {
+    const failedIds = pendingSkills.filter(s => s.status === "failed").map(s => s.id);
+    failedIds.forEach(id => MOCK_FAIL_IDS.delete(id));
     setPendingSkills(prev =>
-      prev.map(s => s.id === id
-        ? { ...s, status: (hasInstalling ? "pending" : "installing") as PendingSkillStatus }
-        : s
-      )
+      prev.map(s => s.status === "failed" ? { ...s, status: "installing" as PendingSkillStatus } : s)
     );
+  };
+
+  // 全部删除：移除所有失败技能
+  const handleDeleteAllFailed = () => {
+    setPendingSkills(prev => prev.filter(s => s.status !== "failed"));
   };
 
   // 合并内置通道 + 可见的自定义通道（动态构建 ChannelConfig）
@@ -1429,6 +1432,24 @@ export default function OpenClawDetail() {
                       </TooltipContent>
                     </Tooltip>
                     <p className="text-xs text-gray-400">待安装技能（{pendingSkills.length}）</p>
+                    {pendingSkills.some(s => s.status === "failed") && (
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={handleRetryAllFailed}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          重试
+                        </button>
+                        <button
+                          onClick={handleDeleteAllFailed}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          删除
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="overflow-y-auto flex-1 space-y-1">
                     {pendingSkills.map((skill) => (
@@ -1449,13 +1470,6 @@ export default function OpenClawDetail() {
                             <>
                               <XCircle className="w-3.5 h-3.5 text-red-500" />
                               <span className="text-xs text-red-500">安装失败</span>
-                              <button
-                                onClick={() => handleRetrySkill(skill.id)}
-                                className="ml-1 text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
-                              >
-                                <RotateCcw className="w-3 h-3" />
-                                重试
-                              </button>
                             </>
                           )}
                         </div>

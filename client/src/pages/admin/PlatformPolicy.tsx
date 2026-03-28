@@ -5,7 +5,8 @@
  * 风格：与管控端其他页面保持一致（白色卡片、浅色边框、圆角）
  */
 import { useState } from "react";
-import { Zap, Pencil, Check, X, Terminal, LayoutDashboard, Loader2, Cpu } from "lucide-react";
+import { useLocation } from "wouter";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,7 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
 
   const displayValue = () => {
     if (value === "unlimited" || value === -1) {
-      return <span className="text-gray-700 font-medium">∞ 无限制</span>;
+      return <span className="text-gray-700 font-medium">无限制</span>;
     }
     return <span className="text-gray-700 font-medium">{Number(value).toLocaleString()}</span>;
   };
@@ -78,22 +79,22 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 p-6"
+      className="bg-white rounded-2xl border border-gray-100 p-4"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
     >
       {/* 卡片头部 */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+      <div className="flex items-center gap-3 mb-1.5">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
           {icon}
         </div>
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
       </div>
 
-      {/* 描述文字：左侧与 icon 容器左侧对齐（pl-0），右侧对称 */}
-      <p className="text-xs text-gray-400 mb-5 leading-relaxed">{description}</p>
+      {/* 描述文字 */}
+      <p className="text-xs text-gray-400 mb-3 leading-relaxed">{description}</p>
 
       {/* 分隔线 */}
-      <div className="border-t border-gray-100 mb-5" />
+      <div className="border-t border-gray-100 mb-3" />
 
       {/* 值展示 / 编辑区 */}
       {!editing ? (
@@ -108,31 +109,33 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          {/* token 类型：无限制 / 自定义 切换按钮 */}
           {type === "token" && (
-            <div className="flex gap-3">
+            <div className="flex gap-1 shrink-0">
               <button
                 onClick={() => { setDraft("unlimited"); setInputStr(""); }}
-                className={`flex-1 text-xs py-2 px-3 rounded-lg border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
                   draft === "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
-                ∞ 无限制
+                无限制
               </button>
               <button
-                onClick={() => { setDraft(0); setInputStr("0"); }}
-                className={`flex-1 text-xs py-2 px-3 rounded-lg border transition-colors ${
+                onClick={() => { setDraft(0); setInputStr(inputStr || "0"); }}
+                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
                   draft !== "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
                 }`}
               >
-                自定义数量
+                自定义
               </button>
             </div>
           )}
+          {/* 数字输入框：integer 类型始终显示；token 类型仅在「自定义」时显示 */}
           {(type === "integer" || draft !== "unlimited") && (
             <Input
               type="number"
@@ -143,23 +146,26 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
                 setInputStr(e.target.value);
                 setDraft(Number(e.target.value));
               }}
-              className="bg-gray-50 border-gray-200 text-sm"
-              placeholder={type === "integer" ? "请输入 0-999" : "请输入数量"}
+              className="bg-gray-50 border-gray-200 text-sm h-8 min-w-0 flex-1"
+              placeholder={type === "integer" ? "0-999" : "请输入数量"}
               autoFocus
             />
           )}
-          <div className="flex gap-2 justify-end">
-            <Button size="sm" variant="outline" onClick={handleCancel} className="h-7 text-xs">
-              <X className="w-3 h-3 mr-1" />
-              取消
+          {/* 占位：token 且无限制时，让右侧按钮靠右 */}
+          {type === "token" && draft === "unlimited" && (
+            <div className="flex-1" />
+          )}
+          {/* 取消 / 保存 */}
+          <div className="flex gap-1 shrink-0">
+            <Button size="sm" variant="outline" onClick={handleCancel} className="h-8 w-8 p-0">
+              <X className="w-3.5 h-3.5" />
             </Button>
             <Button
               size="sm"
               onClick={handleSave}
-              className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+              className="h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <Check className="w-3 h-3 mr-1" />
-              保存
+              <Check className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
@@ -184,12 +190,12 @@ interface ToggleCardProps {
 function ToggleCard({ icon, iconBg, title, description, checked, loading, onToggle, extraContent }: ToggleCardProps) {
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 p-6"
+      className="bg-white rounded-2xl border border-gray-100 p-4"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
     >
       {/* 卡片头部：icon + 标题 + 开关 */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+      <div className="flex items-center gap-3 mb-1.5">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
           {icon}
         </div>
         <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
@@ -197,7 +203,7 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
           {loading && (
             <div className="flex items-center gap-1.5">
               <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-              <span className="text-xs text-blue-500 font-medium">配置中，请勿关闭...</span>
+              <span className="text-xs text-blue-500 font-medium">配置中，请勿关闭</span>
             </div>
           )}
           <Switch
@@ -208,12 +214,12 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
         </div>
       </div>
 
-      {/* 描述文字：左侧与 icon 容器左侧对齐，右侧对称 */}
+      {/* 描述文字 */}
       <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
 
       {/* 额外内容（如端口信息） */}
       {extraContent && (
-        <div className="mt-4 border-t border-gray-100 pt-4">
+        <div className="mt-3 border-t border-gray-100 pt-3">
           {extraContent}
         </div>
       )}
@@ -224,6 +230,8 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
 // ─── 主页面 ───────────────────────────────────────────────────────────────────
 
 export default function PlatformPolicy() {
+  const [, navigate] = useLocation();
+
   // ── 用户配额状态 ──
   const [clawLimit, setClawLimit] = useState<number>(() => {
     const v = localStorage.getItem("policy_claw_limit");
@@ -233,7 +241,7 @@ export default function PlatformPolicy() {
     const mode = localStorage.getItem("policy_token_limit_mode");
     if (mode === "unlimited") return "unlimited";
     const v = localStorage.getItem("policy_token_limit");
-    return v !== null ? Number(v) : 100000;
+    return v !== null ? Number(v) : 500000;
   });
 
   // ── 模型配额状态 ──
@@ -297,7 +305,7 @@ export default function PlatformPolicy() {
   const handleToggleTerminal = (v: boolean) => {
     setAllowTerminal(v);
     localStorage.setItem("admin_allow_terminal", String(v));
-    toast.success(v ? "已允许成员进入终端" : "已禁止成员进入终端");
+    toast.success(v ? "已允许用户进入终端" : "已禁止用户进入终端");
   };
 
   const handleTogglePanelAccess = (v: boolean) => {
@@ -336,17 +344,17 @@ export default function PlatformPolicy() {
           <QuotaCard
             icon={<Zap className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
-            title="OpenClaw 数量上限"
-            description="单个企业用户最多可以创建的 OpenClaw 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+            title="单用户 OpenClaw 数量上限"
+            description="单用户最多可以创建的 OpenClaw 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             value={clawLimit}
             onSave={handleSaveClawLimit}
             type="integer"
           />
           <QuotaCard
             icon={<Zap className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-amber-400 to-amber-500"
-            title="每日 Tokens 上限"
-            description="单个企业用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            title="单用户每日 Tokens 上限"
+            description="此为每位用户的初始默认值，可在「用户管理」添加用户时进行调整，也可后续对单个用户单独修改"
             value={tokenLimit}
             onSave={handleSaveTokenLimit}
             type="token"
@@ -374,10 +382,9 @@ export default function PlatformPolicy() {
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 第一个：允许用户添加自定义模型 */}
           <ToggleCard
             icon={<Cpu className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-sky-500 to-sky-600"
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户添加自定义模型"
             description="开启后，用户可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内"
             checked={allowCustomModel}
@@ -385,16 +392,16 @@ export default function PlatformPolicy() {
           />
           <ToggleCard
             icon={<Terminal className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-orange-500 to-orange-600"
-            title="允许成员进入 OpenClaw 终端"
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            title="允许用户进入 OpenClaw 终端"
             description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 OpenClaw 云服务器的终端"
             checked={allowTerminal}
             onToggle={handleToggleTerminal}
           />
           <ToggleCard
-            icon={<LayoutDashboard className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
-            title="允许成员访问 OpenClaw 面板"
+            icon={<Monitor className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            title="允许用户访问 OpenClaw 面板"
             description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 OpenClaw 面板"
             checked={allowPanelAccess}
             loading={panelAccessLoading}
@@ -403,7 +410,14 @@ export default function PlatformPolicy() {
               allowPanelAccess && panelPort ? (
                 <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
                   <span className="text-xs text-blue-700 leading-relaxed">
-                    已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在安全组规则处检查是否已放通该端口
+                    已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在网络管理的
+                    <button
+                      onClick={() => navigate("/admin/security-group")}
+                      className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5"
+                    >
+                      安全组规则
+                    </button>
+                    处检查是否已放通该端口
                   </span>
                 </div>
               ) : null

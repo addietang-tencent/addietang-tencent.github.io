@@ -360,7 +360,6 @@ export default function MyOpenClaw() {
     setRemoveRoleConfirm(null);
     toast.success(`「${name}」已移除角色，回退为通用助手`);
   };
-  };
 
   const handleRestart = (id: string, name: string) => {
     setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));

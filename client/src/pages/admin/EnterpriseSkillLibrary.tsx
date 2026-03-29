@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import SkillListTab from './SkillLibrary/SkillListTab';
 import CategoryManagementTab from './SkillLibrary/CategoryManagementTab';
 import SkillDetail from './SkillLibrary/SkillDetail';
@@ -18,6 +19,7 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
 
   return (
     <div className="page-enter">
+
       <Tabs defaultValue="skills" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-50">
           <TabsTrigger value="skills">Skill 列表</TabsTrigger>

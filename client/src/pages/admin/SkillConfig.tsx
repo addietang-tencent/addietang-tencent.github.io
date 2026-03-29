@@ -54,7 +54,7 @@ const TABS = [
   {
     id: "library",
     label: "企业技能库",
-    description: "",
+    description: "默认开启 SMH 智能媒资托管服务，赠送 50GB 永久免费额度，预计可覆盖 1 万个 5MB 大小的 Skill。",
     comingSoon: false,
   },
 ];

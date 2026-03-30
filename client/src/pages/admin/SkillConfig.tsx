@@ -29,7 +29,7 @@ import SkillRolesTab from "./SkillRolesTab";
 const TABS = [
   {
     id: "preset",
-    label: "技能初始包",
+    label: "初始技能包",
     description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共技能库和企业技能库中挑选。",
     comingSoon: false,
   },

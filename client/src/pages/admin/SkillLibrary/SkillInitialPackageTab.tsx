@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
-  CheckCircle2, Clock, ChevronRight, X, AlertCircle
+  CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles
 } from 'lucide-react';
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
@@ -758,11 +758,15 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
   return (
     <div className="space-y-4">
       {/* 顶部操作栏 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium text-gray-700">初始技能包列表</h3>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <h3 className="text-base font-bold text-gray-900 shrink-0">初始技能包列表</h3>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-xs text-blue-600 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">由腾讯云存储 Agent Bucket 提供服务，ClawPro 用户独享 50G + 50G 专属免费空间</span>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
+        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5 shrink-0" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
           <Plus className="w-4 h-4" />
           新建
         </Button>

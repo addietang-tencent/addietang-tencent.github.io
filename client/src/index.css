@@ -102,6 +102,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overflow-y: scroll; /* 强制滚动条始终占位，防止 Tab 切换时页面宽度抖动 */
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

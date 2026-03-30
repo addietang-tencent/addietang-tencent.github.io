@@ -1081,10 +1081,10 @@ export default function OpenClawDetail() {
               <button
                 key={tab.id}
                 onClick={() => setActiveDetailTab(tab.id)}
-                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                className={`w-full text-left px-4 py-2 text-sm transition-colors border-l-2 ${
                   activeDetailTab === tab.id
-                    ? "bg-white text-blue-600 shadow-sm border border-gray-100"
-                    : "text-gray-500 hover:text-gray-800 hover:bg-white/60"
+                    ? "border-blue-600 text-gray-900 font-semibold"
+                    : "border-transparent text-gray-500 font-normal hover:text-gray-800"
                 }`}
               >
                 {tab.label}

@@ -294,6 +294,7 @@ export default function OpenClawDetail() {
   // ── 一键更新状态 ──
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
+  const [activeDetailTab, setActiveDetailTab] = useState("basic");
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
@@ -1066,8 +1067,37 @@ export default function OpenClawDetail() {
           </div>
         </div>
 
-        {/* Three-column layout - unified height, upper fixed / lower scrollable */}
-        <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
+        {/* Left tab nav + content area */}
+        <div className="flex gap-5" style={{ alignItems: "start" }}>
+
+          {/* ===== Left vertical tab nav ===== */}
+          <div className="flex flex-col gap-1 flex-shrink-0 w-36">
+            {([
+              { id: "basic", label: "基础配置" },
+              { id: "memory", label: "记忆管理" },
+              { id: "files", label: "文件管理" },
+              { id: "doctor", label: "龙虾医生" },
+            ] as { id: string; label: string }[]).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveDetailTab(tab.id)}
+                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                  activeDetailTab === tab.id
+                    ? "bg-white text-blue-600 shadow-sm border border-gray-100"
+                    : "text-gray-500 hover:text-gray-800 hover:bg-white/60"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ===== Tab content ===== */}
+          <div className="flex-1 min-w-0">
+
+          {/* 基础配置 tab */}
+          {activeDetailTab === "basic" && (
+            <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
@@ -1482,7 +1512,32 @@ export default function OpenClawDetail() {
             </div>
           </div>
 
-        </div>
+            </div>
+          )}{/* end basic tab */}
+
+          {/* 记忆管理 tab */}
+          {activeDetailTab === "memory" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">记忆管理功能即将上线</p>
+            </div>
+          )}
+
+          {/* 文件管理 tab */}
+          {activeDetailTab === "files" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">文件管理功能即将上线</p>
+            </div>
+          )}
+
+          {/* 龙虾医生 tab */}
+          {activeDetailTab === "doctor" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">龙虾医生功能即将上线</p>
+            </div>
+          )}
+
+          </div>{/* end tab content */}
+        </div>{/* end flex outer */}
       </div>
 
       {/* ===== 飞书授权弹窗（三阶段） ===== */}

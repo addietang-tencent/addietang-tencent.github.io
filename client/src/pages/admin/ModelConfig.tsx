@@ -284,10 +284,9 @@ export default function ModelConfig() {
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[32%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">每日 Tokens 上限</th>
-
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">用户可见</th>
-                <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%] text-center">
-                  <div className="flex items-center gap-1 justify-center">
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">用户可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
+                  <div className="flex items-center gap-1">
                     默认配置
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -327,44 +326,6 @@ export default function ModelConfig() {
                         <Pencil className="w-3 h-3" />
                       </button>
                     </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <Switch
-                      checked={model.visible}
-                      onCheckedChange={(v) => handleToggleVisible(model.id, v)}
-                    />
-                  </td>
-                  {/* 默认模型单选 */}
-                  <td className="px-4 py-4 text-center">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => !model.isDefault && handleSetDefault(model.id)}
-                          disabled={model.isDefault}
-                          aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
-                          className={`
-                            w-4 h-4 rounded-full border-2 flex items-center justify-center mx-auto transition-all
-                            ${model.isDefault
-                              ? "border-blue-500 bg-blue-500 cursor-default"
-                              : model.visible
-                                ? "border-gray-300 bg-white hover:border-blue-400 cursor-pointer"
-                                : "border-gray-200 bg-gray-100 cursor-not-allowed opacity-40"
-                            }
-                          `}
-                        >
-                          {model.isDefault && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-white block" />
-                          )}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="text-xs">
-                        {model.isDefault
-                          ? "当前默认模型"
-                          : model.visible
-                            ? "点击设为默认模型"
-                            : "需先开启「用户可见」才可设为默认"}
-                      </TooltipContent>
-                    </Tooltip>
                   </td>
                   <td className="px-4 py-4">
                     <Switch

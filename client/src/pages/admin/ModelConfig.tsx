@@ -201,23 +201,34 @@ export default function ModelConfig() {
 
   // 设置默认模型：单选，同时将其他模型的 isDefault 置为 false
   // 仅允许对「用户可见」的模型设为默认
-  const handleSetDefault = (id: string) => {
+  const handleSetDefault = (id: string, enable: boolean) => {
     const target = models.find((m) => m.id === id);
     if (!target) return;
-    if (!target.visible) {
-      toast.error("请先开启该模型的「用户可见」后再设为默认");
-      return;
+    if (enable) {
+      if (!target.visible) {
+        toast.error("请先开启该模型的「用户可见」后再设为默认");
+        return;
+      }
+      const updated = models.map((m) => ({ ...m, isDefault: m.id === id }));
+      setModels(updated);
+      localStorage.setItem(DEFAULT_MODEL_STORAGE_KEY, id);
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: DEFAULT_MODEL_STORAGE_KEY,
+        newValue: id,
+        storageArea: localStorage,
+      }));
+      toast.success(`已将「${target.name} · ${target.version}」设为默认模型`);
+    } else {
+      const updated = models.map((m) => ({ ...m, isDefault: false }));
+      setModels(updated);
+      localStorage.removeItem(DEFAULT_MODEL_STORAGE_KEY);
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: DEFAULT_MODEL_STORAGE_KEY,
+        newValue: null,
+        storageArea: localStorage,
+      }));
+      toast.success("已取消默认模型");
     }
-    const updated = models.map((m) => ({ ...m, isDefault: m.id === id }));
-    setModels(updated);
-    // 持久化到 localStorage，供用户端读取
-    localStorage.setItem(DEFAULT_MODEL_STORAGE_KEY, id);
-    window.dispatchEvent(new StorageEvent("storage", {
-      key: DEFAULT_MODEL_STORAGE_KEY,
-      newValue: id,
-      storageArea: localStorage,
-    }));
-    toast.success(`已将「${target.name} · ${target.version}」设为默认模型`);
   };
 
   // 当「用户可见」关闭时，若该模型是默认模型则自动取消默认
@@ -323,27 +334,17 @@ export default function ModelConfig() {
                     />
                   </td>
                   {/* 默认模型单选 */}
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-4 py-4">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button
-                          onClick={() => !model.isDefault && handleSetDefault(model.id)}
-                          disabled={model.isDefault}
-                          aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
-                          className={`
-                            w-4 h-4 rounded-full border-2 flex items-center justify-center mx-auto transition-all
-                            ${model.isDefault
-                              ? "border-blue-500 bg-blue-500 cursor-default"
-                              : model.visible
-                                ? "border-gray-300 bg-white hover:border-blue-400 cursor-pointer"
-                                : "border-gray-200 bg-gray-100 cursor-not-allowed opacity-40"
-                            }
-                          `}
-                        >
-                          {model.isDefault && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-white block" />
-                          )}
-                        </button>
+                        <span>
+                          <Switch
+                            checked={model.isDefault}
+                            onCheckedChange={(v) => handleSetDefault(model.id, v)}
+                            disabled={!model.visible && !model.isDefault}
+                            aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
+                          />
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent className="text-xs">
                         {model.isDefault

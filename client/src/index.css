@@ -282,24 +282,24 @@
 }
 
 .md-preview h1 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 
 .md-preview h2 {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
 }
 
 .md-preview h3 {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .md-preview h4,
 .md-preview h5,
 .md-preview h6 {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -307,35 +307,55 @@
 .md-preview li,
 .md-preview td,
 .md-preview th {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
-.md-preview ul,
+.md-preview ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.4em 0;
+}
+
 .md-preview ol {
+  list-style-type: decimal;
   padding-left: 1.5em;
   margin: 0.4em 0;
 }
 
 .md-preview li {
   margin: 0.15em 0;
+  display: list-item;
 }
 
 .md-preview code:not(pre code) {
-  font-size: 11px;
-  background: #f3f4f6;
+  font-size: 12px;
+  background: #fdf2f2;
   padding: 0.1em 0.35em;
   border-radius: 3px;
-  color: #374151;
+  color: #c0392b;
+  font-weight: 500;
 }
 
 .md-preview pre {
   margin: 0.6em 0;
   border-radius: 4px;
   overflow-x: auto;
+  overflow-y: hidden;
+  white-space: pre;
+  max-width: 100%;
 }
 
-/* 覆盖 hljs 主题的字号，与正文保持一致 */
+.md-preview pre code {
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+  display: block;
+  width: max-content;
+  min-width: 100%;
+}
+
+/* 覆盖 hljs 主题的字号，代码块比正文小一档 */
 .md-preview pre.hljs {
   font-size: 12px;
   line-height: 1.6;
@@ -351,6 +371,26 @@
   padding: 0;
   border-radius: 0;
   color: inherit;
+}
+
+/* 树状结构代码块：连接符、文件名、注释分层着色 */
+.md-preview pre.hljs.tree-block {
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+}
+
+.md-preview pre.hljs.tree-block .tree-connector {
+  color: #6b7280;
+}
+
+.md-preview pre.hljs.tree-block .tree-name {
+  color: #111827;
+  font-weight: 500;
+}
+
+.md-preview pre.hljs.tree-block .tree-comment {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .md-preview blockquote {
@@ -373,4 +413,26 @@
 
 .md-preview a:hover {
   text-decoration: underline;
+}
+
+/* MD 预览 - 表格样式 */
+.md-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  font-size: 14px;
+}
+.md-preview th {
+  font-weight: 600;
+  color: #111827;
+  text-align: left;
+  padding: 0 16px 0 0;
+}
+.md-preview td {
+  padding: 0 16px 0 0;
+  color: #374151;
+  vertical-align: middle;
+}
+.md-preview tr:last-child td {
+  border-bottom: none;
 }

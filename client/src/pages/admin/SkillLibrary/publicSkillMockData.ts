@@ -112,7 +112,62 @@ description: "记录错误、纠正、能力缺口与最佳实践，形成可复
 mkdir -p .learnings
 \`\`\`
 
-## 3. 参考资料
+写入记录示例（超长命令，可横向滚动查看）：
+
+\`\`\`bash
+python3 scripts/record.py --type error --trigger "API timeout" --cause "External service rate limit exceeded after 3 retries" --solution "Added exponential backoff with jitter, max 5 retries" --prevention "Monitor rate limit headers and implement circuit breaker pattern" --file .learnings/ERRORS.md
+\`\`\`
+
+技能目录结构如下：
+
+\`\`\`
+self-improving-agent/
+├── SKILL.md （工作流程 + 触发条件）
+├── hooks/
+│   └── post-run.sh （每次运行后自动记录）
+├── scripts/
+│   └── record.py （结构化写入工具）└── _meta.json （技能元数据）
+\`\`\`
+
+---
+
+## 3. 记录格式规范
+
+每条记录应包含以下要素（原点列表示例）：
+
+- **触发事件**：描述触发记录的具体情况
+- **根本原因**：分析问题的根本原因
+- **解决方案**：记录最终采用的解决方案
+- **预防措施**：下次如何避免同类问题
+- **关联文件**：涉及的代码文件或配置路径
+
+写入记录的推荐步骤（数字列表示例）：
+
+1. 确认触发条件已满足（参考第 1 节）
+2. 选择对应的目标文件（\`LEARNINGS.md\` / \`ERRORS.md\`）
+3. 按格式填写触发事件和根本原因
+4. 补充解决方案和预防措施
+5. 保存文件，确认写入成功
+
+
+---
+
+## 5. 文件索引
+
+各记录类型对应的目标文件：
+
+| 记录类型 | 目标文件 |
+|----------|----------|
+| 命令/操作失败 | \`.learnings/ERRORS.md\` |
+| 用户纠正与认知缺口 | \`.learnings/LEARNINGS.md\` |
+| 能力请求与新功能 | \`.learnings/FEATURE_REQUESTS.md\` |
+| 外部服务失败 | \`.learnings/ERRORS.md\` |
+| 可复用的优化流程 | \`.learnings/LEARNINGS.md\` |
+| 知识过时或理解错误 | \`.learnings/LEARNINGS.md\` |
+
+---
+
+## 4. 参考资料
 
 - [OpenClaw 官方文档](https://docs.openclaw.com/skills/self-improving)
 - [最佳实践指南](https://clawhub.openclaw.com/skills/self-improving-agent)

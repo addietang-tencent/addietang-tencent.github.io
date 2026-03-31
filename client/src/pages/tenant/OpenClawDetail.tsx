@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import FileSpace from "./FileSpace";
+import MemoryPreview from "@/components/MemoryPreview";
 
 // ─── 实例状态配置（与 MyOpenClaw 保持一致） ──────────────────────────────────────
 
@@ -1800,8 +1801,8 @@ export default function OpenClawDetail() {
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
-            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <p className="text-gray-400 text-sm">记忆管理功能即将上线</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <MemoryPreview memoryServiceEnabled={true} openclawVersion="3.24" />
             </div>
           )}
 

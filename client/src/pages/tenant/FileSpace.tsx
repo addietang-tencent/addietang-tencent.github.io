@@ -205,6 +205,22 @@ function toSmhPath(uiPath: string): string {
   return uiPath.startsWith("/") ? uiPath.slice(1) : uiPath;
 }
 
+/** 中间省略长路径，保留开头和末尾（含文件后缀），如 /folder/sub/very-long-name.jpg → /folder/s...name.jpg */
+function ellipsisMiddle(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  // 找最后一个 / 后面的部分作为文件名
+  const lastSlash = text.lastIndexOf("/");
+  const suffix = lastSlash >= 0 ? text.slice(lastSlash) : text;
+  // 找文件扩展名
+  const dotIdx = suffix.lastIndexOf(".");
+  const ext = dotIdx > 0 ? suffix.slice(dotIdx) : "";
+  // 保留尾部：至少保留后缀 + 3 个字符
+  const tailKeep = Math.max(ext.length + 3, Math.floor(maxLen * 0.3));
+  const headKeep = maxLen - tailKeep - 3; // 3 for "..."
+  if (headKeep < 1) return text.slice(0, maxLen - 3) + "...";
+  return text.slice(0, headKeep) + "..." + text.slice(text.length - tailKeep);
+}
+
 // ─── Props ───────────────────────────────────────────────────────────────────
 
 interface FileSpaceProps {
@@ -262,6 +278,9 @@ export default function FileSpace({
   // 上传中状态
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadTotal, setUploadTotal] = useState(0);
+  const [uploadCompleted, setUploadCompleted] = useState(0);
+  const [uploadFailed, setUploadFailed] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -460,38 +479,78 @@ export default function FileSpace({
     }
   };
 
-  /** 上传文件 */
-  const handleUpload = async (fileObj: globalThis.File) => {
-    const filePath = toSmhPath(
-      currentPath === "/" ? fileObj.name : `${currentPath}/${fileObj.name}`
-    ).replace(/^\//, "");
-    setUploading(true);
-    setUploadProgress(0);
-    try {
-      await uploadFile(fileObj, filePath, {
-        onProgressCallback: (percent: number) => {
-          setUploadProgress(percent);
-        },
-        onSuccessCallback: () => {
-          toast.success(`「${fileObj.name}」上传成功`);
-          setUploading(false);
-          setUploadProgress(0);
-          loadFiles();
-          getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
-        },
-        onErrorCallback: (err: any) => {
-          console.error("[FileSpace] 上传失败:", err);
-          toast.error(`上传「${fileObj.name}」失败`);
-          setUploading(false);
-          setUploadProgress(0);
-        },
-      });
-    } catch (err) {
-      console.error("[FileSpace] 上传失败:", err);
-      toast.error(`上传「${fileObj.name}」失败`);
-      setUploading(false);
-      setUploadProgress(0);
+  /** 上传单个文件（内部使用） */
+  const uploadSingleFile = (fileObj: globalThis.File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const filePath = toSmhPath(
+        currentPath === "/" ? fileObj.name : `${currentPath}/${fileObj.name}`
+      ).replace(/^\//, "");
+      try {
+        uploadFile(fileObj, filePath, {
+          onProgressCallback: (_percent: number) => {
+            // 单文件进度暂不显示，使用整体完成数作为进度指示
+          },
+          onSuccessCallback: () => {
+            resolve(true);
+          },
+          onErrorCallback: (err: any) => {
+            console.error(`[FileSpace] 上传「${fileObj.name}」失败:`, err);
+            resolve(false);
+          },
+        });
+      } catch (err) {
+        console.error(`[FileSpace] 上传「${fileObj.name}」失败:`, err);
+        resolve(false);
+      }
+    });
+  };
+
+  /** 批量上传文件（最多 10000 个） */
+  const handleUploadFiles = async (fileList: globalThis.File[]) => {
+    if (fileList.length === 0) return;
+    const MAX_FILES = 10000;
+    if (fileList.length > MAX_FILES) {
+      toast.error(`一次最多上传 ${MAX_FILES} 个文件，当前选择了 ${fileList.length} 个`);
+      return;
     }
+
+    const total = fileList.length;
+    setUploading(true);
+    setUploadTotal(total);
+    setUploadCompleted(0);
+    setUploadFailed(0);
+    setUploadProgress(0);
+
+    let completed = 0;
+    let failed = 0;
+
+    // 并发控制：每批最多 5 个文件同时上传
+    const CONCURRENCY = 5;
+    for (let i = 0; i < total; i += CONCURRENCY) {
+      const batch = fileList.slice(i, i + CONCURRENCY);
+      const results = await Promise.all(batch.map((f) => uploadSingleFile(f)));
+      for (const ok of results) {
+        completed++;
+        if (!ok) failed++;
+        setUploadCompleted(completed);
+        setUploadFailed(failed);
+        setUploadProgress(Math.round((completed / total) * 100));
+      }
+    }
+
+    // 上传完成汇总
+    if (failed === 0) {
+      toast.success(total === 1 ? `「${fileList[0].name}」上传成功` : `${total} 个文件全部上传成功`);
+    } else {
+      toast.warning(`上传完成：${total - failed} 个成功，${failed} 个失败`);
+    }
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadTotal(0);
+    setUploadCompleted(0);
+    setUploadFailed(0);
+    loadFiles();
+    getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
   };
 
   /** 新建文件夹 */
@@ -625,8 +684,7 @@ export default function FileSpace({
     setIsDragOver(false);
     const droppedFiles = e.dataTransfer.files;
     if (droppedFiles.length > 0) {
-      // 上传第一个文件（可扩展为批量上传）
-      handleUpload(droppedFiles[0]);
+      handleUploadFiles(Array.from(droppedFiles));
     }
   };
 
@@ -636,9 +694,9 @@ export default function FileSpace({
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileObj = e.target.files?.[0];
-    if (fileObj) {
-      handleUpload(fileObj);
+    const selectedFiles = e.target.files;
+    if (selectedFiles && selectedFiles.length > 0) {
+      handleUploadFiles(Array.from(selectedFiles));
     }
     // 重置 input 以便重复选择同一文件
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -650,6 +708,7 @@ export default function FileSpace({
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         className="hidden"
         onChange={handleFileInputChange}
       />
@@ -681,7 +740,12 @@ export default function FileSpace({
               {uploading && (
                 <div className="flex items-center gap-2 text-xs text-blue-600 mr-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>上传中 {uploadProgress}%</span>
+                  <span>
+                    {uploadTotal > 1
+                      ? `上传中 ${uploadCompleted}/${uploadTotal}${uploadFailed > 0 ? `（${uploadFailed} 失败）` : ""}`
+                      : `上传中 ${uploadProgress}%`
+                    }
+                  </span>
                 </div>
               )}
               {/* 视图切换 */}
@@ -701,7 +765,7 @@ export default function FileSpace({
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => setShowNewFolder(true)} className="text-gray-600">
+                  <Button variant="outline" size="sm" onClick={() => { setNewFolderName("新建文件夹"); setShowNewFolder(true); }} className="text-gray-600">
                     <FolderPlus className="w-3.5 h-3.5 mr-1.5" />
                     新建文件夹
                   </Button>
@@ -728,14 +792,14 @@ export default function FileSpace({
           {/* Breadcrumb + Search + Sort */}
           <div className="flex items-center gap-3">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-xs flex-shrink-0">
+            <nav className="flex items-center gap-1 text-xs flex-shrink min-w-0 overflow-hidden">
               {breadcrumbs.map((crumb, idx) => (
-                <span key={crumb.path} className="flex items-center gap-1">
-                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
+                <span key={crumb.path} className="flex items-center gap-1 flex-shrink-0 min-w-0" style={{ maxWidth: idx === 0 ? undefined : "120px" }}>
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
                   {idx === 0 ? (
                     <button
                       onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
-                      className={`flex items-center gap-1 px-1.5 py-1 rounded-md transition-colors ${
+                      className={`flex items-center gap-1 px-1.5 py-1 rounded-md transition-colors flex-shrink-0 ${
                         idx === breadcrumbs.length - 1
                           ? "text-gray-700 font-medium"
                           : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
@@ -744,16 +808,21 @@ export default function FileSpace({
                       <Home className="w-3 h-3" />
                     </button>
                   ) : (
-                    <button
-                      onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
-                      className={`px-1.5 py-1 rounded-md transition-colors ${
-                        idx === breadcrumbs.length - 1
-                          ? "text-gray-700 font-medium"
-                          : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                      }`}
-                    >
-                      {crumb.label}
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
+                          className={`px-1.5 py-1 rounded-md transition-colors truncate block max-w-[100px] ${
+                            idx === breadcrumbs.length - 1
+                              ? "text-gray-700 font-medium"
+                              : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                          }`}
+                        >
+                          {crumb.label}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">{crumb.label}</TooltipContent>
+                    </Tooltip>
                   )}
                 </span>
               ))}
@@ -835,13 +904,14 @@ export default function FileSpace({
                     <th className="text-left px-5 py-2.5 font-medium w-20">类型</th>
                     <th className="text-right px-5 py-2.5 font-medium w-24">大小</th>
                     <th className="text-right px-5 py-2.5 font-medium w-40">修改时间</th>
+                    <th className="text-center px-5 py-2.5 font-medium w-16">下载</th>
                     <th className="text-center px-5 py-2.5 font-medium w-16">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredFiles.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-5 py-16 text-center">
+                      <td colSpan={6} className="px-5 py-16 text-center">
                         <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                         <p className="text-sm text-gray-400">
                           {search ? "未找到匹配的文件" : "当前目录为空"}
@@ -883,6 +953,23 @@ export default function FileSpace({
                           <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">{file.modifiedAt}</span>
                         </td>
                         <td className="px-5 py-2.5 text-center">
+                          {file.type !== "folder" ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleDownload(file)}
+                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors mx-auto"
+                                >
+                                  <Download className="w-4 h-4" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">下载</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-gray-200">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-2.5 text-center">
                           <FileActions
                             file={file}
                             onDelete={() => setDeleteConfirm(file)}
@@ -890,7 +977,7 @@ export default function FileSpace({
                             onDownload={() => handleDownload(file)}
                             onPreview={() => handlePreview(file)}
                             onRename={() => { setRenameTarget(file); setRenameValue(file.name); }}
-            onMove={() => openMoveDialog(file)}
+                            onMove={() => openMoveDialog(file)}
                           />
                         </td>
                       </tr>
@@ -958,9 +1045,16 @@ export default function FileSpace({
                   最近更新于 {files[0]?.modifiedAt ?? "—"}
                 </span>
               </div>
-              <span className="text-xs text-gray-300">
-                {currentPath === "/" ? "根目录" : currentPath}
-              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-gray-300 truncate block text-right" style={{ maxWidth: "30%" }}>
+                    {currentPath === "/" ? "根目录" : ellipsisMiddle(currentPath, 40)}
+                  </span>
+                </TooltipTrigger>
+                {currentPath !== "/" && currentPath.length > 40 && (
+                  <TooltipContent side="top" className="text-xs max-w-[400px] break-all">{currentPath}</TooltipContent>
+                )}
+              </Tooltip>
             </div>
           )}
         </div>

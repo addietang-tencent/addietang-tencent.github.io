@@ -8,13 +8,52 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Search, Download, Star, Heart, ChevronRight,
-  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw
+  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package
 } from 'lucide-react';
 import {
   PUBLIC_SKILLS, PUBLIC_SKILL_CATEGORIES, type PublicSkill, type FavoriteSkill, type PublicSkillFile
 } from './publicSkillMockData';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { githubGist } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import bash from 'react-syntax-highlighter/dist/esm/languages/hljs/bash';
+import yaml from 'react-syntax-highlighter/dist/esm/languages/hljs/yaml';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
+import typescript from 'react-syntax-highlighter/dist/esm/languages/hljs/typescript';
+import markdown from 'react-syntax-highlighter/dist/esm/languages/hljs/markdown';
+import xml from 'react-syntax-highlighter/dist/esm/languages/hljs/xml';
+
+SyntaxHighlighter.registerLanguage('json', json);
+SyntaxHighlighter.registerLanguage('python', python);
+SyntaxHighlighter.registerLanguage('bash', bash);
+SyntaxHighlighter.registerLanguage('yaml', yaml);
+SyntaxHighlighter.registerLanguage('javascript', javascript);
+SyntaxHighlighter.registerLanguage('typescript', typescript);
+SyntaxHighlighter.registerLanguage('markdown', markdown);
+SyntaxHighlighter.registerLanguage('xml', xml);
+
+function getLanguageFromFilename(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const map: Record<string, string> = {
+    json: 'json',
+    py: 'python',
+    sh: 'bash',
+    bash: 'bash',
+    yaml: 'yaml',
+    yml: 'yaml',
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    md: 'markdown',
+    xml: 'xml',
+    html: 'xml',
+  };
+  return map[ext] || 'plaintext';
+}
 
 // ─── 分页组件 ─────────────────────────────────────────────────────────────────
 
@@ -207,7 +246,7 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
           style={{ paddingLeft: `${8 + depth * 16}px` }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? <FolderOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" /> : <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-gray-400" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-gray-400" />}
           <span className="font-medium">{file.name}</span>
           {expanded ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400" /> : <ChevronRightIcon className="w-3 h-3 ml-auto text-gray-400" />}
         </button>
@@ -256,6 +295,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
     // 默认选中 SKILL.md
     return skill.files.find(f => f.name === 'SKILL.md') || skill.files[0] || null;
   });
+  const [mdPreviewMode, setMdPreviewMode] = useState<'source' | 'preview'>('source');
   const formatCount = (n: number) => {
     if (n >= 10000) {
       const v = n / 10000;
@@ -288,12 +328,13 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-0.5">
               <h2 className="font-mono text-lg font-bold text-gray-900">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
+            <p className="text-xs text-gray-400 font-mono mb-2">slug：{skill.name}</p>
             <p className="text-sm text-gray-600 mb-3">{skill.descriptionZh}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
+            <div className="flex items-center gap-4 text-xs text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Download className="w-4 h-4" />
                 {formatCount(skill.downloads)} 次下载
@@ -319,15 +360,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
 
             </div>
 
-            {/* 加入初始技能包 */}
-            <Button
-              size="sm"
-              onClick={() => onAddToPackage(skill.id)}
-              className={`gap-1.5 ${isInPackage ? 'bg-green-600 hover:bg-green-700' : ''}`}
-            >
-              <Package className="w-4 h-4" />
-              {isInPackage ? '已加入技能包' : '加入初始技能包'}
-            </Button>
+
           </div>
         </div>
       </div>
@@ -338,10 +371,10 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex h-full">
           {/* 左列：版本列表 */}
           <div className="w-44 border-r border-gray-100 flex flex-col shrink-0">
-            <div className="px-3 py-2.5 border-b border-gray-100">
+            <div className="px-3 border-b border-gray-100 bg-gray-50/50 flex items-center" style={{height:'40px'}}>
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">版本</span>
             </div>
-            <div className="flex-1 overflow-y-auto py-1">
+            <div className="flex-1 overflow-y-auto">
               {skill.versions.map(v => (
                 <button
                   key={v.version}
@@ -353,9 +386,9 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                   }`}
                 >
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-mono font-semibold text-gray-800">{v.version}</span>
+                    <span className="text-xs text-gray-800">{v.version}</span>
                     {v.isLatest && (
-                      <span className="text-[10px] px-1 py-0 bg-green-100 text-green-700 rounded font-medium">最新</span>
+                      <span className="text-[10px] px-1 py-0 rounded font-medium" style={{backgroundColor:'#EBF5FF',color:'#007AFF'}}>最新</span>
                     )}
                   </div>
                   <span className="text-[10px] text-gray-400">{v.date.slice(0, 10)}</span>
@@ -366,7 +399,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
 
           {/* 中列：文件目录 */}
           <div className="w-44 border-r border-gray-100 flex flex-col shrink-0">
-            <div className="px-3 py-2.5 border-b border-gray-100">
+            <div className="px-3 border-b border-gray-100 bg-gray-50/50 flex items-center" style={{height:'40px'}}>
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{selectedVersion.version}</span>
             </div>
             <div className="flex-1 overflow-y-auto py-1">
@@ -386,20 +419,66 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
           <div className="flex-1 flex flex-col min-w-0">
             {selectedFile ? (
               <>
-                <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+                <div className="px-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2" style={{height:'40px'}}>
                   <FileText className="w-3.5 h-3.5 text-gray-400" />
                   <span className="text-xs font-medium text-gray-700">{selectedFile.name}</span>
+                  {selectedFile.name.endsWith('.md') && (
+                    <div className="ml-auto flex items-center gap-1">
+                      <button
+                        onClick={() => setMdPreviewMode('source')}
+                        className={`text-[11px] px-2 py-0.5 rounded transition-colors ${
+                          mdPreviewMode === 'source'
+                            ? 'text-white font-medium'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        }`}
+                        style={mdPreviewMode === 'source' ? {backgroundColor:'#007AFF'} : {}}
+                      >
+                        源码
+                      </button>
+                      <button
+                        onClick={() => setMdPreviewMode('preview')}
+                        className={`text-[11px] px-2 py-0.5 rounded transition-colors ${
+                          mdPreviewMode === 'preview'
+                            ? 'text-white font-medium'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        }`}
+                        style={mdPreviewMode === 'preview' ? {backgroundColor:'#007AFF'} : {}}
+                      >
+                        预览
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 overflow-y-auto p-4">
-                  {selectedFile.name.endsWith('.md') ? (
+                <div className="flex-1 overflow-y-auto">
+                  {selectedFile.name.endsWith('.md') && mdPreviewMode === 'preview' ? (
                     <div
-                      className="prose prose-sm max-w-none"
+                      className="md-preview max-w-none p-4"
+                      style={{color:'#374151'}}
                       dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedFile.content || '') }}
                     />
                   ) : (
-                    <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">
-                      {selectedFile.content || '（文件内容为空）'}
-                    </pre>
+                    <SyntaxHighlighter
+                      language={getLanguageFromFilename(selectedFile.name)}
+                      style={githubGist}
+                      showLineNumbers
+                      wrapLongLines
+                      customStyle={{
+                        margin: 0,
+                        padding: '16px',
+                        fontSize: '12px',
+                        lineHeight: '1.6',
+                        background: 'transparent',
+                        height: '100%',
+                      }}
+                      lineNumberStyle={{
+                        minWidth: '2.5em',
+                        paddingRight: '1em',
+                        color: '#9ca3af',
+                        userSelect: 'none',
+                      }}
+                    >
+                      {selectedFile.content || ''}
+                    </SyntaxHighlighter>
                   )}
                 </div>
               </>

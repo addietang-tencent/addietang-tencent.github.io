@@ -39,6 +39,7 @@ import {
   ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
+import FileSpace from "./FileSpace";
 
 // ─── 实例状态配置（与 MyOpenClaw 保持一致） ──────────────────────────────────────
 
@@ -1175,7 +1176,7 @@ export default function OpenClawDetail() {
             {([
               { id: "basic", label: "基础配置" },
               { id: "memory", label: "记忆管理" },
-              { id: "files", label: "文件管理" },
+              { id: "files", label: "文件空间" },
               { id: "doctor", label: "龙虾医生" },
             ] as { id: string; label: string }[]).map((tab) => (
               <button
@@ -1622,11 +1623,19 @@ export default function OpenClawDetail() {
             </div>
           )}
 
-          {/* 文件管理 tab */}
+          {/* 文件空间 tab */}
           {activeDetailTab === "files" && (
-            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <p className="text-gray-400 text-sm">文件管理功能即将上线</p>
-            </div>
+            <FileSpace
+              clawName={clawName}
+              clawId={clawId || ""}
+              basePath="https://smh3jsttekkpsoqw.api.tencentsmh.cn"
+              libraryId="smh3jsttekkpsoqw"
+              spaceId="space232t1yug3w7up"
+              getAccessToken={async () => ({
+                accessToken: "acctk021cf0f24emnem68z3dzwr734zcdpl74fd7783cgdesppskermqhhu7d9pnns4exa5gvc84n2yfhdq5unt754belzzvkwcd5psjuznzwt7jbcs2zsm5c3828ba4",
+                expiresAt: Date.now() + 3600 * 24 * 1000,
+              })}
+            />
           )}
 
           {/* 龙虾医生 tab */}

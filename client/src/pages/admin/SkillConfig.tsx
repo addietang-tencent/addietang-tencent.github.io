@@ -277,7 +277,7 @@ function SkillSourceTab() {
 
 // ── 主页面 ────────────────────────────────────────────────
 export default function SkillConfig() {
-  const [activeTab, setActiveTab] = useState("source");
+  const [activeTab, setActiveTab] = useState("preset");
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [packages, setPackages] = useState<Array<{ id: string; name: string; isActive: boolean }>>(
     [

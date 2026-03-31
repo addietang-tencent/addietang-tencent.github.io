@@ -111,6 +111,11 @@ description: "记录错误、纠正、能力缺口与最佳实践，形成可复
 \`\`\`bash
 mkdir -p .learnings
 \`\`\`
+
+## 3. 参考资料
+
+- [OpenClaw 官方文档](https://docs.openclaw.com/skills/self-improving)
+- [最佳实践指南](https://clawhub.openclaw.com/skills/self-improving-agent)
 `;
 
 const SKILL_CONTENT_GITHUB = `---

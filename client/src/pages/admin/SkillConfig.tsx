@@ -23,12 +23,13 @@ import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import SkillDetail from "./SkillLibrary/SkillDetail";
 import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
 import SkillInitialPackageTab from "./SkillLibrary/SkillInitialPackageTab";
+import SkillRolesTab from "./SkillRolesTab";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
   {
     id: "preset",
-    label: "技能初始包",
+    label: "初始技能包",
     description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共技能库和企业技能库中挑选。",
     comingSoon: false,
   },
@@ -47,13 +48,13 @@ const TABS = [
   {
     id: "public",
     label: "公共技能库",
-    description: "浏览公共技能市场，收藏技能并加入初始技能包，为用户提供丰富的开箱即用技能资源。",
+    description: "浏览公共技能市场，收藏技能并加入初始技能包，形成适合企业实际场景的公共技能库。",
     comingSoon: false,
   },
   {
     id: "library",
     label: "企业技能库",
-    description: "",
+    description: "默认开启 SMH 智能媒资托管服务，赠送 50GB 永久免费额度，预计可覆盖 1 万个 5MB 大小的 Skill。",
     comingSoon: false,
   },
 ];
@@ -328,7 +329,7 @@ export default function SkillConfig() {
         <SkillInitialPackageTab onPackagesChange={setPackages} />
       )}
       {activeTab === "roles" && (
-        <div />
+        <SkillRolesTab />
       )}
       {activeTab === "source" && <SkillSourceTab />}
       {activeTab === "public" && (

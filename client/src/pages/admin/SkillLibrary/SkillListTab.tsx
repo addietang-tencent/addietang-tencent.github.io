@@ -330,28 +330,26 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     {getCategoryName(catId)}
                   </span>
                 ))}
-                {skill.categories.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip delayDuration={1000}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingSkillId(skill.id);
-                            setEditingSkillCategories(skill.categories);
-                            setEditCategoryDialogOpen(true);
-                          }}
-                          className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                        仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                <TooltipProvider>
+                  <Tooltip delayDuration={1000}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingSkillId(skill.id);
+                          setEditingSkillCategories(skill.categories);
+                          setEditCategoryDialogOpen(true);
+                        }}
+                        className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                      仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* 描述 */}
@@ -413,28 +411,26 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                         {getCategoryName(catId)}
                       </span>
                     ))}
-                    {skill.categories.length > 0 && (
-                      <TooltipProvider>
-                        <Tooltip delayDuration={1000}>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingSkillId(skill.id);
-                                setEditingSkillCategories(skill.categories);
-                                setEditCategoryDialogOpen(true);
-                              }}
-                              className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                            >
-                              <Edit2 className="w-3 h-3" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                            仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
+                    <TooltipProvider>
+                      <Tooltip delayDuration={1000}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingSkillId(skill.id);
+                              setEditingSkillCategories(skill.categories);
+                              setEditCategoryDialogOpen(true);
+                            }}
+                            className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                          仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
 

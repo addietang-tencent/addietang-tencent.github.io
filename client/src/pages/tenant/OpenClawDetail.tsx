@@ -34,7 +34,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import {
@@ -42,7 +42,6 @@ import {
   loadVisibleCustomChannels,
   onCustomChannelsChange,
 } from "@/lib/customChannelStore";
-import MemoryCard from "@/components/MemoryCard";
 
 // ─── 通道配置定义 ───────────────────────────────────────────────────────────────
 
@@ -295,6 +294,7 @@ export default function OpenClawDetail() {
   // ── 一键更新状态 ──
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
+  const [activeDetailTab, setActiveDetailTab] = useState("basic");
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
@@ -427,7 +427,7 @@ export default function OpenClawDetail() {
 
   // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
-  const [installedSkills, setInstalledSkills] = useState(claw.skills || [
+  const [installedSkills, setInstalledSkills] = useState<string[]>([
     "tavily-search 1.0.0",
     "summarize 1.0.0",
     "agent-browser 0.2.0",
@@ -438,6 +438,39 @@ export default function OpenClawDetail() {
     "weather 1.0.0",
     "tencentcloud-lighthouse-skill 1.0.0",
     "tencent-docs 1.0.3",
+    "slack 2.1.0",
+    "jira 1.5.2",
+    "confluence 1.3.0",
+    "gitlab 1.2.1",
+    "linear 0.8.0",
+    "figma-export 1.0.0",
+    "google-calendar 2.0.1",
+    "airtable 1.1.0",
+    "zapier-webhook 0.5.0",
+    "stripe-billing 1.0.0",
+    "sendgrid-email 1.2.0",
+    "twilio-sms 0.9.0",
+    "aws-s3 2.3.0",
+    "openai-dalle 1.0.0",
+    "huggingface-inference 1.0.0",
+    "elasticsearch 2.0.0",
+    "redis-cache 1.1.0",
+    "mongodb-query 1.4.0",
+    "postgres-sql 2.2.0",
+    "docker-exec 0.8.0",
+    "kubernetes-deploy 1.0.0",
+    "terraform-plan 0.5.0",
+    "ansible-run 1.2.0",
+    "prometheus-alert 1.0.0",
+    "grafana-dashboard 0.9.0",
+    "datadog-monitor 1.1.0",
+    "pagerduty-incident 1.0.0",
+    "zoom-meeting 2.0.0",
+    "teams-message 1.3.0",
+    "discord-bot 0.7.0",
+    "telegram-send 1.0.0",
+    "wechat-work 2.1.0",
+    "dingtalk-notify 1.5.0",
   ]);
 
   // ── Handlers ──
@@ -575,6 +608,72 @@ export default function OpenClawDetail() {
   const filteredSkills = AVAILABLE_SKILLS.filter((s) =>
     s.toLowerCase().includes(skillSearch.toLowerCase())
   );
+
+  // ── Pending skills state ──
+  type PendingSkillStatus = "pending" | "installing" | "failed";
+  type PendingSkill = { id: string; name: string; status: PendingSkillStatus };
+  // ps-3 和 ps-7 模拟安装失败
+  const MOCK_FAIL_IDS = new Set(["ps-3", "ps-7"]);
+
+  const [pendingSkills, setPendingSkills] = useState<PendingSkill[]>([
+    { id: "ps-1", name: "code-interpreter 1.2.0", status: "pending" },
+    { id: "ps-2", name: "image-recognition 0.9.1", status: "pending" },
+    { id: "ps-3", name: "data-analysis 2.0.0", status: "pending" },
+    { id: "ps-4", name: "text-to-speech 1.0.0", status: "pending" },
+    { id: "ps-5", name: "pdf-parser 1.1.0", status: "pending" },
+    { id: "ps-6", name: "excel-reader 2.0.0", status: "pending" },
+    { id: "ps-7", name: "video-transcribe 0.7.0", status: "pending" },
+    { id: "ps-8", name: "sentiment-analysis 1.0.0", status: "pending" },
+    { id: "ps-9", name: "ocr-scanner 1.3.0", status: "pending" },
+    { id: "ps-10", name: "sql-query 2.1.0", status: "pending" },
+    { id: "ps-11", name: "web-scraper 0.6.0", status: "pending" },
+    { id: "ps-12", name: "chart-generator 1.0.0", status: "pending" },
+  ]);
+
+  // 并行安装：页面加载后所有 pending 技能同时变为 installing，同时出结果
+  useEffect(() => {
+    const pendingList = pendingSkills.filter(s => s.status === "pending");
+    if (pendingList.length === 0) return;
+    // 所有 pending 同时变为 installing
+    setPendingSkills(prev =>
+      prev.map(s => s.status === "pending" ? { ...s, status: "installing" as PendingSkillStatus } : s)
+    );
+  }, []);
+
+  // 监听 installing 技能，3秒后一次性批量更新所有结果
+  useEffect(() => {
+    const installingSkills = pendingSkills.filter(s => s.status === "installing");
+    if (installingSkills.length === 0) return;
+    const timer = setTimeout(() => {
+      const successSkills = installingSkills.filter(s => !MOCK_FAIL_IDS.has(s.id));
+      const failedIds = new Set(installingSkills.filter(s => MOCK_FAIL_IDS.has(s.id)).map(s => s.id));
+      // 一次性更新 pendingSkills：删除成功的，失败的标记 failed
+      setPendingSkills(prev =>
+        prev
+          .filter(s => !successSkills.some(ss => ss.id === s.id))
+          .map(s => failedIds.has(s.id) ? { ...s, status: "failed" as PendingSkillStatus } : s)
+      );
+      // 一次性批量添加到已安装列表
+      if (successSkills.length > 0) {
+        setInstalledSkills(prev => [...successSkills.map(s => s.name), ...prev]);
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [pendingSkills.filter(s => s.status === "installing").map(s => s.id).join()]);
+
+  // 全部重试：所有失败技能同时重新安装
+  const handleRetryAllFailed = () => {
+    const failedIds = pendingSkills.filter(s => s.status === "failed").map(s => s.id);
+    failedIds.forEach(id => MOCK_FAIL_IDS.delete(id));
+    setPendingSkills(prev =>
+      prev.map(s => s.status === "failed" ? { ...s, status: "installing" as PendingSkillStatus } : s)
+    );
+  };
+
+  // 全部删除：移除所有失败技能
+  const handleDeleteAllFailed = () => {
+    setPendingSkills(prev => prev.filter(s => s.status !== "failed"));
+  };
 
   // 合并内置通道 + 可见的自定义通道（动态构建 ChannelConfig）
   const allChannelOptions: ChannelConfig[] = [
@@ -968,11 +1067,40 @@ export default function OpenClawDetail() {
           </div>
         </div>
 
-        {/* Three-column layout - unified height, upper fixed / lower scrollable */}
-        <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
+        {/* Left tab nav + content area */}
+        <div className="flex gap-5" style={{ alignItems: "start" }}>
+
+          {/* ===== Left vertical tab nav ===== */}
+          <div className="flex flex-col gap-1 flex-shrink-0 w-36">
+            {([
+              { id: "basic", label: "基础配置" },
+              { id: "memory", label: "记忆管理" },
+              { id: "files", label: "文件管理" },
+              { id: "doctor", label: "龙虾医生" },
+            ] as { id: string; label: string }[]).map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveDetailTab(tab.id)}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors border-l-2 ${
+                  activeDetailTab === tab.id
+                    ? "border-blue-600 text-gray-900 font-semibold"
+                    : "border-transparent text-gray-500 font-normal hover:text-gray-800"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ===== Tab content ===== */}
+          <div className="flex-1 min-w-0">
+
+          {/* 基础配置 tab */}
+          {activeDetailTab === "basic" && (
+            <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "476px" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1121,7 +1249,7 @@ export default function OpenClawDetail() {
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "476px" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1240,7 +1368,7 @@ export default function OpenClawDetail() {
           </div>
 
           {/* ===== Skills Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "476px" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -1262,9 +1390,30 @@ export default function OpenClawDetail() {
                 />
               </div>
 
-              <Button className="w-full text-sm" variant="outline" onClick={() => toast.info("功能开发中")}>
-                安装技能
-              </Button>
+              {(() => {
+                const hasQueueing = pendingSkills.some(s => s.status === "installing" || s.status === "pending");
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="w-full block" tabIndex={hasQueueing ? 0 : -1}>
+                        <Button
+                          className="w-full text-sm"
+                          variant="outline"
+                          disabled={hasQueueing}
+                          onClick={hasQueueing ? undefined : () => toast.info("功能开发中")}
+                        >
+                          安装技能
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {hasQueueing && (
+                      <TooltipContent side="top" className="text-xs max-w-[220px] text-justify">
+                        当前有技能正在安装队列中，请等待安装完成后再添加新技能，以免影响 OpenClaw 的正常运行。
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                );
+              })()}
               
               {/* 不支持搜索时的提示信息 */}
               <div className="flex items-start gap-3 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
@@ -1279,11 +1428,13 @@ export default function OpenClawDetail() {
                 </div>
               </div>
             </div>
-            {/* Lower: installed skills - scrollable */}
-            <div className="px-5 pb-5 overflow-y-auto flex-1">
-              <div className="pt-2 border-t border-gray-50">
-                <p className="text-xs text-gray-400 mb-2">已安装技能</p>
-                <div className="space-y-1">
+            {/* Lower: two scrollable sections */}
+            <div className="px-5 pb-5 flex flex-col flex-1 min-h-0 gap-3">
+
+              {/* 已安装技能 - scrollable */}
+              <div className="flex flex-col flex-1 min-h-0 pt-2 border-t border-gray-50">
+                <p className="text-xs text-gray-400 mb-2 flex-shrink-0">已安装技能（{skillSearch ? filteredSkills.length : installedSkills.length}）</p>
+                <div className="overflow-y-auto flex-1 space-y-1">
                   {(skillSearch ? filteredSkills : installedSkills).map((skill) => (
                     <div key={skill}
                       className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -1295,16 +1446,98 @@ export default function OpenClawDetail() {
                   )}
                 </div>
               </div>
+
+              {/* 待安装技能 - scrollable */}
+              {pendingSkills.length > 0 && (
+                <div className="flex flex-col flex-1 min-h-0 pt-2 border-t border-gray-50">
+                  <div className="flex items-center gap-1 mb-2 flex-shrink-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default flex items-center">
+                          <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-[220px] text-justify">
+                        待安装技能通常为管理员为您预配置的初始技能，安装过程不影响正常对话。只要模型与通道配置完毕，即可随时开始与 OpenClaw 对话。
+                      </TooltipContent>
+                    </Tooltip>
+                    <p className="text-xs text-gray-400">待安装技能（{pendingSkills.length}）</p>
+                    {pendingSkills.some(s => s.status === "failed") && (
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={handleRetryAllFailed}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          重试
+                        </button>
+                        <button
+                          onClick={handleDeleteAllFailed}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          删除
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto flex-1 space-y-1">
+                    {pendingSkills.map((skill) => (
+                      <div key={skill.id}
+                        className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <span className="text-sm text-gray-700 truncate flex-1 mr-2">{skill.name}</span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          {skill.status === "installing" && (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                              <span className="text-xs text-blue-500">安装中</span>
+                            </>
+                          )}
+                          {skill.status === "pending" && (
+                            <span className="text-xs text-gray-400">待安装</span>
+                          )}
+                          {skill.status === "failed" && (
+                            <>
+                              <XCircle className="w-3.5 h-3.5 text-red-500" />
+                              <span className="text-xs text-red-500">安装失败</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 
-          {/* ===== Memory Column ===== */}
-          <MemoryCard
-            clawId={clawId}
-            clawName={clawName}
-            onNavigateToAdmin={() => window.location.href = "/admin/memory-management"}
-          />
-        </div>
+            </div>
+          )}{/* end basic tab */}
+
+          {/* 记忆管理 tab */}
+          {activeDetailTab === "memory" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">记忆管理功能即将上线</p>
+            </div>
+          )}
+
+          {/* 文件管理 tab */}
+          {activeDetailTab === "files" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">文件管理功能即将上线</p>
+            </div>
+          )}
+
+          {/* 龙虾医生 tab */}
+          {activeDetailTab === "doctor" && (
+            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <p className="text-gray-400 text-sm">龙虾医生功能即将上线</p>
+            </div>
+          )}
+
+          </div>{/* end tab content */}
+        </div>{/* end flex outer */}
       </div>
 
       {/* ===== 飞书授权弹窗（三阶段） ===== */}

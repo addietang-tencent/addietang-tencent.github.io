@@ -45,7 +45,7 @@ export const ProVersionCard: React.FC = () => {
           <h2 className="text-[17px] font-semibold text-[#1a1a2e]">
             Memory Pro 版
           </h2>
-          <span className="text-xs text-[#007AFF] font-medium">由腾讯云数据库 AI 服务（TDAI）提供</span>
+          <span className="text-xs text-[#007AFF] font-medium">由腾讯云数据库 Agent Memory 服务提供</span>
         </div>
         <p className="text-[13.5px] text-[#1a1a2e] font-semibold mb-2">
           基于腾讯云向量数据库的企业级记忆服务

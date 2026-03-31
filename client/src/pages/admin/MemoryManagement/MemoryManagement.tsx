@@ -22,7 +22,7 @@ export const MemoryManagement: React.FC = () => {
           记忆管理
         </h1>
         <p className="text-base text-[#6b7280] leading-relaxed">
-          让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好
+          让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持。
         </p>
       </div>
 

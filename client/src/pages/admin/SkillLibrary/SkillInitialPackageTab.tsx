@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/dialog';
 import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
-  CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles
+  CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles,
+  Search, RefreshCw
 } from 'lucide-react';
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
@@ -154,7 +155,9 @@ interface AddEnterpriseSkillDialogProps {
 
 function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: AddEnterpriseSkillDialogProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('1');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const toggleSkill = (skillId: string) => {
     setSelectedIds(prev =>
@@ -176,16 +179,30 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
     });
     onConfirm(newSkills);
     setSelectedIds([]);
-    setActiveCategory('1');
+    setActiveCategory('all');
+    setSearchQuery('');
   };
 
   const handleCancel = () => {
     setSelectedIds([]);
-    setActiveCategory('1');
+    setActiveCategory('all');
+    setSearchQuery('');
     onCancel();
   };
 
-  const skillsByCategory = MOCK_SKILLS.filter(s => s.categories.includes(activeCategory));
+  const handleRefresh = () => {
+    setRefreshKey(k => k + 1);
+    setSearchQuery('');
+    setActiveCategory('all');
+    setSelectedIds([]);
+  };
+
+  const filteredSkills = MOCK_SKILLS.filter(s => {
+    const matchCategory = activeCategory === 'all' || s.categories.includes(activeCategory);
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = q === '' || s.name.toLowerCase().includes(q) || (s.description ?? '').toLowerCase().includes(q);
+    return matchCategory && matchSearch;
+  });
 
   const renderSkillCard = (skill: typeof MOCK_SKILLS[0]) => {
     const isAlreadyAdded = existingSkillIds.includes(skill.id);
@@ -221,58 +238,72 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-1 overflow-hidden">
-          {/* 左侧 Tab */}
-          <Tabs defaultValue="all" className="flex flex-col w-full overflow-hidden">
-            <div className="px-5 pt-3 shrink-0">
-              <TabsList className="mb-3">
-                <TabsTrigger value="all">全部 Skill</TabsTrigger>
-                <TabsTrigger value="category">按分类</TabsTrigger>
-              </TabsList>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* 搜索框 + 刷新按钮 */}
+          <div className="px-5 pt-3 pb-2 shrink-0 flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索技能名称或描述..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+              />
             </div>
+            <button
+              onClick={handleRefresh}
+              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              title="刷新"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
 
-            {/* 全部 Skill */}
-            <TabsContent value="all" className="flex-1 overflow-y-auto px-5 pb-3">
+          {/* 分类标签 */}
+          <div className="px-5 pb-3 shrink-0 flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                activeCategory === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              全部
+            </button>
+            {DEFAULT_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  activeCategory === cat.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* 技能卡片列表 */}
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            {filteredSkills.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
-                {MOCK_SKILLS.map(skill => renderSkillCard(skill))}
+                {filteredSkills.map(skill => renderSkillCard(skill))}
               </div>
-            </TabsContent>
-
-            {/* 按分类 */}
-            <TabsContent value="category" className="flex-1 overflow-y-auto px-5 pb-3">
-              {/* 分类标签 */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {DEFAULT_CATEGORIES.map(cat => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      activeCategory === cat.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">暂无匹配的技能</p>
               </div>
-              {/* 技能卡片 */}
-              {skillsByCategory.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {skillsByCategory.map(skill => renderSkillCard(skill))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-gray-400">
-                  <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">该分类下暂无技能</p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </div>
         <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
           <Button variant="outline" onClick={handleCancel}>取消</Button>
@@ -758,15 +789,11 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
   return (
     <div className="space-y-4">
       {/* 顶部操作栏 */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <h3 className="text-base font-bold text-gray-900 shrink-0">初始技能包列表</h3>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-xs text-blue-600 min-w-0">
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">由腾讯云存储 Agent Bucket 提供服务，ClawPro 用户独享 50G + 50G 专属免费空间</span>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-medium text-gray-700">初始技能包列表</h3>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5 shrink-0" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
+        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
           <Plus className="w-4 h-4" />
           新建
         </Button>

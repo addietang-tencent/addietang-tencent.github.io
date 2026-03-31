@@ -104,12 +104,19 @@
   }
   html {
     overflow-y: scroll; /* 强制滚动条始终占位，防止 Tab 切换时页面宽度抖动 */
+    scrollbar-gutter: stable; /* 为滚动条预留空间，防止内容跳动 */
   }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  /* 防止弹窗打开时页面晃动：确保 body 被锁定滚动时保持滚动条占位 */
+  body[data-scroll-locked] {
+    overflow: hidden !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

@@ -38,9 +38,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, AlertTriangle, Info
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus
 } from "lucide-react";
-import { MOCK_OPENCLAW_LIST } from "@/lib/mockData";
+import { MOCK_OPENCLAW_LIST, MOCK_ROLES } from "@/lib/mockData";
+import type { Role } from "@/lib/mockData";
 
 // Cast mock data to correct type
 const MOCK_OPENCLAW_LIST_TYPED = MOCK_OPENCLAW_LIST as OpenClawItem[];
@@ -62,6 +63,7 @@ interface OpenClawItem {
   channels: any[];
   skills: any[];
   op?: string; // 操作标记：restart, reinstall
+  roleName?: string; // 角色名称
 }
 
 interface Notification {
@@ -232,6 +234,11 @@ export default function MyOpenClaw() {
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
 
+  // 角色选择
+  const [roleExpanded, setRoleExpanded] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const visibleRoles = MOCK_ROLES.filter((r) => r.visible);
+
   // 通知相关
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
@@ -243,6 +250,7 @@ export default function MyOpenClaw() {
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirmInput, setReinstallConfirmInput] = useState("");
+  const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ id: string; name: string; roleName: string } | null>(null);
 
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
   
@@ -330,9 +338,12 @@ export default function MyOpenClaw() {
       modelVersion: "",
       channels: [],
       skills: [],
+      roleName: selectedRole?.name ?? "通用助手",
     };
     setClaws([...claws, newClaw]);
     setNewName("");
+    setSelectedRole(null);
+    setRoleExpanded(false);
     setShowCreate(false);
     toast.success(`「${newClaw.name}」创建中...`);
   };
@@ -342,6 +353,12 @@ export default function MyOpenClaw() {
     setDeleteConfirm(null);
     setDeleteConfirmInput("");
     toast.success(`「${name}」已删除`);
+  };
+
+  const handleRemoveRole = (id: string, name: string) => {
+    setClaws(claws.map((c) => c.id === id ? { ...c, roleName: "通用助手" } : c));
+    setRemoveRoleConfirm(null);
+    toast.success(`「${name}」已移除角色，回退为通用助手`);
   };
 
   const handleRestart = (id: string, name: string) => {
@@ -559,10 +576,18 @@ export default function MyOpenClaw() {
                                 </>
                               )}
 
+                              {/* Remove Role */}
+                              {claw.roleName && claw.roleName !== "通用助手" && claw.status === "running" ? (
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRemoveRoleConfirm({ id: claw.id, name: claw.name, roleName: claw.roleName! }); }}>
+                                  <UserMinus className="w-4 h-4 mr-2 text-gray-500" />
+                                  移除角色
+                                </DropdownMenuItem>
+                              ) : null}
+
                               <DropdownMenuSeparator />
 
                               {/* Delete */}
-                              {claw.status === "pending" ? (
+                              {["creating", "loading", "pending"].includes(claw.status) ? (
                                 <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed text-red-600">
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   删除
@@ -585,7 +610,15 @@ export default function MyOpenClaw() {
                       <h3 className={`font-semibold text-base mb-0.5 transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
-                      <p className={`text-xs mb-0.5 transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>{claw.instanceId}</p>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        {claw.roleName && (
+                          <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                            style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
+                            {claw.roleName}
+                          </span>
+                        )}
+                        <p className={`text-xs transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>{claw.instanceId}</p>
+                      </div>
                       <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>创建于 {claw.createdAt}</p>
                     </div>
 
@@ -686,37 +719,17 @@ export default function MyOpenClaw() {
 
         {/* Restart Confirm Dialog */}
         <Dialog open={!!restartConfirm} onOpenChange={(open) => { if (!open) setRestartConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setRestartConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2">
-                <RotateCcw className="w-4 h-4 text-amber-500" />
-                确认重启
-              </DialogTitle>
+              <DialogTitle className="text-base font-bold text-gray-900">确认重启</DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                确定要重启「<span className="font-medium text-gray-900">{restartConfirm?.name}</span>」吗？
-              </p>
-              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• 重启期间助手将短暂不可用</li>
-                    <li>• 期间 IM 消息无法回复</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <DialogFooter className="flex justify-end gap-2">
+            <p className="text-sm text-gray-600 leading-relaxed">
+              重启后该 OpenClaw「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
+            </p>
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setRestartConfirm(null)}>取消</Button>
               <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-orange-500 hover:bg-orange-600 text-white"
                 onClick={() => handleRestart(restartConfirm!.id, restartConfirm!.name)}
               >
                 确认重启
@@ -727,50 +740,26 @@ export default function MyOpenClaw() {
 
         {/* Reinstall Confirm Dialog */}
         <Dialog open={!!reinstallConfirm} onOpenChange={(open) => { if (!open) setReinstallConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setReinstallConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2">
-                <HardDriveDownload className="w-4 h-4 text-amber-500" />
-                确认重新安装
-              </DialogTitle>
+              <DialogTitle className="text-base font-bold text-gray-900">确认重新安装</DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                确定要重新安装「<span className="font-medium text-gray-900">{reinstallConfirm?.name}</span>」的 OpenClaw 吗？
-              </p>
-              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                <div className="flex gap-3">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• 将使用最新镜像版本重新安装 OpenClaw</li>
-                    <li>• 所有配置和数据将丢失，无法恢复</li>
-                    <li>• 安装完成后需要重新配置模型和通道</li>
-                  </ul>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="reinstall-confirm" className="text-xs text-gray-600">
-                  请输入「<span className="font-medium">重装</span>」以确认操作
-                </Label>
-                <Input
-                  id="reinstall-confirm"
-                  placeholder="输入「重装」"
-                  value={reinstallConfirmInput}
-                  onChange={(e) => setReinstallConfirmInput(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              重新安装后该 OpenClaw「{reinstallConfirm?.name}」的所有配置和数据将丢失且无法恢复，确认重新安装吗？
+            </p>
+            <div>
+              <label className="text-sm font-medium text-gray-700">请输入「重装」以确认</label>
+              <Input
+                placeholder="输入「重装」"
+                value={reinstallConfirmInput}
+                onChange={(e) => setReinstallConfirmInput(e.target.value)}
+                className="mt-2"
+              />
             </div>
-            <DialogFooter className="flex justify-end gap-2">
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
               <Button
-                className="bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50"
+                className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
                 disabled={reinstallConfirmInput !== "重装"}
                 onClick={() => handleReinstall(reinstallConfirm!.id, reinstallConfirm!.name)}
               >
@@ -782,63 +771,29 @@ export default function MyOpenClaw() {
 
         {/* Delete Confirm Dialog */}
         <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <DialogTitle className="flex items-center gap-2 text-red-600">
-                <Trash2 className="w-4 h-4" />
+              <DialogTitle className="text-base font-bold text-gray-900">
                 {deleteConfirm?.status === "createFail" ? "删除记录" : "确认删除"}
               </DialogTitle>
             </DialogHeader>
-            <div className="py-4 space-y-3">
-              <p className="text-sm text-gray-600">
-                {deleteConfirm?.status === "createFail"
-                  ? `确认删除「${deleteConfirm?.name}」的创建失败记录？`
-                  : `删除后「${deleteConfirm?.name}」将被立即彻底销毁，数据无法恢复。`}
-              </p>
-              <div className={`rounded-lg px-4 py-3 border ${deleteConfirm?.status === "createFail" ? "bg-blue-50 border-blue-200" : "bg-red-50 border-red-200"}`}>
-                <div className="flex gap-3">
-                  {deleteConfirm?.status === "createFail" ? (
-                    <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                  )}
-                  <ul className={`text-sm space-y-1 ${deleteConfirm?.status === "createFail" ? "text-blue-700" : "text-red-700"}`}>
-                    {deleteConfirm?.status === "createFail" ? (
-                      <>
-                        <li>• 底层实例将由平台自动回收</li>
-                        <li>• ClawPro 侧记录将被清除</li>
-                      </>
-                    ) : (
-                      <>
-                        <li>• 已配置的模型、通道和插件将全部清除</li>
-                        <li>• 此操作不可撤销</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {deleteConfirm?.status === "createFail"
+                ? `删除后该 OpenClaw「${deleteConfirm?.name}」的创建失败记录将被清除，确认删除吗？`
+                : `删除后该 OpenClaw「${deleteConfirm?.name}」将无法恢复，确认删除吗？`}
+            </p>
+            {deleteConfirm?.status === "running" && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">请输入「删除」以确认</label>
+                <Input
+                  placeholder="输入「删除」"
+                  value={deleteConfirmInput}
+                  onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                  className="mt-2"
+                />
               </div>
-              {deleteConfirm?.status !== "createFail" && deleteConfirm?.status === "running" && (
-                <div>
-                  <Label htmlFor="delete-confirm" className="text-xs text-gray-600">
-                    请输入「<span className="font-medium">删除</span>」以确认操作
-                  </Label>
-                  <Input
-                    id="delete-confirm"
-                    placeholder="输入「删除」"
-                    value={deleteConfirmInput}
-                    onChange={(e) => setDeleteConfirmInput(e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-              )}
-            </div>
-            <DialogFooter className="flex justify-end gap-2">
+            )}
+            <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
               <Button
                 className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
@@ -851,8 +806,35 @@ export default function MyOpenClaw() {
           </DialogContent>
         </Dialog>
 
+        {/* Remove Role Confirm Dialog */}
+        <Dialog open={!!removeRoleConfirm} onOpenChange={(open) => { if (!open) setRemoveRoleConfirm(null); }}>
+          <DialogContent className="sm:max-w-[360px]">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-gray-900">移除角色</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              确定要移除「{removeRoleConfirm?.name}」的角色「{removeRoleConfirm?.roleName}」吗？
+            </p>
+            <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-600 leading-relaxed">
+                移除角色不会删除已有的技能配置，OpenClaw 将回退为「通用助手」。
+              </p>
+            </div>
+            <DialogFooter className="gap-2 pt-2">
+              <Button variant="outline" onClick={() => setRemoveRoleConfirm(null)}>取消</Button>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={() => handleRemoveRole(removeRoleConfirm!.id, removeRoleConfirm!.name)}
+              >
+                确认移除
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Create Dialog */}
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setRoleExpanded(false); setSelectedRole(null); } }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -863,22 +845,117 @@ export default function MyOpenClaw() {
                 创建 OpenClaw
               </DialogTitle>
             </DialogHeader>
-            <div className="py-4">
-              <Label htmlFor="claw-name" className="text-sm font-medium text-gray-700">
-                OpenClaw 名称
-              </Label>
-              <Input
-                id="claw-name"
-                placeholder="例如：工作助手、代码助手..."
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="mt-2"
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                autoFocus
-              />
-              <p className="text-xs text-gray-400 mt-2">
-                创建后可在详细配置页中配置模型、通道和技能
-              </p>
+            <div className="py-4 space-y-4">
+              {/* Name Input */}
+              <div>
+                <Label htmlFor="claw-name" className="text-sm font-medium text-gray-700">
+                  OpenClaw 名称
+                </Label>
+                <Input
+                  id="claw-name"
+                  placeholder="例如：工作助手、代码助手..."
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="mt-2"
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                  autoFocus
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  创建后可在详细配置页中配置模型、通道和技能
+                </p>
+              </div>
+
+              {/* Role Selection - Collapsible Panel */}
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setRoleExpanded(!roleExpanded)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-medium text-gray-700">赋予角色身份</span>
+                    <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">可选</span>
+                  </div>
+                  {roleExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  )}
+                </button>
+
+                {roleExpanded && (
+                  <div className="border-t border-gray-50">
+                    {/* Fixed height container with scroll */}
+                    <div className="px-4 py-3 overflow-y-auto" style={{ maxHeight: "220px" }}>
+                      {/* Role Tags */}
+                      <div className="flex flex-wrap gap-2">
+                        {visibleRoles.map((role) => {
+                          const isSelected = selectedRole?.id === role.id;
+                          return (
+                            <button
+                              key={role.id}
+                              type="button"
+                              onClick={() => setSelectedRole(isSelected ? null : role)}
+                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                                isSelected
+                                  ? "text-white shadow-sm"
+                                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                              }`}
+                              style={isSelected ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
+                            >
+                              {role.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Hint when no role selected */}
+                      {!selectedRole && (
+                        <p className="text-xs text-gray-400 mt-3">
+                          默认赋予「通用助手」角色
+                        </p>
+                      )}
+
+                      {/* Role Detail - shown when a role is selected */}
+                      {selectedRole && (
+                        <div className="mt-3 rounded-lg overflow-hidden border border-blue-100"
+                          style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.03), rgba(88,86,214,0.03))" }}>
+                          <div className="px-3.5 py-3 space-y-3">
+                            {/* Skills */}
+                            <div>
+                              <p className="text-xs font-semibold text-blue-600 mb-2 flex items-center gap-1">
+                                <span className="w-1 h-1 rounded-full bg-blue-500 inline-block" />
+                                角色技能
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {selectedRole.skills.map((skill, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center text-xs px-2 py-1 rounded-md bg-white/80 text-gray-600 border border-gray-100"
+                                  >
+                                    {skill.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            {/* Soul */}
+                            <div>
+                              <p className="text-xs font-semibold text-blue-600 mb-1.5 flex items-center gap-1">
+                                <span className="w-1 h-1 rounded-full bg-blue-500 inline-block" />
+                                角色灵魂
+                              </p>
+                              <p className="text-sm text-gray-600 leading-relaxed">
+                                {selectedRole.soul}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowCreate(false)}>取消</Button>

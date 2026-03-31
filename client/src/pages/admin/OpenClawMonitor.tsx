@@ -34,7 +34,9 @@ import { toast } from "sonner";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
-  Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff
+  Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
+  Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
+  MessageCircle, RotateCw
 } from "lucide-react";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending";
@@ -48,15 +50,20 @@ interface Claw {
   status: ClawStatus;
 }
 
-const STATUS_CONFIG: Record<ClawStatus, { label: string; color: string; dotClass: string }> = {
-  creating:   { label: "创建中",   color: "text-blue-700",   dotClass: "bg-blue-500 animate-pulse" },
-  createFail: { label: "创建失败", color: "text-red-700",    dotClass: "bg-red-500" },
-  running:    { label: "运行中",   color: "text-green-700",  dotClass: "bg-green-500 animate-breathing" },
-  loading:    { label: "加载中",   color: "text-blue-700",   dotClass: "spinner-blue" },
-  loadFail:   { label: "加载失败", color: "text-red-700",    dotClass: "bg-red-500" },
-  shutdown:   { label: "已关机",   color: "text-gray-500",   dotClass: "bg-gray-400" },
-  maintaining: { label: "维护中",  color: "text-orange-700", dotClass: "bg-orange-500 animate-pulse" },
-  pending:    { label: "待处理",   color: "text-red-700",    dotClass: "bg-red-500" },
+const STATUS_CONFIG: Record<ClawStatus, {
+  label: string;
+  badgeClass: string;       // 复用 index.css 中的 badge-* class
+  dotColor: string;         // 小圆点颜色
+  spinning?: boolean;       // 是否用旋转圆圈替代实心圆点
+}> = {
+  creating:    { label: "创建中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
+  createFail:  { label: "创建失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500" },
+  running:     { label: "运行中",   badgeClass: "badge-running",  dotColor: "bg-green-500" },
+  loading:     { label: "加载中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
+  loadFail:    { label: "加载失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500" },
+  shutdown:    { label: "已关机",   badgeClass: "badge-shutdown", dotColor: "bg-gray-400" },
+  maintaining: { label: "维护中",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
+  pending:     { label: "待处理",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
 };
 
 const MOCK_CLAWS: Claw[] = [
@@ -104,6 +111,10 @@ export default function OpenClawMonitor() {
   const [reinstallTarget, setReinstallTarget] = useState<string | null>(null);
   const [reinstallInput, setReinstallInput] = useState("");
   const [deleteInput, setDeleteInput] = useState("");
+
+  // 详情抽屉
+  const [showDetailDrawer, setShowDetailDrawer] = useState(false);
+  const [drawerLoading, setDrawerLoading] = useState(false);
 
   // 监控抽屉
   const [showMonitorDrawer, setShowMonitorDrawer] = useState(false);
@@ -267,6 +278,41 @@ export default function OpenClawMonitor() {
     toast.success(`已删除 ${claw?.name}`);
   };
 
+  // 详情抽屉模拟数据
+  interface ClawDetail {
+    appliedModel: string;
+    appliedModelVersion: string;
+    connectedChannels: { name: string; bots: string[] }[];
+    installedSkills: string[];
+  }
+  const getClawDetail = (_clawId: string): ClawDetail => {
+    return {
+      appliedModel: "tencentcodingplan",
+      appliedModelVersion: "minimax-m2.5",
+      connectedChannels: [
+        { name: "飞书", bots: [] },
+      ],
+      installedSkills: [
+        "feishu-doc", "feishu-drive", "feishu-perm", "feishu-wiki",
+        "feishu-calendar", "feishu-message", "feishu-task",
+      ],
+    };
+  };
+
+  const handleOpenDrawer = (claw: Claw) => {
+    setSelectedClaw(claw);
+    setShowDetailDrawer(true);
+  };
+
+  const handleRefreshDrawer = () => {
+    if (!selectedClaw) return;
+    setDrawerLoading(true);
+    setTimeout(() => {
+      setDrawerLoading(false);
+      toast.success("信息已刷新");
+    }, 1500);
+  };
+
   const handleOpenMonitor = (claw: Claw) => {
     setSelectedClaw(claw);
     setShowMonitorDrawer(true);
@@ -326,40 +372,58 @@ export default function OpenClawMonitor() {
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
               activeCardFilter === "all"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
+                ? "border-blue-300 ring-1 ring-blue-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="text-xs text-gray-500 mb-1">总数</div>
-            <div className="text-2xl font-bold text-blue-600">{totalCount}</div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <Layers className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">总数</p>
+            </div>
+            <p className="text-xl font-bold text-gray-900">{totalCount}</p>
           </button>
 
           {/* 运行中 */}
           <button
             onClick={() => handleCardFilterChange("running")}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
               activeCardFilter === "running"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
+                ? "border-green-300 ring-1 ring-green-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="text-xs text-gray-500 mb-1">运行中</div>
-            <div className="text-2xl font-bold text-green-600">{runningCount}</div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">运行中</p>
+            </div>
+            <p className="text-xl font-bold text-gray-900">{runningCount}</p>
           </button>
 
           {/* 已关机 */}
           <button
             onClick={() => handleCardFilterChange("shutdown")}
-            className={`p-4 rounded-lg border-2 transition-all ${
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
               activeCardFilter === "shutdown"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 bg-white hover:border-gray-300"
+                ? "border-gray-400 ring-1 ring-gray-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="text-xs text-gray-500 mb-1">已关机</div>
-            <div className="text-2xl font-bold text-gray-500">{shutdownCount}</div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
+                <PowerOff className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">已关机</p>
+            </div>
+            <p className="text-xl font-bold text-gray-900">{shutdownCount}</p>
           </button>
 
           {/* 其他 */}
@@ -367,23 +431,40 @@ export default function OpenClawMonitor() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
-                className={`p-4 rounded-lg border-2 transition-all ${
+                className={`bg-white rounded-2xl border p-4 transition-all text-left ${
                   activeCardFilter === "other"
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
+                    ? "border-orange-300 ring-1 ring-orange-200"
+                    : "border-gray-100 hover:border-gray-200"
                 }`}
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
               >
-                <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                  其他
-                  <HelpCircle className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
+                    <HelpCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <p className="text-xs text-gray-400">其他</p>
                 </div>
-                <div className="text-2xl font-bold text-orange-600">{otherCount}</div>
+                <p className="text-xl font-bold text-gray-900">{otherCount}</p>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs max-w-xs">
-              <div className="space-y-1">
-                <div>⚠ 需关注：创建失败 · 加载失败 · 维护中 · 待处理</div>
-                <div>◎ 处理中：创建中 · 加载中</div>
+            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-gray-100 shadow-lg" style={{ color: 'inherit' }}>
+              <div className="space-y-2.5">
+                <div>
+                  <p className="text-xs font-semibold text-orange-500 mb-1.5">⚠ 需关注</p>
+                  <div className="flex gap-1">
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-red-50 text-red-700 whitespace-nowrap">创建失败</span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-red-50 text-red-700 whitespace-nowrap">加载失败</span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-orange-50 text-orange-700 whitespace-nowrap">维护中</span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-orange-50 text-orange-700 whitespace-nowrap">待处理</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-1.5">◎ 处理中</p>
+                  <div className="flex gap-1">
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 whitespace-nowrap">创建中</span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 whitespace-nowrap">加载中</span>
+                  </div>
+                </div>
               </div>
             </TooltipContent>
           </Tooltip>
@@ -499,22 +580,21 @@ export default function OpenClawMonitor() {
               ) : (
                 paginated.map((claw) => {
                   const isRunning = claw.status === "running";
-                  const isGrayed = ["createFail", "shutdown", "loadFail", "pending"].includes(claw.status);
                   const statusConfig = STATUS_CONFIG[claw.status];
 
                   return (
                     <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
                       {/* 名称/ID */}
-                      <td className={`px-6 py-4 ${isGrayed ? "opacity-50" : ""}`}>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2.5">
-                          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 ${isGrayed ? "opacity-50" : ""}`}>
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
                           <div>
-                            <div className={`text-sm font-medium ${isGrayed ? "text-gray-400" : "text-gray-900"}`}>{claw.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
                             <button
-                              onClick={() => handleOpenMonitor(claw)}
-                              className={`text-xs font-mono cursor-pointer ${isGrayed ? "text-gray-300" : "text-blue-500 hover:text-blue-700 hover:underline"}`}
+                              onClick={() => handleOpenDrawer(claw)}
+                              className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
                             >
                               {claw.instanceId}
                             </button>
@@ -523,19 +603,15 @@ export default function OpenClawMonitor() {
                       </td>
                       {/* 状态列 */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          {claw.status === "loading" ? (
-                            <div className="w-2 h-2 rounded-full border-2 border-blue-400 border-t-transparent animate-spin"></div>
-                          ) : (
-                            <div className={`w-2 h-2 rounded-full ${statusConfig.dotClass}`}></div>
-                          )}
-                          <span className={`text-sm ${statusConfig.color}`}>{statusConfig.label}</span>
-                        </div>
+                        <span className={`${statusConfig.badgeClass} text-xs`}>
+                          <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
+                          {statusConfig.label}
+                        </span>
                       </td>
                       {/* 创建人 */}
-                      <td className={`px-6 py-4 text-sm ${isGrayed ? "text-gray-300" : "text-gray-500"}`}>{claw.creator}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
                       {/* 创建时间 */}
-                      <td className={`px-6 py-4 text-sm whitespace-nowrap ${isGrayed ? "text-gray-300" : "text-gray-500"}`}>{claw.createTime}</td>
+                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 操作 */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 h-5">
@@ -587,13 +663,27 @@ export default function OpenClawMonitor() {
                           )}
 
                           {/* 删除 */}
-                          <button
-                            className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none"
-                            onClick={() => handleDeleteClick(claw)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
-                            删除
-                          </button>
+                          {["creating", "loading", "pending"].includes(claw.status) ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none">
+                                  <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+                                  删除
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                当前状态不可删除
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <button
+                              className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none"
+                              onClick={() => handleDeleteClick(claw)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+                              删除
+                            </button>
+                          )}
 
                           {/* 更多操作 */}
                           <DropdownMenu>
@@ -691,44 +781,35 @@ export default function OpenClawMonitor() {
 
       {/* 关机/开机确认弹窗 */}
       <Dialog open={!!shutdownTarget} onOpenChange={() => setShutdownTarget(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
-            <DialogTitle>确认操作</DialogTitle>
-            <DialogDescription>
-              {claws.find(c => c.id === shutdownTarget)?.status === "running" ? "关机后该 OpenClaw 将无法使用，直到重新启动。" : "开机后该 OpenClaw 将重新运行。"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 p-3 bg-orange-50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-orange-800">
-              确定要{claws.find(c => c.id === shutdownTarget)?.status === "running" ? "关闭" : "启动"} <strong>{claws.find(c => c.id === shutdownTarget)?.name}</strong> 吗？
-            </p>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
-            <Button onClick={confirmShutdown} className="bg-orange-600 hover:bg-orange-700 text-white">
+            <DialogTitle className="text-base font-bold text-gray-900">
               {claws.find(c => c.id === shutdownTarget)?.status === "running" ? "确认关机" : "确认开机"}
-            </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {claws.find(c => c.id === shutdownTarget)?.status === "running"
+              ? <>关机后该 OpenClaw「{claws.find(c => c.id === shutdownTarget)?.name}」将无法使用，直到重新开机。确认关机吗？</>
+              : <>开机后该 OpenClaw「{claws.find(c => c.id === shutdownTarget)?.name}」将重新运行。确认开机吗？</>}
+          </p>
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
+            {claws.find(c => c.id === shutdownTarget)?.status === "running"
+              ? <Button onClick={confirmShutdown} className="bg-orange-500 hover:bg-orange-600 text-white">确认关机</Button>
+              : <Button onClick={confirmShutdown} className="bg-green-600 hover:bg-green-700 text-white">确认开机</Button>}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* 重新安装确认弹窗 */}
       <Dialog open={!!reinstallTarget} onOpenChange={() => setReinstallTarget(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
-            <DialogTitle>重新安装 OpenClaw</DialogTitle>
-            <DialogDescription>
-              使用最新镜像版本重新安装 OpenClaw
-            </DialogDescription>
+            <DialogTitle className="text-base font-bold text-gray-900">确认重新安装</DialogTitle>
           </DialogHeader>
-          <div className="flex gap-3 p-3 bg-orange-50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-orange-800 space-y-1">
-              <p>· 所有配置和数据将丢失，无法恢复</p>
-              <p>· 安装完成后需要重新配置模型和通道</p>
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            重新安装后该 OpenClaw「{claws.find(c => c.id === reinstallTarget)?.name}」的所有配置和数据将丢失且无法恢复，确认重新安装吗？
+          </p>
           <div>
             <label className="text-sm font-medium text-gray-700">请输入「重装」以确认</label>
             <Input
@@ -738,12 +819,12 @@ export default function OpenClawMonitor() {
               className="mt-2"
             />
           </div>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setReinstallTarget(null)}>取消</Button>
             <Button
               onClick={confirmReinstall}
               disabled={reinstallInput !== "重装"}
-              className="bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50"
+              className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
             >
               确认重新安装
             </Button>
@@ -753,20 +834,13 @@ export default function OpenClawMonitor() {
 
       {/* 删除确认弹窗 */}
       <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
-            <DialogDescription>
-              删除后「{claws.find(c => c.id === deleteTarget)?.name}」将被立即彻底销毁，数据无法恢复。
-            </DialogDescription>
+            <DialogTitle className="text-base font-bold text-gray-900">确认删除</DialogTitle>
           </DialogHeader>
-          <div className="flex gap-3 p-3 bg-red-50 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-red-800 space-y-1">
-              <p>· 已配置的模型、通道和插件将全部清除</p>
-              <p>· 此操作不可撤销</p>
-            </div>
-          </div>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            删除后该 OpenClaw「{claws.find(c => c.id === deleteTarget)?.name}」将无法恢复，确认删除吗？
+          </p>
           {claws.find(c => c.id === deleteTarget)?.status === "running" && (
             <div>
               <label className="text-sm font-medium text-gray-700">请输入「删除」以确认</label>
@@ -778,7 +852,7 @@ export default function OpenClawMonitor() {
               />
             </div>
           )}
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
             <Button
               onClick={confirmDelete}
@@ -790,6 +864,96 @@ export default function OpenClawMonitor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* OpenClaw 详情抽屉 */}
+      {showDetailDrawer && selectedClaw && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="flex-1 bg-black/20"
+            onClick={() => setShowDetailDrawer(false)}
+          />
+          <div className="w-[593px] bg-white shadow-lg flex flex-col">
+            {/* 抽屉头 */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+              <h2 className="text-lg font-semibold text-gray-900">OpenClaw 详情</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={handleRefreshDrawer}
+                  disabled={drawerLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${drawerLoading ? "animate-spin" : ""}`} />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setShowDetailDrawer(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            {/* 抽屉内容 - 灰色背景 */}
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              <div className="p-6 space-y-5">
+                {/* 名称/ID 部分 */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Bot className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-bold text-gray-900 leading-tight">{selectedClaw.name}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-400 font-mono">{selectedClaw.instanceId}</span>
+                      <button
+                        className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-0.5 whitespace-nowrap"
+                        onClick={() => window.open(`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`, "_blank")}
+                      >
+                        去腾讯云控制台管理
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {/* 已应用模型 */}
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">已应用模型</div>
+                  <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200">
+                    <div className="text-sm font-semibold text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
+                    <div className="text-xs text-gray-400 mt-1">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
+                  </div>
+                </div>
+                {/* 已接入通道 */}
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
+                  <div className="space-y-2">
+                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => (
+                      <div key={channel.name} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center gap-3">
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                        <span className="text-sm font-semibold text-gray-900">{channel.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* 已安装技能 */}
+                <div>
+                  <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</div>
+                  <div className="space-y-2">
+                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
+                      <div key={skill} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 text-sm text-gray-800">
+                        {skill}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (
@@ -813,21 +977,27 @@ export default function OpenClawMonitor() {
               {/* Tokens 分析区 */}
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 mb-4">Tokens 分析</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">输入 Tokens</div>
-                    <div className="text-lg font-bold text-gray-900">1,234</div>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">输出 Tokens</div>
-                    <div className="text-lg font-bold text-gray-900">5,678</div>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <div className="text-xs text-gray-500 mb-1">总 Tokens</div>
-                    <div className="text-lg font-bold text-gray-900">6,912</div>
-                  </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "输入 Tokens", value: "1,234", icon: ArrowUp,    color: "from-indigo-500 to-indigo-600" },
+                    { label: "输出 Tokens", value: "5,678", icon: ArrowDown,   color: "from-purple-500 to-purple-600" },
+                    { label: "总 Tokens",   value: "6,912", icon: Zap,         color: "from-blue-600 to-purple-600" },
+                  ].map((stat) => (
+                    <div key={stat.label}
+                      className="bg-white rounded-2xl border border-gray-100 p-4"
+                      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                          <stat.icon className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <p className="text-xs text-gray-400">{stat.label}</p>
+                      </div>
+                      <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+                    </div>
+                  ))}
                 </div>
-                <button 
+                <button
                   onClick={() => setLocation('/admin/tokens-monitor')}
                   className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
                 >
@@ -835,56 +1005,76 @@ export default function OpenClawMonitor() {
                 </button>
               </div>
 
+              {/* 分隔线 */}
+              {clsEnabled && <div className="border-t border-gray-100" />}
+
               {/* 会话记录区 - 仅当 CLS 日志服务开启时显示 */}
               {clsEnabled && (
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 mb-4">会话记录</h3>
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-500 mb-1">总会话数</div>
-                      <div className="text-lg font-bold text-gray-900">42</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="text-xs text-gray-500 mb-1">平均轮次</div>
-                      <div className="text-lg font-bold text-gray-900">8.5</div>
-                    </div>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { label: "总会话数", value: "42",  icon: MessageCircle, color: "from-blue-500 to-blue-600" },
+                      { label: "平均轮次", value: "8.5", icon: RotateCw,     color: "from-cyan-500 to-cyan-600" },
+                    ].map((stat) => (
+                      <div key={stat.label}
+                        className="bg-white rounded-2xl border border-gray-100 p-4"
+                        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                            <stat.icon className="w-3.5 h-3.5 text-white" />
+                          </div>
+                          <p className="text-xs text-gray-400">{stat.label}</p>
+                        </div>
+                        <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+                      </div>
+                    ))}
                   </div>
-                  
+
                   {/* 会话摘要表格 */}
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                          <th className="px-4 py-3 text-left font-medium text-gray-700">会话</th>
-                          <th className="px-4 py-3 text-left font-medium text-gray-700">类型</th>
-                          <th className="px-4 py-3 text-left font-medium text-gray-700">模型</th>
-                          <th className="px-4 py-3 text-left font-medium text-gray-700">最新时间</th>
+                  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+                    style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                  >
+                    <table className="w-full text-sm table-fixed">
+                      <colgroup>
+                        <col style={{ width: '30%' }} />
+                        <col style={{ width: '18%' }} />
+                        <col style={{ width: '28%' }} />
+                        <col style={{ width: '24%' }} />
+                      </colgroup>
+                      <thead>
+                        <tr className="border-b border-gray-50 bg-gray-50/50">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">最新时间</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-900">c3b2ac3c</td>
-                          <td className="px-4 py-3 text-gray-600">Feishu Dm</td>
-                          <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
-                          <td className="px-4 py-3 text-gray-600">2026-03-09 17:49</td>
+                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                          <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">c3b2ac3c</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">Feishu Dm</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">2026-03-09 17:49</td>
                         </tr>
-                        <tr className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-900">81c87c7b</td>
-                          <td className="px-4 py-3 text-gray-600">QQ Dm</td>
-                          <td className="px-4 py-3 text-gray-600">hunyuan-turbos-latest</td>
-                          <td className="px-4 py-3 text-gray-600">2026-03-09 10:07</td>
+                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                          <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">81c87c7b</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">QQ Dm</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">2026-03-09 10:07</td>
                         </tr>
-                        <tr className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-900">267e462d</td>
-                          <td className="px-4 py-3 text-gray-600">CLI</td>
-                          <td className="px-4 py-3 text-gray-600">deepseek-v3.2</td>
-                          <td className="px-4 py-3 text-gray-600">2026-03-08 12:54</td>
+                        <tr className="hover:bg-gray-50/60 transition-colors">
+                          <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">267e462d</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">CLI</td>
+                          <td className="px-4 py-3 text-gray-600 text-xs truncate">deepseek-v3.2</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">2026-03-08 12:54</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={() => setLocation('/admin/session-management')}
                     className="mt-4 text-sm text-blue-500 hover:text-blue-700 flex items-center gap-1"
                   >

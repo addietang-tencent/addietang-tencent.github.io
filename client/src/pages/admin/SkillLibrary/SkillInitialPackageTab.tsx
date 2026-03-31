@@ -523,7 +523,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="font-semibold text-gray-900">{pkg.name}</h2>
+              <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
               {pkg.isActive && (
                 <span className="badge-running text-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -791,7 +791,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                 {/* 信息 */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
+                    <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     <span className="flex items-center gap-1">

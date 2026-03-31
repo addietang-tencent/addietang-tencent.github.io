@@ -105,6 +105,8 @@ import {
   type CustomChannel as AdminCustomChannel,
   loadVisibleCustomChannels,
   onCustomChannelsChange,
+  loadBuiltinChannelVisibility,
+  onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
 
 // ─── 通道配置定义 ───────────────────────────────────────────────────────────────
@@ -127,6 +129,7 @@ type ChannelConfig = {
   wechatMode?: true; // 微信特殊处理
   adminCustomMode?: true; // 管控端配置的自定义通道
   adminCustomId?: string; // 对应的自定义通道 ID
+  builtinId?: string; // 对应管控端内置通道 ID，用于可见性过滤
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -164,6 +167,7 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
       { key: "token",          label: "企业微信应用的Token",             secret: false },
       { key: "encodingAesKey", label: "企业微信应用的Encoding AES Key", secret: true  },
     ],
+    builtinId: "wework-app",
   },
   {
     value: "feishu",
@@ -300,7 +304,7 @@ export default function OpenClawDetail() {
     if (provider) setSelectedModel(provider.versions[0].value);
   };
 
-  // ── 自定义通道（从管控端 localStorage 读取可见的自定义通道） ──
+  // 自定义通道（从管控端 localStorage 读取可见的自定义通道）
   const [visibleCustomChannels, setVisibleCustomChannels] = useState<AdminCustomChannel[]>(() => loadVisibleCustomChannels());
 
   useEffect(() => {
@@ -310,6 +314,17 @@ export default function OpenClawDetail() {
     return unsub;
   }, []);
 
+  // 内置通道可见性（从管控端 localStorage 读取）
+  const [builtinChannelVisibility, setBuiltinChannelVisibility] = useState<Record<string, boolean>>(
+    () => loadBuiltinChannelVisibility()
+  );
+
+  useEffect(() => {
+    const unsub = onBuiltinChannelVisibilityChange(() => {
+      setBuiltinChannelVisibility(loadBuiltinChannelVisibility());
+    });
+    return unsub;
+  }, []);
   // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("wework");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
@@ -742,6 +757,12 @@ export default function OpenClawDetail() {
   const handleDeleteAllFailed = () => {
     setPendingSkills(prev => prev.filter(s => s.status !== "failed"));
   };
+
+  // 内置通道按管控端开关过滤（没有 builtinId 的项目为全局内置，始终显示）
+  const visibleBuiltinChannels = CHANNEL_OPTIONS.filter((ch) => {
+    if (!ch.builtinId) return true;
+    return builtinChannelVisibility[ch.builtinId] !== false;
+  });
 
   // 合并内置通道 + 可见的自定义通道（动态构建 ChannelConfig）
   const allChannelOptions: ChannelConfig[] = [
@@ -1347,7 +1368,7 @@ export default function OpenClawDetail() {
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CHANNEL_OPTIONS.map((ch) => (
+                    {visibleBuiltinChannels.map((ch) => (
                       <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
                     ))}
                     {visibleCustomChannels.length > 0 && (

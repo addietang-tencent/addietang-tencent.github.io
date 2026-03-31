@@ -22,6 +22,9 @@ import {
   loadCustomChannels,
   saveCustomChannels,
   onCustomChannelsChange,
+  loadBuiltinChannelVisibility,
+  saveBuiltinChannelVisibility,
+  onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
 
 // ─── 图标组件 ────────────────────────────────────────────────────────────────────
@@ -31,6 +34,16 @@ function WeworkIcon() {
     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1EB955" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M8.5 10.5c-.83 0-1.5-.67-1.5-1.5S7.67 7.5 8.5 7.5 10 8.17 10 9s-.67 1.5-1.5 1.5zm7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.07-1.36C8.44 21.51 10.18 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.67 0-3.22-.49-4.53-1.33l-.32-.2-3.01.81.82-2.95-.21-.33A7.94 7.94 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
+      </svg>
+    </div>
+  );
+}
+
+function WeworkAppIcon() {
+  return (
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1EB955" }}>
+      <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
+        <path d="M9.5 6.5c-.83 0-1.5-.67-1.5-1.5S8.67 3.5 9.5 3.5 11 4.17 11 5s-.67 1.5-1.5 1.5zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 3.5 14.5 3.5 16 4.17 16 5s-.67 1.5-1.5 1.5zM12 1C5.93 1 1 5.93 1 12c0 2.05.55 3.97 1.52 5.62L1 23l5.52-1.5A10.94 10.94 0 0 0 12 23c6.07 0 11-4.93 11-11S18.07 1 12 1zm0 20c-1.84 0-3.56-.54-5-1.46l-.36-.22-3.28.88.9-3.22-.23-.37A8.96 8.96 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9zm4.5-6.5H16v-1h.5c.83 0 1.5-.67 1.5-1.5S17.33 10.5 16.5 10.5H16v-1h.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5zM8 10.5h-.5C6.12 10.5 5 11.62 5 13s1.12 2.5 2.5 2.5H8v-1h-.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5H8v-1zm1-1v5h1.5v-1.75h1V14H12v-1.25h1.5v1.75H15v-5h-1.5v1.75H12V10.5h-1.5V12.25H9V9.5H8z"/>
       </svg>
     </div>
   );
@@ -98,6 +111,7 @@ const CHANNEL_ICONS: Record<string, React.ReactNode> = {
   feishu: <FeishuIcon />,
   dingtalk: <DingtalkIcon />,
   wechat: <WechatIcon />,
+  "wework-app": <WeworkAppIcon />,
 };
 
 // ─── 内置通道列表 ─────────────────────────────────────────────────────────────────
@@ -106,6 +120,7 @@ const BUILTIN_CHANNELS = [
   { id: "wechat", name: "微信" },
   { id: "qq", name: "QQ" },
   { id: "wework", name: "企业微信" },
+  { id: "wework-app", name: "企业微信应用" },
   { id: "dingtalk", name: "钉钉" },
   { id: "feishu", name: "飞书" },
 ];
@@ -149,10 +164,10 @@ function emptyForm(): FormState {
 // ─── 主组件 ──────────────────────────────────────────────────────────────────────
 
 export default function ChannelConfig() {
-  // 内置通道可见性
-  const [builtinVisibility, setBuiltinVisibility] = useState<Record<string, boolean>>({
-    wechat: true, qq: true, wework: true, dingtalk: false, feishu: true,
-  });
+  // 内置通道可见性（从 localStorage 初始化，与租户端共享）
+  const [builtinVisibility, setBuiltinVisibility] = useState<Record<string, boolean>>(
+    () => loadBuiltinChannelVisibility()
+  );
 
   // 自定义通道列表（从 localStorage 初始化）
   const [customChannels, setCustomChannels] = useState<CustomChannel[]>(() => loadCustomChannels());
@@ -161,6 +176,14 @@ export default function ChannelConfig() {
   useEffect(() => {
     const unsub = onCustomChannelsChange(() => {
       setCustomChannels(loadCustomChannels());
+    });
+    return unsub;
+  }, []);
+
+  // 监听内置通道可见性的跨标签页变更
+  useEffect(() => {
+    const unsub = onBuiltinChannelVisibilityChange(() => {
+      setBuiltinVisibility(loadBuiltinChannelVisibility());
     });
     return unsub;
   }, []);
@@ -295,8 +318,10 @@ export default function ChannelConfig() {
                 <Switch
                   checked={builtinVisibility[ch.id] || false}
                   onCheckedChange={(v) => {
-                    setBuiltinVisibility({ ...builtinVisibility, [ch.id]: v });
-                    toast.success(`${ch.name} 已${v ? "开启" : "关闭"}`);
+                    const updated = { ...builtinVisibility, [ch.id]: v };
+                    setBuiltinVisibility(updated);
+                    saveBuiltinChannelVisibility(updated);
+                    toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
                   }}
                 />
               </div>

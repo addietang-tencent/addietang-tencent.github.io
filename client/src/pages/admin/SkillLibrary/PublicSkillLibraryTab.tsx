@@ -295,7 +295,9 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
     // 默认选中 SKILL.md
     return skill.files.find(f => f.name === 'SKILL.md') || skill.files[0] || null;
   });
-  const [mdPreviewMode, setMdPreviewMode] = useState<'source' | 'preview'>('source');
+  const [mdPreviewMode, setMdPreviewMode] = useState<'source' | 'preview'>(
+    () => selectedFile?.name.endsWith('.md') ? 'preview' : 'source'
+  );
   const formatCount = (n: number) => {
     if (n >= 10000) {
       const v = n / 10000;
@@ -367,7 +369,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
 
       {/* 三列内容区 */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)', height: '520px' }}>
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)', height: '760px' }}>
         <div className="flex h-full">
           {/* 左列：版本列表 */}
           <div className="w-44 border-r border-gray-100 flex flex-col shrink-0">
@@ -402,14 +404,17 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
             <div className="px-3 border-b border-gray-100 bg-gray-50/50 flex items-center" style={{height:'40px'}}>
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{selectedVersion.version}</span>
             </div>
-            <div className="flex-1 overflow-y-auto py-1">
+            <div className="flex-1 overflow-y-auto">
               {skill.files.map(file => (
                 <FileTreeNode
                   key={file.path}
                   file={file}
                   depth={0}
                   selectedFile={selectedFile}
-                  onSelect={setSelectedFile}
+                  onSelect={(file) => {
+                    setSelectedFile(file);
+                    setMdPreviewMode(file.name.endsWith('.md') ? 'preview' : 'source');
+                  }}
                 />
               ))}
             </div>

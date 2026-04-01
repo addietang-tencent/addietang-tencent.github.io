@@ -26,6 +26,7 @@ import ChannelConfig from "./pages/admin/ChannelConfig";
 import SkillConfig from "./pages/admin/SkillConfig";
 import ImageManagement from "./pages/admin/ImageManagement";
 import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
+import CloudDevManagement from "./pages/admin/CloudDevManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/admin/skill-config" component={() => <AdminLayout><SkillConfig /></AdminLayout>} />
       <Route path="/admin/image-management" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
+      <Route path="/admin/cloud-dev" component={() => <AdminLayout><CloudDevManagement /></AdminLayout>} />
       <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><ModeAwareRoute standard={<StandardOpenClawMonitor />} custom={<OpenClawMonitor />} /></AdminLayout>} />
       <Route path="/admin/tokens-monitor" component={() => <AdminLayout><ModeAwareRoute standard={<StandardTokensMonitor />} custom={<TokensMonitor />} /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />

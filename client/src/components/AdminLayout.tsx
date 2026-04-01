@@ -16,6 +16,7 @@ import {
   FileText,
   HardDrive,
   ShieldCheck,
+  Code2,
   Activity,
   BarChart3,
   ClipboardList,
@@ -80,6 +81,7 @@ const NAV_GROUPS = [
     items: [
       { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
       { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
+      { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },
     ],
   },
   {

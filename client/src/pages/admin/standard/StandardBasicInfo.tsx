@@ -272,7 +272,7 @@ export default function StandardBasicInfo() {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="w-full flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-left hover:border-gray-300 transition-colors min-h-[38px] data-[state=open]:border-blue-400 data-[state=open]:ring-[3px] data-[state=open]:ring-blue-100"
+                        className="w-full flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-left hover:border-gray-300 transition-colors min-h-[38px] data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
                       >
                         <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
                           {ssoImTypes.length === 0 ? (

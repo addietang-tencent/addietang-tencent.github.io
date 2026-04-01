@@ -329,9 +329,28 @@ interface SkillDetailViewProps {
 
 function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToPackage, onBack }: SkillDetailViewProps) {
   const [selectedVersion, setSelectedVersion] = useState(skill.versions[0]);
+
+  // 剥离唯一顶层文件夹：如果 files 只有一个 folder，直接展示其 children
+  const displayFiles = useMemo(() => {
+    if (skill.files.length === 1 && skill.files[0].type === 'folder' && skill.files[0].children) {
+      return skill.files[0].children;
+    }
+    return skill.files;
+  }, [skill.files]);
+
   const [selectedFile, setSelectedFile] = useState<PublicSkillFile | null>(() => {
-    // 默认选中 SKILL.md
-    return skill.files.find(f => f.name === 'SKILL.md') || skill.files[0] || null;
+    // 默认选中 SKILL.md（在 displayFiles 中递归查找）
+    const findSkillMd = (files: PublicSkillFile[]): PublicSkillFile | null => {
+      for (const f of files) {
+        if (f.name === 'SKILL.md') return f;
+        if (f.children) {
+          const found = findSkillMd(f.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return findSkillMd(displayFiles.length > 0 ? displayFiles : skill.files) || skill.files[0] || null;
   });
   const [mdPreviewMode, setMdPreviewMode] = useState<'source' | 'preview'>(
     () => selectedFile?.name.endsWith('.md') ? 'preview' : 'source'
@@ -441,7 +460,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
             <p className="text-xs font-medium text-gray-900">{selectedVersion.version}</p>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {skill.files.map(file => (
+            {displayFiles.map(file => (
               <FileTreeNode
                 key={file.path}
                 file={file}

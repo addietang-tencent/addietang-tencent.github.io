@@ -50,6 +50,7 @@ const NEW_FEATURE_PATHS = new Set([
   "/admin/ops-observation",
   "/admin/security-management",
   "/admin/session-management",
+  "/admin/skill-config",
 ]);
 
 const NAV_GROUPS = [

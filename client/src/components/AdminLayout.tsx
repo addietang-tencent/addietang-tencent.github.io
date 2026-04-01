@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import AdminNoticeBar from "@/components/AdminNoticeBar";
 
 // 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
@@ -316,6 +317,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
         )}
+        <AdminNoticeBar />
         <div className={sidebarCollapsed ? "p-6 pt-0" : "p-6"}>
           {children}
         </div>

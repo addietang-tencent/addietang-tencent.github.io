@@ -1,16 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, Edit2, X } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Edit2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLocation } from 'wouter';
-import { useEffect } from 'react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import EditCategoriesDialog from './EditCategoriesDialog';
+import { Skill } from './types';
+import {
+  getSkillDistributionSummary,
+  hasInProgressDistribution,
+  addDistributionRecord,
+  updateDistributionRecord,
+  createDistributionRecordId,
+  type CachedDistributionRecord,
+  type SkillDistributionSummary,
+} from './distributionCache';
+
+// localStorage 缓存 key
+const SKILLS_CACHE_KEY = 'skillhub_enterprise_skills_cache';
+
+// 从 localStorage 加载缓存的 skills
+const loadCachedSkills = (): Skill[] => {
+  try {
+    const cached = localStorage.getItem(SKILLS_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      // 恢复 Date 对象
+      return parsed.map((s: any) => ({
+        ...s,
+        uploadTime: new Date(s.uploadTime),
+        lastDistributionTime: s.lastDistributionTime ? new Date(s.lastDistributionTime) : undefined,
+      }));
+    }
+  } catch (e) {
+    console.warn('加载缓存 skills 失败:', e);
+  }
+  return MOCK_SKILLS;
+};
+
+// 保存 skills 到 localStorage
+const saveCachedSkills = (skills: Skill[]) => {
+  try {
+    localStorage.setItem(SKILLS_CACHE_KEY, JSON.stringify(skills));
+  } catch (e) {
+    console.warn('缓存 skills 失败:', e);
+  }
+};
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
@@ -21,7 +62,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [skills, setSkills] = useState(MOCK_SKILLS);
+  const [skills, setSkills] = useState<Skill[]>(loadCachedSkills);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
   const [defaultTabForDetail, setDefaultTabForDetail] = useState<string>('overview');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
@@ -31,7 +72,31 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [editingSkillCategories, setEditingSkillCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  // 下发状态缓存：key 是 skillId，value 是摘要
+  const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
+
+  // skills 变化时同步到 localStorage
+  useEffect(() => {
+    saveCachedSkills(skills);
+  }, [skills]);
+
+  // 从缓存加载所有 skill 的下发摘要
+  const refreshDistributionSummaries = useCallback(() => {
+    const summaries: Record<string, SkillDistributionSummary> = {};
+    skills.forEach(s => {
+      const summary = getSkillDistributionSummary(s.id);
+      if (summary) summaries[s.id] = summary;
+    });
+    setDistributionSummaries(summaries);
+  }, [skills]);
+
+  // 首次加载 + 监听缓存更新事件
+  useEffect(() => {
+    refreshDistributionSummaries();
+    const handler = () => refreshDistributionSummaries();
+    window.addEventListener('distribution-cache-updated', handler);
+    return () => window.removeEventListener('distribution-cache-updated', handler);
+  }, [refreshDistributionSummaries]);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -50,12 +115,21 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   });
 
   const handleUploadSkill = (skillData: any) => {
-    const newSkill = {
-      id: `skill-${Date.now()}`,
+    // skillData 已经是 SkillUploadDialog 中构造好的完整 Skill 对象
+    // 确保必要字段存在
+    const newSkill: Skill = {
       ...skillData,
-      uploadTime: new Date(),
+      id: skillData.id || `skill-${Date.now()}`,
+      uploadTime: skillData.uploadTime instanceof Date ? skillData.uploadTime : new Date(),
+      versions: skillData.versions || [skillData.version || '1.0.0'],
+      files: skillData.files || [],
     };
-    setSkills([...skills, newSkill]);
+    setSkills(prev => {
+      const updated = [...prev, newSkill];
+      // 立即同步缓存，确保不丢数据
+      saveCachedSkills(updated);
+      return updated;
+    });
   };
 
   const handleViewDetail = (skillId: string) => {
@@ -72,58 +146,67 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   };
 
   const handleDistributeStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
-    // 更新 skill 的下发状态
-    setSkills(skills.map(skill =>
-      skill.id === distributeSkillId
-        ? {
-            ...skill,
-            lastDistributionStatus: 'in_progress',
-            lastDistributionProgress: 0,
-            lastDistributionTime: new Date(),
-          }
-        : skill
-    ));
+    if (!distributeSkillId) return;
+    
+    // 创建下发记录并写入缓存
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId: distributeSkillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'distributing',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as const,
+      })),
+    };
+    addDistributionRecord(newRecord);
 
     // 关闭对话框
     setDistributeDialogOpen(false);
     
     // 显示下发开始通知
-    setNotification({ message: '已开始下发流程', type: 'success' });
+    toast.success('已开始下发流程');
 
     // 模拟进度更新
-    let progress = 0;
+    const totalCount = selectedInstanceIds.length;
+    let completed = 0;
     const interval = setInterval(() => {
-      progress += Math.random() * 30;
-      if (progress >= 100) {
-        progress = 100;
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
         clearInterval(interval);
-        // 完成下发
-        setSkills(prevSkills =>
-          prevSkills.map(skill =>
-            skill.id === distributeSkillId
-              ? {
-                  ...skill,
-                  lastDistributionStatus: 'success',
-                  lastDistributionProgress: 100,
-                }
-              : skill
-          )
-        );
-        // 显示成功通知
-        setNotification({ message: '下发成功', type: 'success' });
+        // 模拟随机失败
+        const failedCount = Math.floor(Math.random() * 2);
+        const successCount = totalCount - failedCount;
+        // 完成下发 - 更新缓存
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: failedCount === 0 ? 'success' : 'failed',
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: idx < successCount ? 'success' as const : 'failed' as const,
+          })),
+        }));
+        toast.success('下发完成');
       } else {
-        setSkills(prevSkills =>
-          prevSkills.map(skill =>
-            skill.id === distributeSkillId
-              ? {
-                  ...skill,
-                  lastDistributionProgress: Math.min(progress, 99),
-                }
-              : skill
-          )
-        );
+        // 更新进度 - 更新缓存
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
       }
-    }, 1000);
+    }, 800);
   };
 
   const handleViewDistributeProgress = () => {
@@ -140,50 +223,50 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     }
   };
 
-  // 自动关闭通知
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => {
-        setNotification(null);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
-
   const getDistributionStatusDisplay = (skill: any) => {
-    if (!skill.lastDistributionStatus) return null;
+    const summary = distributionSummaries[skill.id];
+    if (!summary) return null;
+    if (summary.lastDistributionStatus === 'not_distributed') return null;
 
-    let label = '';
-    let color = '';
+    const isDistributing = summary.lastDistributionStatus === 'distributing';
 
-    if (skill.lastDistributionStatus === 'in_progress') {
-      label = `进行中 ${(skill.lastDistributionProgress || 0).toFixed(0)}%`;
-      color = 'text-blue-600 bg-blue-50';
-    } else if (skill.lastDistributionStatus === 'success') {
-      // 假设成功下发了 100/101 个实例
-      label = `已下发(100/101成功)`;
-      color = 'text-green-600 bg-green-50';
-    } else if (skill.lastDistributionStatus === 'partial') {
-      label = `已下发(100/101成功)`;
-      color = 'text-yellow-600 bg-yellow-50';
-    } else if (skill.lastDistributionStatus === 'failed') {
-      label = '下发失败';
-      color = 'text-red-600 bg-red-50';
+    let label: string;
+    let colorClass: string;
+
+    if (isDistributing) {
+      label = `下发中 ${summary.lastDistributionProgress}%`;
+      colorClass = 'text-blue-600 bg-blue-50';
+    } else {
+      const total = summary.lastDistributionInstanceCount || 0;
+      const success = summary.lastDistributionSuccessCount ?? total;
+      label = `已下发(${success}/${total}成功)`;
+      if (success === total) {
+        // 全部成功：绿色底绿色字
+        colorClass = 'text-green-700 bg-green-50';
+      } else {
+        // 部分成功：黄色底黄色字
+        colorClass = 'text-yellow-700 bg-yellow-50';
+      }
     }
 
     return (
       <button
         onClick={(e) => {
           e.stopPropagation();
-          // 跳转到详情-下发记录 Tab
           setDefaultTabForDetail('distribution');
           setSelectedSkillId(skill.id);
         }}
-        className={`inline-block px-3 py-1 rounded text-sm font-medium ${color} cursor-pointer hover:opacity-80 transition-opacity`}
+        className={`inline-block px-3 py-1 rounded text-sm font-medium ${colorClass} cursor-pointer hover:opacity-80 transition-opacity`}
       >
         {label}
       </button>
     );
+  };
+
+  /** 检查某个 skill 是否有进行中的下发（用于禁用按钮） */
+  const isDistributing = (skillId: string): boolean => {
+    const summary = distributionSummaries[skillId];
+    return summary?.hasInProgress || false;
   };
 
   // 如果选中了 Skill，显示详情页
@@ -203,22 +286,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
   return (
     <div className="space-y-4">
-      {/* 通知横幅 */}
-      {notification && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg flex items-center gap-3 z-50 ${
-          notification.type === 'success' 
-            ? 'bg-green-50 text-green-700 border border-green-200' 
-            : 'bg-red-50 text-red-700 border border-red-200'
-        }`}>
-          <span className="text-sm font-medium">{notification.message}</span>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-2 text-current hover:opacity-70"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
       {/* 搜索和工具栏 */}
       <div className="flex items-center justify-between gap-6">
         {/* 搜索框 */}
@@ -370,16 +437,16 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   e.stopPropagation();
                   handleDistribute(skill.id);
                 }}
-                disabled={skill.lastDistributionStatus === 'in_progress'}
+                disabled={isDistributing(skill.id)}
                 className={`w-full cursor-pointer ${
-                  skill.lastDistributionStatus === 'in_progress'
+                  isDistributing(skill.id)
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
                 }`}
-                title={skill.lastDistributionStatus === 'in_progress' ? '下发中' : ''}
+                title={isDistributing(skill.id) ? '有下发任务进行中，请等待完成' : ''}
               >
                 <Send className="w-4 h-4 mr-2" />
-                {skill.lastDistributionStatus === 'in_progress' ? '下发中' : '下发'}
+                {isDistributing(skill.id) ? '下发中' : '下发'}
               </Button>
             </div>
           ))}
@@ -449,16 +516,16 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     e.stopPropagation();
                     handleDistribute(skill.id);
                   }}
-                  disabled={skill.lastDistributionStatus === 'in_progress'}
+                  disabled={isDistributing(skill.id)}
                   className={`shrink-0 cursor-pointer ml-2 ${
-                    skill.lastDistributionStatus === 'in_progress'
+                    isDistributing(skill.id)
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
                   }`}
-                  title={skill.lastDistributionStatus === 'in_progress' ? '下发中' : ''}
+                  title={isDistributing(skill.id) ? '有下发任务进行中，请等待完成' : ''}
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  {skill.lastDistributionStatus === 'in_progress' ? '下发中' : '下发'}
+                  {isDistributing(skill.id) ? '下发中' : '下发'}
                 </Button>
               </div>
               {/* 第二行：描述 */}
@@ -472,6 +539,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
         onConfirm={handleUploadSkill}
+        existingSlugs={skills.map(s => s.slug)}
       />
 
       {distributeSkillId && (
@@ -503,14 +571,10 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 ? { ...skill, categories: selectedCategoryIds }
                 : skill
             ));
-            setNotification({ message: '分类修改成功', type: 'success' });
+            toast.success('分类修改成功');
             setEditCategoryDialogOpen(false);
             setEditingSkillId(null);
             setEditingSkillCategories([]);
-            
-            setTimeout(() => {
-              setNotification(null);
-            }, 2000);
           }
         }}
       />

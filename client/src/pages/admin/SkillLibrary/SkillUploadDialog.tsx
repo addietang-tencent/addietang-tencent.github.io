@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ interface SkillUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (skill: Skill) => void;
+  existingSlugs?: string[];
 }
 
 interface UploadedFile {
@@ -25,7 +27,7 @@ interface UploadedFile {
     name?: string;
     description?: string;
   };
-  files?: Array<{ name: string; size: number }>;
+  files?: Array<{ name: string; size: number; content?: string }>;
 }
 
 // 解析 SKILL.md 文件内容
@@ -58,8 +60,17 @@ const parseSkillMd = (content: string): { name?: string; description?: string } 
 };
 
 // 真实 ZIP 文件解析
+// 可读取内容的文本文件扩展名
+const TEXT_EXTENSIONS = ['.md', '.mdx', '.xml', '.json', '.txt', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.sh', '.bat', '.py', '.js', '.ts', '.css', '.html', '.htm', '.svg', '.env', '.gitignore', '.dockerfile'];
+
+const isTextFile = (name: string) => {
+  const lower = name.toLowerCase();
+  if (!lower.includes('.') && !lower.includes('/')) return true; // Dockerfile, Makefile 等
+  return TEXT_EXTENSIONS.some(ext => lower.endsWith(ext));
+};
+
 const parseZipFile = async (file: File): Promise<{
-  files: Array<{ name: string; size: number }>;
+  files: Array<{ name: string; size: number; content?: string }>;
   skillmdContent?: string;
   skillmdParsed?: { name?: string; description?: string };
   error?: string;
@@ -68,9 +79,10 @@ const parseZipFile = async (file: File): Promise<{
     const zip = new JSZip();
     const loaded = await zip.loadAsync(file);
     
-    const files: Array<{ name: string; size: number }> = [];
+    const files: Array<{ name: string; size: number; content?: string }> = [];
     let skillmdContent: string | undefined;
     let skillmdFound = false;
+    const fileEntries: Array<{ relativePath: string; zipEntry: JSZip.JSZipObject }> = [];
 
     // 遍历 ZIP 中的所有文件
     loaded.forEach((relativePath, zipEntry) => {
@@ -89,12 +101,25 @@ const parseZipFile = async (file: File): Promise<{
         skillmdFound = true;
       }
 
-      // 记录文件信息
-      files.push({
-        name: relativePath,
-        size: (zipEntry as any)._data ? (zipEntry as any)._data.uncompressedSize : 0,
-      });
+      fileEntries.push({ relativePath, zipEntry });
     });
+
+    // 异步读取所有文本文件的内容
+    for (const { relativePath, zipEntry } of fileEntries) {
+      const size = (zipEntry as any)._data ? (zipEntry as any)._data.uncompressedSize : 0;
+      let content: string | undefined;
+
+      // 对文本文件读取内容
+      if (isTextFile(relativePath)) {
+        try {
+          content = await zipEntry.async('text');
+        } catch {
+          // 读取失败则不填充 content
+        }
+      }
+
+      files.push({ name: relativePath, size, content });
+    }
 
     // 排序文件列表，SKILL.md 放第一个
     files.sort((a, b) => {
@@ -103,13 +128,11 @@ const parseZipFile = async (file: File): Promise<{
       return a.name.localeCompare(b.name);
     });
 
-    // 如果找到 SKILL.md，读取其内容
+    // 从已读取的文件中获取 SKILL.md 内容
     if (skillmdFound) {
-      const skillmdEntry = Object.keys(loaded.files).find(
-        key => key.toLowerCase().endsWith('skill.md')
-      );
-      if (skillmdEntry) {
-        skillmdContent = await loaded.file(skillmdEntry)!.async('text');
+      const skillmdFile = files.find(f => f.name.toLowerCase().endsWith('skill.md'));
+      if (skillmdFile?.content) {
+        skillmdContent = skillmdFile.content;
       }
     }
 
@@ -128,10 +151,9 @@ const parseZipFile = async (file: File): Promise<{
   }
 };
 
-export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: SkillUploadDialogProps) {
+export default function SkillUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [] }: SkillUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
-  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 当对话框关闭时，清空上传状态
@@ -272,23 +294,36 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
 
     // 异步处理文件夹上传
     setTimeout(async () => {
-      const fileList: { name: string; size: number }[] = [];
+      const fileList: { name: string; size: number; content?: string }[] = [];
       let skillmdContent: string | undefined;
       let skillmdFound = false;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const relativePath = file.webkitRelativePath || file.name;
+        let content: string | undefined;
+
+        // 对文本文件读取内容
+        if (isTextFile(relativePath)) {
+          try {
+            content = await file.text();
+          } catch {
+            // 读取失败则不填充 content
+          }
+        }
+
         fileList.push({
-          name: file.webkitRelativePath || file.name,
+          name: relativePath,
           size: file.size,
+          content,
         });
 
         // 检查是否是 SKILL.md
-        if ((file.webkitRelativePath || file.name).toLowerCase().endsWith('skill.md')) {
-          const pathParts = (file.webkitRelativePath || file.name).split('/');
+        if (relativePath.toLowerCase().endsWith('skill.md')) {
+          const pathParts = relativePath.split('/');
           if (pathParts.length === 2 && pathParts[0] && pathParts[1].toLowerCase() === 'skill.md') {
             skillmdFound = true;
-            skillmdContent = await file.text();
+            skillmdContent = content || await file.text();
           }
         }
       }
@@ -301,7 +336,8 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
         const pathParts = f.name.split('/');
         return {
           name: pathParts.slice(1).join('/'), // 移除根目录前缀
-          size: f.size
+          size: f.size,
+          content: f.content,
         };
       });
 
@@ -359,14 +395,28 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   const handlePublish = () => {
     const successFiles = uploadedFiles.filter(f => f.status === 'success');
     if (successFiles.length === 0) {
-      alert('请先上传有效的 Skill ZIP 文件');
+      toast.error('请先上传有效的 Skill ZIP 文件');
       return;
     }
 
     if (!formData.slug || !formData.name || !formData.version) {
-      alert('请填写所有必填字段');
+      toast.error('请填写所有必填字段');
       return;
     }
+
+    // 校验 slug 格式
+    if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+      toast.error('slug 仅支持小写字母/数字/连字符 -');
+      return;
+    }
+
+    // 校验 slug 是否重复
+    if (existingSlugs.includes(formData.slug)) {
+      toast.error('该 slug 已存在，请修改后重试');
+      return;
+    }
+
+    const successFile = uploadedFiles.find(f => f.status === 'success');
 
     const newSkill: Skill = {
       id: `skill-${Date.now()}`,
@@ -376,14 +426,15 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
       version: formData.version,
       categories: formData.categories,
       uploadTime: new Date(),
-      content: `# ${formData.name}\n\n${formData.description}`,
+      content: successFile?.skillmdContent || `# ${formData.name}\n\n${formData.description}`,
+      versions: [formData.version],
+      files: successFile?.files || [],
     };
 
     onConfirm(newSkill);
 
-    // 显示成功横幅
-    setShowSuccessBanner(true);
-    setTimeout(() => setShowSuccessBanner(false), 2000);
+    // 显示成功提示
+    toast.success('技能发布成功');
 
     // 重置表单
     setUploadedFiles([]);
@@ -415,12 +466,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
   };
 
   return (
-    <>
-      {showSuccessBanner && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg flex items-center gap-3 z-50 bg-green-50 text-green-700 border border-green-200">
-          <span className="text-sm font-medium">技能发布成功</span>
-        </div>
-      )}
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
@@ -610,18 +655,9 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
                 placeholder="e.g., doc-summarizer-1"
-                className={`mt-1 ${
-                  formData.slug && !/^[a-z0-9-]+$/.test(formData.slug)
-                    ? 'border-red-500 focus:border-red-500'
-                    : ''
-                }`}
+                className="mt-1"
               />
-              {formData.slug && !/^[a-z0-9-]+$/.test(formData.slug) && (
-                <p className="text-xs text-red-500 mt-1">仅支持小写字母/数字/连字符 -</p>
-              )}
-              {(!formData.slug || /^[a-z0-9-]+$/.test(formData.slug)) && (
-                <p className="text-xs text-gray-500 mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
-              )}
+              <p className="text-xs text-gray-500 mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
             </div>
 
           <div>
@@ -711,6 +747,5 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm }: Ski
         </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
   )
 }

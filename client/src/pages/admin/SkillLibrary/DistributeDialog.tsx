@@ -18,12 +18,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Search } from 'lucide-react';
+import { type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
 
 interface OpenClawInstance {
   id: string;
   name: string;
   createdBy: string;
-  distributionStatus?: 'distributed' | 'not_distributed';
+  distributionStatus?: DistributionStatus;
 }
 
 interface DistributeDialogProps {
@@ -45,7 +46,7 @@ export default function DistributeDialog({
 }: DistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [distributionFilter, setDistributionFilter] = useState<'all' | 'distributed' | 'not_distributed'>('all');
+  const [distributionFilter, setDistributionFilter] = useState<'all' | DistributionStatus>('all');
   const [isDistributing, setIsDistributing] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -89,13 +90,10 @@ export default function DistributeDialog({
     onOpenChange(false);
   };
 
-  const getStatusDisplay = (status?: string) => {
-    if (status === 'distributed') {
-      return <span className="text-green-600 font-medium text-xs">已下发</span>;
-    } else if (status === 'not_distributed') {
-      return <span className="text-gray-500 text-xs">未下发</span>;
-    }
-    return <span className="text-gray-500 text-xs">未下发</span>;
+  const getStatusDisplay = (status?: DistributionStatus) => {
+    const s = status || 'not_distributed';
+    const { label, color } = DISTRIBUTION_STATUS_MAP[s];
+    return <span className={`font-medium text-xs ${color.split(' ')[0]}`}>{label}</span>;
   };
 
   if (showSuccessMessage) {
@@ -160,8 +158,10 @@ export default function DistributeDialog({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="distributed">已下发</SelectItem>
               <SelectItem value="not_distributed">未下发</SelectItem>
+              <SelectItem value="success">成功</SelectItem>
+              <SelectItem value="failed">失败</SelectItem>
+              <SelectItem value="distributing">下发中</SelectItem>
             </SelectContent>
           </Select>
         </div>

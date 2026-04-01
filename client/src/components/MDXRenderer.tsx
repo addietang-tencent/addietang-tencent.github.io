@@ -3,7 +3,20 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+
+// 覆盖 vscDarkPlus 中 code 的背景色，使每行代码背景与 pre 完全一致
+const codeStyle = {
+  ...vscDarkPlus,
+  'code[class*="language-"]': {
+    ...vscDarkPlus['code[class*="language-"]'],
+    background: '#1e1e1e',
+  },
+  'pre[class*="language-"]': {
+    ...vscDarkPlus['pre[class*="language-"]'],
+    background: '#1e1e1e',
+  },
+};
 
 interface MDXRendererProps {
   content: string;
@@ -16,7 +29,7 @@ const components = {
     <h1 className="text-xl font-bold text-gray-900 mt-6 mb-3 pb-2 border-b-2 border-blue-500" {...props} />
   ),
   h2: ({ node, ...props }: any) => (
-    <h2 className="text-lg font-bold text-gray-900 mt-5 mb-2 pb-1.5 border-b border-blue-300" {...props} />
+    <h2 className="text-lg font-bold text-gray-900 mt-5 mb-2" {...props} />
   ),
   h3: ({ node, ...props }: any) => (
     <h3 className="text-base font-semibold text-gray-800 mt-4 mb-2" {...props} />
@@ -46,7 +59,7 @@ const components = {
     <li className="text-sm text-gray-700" {...props} />
   ),
   blockquote: ({ node, ...props }: any) => (
-    <blockquote className="border-l-4 border-blue-500 bg-blue-50 pl-4 py-2 my-3 text-sm text-gray-700 italic" {...props} />
+    <blockquote className="border-l-[3px] border-gray-200 bg-gray-50 pl-3 py-2 my-3 text-sm text-gray-600 italic rounded-r" {...props} />
   ),
   code: ({ node, className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || '');
@@ -60,11 +73,12 @@ const components = {
       return (
         <div className="my-3 rounded-lg overflow-hidden">
           <SyntaxHighlighter
-            style={atomDark}
+            style={codeStyle}
             language={language || 'text'}
             showLineNumbers={true}
-            wrapLines={true}
-            customStyle={{ fontSize: '0.8125rem' }}
+            wrapLines={false}
+            customStyle={{ fontSize: '0.8125rem', padding: '18px 16px', margin: 0 }}
+            lineProps={{ style: { background: 'transparent' } }}
             {...props}
           >
             {String(children).replace(/\n$/, '')}
@@ -81,18 +95,13 @@ const components = {
     );
   },
   pre: ({ node, children, ...props }: any) => {
-    // 如果子元素已经是 SyntaxHighlighter 包裹的 div，直接返回 children 避免双层包裹
-    // react-markdown 会把 code block 包在 <pre><code>...</code></pre> 中
-    // 当 code 组件返回 <div><SyntaxHighlighter></div> 时，外面不需要再套 <pre>
+    // code 组件已返回 <div><SyntaxHighlighter>，直接透传 children，不再套 <pre> 避免双层包裹产生色差
     const child = React.Children.toArray(children)[0] as any;
     if (child?.type === 'div' || child?.props?.className?.includes?.('rounded-lg')) {
       return <>{children}</>;
     }
-    return (
-      <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto mb-3 text-xs" {...props}>
-        {children}
-      </pre>
-    );
+    // 普通 pre（非代码块），保留基础样式但不设背景色
+    return <pre className="rounded-lg overflow-x-auto mb-3 text-xs" {...props}>{children}</pre>;
   },
   table: ({ node, ...props }: any) => (
     <div className="overflow-x-auto my-3">
@@ -100,7 +109,7 @@ const components = {
     </div>
   ),
   thead: ({ node, ...props }: any) => (
-    <thead className="bg-gray-100 border-b-2 border-gray-300" {...props} />
+    <thead className="bg-gray-50 border-b border-gray-200" {...props} />
   ),
   tbody: ({ node, ...props }: any) => (
     <tbody {...props} />
@@ -115,7 +124,7 @@ const components = {
     <td className="px-4 py-2 text-gray-700 border border-gray-300" {...props} />
   ),
   hr: ({ node, ...props }: any) => (
-    <hr className="my-6 border-t-2 border-gray-300" {...props} />
+    <hr className="my-4 border-t border-gray-100" {...props} />
   ),
   img: ({ node, ...props }: any) => (
     <img className="max-w-full h-auto rounded-lg my-4 shadow-md" {...props} />

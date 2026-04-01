@@ -171,6 +171,49 @@ self-improving-agent/
 
 - [OpenClaw 官方文档](https://docs.openclaw.com/skills/self-improving)
 - [最佳实践指南](https://clawhub.openclaw.com/skills/self-improving-agent)
+
+---
+
+## 6. 任务列表（Task Lists）
+
+**项目进度**
+
+- [x] 项目初始化
+- [x] 数据库设计
+- [x] API 接口开发
+- [ ] 前端页面开发
+- [ ] 单元测试编写
+- [ ] 集成测试
+- [ ] 部署上线
+
+**日常待办**
+
+- [x] 晨会讨论
+- [x] 代码审查
+- [ ] 编写技术文档
+- [ ] 修复 Bug #1234
+- [ ] 性能优化
+
+---
+
+## 7. 引用（Blockquote）
+
+单行引用：
+
+> 把"踩坑"变成"资产"，每次失败都是下一次成功的基石。
+
+多行引用：
+
+> **最佳实践**
+>
+> 每次运行结束后，立即记录本次的关键发现。
+> 不要等到"有空了再整理"——那一天往往不会来。
+
+嵌套引用：
+
+> 外层引用：这是一条重要的设计原则。
+>
+> > 内层引用：该原则最早由 Kent Beck 在《Extreme Programming Explained》中提出。
 `;
 
 const SKILL_CONTENT_GITHUB = `---

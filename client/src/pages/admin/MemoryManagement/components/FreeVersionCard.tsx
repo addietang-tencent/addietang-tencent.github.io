@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
@@ -10,41 +10,197 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Zap, Brain, Search, Link2, Layers, CheckCircle2, Loader2, Info, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { Zap, CheckCircle2, Loader2, Info, AlertTriangle, AlertOctagon, TrendingUp } from 'lucide-react';
+import { RadarWidget } from './RadarWidget';
 
-const FEATURES = [
-  { icon: Brain, title: '记忆更稳定', desc: '自动记住你的偏好和习惯，无需手动设置', color: '#007AFF' },
-  { icon: Layers, title: '理解更深刻', desc: '不只记住你说过什么，更理解你是谁、你想要什么', color: '#7C3AED' },
-  { icon: Search, title: '检索更精准', desc: '需要时精准找到相关记忆，减少重复沟通', color: '#F59E0B' },
-  { icon: Link2, title: '跨会话不断线', desc: '换个聊天窗口也不会忘记之前的对话', color: '#16A34A' },
+// 评测数据
+const BENCHMARK_DATA = [
+  { label: '记住变化原因', tip: '知道你为什么改了主意', native: 70.97, free: 88.89, improvement: 25.25 },
+  { label: '记住你说过的事', tip: '你提过的信息不会忘', native: 29.63, free: 79.07, improvement: 166.86 },
+  { label: '记住关键信息', tip: '准确回忆对话中的事实', native: 25.00, free: 76.47, improvement: 205.88 },
+  { label: '个性化推荐', tip: '基于你的习惯给出建议', native: 46.67, free: 76.36, improvement: 63.62 },
+  { label: '跨场景理解', tip: '工作聊的事，生活场景也能用', native: 31.58, free: 78.95, improvement: 150.00 },
+  { label: '跟踪偏好变化', tip: '你的喜好变了，它跟着变', native: 66.67, free: 83.45, improvement: 25.17 },
+  { label: '创意启发', tip: '基于了解你给出新点子', native: 24.00, free: 45.16, improvement: 88.17 },
 ];
 
-// 开启步骤
-const ENABLE_STEPS = [
-  '启动开启任务',
-  '执行进度',
-  '检查执行结果',
-  '完成',
-];
+const TOTAL = { native: 47.85, free: 76.10, improvement: 59.04 };
 
-// 关闭步骤
-const DISABLE_STEPS = [
-  '启动关闭任务',
-  '执行进度',
-  '检查执行结果',
-  '完成',
-];
+// 动画计数器
+function AnimatedCounter({
+  value,
+  duration = 1500,
+  decimals = 2,
+  suffix = '%',
+  delay = 0,
+}: {
+  value: number;
+  duration?: number;
+  decimals?: number;
+  suffix?: string;
+  delay?: number;
+}) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
+  const isInView = useInView(ref as React.RefObject<HTMLElement>, { once: true, amount: 0.5 });
 
-const TOTAL_INSTANCES = 42; // mock 总实例数
+  useEffect(() => {
+    if (!isInView || hasAnimated.current) return;
+    hasAnimated.current = true;
+    const start = performance.now() + delay;
+    let raf: number;
+    const animate = (now: number) => {
+      const elapsed = now - start;
+      if (elapsed < 0) {
+        raf = requestAnimationFrame(animate);
+        return;
+      }
+      const p = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(eased * value);
+      if (p < 1) raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [isInView, value, duration, delay]);
+
+  return (
+    <span ref={ref}>
+      {display.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
+}
+
+// 紧凑维度行 — 单行双条形
+function DimensionRow({
+  data,
+  index,
+  isEnabled,
+  radarHovered,
+  waitingForExpand,
+}: {
+  data: (typeof BENCHMARK_DATA)[0];
+  index: number;
+  isEnabled: boolean;
+  radarHovered: boolean;
+  waitingForExpand: boolean;
+}) {
+  return (
+    <div className="group">
+      {/* Label row */}
+      <div className="flex items-center justify-between mb-0.5">
+        <span
+          className="text-sm truncate transition-colors duration-300"
+          style={{ color: radarHovered ? '#374151' : '#6b7280' }}
+        >
+          {data.label}
+        </span>
+        <AnimatePresence>
+          {radarHovered && (
+            <motion.span
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ delay: index * 0.03 }}
+              className="text-[11px] font-semibold text-green-600 ml-2 flex-shrink-0"
+            >
+              +{data.improvement.toFixed(0)}%
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Dual bars stacked */}
+      <div className="space-y-[2px]">
+        {/* OpenClaw bar */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex-1 h-[4px] rounded-full overflow-hidden bg-gray-100">
+            <div
+              className="h-full rounded-full"
+              style={{ background: '#d0d0e0', width: `${data.native}%` }}
+            />
+          </div>
+          <span className="text-[11px] font-mono text-gray-400 w-[34px] text-right flex-shrink-0">
+            {data.native.toFixed(0)}%
+          </span>
+        </div>
+
+        {/* Free bar — progressive reveal */}
+        <div className="flex items-center gap-1.5">
+          <div className="flex-1 h-[4px] rounded-full overflow-hidden bg-gray-100 relative">
+            {/* Ghost dashed (idle) — 不在等待展开期间显示 */}
+            {!radarHovered && !waitingForExpand && (
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    'repeating-linear-gradient(90deg, rgba(0,122,255,0.12) 0px, rgba(0,122,255,0.12) 3px, transparent 3px, transparent 6px)',
+                  width: `${data.free}%`,
+                }}
+              />
+            )}
+            {/* Solid bar (hovered/expanded) */}
+            <motion.div
+              className="h-full rounded-full relative z-10"
+              style={{
+                background: isEnabled
+                  ? 'linear-gradient(90deg, #007AFF, #5856D6)'
+                  : 'linear-gradient(90deg, #93b8f0, #a8b5e0)',
+                boxShadow: radarHovered && isEnabled ? '0 0 6px rgba(0,122,255,0.25)' : 'none',
+              }}
+              initial={false}
+              animate={{ width: radarHovered ? `${data.free}%` : '0%' }}
+              transition={{
+                delay: radarHovered ? 0.06 + index * 0.03 : 0,
+                duration: radarHovered ? 0.4 : 0,
+                ease: 'easeOut',
+              }}
+            />
+          </div>
+          <span
+            className="text-[11px] font-mono font-semibold w-[34px] text-right flex-shrink-0 transition-colors duration-300"
+            style={{ color: radarHovered ? '#007AFF' : 'rgba(0,122,255,0.25)' }}
+          >
+            {radarHovered ? `${data.free.toFixed(0)}%` : '??%'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 开启/关闭步骤
+const ENABLE_STEPS = ['启动开启任务', '执行进度', '检查执行结果', '完成'];
+const DISABLE_STEPS = ['启动关闭任务', '执行进度', '检查执行结果', '完成'];
+const TOTAL_INSTANCES = 42;
 
 export const FreeVersionCard: React.FC = () => {
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(() => {
+    try { return localStorage.getItem('memory-free-enabled') === 'true'; } catch { return false; }
+  });
+  const [radarHovered, setRadarHovered] = useState(false);
+  // 启用后进入页面时，延迟自动展开（复现 hover 动画）
+  const [autoExpanded, setAutoExpanded] = useState(false);
 
-  // 确认弹窗
+  // 持久化启用状态
+  useEffect(() => {
+    try { localStorage.setItem('memory-free-enabled', String(isEnabled)); } catch {}
+  }, [isEnabled]);
+
+  // 启用状态下，页面挂载后延迟触发展开动画
+  useEffect(() => {
+    if (isEnabled) {
+      const timer = setTimeout(() => setAutoExpanded(true), 600);
+      return () => clearTimeout(timer);
+    } else {
+      setAutoExpanded(false);
+    }
+  }, [isEnabled]);
   const [confirmType, setConfirmType] = useState<'enable' | 'disable' | null>(null);
   const [confirmChecked, setConfirmChecked] = useState(false);
-
-  // 进度弹窗
   const [showProgress, setShowProgress] = useState(false);
   const [progressType, setProgressType] = useState<'enable' | 'disable'>('enable');
   const [stepsDone, setStepsDone] = useState(0);
@@ -70,12 +226,7 @@ export const FreeVersionCard: React.FC = () => {
     setResultCount(0);
     setIsRunning(true);
     setShowProgress(true);
-
-    // 模拟 4 步进度
     let done = 0;
-    let progress = 0;
-    let result = 0;
-
     const runNext = () => {
       if (done >= 4) {
         setIsRunning(false);
@@ -83,25 +234,13 @@ export const FreeVersionCard: React.FC = () => {
         toast.success(type === 'enable' ? '记忆功能已开启' : '记忆功能已关闭');
         return;
       }
-
-      const delay = 800 + Math.random() * 1500;
       timerRef.current = setTimeout(() => {
         done += 1;
         setStepsDone(done);
-
-        // Step 2: 模拟执行进度
-        if (done === 2) {
-          progress = TOTAL_INSTANCES;
-          setProgressCount(progress);
-        }
-        // Step 3: 模拟检查结果
-        if (done === 3) {
-          result = TOTAL_INSTANCES;
-          setResultCount(result);
-        }
-
+        if (done === 2) setProgressCount(TOTAL_INSTANCES);
+        if (done === 3) setResultCount(TOTAL_INSTANCES);
         runNext();
-      }, delay);
+      }, 800 + Math.random() * 1500);
     };
     runNext();
   };
@@ -117,15 +256,27 @@ export const FreeVersionCard: React.FC = () => {
     return step;
   };
 
+  const handleRadarHover = useCallback((h: boolean) => {
+    setRadarHovered(h);
+  }, []);
+
+  // 启用后自动展开数据，无需 hover（autoExpanded 延迟触发，有动画效果）
+  const showExpanded = autoExpanded || radarHovered;
+
   return (
     <>
       <div
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-5"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+        className="bg-white rounded-2xl border overflow-hidden mb-5 transition-all duration-500"
+        style={{
+          boxShadow: showExpanded
+            ? '0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)'
+            : '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+          borderColor: showExpanded ? 'rgba(0,122,255,0.2)' : 'rgba(229,231,235,1)',
+        }}
       >
         <div className="p-7">
-          {/* Header — 标题 + 开关同一行 */}
-          <div className="flex items-center justify-between mb-1.5">
+          {/* Header: 图标 + 标题 + 开关 */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -133,9 +284,12 @@ export const FreeVersionCard: React.FC = () => {
               >
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Memory Free 版</h2>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Memory Free 版</h2>
+                <p className="text-xs text-gray-400">基于实例本地存储，自动提取对话记忆，跨会话精准召回，免费即开即用。</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
               <div className="flex items-center gap-2">
                 <span
                   className="w-2 h-2 rounded-full"
@@ -145,38 +299,138 @@ export const FreeVersionCard: React.FC = () => {
                   {isEnabled ? '已启用' : '未启用'}
                 </span>
               </div>
-              <Switch
-                checked={isEnabled}
-                onCheckedChange={handleToggleChange}
-              />
+              <Switch checked={isEnabled} onCheckedChange={handleToggleChange} />
             </div>
           </div>
 
-          {/* Description */}
-          <p className="text-sm text-gray-500 leading-relaxed mb-6 ml-12">
-            基于实例本地存储，自动提取对话记忆，跨会话精准召回，免费即开即用。
-          </p>
+          {/* 主体：左侧雷达图 + 右侧内容 */}
+          <div className="flex gap-4">
+            {/* 左侧：雷达图 — 垂直居中，固定宽度给足空间 */}
+            <div className="w-[528px] flex-shrink-0 flex flex-col items-center justify-center">
+              <RadarWidget hovered={showExpanded} onHoverChange={handleRadarHover} />
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-4 gap-3">
-            {FEATURES.map((f) => {
-              const Icon = f.icon;
-              return (
-                <div
-                  key={f.title}
-                  className="p-4 rounded-xl border border-gray-100 bg-gray-50/50 text-center hover:border-gray-200 transition-colors"
-                >
-                  <div
-                    className="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center"
-                    style={{ background: `${f.color}12` }}
-                  >
-                    <Icon className="w-5 h-5" style={{ color: f.color }} />
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">{f.title}</h4>
-                  <p className="text-xs text-gray-400 leading-relaxed">{f.desc}</p>
+              {/* 图例 */}
+              <div className="flex items-center gap-5 mt-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
+                  <span className="text-xs text-gray-400">OpenClaw 原生</span>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+                  />
+                  <span className="text-xs text-gray-400">Memory Free 版</span>
+                </div>
+              </div>
+
+              {/* Idle hint */}
+              <AnimatePresence>
+                {!showExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-2"
+                  >
+                    <motion.p
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                      className="text-xs text-blue-400"
+                    >
+                      悬停雷达图查看对比详情
+                    </motion.p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* 右侧：总分 + 维度卡片 */}
+            <div className="flex-1 min-w-0">
+              {/* 总分对比 Hero */}
+              <div className="flex items-center gap-4 mb-5">
+                {/* 原生分数 */}
+                <div className="flex-1 text-center px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">OpenClaw 原生</p>
+                  <p className="text-2xl font-bold text-gray-400 font-mono">
+                    <AnimatedCounter value={TOTAL.native} delay={200} duration={1800} />
+                  </p>
+                </div>
+
+                {/* VS */}
+                <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-gray-400">VS</span>
+                </div>
+
+                {/* Free 版分数 */}
+                <div
+                  className="flex-1 text-center px-4 py-3 rounded-xl border transition-all duration-500"
+                  style={{
+                    background: showExpanded ? 'rgba(0,122,255,0.04)' : 'rgba(0,122,255,0.02)',
+                    borderColor: showExpanded ? 'rgba(0,122,255,0.2)' : 'rgba(0,122,255,0.08)',
+                  }}
+                >
+                  <p className="text-xs uppercase tracking-wide mb-1" style={{ color: '#007AFF' }}>
+                    Memory Free 版
+                  </p>
+                  <p className="text-2xl font-bold font-mono transition-colors duration-300" style={{ color: showExpanded ? '#007AFF' : '#c7d2fe' }}>
+                    {showExpanded ? (
+                      <AnimatedCounter value={TOTAL.free} delay={0} duration={800} />
+                    ) : (
+                      '??%'
+                    )}
+                  </p>
+                </div>
+
+                {/* 提升徽章 */}
+                <AnimatePresence>
+                  {showExpanded && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex-shrink-0"
+                    >
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-100">
+                        <TrendingUp className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-sm font-bold text-green-600">
+                          +<AnimatedCounter value={TOTAL.improvement} delay={200} duration={1000} decimals={1} />
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 7 个维度对比 — 紧凑行内条形 */}
+              <div className="rounded-lg border border-gray-100 bg-gray-50/30 px-4 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">各维度记忆能力对比</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-gray-300" />
+                      <span className="text-[11px] text-gray-400">原生</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full" style={{ background: '#007AFF' }} />
+                      <span className="text-[11px] text-gray-400">Free 版</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {BENCHMARK_DATA.map((d, i) => (
+                    <DimensionRow
+                      key={d.label}
+                      data={d}
+                      index={i}
+                      isEnabled={isEnabled}
+                      radarHovered={showExpanded}
+                      waitingForExpand={isEnabled && !autoExpanded}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -203,13 +457,25 @@ export const FreeVersionCard: React.FC = () => {
               </p>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={confirmChecked} onChange={(e) => setConfirmChecked(e.target.checked)} className="w-4 h-4 rounded accent-blue-600" />
+              <input
+                type="checkbox"
+                checked={confirmChecked}
+                onChange={(e) => setConfirmChecked(e.target.checked)}
+                className="w-4 h-4 rounded accent-blue-600"
+              />
               <span className="text-sm text-gray-600">我已了解上述说明，确认开启</span>
             </label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmType(null)}>取消</Button>
-            <Button onClick={handleConfirm} disabled={!confirmChecked} className="text-white disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
+            <Button variant="outline" onClick={() => setConfirmType(null)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!confirmChecked}
+              className="text-white disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+            >
               确认开启
             </Button>
           </DialogFooter>
@@ -239,13 +505,24 @@ export const FreeVersionCard: React.FC = () => {
               </p>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={confirmChecked} onChange={(e) => setConfirmChecked(e.target.checked)} className="w-4 h-4 rounded accent-red-600" />
+              <input
+                type="checkbox"
+                checked={confirmChecked}
+                onChange={(e) => setConfirmChecked(e.target.checked)}
+                className="w-4 h-4 rounded accent-red-600"
+              />
               <span className="text-sm text-gray-600">我已了解上述说明，确认关闭</span>
             </label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmType(null)}>取消</Button>
-            <Button onClick={handleConfirm} disabled={!confirmChecked} className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setConfirmType(null)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!confirmChecked}
+              className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+            >
               确认关闭
             </Button>
           </DialogFooter>
@@ -275,9 +552,9 @@ export const FreeVersionCard: React.FC = () => {
                   ) : (
                     <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
                   )}
-                  <span className={`text-sm ${
-                    isDone ? 'text-gray-600' : isActive ? 'text-blue-600 font-medium' : 'text-gray-400'
-                  }`}>
+                  <span
+                    className={`text-sm ${isDone ? 'text-gray-600' : isActive ? 'text-blue-600 font-medium' : 'text-gray-400'}`}
+                  >
                     [步骤{stepNum}] {getStepLabel(step, idx)}
                   </span>
                 </div>
@@ -286,7 +563,11 @@ export const FreeVersionCard: React.FC = () => {
           </div>
           {!isRunning && (
             <DialogFooter>
-              <Button onClick={handleCloseProgress} className="text-white" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
+              <Button
+                onClick={handleCloseProgress}
+                className="text-white"
+                style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              >
                 完成
               </Button>
             </DialogFooter>

@@ -8,7 +8,7 @@ export const MemoryManagement: React.FC = () => {
   return (
     <div className="page-enter">
       {/* 页面头部 */}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">记忆管理</h1>
         <p className="text-sm text-gray-500">
           让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 AI 服务（TDAI）提供技术支持。

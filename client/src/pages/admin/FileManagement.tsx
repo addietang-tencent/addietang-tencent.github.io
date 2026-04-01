@@ -163,10 +163,10 @@ export default function FileManagement() {
       ...personalItems
     ];
 
-    // 计算总配额
+    // 计算总存储容量
     const totalQuota = enterpriseQuota + personalQuota;
 
-    // 计算已用配额
+    // 计算已用存储容量
     const totalUsed = enterpriseUsed + personalUsed;
 
     // 格式化显示(自动转换为GB或TB)
@@ -286,8 +286,8 @@ export default function FileManagement() {
   };
 
   const handleConfirmQuota = () => {
-    alert(`已将 ${selectedQuotaItem?.name} 的配额调整为: ${newQuota}`);
-    // TODO: 实现实际的配额调整逻辑
+    alert(`已将 ${selectedQuotaItem?.name} 的存储容量调整为: ${newQuota}`);
+    // TODO: 实现实际的存储容量调整逻辑
     setIsQuotaDialogOpen(false);
   };
 
@@ -337,8 +337,8 @@ export default function FileManagement() {
       return;
     }
     const userList = Array.from(selectedUsers).join(", ");
-    alert(`已将以下 ${selectedCount} 位用户的配额调整为 ${batchNewQuota}:\n${userList}`);
-    // TODO: 实现实际的批量配额调整逻辑
+    alert(`已将以下 ${selectedCount} 位用户的存储容量调整为 ${batchNewQuota}:\n${userList}`);
+    // TODO: 实现实际的批量存储容量调整逻辑
     setIsBatchQuotaDialogOpen(false);
   };
 
@@ -444,13 +444,56 @@ export default function FileManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">云盘管理</h1>
-          <p className="text-sm text-gray-500 mt-1">为每位用户提供专属、安全的私人云存储空间。</p>
+          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的私人云存储空间</p>
         </div>
       </div>
 
       {/* SMH Service Activation Banner */}
       {!isSmhEnabled && (
         <>
+          {/* Enterprise Public Space Section - Show when SMH is NOT enabled */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-1">
+              <Building className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-bold text-gray-900">企业公共空间</h2>
+              <span className="text-xs text-gray-400 font-normal ml-1">管理企业的公共空间容量</span>
+            </div>
+            <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
+              <Table>
+                <TableHeader className="bg-white">
+                  <TableRow className="border-b border-gray-50 hover:bg-transparent">
+                    <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[35%] text-left">空间名称</TableHead>
+                    <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[18%] text-left">类型</TableHead>
+                    <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[28%] text-left">已用/存储容量</TableHead>
+                    <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[19%] text-left">有效期</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ENTERPRISE_SPACES.map((item) => (
+                      <TableRow key={item.id} className="hover:bg-blue-50/20 transition-colors border-b border-gray-50 last:border-0 group">
+                        <TableCell className="py-4 px-6 align-middle">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+                              <Building className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-bold text-gray-900">{item.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-4 px-6 align-middle">
+                          <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">{item.type}</span>
+                        </TableCell>
+                        <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">
+                          {item.used}/{<span className="font-bold">{item.quota}</span>}
+                          <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600">免费</span>
+                        </TableCell>
+                        <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">{item.expiry}</TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
+
           <Card className="shadow-sm border-blue-100 rounded-xl overflow-hidden bg-gradient-to-r from-blue-50/50 to-purple-50/50">
             <CardContent className="p-5">
               <div className="flex items-center justify-between gap-6">
@@ -461,7 +504,7 @@ export default function FileManagement() {
                   <p className="text-xs text-gray-600">
                     开启后,为您赠送
                     <span className="mx-1 font-semibold text-blue-600">3个月</span>
-                    每只虾
+                    每个 OpenClaw 实例
                     <span className="mx-1 font-semibold text-blue-600">50GB</span>
                     免费额度，到期后可以购买资源包进行续租。
                   </p>
@@ -495,7 +538,7 @@ export default function FileManagement() {
               </CardContent>
             </Card>
 
-            {/* 配额灵活可控 */}
+            {/* 存储容量灵活可控 */}
             <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
@@ -503,7 +546,7 @@ export default function FileManagement() {
                     <Layers className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="flex-1 space-y-1.5">
-                    <h4 className="text-sm font-semibold text-gray-900">配额灵活可控</h4>
+                    <h4 className="text-sm font-semibold text-gray-900">存储容量灵活可控</h4>
                     <p className="text-xs text-gray-600 leading-relaxed">
                       支持为每个成员、每个 AI Agent 独立配置存储额度,管理员可根据需要随意调整,实现资源的精细化管控与成本分配
                     </p>
@@ -548,7 +591,10 @@ export default function FileManagement() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-500 mb-1">企业空间总容量</span>
-                    <span className="text-3xl font-bold tracking-tight text-gray-900">{stats.totalQuota}</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold tracking-tight text-gray-900">{stats.totalQuota}</span>
+                      <span className="text-xs text-gray-400 font-normal">（各空间容量之和，会根据OpenClaw实例数量增加）</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -663,22 +709,22 @@ export default function FileManagement() {
         <div className="flex items-center gap-2 px-1">
           <Building className="w-5 h-5 text-blue-600" />
           <h2 className="text-lg font-bold text-gray-900">企业公共空间</h2>
-          <span className="text-xs text-gray-400 font-normal ml-1">管理企业的公共空间容量。</span>
+          <span className="text-xs text-gray-400 font-normal ml-1">管理企业的公共空间容量</span>
         </div>
         <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
           <Table>
             <TableHeader className="bg-white">
               <TableRow className="border-b border-gray-50 hover:bg-transparent">
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[40%]">空间名称</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[15%]">类型</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[25%]">已用 / 配额</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[20%]">有效期</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[35%] text-left">空间名称</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[18%] text-left">类型</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[28%] text-left">已用/存储容量</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[19%] text-left">有效期</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {ENTERPRISE_SPACES.map((item) => (
                   <TableRow key={item.id} className="hover:bg-blue-50/20 transition-colors border-b border-gray-50 last:border-0 group">
-                    <TableCell className="py-4 px-6">
+                    <TableCell className="py-4 px-6 align-middle">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm">
                           <Building className="w-5 h-5" />
@@ -686,14 +732,14 @@ export default function FileManagement() {
                         <span className="text-sm font-bold text-gray-900">{item.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 px-6">
+                    <TableCell className="py-4 px-6 align-middle">
                       <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">{item.type}</span>
                     </TableCell>
-                    <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium">
-                      {item.used} / <span className="font-bold">{item.quota}</span>
+                    <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">
+                      {item.used}/{<span className="font-bold">{item.quota}</span>}
                       <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600">免费</span>
                     </TableCell>
-                    <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium">{item.expiry}</TableCell>
+                    <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">{item.expiry}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
@@ -706,7 +752,7 @@ export default function FileManagement() {
         <div className="flex items-center gap-2 px-1">
           <User className="w-5 h-5 text-purple-600" />
           <h2 className="text-lg font-bold text-gray-900">AI 智能体空间</h2>
-          <span className="text-xs text-gray-400 font-normal ml-1">管理每个 OpenClaw 实例的专属云盘空间容量。</span>
+          <span className="text-xs text-gray-400 font-normal ml-1">管理每个 OpenClaw 实例的专属云盘空间容量</span>
         </div>
         <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
           <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white">
@@ -728,10 +774,10 @@ export default function FileManagement() {
           <Table>
             <TableHeader className="bg-white">
               <TableRow className="border-b border-gray-50 hover:bg-transparent">
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[35%]">创建人 / 名称</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[18%]">类型</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[28%]">已用 / 配额</TableHead>
-                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[19%]">有效期</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[35%] text-left">创建人 / 名称</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[18%] text-left">类型</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[28%] text-left">已用/存储容量</TableHead>
+                <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[19%] text-left">有效期</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -770,7 +816,7 @@ export default function FileManagement() {
                   </TableRow>
                   {isExpanded && group.items.map((item, itemIdx) => (
                     <TableRow key={item.id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0 group relative">
-                      <TableCell className="py-4 px-6 pl-12">
+                      <TableCell className="py-4 px-6 pl-12 align-middle">
                         <div className="absolute left-10 top-0 bottom-0 w-[1px] bg-gray-100"></div>
                         {itemIdx === group.items.length - 1 && <div className="absolute left-10 top-0 h-1/2 w-[1px] bg-gray-100"></div>}
                         <div className="absolute left-10 top-1/2 -translate-y-1/2 w-2 h-[1px] bg-gray-100"></div>
@@ -779,14 +825,14 @@ export default function FileManagement() {
                           <span className="text-sm font-bold text-gray-900">{item.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-4 px-6">
+                      <TableCell className="py-4 px-6 align-middle">
                         <span className="px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-600">{item.type}</span>
                       </TableCell>
-                      <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium">
-                        {item.used} / <span className="font-bold">{item.quota}</span>
+                      <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">
+                        {item.used}/{<span className="font-bold">{item.quota}</span>}
                         <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600">免费</span>
                       </TableCell>
-                      <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium">{item.expiry}</TableCell>
+                      <TableCell className="py-4 px-6 text-sm text-gray-900 font-medium align-middle">{item.expiry}</TableCell>
                     </TableRow>
                   ))}
                 </React.Fragment>
@@ -916,7 +962,7 @@ export default function FileManagement() {
       <Dialog open={isQuotaDialogOpen} onOpenChange={setIsQuotaDialogOpen}>
         <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-gray-50/50 border-b border-gray-100">
-            <DialogTitle className="text-xl font-bold text-gray-900">调整存储配额</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900">调整存储容量</DialogTitle>
           </DialogHeader>
           <div className="p-8 space-y-8">
             <div className="space-y-4">
@@ -926,7 +972,7 @@ export default function FileManagement() {
               </div>
               <div className="p-5 bg-blue-50/30 rounded-xl border border-blue-50 space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-blue-600 font-medium">当前配额</span>
+                  <span className="text-blue-600 font-medium">当前存储容量</span>
                   <span className="font-bold text-blue-700 text-lg">{selectedQuotaItem?.quota || '-'}</span>
                 </div>
                 <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
@@ -947,7 +993,7 @@ export default function FileManagement() {
             </div>
 
             <div className="space-y-4">
-              <label className="text-sm font-bold text-gray-900 block">新增配额</label>
+              <label className="text-sm font-bold text-gray-900 block">新增存储容量</label>
               <div className="grid grid-cols-3 gap-3">
                 {['50GB', '100GB', '500GB', '1TB', '2TB'].map((q) => (
                   <Button 
@@ -1192,7 +1238,7 @@ export default function FileManagement() {
           <div className="p-8 space-y-6">
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                将 <span className="font-bold text-blue-600">{selectedFiles.size}</span> 个文件转移给其他成员
+                将 <span className="font-bold text-blue-600">{selectedFiles.size}</span> 个文件转移给 OpenClaw 实例
               </p>
               <div className="p-4 bg-blue-50/30 rounded-xl border border-blue-100">
                 <p className="text-xs text-gray-500 mb-2">选中的文件:</p>
@@ -1208,9 +1254,9 @@ export default function FileManagement() {
             </div>
             
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-900 block">选择转移目标成员</label>
+              <label className="text-sm font-bold text-gray-900 block">选择转移目标 OpenClaw 实例</label>
               <div className="space-y-2">
-                {['Noah (noah@acompany.com)', 'Mia (mia@acompany.com)', 'Leo (leo@acompany.com)', '其他成员'].map((member) => (
+                {['Noah (noah@acompany.com)', 'Mia (mia@acompany.com)', 'Leo (leo@acompany.com)', '其他 OpenClaw 实例'].map((member) => (
                   <Button
                     key={member}
                     variant="outline"

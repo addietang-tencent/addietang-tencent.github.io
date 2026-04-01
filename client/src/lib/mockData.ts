@@ -501,3 +501,125 @@ export const ENTERPRISE_SKILL_POOL = [
   { name: "tencent-meeting-skill", description: "腾讯会议技能", version: "v1.0" },
   { name: "ima-note", description: "即时笔记工具", version: "v1.0" },
 ];
+
+// ─── OneID 相关 Mock 数据 ────────────────────────────────────────────────────
+
+/** 是否启用 OneID 模式（Demo 可切换） */
+export const HAS_ONEID = true;
+
+/** SSO 登录方式选项 */
+export interface SsoImTypeOption {
+  value: string;
+  label: string;
+}
+
+export const MOCK_SSO_IM_TYPE_OPTIONS: SsoImTypeOption[] = [
+  { value: "enterprise_wechat", label: "企业微信" },
+  { value: "dingtalk", label: "钉钉扫码" },
+  { value: "feishu", label: "飞书扫码" },
+];
+
+/** 当前已选的登录方式 */
+export const MOCK_SSO_IM_TYPES = ["enterprise_wechat", "dingtalk", "feishu"];
+
+/** 部门树节点 */
+export interface DepartmentNode {
+  id: string;
+  name: string;
+  path?: string;
+  children?: DepartmentNode[];
+}
+
+/** Mock 部门树数据 */
+export const MOCK_DEPARTMENTS: DepartmentNode[] = [
+  {
+    id: "dept-root",
+    name: "A公司",
+    path: "A公司",
+    children: [
+      {
+        id: "dept-tech",
+        name: "技术部",
+        path: "A公司/技术部",
+        children: [
+          { id: "dept-fe", name: "前端组", path: "A公司/技术部/前端组" },
+          { id: "dept-be", name: "后端组", path: "A公司/技术部/后端组" },
+          { id: "dept-ai", name: "AI 团队", path: "A公司/技术部/AI 团队" },
+        ],
+      },
+      {
+        id: "dept-product",
+        name: "产品部",
+        path: "A公司/产品部",
+        children: [
+          { id: "dept-pm", name: "产品经理组", path: "A公司/产品部/产品经理组" },
+          { id: "dept-design", name: "设计组", path: "A公司/产品部/设计组" },
+        ],
+      },
+      {
+        id: "dept-ops",
+        name: "运营部",
+        path: "A公司/运营部",
+      },
+      {
+        id: "dept-hr",
+        name: "人力资源部",
+        path: "A公司/人力资源部",
+      },
+    ],
+  },
+];
+
+/** 带部门信息的成员数据（OneID 模式使用） */
+export const MOCK_MEMBERS_WITH_DEPT = [
+  { id: "alice@acompany.com", name: "Alice", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2026-01-15", department: "A公司/技术部/前端组", departmentId: "dept-fe" },
+  { id: "bob@acompany.com", name: "Bob", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 1, joinTime: "2026-01-18", department: "A公司/技术部/后端组", departmentId: "dept-be" },
+  { id: "lisi@a-company.com", name: "李四", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2026-01-20", department: "A公司/技术部/AI 团队", departmentId: "dept-ai" },
+  { id: "wangwu@a-company.com", name: "王五", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 3, joinTime: "2026-02-01", department: "A公司/产品部/产品经理组", departmentId: "dept-pm" },
+  { id: "zhaoliu@a-company.com", name: "赵六", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-02-10", department: "A公司/产品部/设计组", departmentId: "dept-design" },
+  { id: "sunqi@a-company.com", name: "孙七", role: "member", status: "active", clawLimit: 3, tokenLimit: -1, clawCount: 2, joinTime: "2026-02-15", department: "A公司/运营部", departmentId: "dept-ops" },
+  { id: "zhouba@a-company.com", name: "周八", role: "member", status: "disabled", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-02-20", department: "A公司/人力资源部", departmentId: "dept-hr" },
+  { id: "wujiu@a-company.com", name: "吴九", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2026-03-01", department: "A公司/技术部/前端组", departmentId: "dept-fe" },
+  { id: "zhengshi@a-company.com", name: "郑十", role: "member", status: "active", clawLimit: 3, tokenLimit: 80000, clawCount: 0, joinTime: "2026-03-05", department: "A公司/技术部/后端组", departmentId: "dept-be" },
+  { id: "liuyi@a-company.com", name: "刘一", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2026-03-10", department: "A公司/运营部", departmentId: "dept-ops" },
+  { id: "chener@a-company.com", name: "陈二", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-15", department: "A公司/技术部/AI 团队", departmentId: "dept-ai" },
+  { id: "yangsan@a-company.com", name: "杨三", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", department: "A公司/产品部/设计组", departmentId: "dept-design" },
+];
+
+/** 按部门汇总的 Token 消耗数据（Tokens 监控「按部门」Tab 使用） */
+export const MOCK_TOKEN_BY_DEPARTMENT = [
+  { departmentId: "dept-fe", departmentName: "前端组", path: "A公司/技术部/前端组", requests: 3200, inputTokens: 820000, outputTokens: 450000, totalTokens: 1270000 },
+  { departmentId: "dept-be", departmentName: "后端组", path: "A公司/技术部/后端组", requests: 2800, inputTokens: 710000, outputTokens: 390000, totalTokens: 1100000 },
+  { departmentId: "dept-ai", departmentName: "AI 团队", path: "A公司/技术部/AI 团队", requests: 4100, inputTokens: 1050000, outputTokens: 600000, totalTokens: 1650000 },
+  { departmentId: "dept-pm", departmentName: "产品经理组", path: "A公司/产品部/产品经理组", requests: 1500, inputTokens: 380000, outputTokens: 210000, totalTokens: 590000 },
+  { departmentId: "dept-design", departmentName: "设计组", path: "A公司/产品部/设计组", requests: 900, inputTokens: 230000, outputTokens: 130000, totalTokens: 360000 },
+  { departmentId: "dept-ops", departmentName: "运营部", path: "A公司/运营部", requests: 600, inputTokens: 151580, outputTokens: 96320, totalTokens: 247900 },
+  { departmentId: "dept-hr", departmentName: "人力资源部", path: "A公司/人力资源部", requests: 250, inputTokens: 50000, outputTokens: 30000, totalTokens: 80000 },
+];
+
+/** OpenClaw 列表（带部门信息，OneID 模式使用） */
+export const MOCK_CLAWS_WITH_DEPT: Array<{
+  id: string;
+  instanceId: string;
+  name: string;
+  creator: string;
+  createTime: string;
+  status: string;
+  department?: string;
+  departmentId?: string;
+}> = [
+  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     department: "A公司/技术部/前端组", departmentId: "dept-fe" },
+  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     department: "A公司/技术部/后端组", departmentId: "dept-be" },
+  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",    department: "A公司/技术部/AI 团队", departmentId: "dept-ai" },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     department: "A公司/产品部/产品经理组", departmentId: "dept-pm" },
+  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail",  department: "A公司/产品部/设计组", departmentId: "dept-design" },
+  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     department: "A公司/运营部", departmentId: "dept-ops" },
+  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",    department: "A公司/人力资源部", departmentId: "dept-hr" },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     department: "A公司/技术部/前端组", departmentId: "dept-fe" },
+  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "maintaining", department: "A公司/技术部/后端组", departmentId: "dept-be" },
+  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     department: "A公司/技术部/AI 团队", departmentId: "dept-ai" },
+  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",    department: "A公司/产品部/产品经理组", departmentId: "dept-pm" },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     department: "A公司/运营部", departmentId: "dept-ops" },
+  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",       creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "loading",     department: "A公司/产品部/设计组", departmentId: "dept-design" },
+  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",     department: "A公司/人力资源部", departmentId: "dept-hr" },
+];

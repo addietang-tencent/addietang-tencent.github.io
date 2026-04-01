@@ -12,6 +12,7 @@ interface AdminModeContextValue {
   setMode: (mode: AdminMode) => void;
   isStandard: boolean;
   isCustom: boolean;
+  hasOneid: boolean;
 }
 
 const AdminModeContext = createContext<AdminModeContextValue | null>(null);
@@ -36,6 +37,7 @@ export function AdminModeProvider({ children }: { children: ReactNode }) {
         setMode,
         isStandard: mode === "standard",
         isCustom: mode === "custom",
+        hasOneid: mode === "standard",
       }}
     >
       {children}

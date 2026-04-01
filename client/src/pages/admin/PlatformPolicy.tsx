@@ -345,7 +345,7 @@ export default function PlatformPolicy() {
             icon={<Zap className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
             title="单用户 OpenClaw 数量上限"
-            description="此为每位用户的初始默认值，可在「用户管理」添加用户时进行调整，也可后续对单个用户单独修改"
+            description="单用户最多可以创建的 OpenClaw 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             value={clawLimit}
             onSave={handleSaveClawLimit}
             type="integer"

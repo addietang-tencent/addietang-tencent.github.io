@@ -3,6 +3,8 @@
  * Design: 「流动蓝图」Fluid Blueprint
  * - 三栏布局：模型 | 通道 | 技能
  * - 参考图片风格：白色卡片，标题带彩色图标
+ * - Header：名称、动态状态 badge（8 种状态）、一键更新、开启 OpenClaw 面板
+ * - 基础配置 Tab：模型配置、通道配置、技能配置
  */
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
@@ -38,10 +40,74 @@ import {
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import FileSpace from "./FileSpace";
+
+// ─── 实例状态配置（与 MyOpenClaw 保持一致） ──────────────────────────────────────
+
+type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+
+const INSTANCE_STATUS_CONFIG: Record<OpenClawStatus, {
+  label: string;
+  badgeClass: string;
+  dotColor?: string;
+  spinning?: boolean;
+  tooltipText?: string;
+}> = {
+  creating: {
+    label: "创建中",
+    badgeClass: "badge-loading",
+    dotColor: "#007AFF",
+    spinning: true,
+    tooltipText: "正在创建中，请稍候",
+  },
+  createFail: {
+    label: "创建失败",
+    badgeClass: "badge-stopped",
+    dotColor: "#FF3B30",
+    tooltipText: "创建失败，可删除后重新创建",
+  },
+  running: {
+    label: "运行中",
+    badgeClass: "badge-running",
+    dotColor: "#34C759",
+  },
+  shutdown: {
+    label: "已关机",
+    badgeClass: "badge-shutdown",
+    dotColor: "#9CA3AF",
+    tooltipText: "已关机，如需恢复请联系管理员",
+  },
+  loading: {
+    label: "加载中",
+    badgeClass: "badge-loading",
+    dotColor: "#007AFF",
+    spinning: true,
+    tooltipText: "加载中，请稍候",
+  },
+  loadFail: {
+    label: "加载失败",
+    badgeClass: "badge-stopped",
+    dotColor: "#FF3B30",
+    tooltipText: "加载失败，可点击重试恢复",
+  },
+  maintaining: {
+    label: "维护中",
+    badgeClass: "badge-pending",
+    dotColor: "#FF9500",
+    tooltipText: "维护中，请稍候",
+  },
+  pending: {
+    label: "待处理",
+    badgeClass: "badge-stopped",
+    dotColor: "#FF3B30",
+    tooltipText: "已停用，请联系管理员处理",
+  },
+};
 import {
   type CustomChannel as AdminCustomChannel,
   loadVisibleCustomChannels,
   onCustomChannelsChange,
+  loadBuiltinChannelVisibility,
+  onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
 
 // ─── 通道配置定义 ───────────────────────────────────────────────────────────────
@@ -64,6 +130,7 @@ type ChannelConfig = {
   wechatMode?: true; // 微信特殊处理
   adminCustomMode?: true; // 管控端配置的自定义通道
   adminCustomId?: string; // 对应的自定义通道 ID
+  builtinId?: string; // 对应管控端内置通道 ID，用于可见性过滤
 };
 
 const CHANNEL_OPTIONS: ChannelConfig[] = [
@@ -88,6 +155,20 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
       { key: "appId", label: "QQ机器人的App ID", secret: false },
       { key: "appSecret", label: "QQ机器人的App Secret", secret: true },
     ],
+  },
+  {
+    value: "wework-app",
+    label: "企业微信应用",
+    descText: "通过企业微信应用接口，将 OpenClaw 接入企业微信应用，支持消息互动与业务集成。",
+    detailUrl: "#",
+    fields: [
+      { key: "corpId",         label: "企业微信应用的Corp ID",           secret: false },
+      { key: "corpSecret",     label: "企业微信应用的Corp Secret",       secret: true  },
+      { key: "agentId",        label: "企业微信应用的Agent ID",          secret: false },
+      { key: "token",          label: "企业微信应用的Token",             secret: false },
+      { key: "encodingAesKey", label: "企业微信应用的Encoding AES Key", secret: true  },
+    ],
+    builtinId: "wework-app",
   },
   {
     value: "feishu",
@@ -201,17 +282,8 @@ export default function OpenClawDetail() {
   const claw = MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) || MOCK_OPENCLAW_LIST[0];
 
   const clawName = claw.name;
-
-  // ── Instance status loading state ──
-  const [statusLoading, setStatusLoading] = useState(true);
-  
-  useEffect(() => {
-    // 模拟加载状态，1.8秒后显示运行中
-    const timer = setTimeout(() => {
-      setStatusLoading(false);
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, []);
+  const clawStatus = (claw.status || "running") as OpenClawStatus;
+  const statusCfg = INSTANCE_STATUS_CONFIG[clawStatus] ?? INSTANCE_STATUS_CONFIG.running;
 
   // ── Configuration state ──
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
@@ -233,7 +305,7 @@ export default function OpenClawDetail() {
     if (provider) setSelectedModel(provider.versions[0].value);
   };
 
-  // ── 自定义通道（从管控端 localStorage 读取可见的自定义通道） ──
+  // 自定义通道（从管控端 localStorage 读取可见的自定义通道）
   const [visibleCustomChannels, setVisibleCustomChannels] = useState<AdminCustomChannel[]>(() => loadVisibleCustomChannels());
 
   useEffect(() => {
@@ -243,6 +315,17 @@ export default function OpenClawDetail() {
     return unsub;
   }, []);
 
+  // 内置通道可见性（从管控端 localStorage 读取）
+  const [builtinChannelVisibility, setBuiltinChannelVisibility] = useState<Record<string, boolean>>(
+    () => loadBuiltinChannelVisibility()
+  );
+
+  useEffect(() => {
+    const unsub = onBuiltinChannelVisibilityChange(() => {
+      setBuiltinChannelVisibility(loadBuiltinChannelVisibility());
+    });
+    return unsub;
+  }, []);
   // ── Channel state ──
   const [selectedChannel, setSelectedChannel] = useState("wework");
   const [channelFields, setChannelFields] = useState<Record<string, string>>({});
@@ -676,6 +759,12 @@ export default function OpenClawDetail() {
     setPendingSkills(prev => prev.filter(s => s.status !== "failed"));
   };
 
+  // 内置通道按管控端开关过滤（没有 builtinId 的项目为全局内置，始终显示）
+  const visibleBuiltinChannels = CHANNEL_OPTIONS.filter((ch) => {
+    if (!ch.builtinId) return true;
+    return builtinChannelVisibility[ch.builtinId] !== false;
+  });
+
   // 合并内置通道 + 可见的自定义通道（动态构建 ChannelConfig）
   const allChannelOptions: ChannelConfig[] = [
     ...CHANNEL_OPTIONS,
@@ -985,20 +1074,31 @@ export default function OpenClawDetail() {
               🦞
             </div>
             <div>
-              {/* 第一行：名称 + 状态 badge */}
-              <div className="flex items-center gap-2">
+            {/* 第一行：名称 + 状态 badge（8 种状态动态渲染） */}
+          <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
-                {statusLoading ? (
-                  <span className="badge-loading">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    加载中...
-                  </span>
-                ) : (
-                  <span className="badge-running">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                    运行中
-                  </span>
-                )}
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={statusCfg.badgeClass}>
+                        {statusCfg.spinning ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full inline-block"
+                            style={{ backgroundColor: statusCfg.dotColor }}
+                          />
+                        )}
+                        {statusCfg.label}
+                      </span>
+                    </TooltipTrigger>
+                    {statusCfg.tooltipText && (
+                      <TooltipContent side="top" className="text-xs">
+                        {statusCfg.tooltipText}
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               {/* 第二行：实例 ID */}
               <p className="text-xs text-gray-400 mt-0.5">{claw.instanceId}</p>
@@ -1269,7 +1369,7 @@ export default function OpenClawDetail() {
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CHANNEL_OPTIONS.map((ch) => (
+                    {visibleBuiltinChannels.map((ch) => (
                       <SelectItem key={ch.value} value={ch.value}>{ch.label}</SelectItem>
                     ))}
                     {visibleCustomChannels.length > 0 && (

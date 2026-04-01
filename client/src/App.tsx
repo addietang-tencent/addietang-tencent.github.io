@@ -36,6 +36,11 @@ import OpsObservation from "./pages/admin/OpsObservation";
 import MemoryManagement from "./pages/admin/MemoryManagement";
 import FileManagement from "./pages/admin/FileManagement";
 import SkillDetailPage from "./pages/admin/SkillDetailPage";
+import ModeAwareRoute from "./components/ModeAwareRoute";
+import StandardBasicInfo from "./pages/admin/standard/StandardBasicInfo";
+import StandardMemberManagement from "./pages/admin/standard/StandardMemberManagement";
+import StandardOpenClawMonitor from "./pages/admin/standard/StandardOpenClawMonitor";
+import StandardTokensMonitor from "./pages/admin/standard/StandardTokensMonitor";
 
 function Router() {
   return (
@@ -51,16 +56,16 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
 
       {/* Admin Routes - 使用顶层路由避免 wouter 嵌套路由匹配问题 */}
-      <Route path="/admin/basic-info" component={() => <AdminLayout><BasicInfo /></AdminLayout>} />
+      <Route path="/admin/basic-info" component={() => <AdminLayout><ModeAwareRoute standard={<StandardBasicInfo />} custom={<BasicInfo />} /></AdminLayout>} />
       <Route path="/admin/platform-policy" component={() => <AdminLayout><PlatformPolicy /></AdminLayout>} />
-      <Route path="/admin/members" component={() => <AdminLayout><MemberManagement /></AdminLayout>} />
+      <Route path="/admin/members" component={() => <AdminLayout><ModeAwareRoute standard={<StandardMemberManagement />} custom={<MemberManagement />} /></AdminLayout>} />
       <Route path="/admin/model-config" component={() => <AdminLayout><ModelConfig /></AdminLayout>} />
       <Route path="/admin/channel-config" component={() => <AdminLayout><ChannelConfig /></AdminLayout>} />
       <Route path="/admin/skill-config" component={() => <AdminLayout><SkillConfig /></AdminLayout>} />
       <Route path="/admin/image-management" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
-      <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><OpenClawMonitor /></AdminLayout>} />
-      <Route path="/admin/tokens-monitor" component={() => <AdminLayout><TokensMonitor /></AdminLayout>} />
+      <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><ModeAwareRoute standard={<StandardOpenClawMonitor />} custom={<OpenClawMonitor />} /></AdminLayout>} />
+      <Route path="/admin/tokens-monitor" component={() => <AdminLayout><ModeAwareRoute standard={<StandardTokensMonitor />} custom={<TokensMonitor />} /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />
       <Route path="/admin/session/:id" component={({ params }) => <AdminLayout><SessionDetail params={params} /></AdminLayout>} />
       <Route path="/admin/session-management" component={() => <AdminLayout><SessionManagement /></AdminLayout>} />

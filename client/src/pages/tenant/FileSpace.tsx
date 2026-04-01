@@ -904,14 +904,13 @@ export default function FileSpace({
                     <th className="text-left px-5 py-2.5 font-medium w-20">类型</th>
                     <th className="text-right px-5 py-2.5 font-medium w-24">大小</th>
                     <th className="text-right px-5 py-2.5 font-medium w-40">修改时间</th>
-                    <th className="text-center px-5 py-2.5 font-medium w-16">下载</th>
                     <th className="text-center px-5 py-2.5 font-medium w-16">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredFiles.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-5 py-16 text-center">
+                      <td colSpan={5} className="px-5 py-16 text-center">
                         <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                         <p className="text-sm text-gray-400">
                           {search ? "未找到匹配的文件" : "当前目录为空"}
@@ -931,16 +930,23 @@ export default function FileSpace({
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             {getFileIcon(file.type)}
-                            <button
-                              className={`text-sm font-medium truncate max-w-[320px] text-left ${
-                                file.type === "folder"
-                                  ? "text-gray-900 hover:text-blue-600 cursor-pointer"
-                                  : "text-gray-700 group-hover:text-blue-600 cursor-default"
-                              } transition-colors`}
-                              onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
-                            >
-                              {file.name}
-                            </button>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  className={`text-sm font-medium truncate max-w-[320px] text-left ${
+                                    file.type === "folder"
+                                      ? "text-gray-900 hover:text-blue-600 cursor-pointer"
+                                      : "text-gray-700 group-hover:text-blue-600 cursor-default"
+                                  } transition-colors`}
+                                  onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
+                                >
+                                  {file.name}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="text-xs max-w-[320px] break-words whitespace-normal">
+                                {file.name}
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                         </td>
                         <td className="px-5 py-2.5">
@@ -951,23 +957,6 @@ export default function FileSpace({
                         </td>
                         <td className="px-5 py-2.5 text-right">
                           <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">{file.modifiedAt}</span>
-                        </td>
-                        <td className="px-5 py-2.5 text-center">
-                          {file.type !== "folder" ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => handleDownload(file)}
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors mx-auto"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">下载</TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <span className="text-gray-200">—</span>
-                          )}
                         </td>
                         <td className="px-5 py-2.5 text-center">
                           <FileActions

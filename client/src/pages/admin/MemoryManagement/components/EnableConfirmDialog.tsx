@@ -34,7 +34,7 @@ export const EnableConfirmDialog: React.FC<EnableConfirmDialogProps> = ({
       return;
     }
     onConfirm();
-    toast.success('已开启记忆功能，正在向所有实例推送安装并重启服务...');
+    toast.success('已开启 Memory Free 版，正在为所有实例开启记忆插件');
     setIsChecked(false);
   };
 
@@ -109,7 +109,7 @@ export const EnableConfirmDialog: React.FC<EnableConfirmDialogProps> = ({
             disabled={!isChecked}
             className="bg-[#007AFF] text-white hover:bg-[#0051d5] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            立即开启并重启服务
+            确认开启
           </Button>
         </DialogFooter>
       </DialogContent>

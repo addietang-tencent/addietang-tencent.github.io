@@ -34,7 +34,7 @@ export const DisableConfirmDialog: React.FC<DisableConfirmDialogProps> = ({
       return;
     }
     onConfirm();
-    toast.success('已关闭记忆功能，所有实例记忆插件已禁用');
+    toast.success('已关闭 Memory Free 版');
     setIsChecked(false);
   };
 

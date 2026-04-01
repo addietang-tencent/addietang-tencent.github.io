@@ -137,7 +137,7 @@ export default function AdminNoticeBar() {
 
   return (
     <div
-      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-300 ${
+      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs transition-colors duration-300 ${
         isWarning
           ? "bg-amber-50 border-b border-amber-200"
           : "bg-blue-50 border-b border-blue-200"

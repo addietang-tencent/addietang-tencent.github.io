@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { MOCK_OPENCLAW_INSTANCES } from './mockData';
-import { type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
+import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP } from './types';
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -43,23 +43,27 @@ export default function BatchDistributeDialog({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  // 当打开弹窗时，默认选中所有未下发或下发失败的实例
+  // 当打开弹窗时，默认选中所有运行中且未下发或下发失败的实例
   useEffect(() => {
     if (open) {
       const validIds = MOCK_OPENCLAW_INSTANCES
-        .filter(i => i.distributionStatus === 'not_distributed' || i.distributionStatus === 'failed')
+        .filter(i => i.status === 'running' && (i.distributionStatus === 'not_distributed' || i.distributionStatus === 'failed'))
         .map(i => i.id);
       setSelectedInstances(validIds);
     }
   }, [open]);
 
-  const allFilteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance => {
-    const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = 
-      distributionFilter === 'all' ? (instance.distributionStatus === 'not_distributed' || instance.distributionStatus === 'failed') :
-      instance.distributionStatus === distributionFilter;
-    return matchesSearch && matchesFilter;
-  });
+  const allFilteredInstances = MOCK_OPENCLAW_INSTANCES
+    .filter(instance => {
+      // 仅显示运行中的实例
+      if (instance.status !== 'running') return false;
+      const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = 
+        distributionFilter === 'all' ? (instance.distributionStatus === 'not_distributed' || instance.distributionStatus === 'failed') :
+        instance.distributionStatus === distributionFilter;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // 分页计算
   const totalCount = allFilteredInstances.length;
@@ -111,7 +115,7 @@ export default function BatchDistributeDialog({
         <DialogHeader>
           <DialogTitle>批量下发 Skill</DialogTitle>
           <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持未下发或下发失败的实例。
+            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发或下发失败的实例。
           </DialogDescription>
         </DialogHeader>
 
@@ -167,6 +171,7 @@ export default function BatchDistributeDialog({
                   <p className="text-sm font-medium text-gray-900 truncate min-w-fit">{instance.name}</p>
                   <p className="text-xs text-gray-500 font-mono">{instance.id}</p>
                 </div>
+
               </div>
               <div className="flex-shrink-0">
                 {getStatusDisplay(instance.distributionStatus)}

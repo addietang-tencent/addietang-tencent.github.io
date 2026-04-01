@@ -161,9 +161,9 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', distributionStatus: 'success' },
-  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', distributionStatus: 'not_distributed' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', distributionStatus: 'success' },
-  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', distributionStatus: 'failed' },
-  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', distributionStatus: 'not_distributed' },
+  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed' },
+  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed' },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success' },
+  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed' },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success' },
 ];

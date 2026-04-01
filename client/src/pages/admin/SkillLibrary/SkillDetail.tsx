@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FileText, Search, Code, Eye } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import MDXRenderer from '@/components/MDXRenderer';
@@ -73,7 +73,7 @@ interface SkillDetailProps {
 
 // hljs 亮色主题样式
 const hljsStyle: Record<string, React.CSSProperties> = {
-  'hljs': { display: 'block', overflowX: 'auto', padding: '1em', background: '#fafafa', color: '#383a42' },
+  'hljs': { display: 'block', overflowX: 'auto', padding: '1em', background: '#ffffff', color: '#383a42' },
   'hljs-comment': { color: '#a0a1a7', fontStyle: 'italic' },
   'hljs-quote': { color: '#a0a1a7', fontStyle: 'italic' },
   'hljs-keyword': { color: '#a626a4' },
@@ -165,6 +165,32 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     }
   }, [skill?.versions, selectedVersion]);
   
+  // 剥离唯一顶层文件夹：如果所有文件都在同一个顶层目录下，则去掉该前缀
+  const { processedFiles, strippedPrefix } = useMemo(() => {
+    const rawFiles = skill?.files || [];
+    if (rawFiles.length === 0) return { processedFiles: rawFiles, strippedPrefix: '' };
+    
+    const topDirs = new Set<string>();
+    let topFileCount = 0;
+    for (const f of rawFiles) {
+      const parts = f.name.split('/');
+      if (parts.length > 1) {
+        topDirs.add(parts[0]);
+      } else {
+        topFileCount++;
+      }
+    }
+    // 所有文件都在同一个顶层目录下，且没有顶层文件
+    if (topDirs.size === 1 && topFileCount === 0) {
+      const prefix = [...topDirs][0] + '/';
+      return {
+        processedFiles: rawFiles.map(f => ({ ...f, name: f.name.slice(prefix.length) })),
+        strippedPrefix: prefix,
+      };
+    }
+    return { processedFiles: rawFiles, strippedPrefix: '' };
+  }, [skill?.files]);
+
   // 可展示的文件扩展名（文本类文件）
   const VIEWABLE_EXTENSIONS = ['.md', '.xml', '.json', '.txt', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.sh', '.bat', '.py', '.js', '.ts', '.css', '.html', '.htm', '.svg', '.env', '.gitignore', '.dockerfile'];
   
@@ -187,22 +213,20 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     });
   };
 
-  // 初始化时自动展开所有文件夹
+  // 初始化时仅展开顶层文件夹（与公共技能库一致）
   useEffect(() => {
-    if (skill?.files?.length) {
+    if (processedFiles.length) {
       const dirs = new Set<string>();
-      for (const file of skill.files) {
+      for (const file of processedFiles) {
         const parts = file.name.split('/');
         if (parts.length > 1) {
-          // 收集所有层级的目录
-          for (let i = 1; i < parts.length; i++) {
-            dirs.add(parts.slice(0, i).join('/'));
-          }
+          // 仅展开第一层目录
+          dirs.add(parts[0]);
         }
       }
       setExpandedDirs(dirs);
     }
-  }, [skill?.files]);
+  }, [processedFiles]);
 
   const renderFileTree = (files: Array<{ name: string; size?: number; content?: string }>) => {
     // 按路径排序，同一文件夹的文件聚在一起
@@ -242,16 +266,15 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
               <button
                 key={`dir-${dirPath}`}
                 onClick={() => toggleDir(dirPath)}
-                className="w-full text-left px-3 py-2 text-sm border-b border-gray-100 text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
+                style={{ paddingLeft: `${8 + depth * 16}px` }}
               >
-                <div className="flex items-center gap-1.5" style={{ paddingLeft: depth * 16 }}>
-                  <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                  <span className="truncate text-xs font-medium flex-1">{parts[i - 1]}</span>
-                  {isExpanded
-                    ? <ChevronDown className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                    : <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                  }
-                </div>
+                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                <span className="truncate font-medium">{parts[i - 1]}</span>
+                {isExpanded
+                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                }
               </button>
             );
           }
@@ -279,18 +302,17 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           key={file.name}
           onClick={() => canView && setExpandedFile(expandedFile === file.name ? null : file.name)}
           disabled={!canView}
-          className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
+          className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
             expandedFile === file.name
-              ? 'bg-blue-50 text-blue-600 font-medium'
+              ? 'bg-blue-50 text-blue-700'
               : canView
-              ? 'hover:bg-gray-50 text-gray-700 cursor-pointer'
+              ? 'hover:bg-gray-50 text-gray-600 cursor-pointer'
               : 'text-gray-500 cursor-not-allowed opacity-60'
           }`}
+          style={{ paddingLeft: `${8 + depth * 16}px` }}
         >
-          <div className="flex items-center gap-1.5" style={{ paddingLeft: depth * 16 }}>
-            <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-            <span className="truncate text-xs">{parts[parts.length - 1]}</span>
-          </div>
+          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <span className="truncate">{parts[parts.length - 1]}</span>
         </button>
       );
     }
@@ -313,9 +335,13 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
   const getFileContent = (fileName: string): string => {
     if (fileName === 'SKILL.md') return skill?.content || '';
-    // 从 skill.files 中递归查找对应文件的内容
-    const file = findFileInTree(skill?.files || [], fileName);
+    // 如果剥离了顶层文件夹，查找时还原为原始路径
+    const originalName = strippedPrefix ? strippedPrefix + fileName : fileName;
+    const file = findFileInTree(skill?.files || [], originalName);
     if (file?.content) return file.content;
+    // 也尝试直接用处理后的路径查找
+    const file2 = findFileInTree(skill?.files || [], fileName);
+    if (file2?.content) return file2.content;
     return '';
   };
 
@@ -522,11 +548,11 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
-              <div className="flex h-[36rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
                 {/* 左列：版本号选择 */}
                 <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-                  <div className="bg-gray-50 px-3 py-3 border-b border-gray-200 flex items-center">
-                    <p className="text-xs font-semibold text-gray-700">版本</p>
+                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                    <p className="text-xs font-medium text-gray-900">版本</p>
                   </div>
                   <div className="flex-1 overflow-y-auto">
                     {skill.versions?.map((ver: string, idx: number) => {
@@ -565,11 +591,11 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
                 {/* 中列：文件列表 */}
                 <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                  <div className="bg-gray-50 px-3 py-3 border-b border-gray-200 flex items-center">
-                    <p className="text-xs font-semibold text-gray-700">{selectedVersion || skill.version}</p>
+                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                    <p className="text-xs font-medium text-gray-900">{selectedVersion || skill.version}</p>
                   </div>
                   <div className="flex-1 overflow-y-auto">
-                    {renderFileTree(skill.files || [])}
+                    {renderFileTree(processedFiles)}
                   </div>
                 </div>
 
@@ -577,8 +603,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                 <div className="flex-1 flex flex-col bg-white">
                   {expandedFile ? (
                     <>
-                      <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[32px]">
-                        <p className="text-xs font-semibold text-gray-900">{expandedFile}</p>
+                      <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+                        <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
                         {/* 源码/预览 切换 */}
                         <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                           <button
@@ -631,7 +657,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                                   style={hljsStyle}
                                   showLineNumbers
                                   lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
-                                  customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#fafafa', borderRadius: 0 }}
+                                  customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
                                   wrapLongLines
                                 >
                                   {content}
@@ -661,7 +687,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                                 style={hljsStyle}
                                 showLineNumbers
                                 lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
-                                customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#fafafa', borderRadius: 0 }}
+                                customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
                                 wrapLongLines
                               >
                                 {content}

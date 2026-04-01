@@ -40,10 +40,23 @@ export interface Category {
   description: string;
 }
 
+/** 实例运行状态 */
+export type InstanceStatus = 'running' | 'stopped' | 'starting' | 'error';
+
+/** 实例运行状态显示映射 */
+export const INSTANCE_STATUS_MAP: Record<InstanceStatus, { label: string; color: string }> = {
+  running:  { label: '运行中', color: 'text-green-700 bg-green-50' },
+  stopped:  { label: '已停止', color: 'text-gray-500 bg-gray-50' },
+  starting: { label: '启动中', color: 'text-blue-600 bg-blue-50' },
+  error:    { label: '异常', color: 'text-red-700 bg-red-50' },
+};
+
 export interface OpenClawInstance {
   id: string;
   name: string;
   createdBy: string;
+  status: InstanceStatus;
+  createdAt: string; // ISO 日期字符串
   distributionStatus?: DistributionStatus;
 }
 

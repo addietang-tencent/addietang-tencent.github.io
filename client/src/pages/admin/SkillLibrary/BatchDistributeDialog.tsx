@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import { MOCK_OPENCLAW_INSTANCES } from './mockData';
+import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP } from './types';
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -28,6 +29,8 @@ interface BatchDistributeDialogProps {
   onDistributionStart?: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
+
 export default function BatchDistributeDialog({
   open,
   onOpenChange,
@@ -36,31 +39,46 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  const [distributionFilter, setDistributionFilter] = useState<'all' | 'not_distributed' | 'distribution_failed'>('all');
+  const [distributionFilter, setDistributionFilter] = useState<'all' | DistributionStatus>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  // 当打开弹窗时，默认选中所有未下发或下发失败的实例
+  // 当打开弹窗时，默认选中所有运行中且未下发或下发失败的实例
   useEffect(() => {
     if (open) {
       const validIds = MOCK_OPENCLAW_INSTANCES
-        .filter(i => i.distributionStatus === 'not_distributed' || i.distributionStatus === 'distribution_failed')
+        .filter(i => i.status === 'running' && (i.distributionStatus === 'not_distributed' || i.distributionStatus === 'failed'))
         .map(i => i.id);
       setSelectedInstances(validIds);
     }
   }, [open]);
 
-  const filteredInstances = MOCK_OPENCLAW_INSTANCES.filter(instance => {
-    const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = 
-      distributionFilter === 'all' ? (instance.distributionStatus === 'not_distributed' || instance.distributionStatus === 'distribution_failed') :
-      instance.distributionStatus === distributionFilter;
-    return matchesSearch && matchesFilter;
-  });
+  const allFilteredInstances = MOCK_OPENCLAW_INSTANCES
+    .filter(instance => {
+      // 仅显示运行中的实例
+      if (instance.status !== 'running') return false;
+      const matchesSearch = instance.name.toLowerCase().includes(searchQuery.toLowerCase()) || instance.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = 
+        distributionFilter === 'all' ? (instance.distributionStatus === 'not_distributed' || instance.distributionStatus === 'failed') :
+        instance.distributionStatus === distributionFilter;
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  // 分页计算
+  const totalCount = allFilteredInstances.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const filteredInstances = allFilteredInstances.slice(startIndex, startIndex + pageSize);
 
   const handleSelectAll = () => {
-    if (selectedInstances.length === filteredInstances.length) {
-      setSelectedInstances([]);
+    const currentPageIds = filteredInstances.map(i => i.id);
+    const allSelected = currentPageIds.every(id => selectedInstances.includes(id));
+    if (allSelected) {
+      setSelectedInstances(prev => prev.filter(id => !currentPageIds.includes(id)));
     } else {
-      setSelectedInstances(filteredInstances.map(i => i.id));
+      setSelectedInstances(prev => [...new Set([...prev, ...currentPageIds])]);
     }
   };
 
@@ -80,16 +98,15 @@ export default function BatchDistributeDialog({
     setSelectedInstances([]);
     setSearchQuery('');
     setDistributionFilter('all');
+    setCurrentPage(1);
+    setPageSize(20);
     onOpenChange(false);
   };
 
-  const getStatusDisplay = (status?: string) => {
-    if (status === 'not_distributed') {
-      return <span className="text-gray-500 text-xs">未下发</span>;
-    } else if (status === 'distribution_failed') {
-      return <span className="text-red-600 font-medium text-xs">下发失败</span>;
-    }
-    return <span className="text-gray-500 text-xs">未下发</span>;
+  const getStatusDisplay = (status?: DistributionStatus) => {
+    const s = status || 'not_distributed';
+    const { label, color } = DISTRIBUTION_STATUS_MAP[s];
+    return <span className={`font-medium text-xs ${color.split(' ')[0]}`}>{label}</span>;
   };
 
   return (
@@ -98,7 +115,7 @@ export default function BatchDistributeDialog({
         <DialogHeader>
           <DialogTitle>批量下发 Skill</DialogTitle>
           <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持未下发或下发失败的实例。
+            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发或下发失败的实例。
           </DialogDescription>
         </DialogHeader>
 
@@ -109,18 +126,18 @@ export default function BatchDistributeDialog({
             <Input
               placeholder="搜索 OpenClaw 云服务器..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="pl-10"
             />
           </div>
-          <Select value={distributionFilter} onValueChange={(value: any) => setDistributionFilter(value)}>
+          <Select value={distributionFilter} onValueChange={(value: any) => { setDistributionFilter(value); setCurrentPage(1); }}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">全部</SelectItem>
               <SelectItem value="not_distributed">未下发</SelectItem>
-              <SelectItem value="distribution_failed">下发失败</SelectItem>
+              <SelectItem value="failed">下发失败</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -130,11 +147,12 @@ export default function BatchDistributeDialog({
           {/* 全选复选框 */}
           <div className="flex items-center gap-3 p-2 border-b border-gray-200 bg-gray-50 sticky top-0">
             <Checkbox
-              checked={selectedInstances.length === filteredInstances.length && filteredInstances.length > 0}
+              checked={filteredInstances.length > 0 && filteredInstances.every(i => selectedInstances.includes(i.id))}
               onCheckedChange={handleSelectAll}
             />
             <span className="text-sm font-medium text-gray-900">
-              全选 ({selectedInstances.length}/{filteredInstances.length})
+              全选本页 ({filteredInstances.filter(i => selectedInstances.includes(i.id)).length}/{filteredInstances.length})
+              {selectedInstances.length > 0 && <span className="text-gray-500 ml-2">· 共选中 {selectedInstances.length} 个</span>}
             </span>
           </div>
 
@@ -153,12 +171,54 @@ export default function BatchDistributeDialog({
                   <p className="text-sm font-medium text-gray-900 truncate min-w-fit">{instance.name}</p>
                   <p className="text-xs text-gray-500 font-mono">{instance.id}</p>
                 </div>
+
               </div>
               <div className="flex-shrink-0">
                 {getStatusDisplay(instance.distributionStatus)}
               </div>
             </div>
           ))}
+        </div>
+
+        {/* 分页控件 */}
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <span>每页</span>
+            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+              <SelectTrigger className="w-20 h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map(size => (
+                  <SelectItem key={size} value={String(size)}>{size} 条</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>共 {totalCount} 条</span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0"
+                disabled={safeCurrentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
+                ‹
+              </Button>
+              <span className="px-2">{safeCurrentPage} / {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0"
+                disabled={safeCurrentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
+                ›
+              </Button>
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

@@ -1,3 +1,20 @@
+/**
+ * 统一下发状态枚举
+ * - not_distributed: 未下发
+ * - distributing: 下发中
+ * - success: 下发完成
+ * - failed: 下发失败
+ */
+export type DistributionStatus = 'not_distributed' | 'distributing' | 'success' | 'failed';
+
+/** 下发状态显示映射 */
+export const DISTRIBUTION_STATUS_MAP: Record<DistributionStatus, { label: string; color: string }> = {
+  not_distributed: { label: '未下发', color: 'text-gray-500 bg-gray-50' },
+  distributing:    { label: '下发中', color: 'text-blue-600 bg-blue-50' },
+  success:         { label: '成功', color: 'text-green-700 bg-green-50' },
+  failed:          { label: '失败', color: 'text-red-700 bg-red-50' },
+};
+
 export interface Skill {
   id: string;
   slug: string;
@@ -9,11 +26,12 @@ export interface Skill {
   content?: string;
   fileContent?: string;
   versions?: string[];
-  files?: Array<{ name: string; size: number }>;
-  lastDistributionStatus?: 'in_progress' | 'success' | 'partial' | 'failed';
+  files?: Array<{ name: string; size: number; content?: string }>;
+  lastDistributionStatus?: DistributionStatus;
   lastDistributionProgress?: number; // 0-100
   lastDistributionTime?: Date;
   lastDistributionInstanceCount?: number;
+  lastDistributionSuccessCount?: number;
 }
 
 export interface Category {
@@ -22,12 +40,24 @@ export interface Category {
   description: string;
 }
 
+/** 实例运行状态 */
+export type InstanceStatus = 'running' | 'stopped' | 'starting' | 'error';
+
+/** 实例运行状态显示映射 */
+export const INSTANCE_STATUS_MAP: Record<InstanceStatus, { label: string; color: string }> = {
+  running:  { label: '运行中', color: 'text-green-700 bg-green-50' },
+  stopped:  { label: '已停止', color: 'text-gray-500 bg-gray-50' },
+  starting: { label: '启动中', color: 'text-blue-600 bg-blue-50' },
+  error:    { label: '异常', color: 'text-red-700 bg-red-50' },
+};
+
 export interface OpenClawInstance {
   id: string;
   name: string;
   createdBy: string;
-  status?: 'success' | 'failed' | 'pending';
-  distributionStatus?: 'distributed' | 'not_distributed';
+  status: InstanceStatus;
+  createdAt: string; // ISO 日期字符串
+  distributionStatus?: DistributionStatus;
 }
 
 export interface DistributionRecord {
@@ -37,7 +67,7 @@ export interface DistributionRecord {
   totalCount: number;
   successCount: number;
   failedCount: number;
-  status: 'completed' | 'partial' | 'in_progress';
+  status: DistributionStatus;
   instances: OpenClawInstance[];
 }
 

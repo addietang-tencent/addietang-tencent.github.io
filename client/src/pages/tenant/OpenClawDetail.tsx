@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import FileSpace from "./FileSpace";
+import MemoryPreview from "@/components/MemoryPreview";
 
 // ─── 实例状态配置（与 MyOpenClaw 保持一致） ──────────────────────────────────────
 
@@ -294,7 +295,20 @@ export default function OpenClawDetail() {
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
-  const [appliedModel, setAppliedModel] = useState({ providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", active: true, isCustom: false, customName: "" });
+  // 多条模型列表，每条有唯一 id；active 表示当前应用中的模型
+  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; active: boolean; isCustom: boolean; customName: string; };
+  const [appliedModels, setAppliedModels] = useState<AppliedModel[]>([
+    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", active: true, isCustom: false, customName: "" },
+  ]);
+  const [modelIdCounter, setModelIdCounter] = useState(2);
+  // 拖拽排序
+  const [dragModelId, setDragModelId] = useState<number | null>(null);
+  // 模型操作二次确认弹窗
+  const [modelConfirmDialog, setModelConfirmDialog] = useState<{
+    open: boolean;
+    type: "switch" | "delete";
+    modelId: number | null;
+  }>({ open: false, type: "switch", modelId: null });
 
   const currentProvider = MODEL_PROVIDERS.find(p => p.value === selectedProvider) || MODEL_PROVIDERS[0];
   const currentVersions = currentProvider.versions;
@@ -560,18 +574,22 @@ export default function OpenClawDetail() {
   // ── Handlers ──
 
   const handleApplyModel = () => {
+    let newEntry: AppliedModel;
     if (selectedProvider === "custom") {
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      setAppliedModel({ providerLabel: "自定义模型", versionLabel: "", active: true, isCustom: true, customName: customName || "" });
+      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", active: true, isCustom: true, customName: customName || "" };
     } else {
       const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
       const version = currentVersions.find(v => v.value === selectedModel);
       if (!provider || !version) return;
-      setAppliedModel({ providerLabel: provider.label, versionLabel: version.label, active: true, isCustom: false, customName: "" });
+      newEntry = { id: modelIdCounter, providerLabel: provider.label, versionLabel: version.label, active: true, isCustom: false, customName: "" };
     }
-    toast.success("模型已添加并应用");
+    // 新添加的模型设为 active，其余取消 active
+    setAppliedModels(prev => [newEntry, ...prev.map(m => ({ ...m, active: false }))]);
+    setModelIdCounter(c => c + 1);
+    toast.success("模型已添加为默认");
   };
 
   const handleAddChannel = () => {
@@ -1307,7 +1325,7 @@ export default function OpenClawDetail() {
                     onClick={handleApplyModel}
                     disabled={isConfiguring}
                   >
-                    添加并应用
+                    添加为默认
                   </Button>
                 </TooltipTrigger>
                 {isConfiguring && (
@@ -1318,32 +1336,197 @@ export default function OpenClawDetail() {
               </Tooltip>
 
             </div>
-            {/* Lower: applied model - scrollable */}
+            {/* Lower: model list - scrollable */}
             <div className="px-5 pb-5 overflow-y-auto flex-1">
               <div className="pt-2 border-t border-gray-50">
-                <p className="text-xs text-gray-400 mb-2">已应用模型</p>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-                  <div className="flex flex-col min-w-0 mr-2">
-                    {appliedModel.isCustom ? (
-                      <>
-                        <span className="text-sm font-medium text-gray-800 leading-tight">自定义模型</span>
-                        {appliedModel.customName && (
-                          <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate">{appliedModel.customName}</span>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-sm font-medium text-gray-800 leading-tight">{appliedModel.providerLabel}</span>
-                        {appliedModel.versionLabel && (
-                          <span className="text-xs text-gray-400 leading-tight mt-0.5">{appliedModel.versionLabel}</span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  <span className="badge-running text-xs shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                    应用中
-                  </span>
+                <p className="text-xs text-gray-400 mb-2">切换模型</p>
+                <div className="space-y-1.5">
+                  {appliedModels.map((model) => (
+                    <div
+                      key={model.id}
+                      draggable
+                      onDragStart={() => setDragModelId(model.id)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (dragModelId === null || dragModelId === model.id) return;
+                        setAppliedModels(prev => {
+                          const from = prev.findIndex(m => m.id === dragModelId);
+                          const to = prev.findIndex(m => m.id === model.id);
+                          if (from === -1 || to === -1) return prev;
+                          const next = [...prev];
+                          const [moved] = next.splice(from, 1);
+                          next.splice(to, 0, moved);
+                          return next;
+                        });
+                        setDragModelId(null);
+                      }}
+                      onDragEnd={() => setDragModelId(null)}
+                      className={`rounded-lg border transition-all ${
+                        dragModelId === model.id
+                          ? "opacity-40 border-blue-200 bg-blue-50 p-2.5"
+                          : model.active
+                          ? "bg-gray-50 border-gray-100 p-2.5"
+                          : "bg-white border-gray-100 hover:bg-gray-50 p-2.5"
+                      }`}
+                    >
+                      {/* active 状态：单行布局，badge 在操作区左侧 */}
+                      {model.active ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center min-w-0 flex-1 overflow-hidden">
+                            <div className="flex flex-col min-w-0 overflow-hidden">
+                              {model.isCustom ? (
+                                <>
+                                  <span className="text-sm font-medium text-gray-800 leading-tight truncate block">自定义模型</span>
+                                  {model.customName && (
+                                    <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-medium text-gray-800 leading-tight truncate block">{model.providerLabel}</span>
+                                  {model.versionLabel && (
+                                    <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.versionLabel}</span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {/* 操作区：应用中 badge + 开关 + 删除 */}
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            <span className="badge-running pointer-events-none">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                              应用中
+                            </span>
+                        {/* Toggle Switch 开关 */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (model.active) {
+                                  // 允许关闭当前应用状态
+                                  setAppliedModels(prev => prev.map(m => m.id === model.id ? { ...m, active: false } : m));
+                                  return;
+                                }
+                                // 当前无应用中模型时直接激活，无需二次确认
+                                const hasActive = appliedModels.some(m => m.active);
+                                if (!hasActive) {
+                                  setAppliedModels(prev => prev.map(m => m.id === model.id ? { ...m, active: true } : m));
+                                  return;
+                                }
+                                setModelConfirmDialog({ open: true, type: "switch", modelId: model.id });
+                              }}
+                              className="relative inline-flex items-center shrink-0 focus:outline-none"
+                              aria-label={model.active ? "当前应用中" : "切换为此模型"}
+                            >
+                              {/* Track */}
+                              <span className={`block w-8 h-4 rounded-full transition-colors duration-200 ${
+                                model.active ? "bg-green-500" : "bg-gray-200"
+                              }`} />
+                              {/* Thumb */}
+                              <span className={`absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 ${
+                                model.active ? "translate-x-4" : "translate-x-0"
+                              }`} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                            {model.active ? "当前应用中" : "切换为此模型"}
+                          </TooltipContent>
+                        </Tooltip>
+                        {/* 删除 icon */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (model.active) {
+                                  // 删除应用中的模型才需要二次确认
+                                  setModelConfirmDialog({ open: true, type: "delete", modelId: model.id });
+                                } else {
+                                  // 删除非应用中的模型直接执行
+                                  setAppliedModels(prev => prev.filter(m => m.id !== model.id));
+                                }
+                              }}
+                              className="p-1 rounded text-gray-300 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                            删除模型
+                          </TooltipContent>
+                        </Tooltip>
+                          </div>
+                        </div>
+                      ) : (
+                        /* 非 active 状态：单行布局 */
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center min-w-0 flex-1 overflow-hidden">
+                            <div className="flex flex-col min-w-0 overflow-hidden">
+                              {model.isCustom ? (
+                                <>
+                                  <span className="text-sm font-medium text-gray-800 leading-tight truncate block">自定义模型</span>
+                                  {model.customName && (
+                                    <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-sm font-medium text-gray-800 leading-tight truncate block">{model.providerLabel}</span>
+                                  {model.versionLabel && (
+                                    <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.versionLabel}</span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    // 当前无应用中模型时直接激活，无需二次确认
+                                    const hasActive = appliedModels.some(m => m.active);
+                                    if (!hasActive) {
+                                      setAppliedModels(prev => prev.map(m => m.id === model.id ? { ...m, active: true } : m));
+                                      return;
+                                    }
+                                    setModelConfirmDialog({ open: true, type: "switch", modelId: model.id });
+                                  }}
+                                  className="relative inline-flex items-center shrink-0 focus:outline-none"
+                                  aria-label="切换为此模型"
+                                >
+                                  <span className="block w-8 h-4 rounded-full transition-colors duration-200 bg-gray-200" />
+                                  <span className="absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 translate-x-0" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                切换为此模型
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setAppliedModels(prev => prev.filter(m => m.id !== model.id));
+                                  }}
+                                  className="p-1 rounded text-gray-300 hover:text-red-400 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                删除模型
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {/* 删除 active 模型的操作区已内联在 active 分支中 */}
                 </div>
               </div>
             </div>
@@ -1618,8 +1801,8 @@ export default function OpenClawDetail() {
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
-            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <p className="text-gray-400 text-sm">记忆管理功能即将上线</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <MemoryPreview memoryServiceEnabled={true} openclawVersion="3.24" />
             </div>
           )}
 
@@ -2237,6 +2420,58 @@ export default function OpenClawDetail() {
                 <rect x="154" y="166" width="8" height="8" fill="black"/>
               </svg>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 模型操作二次确认弹窗 ===== */}
+      <Dialog
+        open={modelConfirmDialog.open}
+        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">
+              {modelConfirmDialog.type === "delete" ? "确认删除模型" : "确认切换模型"}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              {modelConfirmDialog.type === "delete"
+                ? "删除此模型将导致相关的 Gateway 服务立即停止，该操作不可恢复。"
+                : "切换模型会自动重启 Gateway 服务，是否继续？"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                const { type, modelId } = modelConfirmDialog;
+                setModelConfirmDialog(prev => ({ ...prev, open: false }));
+                if (type === "switch" && modelId !== null) {
+                  setAppliedModels(prev => prev.map(m => ({ ...m, active: m.id === modelId })));
+                  toast.success("已切换至该模型");
+                } else if (type === "delete" && modelId !== null) {
+                  setAppliedModels(prev => {
+                    const next = prev.filter(m => m.id !== modelId);
+                    const wasActive = prev.find(m => m.id === modelId)?.active ?? false;
+                    if (wasActive && next.length > 0) {
+                      next[0] = { ...next[0], active: true };
+                    }
+                    return next;
+                  });
+                  toast.success("模型已删除");
+                }
+              }}
+            >
+              {modelConfirmDialog.type === "delete" ? "确认删除" : "确认切换"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

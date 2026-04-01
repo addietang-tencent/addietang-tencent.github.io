@@ -1,15 +1,15 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Download, ChevronDown, ChevronRight, Filter } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import MDXRenderer from '@/components/MDXRenderer';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -21,23 +21,48 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-interface DistributionInstance {
-  id: string;
-  name: string;
-  createdBy: string;
-  status: 'success' | 'failed' | 'in_progress';
-}
+import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
+import {
+  getDistributionRecords,
+  addDistributionRecord,
+  updateDistributionRecord,
+  createDistributionRecordId,
+  type CachedDistributionRecord,
+} from './distributionCache';
 
-interface DistributionRecord {
-  id: string;
-  timestamp: Date;
-  totalCount: number;
-  successCount: number;
-  failedCount: number;
-  inProgressCount: number;
-  status: 'completed' | 'partial' | 'in_progress';
-  instances: DistributionInstance[];
-}
+// 懒加载 react-syntax-highlighter 减少首屏包体积
+const SyntaxHighlighter = lazy(() =>
+  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any }))
+);
+const loadedLanguages = new Set<string>();
+const registerLanguage = async (lang: string) => {
+  if (loadedLanguages.has(lang)) return;
+  loadedLanguages.add(lang);
+  try {
+    const mod = await import('react-syntax-highlighter');
+    const Light = mod.Light as any;
+    const langModules: Record<string, () => Promise<any>> = {
+      xml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/xml'),
+      json: () => import('react-syntax-highlighter/dist/esm/languages/hljs/json'),
+      yaml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/yaml'),
+      python: () => import('react-syntax-highlighter/dist/esm/languages/hljs/python'),
+      javascript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/javascript'),
+      typescript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/typescript'),
+      bash: () => import('react-syntax-highlighter/dist/esm/languages/hljs/bash'),
+      css: () => import('react-syntax-highlighter/dist/esm/languages/hljs/css'),
+      ini: () => import('react-syntax-highlighter/dist/esm/languages/hljs/ini'),
+      markdown: () => import('react-syntax-highlighter/dist/esm/languages/hljs/markdown'),
+    };
+    const loader = langModules[lang];
+    if (loader) {
+      const langMod = await loader();
+      Light.registerLanguage(lang, langMod.default);
+    }
+  } catch { /* 静默降级 */ }
+};
+
+// localStorage 缓存 key（与 SkillListTab 保持一致）
+const SKILLS_CACHE_KEY = 'skillhub_enterprise_skills_cache';
 
 interface SkillDetailProps {
   skillId: string;
@@ -46,17 +71,93 @@ interface SkillDetailProps {
   defaultTab?: string;
 }
 
+// hljs 亮色主题样式
+const hljsStyle: Record<string, React.CSSProperties> = {
+  'hljs': { display: 'block', overflowX: 'auto', padding: '1em', background: '#ffffff', color: '#383a42' },
+  'hljs-comment': { color: '#a0a1a7', fontStyle: 'italic' },
+  'hljs-quote': { color: '#a0a1a7', fontStyle: 'italic' },
+  'hljs-keyword': { color: '#a626a4' },
+  'hljs-selector-tag': { color: '#a626a4' },
+  'hljs-addition': { color: '#50a14f' },
+  'hljs-number': { color: '#986801' },
+  'hljs-string': { color: '#50a14f' },
+  'hljs-meta': { color: '#4078f2' },
+  'hljs-literal': { color: '#0184bb' },
+  'hljs-doctag': { color: '#a626a4' },
+  'hljs-regexp': { color: '#50a14f' },
+  'hljs-attr': { color: '#986801' },
+  'hljs-attribute': { color: '#50a14f' },
+  'hljs-builtin-name': { color: '#e45649' },
+  'hljs-name': { color: '#e45649' },
+  'hljs-section': { color: '#e45649' },
+  'hljs-tag': { color: '#e45649' },
+  'hljs-variable': { color: '#e45649' },
+  'hljs-template-variable': { color: '#e45649' },
+  'hljs-selector-id': { color: '#e45649' },
+  'hljs-title': { color: '#4078f2' },
+  'hljs-type': { color: '#4078f2' },
+  'hljs-symbol': { color: '#4078f2' },
+  'hljs-bullet': { color: '#4078f2' },
+  'hljs-link': { color: '#4078f2' },
+  'hljs-deletion': { color: '#e45649' },
+  'hljs-emphasis': { fontStyle: 'italic' },
+  'hljs-strong': { fontWeight: 'bold' },
+};
+
 export default function SkillDetail({ skillId, onBack, skills, defaultTab }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
-  const [distributionRecords, setDistributionRecords] = useState<DistributionRecord[]>([]);
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'failed' | 'in_progress'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | DistributionStatus>('all');
+  const [detailSearchQuery, setDetailSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
+  const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
   const skillsArray = skills || MOCK_SKILLS;
-  const skill = skillsArray.find(s => s.id === skillId);
+
+  // 从缓存读取下发记录
+  const [distributionRecords, setDistributionRecords] = useState<CachedDistributionRecord[]>([]);
+
+  const refreshRecords = useCallback(() => {
+    setDistributionRecords(getDistributionRecords(skillId));
+  }, [skillId]);
+
+  // 首次加载 + 监听缓存更新
+  useEffect(() => {
+    refreshRecords();
+    const handler = () => refreshRecords();
+    window.addEventListener('distribution-cache-updated', handler);
+    return () => window.removeEventListener('distribution-cache-updated', handler);
+  }, [refreshRecords]);
+
+  // 是否有进行中的下发任务
+  const hasInProgress = distributionRecords.some(r => r.status === 'distributing');
+  
+  // 先从 props 传入的 skills 中查找，找不到再从 localStorage 缓存中查找
+  const skill = useMemo(() => {
+    let found = skillsArray.find((s: any) => s.id === skillId);
+    if (!found) {
+      try {
+        const cached = localStorage.getItem(SKILLS_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const cachedSkill = parsed.find((s: any) => s.id === skillId);
+          if (cachedSkill) {
+            found = {
+              ...cachedSkill,
+              uploadTime: new Date(cachedSkill.uploadTime),
+              lastDistributionTime: cachedSkill.lastDistributionTime ? new Date(cachedSkill.lastDistributionTime) : undefined,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('从缓存加载 skill 失败:', e);
+      }
+    }
+    return found;
+  }, [skillId, skillsArray]);
   
   useEffect(() => {
     if (skill?.versions && skill.versions.length > 0 && !selectedVersion) {
@@ -64,67 +165,230 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     }
   }, [skill?.versions, selectedVersion]);
   
-  const renderFileTree = (files: Array<{ name: string; size?: number }>) => {
-    return files.map((file) => {
-      const isDir = !file.name.toLowerCase().endsWith('.md');
-      const parts = file.name.split('/');
-      const isNested = parts.length > 1;
-      
-      return (
-        <button
-          key={file.name}
-          onClick={() => !isDir && setExpandedFile(expandedFile === file.name ? null : file.name)}
-          disabled={isDir}
-          className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition-colors ${
-            expandedFile === file.name
-              ? 'bg-blue-50 text-blue-600 font-medium'
-              : !isDir
-              ? 'hover:bg-gray-50 text-gray-700 cursor-pointer'
-              : 'text-gray-500 cursor-not-allowed opacity-60'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {isNested && <span className="text-xs ml-2">└</span>}
-            <span className="text-xs">{isDir ? '📁' : '📄'}</span>
-            <span className="truncate text-xs">{parts[parts.length - 1]}</span>
-          </div>
-        </button>
-      );
+  // 剥离唯一顶层文件夹：如果所有文件都在同一个顶层目录下，则去掉该前缀
+  const { processedFiles, strippedPrefix } = useMemo(() => {
+    const rawFiles = skill?.files || [];
+    if (rawFiles.length === 0) return { processedFiles: rawFiles, strippedPrefix: '' };
+    
+    const topDirs = new Set<string>();
+    let topFileCount = 0;
+    for (const f of rawFiles) {
+      const parts = f.name.split('/');
+      if (parts.length > 1) {
+        topDirs.add(parts[0]);
+      } else {
+        topFileCount++;
+      }
+    }
+    // 所有文件都在同一个顶层目录下，且没有顶层文件
+    if (topDirs.size === 1 && topFileCount === 0) {
+      const prefix = [...topDirs][0] + '/';
+      return {
+        processedFiles: rawFiles.map(f => ({ ...f, name: f.name.slice(prefix.length) })),
+        strippedPrefix: prefix,
+      };
+    }
+    return { processedFiles: rawFiles, strippedPrefix: '' };
+  }, [skill?.files]);
+
+  // 可展示的文件扩展名（文本类文件）
+  const VIEWABLE_EXTENSIONS = ['.md', '.xml', '.json', '.txt', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.sh', '.bat', '.py', '.js', '.ts', '.css', '.html', '.htm', '.svg', '.env', '.gitignore', '.dockerfile'];
+  
+  const isViewableFile = (name: string) => {
+    const lower = name.toLowerCase();
+    // 没有扩展名的特殊文件也可以查看（如 Dockerfile, Makefile 等）
+    if (!lower.includes('.') && !lower.includes('/')) return true;
+    return VIEWABLE_EXTENSIONS.some(ext => lower.endsWith(ext));
+  };
+
+  const toggleDir = (dirName: string) => {
+    setExpandedDirs(prev => {
+      const next = new Set(prev);
+      if (next.has(dirName)) {
+        next.delete(dirName);
+      } else {
+        next.add(dirName);
+      }
+      return next;
     });
   };
+
+  // 初始化时仅展开顶层文件夹（与公共技能库一致）
+  useEffect(() => {
+    if (processedFiles.length) {
+      const dirs = new Set<string>();
+      for (const file of processedFiles) {
+        const parts = file.name.split('/');
+        if (parts.length > 1) {
+          // 仅展开第一层目录
+          dirs.add(parts[0]);
+        }
+      }
+      setExpandedDirs(dirs);
+    }
+  }, [processedFiles]);
+
+  const renderFileTree = (files: Array<{ name: string; size?: number; content?: string }>) => {
+    // 按路径排序，同一文件夹的文件聚在一起
+    const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name));
+    
+    // 收集所有文件夹及其层级
+    const renderedDirs = new Set<string>();
+    const result: React.ReactNode[] = [];
+    
+    for (const file of sorted) {
+      const parts = file.name.split('/');
+      const isDir = file.name.endsWith('/');
+      const isNested = parts.length > 1 && !isDir;
+      const canView = !isDir && isViewableFile(file.name);
+      
+      // 如果是子目录下的文件，先渲染各层目录头
+      if (isNested) {
+        for (let i = 1; i < parts.length; i++) {
+          const dirPath = parts.slice(0, i).join('/');
+          if (!renderedDirs.has(dirPath)) {
+            renderedDirs.add(dirPath);
+            const depth = i - 1;
+            const isExpanded = expandedDirs.has(dirPath);
+            
+            // 检查该目录的所有祖先是否展开，未展开则不渲染
+            let ancestorsExpanded = true;
+            for (let j = 1; j < i; j++) {
+              const ancestor = parts.slice(0, j).join('/');
+              if (!expandedDirs.has(ancestor)) {
+                ancestorsExpanded = false;
+                break;
+              }
+            }
+            if (!ancestorsExpanded) continue;
+            
+            result.push(
+              <button
+                key={`dir-${dirPath}`}
+                onClick={() => toggleDir(dirPath)}
+                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
+                style={{ paddingLeft: `${8 + depth * 16}px` }}
+              >
+                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                <span className="truncate font-medium">{parts[i - 1]}</span>
+                {isExpanded
+                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                }
+              </button>
+            );
+          }
+        }
+        
+        // 检查父目录是否全部展开，否则隐藏该文件
+        const parentDir = parts.slice(0, -1).join('/');
+        let allParentsExpanded = true;
+        for (let i = 1; i < parts.length; i++) {
+          const ancestor = parts.slice(0, i).join('/');
+          if (!expandedDirs.has(ancestor)) {
+            allParentsExpanded = false;
+            break;
+          }
+        }
+        if (!allParentsExpanded) continue;
+      }
+      
+      // 跳过纯目录条目
+      if (isDir) continue;
+      
+      const depth = parts.length - 1;
+      result.push(
+        <button
+          key={file.name}
+          onClick={() => canView && setExpandedFile(expandedFile === file.name ? null : file.name)}
+          disabled={!canView}
+          className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
+            expandedFile === file.name
+              ? 'bg-blue-50 text-blue-700'
+              : canView
+              ? 'hover:bg-gray-50 text-gray-600 cursor-pointer'
+              : 'text-gray-500 cursor-not-allowed opacity-60'
+          }`}
+          style={{ paddingLeft: `${8 + depth * 16}px` }}
+        >
+          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <span className="truncate">{parts[parts.length - 1]}</span>
+        </button>
+      );
+    }
+    
+    return result;
+  };
   
+  // 递归在文件树中查找文件（支持 children 嵌套结构和 path 匹配）
+  const findFileInTree = (files: any[], targetName: string): any => {
+    for (const f of files) {
+      // 同时匹配 name 和 path
+      if (f.name === targetName || f.path === targetName) return f;
+      if (f.children && f.children.length > 0) {
+        const found = findFileInTree(f.children, targetName);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   const getFileContent = (fileName: string): string => {
     if (fileName === 'SKILL.md') return skill?.content || '';
-    if (fileName === 'hha/ha.md') {
-      return `## 我好\n### niha\n**默认有：**\n通用办公  研发工具  系统运维   质量测试   需求设计    信息检索    项目管理    数据分析    安全合规\n支持新增和删除。`;
-    }
+    // 如果剥离了顶层文件夹，查找时还原为原始路径
+    const originalName = strippedPrefix ? strippedPrefix + fileName : fileName;
+    const file = findFileInTree(skill?.files || [], originalName);
+    if (file?.content) return file.content;
+    // 也尝试直接用处理后的路径查找
+    const file2 = findFileInTree(skill?.files || [], fileName);
+    if (file2?.content) return file2.content;
     return '';
+  };
+
+  // 判断文件是否为 Markdown
+  const isMarkdownFile = (name: string) => {
+    const lower = name.toLowerCase();
+    return lower.endsWith('.md') || lower.endsWith('.mdx');
+  };
+
+  // 获取文件对应的语法高亮语言
+  const getFileLanguage = (name: string): string => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    const langMap: Record<string, string> = {
+      json: 'json', xml: 'xml', yaml: 'yaml', yml: 'yaml',
+      toml: 'toml', py: 'python', js: 'javascript', ts: 'typescript',
+      css: 'css', html: 'html', htm: 'html', sh: 'bash', bat: 'batch',
+      svg: 'xml', ini: 'ini', cfg: 'ini', conf: 'ini',
+    };
+    return langMap[ext] || 'text';
   };
   
   const handleDistributionStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
-    // 创建新的分发记录
-    const newRecord: DistributionRecord = {
-      id: 'dist-' + Date.now(),
-      timestamp: new Date(),
+    // 创建新的分发记录并写入缓存
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId,
+      timestamp: new Date().toISOString(),
       totalCount: selectedInstanceIds.length,
       successCount: 0,
       failedCount: 0,
       inProgressCount: selectedInstanceIds.length,
-      status: 'in_progress',
+      status: 'distributing',
       instances: selectedInstancesData.map(inst => ({
         id: inst.id,
         name: inst.name,
-        createdBy: 'admin', // 模拟数据
-        status: 'in_progress',
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as DistributionStatus,
       })),
     };
     
-    setDistributionRecords(prev => [newRecord, ...prev]);
-    setActiveDistributionId(newRecord.id);
+    addDistributionRecord(newRecord);
+    setActiveDistributionId(recordId);
     setDistributeDialogOpen(false);
     
     // 模拟下发进度
-    simulateDistribution(newRecord.id, selectedInstanceIds.length);
+    simulateDistribution(recordId, selectedInstanceIds.length);
   };
   
   const simulateDistribution = (recordId: string, totalCount: number) => {
@@ -135,37 +399,27 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
         completed = totalCount;
         clearInterval(interval);
         
-        // 更新记录为完成
-        setDistributionRecords(prev => prev.map(record => {
-          if (record.id === recordId) {
-            // 模拟随机失败一些实例
-            const failedCount = Math.floor(Math.random() * 2);
-            const successCount = totalCount - failedCount;
-            return {
-              ...record,
-              successCount,
-              failedCount,
-              inProgressCount: 0,
-              status: failedCount === 0 ? 'completed' : 'partial',
-              instances: record.instances.map((inst, idx) => ({
-                ...inst,
-                status: idx < successCount ? 'success' : 'failed',
-              })),
-            };
-          }
-          return record;
+        // 模拟随机失败一些实例
+        const failedCount = Math.floor(Math.random() * 2);
+        const successCount = totalCount - failedCount;
+        
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: (failedCount === 0 ? 'success' : 'failed') as DistributionStatus,
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (idx < successCount ? 'success' : 'failed') as DistributionStatus,
+          })),
         }));
       } else {
         // 更新进度
-        setDistributionRecords(prev => prev.map(record => {
-          if (record.id === recordId) {
-            return {
-              ...record,
-              successCount: completed,
-              inProgressCount: totalCount - completed,
-            };
-          }
-          return record;
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
         }));
       }
     }, 800);
@@ -175,24 +429,20 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     const record = distributionRecords.find(r => r.id === recordId);
     if (!record) return;
     
-    const failedInstances = record.instances.filter(inst => inst.status === 'failed');
-    simulateDistribution(recordId, failedInstances.length);
+    const failedInstances = record.instances.filter(inst => inst.distributionStatus === 'failed');
     
     // 重置失败的实例状态
-    setDistributionRecords(prev => prev.map(r => {
-      if (r.id === recordId) {
-        return {
-          ...r,
-          status: 'in_progress',
-          inProgressCount: failedInstances.length,
-          instances: r.instances.map(inst => ({
-            ...inst,
-            status: inst.status === 'failed' ? 'in_progress' : inst.status,
-          })),
-        };
-      }
-      return r;
+    updateDistributionRecord(recordId, (r) => ({
+      ...r,
+      status: 'distributing' as DistributionStatus,
+      inProgressCount: failedInstances.length,
+      instances: r.instances.map(inst => ({
+        ...inst,
+        distributionStatus: (inst.distributionStatus === 'failed' ? 'distributing' : inst.distributionStatus) as DistributionStatus,
+      })),
     }));
+    
+    simulateDistribution(recordId, failedInstances.length);
   };
 
   if (!skill) {
@@ -208,17 +458,16 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
   };
 
-  const files = [
-    { name: 'SKILL.md', content: skill.content },
-    { name: 'README.md', content: '# README\n\n这是 Skill 的说明文档...' },
-    { name: 'config.yaml', content: 'name: ' + skill.name + '\nversion: ' + skill.version },
-  ];
-
   const activeDistribution = distributionRecords.find(r => r.id === activeDistributionId);
   const filteredInstances = activeDistribution 
-    ? activeDistribution.instances.filter(inst => 
-        statusFilter === 'all' || inst.status === statusFilter
-      )
+    ? activeDistribution.instances.filter(inst => {
+        const matchesStatus = statusFilter === 'all' || inst.distributionStatus === statusFilter;
+        const searchLower = detailSearchQuery.toLowerCase();
+        const matchesSearch = !detailSearchQuery || 
+          inst.name.toLowerCase().includes(searchLower) || 
+          inst.id.toLowerCase().includes(searchLower);
+        return matchesStatus && matchesSearch;
+      })
     : [];
 
   return (
@@ -299,65 +548,162 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <div className="flex gap-2 h-96">
-                {/* 左列：版本号选择 (1) */}
-                <div className="w-1/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <p className="text-xs font-semibold text-gray-700">版本号</p>
+              <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
+                {/* 左列：版本号选择 */}
+                <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                    <p className="text-xs font-medium text-gray-900">版本</p>
                   </div>
                   <div className="flex-1 overflow-y-auto">
-                    {skill.versions?.map((ver: string) => (
-                      <button
-                        key={ver}
-                        onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-2 py-1.5 text-xs border-b border-gray-100 transition-colors ${
-                          selectedVersion === ver
-                            ? 'bg-blue-50 text-blue-600 font-medium'
-                            : 'hover:bg-gray-50 text-gray-700 cursor-pointer'
-                        }`}
-                      >
-                        v{ver}
-                      </button>
-                    ))}
+                    {skill.versions?.map((ver: string, idx: number) => {
+                      const isLatest = idx === 0;
+                      const isSelected = selectedVersion === ver;
+                      // 根据版本索引生成模拟日期（从 uploadTime 往前推）
+                      const versionDate = new Date(skill.uploadTime);
+                      versionDate.setDate(versionDate.getDate() - idx * 14);
+                      const dateStr = `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
+                      return (
+                        <button
+                          key={ver}
+                          onClick={() => setSelectedVersion(ver)}
+                          className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                            isSelected
+                              ? 'bg-blue-50 border-l-[3px] border-l-blue-500'
+                              : 'hover:bg-gray-50 cursor-pointer'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                              {ver}
+                            </span>
+                            {isLatest && (
+                              <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                                最新
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-400 mt-0.5">{dateStr}</p>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* 中列：文件列表 (2) */}
-                <div className="w-2/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <p className="text-xs font-semibold text-gray-700">文件</p>
+                {/* 中列：文件列表 */}
+                <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                    <p className="text-xs font-medium text-gray-900">{selectedVersion || skill.version}</p>
                   </div>
                   <div className="flex-1 overflow-y-auto">
-                    {renderFileTree(skill.files || [])}
+                    {renderFileTree(processedFiles)}
                   </div>
                 </div>
 
-                {/* 右列：文件详情 (4) */}
-                <div className="w-4/7 border border-gray-200 rounded-lg overflow-hidden flex flex-col bg-white">
+                {/* 右列：文件详情 */}
+                <div className="flex-1 flex flex-col bg-white">
                   {expandedFile ? (
                     <>
-                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900">{expandedFile}</p>
+                      <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+                        <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
+                        {/* 源码/预览 切换 */}
+                        <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
+                          <button
+                            onClick={() => setFileViewMode('preview')}
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                              fileViewMode === 'preview'
+                                ? 'bg-white text-gray-900 shadow-sm font-medium'
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          >
+                            <Eye className="w-3 h-3" />
+                            预览
+                          </button>
+                          <button
+                            onClick={() => setFileViewMode('source')}
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                              fileViewMode === 'source'
+                                ? 'bg-white text-gray-900 shadow-sm font-medium'
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          >
+                            <Code className="w-3 h-3" />
+                            源码
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex-1 overflow-y-auto p-4">
-                        {expandedFile.toLowerCase().endsWith('.md') ? (
-                          <MDXRenderer content={getFileContent(expandedFile)} />
-                        ) : (
-                          <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap break-words font-mono">
-                            {getFileContent(expandedFile)}
-                          </pre>
-                        )}
+                      <div className="flex-1 overflow-y-auto">
+                        {(() => {
+                          const content = getFileContent(expandedFile);
+                          if (!content) {
+                            return (
+                              <div className="flex items-center justify-center h-full text-gray-400">
+                                <p className="text-sm">文件内容暂无</p>
+                              </div>
+                            );
+                          }
+                          // 源码模式：所有文件类型都使用语法高亮
+                          if (fileViewMode === 'source') {
+                            const lang = getFileLanguage(expandedFile);
+                            // 异步注册语言
+                            registerLanguage(lang);
+                            return (
+                              <Suspense fallback={
+                                <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                                  {content}
+                                </pre>
+                              }>
+                                <SyntaxHighlighter
+                                  language={lang}
+                                  style={hljsStyle}
+                                  showLineNumbers
+                                  lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                                  customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
+                                  wrapLongLines
+                                >
+                                  {content}
+                                </SyntaxHighlighter>
+                              </Suspense>
+                            );
+                          }
+                          // 预览模式
+                          if (isMarkdownFile(expandedFile)) {
+                            return (
+                              <div className="p-4">
+                                <MDXRenderer content={content} />
+                              </div>
+                            );
+                          }
+                          // 非 md 文件：预览也使用带行号的语法高亮（与源码一致）
+                          const previewLang = getFileLanguage(expandedFile);
+                          registerLanguage(previewLang);
+                          return (
+                            <Suspense fallback={
+                              <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                                {content}
+                              </pre>
+                            }>
+                              <SyntaxHighlighter
+                                language={previewLang}
+                                style={hljsStyle}
+                                showLineNumbers
+                                lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                                customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
+                                wrapLongLines
+                              >
+                                {content}
+                              </SyntaxHighlighter>
+                            </Suspense>
+                          );
+                        })()}
                       </div>
                     </>
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-500">
-                      <p className="text-sm">选择一个 MD 文件查看详情</p>
+                      <p className="text-sm">选择一个文件查看内容</p>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
           </TabsContent>
 
           {/* 下发记录 Tab */}
@@ -369,8 +715,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                 <Button
                   onClick={() => setDistributeDialogOpen(true)}
                   className="bg-blue-600 hover:bg-blue-700"
+                  disabled={hasInProgress}
+                  title={hasInProgress ? '有下发任务进行中，请等待完成' : ''}
                 >
-                  批量下发
+                  {hasInProgress ? '下发中...' : '批量下发'}
                 </Button>
               </div>
             </div>
@@ -389,18 +737,18 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">
-                              #{distributionRecords.length - idx} · {record.timestamp.toLocaleString('zh-CN')}
+                              #{distributionRecords.length - idx} · {new Date(record.timestamp).toLocaleString('zh-CN')}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                              record.status === 'completed' ? 'bg-green-50 text-green-700' :
-                              record.status === 'partial' ? 'bg-yellow-50 text-yellow-700' :
-                              'bg-blue-50 text-blue-700'
+                              record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
+                              record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
+                              'bg-yellow-50 text-yellow-700'
                             }`}>
-                              {record.status === 'completed' ? `下发完成，${record.totalCount}个下发成功，0个失败` :
-                               record.status === 'partial' ? `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败` :
-                               '下发中'}
+                              {record.status === 'distributing'
+                                ? `下发中 ${progress}%`
+                                : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`}
                             </span>
                             <Button 
                               size="sm" 
@@ -408,6 +756,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                               onClick={() => {
                                 setActiveDistributionId(record.id);
                                 setStatusFilter('all');
+                                setDetailSearchQuery('');
                                 setDetailsOpen(true);
                               }}
                               className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
@@ -417,7 +766,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                           </div>
                         </div>
                         
-                        {record.status === 'in_progress' && (
+                        {record.status === 'distributing' && (
                           <>
                             <div className="mb-2">
                               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -459,18 +808,26 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           
           {activeDistribution && (
             <div className="space-y-4">
-              {/* 筛选器 */}
+              {/* 筛选器 + 搜索框 */}
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-600" />
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="搜索实例名称/ID..."
+                    value={detailSearchQuery}
+                    onChange={(e) => setDetailSearchQuery(e.target.value)}
+                    className="pl-10 h-9"
+                  />
+                </div>
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-28">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="success">成功</SelectItem>
                     <SelectItem value="failed">失败</SelectItem>
-                    <SelectItem value="in_progress">进行中</SelectItem>
+                    <SelectItem value="distributing">下发中</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -499,13 +856,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                           <td className="px-4 py-2 text-gray-600 font-mono">{instance.id}</td>
                           <td className="px-4 py-2">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                              instance.status === 'success' ? 'bg-green-50 text-green-700' :
-                              instance.status === 'failed' ? 'bg-red-50 text-red-700' :
-                              'bg-blue-50 text-blue-700'
+                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'
                             }`}>
-                              {instance.status === 'success' ? '成功' :
-                               instance.status === 'failed' ? '失败' :
-                               '进行中'}
+                              {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
                           </td>
 

@@ -2,19 +2,96 @@
  * 公共技能库 Tab
  * 设计风格：浅色主题，卡片式布局，精选排行榜
  */
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Search, Download, Star, Heart, ChevronRight,
-  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw
+  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
 } from 'lucide-react';
 import {
   PUBLIC_SKILLS, PUBLIC_SKILL_CATEGORIES, type PublicSkill, type FavoriteSkill, type PublicSkillFile
 } from './publicSkillMockData';
-import { renderMarkdown } from '@/lib/markdownRenderer';
+import MDXRenderer from '@/components/MDXRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
+
+// 懒加载 react-syntax-highlighter 减少首屏包体积
+const SyntaxHighlighter = lazy(() =>
+  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any }))
+);
+const _loadedLanguages = new Set<string>();
+const registerLanguage = async (lang: string) => {
+  if (_loadedLanguages.has(lang)) return;
+  _loadedLanguages.add(lang);
+  try {
+    const mod = await import('react-syntax-highlighter');
+    const Light = mod.Light as any;
+    const langModules: Record<string, () => Promise<any>> = {
+      xml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/xml'),
+      json: () => import('react-syntax-highlighter/dist/esm/languages/hljs/json'),
+      yaml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/yaml'),
+      python: () => import('react-syntax-highlighter/dist/esm/languages/hljs/python'),
+      javascript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/javascript'),
+      typescript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/typescript'),
+      bash: () => import('react-syntax-highlighter/dist/esm/languages/hljs/bash'),
+      css: () => import('react-syntax-highlighter/dist/esm/languages/hljs/css'),
+      ini: () => import('react-syntax-highlighter/dist/esm/languages/hljs/ini'),
+      markdown: () => import('react-syntax-highlighter/dist/esm/languages/hljs/markdown'),
+    };
+    const loader = langModules[lang];
+    if (loader) {
+      const langMod = await loader();
+      Light.registerLanguage(lang, langMod.default);
+    }
+  } catch { /* 静默降级 */ }
+};
+
+// hljs 亮色主题样式（与企业技能库保持一致）
+const hljsStyle: Record<string, React.CSSProperties> = {
+  'hljs': { display: 'block', overflowX: 'auto', padding: '1em', background: '#ffffff', color: '#383a42' },
+  'hljs-comment': { color: '#a0a1a7', fontStyle: 'italic' },
+  'hljs-quote': { color: '#a0a1a7', fontStyle: 'italic' },
+  'hljs-keyword': { color: '#a626a4' },
+  'hljs-selector-tag': { color: '#a626a4' },
+  'hljs-addition': { color: '#50a14f' },
+  'hljs-number': { color: '#986801' },
+  'hljs-string': { color: '#50a14f' },
+  'hljs-meta': { color: '#4078f2' },
+  'hljs-literal': { color: '#0184bb' },
+  'hljs-doctag': { color: '#a626a4' },
+  'hljs-regexp': { color: '#50a14f' },
+  'hljs-attr': { color: '#986801' },
+  'hljs-attribute': { color: '#50a14f' },
+  'hljs-builtin-name': { color: '#e45649' },
+  'hljs-name': { color: '#e45649' },
+  'hljs-section': { color: '#e45649' },
+  'hljs-tag': { color: '#e45649' },
+  'hljs-variable': { color: '#e45649' },
+  'hljs-template-variable': { color: '#e45649' },
+  'hljs-selector-id': { color: '#e45649' },
+  'hljs-title': { color: '#4078f2' },
+  'hljs-type': { color: '#4078f2' },
+  'hljs-symbol': { color: '#4078f2' },
+  'hljs-bullet': { color: '#4078f2' },
+  'hljs-link': { color: '#4078f2' },
+  'hljs-deletion': { color: '#e45649' },
+  'hljs-emphasis': { fontStyle: 'italic' },
+  'hljs-strong': { fontWeight: 'bold' },
+};
+
+function getLanguageFromFilename(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  const map: Record<string, string> = {
+    json: 'json', xml: 'xml', yaml: 'yaml', yml: 'yaml',
+    py: 'python', js: 'javascript', jsx: 'javascript',
+    ts: 'typescript', tsx: 'typescript',
+    sh: 'bash', bash: 'bash', css: 'css',
+    md: 'markdown', html: 'xml', htm: 'xml',
+    ini: 'ini', cfg: 'ini', conf: 'ini',
+  };
+  return map[ext] || 'text';
+}
 
 // ─── 分页组件 ─────────────────────────────────────────────────────────────────
 
@@ -207,7 +284,7 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
           style={{ paddingLeft: `${8 + depth * 16}px` }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? <FolderOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" /> : <Folder className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-gray-400" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-gray-400" />}
           <span className="font-medium">{file.name}</span>
           {expanded ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400" /> : <ChevronRightIcon className="w-3 h-3 ml-auto text-gray-400" />}
         </button>
@@ -252,10 +329,32 @@ interface SkillDetailViewProps {
 
 function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToPackage, onBack }: SkillDetailViewProps) {
   const [selectedVersion, setSelectedVersion] = useState(skill.versions[0]);
+
+  // 剥离唯一顶层文件夹：如果 files 只有一个 folder，直接展示其 children
+  const displayFiles = useMemo(() => {
+    if (skill.files.length === 1 && skill.files[0].type === 'folder' && skill.files[0].children) {
+      return skill.files[0].children;
+    }
+    return skill.files;
+  }, [skill.files]);
+
   const [selectedFile, setSelectedFile] = useState<PublicSkillFile | null>(() => {
-    // 默认选中 SKILL.md
-    return skill.files.find(f => f.name === 'SKILL.md') || skill.files[0] || null;
+    // 默认选中 SKILL.md（在 displayFiles 中递归查找）
+    const findSkillMd = (files: PublicSkillFile[]): PublicSkillFile | null => {
+      for (const f of files) {
+        if (f.name === 'SKILL.md') return f;
+        if (f.children) {
+          const found = findSkillMd(f.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return findSkillMd(displayFiles.length > 0 ? displayFiles : skill.files) || skill.files[0] || null;
   });
+  const [mdPreviewMode, setMdPreviewMode] = useState<'source' | 'preview'>(
+    () => selectedFile?.name.endsWith('.md') ? 'preview' : 'source'
+  );
   const formatCount = (n: number) => {
     if (n >= 10000) {
       const v = n / 10000;
@@ -288,12 +387,13 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-0.5">
               <h2 className="font-mono text-lg font-bold text-gray-900">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
+            <p className="text-xs text-gray-400 font-mono mb-2">slug：{skill.name}</p>
             <p className="text-sm text-gray-600 mb-3">{skill.descriptionZh}</p>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
+            <div className="flex items-center gap-4 text-xs text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Download className="w-4 h-4" />
                 {formatCount(skill.downloads)} 次下载
@@ -318,97 +418,160 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
               </Button>
 
             </div>
-
-            {/* 加入初始技能包 */}
-            <Button
-              size="sm"
-              onClick={() => onAddToPackage(skill.id)}
-              className={`gap-1.5 ${isInPackage ? 'bg-green-600 hover:bg-green-700' : ''}`}
-            >
-              <Package className="w-4 h-4" />
-              {isInPackage ? '已加入技能包' : '加入初始技能包'}
-            </Button>
           </div>
         </div>
       </div>
 
       {/* 三列内容区 */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)', height: '520px' }}>
-        <div className="flex h-full">
-          {/* 左列：版本列表 */}
-          <div className="w-44 border-r border-gray-100 flex flex-col shrink-0">
-            <div className="px-3 py-2.5 border-b border-gray-100">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">版本</span>
-            </div>
-            <div className="flex-1 overflow-y-auto py-1">
-              {skill.versions.map(v => (
-                <button
-                  key={v.version}
-                  onClick={() => setSelectedVersion(v)}
-                  className={`w-full text-left px-3 py-2.5 transition-colors ${
-                    selectedVersion.version === v.version
-                      ? 'bg-blue-50 border-r-2 border-blue-500'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-mono font-semibold text-gray-800">{v.version}</span>
-                    {v.isLatest && (
-                      <span className="text-[10px] px-1 py-0 bg-green-100 text-green-700 rounded font-medium">最新</span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-gray-400">{v.date.slice(0, 10)}</span>
-                </button>
-              ))}
-            </div>
+      <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
+        {/* 左列：版本列表 */}
+        <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+            <p className="text-xs font-medium text-gray-900">版本</p>
           </div>
-
-          {/* 中列：文件目录 */}
-          <div className="w-44 border-r border-gray-100 flex flex-col shrink-0">
-            <div className="px-3 py-2.5 border-b border-gray-100">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{selectedVersion.version}</span>
-            </div>
-            <div className="flex-1 overflow-y-auto py-1">
-              {skill.files.map(file => (
-                <FileTreeNode
-                  key={file.path}
-                  file={file}
-                  depth={0}
-                  selectedFile={selectedFile}
-                  onSelect={setSelectedFile}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 右列：文件内容预览 */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {selectedFile ? (
-              <>
-                <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-700">{selectedFile.name}</span>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4">
-                  {selectedFile.name.endsWith('.md') ? (
-                    <div
-                      className="prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedFile.content || '') }}
-                    />
-                  ) : (
-                    <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap leading-relaxed">
-                      {selectedFile.content || '（文件内容为空）'}
-                    </pre>
+          <div className="flex-1 overflow-y-auto">
+            {skill.versions.map((v, idx) => (
+              <button
+                key={v.version}
+                onClick={() => setSelectedVersion(v)}
+                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors rounded-none ${
+                  selectedVersion.version === v.version
+                    ? 'bg-blue-50'
+                    : 'hover:bg-gray-50 cursor-pointer'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-xs font-normal ${
+                    selectedVersion.version === v.version ? 'text-blue-700' : 'text-gray-700'
+                  }`}>{v.version}</span>
+                  {v.isLatest && (
+                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">最新</span>
                   )}
                 </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
-                选择文件查看内容
-              </div>
-            )}
+                <p className="text-[11px] text-gray-400 mt-0.5">{v.date.slice(0, 10)}</p>
+              </button>
+            ))}
           </div>
+        </div>
+
+        {/* 中列：文件目录 */}
+        <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+            <p className="text-xs font-medium text-gray-900">{selectedVersion.version}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {displayFiles.map(file => (
+              <FileTreeNode
+                key={file.path}
+                file={file}
+                depth={0}
+                selectedFile={selectedFile}
+                onSelect={(file) => {
+                  setSelectedFile(file);
+                  setMdPreviewMode(file.name.endsWith('.md') ? 'preview' : 'source');
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 右列：文件内容预览 */}
+        <div className="flex-1 flex flex-col bg-white">
+          {selectedFile ? (
+            <>
+              <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+                <p className="text-xs font-medium text-gray-900">{selectedFile.name}</p>
+                {/* 源码/预览 切换（所有文件都显示） */}
+                <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
+                  <button
+                    onClick={() => setMdPreviewMode('preview')}
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                      mdPreviewMode === 'preview'
+                        ? 'bg-white text-gray-900 shadow-sm font-medium'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Eye className="w-3 h-3" />
+                    预览
+                  </button>
+                  <button
+                    onClick={() => setMdPreviewMode('source')}
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                      mdPreviewMode === 'source'
+                        ? 'bg-white text-gray-900 shadow-sm font-medium'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Code className="w-3 h-3" />
+                    源码
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {(() => {
+                  const content = selectedFile.content || '';
+                  if (!content) {
+                    return (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        <p className="text-sm">文件内容暂无</p>
+                      </div>
+                    );
+                  }
+                  // 源码模式：所有文件类型都使用语法高亮
+                  if (mdPreviewMode === 'source') {
+                    const lang = getLanguageFromFilename(selectedFile.name);
+                    registerLanguage(lang);
+                    return (
+                      <Suspense fallback={
+                        <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                      }>
+                        <SyntaxHighlighter
+                          language={lang}
+                          style={hljsStyle}
+                          showLineNumbers
+                          lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                          customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
+                          wrapLongLines
+                        >
+                          {content}
+                        </SyntaxHighlighter>
+                      </Suspense>
+                    );
+                  }
+                  // 预览模式：md 文件用 MDXRenderer，其他文件也用语法高亮
+                  if (selectedFile.name.toLowerCase().endsWith('.md') || selectedFile.name.toLowerCase().endsWith('.mdx')) {
+                    return (
+                      <div className="p-4">
+                        <MDXRenderer content={content} />
+                      </div>
+                    );
+                  }
+                  const previewLang = getLanguageFromFilename(selectedFile.name);
+                  registerLanguage(previewLang);
+                  return (
+                    <Suspense fallback={
+                      <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                    }>
+                      <SyntaxHighlighter
+                        language={previewLang}
+                        style={hljsStyle}
+                        showLineNumbers
+                        lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                        customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
+                        wrapLongLines
+                      >
+                        {content}
+                      </SyntaxHighlighter>
+                    </Suspense>
+                  );
+                })()}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p className="text-sm">选择一个文件查看内容</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

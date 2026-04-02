@@ -26,6 +26,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -37,6 +45,7 @@ import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
   ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
+  Copy, Terminal, Database, Clock, Shield,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import { findClawById, onClawListChange } from "@/lib/openclawStore";
@@ -407,6 +416,72 @@ export default function OpenClawDetail() {
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
   const [activeDetailTab, setActiveDetailTab] = useState("basic");
+
+  // ── 智能体迁移状态 ──
+  const [migrationOpen, setMigrationOpen] = useState(false);
+  const [migrationStep, setMigrationStep] = useState<"export" | "waitUpload" | "import" | "importing" | "success" | "failed">("export");
+  const [migrationCosUrl, setMigrationCosUrl] = useState("");
+  const [migrationProgress, setMigrationProgress] = useState(0);
+  const [migrationUploaded, setMigrationUploaded] = useState(false);
+  const [migrationChecking, setMigrationChecking] = useState(false);
+  const [migrationError, setMigrationError] = useState("");
+
+  const migrationBatchId = `${clawData?.instanceId || "unknown"}-${Date.now()}`;
+  const migrationCosBucket = "clawpro-migrate-1302061491";
+  const migrationCosKey = `single/${clawData?.instanceId || "unknown"}-${Math.random().toString(36).substring(2, 8)}.tgz`;
+  const migrationPresignedUrl = `https://${migrationCosBucket}.cos.ap-guangzhou.myqcloud.com/${migrationCosKey}?q-sign-algorithm=sha1&q-ak=AKID****&q-sign-time=****&q-signature=****`;
+
+  const migrationExportCommand = `# 在源端 OpenClaw 终端执行以下命令
+openclaw gateway stop
+tar -czf /tmp/openclaw-export.tgz -C /root .openclaw
+curl -X PUT --upload-file /tmp/openclaw-export.tgz \\
+  "${migrationPresignedUrl}"
+rm -f /tmp/openclaw-export.tgz
+openclaw gateway start
+echo "✅ 导出完成，数据已上传到 COS"`;
+
+  const handleCheckUpload = () => {
+    setMigrationChecking(true);
+    setTimeout(() => {
+      setMigrationUploaded(true);
+      setMigrationChecking(false);
+      setMigrationStep("import");
+      toast.success("检测到已上传的数据包");
+    }, 1500);
+  };
+
+  const handleStartMigration = () => {
+    setMigrationStep("importing");
+    setMigrationProgress(0);
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 15 + 5;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(iv);
+        setTimeout(() => {
+          if (Math.random() < 0.9) {
+            setMigrationStep("success");
+            toast.success("迁移成功！OpenClaw 已重启");
+          } else {
+            setMigrationStep("failed");
+            setMigrationError("Gateway 重启超时，请手动检查");
+          }
+        }, 500);
+      }
+      setMigrationProgress(Math.min(p, 100));
+    }, 800);
+  };
+
+  const resetMigration = () => {
+    setMigrationStep("export");
+    setMigrationCosUrl("");
+    setMigrationProgress(0);
+    setMigrationUploaded(false);
+    setMigrationChecking(false);
+    setMigrationError("");
+  };
+
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
@@ -1214,6 +1289,15 @@ export default function OpenClawDetail() {
                 </TooltipContent>
               )}
             </Tooltip>
+            {activeDetailTab === "basic" && (
+              <button
+                onClick={() => { setMigrationOpen(true); resetMigration(); }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors leading-none text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100 cursor-pointer"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                智能体迁移
+              </button>
+            )}
           </div>
         </div>
 
@@ -2567,6 +2651,178 @@ export default function OpenClawDetail() {
             >
               确认安装
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ==================== 智能体迁移弹窗 ==================== */}
+      <Dialog open={migrationOpen} onOpenChange={setMigrationOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold flex items-center gap-2">
+              <ArrowLeftRight className="w-4 h-4 text-blue-500" />
+              迁移 OpenClaw 至当前实例
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              将源端 OpenClaw 的配置、通道状态、会话历史导入到「{clawData?.name}」
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 mt-2">
+            {/* 注意事项 */}
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 space-y-1.5">
+              <p className="text-xs text-amber-800 font-semibold flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> 注意事项
+              </p>
+              <ul className="text-xs text-amber-700 space-y-1 list-disc pl-4 leading-relaxed">
+                <li>源端 OpenClaw 的配置、通道登录状态、会话历史将完整导入到当前实例</li>
+                <li>源端仅做读取打包，不影响源端正常运行</li>
+                <li>导入将覆盖当前实例的 ~/.openclaw/ 目录，导入前自动备份，失败自动回滚</li>
+                <li>COS 临时数据保留 24 小时后自动清理</li>
+              </ul>
+            </div>
+
+            {/* Step 1: 导出源端配置 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  migrationStep === "export" || migrationStep === "waitUpload"
+                    ? "bg-blue-500 text-white" : "bg-green-500 text-white"
+                }`}>
+                  {migrationStep !== "export" && migrationStep !== "waitUpload" ? <CheckCircle2 className="w-3 h-3" /> : "1"}
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">导出源端 OpenClaw 配置</h3>
+              </div>
+              <p className="text-xs text-gray-500 ml-7">
+                请复制下方命令，在源 OpenClaw 终端或 IM 机器人对话框中执行。
+              </p>
+              <div className="ml-7 relative bg-gray-900 rounded-lg p-3">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(migrationExportCommand); toast.success("命令已复制"); }}
+                  className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                  title="复制命令"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap break-all leading-relaxed pr-8">{migrationExportCommand}</pre>
+              </div>
+              <div className="ml-7 text-xs text-gray-400 space-y-0.5">
+                <p className="flex items-center gap-1"><Clock className="w-3 h-3" /> 上传链接有效期 1 小时，超时请刷新页面重新获取</p>
+              </div>
+            </div>
+
+            {/* Step 2: 检测上传 & 导入 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  migrationStep === "export" || migrationStep === "waitUpload" ? "bg-gray-300 text-gray-600"
+                  : migrationStep === "import" ? "bg-blue-500 text-white"
+                  : "bg-green-500 text-white"
+                }`}>
+                  {migrationStep === "success" || migrationStep === "importing" ? <CheckCircle2 className="w-3 h-3" /> : "2"}
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">将源端配置导入当前实例</h3>
+              </div>
+
+              {!migrationUploaded && (migrationStep === "export" || migrationStep === "waitUpload") && (
+                <div className="ml-7 space-y-2">
+                  <p className="text-xs text-gray-500">执行完导出命令后，点击检测上传状态：</p>
+                  <button
+                    onClick={handleCheckUpload}
+                    disabled={migrationChecking}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100 disabled:opacity-50"
+                  >
+                    {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                    {migrationChecking ? "检测中..." : "检测上传状态"}
+                  </button>
+                </div>
+              )}
+
+              {migrationStep === "import" && (
+                <div className="ml-7 space-y-3">
+                  <div className="rounded-lg bg-green-50 border border-green-200 p-2.5">
+                    <p className="text-xs text-green-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> 已检测到上传的数据包
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                    <p className="text-xs text-red-700 font-semibold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> 重要提醒
+                    </p>
+                    <p className="text-xs text-red-600 mt-1 leading-relaxed">
+                      执行导入将<strong>覆盖</strong>当前实例「{clawData?.name}」的全部 OpenClaw 配置（~/.openclaw/ 目录）。
+                      导入前会自动备份，失败时自动回滚。
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleStartMigration}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-4 py-2 transition-colors text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    导入并重启 OpenClaw
+                  </button>
+                </div>
+              )}
+
+              {migrationStep === "importing" && (
+                <div className="ml-7 space-y-2">
+                  <p className="text-xs text-blue-600 flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> 正在导入...
+                  </p>
+                  <Progress value={migrationProgress} className="h-1.5" />
+                  <p className="text-xs text-gray-400">
+                    下载数据包 → 备份当前配置 → 解压覆盖 → 重启 Gateway
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Result */}
+            {migrationStep === "success" && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center">
+                    <CheckCircle2 className="w-3 h-3" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-green-700">迁移成功</h3>
+                </div>
+                <div className="ml-7 rounded-lg bg-green-50 border border-green-200 p-3 space-y-1.5">
+                  <p className="text-xs text-green-700">OpenClaw 配置数据已成功导入，Gateway 已重启。</p>
+                  <p className="text-xs text-green-600">COS 临时数据已清理。</p>
+                </div>
+                <div className="ml-7">
+                  <button onClick={() => setMigrationOpen(false)}
+                    className="text-xs font-medium text-blue-600 hover:underline">
+                    关闭
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {migrationStep === "failed" && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center">
+                    <XCircle className="w-3 h-3" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-red-700">迁移失败</h3>
+                </div>
+                <div className="ml-7 rounded-lg bg-red-50 border border-red-200 p-3 space-y-1.5">
+                  <p className="text-xs text-red-700">{migrationError}</p>
+                  <p className="text-xs text-red-600">已自动回滚至导入前状态，当前实例配置未受影响。</p>
+                </div>
+                <div className="ml-7 flex gap-2">
+                  <button onClick={resetMigration}
+                    className="text-xs font-medium text-blue-600 hover:underline">
+                    重试
+                  </button>
+                  <button onClick={() => setMigrationOpen(false)}
+                    className="text-xs font-medium text-gray-500 hover:underline">
+                    关闭
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -2,7 +2,7 @@
  * MemberManagement - 管控端用户管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,14 +16,18 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   Search, Plus, ChevronDown, Info, Upload, Download,
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
-  Loader2, X, FileText, ExternalLink,
+  Loader2, X, FileText, ExternalLink, RefreshCw, Users, Check,
 } from "lucide-react";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
 const PAGE_SIZE = 10;
 
@@ -49,6 +53,64 @@ const MOCK_MEMBERS_BASE = [
   { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/nina", hasVpcResources: true },   // 无 claw，但还有残留资源
   { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/oscar", hasVpcResources: false }, // 无 claw，资源已清空
 ];
+
+// ─── Mock 部门数据（仅 OneID 模式使用） ─────────────────────────────────────────
+interface DepartmentNode {
+  id: string;
+  name: string;
+  path?: string;
+  children?: DepartmentNode[];
+}
+
+const MOCK_DEPARTMENTS: DepartmentNode[] = [
+  {
+    id: "dept-root",
+    name: "全公司",
+    path: "全公司",
+    children: [
+      {
+        id: "dept-tech",
+        name: "技术部",
+        path: "全公司/技术部",
+        children: [
+          { id: "dept-fe", name: "前端组", path: "全公司/技术部/前端组" },
+          { id: "dept-be", name: "后端组", path: "全公司/技术部/后端组" },
+          { id: "dept-ai", name: "AI 组", path: "全公司/技术部/AI 组" },
+        ],
+      },
+      {
+        id: "dept-product",
+        name: "产品部",
+        path: "全公司/产品部",
+        children: [
+          { id: "dept-pm", name: "产品策划", path: "全公司/产品部/产品策划" },
+          { id: "dept-design", name: "设计组", path: "全公司/产品部/设计组" },
+        ],
+      },
+      { id: "dept-hr", name: "人力资源", path: "全公司/人力资源" },
+      { id: "dept-finance", name: "财务部", path: "全公司/财务部" },
+    ],
+  },
+];
+
+/** 用户归属 mock 映射 */
+const MOCK_MEMBER_DEPARTMENTS: Record<string, string> = {
+  "alice@acompany.com": "全公司/技术部/前端组",
+  "bob@acompany.com": "全公司/技术部/后端组",
+  "carol@acompany.com": "全公司/技术部/AI 组",
+  "david@acompany.com": "全公司/产品部/产品策划",
+  "eve@acompany.com": "全公司/产品部/设计组",
+  "frank@acompany.com": "全公司/技术部/前端组",
+  "grace@acompany.com": "全公司/技术部/后端组",
+  "henry@acompany.com": "全公司/人力资源",
+  "iris@acompany.com": "全公司/技术部/AI 组",
+  "jack@acompany.com": "全公司/财务部",
+  "kate@acompany.com": "全公司/技术部/前端组",
+  "leo@acompany.com": "全公司/产品部/产品策划",
+  "mike@acompany.com": "全公司/技术部/后端组",
+  "nina@acompany.com": "全公司/产品部/设计组",
+  "oscar@acompany.com": "全公司/财务部",
+};
 
 const LAST_CLAW_LIMIT = 3;
 const LAST_TOKEN_LIMIT = 50000;
@@ -189,9 +251,8 @@ function AddMemberFormFields({
                 setIdError(""); // 清除错误提示
               }}
               onBlur={handleIdBlur}
-              className={`bg-gray-50 ${
-                idError ? "border-red-300 focus:ring-red-500 focus:border-red-500" : ""
-              }`}
+              className={`bg-gray-50 ${idError ? "border-red-300 focus:ring-red-500 focus:border-red-500" : ""
+                }`}
             />
             {idError && (
               <p className="text-xs text-red-500 font-medium">{idError}</p>
@@ -413,6 +474,305 @@ function EditMemberFormFields({
   );
 }
 
+// ─── OneID 编辑用户表单（用户 ID / 角色 / 部门 只读，仅配额可编辑） ──────────
+const emptyOneidEditForm = {
+  id: "", role: "member", department: "", clawLimit: LAST_CLAW_LIMIT, tokenLimit: LAST_TOKEN_LIMIT,
+};
+
+function OneidEditMemberFormFields({
+  values,
+  onChange,
+}: {
+  values: typeof emptyOneidEditForm;
+  onChange: (v: typeof emptyOneidEditForm) => void;
+}) {
+  const [clawStr, setClawStr] = React.useState<string>(String(values.clawLimit));
+
+  React.useEffect(() => {
+    setClawStr(String(values.clawLimit));
+  }, [values.clawLimit]);
+
+  return (
+    <div className="py-2 space-y-6">
+      {/* 用户信息（只读） */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              用户 ID
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-default inline-flex">
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>用户 ID 由统一身份平台管理</TooltipContent>
+              </Tooltip>
+            </Label>
+            <Input
+              value={values.id}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>用户角色</Label>
+            <Select value={values.role} disabled>
+              <SelectTrigger className="bg-gray-100 cursor-not-allowed opacity-60 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="member">用户</SelectItem>
+                <SelectItem value="admin">管理员</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>部门</Label>
+            <Input
+              value={values.department || "—"}
+              readOnly
+              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100" />
+
+      {/* 用户配额（可编辑） */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              OpenClaw 数量上限
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-default inline-flex">
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
+              </Tooltip>
+            </Label>
+            <Input
+              type="number"
+              value={clawStr}
+              onChange={(e) => {
+                setClawStr(e.target.value);
+                if (e.target.value !== "") onChange({ ...values, clawLimit: Number(e.target.value) });
+              }}
+              onBlur={() => {
+                if (clawStr === "" || isNaN(Number(clawStr))) {
+                  setClawStr("0");
+                  onChange({ ...values, clawLimit: 0 });
+                }
+              }}
+              className="bg-gray-50"
+              autoFocus
+              placeholder="请输入数量"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              每日 Tokens 数量上限
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-default inline-flex">
+                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
+              </Tooltip>
+            </Label>
+            <TokenLimitInput
+              value={values.tokenLimit}
+              onChange={(v) => onChange({ ...values, tokenLimit: v })}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── 部门树选择器 ───────────────────────────────────────────────────────────
+function DepartmentTreeNode({
+  node,
+  level,
+  selected,
+  expanded,
+  onToggle,
+  onSelect,
+}: {
+  node: DepartmentNode;
+  level: number;
+  selected: string;
+  expanded: Set<string>;
+  onToggle: (id: string) => void;
+  onSelect: (id: string) => void;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+          }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button
+            className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            )}
+          </button>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          </span>
+        )}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+      </div>
+      {hasChildren && isExpanded && node.children!.map((child) => (
+        <DepartmentTreeNode
+          key={child.id}
+          node={child}
+          level={level + 1}
+          selected={selected}
+          expanded={expanded}
+          onToggle={onToggle}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DepartmentFilter({
+  departments,
+  value,
+  onChange,
+}: {
+  departments: DepartmentNode[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (open) setTempValue(value);
+  }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleConfirm = () => {
+    onChange(tempValue);
+    setOpen(false);
+  };
+
+  const handleCancel = () => {
+    setTempValue(value);
+    setOpen(false);
+  };
+
+  // 查找选中节点（递归）
+  const findNode = (nodes: DepartmentNode[], id: string): DepartmentNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) {
+        const found = findNode(n.children, id);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  };
+
+  const selectedNode = tempValue ? findNode(departments, tempValue) : undefined;
+  const triggerNode = value ? findNode(departments, value) : undefined;
+  const pathParts = selectedNode?.path?.split("/").filter(Boolean) || [];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${triggerNode ? "text-foreground" : "text-muted-foreground"
+            }`}
+        >
+          <span className="truncate">{triggerNode?.name || "全部部门"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div
+            className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+              }`}
+            onClick={() => setTempValue("")}
+          >
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {departments.map((dept) => (
+            <DepartmentTreeNode
+              key={dept.id}
+              node={dept}
+              level={0}
+              selected={tempValue}
+              expanded={expanded}
+              onToggle={toggleExpand}
+              onSelect={setTempValue}
+            />
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部部门</span>
+            ) : pathParts.length > 0 ? (
+              pathParts.map((part, idx) => (
+                <span key={idx} className="flex items-center gap-1 shrink-0">
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
+                  <span className={idx === pathParts.length - 1 ? "text-blue-600 font-medium truncate" : "text-gray-500 truncate"}>
+                    {part}
+                  </span>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ─── 创建/重置成功弹窗 ────────────────────────────────────────────────────────
 function CredentialResultDialog({
   open,
@@ -493,10 +853,19 @@ function CredentialResultDialog({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function MemberManagement() {
+  // 获取 hasOneid 状态
+  const { hasOneid } = useAdminMode();
+
   const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
+
+  // OneID 模式专用状态
+  const [deptFilter, setDeptFilter] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "member">("all");
+  const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
   const sortedMembers = [...members].sort((a, b) => {
@@ -552,9 +921,31 @@ export default function MemberManagement() {
   // 启用确认弹窗
   const [enableConfirmDialog, setEnableConfirmDialog] = useState<{ open: boolean; memberId: string; clawCount: number } | null>(null);
 
-  const filtered = sortedMembers.filter((m) =>
-    m.id.toLowerCase().includes(search.toLowerCase())
-  );
+  // 筛选逻辑：hasOneid 模式时支持部门和角色筛选
+  const filtered = sortedMembers.filter((m) => {
+    // 搜索筛选
+    if (!m.id.toLowerCase().includes(search.toLowerCase())) return false;
+    // OneID 模式：部门筛选
+    if (hasOneid && deptFilter) {
+      const memberDept = MOCK_MEMBER_DEPARTMENTS[m.id] || "";
+      // 根据部门 ID 匹配部门路径
+      const findDeptPath = (nodes: DepartmentNode[], id: string): string | undefined => {
+        for (const n of nodes) {
+          if (n.id === id) return n.path;
+          if (n.children) {
+            const found = findDeptPath(n.children, id);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+      const selectedPath = findDeptPath(MOCK_DEPARTMENTS, deptFilter);
+      if (selectedPath && !memberDept.startsWith(selectedPath)) return false;
+    }
+    // OneID 模式：角色筛选
+    if (hasOneid && roleFilter !== "all" && m.role !== roleFilter) return false;
+    return true;
+  });
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -575,25 +966,57 @@ export default function MemberManagement() {
   };
 
   const openEditDialog = (member: typeof MOCK_MEMBERS_BASE[0]) => {
-    setEditForm({
-      id: member.id,
-      role: member.role,
-      clawLimit: member.clawLimit,
-      tokenLimit: member.tokenLimit,
-    });
-    setIsInitialAdminEdit(member.id === initialAdminId);
+    if (hasOneid) {
+      // OneID 模式：使用 OneID 编辑表单
+      setOneidEditForm({
+        id: member.id,
+        role: member.role,
+        department: MOCK_MEMBER_DEPARTMENTS[member.id] || "",
+        clawLimit: member.clawLimit,
+        tokenLimit: member.tokenLimit,
+      });
+    } else {
+      // 普通模式
+      setEditForm({
+        id: member.id,
+        role: member.role,
+        clawLimit: member.clawLimit,
+        tokenLimit: member.tokenLimit,
+      });
+      setIsInitialAdminEdit(member.id === initialAdminId);
+    }
     setEditMemberId(member.id);
   };
 
   const handleEdit = () => {
-    setMembers(members.map((m) =>
-      m.id === editMemberId
-        ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
-        : m
-    ));
+    if (hasOneid) {
+      // OneID 模式：只更新配额
+      setMembers(members.map((m) =>
+        m.id === editMemberId
+          ? { ...m, clawLimit: oneidEditForm.clawLimit, tokenLimit: oneidEditForm.tokenLimit }
+          : m
+      ));
+    } else {
+      // 普通模式
+      setMembers(members.map((m) =>
+        m.id === editMemberId
+          ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
+          : m
+      ));
+    }
     setEditMemberId(null);
     toast.success("用户信息已更新");
   };
+
+  // 手动同步（OneID 模式）
+  const handleSync = useCallback(() => {
+    setIsSyncing(true);
+    // 模拟同步过程
+    setTimeout(() => {
+      setIsSyncing(false);
+      toast.success("同步完成，用户数据已更新");
+    }, 2000);
+  }, []);
 
   const handleToggleStatus = (id: string) => {
     setMembers(members.map((m) =>
@@ -656,96 +1079,176 @@ export default function MemberManagement() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
-            <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额</p>
+            <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额
+              {hasOneid && (
+                <>
+                  <span className="mx-2">|</span>
+                  <button
+                    onClick={async () => {
+                      window.open(
+                        "https://xxx.com/login",
+                        "_blank"
+                      );
+                    }}
+                    className="text-gray-500 hover:text-blue-500 inline-flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none p-0"
+                  >
+                    前往腾讯统一身份管理用户
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
+            </p>
           </div>
+          {/* OneID 模式：右上角手动同步按钮 */}
+          {hasOneid && (
+            <Button
+              variant="outline"
+              className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />同步中...</>
+              ) : (
+                <><RefreshCw className="w-4 h-4 mr-2" />手动同步</>
+              )}
+            </Button>
+          )}
         </div>
 
-        {/* Search + Add Button Row */}
+        {/* Search + Filter + Actions Row */}
         <div className="flex items-center justify-between mb-4">
-          <div className="relative max-w-sm flex-1 mr-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="搜索用户 ID..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-white border-gray-200"
-            />
+          <div className="flex items-center gap-3">
+            {/* OneID 模式：部门筛选（最左侧） */}
+            {hasOneid && (
+              <DepartmentFilter
+                departments={MOCK_DEPARTMENTS}
+                value={deptFilter}
+                onChange={(v) => { setDeptFilter(v); setPage(1); }}
+              />
+            )}
+            {/* 搜索框 */}
+            <div className="relative w-[260px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="搜索用户 ID..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="pl-9 bg-white border-gray-200"
+              />
+            </div>
+            {/* OneID 模式：角色筛选（搜索框右侧） */}
+            {hasOneid && (
+              <Select
+                value={roleFilter}
+                onValueChange={(v) => { setRoleFilter(v as "all" | "admin" | "member"); setPage(1); }}
+              >
+                <SelectTrigger className="w-[130px] bg-white border-gray-200 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 [&_svg:last-child]:transition-transform [&_svg:last-child]:duration-200 data-[state=open]:[&_svg:last-child]:rotate-180">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部角色</SelectItem>
+                  <SelectItem value="admin">管理员</SelectItem>
+                  <SelectItem value="member">用户</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            {/* 清除筛选按钮 - 当有任何筛选条件时显示 */}
+            {(deptFilter || search.trim() || roleFilter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700 h-9 px-3"
+                onClick={() => {
+                  setDeptFilter("");
+                  setSearch("");
+                  setRoleFilter("all");
+                  setPage(1);
+                }}
+              >
+                <X className="w-3.5 h-3.5 mr-1" />
+                清除筛选
+              </Button>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-            title="导出用户列表"
-            onClick={() => {
-              const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
-              const rows = members.map((m: any) => [
-                m.id || "",
-                m.name || m.username || "",
-                m.role || "",
-                m.status || "",
-                m.createdAt || m.created_at || "",
-              ]);
-              const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-              const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `用户列表_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
-              toast.success("用户列表已导出");
-            }}
-          >
-            <Download className="w-4 h-4" />
-          </Button>
-          {members.length >= 15 ? (
-            <div
-              className="relative inline-block cursor-not-allowed"
-              onMouseEnter={() => setAddBtnHovered(true)}
-              onMouseLeave={() => setAddBtnHovered(false)}
-            >
-              <div className="relative">
-                <Button
-                  className="pointer-events-none select-none"
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                  tabIndex={-1}
-                  aria-disabled="true"
+          {/* 非 OneID 模式：导出 + 添加按钮 */}
+          {!hasOneid && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                title="导出用户列表"
+                onClick={() => {
+                  const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
+                  const rows = members.map((m: any) => [
+                    m.id || "",
+                    m.name || m.username || "",
+                    m.role || "",
+                    m.status || "",
+                    m.createdAt || m.created_at || "",
+                  ]);
+                  const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+                  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `用户列表_${new Date().toLocaleDateString("zh-CN").replace(/\//g, "-")}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success("用户列表已导出");
+                }}
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              {members.length >= 15 ? (
+                <div
+                  className="relative inline-block cursor-not-allowed"
+                  onMouseEnter={() => setAddBtnHovered(true)}
+                  onMouseLeave={() => setAddBtnHovered(false)}
                 >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  添加用户
-                  <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-                </Button>
-                <div className="absolute inset-0 rounded-md bg-white/50 pointer-events-none" />
-              </div>
-              {addBtnHovered && (
-                <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
-                  当前用户数已达上限，无法再添加
+                  <div className="relative">
+                    <Button
+                      className="pointer-events-none select-none"
+                      style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                      tabIndex={-1}
+                      aria-disabled="true"
+                    >
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      添加用户
+                      <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+                    </Button>
+                    <div className="absolute inset-0 rounded-md bg-white/50 pointer-events-none" />
+                  </div>
+                  {addBtnHovered && (
+                    <div className="absolute right-0 top-full mt-2 z-50 w-56 rounded-md bg-gray-900 px-3 py-2 text-xs text-white leading-relaxed text-left shadow-lg pointer-events-none">
+                      当前用户数已达上限，无法再添加
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                      <Plus className="w-4 h-4 mr-1.5" />
+                      添加用户
+                      <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      单个添加
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      批量导入
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  添加用户
-                  <ChevronDown className="w-3.5 h-3.5 ml-1.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  单个添加
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowBatchDialog(true)}>
-                  <Upload className="w-4 h-4 mr-2" />
-                  批量导入
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           )}
-          </div>
         </div>
 
         {/* Table */}
@@ -754,7 +1257,7 @@ export default function MemberManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[30%]">
+                <th className={`text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide ${hasOneid ? "w-[20%]" : "w-[30%]"}`}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -767,6 +1270,22 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
+                {/* OneID 模式：用户归属列 */}
+                {hasOneid && (
+                  <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
+                    <div className="flex items-center gap-1.5">
+                      用户归属
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-default inline-flex">
+                            <Info className="w-3.5 h-3.5 text-gray-400" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>用户在统一身份平台中的组织归属</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </th>
+                )}
                 <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[9%]">角色</th>
                 <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">状态</th>
                 <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%] whitespace-nowrap">
@@ -796,7 +1315,7 @@ export default function MemberManagement() {
                   </div>
                 </th>
                 <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[11%] whitespace-nowrap">加入时间</th>
-                <th className="text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">操作</th>
+                <th className={`text-left px-4 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide ${hasOneid ? "w-[6%]" : "w-[10%]"}`}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -805,6 +1324,17 @@ export default function MemberManagement() {
                   <td className="px-6 py-4">
                     <span className="text-sm font-medium text-gray-900">{member.id}</span>
                   </td>
+                  {/* OneID 模式：用户归属列 */}
+                  {hasOneid && (
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="text-sm text-gray-600 truncate" title={MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}>
+                          {MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}
+                        </span>
+                      </div>
+                    </td>
+                  )}
                   <td className="px-4 py-4">
                     <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
                       {member.role === "admin" ? "管理员" : "用户"}
@@ -833,8 +1363,8 @@ export default function MemberManagement() {
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
                   </td>
                   <td className="px-4 py-4">
-                    <div className="flex items-center gap-0.5">
-                      {/* 编辑 - 直接展示 */}
+                    {/* OneID 模式：只有编辑按钮 */}
+                    {hasOneid ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -843,84 +1373,96 @@ export default function MemberManagement() {
                       >
                         <Pencil className="w-3 h-3 mr-1" />编辑
                       </Button>
-                      {/* 三点菜单：重置密码 + 禁用/启用 + 删除 */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
-                            <MoreHorizontal className="w-3.5 h-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {/* 重置密码：初始管理员禁用 */}
-                          {member.id === initialAdminId ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                  <Key className="w-3.5 h-3.5 mr-2" />
-                                  重置密码
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">
-                                初始管理员账号不允许重置密码，如有需要请前往腾讯云云服务器控制台修改
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
-                              <Key className="w-3.5 h-3.5 mr-2" />
-                              重置密码
-                            </DropdownMenuItem>
-                          )}
-                          {/* 禁用/启用 */}
-                          {member.id === initialAdminId ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                  <UserX className="w-3.5 h-3.5 mr-2" />
-                                  禁用
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
-                            </Tooltip>
-                          ) : member.status === "active" ? (
-                            <DropdownMenuItem
-                              className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
-                              onClick={() => openDisableConfirm(member)}
-                            >
-                              <UserX className="w-3.5 h-3.5 mr-2" />
-                              禁用
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
-                              onClick={() => openEnableConfirm(member)}
-                            >
-                              <UserCheck className="w-3.5 h-3.5 mr-2" />
-                              启用
-                            </DropdownMenuItem>
-                          )}
-                          {/* 删除：初始管理员不可删除 */}
-                          {member.id === initialAdminId ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                  <Trash2 className="w-3.5 h-3.5 mr-2" />
-                                  删除
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <DropdownMenuItem
-                              className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50"
-                              onClick={() => openDeleteCheck(member)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-0.5">
+                        {/* 编辑 - 直接展示 */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-gray-500 hover:text-blue-600 h-7 px-2"
+                          onClick={() => openEditDialog(member)}
+                        >
+                          <Pencil className="w-3 h-3 mr-1" />编辑
+                        </Button>
+                        {/* 三点菜单：重置密码 + 禁用/启用 + 删除 */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* 重置密码：初始管理员禁用 */}
+                            {member.id === initialAdminId ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                    <Key className="w-3.5 h-3.5 mr-2" />
+                                    重置密码
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">
+                                  初始管理员账号不允许重置密码，如有需要请前往腾讯云云服务器控制台修改
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                                <Key className="w-3.5 h-3.5 mr-2" />
+                                重置密码
+                              </DropdownMenuItem>
+                            )}
+                            {/* 禁用/启用 */}
+                            {member.id === initialAdminId ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                    <UserX className="w-3.5 h-3.5 mr-2" />
+                                    禁用
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
+                              </Tooltip>
+                            ) : member.status === "active" ? (
+                              <DropdownMenuItem
+                                className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
+                                onClick={() => openDisableConfirm(member)}
+                              >
+                                <UserX className="w-3.5 h-3.5 mr-2" />
+                                禁用
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50"
+                                onClick={() => openEnableConfirm(member)}
+                              >
+                                <UserCheck className="w-3.5 h-3.5 mr-2" />
+                                启用
+                              </DropdownMenuItem>
+                            )}
+                            {/* 删除：初始管理员不可删除 */}
+                            {member.id === initialAdminId ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                    <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                    删除
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <DropdownMenuItem
+                                className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onClick={() => openDeleteCheck(member)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                删除
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -946,11 +1488,10 @@ export default function MemberManagement() {
                     key={p}
                     variant="ghost"
                     size="sm"
-                    className={`h-7 w-7 p-0 text-xs ${
-                      p === currentPage
+                    className={`h-7 w-7 p-0 text-xs ${p === currentPage
                         ? "bg-blue-50 text-blue-600 font-semibold"
                         : "text-gray-500 hover:text-gray-700"
-                    }`}
+                      }`}
                     onClick={() => setPage(p)}
                   >
                     {p}
@@ -991,7 +1532,11 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle>编辑用户</DialogTitle>
           </DialogHeader>
-          <EditMemberFormFields values={editForm} onChange={setEditForm} isInitialAdmin={isInitialAdminEdit} />
+          {hasOneid ? (
+            <OneidEditMemberFormFields values={oneidEditForm} onChange={setOneidEditForm} />
+          ) : (
+            <EditMemberFormFields values={editForm} onChange={setEditForm} isInitialAdmin={isInitialAdminEdit} />
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditMemberId(null)}>取消</Button>
             <Button onClick={handleEdit} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>保存修改</Button>
@@ -1244,9 +1789,8 @@ export default function MemberManagement() {
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
               <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-semibold ${
-                  (deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-600" : "text-green-600"
-                }`}>
+                <span className={`text-sm font-semibold ${(deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-600" : "text-green-600"
+                  }`}>
                   {deleteCheckDialog?.clawRefreshing
                     ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
                     : <>{deleteCheckDialog?.clawCount ?? 0} 个</>
@@ -1363,17 +1907,17 @@ export default function MemberManagement() {
             {/* 所有条件满足时才显示确认删除按钮 */}
             {(deleteCheckDialog?.clawCount ?? 0) === 0 &&
               (deleteCheckDialog?.vpcType === "custom" || deleteCheckDialog?.hasVpcResources === false) && (
-              <Button
-                className="bg-red-500 hover:bg-red-600 text-white"
-                onClick={() => {
-                  const d = deleteCheckDialog!;
-                  setDeleteCheckDialog(null);
-                  setDeleteConfirmDialog({ open: true, memberId: d.memberId, vpcType: d.vpcType, vpcName: d.vpcName });
-                }}
-              >
-                确认删除
-              </Button>
-            )}
+                <Button
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                  onClick={() => {
+                    const d = deleteCheckDialog!;
+                    setDeleteCheckDialog(null);
+                    setDeleteConfirmDialog({ open: true, memberId: d.memberId, vpcType: d.vpcType, vpcName: d.vpcName });
+                  }}
+                >
+                  确认删除
+                </Button>
+              )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -16,6 +16,7 @@ import {
   FileText,
   HardDrive,
   ShieldCheck,
+  Code2,
   Activity,
   BarChart3,
   ClipboardList,
@@ -39,6 +40,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import AdminNoticeBar from "@/components/AdminNoticeBar";
+import AdminModeToggle from "@/components/AdminModeToggle";
+import { AdminModeProvider } from "@/contexts/AdminModeContext";
 
 // 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
@@ -77,6 +81,7 @@ const NAV_GROUPS = [
     items: [
       { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
       { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
+      { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },
     ],
   },
   {
@@ -115,6 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
+    <AdminModeProvider>
     <div className="flex min-h-screen" style={{ background: "#F0F2F8" }}>
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 flex flex-col z-40 transition-all duration-300 ${
@@ -268,6 +274,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </>
         )}
 
+        {/* Mode Toggle */}
+        <div className="border-t border-gray-100 pt-3">
+          <AdminModeToggle collapsed={sidebarCollapsed} />
+        </div>
         {/* User Footer */}
         {!sidebarCollapsed && (
         <div className="border-t border-gray-100 p-3">
@@ -316,6 +326,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </div>
         )}
+        <AdminNoticeBar />
         <div className={sidebarCollapsed ? "p-6 pt-0" : "p-6"}>
           {children}
         </div>
@@ -332,5 +343,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       )}
     </div>
+    </AdminModeProvider>
   );
 }

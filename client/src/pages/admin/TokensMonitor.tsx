@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,9 +17,14 @@ import {
   TooltipTrigger as UITooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
+import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, type DepartmentNode } from "@/lib/mockData";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // CLS 采集插件版本历史
 interface CLSPluginVersion {
@@ -158,6 +163,136 @@ function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; 
 
 // ─── 翻页组件 ─────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 10;
+
+// ─── 部门树节点（递归）──────────────────────────────────────────────────────
+function TokenDepartmentTreeNode({
+  node, level, selected, expanded, onToggle, onSelect,
+}: {
+  node: DepartmentNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+        }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+            {isExpanded
+              ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+          </button>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          </span>
+        )}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+      </div>
+      {hasChildren && isExpanded && node.children!.map((child) => (
+        <TokenDepartmentTreeNode key={child.id} node={child} level={level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 部门筛选弹出框（Tokens 监控「按部门」Tab 用） ────────────────────────────
+function TokenDepartmentFilter({
+  departments, value, onChange,
+}: {
+  departments: DepartmentNode[]; value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => { if (open) setTempValue(value); }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  const findNode = (nodes: DepartmentNode[], id: string): DepartmentNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) { const found = findNode(n.children, id); if (found) return found; }
+    }
+    return undefined;
+  };
+  const selectedNode = tempValue ? findNode(departments, tempValue) : undefined;
+  const triggerNode = value ? findNode(departments, value) : undefined;
+  const pathParts = selectedNode?.path?.split("/").filter(Boolean) || [];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[140px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerNode ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerNode?.name || "全部部门"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {departments.map((dept) => (
+            <TokenDepartmentTreeNode key={dept.id} node={dept} level={0}
+              selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部部门</span>
+            ) : pathParts.length > 0 ? (
+              pathParts.map((part, idx) => (
+                <span key={idx} className="flex items-center gap-1 shrink-0">
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
+                  <span className={idx === pathParts.length - 1 ? "text-blue-600 font-medium truncate" : "text-gray-500 truncate"}>
+                    {part}
+                  </span>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safe = Math.min(page, totalPages);
@@ -191,6 +326,7 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 export default function TokensMonitor() {
   const [, navigate] = useLocation(); // 在组件顶级调用 useLocation
+  const { hasOneid } = useAdminMode();
   const today = todayStr();
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo, setDateTo] = useState(today);
@@ -198,6 +334,8 @@ export default function TokensMonitor() {
   const [memberPage, setMemberPage] = useState(1);
   const [modelPage, setModelPage] = useState(1);
   const [sessionPage, setSessionPage] = useState(1);
+  const [deptPage, setDeptPage] = useState(1);
+  const [deptFilter, setDeptFilter] = useState("");
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [clsEnabled, setClsEnabled] = useState(() => {
@@ -408,12 +546,14 @@ export default function TokensMonitor() {
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
+    setDeptPage(1);
   };
   const handleToChange = (v: string) => {
     setDateTo(v);
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
+    setDeptPage(1);
   };
 
   // 有效时间范围
@@ -517,6 +657,35 @@ export default function TokensMonitor() {
   // 翻页切片
   const memberPaged = memberStats.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
   const modelPaged = modelStats.slice((modelPage - 1) * PAGE_SIZE, modelPage * PAGE_SIZE);
+
+  // 按部门汇总（OneID 模式使用）
+  const findDeptAndChildren = (nodes: DepartmentNode[], targetId: string): string[] => {
+    const ids: string[] = [];
+    const collect = (node: DepartmentNode) => {
+      ids.push(node.id);
+      node.children?.forEach(collect);
+    };
+    const find = (list: DepartmentNode[]): boolean => {
+      for (const n of list) {
+        if (n.id === targetId) { collect(n); return true; }
+        if (n.children && find(n.children)) return true;
+      }
+      return false;
+    };
+    find(nodes);
+    return ids;
+  };
+
+  const deptStats = useMemo(() => {
+    if (!hasOneid) return [];
+    let data = MOCK_TOKEN_BY_DEPARTMENT;
+    if (deptFilter) {
+      const allowedIds = findDeptAndChildren(MOCK_DEPARTMENTS, deptFilter);
+      data = data.filter((d) => allowedIds.includes(d.departmentId));
+    }
+    return data.sort((a, b) => b.totalTokens - a.totalTokens);
+  }, [hasOneid, deptFilter]);
+  const deptPaged = deptStats.slice((deptPage - 1) * PAGE_SIZE, deptPage * PAGE_SIZE);
 
   return (
       <div className="page-enter">
@@ -656,6 +825,10 @@ export default function TokensMonitor() {
             <TabsList>
               <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
+              {hasOneid && <TabsTrigger value="department" className="relative pr-3">
+                按部门
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                </TabsTrigger>}
               <TabsTrigger value="session" className="relative pr-3">
                 按会话
                 <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
@@ -728,6 +901,50 @@ export default function TokensMonitor() {
               <Pagination page={modelPage} total={modelStats.length} onChange={setModelPage} />
             </div>
           </TabsContent>
+
+          {/* 按部门 - 仅 OneID 模式显示 */}
+          {hasOneid && (
+            <TabsContent value="department">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-gray-400">汇总各部门的 Token 消耗，按总 Token 降序排列</p>
+                <TokenDepartmentFilter
+                  departments={MOCK_DEPARTMENTS}
+                  value={deptFilter}
+                  onChange={(v) => { setDeptFilter(v); setDeptPage(1); }}
+                />
+              </div>
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-50 bg-gray-50/50">
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">部门名称</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">所属路径</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {deptPaged.length === 0 ? (
+                      <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    ) : deptPaged.map((d) => (
+                      <tr key={d.departmentId} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{d.departmentName}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{d.path.replace(/\//g, " / ")}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.requests)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.inputTokens)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.outputTokens)}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(d.totalTokens)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Pagination page={deptPage} total={deptStats.length} onChange={setDeptPage} />
+              </div>
+            </TabsContent>
+          )}
 
           {/* 按会话 */}
           <TabsContent value="session">

@@ -6,6 +6,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
 
+// Demo
+import SsoLoginDemo from "./pages/SsoLoginDemo";
+
 // Landing
 import LandingPage from "./pages/LandingPage";
 
@@ -26,7 +29,9 @@ import ChannelConfig from "./pages/admin/ChannelConfig";
 import SkillConfig from "./pages/admin/SkillConfig";
 import ImageManagement from "./pages/admin/ImageManagement";
 import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
+import CloudDevManagement from "./pages/admin/CloudDevManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
+import AgentMigration from "./pages/admin/AgentMigration";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
 import SecurityManagement from "./pages/admin/SecurityManagement";
@@ -36,12 +41,17 @@ import OpsObservation from "./pages/admin/OpsObservation";
 import MemoryManagement from "./pages/admin/MemoryManagement";
 import FileManagement from "./pages/admin/FileManagement";
 import SkillDetailPage from "./pages/admin/SkillDetailPage";
+import ModeAwareRoute from "./components/ModeAwareRoute";
+import StandardBasicInfo from "./pages/admin/standard/StandardBasicInfo";
 
 function Router() {
   return (
     <Switch>
       {/* Landing Page */}
       <Route path="/" component={LandingPage} />
+
+       {/* Demo */}
+      <Route path="/demo/sso-login" component={SsoLoginDemo} />
 
       {/* Tenant Routes */}
       <Route path="/my-openclaw" component={MyOpenClaw} />
@@ -51,7 +61,7 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
 
       {/* Admin Routes - 使用顶层路由避免 wouter 嵌套路由匹配问题 */}
-      <Route path="/admin/basic-info" component={() => <AdminLayout><BasicInfo /></AdminLayout>} />
+      <Route path="/admin/basic-info" component={() => <AdminLayout><ModeAwareRoute standard={<StandardBasicInfo />} custom={<BasicInfo />} /></AdminLayout>} />
       <Route path="/admin/platform-policy" component={() => <AdminLayout><PlatformPolicy /></AdminLayout>} />
       <Route path="/admin/members" component={() => <AdminLayout><MemberManagement /></AdminLayout>} />
       <Route path="/admin/model-config" component={() => <AdminLayout><ModelConfig /></AdminLayout>} />
@@ -59,7 +69,9 @@ function Router() {
       <Route path="/admin/skill-config" component={() => <AdminLayout><SkillConfig /></AdminLayout>} />
       <Route path="/admin/image-management" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
+      <Route path="/admin/cloud-dev" component={() => <AdminLayout><CloudDevManagement /></AdminLayout>} />
       <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><OpenClawMonitor /></AdminLayout>} />
+      <Route path="/admin/agent-migration" component={() => <AdminLayout><AgentMigration /></AdminLayout>} />
       <Route path="/admin/tokens-monitor" component={() => <AdminLayout><TokensMonitor /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />
       <Route path="/admin/session/:id" component={({ params }) => <AdminLayout><SessionDetail params={params} /></AdminLayout>} />

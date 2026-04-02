@@ -600,57 +600,30 @@ export default function FileManagement() {
       {isSmhEnabled && (
         <>
       {/* Stats Cards */}
-      <div className="flex flex-wrap gap-6">
-        {/* 企业空间总容量卡片 */}
-        <Card className="shadow-sm border-gray-100 rounded-xl bg-white overflow-hidden group hover:shadow-md transition-all duration-300 w-auto min-w-[420px]">
-          <CardContent className="p-6">
-            <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-6">
+        {/* 企业公共空间卡片 */}
+        <Card className="shadow-sm border-gray-100 rounded-xl bg-white overflow-hidden group hover:shadow-md transition-all duration-300">
+          <CardContent className="p-5">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 bg-blue-50">
-                    <HardDrive className="w-7 h-7 text-blue-600" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 bg-blue-50">
+                    <Building className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">企业空间总容量</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold tracking-tight text-gray-900">{stats.totalQuota}</span>
-                      <span className="text-xs text-gray-400 font-normal">（各空间容量之和，会根据OpenClaw实例数量增加）</span>
-                    </div>
+                    <span className="text-xs font-medium text-gray-500">企业公共空间</span>
+                    <span className="text-2xl font-bold tracking-tight text-gray-900">{stats.enterpriseSpacesCount}</span>
                   </div>
                 </div>
               </div>
-              
-              {/* 总进度条 */}
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${stats.usagePercentage}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">
-                    已使用 <span className="font-bold text-blue-600">{stats.totalUsed}</span>
-                  </span>
-                  <span className="text-gray-500">
-                    {stats.usagePercentage}%
-                  </span>
-                </div>
-              </div>
 
-              {/* 分隔线 */}
-              <div className="border-t border-gray-100"></div>
-
-              {/* 企业公共空间 */}
-              <div className="space-y-2">
+              {/* 当前使用量 */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold text-gray-700">企业公共空间</span>
-                  </div>
+                  <span className="text-xs font-bold text-gray-700">当前使用量</span>
                   <span className="text-xs text-gray-500">{stats.enterpriseUsed} / {stats.enterpriseQuota}</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${stats.enterprisePercentage}%` }}
@@ -660,17 +633,33 @@ export default function FileManagement() {
                   <span className="text-xs text-gray-400">{stats.enterprisePercentage}%</span>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* AI 智能体空间 */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-purple-600" />
-                    <span className="text-xs font-bold text-gray-700">AI 智能体空间</span>
+        {/* AI 智能体私有空间卡片 */}
+        <Card className="shadow-sm border-gray-100 rounded-xl bg-white overflow-hidden group hover:shadow-md transition-all duration-300">
+          <CardContent className="p-5">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 bg-purple-50">
+                    <User className="w-5 h-5 text-purple-600" />
                   </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-gray-500">AI 智能体私有空间</span>
+                    <span className="text-2xl font-bold tracking-tight text-gray-900">{stats.totalPersonalInstances}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 当前使用量 */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-700">当前使用量</span>
                   <span className="text-xs text-gray-500">{stats.personalUsed} / {stats.personalQuota}</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-purple-500 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${stats.personalPercentage}%` }}
@@ -679,46 +668,6 @@ export default function FileManagement() {
                 <div className="flex justify-end">
                   <span className="text-xs text-gray-400">{stats.personalPercentage}%</span>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 总空间数卡片 */}
-        <Card className="shadow-sm border-gray-100 rounded-xl bg-white overflow-hidden group hover:shadow-md transition-all duration-300 w-auto min-w-[420px]">
-          <CardContent className="p-6">
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300 bg-purple-50">
-                    <Layers className="w-7 h-7 text-purple-600" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-500 mb-1">总空间数</span>
-                    <span className="text-3xl font-bold tracking-tight text-gray-900">{stats.totalSpaces}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* 分隔线 */}
-              <div className="border-t border-gray-100"></div>
-
-              {/* 企业公共空间数量 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-bold text-gray-700">企业公共空间</span>
-                </div>
-                <span className="text-base font-bold text-blue-600">{stats.enterpriseSpacesCount}</span>
-              </div>
-
-              {/* AI 智能体空间数量 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-purple-600" />
-                  <span className="text-xs font-bold text-gray-700">AI 智能体空间</span>
-                </div>
-                <span className="text-base font-bold text-purple-600">{stats.totalPersonalInstances}</span>
               </div>
             </div>
           </CardContent>
@@ -771,8 +720,7 @@ export default function FileManagement() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
           <User className="w-5 h-5 text-purple-600" />
-          <h2 className="text-lg font-bold text-gray-900">AI 智能体空间</h2>
-          <span className="text-xs text-gray-400 font-normal ml-1">管理每个 OpenClaw 实例的专属云盘空间容量</span>
+          <h2 className="text-lg font-bold text-gray-900">AI 智能体私有空间</h2>
         </div>
         <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
           <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white">
@@ -781,10 +729,6 @@ export default function FileManagement() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input placeholder="搜索名称或创建人" className="pl-10 h-10 bg-gray-50/50 border-gray-100 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:bg-white transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
               </div>
-              <Button variant="outline" size="sm" className="h-10 text-xs gap-1.5 border-gray-100 hover:bg-gray-50 text-gray-600 hover:text-red-600 transition-colors" onClick={handleOpenRecycleBin}>
-                <Trash2 className="w-4 h-4" />
-                回收站
-              </Button>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <div className="bg-purple-600 p-1 rounded-md text-white"><Bot className="w-4 h-4" /></div>

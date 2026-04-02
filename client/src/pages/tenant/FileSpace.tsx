@@ -1,5 +1,5 @@
 /**
- * FileSpace - 文件空间（当前龙虾实例的文件管理）
+ * FileSpace - 云盘空间（当前龙虾实例的文件管理）
  * Design: 「流动蓝图」Fluid Blueprint
  * - 文件表格 + 面包屑导航
  * - 支持搜索、排序、文件操作
@@ -860,7 +860,7 @@ export default function FileSpace({
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
             <HardDrive className="w-6 h-6 text-red-400" />
           </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">文件空间不可用</p>
+          <p className="text-sm font-medium text-gray-700 mb-1">云盘空间不可用</p>
           <p className="text-xs text-gray-400 text-center max-w-sm">{fatalError}</p>
           <Button
             variant="outline"
@@ -899,7 +899,7 @@ export default function FileSpace({
                 <HardDrive className="w-4.5 h-4.5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 文件空间</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 云盘空间</h3>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {spaceUsage
                     ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`

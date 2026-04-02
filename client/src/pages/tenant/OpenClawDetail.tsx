@@ -1198,7 +1198,7 @@ export default function OpenClawDetail() {
             {([
               { id: "basic", label: "基础配置" },
               { id: "memory", label: "记忆管理" },
-              { id: "files", label: "文件空间" },
+              { id: "files", label: "云盘空间" },
               { id: "doctor", label: "龙虾医院" },
             ] as { id: string; label: string }[]).map((tab) => (
               <button
@@ -1761,7 +1761,7 @@ export default function OpenClawDetail() {
             </div>
           )}
 
-          {/* 文件空间 tab */}
+          {/* 云盘空间 tab */}
           {activeDetailTab === "files" && (
             <FileSpace
               clawName={clawName}

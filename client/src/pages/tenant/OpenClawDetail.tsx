@@ -6,7 +6,7 @@
  * - Header：名称、动态状态 badge（8 种状态）、一键更新、开启 OpenClaw 面板
  * - 基础配置 Tab：模型配置、通道配置、技能配置
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
@@ -288,6 +288,7 @@ export default function OpenClawDetail() {
 
   // ── Configuration state ──
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
+  const [quickFixState, setQuickFixState] = useState<"idle" | "loading" | "success">("idle");
 
   // ── Model state ──
   const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
@@ -1198,7 +1199,7 @@ export default function OpenClawDetail() {
               { id: "basic", label: "基础配置" },
               { id: "memory", label: "记忆管理" },
               { id: "files", label: "文件空间" },
-              { id: "doctor", label: "龙虾医生" },
+              { id: "doctor", label: "龙虾医院" },
             ] as { id: string; label: string }[]).map((tab) => (
               <button
                 key={tab.id}
@@ -1775,10 +1776,71 @@ export default function OpenClawDetail() {
             />
           )}
 
-          {/* 龙虾医生 tab */}
+          {/* 龙虾医院 tab */}
           {activeDetailTab === "doctor" && (
-            <div className="bg-white rounded-2xl border border-gray-100 flex items-center justify-center" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <p className="text-gray-400 text-sm">龙虾医生功能即将上线</p>
+            <div className="flex flex-col gap-5">
+
+              {/* ===== 一键修复卡片 ===== */}
+              <div className="bg-white rounded-2xl border border-gray-100" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="p-6">
+                  <h2 className="text-base font-semibold text-gray-900 mb-2">一键修复</h2>
+                  <p className="text-sm text-gray-500 mb-4">适合龙虾配置文件中 API KEY、插件、通道等配置异常导致无法启动等常见问题，系统自动检测并尝试修复。</p>
+                  <ul className="space-y-2 mb-6">
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
+                      自动执行
+                      <code className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-xs">openclaw doctor --fix</code>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
+                      自动恢复常见配置问题
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
+                      恢复前会将配置文件备份
+                    </li>
+                  </ul>
+                  <div className="border-t border-gray-100 pt-4">
+                    {quickFixState === "idle" && (
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 text-sm"
+                        onClick={() => {
+                          setQuickFixState("loading");
+                          setTimeout(() => setQuickFixState("success"), 3000);
+                        }}
+                      >
+                        <span>🩺</span>
+                        一键修复
+                      </Button>
+                    )}
+                    {quickFixState === "loading" && (
+                      <Button variant="outline" className="flex items-center gap-2 text-sm" disabled>
+                        <svg className="animate-spin w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                        尝试修复中
+                      </Button>
+                    )}
+                    {quickFixState === "success" && (
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1 text-sm">
+                          <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-gray-800">执行完成</span>
+                        </span>
+                        <span className="text-xs text-gray-400">请前往 OpenClaw 对话确认问题是否已解决</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* ===== 龙虾医生对话卡片 ===== */}
+              <DoctorChatCard instanceId={claw.instanceId} instanceName={claw.instanceId} />
+
             </div>
           )}
 
@@ -2434,5 +2496,1439 @@ export default function OpenClawDetail() {
 
     </TenantLayout>
     </TooltipProvider>
+  );
+}
+
+// ─── 龙虾医生对话卡片 ────────────────────────────────────────────────────────────
+
+// ─── 消息类型定义 ────────────────────────────────────────────────────────────
+
+
+// ─── 类型定义 ────────────────────────────────────────────────────────────────
+
+type DiagCheckItem = {
+  label: string;
+  status: "ok" | "error" | "warn";
+  detail?: string;
+};
+
+// 操作确认卡片（修改三：取代旧版 RepairCard）
+type ActionCard = {
+  id: string;
+  description: string; // 具体说明「做什么」
+  // 状态: null=待确认, "confirmed"=已确认, "cancelled"=已取消, "running"=执行中, "done"=完成, "failed"=失败
+  status: null | "confirmed" | "cancelled" | "running" | "done" | "failed";
+  resultText?: string; // 执行结果说明
+};
+
+type SessionEndCard = {
+  dataAuthorized: boolean | null; // null=未操作
+};
+
+type DoctorMessageContent =
+  | { type: "text"; text: string }
+  | { type: "check_list"; items: DiagCheckItem[] }
+  | { type: "action_card"; card: ActionCard }
+  | { type: "result_tags"; tags: { label: string; ok: boolean }[] }
+  | { type: "session_end"; card: SessionEndCard }
+  | { type: "end_ask_resolved" }
+  | { type: "end_ask_rollback" }
+  | { type: "end_ask_continue" } // 回滚完成后再次询问
+  | { type: "snapshot_confirm" }; // 快照确认内嵌卡片
+
+type DoctorMsg =
+  | { kind: "system"; text: string }
+  | { kind: "assistant"; parts: DoctorMessageContent[] }
+  | { kind: "user"; text: string };
+
+type HistoryRecord = {
+  id: string;
+  time: string;
+  instanceId: string; // 实例 ID，用于按实例过滤历史记录
+  instanceName: string;
+  result: "all_ok" | "partial" | "all_fixed" | "failed";
+  messages: DoctorMsg[];
+  firstUserMsg?: string; // 本次会话第一条用户消息（用于历史列表展示）
+};
+
+// ─── 小工具组件 ────────────────────────────────────────────────────────────
+
+const RESULT_LABEL: Record<HistoryRecord["result"], { text: string; cls: string }> = {
+  all_ok:    { text: "全部正常",   cls: "bg-green-100 text-green-700" },
+  partial:   { text: "部分修复",   cls: "bg-orange-100 text-orange-700" },
+  all_fixed: { text: "全部修复",   cls: "bg-green-100 text-green-700" },
+  failed:    { text: "未能修复",   cls: "bg-red-100 text-red-700" },
+};
+
+// 检测结果列表
+function CheckList({ items }: { items: DiagCheckItem[] }) {
+  return (
+    <div className="space-y-1.5 mt-1">
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2 text-sm">
+          <span
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${
+              item.status === "ok" ? "bg-green-500" :
+              item.status === "error" ? "bg-red-500" : "bg-orange-400"
+            }`}
+          />
+          <span className="text-gray-700 w-28 flex-shrink-0">{item.label}</span>
+          <span className={`${
+            item.status === "ok" ? "text-gray-400" :
+            item.status === "error" ? "text-red-600 font-medium" : "text-orange-600 font-medium"
+          }`}>
+            {item.detail ?? (item.status === "ok" ? "正常" : "异常")}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// 操作确认卡片（修改三）
+function ActionCardView({
+  card,
+  onConfirm,
+  onCancel,
+  readonly,
+}: {
+  card: ActionCard;
+  onConfirm: (id: string) => void;
+  onCancel: (id: string) => void;
+  readonly?: boolean;
+}) {
+  return (
+    <div className="mt-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <p className="text-sm text-gray-800 leading-relaxed mb-3">{card.description}</p>
+      {/* 待确认 */}
+      {card.status === null && !readonly && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => onConfirm(card.id)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            执行修复
+          </button>
+          <button
+            onClick={() => onCancel(card.id)}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            取消
+          </button>
+        </div>
+      )}
+      {/* 已确认 */}
+      {card.status === "confirmed" && (
+        <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+          <span>✓</span> 已确认
+        </span>
+      )}
+      {/* 执行中 */}
+      {card.status === "running" && (
+        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+          <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          正在执行…
+        </span>
+      )}
+      {/* 完成 */}
+      {card.status === "done" && (
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1 text-xs font-medium">
+              <span className="text-green-500">✓</span>
+              <span className="text-gray-800">执行完成</span>
+            </span>
+            <span className="text-xs text-gray-400">请前往 OpenClaw 对话确认问题是否已解决</span>
+          </div>
+          {card.resultText && <p className="text-xs text-gray-600 mt-1">{card.resultText}</p>}
+        </div>
+      )}
+      {/* 失败 */}
+      {card.status === "failed" && (
+        <div>
+          <span className="inline-flex items-center gap-1 text-xs text-red-600 font-medium mb-1">
+            <span>✕</span> 执行失败
+          </span>
+          {card.resultText && <p className="text-xs text-gray-500 mt-1">{card.resultText}</p>}
+        </div>
+      )}
+      {/* 已取消 */}
+      {card.status === "cancelled" && (
+        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+          <span>—</span> 已取消
+        </span>
+      )}
+      {/* 只读：待确认状态显示为置灰按钮 */}
+      {card.status === null && readonly && (
+        <div className="flex gap-2">
+          <button disabled className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-400 cursor-not-allowed">确定</button>
+          <button disabled className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-300 bg-white border border-gray-100 cursor-not-allowed">取消</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 修复结果标签
+function ResultTags({ tags }: { tags: { label: string; ok: boolean }[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {tags.map((t, i) => (
+        <span
+          key={i}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+            t.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+          }`}
+        >
+          {t.label}
+          {t.ok ? " ✓" : " 未修复"}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// 数据授权区域（修改六：每次会话结束都出现）
+function DataAuthSection({
+  persistDataAuth,
+  sessionDataAuth,
+  onAuthorize,
+  onDeny,
+  readonly,
+  readonlyAuth,
+}: {
+  persistDataAuth: boolean | null;
+  sessionDataAuth: boolean | null;
+  onAuthorize: () => void;
+  onDeny: () => void;
+  readonly?: boolean;
+  readonlyAuth?: boolean | null;
+}) {
+  if (readonly) {
+    // 只读模式：展示历史授权结果
+    if (readonlyAuth === true) {
+      return <p className="text-xs text-green-600 flex items-center gap-1 mt-2">✓ 已授权诊断记录使用</p>;
+    }
+    if (readonlyAuth === false) {
+      return <p className="text-xs text-gray-400 mt-2">未授权诊断记录使用</p>;
+    }
+    return null;
+  }
+
+  // 情况 C：已选择「不授权」— 完全不显示
+  if (persistDataAuth === false && sessionDataAuth === null) return null;
+
+  // 情况 B：已选择「同意长期授权」
+  if (persistDataAuth === true || sessionDataAuth === true) {
+    return (
+      <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
+        ✓ 已授权
+      </p>
+    );
+  }
+
+  // 情况 A：首次（从未询问过）
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 mt-3">
+      <p className="text-xs font-semibold text-gray-800 mb-1">帮我们让虾医生变得更好 🦞</p>
+      <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+        是否长期授权我们使用您的诊断记录（仅含问题类型和修复结果，不含任何对话内容），用于提升龙虾医生能力？您可随时在设置中修改。
+      </p>
+      <div className="flex gap-2">
+        <button
+          onClick={onAuthorize}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+        >
+          同意长期授权
+        </button>
+        <button
+          onClick={onDeny}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+        >
+          不授权
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 打字动画气泡
+function TypingBubble() {
+  return (
+    <div className="flex gap-3 py-1">
+      <div className="flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── 历史记录持久化（localStorage）────────────────────────────────────────────
+// 注意：不再使用任何硬编码假数据，所有历史记录来自真实会话
+
+const HISTORY_STORAGE_KEY = "doctor_history_openclaw_1";
+
+function loadHistory(): HistoryRecord[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as HistoryRecord[];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(records: HistoryRecord[]) {
+  try {
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(records));
+  } catch {
+    // ignore
+  }
+}
+
+// ─── 以下为已删除的 MOCK_HISTORY 假数据占位符（保留注释供参考）────────────────
+// MOCK_HISTORY 已完全删除，历史记录改为 localStorage 真实持久化
+// 如需查看历史记录格式，参考 HistoryRecord 类型定义
+
+// ─── 以下为原 MOCK_HISTORY 末尾的假数据（已删除）────────────────────────────
+// 原有两条假数据（h1: 2026-03-31, h2: 2026-03-28）已全部删除
+// 用户首次使用时历史记录为空，显示「暂无历史诊断记录」
+
+// ─── 占位：原 MOCK_HISTORY 的第一条（已删除，保留结构注释）────────────────────
+// {
+//   id: "h1", time: "2026-03-31 14:22", instanceName: "ins-running01", result: "partial",
+//   messages: [ ... ] // 完整对话消息
+// }
+
+// ─── 以下为原 MOCK_HISTORY 的第二条（已删除）────────────────────────────────
+// {
+//   id: "h2", time: "2026-03-28 09:05", instanceName: "ins-running01", result: "all_ok",
+//   messages: [ ... ]
+// }
+
+// ─── 主组件 DoctorChatCard（历史记录改为真实持久化）────────────────────────────
+// 以下为原 MOCK_HISTORY 第一条的 messages 开头（已删除）
+// 此注释块仅用于标记删除位置，不影响代码运行
+
+// ─── 原 MOCK_HISTORY 剩余部分（已删除）─────────────────────────────────────────
+// 以下为被删除的假数据末尾，保留注释以便 diff 追踪
+// 如需恢复假数据用于测试，请参考 git history
+
+// ─── 假数据完全删除，以下为真实主组件 ─────────────────────────────────────────
+
+
+// ─── 主组件 DoctorChatCard ────────────────────────────────────────────────────────────
+
+type ViewMode = "idle" | "history_list" | "history_detail" | "active";
+// key 按实例 ID 区分，每台实例独立记录授权状态
+const getDataAuthKey = (id: string) => `doctor_data_auth_${id}`;
+const getDiagAuthKey = (id: string) => `doctor_diag_auth_${id}`;
+
+// 自动检测修复队列
+const REPAIR_QUEUE: Array<{
+  id: string;
+  description: string;
+  resultText: string;
+}> = [
+  {
+    id: "card_feishu",
+    description: "刷新飞书 Bot 的 App Secret Token，并重启通道连接，恢复消息收发。",
+    resultText: "Token 已刷新，通道连接已恢复正常。",
+  },
+  {
+    id: "card_tavily",
+    description: "强制重启 tavily-search 技能进程，并重新加载技能配置。",
+    resultText: "技能进程已重启，运行状态恢复正常。",
+  },
+];
+
+// AI 系统提示词（修改八）
+const SYSTEM_PROMPT = `你是龙虾医生（Lobster Doctor），ClawPro 企业版 OpenClaw 平台内置的 AI 运维助手。
+
+你的核心能力：
+1. 自动检测标准项目（网络连通性、模型接口、IM 通道、技能插件运行状态）
+2. 根据用户描述，针对性分析和解决任意 OpenClaw 运行问题
+3. 执行具体操作（开放端口、重启服务、修改配置、回滚快照等），执行前必须展示操作确认卡片
+4. 给出建议和指导，即使当前无法直接解决，也能说明方向
+
+你的工作原则：
+- 不展示任何 Token、费用、模型名称等计费信息
+- 回答简洁专业，直接切入问题
+- 需要执行操作时，先说明要做什么，等用户确认后再执行
+- 用中文回复，不超过 200 字
+
+当前上下文：用户正在使用 ClawPro 用户端，对其 OpenClaw 实例进行诊断和修复。`;
+
+// ─── 点赞/点踩图标组件 ─────────────────────────────────────────────────────────
+function ThumbUpIcon({ filled }: { filled?: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "#6b7280" : "none"} stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
+      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    </svg>
+  );
+}
+function ThumbDownIcon({ filled }: { filled?: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "#6b7280" : "none"} stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z" />
+      <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17" />
+    </svg>
+  );
+}
+
+// ─── 主组件 DoctorChatCard（历史记录改为真实持久化）────────────────────────────
+// ─── 主组件 DoctorChatCard ────────────────────────────────────────────────────────────
+function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; instanceName: string }) {
+  const [viewMode, setViewMode] = useState<ViewMode>("idle");
+  const [messages, setMessages] = useState<DoctorMsg[]>([]);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  // 是否正在流式输出（用于暂停按钮）
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // 诊断阶段
+  const [diagPhase, setDiagPhase] = useState<
+    "idle" | "initializing" | "diagnosing" | "waiting_user" | "asking_snapshot" | "asking_resolved" | "asking_rollback" | "asking_continue" | "destroying" | "ended"
+  >("idle");
+  const [selectedHistory, setSelectedHistory] = useState<HistoryRecord | null>(null);
+  // 开始诊断授权弹窗
+  const [showDiagAuthModal, setShowDiagAuthModal] = useState(false);
+  // 快照是否已确认（每次诊断只询问一次）
+  const [snapshotConfirmed, setSnapshotConfirmed] = useState(false);
+  // 10分钟无操作自动结束计时器
+  const autoEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+  // 指令库下拉菜单
+  const [showCommandMenu, setShowCommandMenu] = useState(false);
+  // 操作卡片状态 map: cardId -> ActionCard["status"]
+  const [cardStatus, setCardStatus] = useState<Record<string, ActionCard["status"]>>({});
+  const [cardResults, setCardResults] = useState<Record<string, string>>({});
+  // 当前待处理的修复卡片队列索引（串行）
+  const [repairQueueIdx, setRepairQueueIdx] = useState(0);
+  // 历史记录（从 localStorage 加载，按当前实例过滤）
+  const [historyRecords, setHistoryRecords] = useState<HistoryRecord[]>(() =>
+    loadHistory().filter((r) => r.instanceId === instanceId)
+  );
+  // 记录会话开始时间
+  const sessionStartTimeRef = useRef<string>("");
+  // 数据授权永久状态
+  const [persistDataAuth, setPersistDataAuth] = useState<boolean | null>(() => {
+    const v = localStorage.getItem(getDataAuthKey(instanceId));
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return null;
+  });
+  const [sessionDataAuth, setSessionDataAuth] = useState<boolean | null>(null);
+  // 结果标签（用于会话结束汇总）
+  const [resultTags, setResultTags] = useState<{ label: string; ok: boolean }[]>([]);
+  // 点赞/点踩状态 map: msgIdx -> "up" | "down" | null
+  const [thumbs, setThumbs] = useState<Record<number, "up" | "down" | null>>({});
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  // ─── 开始诊断（真正执行）───────────────────────────────────────────────────────
+  const doStartDiagnosis = () => {
+    // 记录会话开始时间
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    sessionStartTimeRef.current = timeStr;
+    setViewMode("active");
+    setMessages([{ kind: "system", text: "正在为您创建龙虾医生实例，预计需要 1-2 分钟，请稍候…" }]);
+    setDiagPhase("initializing");
+    setCardStatus({});
+    setCardResults({});
+    setRepairQueueIdx(0);
+    setSessionDataAuth(null);
+    setResultTags([]);
+    setThumbs({});
+    setSnapshotConfirmed(false);
+    // 模拟初始化完成（1.5s 后进入 diagnosing）
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { kind: "system", text: "初始化完成" }]);
+      setDiagPhase("diagnosing");
+      startAutoEndTimer();
+      runDiagnosis();
+    }, 1500);
+  };
+
+  // ─── 开始诊断（入口：检查首次授权）──────────────────────────────────────────────
+  const handleStartDiagnosis = () => {
+    const diagAuthGranted = localStorage.getItem(getDiagAuthKey(instanceId)) === "true";
+    if (!diagAuthGranted) {
+      setShowDiagAuthModal(true);
+      return;
+    }
+    doStartDiagnosis();
+  };
+
+  // ─── 授权弹窗：同意并开始 ────────────────────────────────────────────────────────
+  const handleDiagAuthConfirm = () => {
+    localStorage.setItem(getDiagAuthKey(instanceId), "true");
+    setShowDiagAuthModal(false);
+    doStartDiagnosis();
+  };
+
+  // ─── 10 分钟无操作自动结束 ────────────────────────────────────────────────────────
+  const startAutoEndTimer = () => {
+    if (autoEndTimerRef.current) clearTimeout(autoEndTimerRef.current);
+    lastActivityRef.current = Date.now();
+    autoEndTimerRef.current = setTimeout(() => {
+      setMessages((prev) => [...prev, { kind: "system", text: "检测到您已超过 10 分钟无操作，本次诊断将自动结束。" }]);
+      triggerSessionEnd();
+    }, 10 * 60 * 1000);
+  };
+
+  const resetAutoEndTimer = () => {
+    if (autoEndTimerRef.current) {
+      clearTimeout(autoEndTimerRef.current);
+      autoEndTimerRef.current = setTimeout(() => {
+        setMessages((prev) => [...prev, { kind: "system", text: "检测到您已超过 10 分钟无操作，本次诊断将自动结束。" }]);
+        triggerSessionEnd();
+      }, 10 * 60 * 1000);
+    }
+  };
+
+  // ─── 诊断检测逻辑（从 handleStartDiagnosis 拆出）────────────────────────────────
+  const runDiagnosis = () => {
+    setIsTyping(true);  // 打招呼
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { kind: "assistant", parts: [{ type: "text", text: "您好！我是龙虾医生 🦞\n我将对您的 OpenClaw 实例进行全面检测" }] },
+      ]);
+    }, 800);
+
+    // 检测结果
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          kind: "assistant",
+          parts: [
+            { type: "text", text: "检测完成，发现 2 个问题：" },
+            {
+              type: "check_list",
+              items: [
+                { label: "网络连通性", status: "ok" },
+                { label: "模型接口", status: "ok" },
+                { label: "飞书通道", status: "error", detail: "认证 Token 已过期" },
+                { label: "QQ 通道", status: "ok" },
+                { label: "tavily-search", status: "error", detail: "进程崩溃" },
+              ],
+            },
+          ],
+        },
+      ]);
+    }, 2200);
+
+    // 快照确认内嵌卡片（在修复卡片之前询问用户）
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [
+        ...prev,
+        {
+          kind: "assistant",
+          parts: [
+            { type: "text", text: "检测完成，在开始修复之前，我需要先为您的当前配置创建一份快照，以便修复后出现问题时可以随时回滚，是否同意？" },
+            { type: "snapshot_confirm" },
+          ],
+        },
+      ]);
+      setDiagPhase("asking_snapshot");
+    }, 3200);
+  };
+
+  // ─── 快照确认：同意 ────────────────────────────────────────────────────────────────────────────────────
+  const handleSnapshotConfirm = () => {
+    setSnapshotConfirmed(true);
+    setMessages((prev) => [
+      ...prev,
+      { kind: "system", text: "已创建配置快照，开始推送修复方案…" },
+    ]);
+    // 推送第一张修复卡片
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          kind: "assistant",
+          parts: [
+            { type: "text", text: "针对飞书通道认证失效，我有以下修复方案：" },
+            {
+              type: "action_card",
+              card: {
+                id: "feishu_token",
+                title: "刷新飞书 Bot 的 App Secret Token，并重启通道连接，恢复消息收发。",
+                description: "刷新飞书 Bot 的 App Secret Token，并重启通道连接，恢复消息收发。",
+                status: null,
+                resultText: undefined,
+              },
+            },
+          ],
+        },
+      ]);
+      setRepairQueueIdx(0);
+      setDiagPhase("waiting_user");
+    }, 600);
+  };
+
+  // ─── 快照确认：取消修复 ────────────────────────────────────────────────────────────────────────────────
+  const handleSnapshotCancel = () => {
+    setMessages((prev) => [
+      ...prev,
+      { kind: "system", text: "已取消修复。您可继续向龙虾医生提问。" },
+    ]);
+    setDiagPhase("diagnosing");
+  };
+
+   // ─── 结束诊断（用户主动点击）───────────────────────────────────────────────
+  const handleEndDiagnosis = () => {
+    // 直接销毁，不再询问问题是否已解决
+    triggerSessionEnd();
+  };
+
+  // ─── 确认操作卡片 ────────────────────────────────────────────────────────────────
+  const handleConfirmAction = (cardId: string) => {
+    // AI 动态生成的授权卡片：点击执行后发送已授权消息给 AI
+    if (cardId.startsWith("ai_action_")) {
+      setCardStatus((prev) => ({ ...prev, [cardId]: "running" }));
+      // 找到该卡片的描述
+      const desc = messages
+        .flatMap((m) => m.kind === "assistant" ? m.parts : [])
+        .find((p) => p.type === "action_card" && (p as { type: string; card: ActionCard }).card.id === cardId)
+        ? (messages
+            .flatMap((m) => m.kind === "assistant" ? m.parts : [])
+            .find((p) => p.type === "action_card" && (p as { type: string; card: ActionCard }).card.id === cardId) as { type: string; card: ActionCard })
+            .card.description
+        : "执行该操作";
+      // 添加用户授权消息
+      setMessages((prev) => [...prev, { kind: "user", text: `已授权，请执行：${desc}` }]);
+      // 调用 AI
+      setTimeout(() => {
+        callAI(`已授权，请执行：${desc}`).then(() => {
+          setCardStatus((prev) => ({ ...prev, [cardId]: "done" }));
+          setCardResults((prev) => ({ ...prev, [cardId]: "操作已执行" }));
+        });
+      }, 300);
+      return;
+    }
+    setCardStatus((prev) => ({ ...prev, [cardId]: "running" }));
+    setTimeout(() => {
+      const ok = true; // mock 成功
+      setCardStatus((prev) => ({ ...prev, [cardId]: ok ? "done" : "failed" }));
+      const resultText = ok ? "Token 已刷新，通道连接已恢复正常。" : "修复失败，请手动检查飞书配置。";
+      setCardResults((prev) => ({ ...prev, [cardId]: resultText }));
+
+      if (ok) {
+        setResultTags((prev) => [...prev, { label: "飞书通道", ok: true }]);
+      }
+
+      // 飞书修复完成后，推送第二张卡片（tavily-search）
+      if (cardId === "feishu_token") {
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              kind: "assistant",
+              parts: [
+                { type: "text", text: ok ? "飞书通道已成功修复。" : "飞书通道修复失败，建议手动检查。" },
+              ],
+            },
+          ]);
+          // 第二张卡片
+          setTimeout(() => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                kind: "assistant",
+                parts: [
+                  { type: "text", text: "对 tavily-search 进程崩溃问题：" },
+                  {
+                    type: "action_card",
+                    card: {
+                      id: "tavily_restart",
+                      title: "强制重启 tavily-search 技能进程，并重新加载技能配置。",
+                      description: "强制重启 tavily-search 技能进程，并重新加载技能配置。",
+                      status: null,
+                      resultText: undefined,
+                    },
+                  },
+                ],
+              },
+            ]);
+            setRepairQueueIdx(1);
+          }, 600);
+        }, 400);
+      }
+
+      // tavily 修复完成后，进入「等待用户」状态
+      if (cardId === "tavily_restart") {
+        const tavilyOk = false; // mock 失败
+        setResultTags((prev) => [...prev, { label: "tavily-search", ok: tavilyOk }]);
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              kind: "assistant",
+              parts: [
+                { type: "text", text: "以上是自动检测到的问题，已逐项处理完毕。如需进一步排查，可在下方输入框描述问题；或点击「结束诊断」结束本次会话。" },
+              ],
+            },
+          ]);
+          setDiagPhase("waiting_user");
+        }, 600);
+      }
+    }, 2000);
+  };
+
+  // ─── 取消操作卡片 ────────────────────────────────────────────────────────────────
+  const handleCancelAction = (cardId: string) => {
+    setCardStatus((prev) => ({ ...prev, [cardId]: "cancelled" }));
+    // AI 动态生成的卡片：取消后不做额外操作
+    if (cardId.startsWith("ai_action_")) return;
+    if (cardId === "feishu_token") {
+      setResultTags((prev) => [...prev, { label: "飞书通道", ok: false }]);
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            kind: "assistant",
+            parts: [
+              { type: "text", text: "已跳过飞书通道修复。" },
+            ],
+          },
+        ]);
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              kind: "assistant",
+              parts: [
+                { type: "text", text: "对 tavily-search 进程崩溃问题：" },
+                {
+                  type: "action_card",
+                  card: {
+                    id: "tavily_restart",
+                    title: "强制重启 tavily-search 技能进程，并重新加载技能配置。",
+                    description: "强制重启 tavily-search 技能进程，并重新加载技能配置。",
+                    status: null,
+                    resultText: undefined,
+                  },
+                },
+              ],
+            },
+          ]);
+          setRepairQueueIdx(1);
+        }, 600);
+      }, 400);
+    } else if (cardId === "tavily_restart") {
+      setResultTags((prev) => [...prev, { label: "tavily-search", ok: false }]);
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            kind: "assistant",
+            parts: [
+              { type: "text", text: "以上是自动检测到的问题，已逐项处理完毕。如需进一步排查，可在下方输入框描述问题；或点击「结束诊断」结束本次会话。" },
+            ],
+          },
+        ]);
+        setDiagPhase("waiting_user");
+      }, 600);
+    }
+  };
+
+  // ─── 确认回滚 ────────────────────────────────────────────────────────────────────
+  const handleConfirmRollback = (_cardId: string) => {
+    setCardStatus((prev) => ({ ...prev, rollback_snapshot: "running" }));
+    setTimeout(() => {
+      setCardStatus((prev) => ({ ...prev, rollback_snapshot: "done" }));
+      setCardResults((prev) => ({ ...prev, rollback_snapshot: "配置已回滚至诊断前快照，OpenClaw 已重启。" }));
+      triggerSessionEnd();
+    }, 2000);
+  };
+
+  // ─── 已解决，结束诊断 ─────────────────────────────────────────────────────────────
+  const handleResolvedYes = () => {
+    setDiagPhase("destroying");
+    triggerSessionEnd();
+  };
+
+  // ─── 没有完全解决 ─────────────────────────────────────────────────────────────────
+  const handleResolvedNo = () => {
+    setDiagPhase("asking_rollback");
+    setMessages((prev) => [
+      ...prev,
+      {
+        kind: "assistant",
+        parts: [
+          { type: "text", text: "好的，是否需要回滚到诊断前的配置快照？这将撤销本次所有修复操作。" },
+          {
+            type: "action_card",
+            card: {
+              id: "rollback_snapshot",
+              title: "回滚到诊断前快照",
+              description: "将配置恢复到诊断开始前的状态，撤销本次所有修复操作。",
+              status: null,
+              resultText: undefined,
+            },
+          },
+        ],
+      },
+    ]);
+  };
+
+  // ─── 回滚：不需要，直接结束 ───────────────────────────────────────────────────────
+  const handleRollbackNo = () => {
+    triggerSessionEnd();
+  };
+
+  // ─── 用户主动提问后：已解决 ───────────────────────────────────────────────────────
+  const handleContinueResolved = () => {
+    setDiagPhase("destroying");
+    triggerSessionEnd();
+  };
+
+  // ─── 用户主动提问后：继续诊断 ─────────────────────────────────────────────────────
+  const handleContinueDiag = () => {
+    setDiagPhase("waiting_user");
+    setMessages((prev) => [
+      ...prev,
+      { kind: "system", text: "继续诊断中，请描述您的问题" },
+    ]);
+  };
+
+  // ─── 触发会话结束 ─────────────────────────────────────────────────────────────────
+  const triggerSessionEnd = () => {
+    setDiagPhase("destroying");
+    // 系统提示：正在销毁
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { kind: "system", text: "正在销毁虾医生实例…" },
+      ]);
+    }, 300);
+    // 系统提示：已销毁
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { kind: "system", text: "本次诊断已结束 · 虾医生实例已销毁" },
+      ]);
+    }, 1500);
+    // 汇总消息
+    setTimeout(() => {
+      setMessages((prev) => {
+        const tags = resultTags.length > 0 ? resultTags : [];
+        const endMsg: DoctorMsg = {
+          kind: "assistant",
+          parts: [
+            { type: "text", text: "好的，本次诊断结束。" },
+            ...(tags.length > 0 ? [{ type: "result_tags" as const, tags }] : []),
+            { type: "session_end", card: { dataAuthorized: sessionDataAuth } },
+          ],
+        };
+        // 保存历史记录
+        const fixedCount = tags.filter((t) => t.ok).length;
+        const totalCount = tags.length;
+        const result: HistoryRecord["result"] =
+          totalCount === 0 ? "all_ok" :
+          fixedCount === totalCount ? "all_fixed" :
+          fixedCount > 0 ? "partial" : "failed";
+        // 找到本次会话第一条用户消息
+        const allMsgs = [...prev, endMsg];
+        const firstUser = allMsgs.find((m) => m.kind === "user");
+        const firstUserMsg = firstUser && firstUser.kind === "user" ? firstUser.text.slice(0, 30) : undefined;
+        const newRecord: HistoryRecord = {
+          id: Date.now().toString(),
+          time: sessionStartTimeRef.current,
+          instanceId,
+          instanceName,
+          result,
+          messages: allMsgs,
+          firstUserMsg,
+        };
+        // 全量记录保存（所有实例），展示时再按实例过滤
+        const allHistory = [newRecord, ...loadHistory()].slice(0, 50);
+        saveHistory(allHistory);
+        setHistoryRecords(allHistory.filter((r) => r.instanceId === instanceId));
+        return [...prev, endMsg];
+      });
+      setDiagPhase("ended");
+    }, 2500);
+  };
+
+  // ─── AI 对话（用户主动提问）──────────────────────────────────────────────────────
+  const callAI = async (userText: string) => {
+    setIsTyping(false);
+    setIsStreaming(true);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // 构建上下文
+    const history = messages
+      .filter((m) => m.kind === "user" || m.kind === "assistant")
+      .map((m) => {
+        if (m.kind === "user") return { role: "user" as const, content: m.text };
+        const text = m.parts.filter((p) => p.type === "text").map((p) => (p as { type: "text"; text: string }).text).join("\n");
+        return { role: "assistant" as const, content: text };
+      });
+
+    const systemPrompt = `你是龙虾医生，一个专业的 OpenClaw 运维助手。你的职责是帮助用户诊断并修复 OpenClaw 运行问题。
+
+【重要规则，必须严格遵守】
+1. 用简洁、友好的中文回复，不超过 150 字
+2. 当用户要求执行任何操作（重启服务、修改配置、刷新 Token、重启通道等）时，你必须在回复的最后一行单独输出以下格式，不得省略：
+   [ACTION:操作的简短描述]
+   示例：[ACTION:重启飞书通道服务] 或 [ACTION:刷新飞书 Bot App Secret Token]
+3. 绝对不能说"请确认授权"、"请授权"等文字，也不能要求用户发送"授权"——系统会自动弹出授权按钮
+4. 不要在未获授权的情况下声称已执行任何操作
+5. 如果用户消息包含"已授权，请执行："，则直接说明已执行并给出结果，不再输出 [ACTION:...]`;
+
+    try {
+      // 先插入一条「正在思考」占位消息
+      setMessages((prev) => [
+        ...prev,
+        { kind: "assistant", parts: [{ type: "text", text: "…" }] },
+      ]);
+
+      const resp = await fetch("/api/ai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gpt-4.1-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history,
+            { role: "user", content: userText },
+          ],
+          max_tokens: 400,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+
+      const data = await resp.json();
+      const rawText = data.choices?.[0]?.message?.content ?? "（无回复）";
+
+      // 解析 [ACTION:...] 标记
+      const actionMatch = rawText.match(/\[ACTION:([^\]]+)\]/);
+      const cleanText = rawText.replace(/\[ACTION:[^\]]+\]/g, "").trim();
+      const actionDesc = actionMatch ? actionMatch[1].trim() : null;
+
+      // 用真实回复替换占位消息，如有 ACTION 则追加 action_card
+      setMessages((prev) => {
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.kind === "assistant") {
+          const parts: DoctorMessageContent[] = [{ type: "text", text: cleanText }];
+          if (actionDesc) {
+            const cardId = `ai_action_${Date.now()}`;
+            parts.push({
+              type: "action_card",
+              card: {
+                id: cardId,
+                description: actionDesc,
+                status: null,
+              },
+            });
+          }
+          updated[updated.length - 1] = { ...last, parts };
+        }
+        return updated;
+      });
+
+      // 用户手动对话时，回复后恢复 waiting_user 状态，不追加「是否解决」
+      setDiagPhase("waiting_user");
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        // 用户暂停，不追加询问
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { kind: "assistant", parts: [{ type: "text", text: "抱歉，我暂时无法回复，请稍后再试。" }] },
+        ]);
+      }
+    } finally {
+      setIsStreaming(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // ─── 发送消息 ─────────────────────────────────────────────────────────────────────
+  const handleSend = () => {
+    const text = input.trim();
+    if (!text || inputDisabled) return;
+    setInput("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+    setMessages((prev) => [...prev, { kind: "user", text }]);
+    setDiagPhase("waiting_user");
+    resetAutoEndTimer();
+    callAI(text);
+  };
+
+  // ─── 暂停 AI 输出 ─────────────────────────────────────────────────────────────────
+  const handleStopStreaming = () => {
+    abortControllerRef.current?.abort();
+    setIsStreaming(false);
+  };
+
+  // ─── 数据授权 ─────────────────────────────────────────────────────────────────────
+  const saveDataAuth = (val: boolean) => {
+    setPersistDataAuth(val);
+    setSessionDataAuth(val);
+    localStorage.setItem(getDataAuthKey(instanceId), String(val));
+  };
+
+  // ─── 渲染单条消息 ─────────────────────────────────────────────────────────────────
+  const renderMsg = (msg: DoctorMsg, idx: number, readonly = false) => {
+    if (msg.kind === "system") {
+      return (
+        <div key={idx} className="flex justify-center">
+          <span className="px-3 py-1 rounded-full bg-gray-100 text-xs text-gray-400">{msg.text}</span>
+        </div>
+      );
+    }
+    if (msg.kind === "user") {
+      return (
+        <div key={idx} className="flex justify-end">
+          <div className="max-w-[75%] px-4 py-2.5 rounded-2xl bg-gray-100 text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">
+            {msg.text}
+          </div>
+        </div>
+      );
+    }
+    // assistant
+    const thumb = thumbs[idx] ?? null;
+    return (
+      <div key={idx} className="flex gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="text-sm leading-relaxed text-gray-800 py-1">
+            {msg.parts.map((part, pi) => {
+              if (part.type === "text") return <p key={pi} className={pi > 0 ? "mt-2" : ""}>{part.text}</p>;
+              if (part.type === "check_list") return <CheckList key={pi} items={part.items} />;
+              if (part.type === "action_card") {
+                const status = readonly ? part.card.status : (cardStatus[part.card.id] ?? null);
+                const resultText = readonly ? part.card.resultText : (cardResults[part.card.id] ?? undefined);
+                const confirmFn = part.card.id === "rollback_snapshot" ? handleConfirmRollback : handleConfirmAction;
+                return (
+                  <ActionCardView
+                    key={pi}
+                    card={{ ...part.card, status, resultText }}
+                    onConfirm={confirmFn}
+                    onCancel={part.card.id === "rollback_snapshot"
+                      ? () => { setCardStatus((prev) => ({ ...prev, rollback_snapshot: "cancelled" })); triggerSessionEnd(); }
+                      : handleCancelAction
+                    }
+                    readonly={readonly || diagPhase === "ended"}
+                  />
+                );
+              }
+              if (part.type === "result_tags") return <ResultTags key={pi} tags={part.tags} />;
+              if (part.type === "end_ask_resolved") {
+                // 已移除「已解决/没有完全解决」选项，直接不渲染
+                return null;
+              }
+              if (part.type === "end_ask_rollback") {
+                if (readonly) return null;
+                if (diagPhase !== "asking_rollback") return null;
+                return (
+                  <div key={pi} className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => handleConfirmRollback("rollback_snapshot")}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 bg-white border border-red-300 hover:bg-red-50 transition-colors"
+                    >
+                      回滚到诊断前快照
+                    </button>
+                    <button
+                      onClick={handleRollbackNo}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      不需要，直接结束
+                    </button>
+                  </div>
+                );
+              }
+              if (part.type === "end_ask_continue") {
+                // 已移除「已解决」选项，直接不渲染
+                return null;
+              }
+              if (part.type === "snapshot_confirm") {
+                if (readonly) return null;
+                if (diagPhase !== "asking_snapshot") return null;
+                return (
+                  <div key={pi} className="flex gap-2 mt-3">
+                    <button
+                      onClick={handleSnapshotConfirm}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+                    >
+                      同意，创建快照并开始修复
+                    </button>
+                    <button
+                      onClick={handleSnapshotCancel}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      取消修复
+                    </button>
+                  </div>
+                );
+              }
+              if (part.type === "session_end") {
+                // 数据授权已合并进首次授权弹窗，此处不再单独展示
+                return null;
+              }
+              return null;
+            })}
+          </div>
+          {/* 点赞/点踩已移除 */}
+        </div>
+      </div>
+    );
+  };
+
+  const isReadonly = viewMode === "history_detail";
+  const displayMessages = (viewMode === "history_detail" && selectedHistory) ? selectedHistory.messages : messages;
+
+  // 输入框状态控制
+  const inputDisabled = isReadonly || isTyping || diagPhase === "ended" || diagPhase === "idle" || diagPhase === "destroying";
+  const inputPlaceholder =
+    diagPhase === "idle" ? "点击「开始诊断」开始" :
+    diagPhase === "ended" ? "本次诊断已结束，点击「再次诊断」开始新会话" :
+    isReadonly ? "历史记录（只读）" :
+    "向虾医生提问，或描述您遇到的问题…";
+  const inputHint =
+    isReadonly ? "历史记录（只读）" :
+    diagPhase === "ended" ? "本次诊断已结束" :
+    diagPhase === "idle" ? "" :
+    "诊断中，您可随时向虾医生提问";
+
+  // 「开始/结束/再次诊断」按钮文字和状态
+  const diagBtnLabel =
+    diagPhase === "idle" ? "🩺 开始诊断" :
+    diagPhase === "ended" ? "🩺 再次诊断" :
+    diagPhase === "initializing" ? "⏳ 初始化中…" :
+    "🩺 结束诊断";
+  const diagBtnAction =
+    (diagPhase === "idle" || diagPhase === "ended") ? handleStartDiagnosis :
+    diagPhase === "initializing" ? (() => {}) : handleEndDiagnosis;
+
+  return (
+    <div
+      className="bg-white rounded-2xl border border-gray-100 relative"
+      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+    >
+      {/* ─── 首次诊断授权弹窗 ─── */}
+      <Dialog open={showDiagAuthModal} onOpenChange={(open) => { if (!open) setShowDiagAuthModal(false); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">诊断前授权确认</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-700 font-medium">龙虾医生将：</p>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2 text-sm text-gray-600">
+                <span className="mt-0.5 text-gray-400 flex-shrink-0">·</span>
+                <span>创建一只临时龙虾，对您的 OpenClaw 进行检测和修复</span>
+              </li>
+              <li className="flex items-start gap-2 text-sm text-gray-600">
+                <span className="mt-0.5 text-gray-400 flex-shrink-0">·</span>
+                <span>将诊断记录授权给平台，持续优化龙虾医生能力</span>
+              </li>
+            </ul>
+            <p className="text-xs text-gray-400">初始化约需 1-2 分钟，请稍作等待。</p>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <Button
+              className="bg-gray-900 text-white hover:bg-gray-700 text-sm h-9 px-5"
+              onClick={handleDiagAuthConfirm}
+            >
+              同意
+            </Button>
+            <Button
+              variant="outline"
+              className="text-sm h-9 px-5"
+              onClick={() => setShowDiagAuthModal(false)}
+            >
+              取消
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 标题栏 */}
+      <div className="px-6 pt-5 pb-0">
+        <h2 className="text-base font-semibold text-gray-900">龙虾医生</h2>
+      </div>
+
+      {/* 副标题 + 按钮行 */}
+      <div className="px-6 pt-3 pb-4">
+        <p className="text-sm text-gray-500 mb-3">AI 智能诊断，帮助您发现并修复 OpenClaw 运行问题</p>
+        <div className="flex items-center gap-2">
+          {/* 开始/再次诊断：只在 idle/ended 状态显示（active 时按鈕已移到对话区底部） */}
+          {viewMode !== "history_detail" && (diagPhase === "idle" || diagPhase === "ended") && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1.5 text-sm h-8 px-4"
+              onClick={diagBtnAction}
+              disabled={false}
+            >
+              {diagBtnLabel}
+            </Button>
+          )}
+          {/* 返回历史：次要按钮 */}
+          {viewMode === "history_detail" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-sm h-8 px-3"
+              onClick={() => setViewMode("history_list")}
+            >
+              ← 返回历史
+            </Button>
+          )}
+          {/* 历史记录：次要按钮 */}
+          {viewMode !== "history_detail" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-sm h-8 px-3"
+              onClick={() =>
+                setViewMode((v) =>
+                  v === "history_list" ? (diagPhase === "ended" || diagPhase === "idle" ? "idle" : "active") : "history_list"
+                )
+              }
+            >
+              {viewMode === "history_list" ? "关闭历史" : "历史记录"}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* ─── 状态 A：空态 ─── */}
+      {viewMode === "idle" && (
+        <div className="px-6 pb-8">
+          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-6 gap-1.5">
+            <p className="text-sm font-medium text-gray-600">龙虾医生待命中</p>
+            <p className="text-xs text-gray-400">点击「开始诊断」后，将为您开启一只龙虾医生，通过它对当前 OpenClaw 进行全面检测和对话式修复，龙虾医生初始化约需 1-2 分钟。</p>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 状态 B：历史记录列表 ─── */}
+      {viewMode === "history_list" && (
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-gray-500">历史诊断记录</p>
+          </div>
+          {historyRecords.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-10 gap-2">
+              <p className="text-sm text-gray-500">暂无历史诊断记录</p>
+              <p className="text-xs text-gray-400">完成一次诊断后，记录会自动保存在这里</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100 rounded-xl border border-gray-100 overflow-hidden">
+              {historyRecords.map((rec) => {
+                return (
+                  <div key={rec.id} className="flex items-center group">
+                    <button
+                      onClick={() => { setSelectedHistory(rec); setViewMode("history_detail"); }}
+                      className="flex-1 flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <p className="text-sm text-gray-700 truncate flex-1 min-w-0 pr-4">{rec.firstUserMsg ?? "全面检测"}</p>
+                      <p className="text-xs text-gray-400 flex-shrink-0">{rec.time}</p>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const updated = historyRecords.filter((r) => r.id !== rec.id);
+                        saveHistory(updated);
+                        setHistoryRecords(updated);
+                      }}
+                      className="px-3 py-3 text-gray-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                      title="删除此记录"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── 状态 B 只读 + 状态 C 活跃对话 ─── */}
+      {(viewMode === "active" || viewMode === "history_detail") && (
+        <>
+          {/* 历史模式顶部提示条 */}
+          {isReadonly && selectedHistory && (
+            <div className="mx-6 mb-3 px-3 py-2 rounded-lg bg-gray-50 border border-gray-100 text-xs text-gray-400">
+              {selectedHistory.time} · 历史诊断记录（只读）
+            </div>
+          )}
+
+          {/* 消息列表 */}
+          <div
+            className="overflow-y-auto px-6 space-y-4 pb-2 pt-2"
+            style={{ minHeight: "300px", maxHeight: "440px" }}
+          >
+            {displayMessages.map((msg, idx) => renderMsg(msg, idx, isReadonly))}
+            {isTyping && <TypingBubble />}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* 输入区 — 参考图样式：底部独立大圆角卡片 */}
+          <div className="px-5 pb-5 pt-2">
+            <div
+              className={`rounded-2xl border bg-white transition-colors ${
+                inputDisabled
+                  ? "border-gray-100 opacity-60"
+                  : "border-gray-200 focus-within:border-gray-300"
+              }`}
+              style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+            >
+              {/* 文本输入区 */}
+              <textarea
+                ref={textareaRef}
+                value={input}
+                rows={1}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!isStreaming && !inputDisabled) handleSend();
+                  }
+                }}
+                placeholder={inputPlaceholder}
+                disabled={inputDisabled}
+                className="w-full px-4 pt-3 pb-1 text-sm bg-transparent focus:outline-none disabled:cursor-not-allowed resize-none overflow-hidden leading-relaxed text-gray-800 placeholder:text-gray-400"
+                style={{ minHeight: "44px" }}
+              />
+              {/* 底部工具栏 */}
+              <div className="relative flex items-center justify-between px-3 pb-2.5 pt-1">
+                {/* 左侧：+ 按鈕 + 指令库按鈕 */}
+                <div className="flex items-center gap-1">
+                  {/* + 按鈕 */}
+                  <button
+                    disabled={inputDisabled}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    title="附件"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="8" y1="2" x2="8" y2="14" />
+                      <line x1="2" y1="8" x2="14" y2="8" />
+                    </svg>
+                  </button>
+                  {/* 指令库按鈕 */}
+                  <div className="relative">
+                    <button
+                      disabled={inputDisabled}
+                      onClick={() => setShowCommandMenu((v) => !v)}
+                      className="flex items-center gap-1 px-2.5 h-7 rounded-full border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {/* 星形图标 */}
+                      <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor">
+                        <path d="M6 0l1.2 3.8H11l-3.1 2.3 1.2 3.8L6 7.6l-3.1 2.3 1.2-3.8L1 3.8h3.8z" />
+                      </svg>
+                      指令库
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                        <path d="M2.5 4l2.5 2.5L7.5 4" />
+                      </svg>
+                    </button>
+                    {/* 指令库下拉浮层 */}
+                    {showCommandMenu && (
+                      <div
+                        className="absolute bottom-full left-0 mb-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden z-20"
+                        onMouseLeave={() => setShowCommandMenu(false)}
+                      >
+                        {[
+                          { cmd: "/new", desc: "新建会话" },
+                          { cmd: "/compact", desc: "压缩上下文" },
+                          { cmd: "/status", desc: "查看状态" },
+                          { cmd: "/stop", desc: "停止当前任务" },
+                          { cmd: "/commands", desc: "全部指令" },
+                        ].map(({ cmd, desc }) => (
+                          <button
+                            key={cmd}
+                            onClick={() => {
+                              setInput(cmd + " ");
+                              setShowCommandMenu(false);
+                              textareaRef.current?.focus();
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors text-left whitespace-nowrap"
+                          >
+                            <span className="font-mono text-gray-700 flex-shrink-0">{cmd}</span>
+                            <span className="text-gray-400">{desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* 右侧：发送按鈕 */}
+                <div className="flex items-center gap-2">
+                  {/* 发送/暂停按鈕 */}
+                  {isStreaming ? (
+                    <button
+                      onClick={handleStopStreaming}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+                      title="暂停输出"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="white">
+                        <rect x="2" y="1.5" width="3" height="9" rx="1" />
+                        <rect x="7" y="1.5" width="3" height="9" rx="1" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSend}
+                      disabled={inputDisabled || !input.trim()}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="发送（Enter）"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 12V2M7 2L3 6M7 2L11 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* 结束诊断按钮（对话框外部，次要按钮样式） */}
+            {viewMode === "active" && diagPhase !== "idle" && diagPhase !== "ended" && (
+              <div className="flex justify-end mt-2 px-1">
+                <button
+                  onClick={diagBtnAction}
+                  disabled={diagPhase === "destroying" || diagPhase === "initializing"}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {diagPhase === "initializing" ? "初始化中…" : "结束诊断"}
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

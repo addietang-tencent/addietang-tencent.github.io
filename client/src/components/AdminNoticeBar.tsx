@@ -11,7 +11,7 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, AlertTriangle, Star, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
 
 // ─── 基础配置 6 项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
 const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
@@ -153,7 +153,7 @@ export default function AdminNoticeBar() {
         {isWarning ? (
           <AlertTriangle className="w-4 h-4" />
         ) : (
-          <Star className="w-4 h-4 fill-current" />
+          <Sparkles className="w-4 h-4" />
         )}
       </div>
 

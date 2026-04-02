@@ -40,11 +40,9 @@ import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus
 } from "lucide-react";
-import { MOCK_OPENCLAW_LIST, MOCK_ROLES } from "@/lib/mockData";
+import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
-
-// Cast mock data to correct type
-const MOCK_OPENCLAW_LIST_TYPED = MOCK_OPENCLAW_LIST as OpenClawItem[];
+import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
@@ -229,7 +227,16 @@ const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
 
 export default function MyOpenClaw() {
   const [, navigate] = useLocation();
-  const [claws, setClaws] = useState<OpenClawItem[]>(MOCK_OPENCLAW_LIST_TYPED);
+  const [claws, setClawsRaw] = useState<OpenClawItem[]>(() => loadClawList() as OpenClawItem[]);
+  // 包装 setClaws，每次更新同步到 store
+  const setClaws = (v: OpenClawItem[] | ((prev: OpenClawItem[]) => OpenClawItem[])) => {
+    setClawsRaw((prev) => {
+      const next = typeof v === "function" ? v(prev) : v;
+      saveClawList(next);
+      notifyClawListChange();
+      return next;
+    });
+  };
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);

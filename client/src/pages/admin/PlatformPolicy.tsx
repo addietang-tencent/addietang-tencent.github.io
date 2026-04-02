@@ -453,21 +453,15 @@ export default function PlatformPolicy() {
               allowLobsterDoctor ? (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    龙虾医生是平台提供的免费能力，用户无需支付额外费用。
-                  </p>
-                  <p className="text-xs text-blue-700 leading-relaxed mt-1">
-                    每次诊断将消耗用户的 Token 日常配额，底层云资源费用由平台承担。
-                  </p>
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <span className="text-xs text-blue-700">详情</span>
+                    龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
                     <button
                       onClick={() => setShowLobsterDoctorDialog(true)}
-                      className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors shrink-0"
-                      title="龙虾医生是如何工作的？"
+                      className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity"
+                      title="查看详情"
                     >
-                      <HelpCircle className="w-3 h-3 text-gray-500" />
+                      <HelpCircle className="w-3.5 h-3.5" />
                     </button>
-                  </div>
+                  </p>
                 </div>
               ) : null
             }
@@ -478,44 +472,56 @@ export default function PlatformPolicy() {
       {/* 龙虾医生详情弹窗 */}
       <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>龙虾医生是如何工作的？</DialogTitle>
-          </DialogHeader>
-          <div className="py-2 space-y-4 text-sm text-gray-600 leading-relaxed">
-            <p>当用户点击「开始诊断」后，平台会自动完成以下步骤：</p>
-            <ol className="space-y-2 pl-4 list-decimal">
-              <li>创建一台按量计费的临时云服务器</li>
-              <li>在该服务器上拉起一个 OpenClaw 节点</li>
-              <li>通过这个节点对您的 OpenClaw 实例进行检测和修复</li>
-            </ol>
-            <p>整个过程约需 1–2 分钟完成初始化。诊断结束后，临时云服务器将自动销毁，不会留存任何数据。</p>
+          <div className="py-1 space-y-4 text-sm text-gray-600 leading-relaxed">
+            {/* 工作原理 */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-900">工作原理</p>
+              <p>当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
+              <ol className="space-y-1.5 pl-5 list-decimal">
+                <li>创建一个临时按量计费的龙虾医生 OpenClaw 节点</li>
+                <li>通过该节点对用户的目标 OpenClaw 进行检测和修复</li>
+                <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
+              </ol>
+            </div>
+            {/* 说明 */}
             <div className="border-t border-gray-100 pt-3 space-y-2">
-              <p className="font-medium text-gray-700">费用说明</p>
-              <p>诊断消耗的 Token 计入对应用户的当日配额，可在{" "}
-                <button
-                  onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }}
-                  className="text-blue-600 underline underline-offset-2 hover:text-blue-800 transition-colors"
-                >
-                  Tokens 监控
-                </button>
-                {" "}页面按用户/模型/会话维度查看。
-              </p>
-              <p>底层云服务器费用可在{" "}
-                <a
-                  href="https://console.cloud.tencent.com/expense"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline underline-offset-2 hover:text-blue-800 transition-colors"
-                >
-                  腾讯云费用中心
-                </a>
-                {" "}查看。
-              </p>
+              <p className="text-sm font-medium text-gray-900">说明</p>
+              <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
+                <li>
+                  <span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在{" "}
+                  <a
+                    href="https://console.cloud.tencent.com/expense"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    腾讯云费用中心
+                  </a>
+                  {" "}查看
+                </li>
+                <li>
+                  <span className="font-medium text-gray-700">Token 消耗</span>：诊断消耗的 Token 计入对应用户的 Token 消耗，可在{" "}
+                  <button
+                    onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }}
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    Tokens 监控
+                  </button>
+                  {" "}查看
+                </li>
+                <li>
+                  <span className="font-medium text-gray-700">诊断模型</span>：诊断所用模型将按照当前已启用的模型顺序使用，可前往{" "}
+                  <button
+                    onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }}
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    模型配置
+                  </button>
+                  {" "}调整
+                </li>
+              </ol>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowLobsterDoctorDialog(false)}>关闭</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

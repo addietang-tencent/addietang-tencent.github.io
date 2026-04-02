@@ -39,6 +39,7 @@ import {
   ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
+import { findClawById, onClawListChange } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 
@@ -280,7 +281,21 @@ type AppliedChannel = {
 export default function OpenClawDetail() {
   const [, params] = useRoute("/openclaw/:id");
   const clawId = params?.id;
-  const claw = MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) || MOCK_OPENCLAW_LIST[0];
+
+  // 优先从共享 store 读取（包含动态创建的 claw 及 roleName），fallback 到 mock 数据
+  const [clawData, setClawData] = useState(() =>
+    (clawId ? findClawById(clawId) : undefined) ?? MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]
+  );
+  useEffect(() => {
+    const unsub = onClawListChange(() => {
+      if (clawId) {
+        const updated = findClawById(clawId);
+        if (updated) setClawData(updated);
+      }
+    });
+    return unsub;
+  }, [clawId]);
+  const claw = clawData;
 
   const clawName = claw.name;
   const clawStatus = (claw.status || "running") as OpenClawStatus;
@@ -1126,8 +1141,16 @@ export default function OpenClawDetail() {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {/* 第二行：实例 ID */}
-              <p className="text-xs text-gray-400 mt-0.5">{claw.instanceId}</p>
+              {/* 第二行：角色胶囊标签 + 实例 ID */}
+              <div className="flex items-center gap-2 mt-0.5">
+                {claw.roleName && (
+                  <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
+                    {claw.roleName}
+                  </span>
+                )}
+                <p className="text-xs text-gray-400">{claw.instanceId}</p>
+              </div>
             </div>
           </div>
           {/* 右侧：操作按鈕 */}

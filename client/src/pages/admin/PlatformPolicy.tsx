@@ -6,11 +6,18 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
@@ -267,6 +274,12 @@ export default function PlatformPolicy() {
   });
   const [panelAccessLoading, setPanelAccessLoading] = useState(false);
 
+  // ── 龙虾医生开关状态 ──
+  const [allowLobsterDoctor, setAllowLobsterDoctor] = useState(() => {
+    return localStorage.getItem("admin_allow_lobster_doctor") === "true";
+  });
+  const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
+
   // ── 保存处理 ──
   const handleSaveClawLimit = (v: TokenLimit | number) => {
     const n = Number(v);
@@ -327,6 +340,12 @@ export default function PlatformPolicy() {
       localStorage.removeItem("admin_panel_port");
       toast.success("已禁止用户端访问 OpenClaw 面板");
     }
+  };
+
+  const handleToggleLobsterDoctor = (v: boolean) => {
+    setAllowLobsterDoctor(v);
+    localStorage.setItem("admin_allow_lobster_doctor", String(v));
+    toast.success(v ? "已允许用户使用龙虾医生" : "已关闭龙虾医生功能");
   };
 
   return (
@@ -422,9 +441,89 @@ export default function PlatformPolicy() {
                 </div>
               ) : null
             }
+            />
+          <ToggleCard
+            icon={<Stethoscope className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            title="允许用户使用龙虾医生"
+            description="开启后，所有用户在用户端可免费使用「龙虾医生」 AI 诊断功能，自动检测并对话式修复 OpenClaw 运行问题。"
+            checked={allowLobsterDoctor}
+            onToggle={handleToggleLobsterDoctor}
+            extraContent={
+              allowLobsterDoctor ? (
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
+                    <button
+                      onClick={() => setShowLobsterDoctorDialog(true)}
+                      className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity"
+                      title="查看详情"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </p>
+                </div>
+              ) : null
+            }
           />
         </div>
       </section>
+
+      {/* 龙虾医生详情弹窗 */}
+      <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="py-1 space-y-4 text-sm text-gray-600 leading-relaxed">
+            {/* 工作原理 */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-900">工作原理</p>
+              <p>当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
+              <ol className="space-y-1.5 pl-5 list-decimal">
+                <li>创建一个临时按量计费的龙虾医生 OpenClaw 节点</li>
+                <li>通过该节点对用户的目标 OpenClaw 进行检测和修复</li>
+                <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
+              </ol>
+            </div>
+            {/* 说明 */}
+            <div className="border-t border-gray-100 pt-3 space-y-2">
+              <p className="text-sm font-medium text-gray-900">说明</p>
+              <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
+                <li>
+                  <span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在{" "}
+                  <a
+                    href="https://console.cloud.tencent.com/expense"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    腾讯云费用中心
+                  </a>
+                  {" "}查看
+                </li>
+                <li>
+                  <span className="font-medium text-gray-700">Token 消耗</span>：诊断消耗的 Token 计入对应用户的 Token 消耗，可在{" "}
+                  <button
+                    onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }}
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    Tokens 监控
+                  </button>
+                  {" "}查看
+                </li>
+                <li>
+                  <span className="font-medium text-gray-700">诊断模型</span>：诊断所用模型将按照当前已启用的模型顺序使用，可前往{" "}
+                  <button
+                    onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }}
+                    className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors"
+                  >
+                    模型配置
+                  </button>
+                  {" "}调整
+                </li>
+              </ol>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

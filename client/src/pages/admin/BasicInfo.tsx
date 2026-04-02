@@ -358,20 +358,7 @@ export default function BasicInfo() {
         </p>
       </div>
 
-      {/* 汇总横幅 */}
-      {incompleteCount > 0 ? (
-        <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-orange-200 bg-orange-50">
-          <AlertCircle className="w-4 h-4 text-orange-500 shrink-0" />
-          <p className="text-sm text-orange-700">
-            还有 <span className="font-semibold">{incompleteCount}</span> 项配置未完成，用户端可能无法正常使用
-          </p>
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl border border-green-200 bg-green-50">
-          <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-          <p className="text-sm text-green-700 font-medium">平台已就绪，用户端可正常使用</p>
-        </div>
-      )}
+
 
       {/* 双栏主体 */}
       <div className="flex gap-6 items-start">

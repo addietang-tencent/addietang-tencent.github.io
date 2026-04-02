@@ -3,7 +3,7 @@
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,8 +36,13 @@ import {
   Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw
+  MessageCircle, RotateCw, Check, ArrowLeftRight
 } from "lucide-react";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { MOCK_DEPARTMENTS, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending";
 
@@ -48,6 +53,8 @@ interface Claw {
   creator: string;
   createTime: string;
   status: ClawStatus;
+  department?: string;
+  departmentId?: string;
 }
 
 const STATUS_CONFIG: Record<ClawStatus, {
@@ -85,16 +92,147 @@ const MOCK_CLAWS: Claw[] = [
 
 const PAGE_SIZE = 10;
 
+// ─── 部门树节点（递归）──────────────────────────────────────────────────────
+function InstanceDepartmentTreeNode({
+  node, level, selected, expanded, onToggle, onSelect,
+}: {
+  node: DepartmentNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+        }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+            {isExpanded
+              ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+          </button>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          </span>
+        )}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+      </div>
+      {hasChildren && isExpanded && node.children!.map((child) => (
+        <InstanceDepartmentTreeNode key={child.id} node={child} level={level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 部门筛选弹出框（OpenClaw 列表页用） ──────────────────────────────────────
+function InstanceDepartmentFilter({
+  departments, value, onChange,
+}: {
+  departments: DepartmentNode[]; value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => { if (open) setTempValue(value); }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  const findNode = (nodes: DepartmentNode[], id: string): DepartmentNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) { const found = findNode(n.children, id); if (found) return found; }
+    }
+    return undefined;
+  };
+  const selectedNode = tempValue ? findNode(departments, tempValue) : undefined;
+  const triggerNode = value ? findNode(departments, value) : undefined;
+  const pathParts = selectedNode?.path?.split("/").filter(Boolean) || [];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerNode ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerNode?.name || "全部部门"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {departments.map((dept) => (
+            <InstanceDepartmentTreeNode key={dept.id} node={dept} level={0}
+              selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部部门</span>
+            ) : pathParts.length > 0 ? (
+              pathParts.map((part, idx) => (
+                <span key={idx} className="flex items-center gap-1 shrink-0">
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
+                  <span className={idx === pathParts.length - 1 ? "text-blue-600 font-medium truncate" : "text-gray-500 truncate"}>
+                    {part}
+                  </span>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function OpenClawMonitor() {
   const [, setLocation] = useLocation();
+  const { hasOneid } = useAdminMode();
   const [claws, setClaws] = useState<Claw[]>(
-    [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime))
+    [...(hasOneid ? (MOCK_CLAWS_WITH_DEPT as Claw[]) : MOCK_CLAWS)].sort((a, b) => b.createTime.localeCompare(a.createTime))
   );
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
+  const [departmentFilter, setDepartmentFilter] = useState("");
 
   // 状态卡片筛选
   const [activeCardFilter, setActiveCardFilter] = useState<"all" | "running" | "shutdown" | "other">("all");
@@ -208,7 +346,31 @@ export default function OpenClawMonitor() {
     return matchSearch;
   });
 
-  const cardFiltered = searchFiltered.filter((c) => {
+  // 部门筛选（OneID 模式）
+  const findDeptAndChildren = (nodes: DepartmentNode[], targetId: string): string[] => {
+    const ids: string[] = [];
+    const collect = (node: DepartmentNode) => {
+      ids.push(node.id);
+      node.children?.forEach(collect);
+    };
+    const find = (list: DepartmentNode[]): boolean => {
+      for (const n of list) {
+        if (n.id === targetId) { collect(n); return true; }
+        if (n.children && find(n.children)) return true;
+      }
+      return false;
+    };
+    find(nodes);
+    return ids;
+  };
+
+  const deptFiltered = hasOneid ? searchFiltered.filter((c) => {
+    if (!departmentFilter) return true;
+    const allowedIds = findDeptAndChildren(MOCK_DEPARTMENTS, departmentFilter);
+    return c.departmentId ? allowedIds.includes(c.departmentId) : false;
+  }) : searchFiltered;
+
+  const cardFiltered = deptFiltered.filter((c) => {
     switch (activeCardFilter) {
       case "running": return c.status === "running";
       case "shutdown": return c.status === "shutdown";
@@ -477,6 +639,14 @@ export default function OpenClawMonitor() {
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
+              {/* 部门筛选 - 仅 OneID 模式显示 */}
+              {hasOneid && (
+                <InstanceDepartmentFilter
+                  departments={MOCK_DEPARTMENTS}
+                  value={departmentFilter}
+                  onChange={(v) => { setDepartmentFilter(v); setPage(1); }}
+                />
+              )}
               {/* 搜索框 */}
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -488,23 +658,24 @@ export default function OpenClawMonitor() {
                 />
               </div>
             </div>
-            {/* 统计 */}
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                <Bot className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-sm text-gray-500">
-                共计 <span className="text-lg font-bold text-gray-900">{statusFiltered.length}</span> 个 OpenClaw
-              </span>
-            </div>
+            {/* 智能体迁移按钮 */}
+            <Link href="/admin/agent-migration">
+              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                智能体迁移
+              </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50 relative">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">名称 / ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '25%' }}>名称 / ID</th>
+                {hasOneid && (
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">用户归属</th>
+                )}
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '10%' : '15%' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -565,15 +736,15 @@ export default function OpenClawMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建人</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">创建时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">操作</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '20%' }}>创建人</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '20%' }}>创建时间</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '16%' : '20%' }}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 6 : 5} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
@@ -601,6 +772,12 @@ export default function OpenClawMonitor() {
                           </div>
                         </div>
                       </td>
+                      {/* 用户归属 - 仅 OneID 模式显示 */}
+                      {hasOneid && (
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {claw.department ? claw.department.replace(/\//g, " / ") : "—"}
+                        </td>
+                      )}
                       {/* 状态列 */}
                       <td className="px-6 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>

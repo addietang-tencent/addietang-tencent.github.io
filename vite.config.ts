@@ -171,6 +171,16 @@ export default defineConfig({
     port: 3000,
     strictPort: false, // Will find next available port if 3000 is busy
     host: true,
+    proxy: {
+      "/api/ai": {
+        target: "https://api.manus.im/api/llm-proxy",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/ai/, ""),
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY ?? ""}`,
+        },
+      },
+    },
     allowedHosts: [
       ".manuspre.computer",
       ".manus.computer",

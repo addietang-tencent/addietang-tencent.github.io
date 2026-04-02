@@ -5,10 +5,13 @@
  * - 支持自动轮播（5s）+ 手动左右切换
  * - 只有 1 条通知时隐藏切换按钮
  * - 不可手动关闭，强制常驻
+ * - sticky top-0 固定在内容区顶部，不随页面滚动
+ * - 跳转链接紧跟在通知文字末尾
+ * - 产品动态图标使用星星符号
  */
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, AlertTriangle, Info, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, AlertTriangle, Star, ExternalLink } from "lucide-react";
 
 // ─── 基础配置 6 项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
 const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
@@ -71,9 +74,9 @@ function buildNotices(): NoticeItem[] {
     notices.push({
       id: "basic-config",
       type: "warning",
-      message: `有 ${incompleteSteps.length} 项基础配置未完成（${names}），未完成配置将影响用户端的正常使用。`,
+      message: `有 ${incompleteSteps.length} 项基础配置未完成（${names}），未完成配置将影响用户端的正常使用，`,
       action: {
-        label: "前往基础信息配置",
+        label: "前往基础信息配置处理",
         href: "/admin/basic-info",
         external: false,
       },
@@ -85,7 +88,7 @@ function buildNotices(): NoticeItem[] {
     notices.push({
       id: `quota-${alert.id}`,
       type: "warning",
-      message: alert.message,
+      message: alert.message.replace("。", "，"),
       action: {
         label: "前往腾讯云控制台提交工单",
         href: alert.link,
@@ -137,7 +140,7 @@ export default function AdminNoticeBar() {
 
   return (
     <div
-      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs transition-colors duration-300 ${
+      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs transition-colors duration-300 sticky top-0 z-20 ${
         isWarning
           ? "bg-amber-50 border-b border-amber-200"
           : "bg-blue-50 border-b border-blue-200"
@@ -150,43 +153,41 @@ export default function AdminNoticeBar() {
         {isWarning ? (
           <AlertTriangle className="w-4 h-4" />
         ) : (
-          <Info className="w-4 h-4" />
+          <Star className="w-4 h-4 fill-current" />
         )}
       </div>
 
-      {/* 通知文字 */}
-      <p className={`flex-1 min-w-0 truncate leading-5 ${isWarning ? "text-amber-800" : "text-blue-800"}`}>
-        {notice.message}
-      </p>
-
-      {/* 操作按钮 */}
-      {notice.action && (
-        <>
-          {notice.action.external ? (
-            <a
-              href={notice.action.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium underline underline-offset-2 whitespace-nowrap ${
-                isWarning ? "text-amber-700 hover:text-amber-900" : "text-blue-700 hover:text-blue-900"
-              }`}
-            >
-              {notice.action.label}
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          ) : (
-            <Link href={notice.action.href}>
-              <span
-                className={`flex-shrink-0 text-xs font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer ${
+      {/* 通知文字 + 跳转链接（内联排列） */}
+      <div className={`flex-1 min-w-0 leading-5 flex items-baseline flex-wrap gap-x-1 ${isWarning ? "text-amber-800" : "text-blue-800"}`}>
+        <span className="shrink-0 max-w-full">{notice.message}</span>
+        {notice.action && (
+          <>
+            {notice.action.external ? (
+              <a
+                href={notice.action.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap flex-shrink-0 ${
                   isWarning ? "text-amber-700 hover:text-amber-900" : "text-blue-700 hover:text-blue-900"
                 }`}
               >
                 {notice.action.label}
-              </span>
-            </Link>
-          )}
-        </>
-      )}
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            ) : (
+              <Link href={notice.action.href}>
+                <span
+                  className={`inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
+                    isWarning ? "text-amber-700 hover:text-amber-900" : "text-blue-700 hover:text-blue-900"
+                  }`}
+                >
+                  {notice.action.label}
+                </span>
+              </Link>
+            )}
+          </>
+        )}
+      </div>
 
       {/* 切换按钮（仅多条时显示） */}
       {total > 1 && (

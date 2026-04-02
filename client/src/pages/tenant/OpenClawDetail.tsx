@@ -1292,7 +1292,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             {activeDetailTab === "basic" && (
               <button
                 onClick={() => { setMigrationOpen(true); resetMigration(); }}
-                className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors leading-none text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100 cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 智能体迁移
@@ -2659,8 +2659,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       <Dialog open={migrationOpen} onOpenChange={setMigrationOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold flex items-center gap-2">
-              <ArrowLeftRight className="w-4 h-4 text-blue-500" />
+            <DialogTitle className="text-base font-semibold">
               迁移 OpenClaw 至当前实例
             </DialogTitle>
             <DialogDescription className="text-xs text-gray-500">
@@ -2696,15 +2695,15 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               <p className="text-xs text-gray-500 ml-7">
                 请复制下方命令，在源 OpenClaw 终端或 IM 机器人对话框中执行。
               </p>
-              <div className="ml-7 relative bg-gray-900 rounded-lg p-3">
+              <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <button
                   onClick={() => { navigator.clipboard.writeText(migrationExportCommand); toast.success("命令已复制"); }}
-                  className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
                   title="复制命令"
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </button>
-                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap break-all leading-relaxed pr-8">{migrationExportCommand}</pre>
+                <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-all leading-relaxed pr-8">{migrationExportCommand}</pre>
               </div>
               <div className="ml-7 text-xs text-gray-400 space-y-0.5">
                 <p className="flex items-center gap-1"><Clock className="w-3 h-3" /> 上传链接有效期 1 小时，超时请刷新页面重新获取</p>
@@ -2730,7 +2729,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <button
                     onClick={handleCheckUpload}
                     disabled={migrationChecking}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-blue-600 bg-blue-50 border-blue-200 hover:bg-blue-100 disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-gray-600 bg-white border-gray-200 hover:bg-gray-50 disabled:opacity-50"
                   >
                     {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
                     {migrationChecking ? "检测中..." : "检测上传状态"}

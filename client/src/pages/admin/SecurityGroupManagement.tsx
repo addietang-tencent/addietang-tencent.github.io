@@ -17,7 +17,8 @@ import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock, Loader2, Check, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock, Loader2, Check, ChevronDown, Shield, ArrowRight, Search, X } from "lucide-react";
+
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
@@ -96,6 +97,77 @@ const MOCK_SUBNETS: Record<string, { id: string; name: string; cidr: string }[]>
   ],
 };
 
+// ─── Mock 安全组数据 ──────────────────────────────────────────────────────────
+
+type SecurityGroup = {
+  id: string;
+  name: string;
+  remark: string;
+  inboundCount: number;
+  outboundCount: number;
+  inboundRules: Rule[];
+  outboundRules: Rule[];
+};
+
+const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
+  {
+    id: "sg-current001",
+    name: "OpenClaw-Default-SG",
+    remark: "OpenClaw 默认安全组",
+    inboundCount: 13,
+    outboundCount: 2,
+    inboundRules: DEFAULT_INBOUND,
+    outboundRules: DEFAULT_OUTBOUND,
+  },
+  {
+    id: "sg-web00002",
+    name: "Web-Server-SG",
+    remark: "Web 服务器安全组，开放 80/443",
+    inboundCount: 5,
+    outboundCount: 2,
+    inboundRules: [
+      { id: "w1", source: "0.0.0.0/0", protocol: "TCP", port: "80", policy: "允许", remark: "HTTP" },
+      { id: "w2", source: "0.0.0.0/0", protocol: "TCP", port: "443", policy: "允许", remark: "HTTPS" },
+      { id: "w3", source: "10.0.0.0/8", protocol: "ALL", port: "ALL", policy: "允许", remark: "内网放通" },
+      { id: "w4", source: "0.0.0.0/0", protocol: "TCP", port: "22", policy: "允许", remark: "SSH" },
+      { id: "w5", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
+    ],
+    outboundRules: [
+      { id: "wo1", source: "-", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通所有出站流量" },
+      { id: "wo2", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
+    ],
+  },
+  {
+    id: "sg-strict003",
+    name: "Strict-Isolation-SG",
+    remark: "严格隔离，仅允许必要端口",
+    inboundCount: 3,
+    outboundCount: 1,
+    inboundRules: [
+      { id: "s1", source: "10.0.0.0/8", protocol: "TCP", port: "22", policy: "允许", remark: "内网 SSH" },
+      { id: "s2", source: "10.0.0.0/8", protocol: "TCP", port: "18789", policy: "允许", remark: "OpenClaw 内网端口" },
+      { id: "s3", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
+    ],
+    outboundRules: [
+      { id: "so1", source: "-", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通所有出站流量" },
+    ],
+  },
+  {
+    id: "sg-devtest04",
+    name: "Dev-Test-SG",
+    remark: "开发测试环境，开放所有端口",
+    inboundCount: 2,
+    outboundCount: 1,
+    inboundRules: [
+      { id: "d1", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "允许", remark: "全放通（仅测试用）" },
+      { id: "d2", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
+    ],
+    outboundRules: [
+      { id: "do1", source: "-", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通所有出站流量" },
+    ],
+  },
+];
+
 // ─── 类型定义 ─────────────────────────────────────────────────────────────────
 
 type Rule = {
@@ -145,6 +217,7 @@ export default function SecurityGroupManagement() {
   const [inboundRules, setInboundRules] = useState<Rule[]>(DEFAULT_INBOUND);
   const [outboundRules, setOutboundRules] = useState<Rule[]>(DEFAULT_OUTBOUND);
   const [securityTab, setSecurityTab] = useState<"outbound" | "inbound">("outbound");
+  const [sgSubTab, setSgSubTab] = useState<"info" | "rules">("info");
 
   // 用户端访问 OpenClaw 面板开关 - 持久化到 localStorage
   const [allowPanelAccess, setAllowPanelAccess] = useState(() => {
@@ -189,6 +262,13 @@ export default function SecurityGroupManagement() {
   const [instanceTasks, setInstanceTasks] = useState<InstanceTask[]>(
     MIGRATION_INSTANCES.map(m => ({ user: m.user, instance: m.instance, currentStep: "确认网络配置", status: "待执行" }))
   );
+
+  // 安全组切换状态
+  const [currentSg, setCurrentSg] = useState<SecurityGroup>(MOCK_SECURITY_GROUPS[0]);
+  const [isSgDialogOpen, setIsSgDialogOpen] = useState(false);
+  const [sgSearchKeyword, setSgSearchKeyword] = useState("");
+  const [sgDialogSelected, setSgDialogSelected] = useState<SecurityGroup | null>(null); // 弹窗内选中的候选
+  const [sgDialogTab, setSgDialogTab] = useState<"outbound" | "inbound">("outbound");
 
   // 公网配置状态
   const INITIAL_PUBLIC_CONFIG = { assignPublicIp: true, billingMode: "monthly" as "monthly" | "traffic", bandwidth: 5 };
@@ -282,7 +362,7 @@ export default function SecurityGroupManagement() {
   };
 
   // ── 规则表格内容组件（不包含卡片外层）──
-  function RuleTableBody({ rules, type }: { rules: Rule[]; type: "inbound" | "outbound" }) {
+  function RuleTableBody({ rules, type, readonly = false }: { rules: Rule[]; type: "inbound" | "outbound"; readonly?: boolean }) {
     return (
       <table className="w-full text-sm">
         <thead>
@@ -292,7 +372,7 @@ export default function SecurityGroupManagement() {
             <th className="px-6 py-3 text-left font-medium text-gray-600">端口</th>
             <th className="px-6 py-3 text-left font-medium text-gray-600">策略</th>
             <th className="px-6 py-3 text-left font-medium text-gray-600">备注</th>
-            <th className="px-6 py-3 text-left font-medium text-gray-600">操作</th>
+            {!readonly && <th className="px-6 py-3 text-left font-medium text-gray-600">操作</th>}
           </tr>
         </thead>
         <tbody>
@@ -307,31 +387,33 @@ export default function SecurityGroupManagement() {
                 </span>
               </td>
               <td className="px-6 py-3 text-gray-700">{rule.remark || "—"}</td>
-              <td className="px-6 py-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setEditingRule({ id: rule.id, type });
-                      setEditDraft(rule);
-                    }}
-                    className="text-gray-300 hover:text-blue-500 transition-colors"
-                    title="编辑"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (type === "inbound") setInboundRules((prev) => prev.filter((r) => r.id !== rule.id));
-                      else setOutboundRules((prev) => prev.filter((r) => r.id !== rule.id));
-                      toast.success("规则已删除");
-                    }}
-                    className="text-gray-300 hover:text-red-500 transition-colors"
-                    title="删除"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </td>
+              {!readonly && (
+                <td className="px-6 py-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingRule({ id: rule.id, type });
+                        setEditDraft(rule);
+                      }}
+                      className="text-gray-300 hover:text-blue-500 transition-colors"
+                      title="编辑"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (type === "inbound") setInboundRules((prev) => prev.filter((r) => r.id !== rule.id));
+                        else setOutboundRules((prev) => prev.filter((r) => r.id !== rule.id));
+                        toast.success("规则已删除");
+                      }}
+                      className="text-gray-300 hover:text-red-500 transition-colors"
+                      title="删除"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -373,15 +455,58 @@ export default function SecurityGroupManagement() {
 
         {/* Tab 内容 */}
         {activeTab === "security" && (
-        <div>
-          {/* 统一提示说明 */}
-          <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
-            <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，可能导致用户无法使用 OpenClaw；修改规则后对所有 OpenClaw 云服务器立即生效，请谨慎操作。</p>
+        <div className="flex flex-col gap-5">
+          {/* 卡片1：当前安全组信息 */}
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+              <h3 className="text-xs font-semibold text-gray-900">安全组</h3>
+            </div>
+            <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <Shield className="w-4.5 h-4.5 text-blue-500" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-900">{currentSg.name}</span>
+                  <span className="text-xs text-gray-400 font-mono">{currentSg.id}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">用于当前企业下所有 OpenClaw 云服务器的网络访问控制</p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5"
+              onClick={() => {
+                const hasUnsaved = inboundRules !== currentSg.inboundRules || outboundRules !== currentSg.outboundRules;
+                if (hasUnsaved) {
+                  toast.error("当前安全组规则有未保存修改，请先保存或放弃后，再切换安全组。");
+                  return;
+                }
+                setSgSearchKeyword("");
+                setSgDialogSelected(null);
+                setSgDialogTab("outbound");
+                setIsSgDialogOpen(true);
+              }}
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              切换安全组
+            </Button>
+            </div>
           </div>
 
-          {/* 统一规则卡片 */}
+          {/* 卡片2：规则区域 */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            {/* 卡片2标题 */}
+            <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+              <h3 className="text-xs font-semibold text-gray-900">安全组规则</h3>
+            </div>
+            {/* 默认出站规则风险提示（独立黄色边框卡片） */}
+            <div className="mx-6 mt-4 flex items-start gap-2.5 bg-amber-50 border border-amber-300 rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-amber-700 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，可能导致用户无法使用 OpenClaw；修改规则后对所有 OpenClaw 云服务器立即生效，请谨慎操作。</p>
+            </div>
             {/* 卡片顶部工具栏：Tab 切换 + 添加按钮 */}
             <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "52px" }}>
               <div className="flex items-center gap-0">
@@ -404,7 +529,7 @@ export default function SecurityGroupManagement() {
                 添加规则
               </Button>
             </div>
-            {/* 表格内容 */}
+            {/* 表格内容：始终展示当前安全组规则 */}
             <RuleTableBody rules={securityTab === "outbound" ? outboundRules : inboundRules} type={securityTab} />
           </div>
 
@@ -993,8 +1118,215 @@ export default function SecurityGroupManagement() {
         )}
 
       </div>
+      {/* ─── 切换安全组大弹窗（上下布局） ──────────────────────────────────────────────────────────────── */}
+      <Dialog
+        open={isSgDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsSgDialogOpen(false);
+            setSgDialogSelected(null);
+            setSgSearchKeyword("");
+          }
+        }}
+      >
+        <DialogContent
+          className="flex flex-col p-0 gap-0 overflow-hidden"
+          style={{ width: "min(90vw, 880px)", maxWidth: "880px", maxHeight: "min(90vh, 820px)" }}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          {/* 弹窗标题栏 */}
+          <DialogHeader className="px-6 pt-6 pb-3 border-b border-gray-100 shrink-0">
+            <DialogTitle className="text-base font-semibold text-gray-900">切换安全组</DialogTitle>
+            <p className="text-xs text-gray-400 mt-1">
+              当前生效：{currentSg.name}（{currentSg.id}）
+            </p>
+          </DialogHeader>
 
-      {/* ─── 添加规则弹窗 ─────────────────────────────────────────────────────── */}
+          {/* 内容区（可滚动） */}
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
+
+            {/* 上区：搜索 + 候选列表 */}
+            <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+              {/* 搜索框 */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="搜索安全组名称、ID 或备注"
+                  value={sgSearchKeyword}
+                  onChange={(e) => setSgSearchKeyword(e.target.value)}
+                  className="w-full pl-9 pr-4 h-9 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {sgSearchKeyword && (
+                  <button
+                    onClick={() => setSgSearchKeyword("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* 候选安全组列表（下拉列表模式） */}
+              <div
+                className="border border-gray-200 rounded-xl overflow-hidden"
+                style={{ maxHeight: "240px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}
+              >
+              {(() => {
+                const candidates = MOCK_SECURITY_GROUPS.filter(
+                  (sg) =>
+                    sg.id !== currentSg.id &&
+                    (sgSearchKeyword === "" ||
+                      sg.name.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
+                      sg.id.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
+                      (sg.remark ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()))
+                );
+                if (candidates.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                      <Shield className="w-10 h-10 mb-3 opacity-30" />
+                      <p className="text-sm">未找到匹配的安全组</p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex flex-col">
+                    {candidates.map((sg) => {
+                      const isSelected = sgDialogSelected?.id === sg.id;
+                      return (
+                        <button
+                          key={sg.id}
+                          onClick={() => {
+                            setSgDialogSelected(sg);
+                            setSgDialogTab("outbound");
+                          }}
+                          className={`w-full text-left px-4 py-3.5 border-b border-gray-100 last:border-b-0 transition-colors ${
+                            isSelected
+                              ? "bg-blue-50"
+                              : "hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            {/* 单选圆点 */}
+                            <div className="mt-0.5 shrink-0">
+                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "border-blue-500 bg-blue-500"
+                                  : "border-gray-300 bg-white"
+                              }`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </div>
+                            {/* 内容 */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-800"}`}>{sg.name}</span>
+                              </div>
+                              <p className="text-xs text-gray-400 font-mono mt-0.5">{sg.id}</p>
+                              {sg.remark && (
+                                <p className="text-xs text-gray-500 mt-1 truncate">{sg.remark}</p>
+                              )}
+                            </div>
+                            {/* 规则数 */}
+                            <div className="flex flex-col items-end gap-1 shrink-0 text-xs text-gray-400">
+                              <span>入站 {sg.inboundCount} 条</span>
+                              <span>出站 {sg.outboundCount} 条</span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+              </div>
+            </div>
+
+            {/* 中区：规则预览 */}
+            {!sgDialogSelected ? (
+              /* 轻量空态：仅一行提示，不撑开容器 */
+              <div className="px-6 py-3 text-center">
+                <p className="text-sm text-gray-400">请选择一个安全组，查看其规则后再确认切换</p>
+              </div>
+            ) : (
+            <div className="px-6 pt-5 pb-4">
+                <div className="bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                  {/* Tab 切换栏 */}
+                  <div className="flex items-center px-4 border-b border-gray-100" style={{ minHeight: "44px" }}>
+                    {(["outbound", "inbound"] as const).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setSgDialogTab(t)}
+                        className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
+                          sgDialogTab === t
+                            ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        {t === "outbound" ? "出站规则" : "入站规则"}
+                        <span className="ml-1.5 text-xs text-gray-400">
+                          ({t === "outbound" ? sgDialogSelected.outboundCount : sgDialogSelected.inboundCount})
+                        </span>
+                      </button>
+                    ))}
+                    <span className="ml-auto text-xs text-gray-400 pr-2">仅预览，不可编辑</span>
+                  </div>
+                  {/* 规则表格（只读） */}
+                  <div className="max-h-64 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
+                    <RuleTableBody
+                      rules={sgDialogTab === "outbound" ? sgDialogSelected.outboundRules : sgDialogSelected.inboundRules}
+                      type={sgDialogTab}
+                      readonly
+                    />
+                  </div>
+                </div>
+            </div>
+            )}
+          </div>
+
+          {/* 底部：风险提示 + 操作按钮（固定） */}
+          <div className="shrink-0 px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4 bg-white">
+            <div className="flex items-start gap-2 flex-1 min-w-0">
+              <svg className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+              <p className="text-xs text-amber-700 leading-relaxed">切换后，当前企业下所有 OpenClaw 云服务器将立即使用该安全组规则，可能影响现有网络访问。</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsSgDialogOpen(false);
+                  setSgDialogSelected(null);
+                  setSgSearchKeyword("");
+                }}
+              >
+                取消
+              </Button>
+              <Button
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={!sgDialogSelected}
+                onClick={() => {
+                  if (!sgDialogSelected) return;
+                  setCurrentSg(sgDialogSelected);
+                  setInboundRules(sgDialogSelected.inboundRules);
+                  setOutboundRules(sgDialogSelected.outboundRules);
+                  setIsSgDialogOpen(false);
+                  setSgDialogSelected(null);
+                  setSgSearchKeyword("");
+                  toast.success("切换成功，安全组已更新为 " + sgDialogSelected.name);
+                }}
+              >
+                确认切换
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
+      {/* ─── 添加规则弹窗 ───────────────────────────────────────────────────────────────── */}
       <Dialog
         open={showAddDialog !== null}
         onOpenChange={(open) => {

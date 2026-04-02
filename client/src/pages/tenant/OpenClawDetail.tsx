@@ -36,7 +36,7 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import FileSpace from "./FileSpace";
@@ -524,6 +524,10 @@ export default function OpenClawDetail() {
 
   // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
+  const [skillInstallConfirm, setSkillInstallConfirm] = useState<{ open: boolean; skillName: string }>({
+    open: false,
+    skillName: "",
+  });
   const [installedSkills, setInstalledSkills] = useState<string[]>([
     "tavily-search 1.0.0",
     "summarize 1.0.0",
@@ -1446,17 +1450,14 @@ export default function OpenClawDetail() {
                                     onClick={() => {
                                       setModelConfirmDialog({ open: true, type: "set-primary", modelId: model.id });
                                     }}
-                                    className="relative inline-flex items-center shrink-0 focus:outline-none"
-                                    aria-label="设为主模型"
+                                    className="p-1 rounded opacity-60 hover:opacity-90 transition-opacity focus:outline-none"
+                                    aria-label="切换为主模型"
                                   >
-                                    {/* Track */}
-                                    <span className="block w-8 h-4 rounded-full transition-colors duration-200 bg-gray-200" />
-                                    {/* Thumb */}
-                                    <span className="absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 translate-x-0" />
+                                    <img src="/images/icon-switch.png" className="w-3.5 h-3.5" alt="切换" />
                                   </button>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                                  设为主模型
+                                  切换为主模型
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1639,7 +1640,13 @@ export default function OpenClawDetail() {
                           className="w-full text-sm"
                           variant="outline"
                           disabled={hasQueueing}
-                          onClick={hasQueueing ? undefined : () => toast.info("功能开发中")}
+                          onClick={hasQueueing ? undefined : () => {
+                            if (!skillSearch.trim()) {
+                              toast.warning("请先输入准确的 Skill 名称");
+                              return;
+                            }
+                            setSkillInstallConfirm({ open: true, skillName: skillSearch.trim() });
+                          }}
                         >
                           安装技能
                         </Button>
@@ -2489,6 +2496,53 @@ export default function OpenClawDetail() {
               }}
             >
               {modelConfirmDialog.type === "delete" ? "确认删除" : "确认设置"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 技能安装二次确认弹窗 ===== */}
+      <Dialog
+        open={skillInstallConfirm.open}
+        onOpenChange={(open) => !open && setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600">确认安装技能</DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              确认安装名称为
+              <span className="font-semibold text-gray-900 mx-1">{skillInstallConfirm.skillName}</span>
+              的技能？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200 mt-1">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">部分技能(Skills)可能存在安全风险，安装前请确认其安全性。</p>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => {
+                const name = skillInstallConfirm.skillName;
+                setSkillInstallConfirm({ open: false, skillName: "" });
+                setSkillSearch("");
+                // 添加到待安装队列
+                setPendingSkills(prev => [
+                  ...prev,
+                  { id: `ps-${Date.now()}`, name, status: "pending" as const },
+                ]);
+                toast.success(`技能「${name}」已加入安装队列`);
+              }}
+            >
+              确认安装
             </Button>
           </div>
         </DialogContent>

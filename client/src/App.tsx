@@ -31,6 +31,7 @@ import ImageManagement from "./pages/admin/ImageManagement";
 import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
 import CloudDevManagement from "./pages/admin/CloudDevManagement";
 import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
+import AgentMigration from "./pages/admin/AgentMigration";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
 import SecurityManagement from "./pages/admin/SecurityManagement";
@@ -70,6 +71,7 @@ function Router() {
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
       <Route path="/admin/cloud-dev" component={() => <AdminLayout><CloudDevManagement /></AdminLayout>} />
       <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><OpenClawMonitor /></AdminLayout>} />
+      <Route path="/admin/agent-migration" component={() => <AdminLayout><AgentMigration /></AdminLayout>} />
       <Route path="/admin/tokens-monitor" component={() => <AdminLayout><TokensMonitor /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />
       <Route path="/admin/session/:id" component={({ params }) => <AdminLayout><SessionDetail params={params} /></AdminLayout>} />

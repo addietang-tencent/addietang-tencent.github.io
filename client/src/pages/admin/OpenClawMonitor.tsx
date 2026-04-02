@@ -3,7 +3,7 @@
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,7 +36,7 @@ import {
   Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw, Check
+  MessageCircle, RotateCw, Check, ArrowLeftRight
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -658,15 +658,13 @@ export default function OpenClawMonitor() {
                 />
               </div>
             </div>
-            {/* 统计 */}
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                <Bot className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="text-sm text-gray-500">
-                共计 <span className="text-lg font-bold text-gray-900">{statusFiltered.length}</span> 个 OpenClaw
-              </span>
-            </div>
+            {/* 智能体迁移按钮 */}
+            <Link href="/admin/agent-migration">
+              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                智能体迁移
+              </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto overflow-y-visible">

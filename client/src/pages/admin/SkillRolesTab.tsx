@@ -324,33 +324,31 @@ function RoleEditModal({
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle>
               {isNew ? "自定义角色" : `编辑角色 — ${role?.name}`}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto space-y-5 py-2 pr-1" style={{ scrollbarGutter: "stable" }}>
+          <div className="space-y-5">
             {/* Name */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">角色名称</Label>
+              <Label className="text-sm font-medium text-gray-700">
+                角色名称
+                <span className="text-xs text-gray-300 font-normal ml-1.5">{name.length}/{NAME_MAX_LEN}</span>
+              </Label>
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="例如：营养师、法律顾问..."
-                className={`mt-1.5 ${nameError ? "border-red-400" : ""}`}
+                className={`mt-1.5 bg-gray-50 ${nameError ? "border-red-400" : ""}`}
                 autoFocus={isNew}
                 maxLength={NAME_MAX_LEN}
               />
-              <div className="flex items-center justify-between mt-1">
-                {nameError ? (
-                  <p className="text-xs text-red-500">{nameError}</p>
-                ) : (
-                  <span />
-                )}
-                <p className="text-xs text-gray-300">{name.length}/{NAME_MAX_LEN}</p>
-              </div>
+              {nameError && (
+                <p className="text-xs text-red-500 mt-1">{nameError}</p>
+              )}
             </div>
 
             {/* Description — use Textarea for auto wrap */}
@@ -360,7 +358,7 @@ function RoleEditModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="一句话描述角色的核心能力"
-                className="mt-1.5 min-h-[60px] resize-none"
+                className="mt-1.5 min-h-[60px] resize-none bg-gray-50"
                 rows={2}
               />
             </div>
@@ -375,7 +373,7 @@ function RoleEditModal({
                 value={soul}
                 onChange={(e) => setSoul(e.target.value)}
                 placeholder="描述角色的人格特质、专业领域和行为准则..."
-                className="mt-1.5 min-h-[80px] resize-none"
+                className="mt-1.5 min-h-[80px] resize-none bg-gray-50"
                 rows={3}
               />
             </div>
@@ -417,21 +415,15 @@ function RoleEditModal({
                     ))}
                   </div>
                 )}
-                <div className="flex gap-2 px-4 py-2.5 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => { setPickerSource("企业"); setPickerOpen(true); }}
-                    className="px-3 py-1.5 rounded-lg border border-dashed border-green-200 text-sm text-green-600 hover:border-green-400 hover:bg-green-50/50 transition-colors"
-                  >
-                    + 从企业技能库添加
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setPickerSource("公共"); setPickerOpen(true); }}
-                    className="px-3 py-1.5 rounded-lg border border-dashed border-blue-200 text-sm text-blue-600 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
-                  >
-                    + 从公共技能库添加
-                  </button>
+                <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => { setPickerSource("企业"); setPickerOpen(true); }}>
+                    <Plus className="w-3.5 h-3.5" />
+                    从企业技能库添加
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => { setPickerSource("公共"); setPickerOpen(true); }}>
+                    <Plus className="w-3.5 h-3.5" />
+                    从公共技能库添加
+                  </Button>
                 </div>
               </div>
             </div>
@@ -446,7 +438,7 @@ function RoleEditModal({
             </div>
           </div>
 
-          <DialogFooter className="flex-shrink-0">
+          <DialogFooter>
             <Button variant="outline" onClick={onClose}>取消</Button>
             <Button
               onClick={handleSave}

@@ -40,13 +40,15 @@ import {
   Image as ImageIcon,
   Table as TableIcon,
   ExternalLink,
-  MoreVertical
+  MoreVertical,
+  Zap,
+  Share2
 } from "lucide-react";
 
 // Updated Mock Data for Enterprise Spaces
 const ENTERPRISE_SPACES = [
   { id: "ent-skill-lib", name: "企业技能库", type: "公共", used: "12GB", quota: "50GB", expiry: "永久有效" },
-  { id: "ent-plugin-lib", name: "企业插件库", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
+  { id: "ent-plugin-lib", name: "企业预设配置库", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
 ];
 
 // Mock Data for Personal Spaces (Grouped)
@@ -456,11 +458,24 @@ export default function FileManagement() {
             <div className="flex items-center gap-2 px-1">
               <Building className="w-5 h-5 text-blue-600" />
               <h2 className="text-lg font-bold text-gray-900">企业公共空间</h2>
-              <span className="text-xs text-gray-400 font-normal ml-1">管理企业的公共空间容量</span>
             </div>
+
             <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
               <Table>
                 <TableHeader className="bg-white">
+                  {/* 说明文字行 */}
+                  <TableRow className="bg-blue-50/30 hover:bg-blue-50/30 border-b border-gray-100">
+                    <TableHead colSpan={4} className="py-3 px-6 font-normal">
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs shrink-0 mt-0.5">
+                          <span className="text-[10px] font-bold">i</span>
+                        </div>
+                        <p className="text-sm text-gray-700">
+                          默认开启,赠送 <span className="font-semibold text-blue-600">100GB</span> 永久免费空间，用于存放企业级技能库和预设配置库
+                        </p>
+                      </div>
+                    </TableHead>
+                  </TableRow>
                   <TableRow className="border-b border-gray-50 hover:bg-transparent">
                     <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[35%] text-left">空间名称</TableHead>
                     <TableHead className="font-medium text-xs text-gray-400 h-12 px-6 w-[18%] text-left">类型</TableHead>
@@ -494,79 +509,85 @@ export default function FileManagement() {
             </Card>
           </div>
 
-          <Card className="shadow-sm border-blue-100 rounded-xl overflow-hidden bg-gradient-to-r from-blue-50/50 to-purple-50/50">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex-1 space-y-1">
-                  <h3 className="text-sm font-semibold text-gray-900">
-                    云盘管理需要开启 SMH 智能媒资托管服务
-                  </h3>
-                  <p className="text-xs text-gray-600">
-                    开启后,为您赠送
-                    <span className="mx-1 font-semibold text-blue-600">3个月</span>
-                    每个 OpenClaw 实例
-                    <span className="mx-1 font-semibold text-blue-600">50GB</span>
-                    免费额度，到期后可以购买资源包进行续租。
-                  </p>
-                </div>
-                <Button 
-                  className="h-9 px-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-xs font-semibold rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
-                  onClick={handleEnableSmh}
-                >
-                  开启 SMH 智能媒资托管服务
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* AI 智能体私有空间 Section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <Bot className="w-5 h-5 text-purple-600" />
+              <h2 className="text-lg font-bold text-gray-900">AI 智能体私有空间</h2>
+            </div>
 
-          {/* Feature Cards Grid */}
-          <div className="grid grid-cols-3 gap-4">
-            {/* 空间完全隔离 */}
-            <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
-                    <User className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    <h4 className="text-sm font-semibold text-gray-900">空间完全隔离</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      实现不同用户 AI Agent 存储空间的完全隔离,用户仅可访问自身名下的实例,从根源上保障数据隐私私与安全
+            {/* 大框包裹开通说明和功能卡片 */}
+            <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
+              <CardContent className="p-6 pb-0">
+                {/* 开通说明和按钮 - 同一行 */}
+                <div className="flex items-center justify-between gap-6 mb-5">
+                  <div className="flex-1 space-y-1">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      AI 智能体私有空间 需要开启云盘管理服务
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      开启后,为您赠送每个 OpenClaw 实例
+                      <span className="mx-1 font-semibold text-blue-600">3 个月 50GB</span>
+                      免费额度。到期后可以购买资源包继续使用续租
                     </p>
                   </div>
+                  <Button 
+                    className="h-10 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+                    onClick={handleEnableSmh}
+                  >
+                    开启云盘管理服务
+                  </Button>
                 </div>
               </CardContent>
-            </Card>
 
-            {/* 存储容量灵活可控 */}
-            <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                    <Layers className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    <h4 className="text-sm font-semibold text-gray-900">存储容量灵活可控</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      支持为每个成员、每个 AI Agent 独立配置存储额度,管理员可根据需要随意调整,实现资源的精细化管控与成本分配
-                    </p>
-                  </div>
+              {/* 分隔线 - 横跨整个Card宽度 */}
+              <div className="border-t border-gray-200"></div>
+
+              <CardContent className="p-6 pt-5 space-y-5">
+                {/* 分隔文字 */}
+                <div className="text-sm text-gray-900 font-semibold">
+                  开启后为您提供以下:
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* 文件安全共享 */}
-            <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
-                    <Building className="w-5 h-5 text-purple-600" />
+                {/* Feature Cards Grid - 横向左对齐布局 */}
+                <div className="grid grid-cols-3 gap-6">
+                  {/* 空间安全隔离 */}
+                  <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow">
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                      <ShieldAlert className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold text-gray-900">空间安全隔离</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        实现不同用户 AI Agent 存储空间的完全隔离，保障数据隐私与安全
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-1.5">
-                    <h4 className="text-sm font-semibold text-gray-900">文件安全共享</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      一键生成有效期、权限取及提取码控制的外链分享链接,在便捷分享文件的同时,确保分享的安全性与管理性
-                    </p>
+
+                  {/* 存储管理及监控 */}
+                  <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                      <Layers className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold text-gray-900">存储管理及监控</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        实时监控每个用户的容量的使用情况及余量进度条提示
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 文件安全共享 */}
+                  <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-white hover:shadow-sm transition-shadow">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
+                      <Share2 className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold text-gray-900">文件安全共享</h4>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        一键生成有效期提取码控制的外链分享链接，确保分享安全性
+                      </p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -709,7 +730,6 @@ export default function FileManagement() {
         <div className="flex items-center gap-2 px-1">
           <Building className="w-5 h-5 text-blue-600" />
           <h2 className="text-lg font-bold text-gray-900">企业公共空间</h2>
-          <span className="text-xs text-gray-400 font-normal ml-1">管理企业的公共空间容量</span>
         </div>
         <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
           <Table>

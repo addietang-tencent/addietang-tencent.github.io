@@ -38,8 +38,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
+  LayoutGrid, MessageSquare,
 } from "lucide-react";
+import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
 import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
@@ -240,6 +242,15 @@ export default function MyOpenClaw() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
+
+  // 视图模式
+  const [viewMode, setViewMode] = useState<"card" | "chat">(() => {
+    return (localStorage.getItem("openclaw_view_mode") as "card" | "chat") || "card";
+  });
+  const handleViewModeChange = (mode: "card" | "chat") => {
+    setViewMode(mode);
+    localStorage.setItem("openclaw_view_mode", mode);
+  };
 
   // 角色选择
   const [roleExpanded, setRoleExpanded] = useState(false);
@@ -466,6 +477,33 @@ export default function MyOpenClaw() {
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center rounded-lg bg-gray-100 p-0.5">
+                <button
+                  onClick={() => handleViewModeChange("card")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                    viewMode === "card"
+                      ? "text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  style={viewMode === "card" ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  卡片视图
+                </button>
+                <button
+                  onClick={() => handleViewModeChange("chat")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                    viewMode === "chat"
+                      ? "text-white shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  style={viewMode === "chat" ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  对话视图
+                </button>
+              </div>
               {/* Bell Notification Button */}
               <div className="relative">
                 <button
@@ -489,8 +527,20 @@ export default function MyOpenClaw() {
             </div>
           </div>
 
-          {/* OpenClaw Cards */}
-          {claws.length === 0 ? (
+          {/* OpenClaw Cards / Chat View */}
+          {viewMode === "chat" ? (
+            <ChatView
+              claws={claws}
+              onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
+              onRestartConfirm={(claw) => setRestartConfirm(claw)}
+              onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
+              onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
+              onRetry={handleRetry}
+              allowTerminal={allowTerminal}
+              refreshingIds={refreshingIds}
+              onRefreshStatus={handleRefreshStatus}
+            />
+          ) : claws.length === 0 ? (
             <div className="text-center py-24">
               <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
               <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>

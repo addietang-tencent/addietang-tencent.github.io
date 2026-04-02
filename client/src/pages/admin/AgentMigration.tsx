@@ -13,7 +13,7 @@ export default function AgentMigration() {
     <div className="min-h-full">
       {/* 返回按钮 */}
       <div className="mb-6">
-        <Link href="/admin/openclaw-list">
+        <Link href="/admin/openclaw-monitor">
           <button className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors group">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             返回 OpenClaw 列表

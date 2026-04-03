@@ -76,17 +76,17 @@ export default function CloudDevManagement() {
         {CLOUD_DEV_FEATURES.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-xl border border-gray-100 p-4 transition-all duration-200 hover:-translate-y-0.5"
+            className="bg-white rounded-xl border border-gray-100 p-5"
             style={{ boxShadow: CARD_SHADOW }}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-4">
               <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
                 style={{ background: feature.iconBg }}
               >
-                <feature.icon className="text-white" style={{ width: "18px", height: "18px" }} />
+                <feature.icon className="text-white" style={{ width: "22px", height: "22px" }} />
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1.5 pt-0.5">
                 <h3 className="text-sm font-semibold text-gray-900">
                   {feature.title}
                 </h3>

@@ -26,6 +26,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -36,9 +44,11 @@ import {
 import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
-  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine,
+  ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
+  Copy, Terminal, Database, Clock, Shield,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
+import { findClawById, onClawListChange } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 
@@ -280,7 +290,21 @@ type AppliedChannel = {
 export default function OpenClawDetail() {
   const [, params] = useRoute("/openclaw/:id");
   const clawId = params?.id;
-  const claw = MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) || MOCK_OPENCLAW_LIST[0];
+
+  // 优先从共享 store 读取（包含动态创建的 claw 及 roleName），fallback 到 mock 数据
+  const [clawData, setClawData] = useState(() =>
+    (clawId ? findClawById(clawId) : undefined) ?? MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]
+  );
+  useEffect(() => {
+    const unsub = onClawListChange(() => {
+      if (clawId) {
+        const updated = findClawById(clawId);
+        if (updated) setClawData(updated);
+      }
+    });
+    return unsub;
+  }, [clawId]);
+  const claw = clawData;
 
   const clawName = claw.name;
   const clawStatus = (claw.status || "running") as OpenClawStatus;
@@ -290,6 +314,21 @@ export default function OpenClawDetail() {
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
   const [quickFixState, setQuickFixState] = useState<"idle" | "loading" | "success">("idle");
 
+  // 读取管控端「允许用户使用龙虾医生」开关状态（默认关闭）
+  const [lobsterDoctorEnabled, setLobsterDoctorEnabled] = useState(
+    () => localStorage.getItem("admin_allow_lobster_doctor") === "true"
+  );
+  // 监听 localStorage 变化，管控端切换开关后用户端实时响应
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "admin_allow_lobster_doctor") {
+        setLobsterDoctorEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   // ── Model state ──
   const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
   const [selectedModel, setSelectedModel] = useState(MODEL_PROVIDERS[0].versions[0].value);
@@ -297,15 +336,15 @@ export default function OpenClawDetail() {
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
   // 多条模型列表，每条有唯一 id；primary 表示主模型，其余为备选模型，所有模型均为应用中状态
-  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; };
+  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; };
   const [appliedModels, setAppliedModels] = useState<AppliedModel[]>([
-    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "" },
+    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "", addedAt: Date.now() },
   ]);
   const [modelIdCounter, setModelIdCounter] = useState(2);
   // 模型操作二次确认弹窗
   const [modelConfirmDialog, setModelConfirmDialog] = useState<{
     open: boolean;
-    type: "set-primary" | "delete";
+    type: "set-primary" | "delete" | "delete-backup";
     modelId: number | null;
   }>({ open: false, type: "set-primary", modelId: null });
 
@@ -392,6 +431,72 @@ export default function OpenClawDetail() {
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
   const [activeDetailTab, setActiveDetailTab] = useState("basic");
+
+  // ── 智能体迁移状态 ──
+  const [migrationOpen, setMigrationOpen] = useState(false);
+  const [migrationStep, setMigrationStep] = useState<"export" | "waitUpload" | "import" | "importing" | "success" | "failed">("export");
+  const [migrationCosUrl, setMigrationCosUrl] = useState("");
+  const [migrationProgress, setMigrationProgress] = useState(0);
+  const [migrationUploaded, setMigrationUploaded] = useState(false);
+  const [migrationChecking, setMigrationChecking] = useState(false);
+  const [migrationError, setMigrationError] = useState("");
+
+  const migrationBatchId = `${clawData?.instanceId || "unknown"}-${Date.now()}`;
+  const migrationCosBucket = "clawpro-migrate-1302061491";
+  const migrationCosKey = `single/${clawData?.instanceId || "unknown"}-${Math.random().toString(36).substring(2, 8)}.tgz`;
+  const migrationPresignedUrl = `https://${migrationCosBucket}.cos.ap-guangzhou.myqcloud.com/${migrationCosKey}?q-sign-algorithm=sha1&q-ak=AKID****&q-sign-time=****&q-signature=****`;
+
+  const migrationExportCommand = `# 在源端 OpenClaw 终端执行以下命令
+openclaw gateway stop
+tar -czf /tmp/openclaw-export.tgz -C /root .openclaw
+curl -X PUT --upload-file /tmp/openclaw-export.tgz \\
+  "${migrationPresignedUrl}"
+rm -f /tmp/openclaw-export.tgz
+openclaw gateway start
+echo "✅ 导出完成，数据已上传到 COS"`;
+
+  const handleCheckUpload = () => {
+    setMigrationChecking(true);
+    setTimeout(() => {
+      setMigrationUploaded(true);
+      setMigrationChecking(false);
+      setMigrationStep("import");
+      toast.success("检测到已上传的数据包");
+    }, 1500);
+  };
+
+  const handleStartMigration = () => {
+    setMigrationStep("importing");
+    setMigrationProgress(0);
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 15 + 5;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(iv);
+        setTimeout(() => {
+          if (Math.random() < 0.9) {
+            setMigrationStep("success");
+            toast.success("迁移成功！OpenClaw 已重启");
+          } else {
+            setMigrationStep("failed");
+            setMigrationError("Gateway 重启超时，请手动检查");
+          }
+        }, 500);
+      }
+      setMigrationProgress(Math.min(p, 100));
+    }, 800);
+  };
+
+  const resetMigration = () => {
+    setMigrationStep("export");
+    setMigrationCosUrl("");
+    setMigrationProgress(0);
+    setMigrationUploaded(false);
+    setMigrationChecking(false);
+    setMigrationError("");
+  };
+
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
@@ -524,6 +629,10 @@ export default function OpenClawDetail() {
 
   // ── Skills state ──
   const [skillSearch, setSkillSearch] = useState("");
+  const [skillInstallConfirm, setSkillInstallConfirm] = useState<{ open: boolean; skillName: string }>({
+    open: false,
+    skillName: "",
+  });
   const [installedSkills, setInstalledSkills] = useState<string[]>([
     "tavily-search 1.0.0",
     "summarize 1.0.0",
@@ -578,12 +687,12 @@ export default function OpenClawDetail() {
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "" };
+      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "", addedAt: Date.now() };
     } else {
       const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
       const version = currentVersions.find(v => v.value === selectedModel);
       if (!provider || !version) return;
-      newEntry = { id: modelIdCounter, providerLabel: provider.label, versionLabel: version.label, primary: false, isCustom: false, customName: "" };
+      newEntry = { id: modelIdCounter, providerLabel: provider.label, versionLabel: version.label, primary: false, isCustom: false, customName: "", addedAt: Date.now() };
     }
     setAppliedModels(prev => {
       // 当前无主模型时（列表为空或全部为备选），新模型直接成为主模型
@@ -1122,8 +1231,16 @@ export default function OpenClawDetail() {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {/* 第二行：实例 ID */}
-              <p className="text-xs text-gray-400 mt-0.5">{claw.instanceId}</p>
+              {/* 第二行：角色胶囊标签 + 实例 ID */}
+              <div className="flex items-center gap-2 mt-0.5">
+                {claw.roleName && (
+                  <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
+                    {claw.roleName}
+                  </span>
+                )}
+                <p className="text-xs text-gray-400">{claw.instanceId}</p>
+              </div>
             </div>
           </div>
           {/* 右侧：操作按鈕 */}
@@ -1187,6 +1304,15 @@ export default function OpenClawDetail() {
                 </TooltipContent>
               )}
             </Tooltip>
+            {activeDetailTab === "basic" && (
+              <button
+                onClick={() => { setMigrationOpen(true); resetMigration(); }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                智能体迁移
+              </button>
+            )}
           </div>
         </div>
 
@@ -1198,7 +1324,7 @@ export default function OpenClawDetail() {
             {([
               { id: "basic", label: "基础配置" },
               { id: "memory", label: "记忆管理" },
-              { id: "files", label: "云盘空间" },
+              { id: "files", label: "文件空间" },
               { id: "doctor", label: "龙虾医院" },
             ] as { id: string; label: string }[]).map((tab) => (
               <button
@@ -1408,9 +1534,12 @@ export default function OpenClawDetail() {
                 {appliedModels.some(m => !m.primary) && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">备选模型</p>
-                    <p className="text-xs text-gray-400 mb-2">主模型不可用时会自动切换备选模型，确保服务不中断</p>
+                    <div className="mb-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <span>主模型不可用时会自动切换备选模型，此时备选模型消耗的token将统计到主模型下</span>
+                    </div>
                     <div className="space-y-1.5">
-                      {appliedModels.filter(m => !m.primary).map((model) => (
+                      {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
                         <div
                           key={model.id}
                           className="rounded-lg border transition-all bg-white border-gray-100 hover:bg-gray-50 p-2.5"
@@ -1446,17 +1575,14 @@ export default function OpenClawDetail() {
                                     onClick={() => {
                                       setModelConfirmDialog({ open: true, type: "set-primary", modelId: model.id });
                                     }}
-                                    className="relative inline-flex items-center shrink-0 focus:outline-none"
-                                    aria-label="设为主模型"
+                                    className="p-1 rounded opacity-60 hover:opacity-90 transition-opacity focus:outline-none"
+                                    aria-label="切换为主模型"
                                   >
-                                    {/* Track */}
-                                    <span className="block w-8 h-4 rounded-full transition-colors duration-200 bg-gray-200" />
-                                    {/* Thumb */}
-                                    <span className="absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform duration-200 translate-x-0" />
+                                    <img src="/images/icon-switch.png" className="w-3.5 h-3.5" alt="切换" />
                                   </button>
                                 </TooltipTrigger>
                                 <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                                  设为主模型
+                                  切换为主模型
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1464,8 +1590,7 @@ export default function OpenClawDetail() {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setAppliedModels(prev => prev.filter(m => m.id !== model.id));
-                                      toast.success("备选模型已移除");
+                                      setModelConfirmDialog({ open: true, type: "delete-backup", modelId: model.id });
                                     }}
                                     className="p-1 rounded text-gray-300 hover:text-red-400 transition-colors"
                                   >
@@ -1639,7 +1764,13 @@ export default function OpenClawDetail() {
                           className="w-full text-sm"
                           variant="outline"
                           disabled={hasQueueing}
-                          onClick={hasQueueing ? undefined : () => toast.info("功能开发中")}
+                          onClick={hasQueueing ? undefined : () => {
+                            if (!skillSearch.trim()) {
+                              toast.warning("请先输入准确的 Skill 名称");
+                              return;
+                            }
+                            setSkillInstallConfirm({ open: true, skillName: skillSearch.trim() });
+                          }}
                         >
                           安装技能
                         </Button>
@@ -1761,7 +1892,7 @@ export default function OpenClawDetail() {
             </div>
           )}
 
-          {/* 云盘空间 tab */}
+          {/* 文件空间 tab */}
           {activeDetailTab === "files" && (
             <FileSpace
               clawName={clawName}
@@ -1838,8 +1969,10 @@ export default function OpenClawDetail() {
                 </div>
               </div>
 
-              {/* ===== 龙虾医生对话卡片 ===== */}
-              <DoctorChatCard instanceId={claw.instanceId} instanceName={claw.instanceId} />
+              {/* ===== 龙虾医生对话卡片（受管控端「允许用户使用龙虾医生」开关控制） ===== */}
+              {lobsterDoctorEnabled && (
+                <DoctorChatCard instanceId={claw.instanceId} instanceName={claw.instanceId} />
+              )}
 
             </div>
           )}
@@ -2448,12 +2581,14 @@ export default function OpenClawDetail() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-blue-600">
-              {modelConfirmDialog.type === "delete" ? "确认删除主模型" : "设为主模型"}
+              {modelConfirmDialog.type === "delete" ? "确认删除主模型" : modelConfirmDialog.type === "delete-backup" ? "确认删除备选模型" : "切换主模型"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 leading-relaxed pt-1">
               {modelConfirmDialog.type === "delete"
-                ? "删除主模型将导致相关的 Gateway 服务立即停止，该操作不可恢复。"
-                : "将此模型设为主模型后，原主模型将降为备选模型。是否继续？"}
+                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
+                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
@@ -2474,6 +2609,9 @@ export default function OpenClawDetail() {
                 if (type === "set-primary" && modelId !== null) {
                   setAppliedModels(prev => prev.map(m => ({ ...m, primary: m.id === modelId })));
                   toast.success("已设为主模型");
+                } else if (type === "delete-backup" && modelId !== null) {
+                  setAppliedModels(prev => prev.filter(m => m.id !== modelId));
+                  toast.success("备选模型已删除");
                 } else if (type === "delete" && modelId !== null) {
                   setAppliedModels(prev => {
                     const next = prev.filter(m => m.id !== modelId);
@@ -2488,8 +2626,226 @@ export default function OpenClawDetail() {
                 }
               }}
             >
-              {modelConfirmDialog.type === "delete" ? "确认删除" : "确认设置"}
+              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup" ? "确认删除" : "确认设置"}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ===== 技能安装二次确认弹窗 ===== */}
+      <Dialog
+        open={skillInstallConfirm.open}
+        onOpenChange={(open) => !open && setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600">确认安装技能</DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              确认安装名称为
+              <span className="font-semibold text-gray-900 mx-1">{skillInstallConfirm.skillName}</span>
+              的技能？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200 mt-1">
+            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">部分技能(Skills)可能存在安全风险，安装前请确认其安全性。</p>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => {
+                const name = skillInstallConfirm.skillName;
+                setSkillInstallConfirm({ open: false, skillName: "" });
+                setSkillSearch("");
+                // 添加到待安装队列
+                setPendingSkills(prev => [
+                  ...prev,
+                  { id: `ps-${Date.now()}`, name, status: "pending" as const },
+                ]);
+                toast.success(`技能「${name}」已加入安装队列`);
+              }}
+            >
+              确认安装
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ==================== 智能体迁移弹窗 ==================== */}
+      <Dialog open={migrationOpen} onOpenChange={setMigrationOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold">
+              迁移 OpenClaw 至当前实例
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              将源端 OpenClaw 的配置、通道状态、会话历史导入到「{clawData?.name}」
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5 mt-2">
+            {/* 注意事项 */}
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 space-y-1.5">
+              <p className="text-xs text-amber-800 font-semibold flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> 注意事项
+              </p>
+              <ul className="text-xs text-amber-700 space-y-1 list-disc pl-4 leading-relaxed">
+                <li>源端 OpenClaw 的配置、通道登录状态、会话历史将完整导入到当前实例</li>
+                <li>源端仅做读取打包，不影响源端正常运行</li>
+                <li>导入将覆盖当前实例的 ~/.openclaw/ 目录，导入前自动备份，失败自动回滚</li>
+                <li>COS 临时数据保留 24 小时后自动清理</li>
+              </ul>
+            </div>
+
+            {/* Step 1: 导出源端配置 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  migrationStep === "export" || migrationStep === "waitUpload"
+                    ? "bg-blue-500 text-white" : "bg-green-500 text-white"
+                }`}>
+                  {migrationStep !== "export" && migrationStep !== "waitUpload" ? <CheckCircle2 className="w-3 h-3" /> : "1"}
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">导出源端 OpenClaw 配置</h3>
+              </div>
+              <p className="text-xs text-gray-500 ml-7">
+                请复制下方命令，在源 OpenClaw 终端或 IM 机器人对话框中执行。
+              </p>
+              <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <button
+                  onClick={() => { navigator.clipboard.writeText(migrationExportCommand); toast.success("命令已复制"); }}
+                  className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                  title="复制命令"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-all leading-relaxed pr-8">{migrationExportCommand}</pre>
+              </div>
+              <div className="ml-7 text-xs text-gray-400 space-y-0.5">
+                <p className="flex items-center gap-1"><Clock className="w-3 h-3" /> 上传链接有效期 1 小时，超时请刷新页面重新获取</p>
+              </div>
+            </div>
+
+            {/* Step 2: 检测上传 & 导入 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  migrationStep === "export" || migrationStep === "waitUpload" ? "bg-gray-300 text-gray-600"
+                  : migrationStep === "import" ? "bg-blue-500 text-white"
+                  : "bg-green-500 text-white"
+                }`}>
+                  {migrationStep === "success" || migrationStep === "importing" ? <CheckCircle2 className="w-3 h-3" /> : "2"}
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">将源端配置导入当前实例</h3>
+              </div>
+
+              {!migrationUploaded && (migrationStep === "export" || migrationStep === "waitUpload") && (
+                <div className="ml-7 space-y-2">
+                  <p className="text-xs text-gray-500">执行完导出命令后，点击检测上传状态：</p>
+                  <button
+                    onClick={handleCheckUpload}
+                    disabled={migrationChecking}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-gray-600 bg-white border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+                    {migrationChecking ? "检测中..." : "检测上传状态"}
+                  </button>
+                </div>
+              )}
+
+              {migrationStep === "import" && (
+                <div className="ml-7 space-y-3">
+                  <div className="rounded-lg bg-green-50 border border-green-200 p-2.5">
+                    <p className="text-xs text-green-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> 已检测到上传的数据包
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                    <p className="text-xs text-red-700 font-semibold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> 重要提醒
+                    </p>
+                    <p className="text-xs text-red-600 mt-1 leading-relaxed">
+                      执行导入将<strong>覆盖</strong>当前实例「{clawData?.name}」的全部 OpenClaw 配置（~/.openclaw/ 目录）。
+                      导入前会自动备份，失败时自动回滚。
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleStartMigration}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-4 py-2 transition-colors text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                    导入并重启 OpenClaw
+                  </button>
+                </div>
+              )}
+
+              {migrationStep === "importing" && (
+                <div className="ml-7 space-y-2">
+                  <p className="text-xs text-blue-600 flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> 正在导入...
+                  </p>
+                  <Progress value={migrationProgress} className="h-1.5" />
+                  <p className="text-xs text-gray-400">
+                    下载数据包 → 备份当前配置 → 解压覆盖 → 重启 Gateway
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Result */}
+            {migrationStep === "success" && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center">
+                    <CheckCircle2 className="w-3 h-3" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-green-700">迁移成功</h3>
+                </div>
+                <div className="ml-7 rounded-lg bg-green-50 border border-green-200 p-3 space-y-1.5">
+                  <p className="text-xs text-green-700">OpenClaw 配置数据已成功导入，Gateway 已重启。</p>
+                  <p className="text-xs text-green-600">COS 临时数据已清理。</p>
+                </div>
+                <div className="ml-7">
+                  <button onClick={() => setMigrationOpen(false)}
+                    className="text-xs font-medium text-blue-600 hover:underline">
+                    关闭
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {migrationStep === "failed" && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center">
+                    <XCircle className="w-3 h-3" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-red-700">迁移失败</h3>
+                </div>
+                <div className="ml-7 rounded-lg bg-red-50 border border-red-200 p-3 space-y-1.5">
+                  <p className="text-xs text-red-700">{migrationError}</p>
+                  <p className="text-xs text-red-600">已自动回滚至导入前状态，当前实例配置未受影响。</p>
+                </div>
+                <div className="ml-7 flex gap-2">
+                  <button onClick={resetMigration}
+                    className="text-xs font-medium text-blue-600 hover:underline">
+                    重试
+                  </button>
+                  <button onClick={() => setMigrationOpen(false)}
+                    className="text-xs font-medium text-gray-500 hover:underline">
+                    关闭
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

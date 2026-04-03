@@ -50,13 +50,17 @@ import {
   Trash2,
   X,
   Search,
+  Check,
+  RefreshCw,
+  Package,
+  Star,
 } from "lucide-react";
 import {
   MOCK_ROLES,
-  PUBLIC_SKILL_POOL,
-  ENTERPRISE_SKILL_POOL,
 } from "@/lib/mockData";
 import type { Role, RoleSkill } from "@/lib/mockData";
+import { PUBLIC_SKILLS, type PublicSkill } from "./SkillLibrary/publicSkillMockData";
+import { MOCK_SKILLS, DEFAULT_CATEGORIES } from "./SkillLibrary/mockData";
 
 // ── Sortable Row ────────────────────────────────────────
 function SortableRoleRow({
@@ -145,99 +149,272 @@ function SortableRoleRow({
   );
 }
 
-// ── Skill Picker Modal ──────────────────────────────────
-function SkillPicker({
+// ── 公共技能库添加弹窗（与初始技能包交互一致）──────────────
+const MOCK_FAVORITES: PublicSkill[] = PUBLIC_SKILLS.slice(0, 5);
+
+function RoleAddPublicSkillDialog({
   open,
-  onClose,
-  source,
-  existingSkills,
-  onAdd,
+  existingSkillNames,
+  onConfirm,
+  onCancel,
 }: {
   open: boolean;
-  onClose: () => void;
-  source: "公共" | "企业";
-  existingSkills: RoleSkill[];
-  onAdd: (skills: RoleSkill[]) => void;
+  existingSkillNames: string[];
+  onConfirm: (skills: RoleSkill[]) => void;
+  onCancel: () => void;
 }) {
-  const pool = source === "公共" ? PUBLIC_SKILL_POOL : ENTERPRISE_SKILL_POOL;
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const filtered = pool.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) &&
-      !existingSkills.some((es) => es.name === s.name)
-  );
+  const toggleSkill = (skillId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(skillId) ? prev.filter(id => id !== skillId) : [...prev, skillId]
+    );
+  };
 
   const handleConfirm = () => {
-    const newSkills: RoleSkill[] = [];
-    selected.forEach((name) => {
-      const skill = pool.find((s) => s.name === name);
-      if (skill) {
-        newSkills.push({ name: skill.name, version: skill.version, source });
-      }
+    const newSkills: RoleSkill[] = selectedIds.map(id => {
+      const skill = MOCK_FAVORITES.find(s => s.id === id)!;
+      return { name: skill.name, version: `v${skill.version}`, source: "公共" as const };
     });
-    onAdd(newSkills);
-    setSelected(new Set());
-    setSearch("");
-    onClose();
+    onConfirm(newSkills);
+    setSelectedIds([]);
+  };
+
+  const handleCancel = () => {
+    setSelectedIds([]);
+    onCancel();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setSelected(new Set()); setSearch(""); } }}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>从{source}技能库添加</DialogTitle>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
+      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+          <DialogTitle>从公共技能库添加</DialogTitle>
         </DialogHeader>
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="搜索技能名称..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+
+        <div className="px-5 pt-4 pb-2 shrink-0">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            我的收藏
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto">
-          {filtered.map((skill) => {
-            const isSel = selected.has(skill.name);
-            return (
-              <button
-                key={skill.name}
-                type="button"
-                onClick={() => {
-                  const next = new Set(selected);
-                  if (isSel) next.delete(skill.name);
-                  else next.add(skill.name);
-                  setSelected(next);
-                }}
-                className={`text-left p-3 rounded-lg border transition-all ${
-                  isSel
-                    ? "border-blue-500 bg-blue-50/50 shadow-sm"
-                    : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50"
-                }`}
-              >
-                <div className="text-sm font-semibold text-gray-900 mb-0.5">{skill.name}</div>
-                <div className="text-xs text-gray-400 line-clamp-2">{skill.description}</div>
-                <div className="text-xs text-gray-300 mt-1">{skill.version}</div>
-              </button>
-            );
-          })}
-          {filtered.length === 0 && (
-            <div className="col-span-3 py-8 text-center text-sm text-gray-400">
-              {search ? "没有匹配的技能" : "所有技能已添加"}
+
+        <div className="flex-1 overflow-y-auto px-5 pb-3">
+          {MOCK_FAVORITES.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <Star className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">还没有收藏任何技能</p>
+              <p className="text-xs mt-1">可先前往公共技能库收藏技能</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {MOCK_FAVORITES.map(skill => {
+                const isAlreadyAdded = existingSkillNames.includes(skill.name);
+                const isSelected = selectedIds.includes(skill.id);
+                return (
+                  <div
+                    key={skill.id}
+                    onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
+                    className={`relative rounded-lg border p-3 transition-all ${
+                      isAlreadyAdded
+                        ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+                        : isSelected
+                          ? 'border-blue-400 bg-blue-50 cursor-pointer'
+                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                    {isAlreadyAdded && (
+                      <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+                    )}
+                    <div className="flex items-center gap-2 mb-1.5 pr-8">
+                      <span className="font-mono font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
+                      <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{skill.descriptionZh}</p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => { onClose(); setSelected(new Set()); setSearch(""); }}>取消</Button>
+
+        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+          <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
-            disabled={selected.size === 0}
-            className="text-white"
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            disabled={selectedIds.length === 0}
           >
-            确认添加{selected.size > 0 ? ` (${selected.size})` : ""}
+            确认添加{selectedIds.length > 0 ? `（${selectedIds.length} 个）` : ''}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── 企业技能库添加弹窗（与初始技能包交互一致）──────────────
+
+function RoleAddEnterpriseSkillDialog({
+  open,
+  existingSkillNames,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  existingSkillNames: string[];
+  onConfirm: (skills: RoleSkill[]) => void;
+  onCancel: () => void;
+}) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const toggleSkill = (skillId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(skillId) ? prev.filter(id => id !== skillId) : [...prev, skillId]
+    );
+  };
+
+  const handleConfirm = () => {
+    const newSkills: RoleSkill[] = selectedIds.map(id => {
+      const skill = MOCK_SKILLS.find(s => s.id === id)!;
+      return { name: skill.name, version: `v${skill.version}`, source: "企业" as const };
+    });
+    onConfirm(newSkills);
+    setSelectedIds([]);
+    setActiveCategory('all');
+    setSearchQuery('');
+  };
+
+  const handleCancel = () => {
+    setSelectedIds([]);
+    setActiveCategory('all');
+    setSearchQuery('');
+    onCancel();
+  };
+
+  const handleRefresh = () => {
+    setSearchQuery('');
+    setActiveCategory('all');
+    setSelectedIds([]);
+  };
+
+  const filteredSkills = MOCK_SKILLS.filter(s => {
+    const matchCategory = activeCategory === 'all' || s.categories.includes(activeCategory);
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = q === '' || s.name.toLowerCase().includes(q) || (s.description ?? '').toLowerCase().includes(q);
+    return matchCategory && matchSearch;
+  });
+
+  const renderSkillCard = (skill: typeof MOCK_SKILLS[0]) => {
+    const isAlreadyAdded = existingSkillNames.includes(skill.name);
+    const isSelected = selectedIds.includes(skill.id);
+    return (
+      <div
+        key={skill.id}
+        onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
+        className={`relative rounded-lg border p-3 transition-all ${
+          isAlreadyAdded
+            ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+            : isSelected
+              ? 'border-blue-400 bg-blue-50 cursor-pointer'
+              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+        }`}
+      >
+        {isSelected && (
+          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+            <Check className="w-3 h-3 text-white" />
+          </div>
+        )}
+        {isAlreadyAdded && (
+          <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+        )}
+        <div className="flex items-center gap-2 mb-1.5 pr-8">
+          <span className="font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
+          <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+        </div>
+        <p className="text-xs text-gray-500 line-clamp-2">{skill.description}</p>
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
+      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+          <DialogTitle>从企业技能库添加</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="px-5 pt-3 pb-2 shrink-0 flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索技能名称或描述..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+              />
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              title="刷新"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="px-5 pb-3 shrink-0 flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveCategory('all')}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                activeCategory === 'all'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              全部
+            </button>
+            {DEFAULT_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  activeCategory === cat.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            {filteredSkills.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {filteredSkills.map(skill => renderSkillCard(skill))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">暂无匹配的技能</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+          <Button variant="outline" onClick={handleCancel}>取消</Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={selectedIds.length === 0}
+          >
+            确认添加{selectedIds.length > 0 ? `（${selectedIds.length} 个）` : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -266,8 +443,8 @@ function RoleEditModal({
   const [soul, setSoul] = useState("");
   const [skills, setSkills] = useState<RoleSkill[]>([]);
   const [visible, setVisible] = useState(true);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerSource, setPickerSource] = useState<"公共" | "企业">("公共");
+  const [showAddPublicDialog, setShowAddPublicDialog] = useState(false);
+  const [showAddEnterpriseDialog, setShowAddEnterpriseDialog] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
   // Reset form when dialog opens
@@ -319,38 +496,38 @@ function RoleEditModal({
 
   const handleAddSkills = (newSkills: RoleSkill[]) => {
     setSkills([...skills, ...newSkills]);
+    setShowAddPublicDialog(false);
+    setShowAddEnterpriseDialog(false);
   };
 
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle>
               {isNew ? "自定义角色" : `编辑角色 — ${role?.name}`}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto space-y-5 py-2 pr-1" style={{ scrollbarGutter: "stable" }}>
+          <div className="space-y-5">
             {/* Name */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">角色名称</Label>
+              <Label className="text-sm font-medium text-gray-700">
+                角色名称
+                <span className="text-xs text-gray-300 font-normal ml-1.5">{name.length}/{NAME_MAX_LEN}</span>
+              </Label>
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="例如：营养师、法律顾问..."
-                className={`mt-1.5 ${nameError ? "border-red-400" : ""}`}
+                className={`mt-1.5 bg-gray-50 ${nameError ? "border-red-400" : ""}`}
                 autoFocus={isNew}
                 maxLength={NAME_MAX_LEN}
               />
-              <div className="flex items-center justify-between mt-1">
-                {nameError ? (
-                  <p className="text-xs text-red-500">{nameError}</p>
-                ) : (
-                  <span />
-                )}
-                <p className="text-xs text-gray-300">{name.length}/{NAME_MAX_LEN}</p>
-              </div>
+              {nameError && (
+                <p className="text-xs text-red-500 mt-1">{nameError}</p>
+              )}
             </div>
 
             {/* Description — use Textarea for auto wrap */}
@@ -360,7 +537,7 @@ function RoleEditModal({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="一句话描述角色的核心能力"
-                className="mt-1.5 min-h-[60px] resize-none"
+                className="mt-1.5 min-h-[60px] resize-none bg-gray-50"
                 rows={2}
               />
             </div>
@@ -375,7 +552,7 @@ function RoleEditModal({
                 value={soul}
                 onChange={(e) => setSoul(e.target.value)}
                 placeholder="描述角色的人格特质、专业领域和行为准则..."
-                className="mt-1.5 min-h-[80px] resize-none"
+                className="mt-1.5 min-h-[80px] resize-none bg-gray-50"
                 rows={3}
               />
             </div>
@@ -417,21 +594,15 @@ function RoleEditModal({
                     ))}
                   </div>
                 )}
-                <div className="flex gap-2 px-4 py-2.5 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => { setPickerSource("企业"); setPickerOpen(true); }}
-                    className="px-3 py-1.5 rounded-lg border border-dashed border-green-200 text-sm text-green-600 hover:border-green-400 hover:bg-green-50/50 transition-colors"
-                  >
-                    + 从企业技能库添加
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setPickerSource("公共"); setPickerOpen(true); }}
-                    className="px-3 py-1.5 rounded-lg border border-dashed border-blue-200 text-sm text-blue-600 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
-                  >
-                    + 从公共技能库添加
-                  </button>
+                <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddPublicDialog(true)}>
+                    <Plus className="w-3.5 h-3.5" />
+                    从公共技能库添加
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddEnterpriseDialog(true)}>
+                    <Plus className="w-3.5 h-3.5" />
+                    从企业技能库添加
+                  </Button>
                 </div>
               </div>
             </div>
@@ -446,7 +617,7 @@ function RoleEditModal({
             </div>
           </div>
 
-          <DialogFooter className="flex-shrink-0">
+          <DialogFooter>
             <Button variant="outline" onClick={onClose}>取消</Button>
             <Button
               onClick={handleSave}
@@ -459,12 +630,18 @@ function RoleEditModal({
         </DialogContent>
       </Dialog>
 
-      <SkillPicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        source={pickerSource}
-        existingSkills={skills}
-        onAdd={handleAddSkills}
+      <RoleAddPublicSkillDialog
+        open={showAddPublicDialog}
+        existingSkillNames={skills.map(s => s.name)}
+        onConfirm={handleAddSkills}
+        onCancel={() => setShowAddPublicDialog(false)}
+      />
+
+      <RoleAddEnterpriseSkillDialog
+        open={showAddEnterpriseDialog}
+        existingSkillNames={skills.map(s => s.name)}
+        onConfirm={handleAddSkills}
+        onCancel={() => setShowAddEnterpriseDialog(false)}
       />
     </>
   );

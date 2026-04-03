@@ -1,5 +1,5 @@
 /**
- * FileSpace - 云盘空间（当前龙虾实例的文件管理）
+ * FileSpace - 文件空间（当前龙虾实例的文件管理）
  * Design: 「流动蓝图」Fluid Blueprint
  * - 文件表格 + 面包屑导航
  * - 支持搜索、排序、文件操作
@@ -45,6 +45,7 @@ import {
   HardDrive,
   ArrowUpDown,
   Eye,
+  Clock,
   Upload,
   RefreshCw,
   FileArchive,
@@ -58,10 +59,6 @@ import {
   Edit3,
   FolderInput,
   Loader2,
-  Share2,
-  Copy,
-  Link,
-  Check,
 } from "lucide-react";
 
 // ─── SMH 服务层导入 ──────────────────────────────────────────────────────────
@@ -74,7 +71,7 @@ import {
   isTokenExpiringSoon,
   ensureValidToken,
   // @ts-ignore
-} from "../../lib/smh-space-drive";
+} from "@/lib/smh-space-drive/smh-space-drive";
 
 import {
   getFileList,
@@ -87,12 +84,14 @@ import {
   renameFile,
   renameDirectory,
   downloadFile,
+  getFileInfo,
   getPreview,
   getDocPreviewUrl,
+  getFilePreviewUrlOrContent,
   getSpaceUsage,
-  searchFiles,
+  resetClient,
   // @ts-ignore — smh-space-drive 为预构建 JS 包，无内置类型声明
-} from "../../lib/smh-space-drive";
+} from "@/lib/smh-space-drive/smh-space-drive";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -242,15 +241,8 @@ export default function FileSpace({
   const [files, setFiles] = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
-  const [fatalError, setFatalError] = useState<string | null>(null);
   const [totalFileCount, setTotalFileCount] = useState(0);
-  const [serverFileCount, setServerFileCount] = useState(0);
-  const [serverDirCount, setServerDirCount] = useState(0);
   const [spaceUsage, setSpaceUsage] = useState<{ used: number; total: number } | null>(null);
-
-  // 分页
-  const PAGE_SIZE = 50;
-  const [currentPage, setCurrentPage] = useState(1);
 
   // 重命名对话框
   const [renameTarget, setRenameTarget] = useState<FileItem | null>(null);
@@ -270,23 +262,6 @@ export default function FileSpace({
   // 上传中状态
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
-  // 远程搜索状态
-  const [searchResults, setSearchResults] = useState<FileItem[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchNextMarker, setSearchNextMarker] = useState<string | undefined>(undefined);
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 预览状态
-  const [previewImg, setPreviewImg] = useState<{ url: string; name: string; path: string; mediaType?: 'image' | 'video' | 'audio' } | null>(null);
-  const [previewDoc, setPreviewDoc] = useState<{ name: string; path: string; url?: string; content?: string; isMarkdown?: boolean } | null>(null);
-
-  // 分享状态
-  const [shareTarget, setShareTarget] = useState<FileItem | null>(null);
-  const [shareUrl, setShareUrl] = useState<string>('');
-  const [shareLoading, setShareLoading] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -318,9 +293,7 @@ export default function FileSpace({
       } catch (err) {
         console.error("[FileSpace] SMH 初始化失败:", err);
         if (!cancelled) {
-          const msg = "文件服务初始化失败，请检查配置";
-          toast.error(msg);
-          setFatalError(msg);
+          toast.error("文件服务初始化失败，请检查配置");
         }
       }
     }
@@ -348,46 +321,29 @@ export default function FileSpace({
 
   // ─── 加载文件列表 ────────────────────────────────────────────────────────
 
-  const loadFiles = useCallback(async (page = 1): Promise<boolean> => {
-    if (!initialized) return false;
+  const loadFiles = useCallback(async () => {
+    if (!initialized) return;
     setLoading(true);
     try {
       const smhPath = toSmhPath(currentPath);
-      const data = await getFileList(smhPath, { page, pageSize: PAGE_SIZE });
+      const data = await getFileList(smhPath, { page: 1, pageSize: 200 });
       const contents = data?.contents ?? [];
       const items: FileItem[] = contents.map((entry: any) => toFileItem(entry, currentPath));
       setFiles(items);
       setTotalFileCount(data?.totalNum ?? items.length);
-      setServerFileCount(data?.fileCount ?? 0);
-      setServerDirCount(data?.subDirCount ?? 0);
-      return true;
-    } catch (err: unknown) {
-      const errAny = err as any;
-      let errorMessage = errAny?.message ?? "加载文件列表失败";
-      const errRes = errAny?.response?.responseData;
-      if (errRes?.code === "InvalidAccessToken") {
-        errorMessage = "访问令牌无效、已过期，或与指定的云空间不匹配。请刷新页面";
-        setFatalError(errorMessage);
-      }
-      toast.error(errorMessage);
+    } catch (err) {
+      console.error("[FileSpace] 加载文件列表失败:", err);
+      toast.error("加载文件列表失败");
       setFiles([]);
-      return false;
     } finally {
       setLoading(false);
     }
   }, [initialized, currentPath]);
 
-  // 初始化完成后 & 路径变化时加载文件（路径变化重置到第 1 页）
+  // 初始化完成后 & 路径变化时加载文件
   useEffect(() => {
-    setCurrentPage(1);
-    loadFiles(1);
+    loadFiles();
   }, [loadFiles]);
-
-  // 翻页时重新加载
-  useEffect(() => {
-    loadFiles(currentPage);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
 
   // 加载空间使用量
   useEffect(() => {
@@ -399,105 +355,17 @@ export default function FileSpace({
       .catch(() => {});
   }, [initialized]);
 
-  // ─── 远程搜索 ─────────────────────────────────────────────────────────
+  // ─── 统计 ────────────────────────────────────────────────────────────────
 
-  /** 将 searchFiles 返回的条目转换为 FileItem */
-  const toSearchFileItem = useCallback((entry: any): FileItem => {
-    const rawType = entry.type === 'dir' ? 'dir' : 'file';
-    const name = entry.name as string;
-    const sizeBytes = entry.size ? Number(entry.size) : 0;
-    const modTime = entry.modificationTime ?? entry.creationTime ?? '';
-    const modifiedAt = modTime
-      ? modTime.replace('T', ' ').replace(/:\d{2}(\.\d+)?Z?$/, '').slice(0, 16)
-      : '—';
-    // path 数组：['folderA', 'folderB', 'file.txt']，取父目录
-    const pathArr: string[] = entry.path ?? [];
-    const parentPath = pathArr.length > 1
-      ? '/' + pathArr.slice(0, -1).join('/')
-      : '/';
+  const fileCount = files.filter((f) => f.type !== "folder").length;
+  const folderCount = files.filter((f) => f.type === "folder").length;
 
-    return {
-      id: pathArr.length > 0 ? '/' + pathArr.join('/') : `/${name}`,
-      name,
-      type: inferFileType(name, rawType),
-      size: rawType === 'dir' ? '—' : formatBytes(sizeBytes),
-      sizeBytes,
-      modifiedAt,
-      parentPath,
-      rawType,
-    };
-  }, []);
-
-  /** 执行远程搜索 */
-  const executeSearch = useCallback(async (keyword: string, marker?: string) => {
-    if (!initialized || !keyword.trim()) return;
-    setSearchLoading(true);
-    try {
-      const smhPath = toSmhPath(currentPath);
-      const result = await searchFiles({
-        keywords: [keyword.trim()],
-        limit: 10,
-        marker,
-        orderBy: 'modificationTime',
-        orderByType: 'desc',
-        ...(smhPath ? { dirPath: smhPath } : {}),
-      });
-      const items = (result?.contents ?? []).map(toSearchFileItem);
-      if (marker) {
-        // 加载更多：追加结果
-        setSearchResults((prev) => [...prev, ...items]);
-      } else {
-        setSearchResults(items);
-      }
-      setSearchNextMarker(result?.nextMarker);
-    } catch (err) {
-      console.error('[FileSpace] 远程搜索失败:', err);
-      toast.error('搜索失败');
-      if (!marker) setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  }, [initialized, currentPath, toSearchFileItem]);
-
-  /** 搜索输入变化时的防抖处理 */
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value);
-    if (searchTimerRef.current) {
-      clearTimeout(searchTimerRef.current);
-    }
-    if (!value.trim()) {
-      setIsSearchMode(false);
-      setSearchResults([]);
-      setSearchNextMarker(undefined);
-      return;
-    }
-    searchTimerRef.current = setTimeout(() => {
-      setIsSearchMode(true);
-      executeSearch(value);
-    }, 500);
-  }, [executeSearch]);
-
-  /** 加载更多搜索结果 */
-  const handleLoadMoreSearch = useCallback(() => {
-    if (searchNextMarker && search.trim()) {
-      executeSearch(search, searchNextMarker);
-    }
-  }, [searchNextMarker, search, executeSearch]);
-
-  // 清理搜索防抖定时器
-  useEffect(() => {
-    return () => {
-      if (searchTimerRef.current) {
-        clearTimeout(searchTimerRef.current);
-      }
-    };
-  }, []);
-
-  // ─── 排序（对当前展示的列表排序） ────────────────────────────────────────
+  // ─── 搜索 + 排序 ────────────────────────────────────────────────────────
 
   const filteredFiles = useMemo(() => {
-    const source = isSearchMode ? searchResults : files;
-    const result = [...source];
+    let result = files.filter((f) =>
+      f.name.toLowerCase().includes(search.toLowerCase()),
+    );
     result.sort((a, b) => {
       if (a.type === "folder" && b.type !== "folder") return -1;
       if (a.type !== "folder" && b.type === "folder") return 1;
@@ -510,7 +378,7 @@ export default function FileSpace({
       return sortOrder === "asc" ? cmp : -cmp;
     });
     return result;
-  }, [files, searchResults, isSearchMode, sortField, sortOrder]);
+  }, [files, search, sortField, sortOrder]);
 
   // ─── 面包屑路径段 ────────────────────────────────────────────────────────
 
@@ -540,30 +408,7 @@ export default function FileSpace({
   const handleOpenFolder = (folderName: string) => {
     const newPath = currentPath === "/" ? `/${folderName}` : `${currentPath}/${folderName}`;
     setCurrentPath(newPath);
-    setCurrentPage(1);
     setSearch("");
-    setIsSearchMode(false);
-    setSearchResults([]);
-    setSearchNextMarker(undefined);
-  };
-
-  /** 搜索模式下打开文件所在目录或文件夹 */
-  const handleSearchItemOpen = (file: FileItem) => {
-    if (file.type === 'folder') {
-      // 搜索结果中的文件夹：直接跳转到该文件夹
-      const folderPath = file.parentPath === '/'
-        ? `/${file.name}`
-        : `${file.parentPath}/${file.name}`;
-      setCurrentPath(folderPath);
-    } else {
-      // 搜索结果中的文件：跳转到其所在目录
-      setCurrentPath(file.parentPath);
-    }
-    setCurrentPage(1);
-    setSearch('');
-    setIsSearchMode(false);
-    setSearchResults([]);
-    setSearchNextMarker(undefined);
   };
 
   /** 删除文件/文件夹 */
@@ -601,78 +446,18 @@ export default function FileSpace({
   /** 预览文件 */
   const handlePreview = async (file: FileItem) => {
     const filePath = toSmhPath(joinPath(file.parentPath, file.name));
-
-    // 图片类型：用 getPreview 获取带 token 的直链，在当前页弹层展示
-    if (file.type === 'image') {
-      try {
-        const previewUrl = await getPreview(filePath);
-        setPreviewImg({ url: previewUrl as string, name: file.name, path: filePath, mediaType: 'image' });
-      } catch (err) {
-        console.error('[FileSpace] 图片预览失败:', err);
-        toast.error('图片预览失败');
+    try {
+      const result = await getFilePreviewUrlOrContent({ name: file.name, path: filePath.split("/") });
+      if (typeof result === "string" && (result.startsWith("http") || result.startsWith("blob"))) {
+        window.open(result, "_blank");
+      } else {
+        toast.info("预览内容已获取，请查看控制台");
+        console.log("[FileSpace] 预览内容:", result);
       }
-      return;
+    } catch (err) {
+      console.error("[FileSpace] 预览失败:", err);
+      toast.error("预览失败");
     }
-
-    // 视频/音频：同样用 getPreview 获取带 token 直链，用 <video>/<audio> 播放
-    if (file.type === 'video' || file.type === 'audio') {
-      try {
-        const previewUrl = await getPreview(filePath);
-        setPreviewImg({
-          url: previewUrl as string,
-          name: file.name,
-          path: filePath,
-          mediaType: file.type,
-        });
-      } catch (err) {
-        console.error('[FileSpace] 媒体预览失败:', err);
-        toast.error('媒体预览失败');
-      }
-      return;
-    }
-
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-
-    // Markdown 文件：只获取原始文本，不走数据万象转码
-    if (ext === 'md') {
-      try {
-        const text = await getPreview(filePath, true);
-        setPreviewDoc({ name: file.name, path: filePath, content: text as string, isMarkdown: true });
-      } catch {
-        setPreviewDoc({ name: file.name, path: filePath, content: '无法加载文件内容' });
-      }
-      return;
-    }
-
-    // 纯文本类型：getPreview(path, true) 获取文本内容，<pre> 展示
-    const textOnlyExts = ['json', 'txt', 'log'];
-    // Office/PDF 类型：getDocPreviewUrl(path) 返回 cosUrl，用 iframe 预览
-    const docExts = ['doc', 'docx', 'pdf', 'xls', 'xlsx', 'ppt', 'pptx', ...textOnlyExts];
-
-    if (docExts.includes(ext)) {
-      try {
-        // getDocPreviewUrl 接收字符串路径，返回 cosUrl
-        const docUrl = await getDocPreviewUrl(filePath);
-        if (textOnlyExts.includes(ext)) {
-          // 纯文本：同时获取文本内容展示
-          const text = await getPreview(filePath, true);
-          setPreviewDoc({ name: file.name, path: filePath, url: docUrl as string, content: text as string });
-        } else {
-          setPreviewDoc({ name: file.name, path: filePath, url: docUrl as string });
-        }
-      } catch {
-        // 兜底：尝试纯文本展示
-        try {
-          const text = await getPreview(filePath, true);
-          setPreviewDoc({ name: file.name, path: filePath, content: text as string });
-        } catch {
-          setPreviewDoc({ name: file.name, path: filePath, content: '无法加载内容' });
-        }
-      }
-      return;
-    }
-
-    toast.info(`暂不支持预览 .${ext} 类型文件`);
   };
 
   /** 上传文件 */
@@ -682,7 +467,6 @@ export default function FileSpace({
     ).replace(/^\//, "");
     setUploading(true);
     setUploadProgress(0);
-    let errorHandled = false;
     try {
       await uploadFile(fileObj, filePath, {
         onProgressCallback: (percent: number) => {
@@ -696,27 +480,17 @@ export default function FileSpace({
           getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
         },
         onErrorCallback: (err: any) => {
-          errorHandled = true;
-          console.error("[FileSpace] 上传失败:", err.code);
-          const msg = err?.code === 'QuotaLimitReached'
-            ? '配额已经用尽，请联系上级扩容'
-            : `上传「${fileObj.name}」失败`;
-          toast.error(msg);
+          console.error("[FileSpace] 上传失败:", err);
+          toast.error(`上传「${fileObj.name}」失败`);
           setUploading(false);
           setUploadProgress(0);
         },
       });
-    } catch (err: unknown) {
-      if (!errorHandled) {
-        console.error("[FileSpace] 上传失败:", err);
-        const errAny = err as any;
-        const msg = errAny?.code === 'QuotaLimitReached'
-          ? '配额已经用尽，请联系上级扩容'
-          : `上传「${fileObj.name}」失败`;
-        toast.error(msg);
-        setUploading(false);
-        setUploadProgress(0);
-      }
+    } catch (err) {
+      console.error("[FileSpace] 上传失败:", err);
+      toast.error(`上传「${fileObj.name}」失败`);
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -835,55 +609,10 @@ export default function FileSpace({
   };
 
   /** 刷新 */
-  const handleRefresh = async () => {
-    const success = await loadFiles();
-    if (success) {
-      getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
-      toast.success("文件列表已刷新");
-    }
-  };
-
-  /** 分享文件 —— 获取临时访问链接 */
-  const handleShare = async (file: FileItem) => {
-    setShareTarget(file);
-    setShareUrl('');
-    setShareCopied(false);
-    setShareLoading(true);
-    try {
-      const filePath = toSmhPath(joinPath(file.parentPath, file.name));
-      const url = await getPreview(filePath);
-      setShareUrl(url as string);
-    } catch (err) {
-      console.error('[FileSpace] 获取分享链接失败:', err);
-      toast.error('获取分享链接失败');
-      setShareTarget(null);
-    } finally {
-      setShareLoading(false);
-    }
-  };
-
-  /** 复制分享链接到剪贴板 */
-  const handleCopyShareUrl = async () => {
-    if (!shareUrl) return;
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setShareCopied(true);
-      toast.success('链接已复制到剪贴板');
-      setTimeout(() => setShareCopied(false), 2000);
-    } catch {
-      // 降级方案
-      const textArea = document.createElement('textarea');
-      textArea.value = shareUrl;
-      textArea.style.position = 'fixed';
-      textArea.style.opacity = '0';
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setShareCopied(true);
-      toast.success('链接已复制到剪贴板');
-      setTimeout(() => setShareCopied(false), 2000);
-    }
+  const handleRefresh = () => {
+    loadFiles();
+    getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
+    toast.success("文件列表已刷新");
   };
 
   // ─── 拖拽上传 ────────────────────────────────────────────────────────────
@@ -915,31 +644,6 @@ export default function FileSpace({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ─── 致命错误：不展示云盘界面 ──────────────────────────────────────────
-  if (fatalError) {
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-        <div className="flex flex-col items-center justify-center py-20 px-6">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-            <HardDrive className="w-6 h-6 text-red-400" />
-          </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">云盘空间不可用</p>
-          <p className="text-xs text-gray-400 text-center max-w-sm">{fatalError}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4 text-gray-600"
-            onClick={() => window.location.reload()}
-          >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            刷新页面
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* 隐藏的文件上传 input */}
@@ -963,7 +667,7 @@ export default function FileSpace({
                 <HardDrive className="w-4.5 h-4.5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 云盘空间</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 文件空间</h3>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {spaceUsage
                     ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`
@@ -1030,7 +734,7 @@ export default function FileSpace({
                   {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
                   {idx === 0 ? (
                     <button
-                      onClick={() => { setCurrentPath(crumb.path); setCurrentPage(1); setSearch(""); setIsSearchMode(false); setSearchResults([]); setSearchNextMarker(undefined); }}
+                      onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
                       className={`flex items-center gap-1 px-1.5 py-1 rounded-md transition-colors ${
                         idx === breadcrumbs.length - 1
                           ? "text-gray-700 font-medium"
@@ -1041,7 +745,7 @@ export default function FileSpace({
                     </button>
                   ) : (
                     <button
-                      onClick={() => { setCurrentPath(crumb.path); setCurrentPage(1); setSearch(""); setIsSearchMode(false); setSearchResults([]); setSearchNextMarker(undefined); }}
+                      onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
                       className={`px-1.5 py-1 rounded-md transition-colors ${
                         idx === breadcrumbs.length - 1
                           ? "text-gray-700 font-medium"
@@ -1063,12 +767,9 @@ export default function FileSpace({
               <Input
                 placeholder="搜索文件名..."
                 value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 className="pl-8 bg-gray-50 border-gray-200 text-xs h-8"
               />
-              {searchLoading && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-400 animate-spin" />
-              )}
             </div>
 
             {/* Sort */}
@@ -1134,7 +835,7 @@ export default function FileSpace({
                     <th className="text-left px-5 py-2.5 font-medium w-20">类型</th>
                     <th className="text-right px-5 py-2.5 font-medium w-24">大小</th>
                     <th className="text-right px-5 py-2.5 font-medium w-40">修改时间</th>
-                    <th className="text-center px-5 py-2.5 font-medium w-20 whitespace-nowrap">操作</th>
+                    <th className="text-center px-5 py-2.5 font-medium w-16">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -1143,9 +844,9 @@ export default function FileSpace({
                       <td colSpan={5} className="px-5 py-16 text-center">
                         <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                         <p className="text-sm text-gray-400">
-                          {isSearchMode ? "未找到匹配的文件" : search ? "未找到匹配的文件" : "当前目录为空"}
+                          {search ? "未找到匹配的文件" : "当前目录为空"}
                         </p>
-                        {!search && !isSearchMode && (
+                        {!search && (
                           <p className="text-xs text-gray-300 mt-1">拖拽文件到此处或点击上传按钮添加文件</p>
                         )}
                       </td>
@@ -1155,39 +856,21 @@ export default function FileSpace({
                       <tr
                         key={file.id}
                         className="hover:bg-gray-50/60 transition-colors group"
-                        onDoubleClick={() => file.type === "folder"
-                          ? (isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name))
-                          : handlePreview(file)
-                        }
+                        onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                       >
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             {getFileIcon(file.type)}
-                            <div className="min-w-0">
-                              <button
-                                className={`text-sm font-medium truncate max-w-[320px] text-left block ${
-                                  file.type === "folder"
-                                    ? "text-gray-900 hover:text-blue-600 cursor-pointer"
-                                    : "text-gray-700 group-hover:text-blue-600 cursor-default"
-                                } transition-colors`}
-                                onClick={() => {
-                                  if (file.type === "folder") {
-                                    isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name);
-                                  }
-                                }}
-                              >
-                                {file.name}
-                              </button>
-                              {isSearchMode && (
-                                <button
-                                  className="text-[10px] text-gray-400 hover:text-blue-500 truncate block max-w-[320px] text-left transition-colors"
-                                  onClick={() => handleSearchItemOpen(file)}
-                                  title={`跳转到：${file.parentPath === '/' ? '根目录' : file.parentPath}`}
-                                >
-                                  {file.parentPath === '/' ? '根目录' : file.parentPath}
-                                </button>
-                              )}
-                            </div>
+                            <button
+                              className={`text-sm font-medium truncate max-w-[320px] text-left ${
+                                file.type === "folder"
+                                  ? "text-gray-900 hover:text-blue-600 cursor-pointer"
+                                  : "text-gray-700 group-hover:text-blue-600 cursor-default"
+                              } transition-colors`}
+                              onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
+                            >
+                              {file.name}
+                            </button>
                           </div>
                         </td>
                         <td className="px-5 py-2.5">
@@ -1203,12 +886,11 @@ export default function FileSpace({
                           <FileActions
                             file={file}
                             onDelete={() => setDeleteConfirm(file)}
-                            onOpenFolder={() => isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name)}
+                            onOpenFolder={() => handleOpenFolder(file.name)}
                             onDownload={() => handleDownload(file)}
                             onPreview={() => handlePreview(file)}
                             onRename={() => { setRenameTarget(file); setRenameValue(file.name); }}
-                            onMove={() => openMoveDialog(file)}
-                            onShare={() => handleShare(file)}
+            onMove={() => openMoveDialog(file)}
                           />
                         </td>
                       </tr>
@@ -1224,7 +906,7 @@ export default function FileSpace({
                 <div className="py-16 text-center">
                   <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
                   <p className="text-sm text-gray-400">
-                    {isSearchMode ? "未找到匹配的文件" : search ? "未找到匹配的文件" : "当前目录为空"}
+                    {search ? "未找到匹配的文件" : "当前目录为空"}
                   </p>
                 </div>
               ) : (
@@ -1233,25 +915,18 @@ export default function FileSpace({
                     <div
                       key={file.id}
                       className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-gray-100 hover:border-blue-200 rounded-xl p-4 transition-all cursor-pointer"
-                      onDoubleClick={() => file.type === "folder"
-                        ? (isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name))
-                        : handlePreview(file)
-                      }
-                      onClick={() => file.type === "folder"
-                        ? (isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name))
-                        : undefined
-                      }
+                      onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
+                      onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                     >
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <FileActions
                           file={file}
                           onDelete={() => setDeleteConfirm(file)}
-                          onOpenFolder={() => isSearchMode ? handleSearchItemOpen(file) : handleOpenFolder(file.name)}
+                          onOpenFolder={() => handleOpenFolder(file.name)}
                           onDownload={() => handleDownload(file)}
                           onPreview={() => handlePreview(file)}
                           onRename={() => { setRenameTarget(file); setRenameValue(file.name); }}
                           onMove={() => openMoveDialog(file)}
-                          onShare={() => handleShare(file)}
                         />
                       </div>
                       <div className="flex flex-col items-center text-center">
@@ -1262,15 +937,6 @@ export default function FileSpace({
                         <p className="text-[10px] text-gray-400 mt-1">
                           {file.type === "folder" ? "文件夹" : file.size}
                         </p>
-                        {isSearchMode && (
-                          <button
-                            className="text-[10px] text-gray-400 hover:text-blue-500 mt-0.5 truncate w-full transition-colors"
-                            title={`跳转到：${file.parentPath === '/' ? '根目录' : file.parentPath}`}
-                            onClick={(e) => { e.stopPropagation(); handleSearchItemOpen(file); }}
-                          >
-                            {file.parentPath === '/' ? '根目录' : file.parentPath}
-                          </button>
-                        )}
                       </div>
                     </div>
                   ))}
@@ -1279,89 +945,19 @@ export default function FileSpace({
             </div>
           ) : null}
 
-          {/* Footer Stats + 分页 */}
-          {!loading && (
-            <div className="px-5 py-2.5 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2">
+          {/* Footer Stats */}
+          {!loading && filteredFiles.length > 0 && (
+            <div className="px-5 py-2.5 border-t border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <HardDrive className="w-3 h-3" />
-                  {isSearchMode
-                    ? `搜索到 ${searchResults.length} 个结果`
-                    : <>共 {totalFileCount} 项{(serverDirCount > 0 || serverFileCount > 0) && `（${serverDirCount} 个文件夹，${serverFileCount} 个文件）`}</>
-                  }
+                  {folderCount > 0 && `${folderCount} 个文件夹，`}{fileCount} 个文件
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  最近更新于 {files[0]?.modifiedAt ?? "—"}
                 </span>
               </div>
-
-              {/* 搜索模式：加载更多按钮 */}
-              {isSearchMode && searchNextMarker && (
-                <button
-                  onClick={handleLoadMoreSearch}
-                  disabled={searchLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {searchLoading ? (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      加载中...
-                    </>
-                  ) : (
-                    '加载更多'
-                  )}
-                </button>
-              )}
-
-              {/* 非搜索模式：分页栏 */}
-              {!isSearchMode && totalFileCount > PAGE_SIZE && (
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                    disabled={currentPage <= 1}
-                    className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                  </button>
-                  {(() => {
-                    const totalPages = Math.ceil(totalFileCount / PAGE_SIZE);
-                    const pages: React.ReactNode[] = [];
-                    const maxVisible = 5;
-                    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-                    const end = Math.min(totalPages, start + maxVisible - 1);
-                    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-                    if (start > 1) {
-                      pages.push(<button key={1} onClick={() => setCurrentPage(1)} className="w-7 h-7 rounded-md border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors">1</button>);
-                      if (start > 2) pages.push(<span key="s1" className="text-xs text-gray-300 px-0.5">…</span>);
-                    }
-                    for (let i = start; i <= end; i++) {
-                      pages.push(
-                        <button
-                          key={i}
-                          onClick={() => setCurrentPage(i)}
-                          className={`w-7 h-7 rounded-md border text-xs transition-colors ${
-                            currentPage === i
-                              ? 'border-blue-500 bg-blue-50 text-blue-600 font-semibold'
-                              : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                          }`}
-                        >
-                          {i}
-                        </button>
-                      );
-                    }
-                    if (end < totalPages) {
-                      if (end < totalPages - 1) pages.push(<span key="s2" className="text-xs text-gray-300 px-0.5">…</span>);
-                      pages.push(<button key={totalPages} onClick={() => setCurrentPage(totalPages)} className="w-7 h-7 rounded-md border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors">{totalPages}</button>);
-                    }
-                    return pages;
-                  })()}
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(p + 1, Math.ceil(totalFileCount / PAGE_SIZE)))}
-                    disabled={currentPage >= Math.ceil(totalFileCount / PAGE_SIZE)}
-                    className="w-7 h-7 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-
               <span className="text-xs text-gray-300">
                 {currentPath === "/" ? "根目录" : currentPath}
               </span>
@@ -1553,366 +1149,6 @@ export default function FileSpace({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Share Dialog */}
-      <Dialog open={!!shareTarget} onOpenChange={(open) => { if (!open) { setShareTarget(null); setShareUrl(''); setShareCopied(false); } }}>
-        <DialogContent className="sm:max-w-[480px]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-blue-500" />
-              分享文件
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-3 space-y-4">
-            {/* 文件信息 */}
-            <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
-              {shareTarget && getFileIcon(shareTarget.type)}
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-700 truncate">{shareTarget?.name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {`${getFileTypeName(shareTarget?.type ?? 'other')} · ${shareTarget?.size}`}
-                </p>
-              </div>
-            </div>
-
-            {/* 分享链接 */}
-            {shareLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="w-5 h-5 text-blue-400 animate-spin mr-2" />
-                <span className="text-sm text-gray-400">正在生成分享链接...</span>
-              </div>
-            ) : shareUrl ? (
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-500 flex items-center gap-1.5">
-                  <Link className="w-3 h-3" />
-                  临时访问链接
-                </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 relative">
-                    <Input
-                      value={shareUrl}
-                      readOnly
-                      className="text-xs bg-gray-50 border-gray-200 pr-10 font-mono"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyShareUrl}
-                    className={`flex-shrink-0 transition-colors ${shareCopied ? 'border-green-300 text-green-600 bg-green-50' : 'text-gray-600'}`}
-                  >
-                    {shareCopied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 mr-1.5" />
-                        已复制
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 mr-1.5" />
-                        复制
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <p className="text-[11px] text-gray-400 leading-relaxed">
-                  此链接为临时访问链接，有效期有限。获得链接的人可直接访问该文件。
-                </p>
-              </div>
-            ) : null}
-          </div>
-          <DialogFooter className="gap-2 pt-1">
-            <Button variant="outline" onClick={() => { setShareTarget(null); setShareUrl(''); setShareCopied(false); }}>
-              关闭
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 图片/文档预览弹层 */}
-      {previewImg && (
-        <ImagePreviewOverlay item={previewImg} onClose={() => setPreviewImg(null)} />
-      )}
-      {previewDoc && (
-        <DocPreviewOverlay item={previewDoc} onClose={() => setPreviewDoc(null)} />
-      )}
-    </div>
-  );
-}
-
-// ─── ImagePreviewOverlay ─────────────────────────────────────────────────────
-
-interface PreviewImgItem {
-  url: string;
-  name: string;
-  path: string;
-  mediaType?: 'image' | 'video' | 'audio';
-}
-
-interface PreviewDocItem {
-  name: string;
-  path: string;
-  url?: string;
-  content?: string;
-  isMarkdown?: boolean;
-}
-
-function ImagePreviewOverlay({ item, onClose }: { item: PreviewImgItem; onClose: () => void }) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const mediaType = item.mediaType ?? 'image';
-
-  return (
-    <div
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.85)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      {mediaType === 'video' ? (
-        <video
-          src={item.url}
-          controls
-          autoPlay
-          style={{ maxWidth: '90vw', maxHeight: '88vh', borderRadius: 8, boxShadow: '0 8px 40px rgba(0,0,0,0.5)', outline: 'none' }}
-        />
-      ) : mediaType === 'audio' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ color: '#fff', fontSize: 14, opacity: 0.8, maxWidth: 400, textAlign: 'center', wordBreak: 'break-all' }}>
-            {item.name}
-          </div>
-          <audio
-            src={item.url}
-            controls
-            autoPlay
-            style={{ width: 360, outline: 'none' }}
-          />
-        </div>
-      ) : (
-        <img
-          src={item.url}
-          alt={item.name}
-          style={{ maxWidth: '90vw', maxHeight: '88vh', borderRadius: 8, boxShadow: '0 8px 40px rgba(0,0,0,0.5)', objectFit: 'contain' }}
-        />
-      )}
-      {item.path && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          padding: '12px 56px 12px 20px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
-          color: '#fff', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {item.path}
-        </div>
-      )}
-      <button
-        onClick={onClose}
-        title="关闭"
-        style={{
-          position: 'absolute', top: 16, right: 20,
-          width: 32, height: 32, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.15)', border: 'none',
-          color: '#fff', fontSize: 18, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
-
-// ─── Markdown Renderer ───────────────────────────────────────────────────────
-
-/** 轻量级 Markdown → HTML 转换（覆盖常用语法） */
-function renderMarkdownToHtml(md: string): string {
-  let html = md
-    // 转义 HTML 特殊字符
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-  // 代码块（``` ... ```）
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) =>
-    `<pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.6;margin:12px 0"><code>${code.trim()}</code></pre>`
-  );
-
-  // 行内代码
-  html = html.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;color:#e11d48;padding:2px 6px;border-radius:4px;font-size:0.9em">$1</code>');
-
-  // 标题（h1–h6）
-  html = html.replace(/^######\s+(.+)$/gm, '<h6 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#374151">$1</h6>');
-  html = html.replace(/^#####\s+(.+)$/gm, '<h5 style="font-size:15px;font-weight:600;margin:16px 0 8px;color:#374151">$1</h5>');
-  html = html.replace(/^####\s+(.+)$/gm, '<h4 style="font-size:16px;font-weight:600;margin:20px 0 8px;color:#1f2937">$1</h4>');
-  html = html.replace(/^###\s+(.+)$/gm, '<h3 style="font-size:18px;font-weight:600;margin:20px 0 8px;color:#1f2937">$1</h3>');
-  html = html.replace(/^##\s+(.+)$/gm, '<h2 style="font-size:20px;font-weight:700;margin:24px 0 10px;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:6px">$1</h2>');
-  html = html.replace(/^#\s+(.+)$/gm, '<h1 style="font-size:24px;font-weight:700;margin:24px 0 12px;color:#111827;border-bottom:2px solid #e5e7eb;padding-bottom:8px">$1</h1>');
-
-  // 水平线
-  html = html.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>');
-
-  // 粗体 + 斜体
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
-
-  // 链接（不处理图片）
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline">$1</a>');
-
-  // 图片
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:8px 0"/>');
-
-  // 无序列表
-  html = html.replace(/^[\s]*[-*+]\s+(.+)$/gm, '<li style="margin:4px 0;padding-left:4px">$1</li>');
-  html = html.replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul style="padding-left:24px;margin:8px 0">$1</ul>');
-
-  // 有序列表
-  html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li style="margin:4px 0;padding-left:4px">$1</li>');
-
-  // 引用块
-  html = html.replace(/^&gt;\s+(.+)$/gm, '<blockquote style="border-left:3px solid #3b82f6;padding:8px 16px;margin:12px 0;color:#4b5563;background:#f0f9ff;border-radius:0 6px 6px 0">$1</blockquote>');
-
-  // 段落：连续空行分隔
-  html = html.replace(/\n\n+/g, '</p><p style="margin:8px 0;line-height:1.75">');
-  // 单换行 → <br>
-  html = html.replace(/\n/g, '<br/>');
-
-  return `<p style="margin:8px 0;line-height:1.75">${html}</p>`;
-}
-
-// ─── DocPreviewOverlay ────────────────────────────────────────────────────────
-
-function DocPreviewOverlay({ item, onClose }: { item: PreviewDocItem; onClose: () => void }) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
-  const isTextOnly = !item.url && !!item.content;
-  const isMarkdown = !!item.isMarkdown && !!item.content;
-
-  // Markdown 预渲染
-  const markdownHtml = useMemo(() => {
-    if (!isMarkdown || !item.content) return '';
-    return renderMarkdownToHtml(item.content);
-  }, [isMarkdown, item.content]);
-
-  // cosUrl 需要拼接数据万象文档预览参数
-  const previewUrl = item.url
-    ? `${item.url}${item.url.includes('?') ? '&' : '?'}ci-process=doc-preview&dstType=html&htmlwaterword=&htmlfillstyle=&htmlfront=&htmlrotate=&htmlhorizontal=&htmlvertical=`
-    : '';
-
-  return (
-    <div
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.7)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '48px 24px 24px',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* 顶部标题栏 */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        height: 44, display: 'flex', alignItems: 'center',
-        padding: '0 56px 0 20px',
-        background: 'rgba(0,0,0,0.6)',
-        color: '#fff', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-      }}>
-        {item.path || item.name}
-      </div>
-
-      {/* 预览内容区 */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '90vw', height: '80vh',
-          background: '#fff', borderRadius: 8,
-          overflow: 'hidden', position: 'relative',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-          display: 'flex', flexDirection: 'column',
-        }}
-      >
-        {!isTextOnly && !isMarkdown && loading && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            flexDirection: 'column', gap: 12, background: '#fff',
-          }}>
-            <Loader2 style={{ width: 28, height: 28, color: '#3b82f6', animation: 'spin 1s linear infinite' }} />
-            <span style={{ color: '#6b7280', fontSize: 13 }}>文档加载中...</span>
-          </div>
-        )}
-
-        {isMarkdown ? (
-          <div
-            style={{
-              flex: 1, padding: '24px 40px', overflow: 'auto',
-              fontSize: 14, color: '#1f2937', background: '#fff',
-               margin: '0 auto', width: '100%', boxSizing: 'border-box',
-            }}
-            dangerouslySetInnerHTML={{ __html: markdownHtml }}
-          />
-        ) : isTextOnly ? (
-          <pre style={{
-            flex: 1, margin: 0, padding: 20,
-            overflow: 'auto', fontSize: 13, lineHeight: 1.6,
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-            color: '#1f2937', background: '#f9fafb', whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-          }}>
-            {item.content || '无法加载文件内容'}
-          </pre>
-        ) : error ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-            <p style={{ color: '#6b7280', fontSize: 14 }}>文档预览加载失败</p>
-            {item.content && (
-              <button
-                onClick={() => { setError(false); setLoading(false); }}
-                style={{ color: '#3b82f6', fontSize: 13, cursor: 'pointer', background: 'none', border: 'none', textDecoration: 'underline' }}
-              >
-                切换为文本模式查看
-              </button>
-            )}
-          </div>
-        ) : previewUrl ? (
-          <iframe
-            src={previewUrl}
-            title={item.name || '文档预览'}
-            onLoad={() => setLoading(false)}
-            onError={() => { setLoading(false); setError(true); }}
-            sandbox="allow-scripts allow-same-origin allow-popups"
-            style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
-          />
-        ) : null}
-      </div>
-
-      {/* 关闭按钮 */}
-      <button
-        onClick={onClose}
-        title="关闭"
-        style={{
-          position: 'absolute', top: 6, right: 20,
-          width: 32, height: 32, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.15)', border: 'none',
-          color: '#fff', fontSize: 18, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        ✕
-      </button>
     </div>
   );
 }
@@ -1927,7 +1163,6 @@ function FileActions({
   onPreview,
   onRename,
   onMove,
-  onShare,
 }: {
   file: FileItem;
   onDelete: () => void;
@@ -1936,7 +1171,6 @@ function FileActions({
   onPreview: () => void;
   onRename: () => void;
   onMove: () => void;
-  onShare: () => void;
 }) {
   return (
     <DropdownMenu>
@@ -1960,10 +1194,6 @@ function FileActions({
             <DropdownMenuItem onClick={onDownload}>
               <Download className="w-4 h-4 mr-2 text-gray-500" />
               下载
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onShare}>
-              <Share2 className="w-4 h-4 mr-2 text-gray-500" />
-              分享
             </DropdownMenuItem>
           </>
         )}

@@ -38,13 +38,13 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
+  LayoutGrid, MessageSquare,
 } from "lucide-react";
-import { MOCK_OPENCLAW_LIST, MOCK_ROLES } from "@/lib/mockData";
+import ChatView from "./ChatView";
+import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
-
-// Cast mock data to correct type
-const MOCK_OPENCLAW_LIST_TYPED = MOCK_OPENCLAW_LIST as OpenClawItem[];
+import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
@@ -229,10 +229,32 @@ const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
 
 export default function MyOpenClaw() {
   const [, navigate] = useLocation();
-  const [claws, setClaws] = useState<OpenClawItem[]>(MOCK_OPENCLAW_LIST_TYPED);
+  const [claws, setClawsRaw] = useState<OpenClawItem[]>(() => loadClawList() as OpenClawItem[]);
+  // 包装 setClaws，每次更新同步到 store
+  const setClaws = (v: OpenClawItem[] | ((prev: OpenClawItem[]) => OpenClawItem[])) => {
+    setClawsRaw((prev) => {
+      const next = typeof v === "function" ? v(prev) : v;
+      saveClawList(next);
+      notifyClawListChange();
+      return next;
+    });
+  };
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
+
+  // 视图模式
+  const [viewMode, setViewMode] = useState<"card" | "chat">(() => {
+    return (localStorage.getItem("openclaw_view_mode") as "card" | "chat") || "chat";
+  });
+  const handleViewModeChange = (mode: "card" | "chat") => {
+    setViewMode(mode);
+    localStorage.setItem("openclaw_view_mode", mode);
+  };
+
+  // 全屏模式
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const handleToggleFullscreen = () => setIsFullscreen(prev => !prev);
 
   // 角色选择
   const [roleExpanded, setRoleExpanded] = useState(false);
@@ -482,18 +504,69 @@ export default function MyOpenClaw() {
             </div>
           </div>
 
-          {/* OpenClaw Cards */}
-          {claws.length === 0 ? (
-            <div className="text-center py-24">
-              <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>
-              <Button onClick={() => setShowCreate(true)} variant="outline">
-                <Plus className="w-4 h-4 mr-1.5" />
-                创建 OpenClaw
-              </Button>
+          {/* Content Area */}
+          <div className="relative">
+            {/* Floating Bookmark Tabs - positioned outside content area */}
+            <div className="absolute flex flex-col gap-1 p-1 rounded-lg bg-white border border-gray-200"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)", right: "calc(100% + 12px)", top: 0 }}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewModeChange("card")}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                      viewMode === "card"
+                        ? "bg-gray-100 text-gray-900"
+                        : "bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">管理视图</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewModeChange("chat")}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                      viewMode === "chat"
+                        ? "bg-gray-100 text-gray-900"
+                        : "bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">对话视图</TooltipContent>
+              </Tooltip>
             </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-4">
+
+            {/* Main Content */}
+              {viewMode === "chat" ? (
+                <ChatView
+                  claws={claws}
+                  onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
+                  onRestartConfirm={(claw) => setRestartConfirm(claw)}
+                  onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
+                  onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
+                  onRetry={handleRetry}
+                  allowTerminal={allowTerminal}
+                  refreshingIds={refreshingIds}
+                  onRefreshStatus={handleRefreshStatus}
+                  isFullscreen={isFullscreen}
+                  onToggleFullscreen={handleToggleFullscreen}
+                />
+              ) : claws.length === 0 ? (
+                <div className="text-center py-24">
+                  <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>
+                  <Button onClick={() => setShowCreate(true)} variant="outline">
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    创建 OpenClaw
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
               {claws.map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status];
                 const isDisabled = cfg.isDisabled;
@@ -660,8 +733,9 @@ export default function MyOpenClaw() {
                   </div>
                 );
               })}
-            </div>
-          )}
+                </div>
+              )}
+          </div>
         </div>
 
         {/* Notification Panel */}

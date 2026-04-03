@@ -1,8 +1,0 @@
-{
-  "name": "smh-web-ui-kit",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./smh-web-ui-kit.js",
-  "module": "./smh-web-ui-kit.js",
-  "types": "./index.d.ts"
-}

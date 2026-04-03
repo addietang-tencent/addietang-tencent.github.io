@@ -100,6 +100,17 @@ export const MOCK_OPENCLAW_LIST = [
     channels: [],
     skills: [],
   },
+  {
+    id: "oc-009",
+    instanceId: "ins-longname01",
+    name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果",
+    status: "running",
+    createdAt: "2026-03-28 14:30:00",
+    model: "腾讯云 DeepSeek",
+    modelVersion: "DeepSeek V3 0324",
+    channels: ["企业微信"],
+    skills: ["github 1.0.0"],
+  },
 ];
 
 export const MOCK_MEMBERS = [

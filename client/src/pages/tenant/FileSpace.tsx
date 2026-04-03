@@ -58,6 +58,10 @@ import {
   Edit3,
   FolderInput,
   Loader2,
+  Share2,
+  Copy,
+  Link,
+  Check,
 } from "lucide-react";
 
 // ─── SMH 服务层导入 ──────────────────────────────────────────────────────────
@@ -276,7 +280,13 @@ export default function FileSpace({
 
   // 预览状态
   const [previewImg, setPreviewImg] = useState<{ url: string; name: string; path: string; mediaType?: 'image' | 'video' | 'audio' } | null>(null);
-  const [previewDoc, setPreviewDoc] = useState<{ name: string; path: string; url?: string; content?: string } | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{ name: string; path: string; url?: string; content?: string; isMarkdown?: boolean } | null>(null);
+
+  // 分享状态
+  const [shareTarget, setShareTarget] = useState<FileItem | null>(null);
+  const [shareUrl, setShareUrl] = useState<string>('');
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -623,8 +633,19 @@ export default function FileSpace({
 
     const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
 
+    // Markdown 文件：只获取原始文本，不走数据万象转码
+    if (ext === 'md') {
+      try {
+        const text = await getPreview(filePath, true);
+        setPreviewDoc({ name: file.name, path: filePath, content: text as string, isMarkdown: true });
+      } catch {
+        setPreviewDoc({ name: file.name, path: filePath, content: '无法加载文件内容' });
+      }
+      return;
+    }
+
     // 纯文本类型：getPreview(path, true) 获取文本内容，<pre> 展示
-    const textOnlyExts = ['json', 'txt', 'md', 'log'];
+    const textOnlyExts = ['json', 'txt', 'log'];
     // Office/PDF 类型：getDocPreviewUrl(path) 返回 cosUrl，用 iframe 预览
     const docExts = ['doc', 'docx', 'pdf', 'xls', 'xlsx', 'ppt', 'pptx', ...textOnlyExts];
 
@@ -819,6 +840,49 @@ export default function FileSpace({
     if (success) {
       getSpaceUsage().then((u: any) => u && setSpaceUsage(u)).catch(() => {});
       toast.success("文件列表已刷新");
+    }
+  };
+
+  /** 分享文件 —— 获取临时访问链接 */
+  const handleShare = async (file: FileItem) => {
+    setShareTarget(file);
+    setShareUrl('');
+    setShareCopied(false);
+    setShareLoading(true);
+    try {
+      const filePath = toSmhPath(joinPath(file.parentPath, file.name));
+      const url = await getPreview(filePath);
+      setShareUrl(url as string);
+    } catch (err) {
+      console.error('[FileSpace] 获取分享链接失败:', err);
+      toast.error('获取分享链接失败');
+      setShareTarget(null);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  /** 复制分享链接到剪贴板 */
+  const handleCopyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      toast.success('链接已复制到剪贴板');
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      // 降级方案
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setShareCopied(true);
+      toast.success('链接已复制到剪贴板');
+      setTimeout(() => setShareCopied(false), 2000);
     }
   };
 
@@ -1070,7 +1134,7 @@ export default function FileSpace({
                     <th className="text-left px-5 py-2.5 font-medium w-20">类型</th>
                     <th className="text-right px-5 py-2.5 font-medium w-24">大小</th>
                     <th className="text-right px-5 py-2.5 font-medium w-40">修改时间</th>
-                    <th className="text-center px-5 py-2.5 font-medium w-16">操作</th>
+                    <th className="text-center px-5 py-2.5 font-medium w-20 whitespace-nowrap">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -1144,6 +1208,7 @@ export default function FileSpace({
                             onPreview={() => handlePreview(file)}
                             onRename={() => { setRenameTarget(file); setRenameValue(file.name); }}
                             onMove={() => openMoveDialog(file)}
+                            onShare={() => handleShare(file)}
                           />
                         </td>
                       </tr>
@@ -1186,6 +1251,7 @@ export default function FileSpace({
                           onPreview={() => handlePreview(file)}
                           onRename={() => { setRenameTarget(file); setRenameValue(file.name); }}
                           onMove={() => openMoveDialog(file)}
+                          onShare={() => handleShare(file)}
                         />
                       </div>
                       <div className="flex flex-col items-center text-center">
@@ -1488,6 +1554,81 @@ export default function FileSpace({
         </DialogContent>
       </Dialog>
 
+      {/* Share Dialog */}
+      <Dialog open={!!shareTarget} onOpenChange={(open) => { if (!open) { setShareTarget(null); setShareUrl(''); setShareCopied(false); } }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-blue-500" />
+              分享文件
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-3 space-y-4">
+            {/* 文件信息 */}
+            <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
+              {shareTarget && getFileIcon(shareTarget.type)}
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-700 truncate">{shareTarget?.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {`${getFileTypeName(shareTarget?.type ?? 'other')} · ${shareTarget?.size}`}
+                </p>
+              </div>
+            </div>
+
+            {/* 分享链接 */}
+            {shareLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 text-blue-400 animate-spin mr-2" />
+                <span className="text-sm text-gray-400">正在生成分享链接...</span>
+              </div>
+            ) : shareUrl ? (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                  <Link className="w-3 h-3" />
+                  临时访问链接
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={shareUrl}
+                      readOnly
+                      className="text-xs bg-gray-50 border-gray-200 pr-10 font-mono"
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyShareUrl}
+                    className={`flex-shrink-0 transition-colors ${shareCopied ? 'border-green-300 text-green-600 bg-green-50' : 'text-gray-600'}`}
+                  >
+                    {shareCopied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 mr-1.5" />
+                        已复制
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 mr-1.5" />
+                        复制
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  此链接为临时访问链接，有效期有限。获得链接的人可直接访问该文件。
+                </p>
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter className="gap-2 pt-1">
+            <Button variant="outline" onClick={() => { setShareTarget(null); setShareUrl(''); setShareCopied(false); }}>
+              关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 图片/文档预览弹层 */}
       {previewImg && (
         <ImagePreviewOverlay item={previewImg} onClose={() => setPreviewImg(null)} />
@@ -1513,6 +1654,7 @@ interface PreviewDocItem {
   path: string;
   url?: string;
   content?: string;
+  isMarkdown?: boolean;
 }
 
 function ImagePreviewOverlay({ item, onClose }: { item: PreviewImgItem; onClose: () => void }) {
@@ -1586,6 +1728,65 @@ function ImagePreviewOverlay({ item, onClose }: { item: PreviewImgItem; onClose:
   );
 }
 
+// ─── Markdown Renderer ───────────────────────────────────────────────────────
+
+/** 轻量级 Markdown → HTML 转换（覆盖常用语法） */
+function renderMarkdownToHtml(md: string): string {
+  let html = md
+    // 转义 HTML 特殊字符
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 代码块（``` ... ```）
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) =>
+    `<pre style="background:#1e293b;color:#e2e8f0;padding:16px;border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.6;margin:12px 0"><code>${code.trim()}</code></pre>`
+  );
+
+  // 行内代码
+  html = html.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;color:#e11d48;padding:2px 6px;border-radius:4px;font-size:0.9em">$1</code>');
+
+  // 标题（h1–h6）
+  html = html.replace(/^######\s+(.+)$/gm, '<h6 style="font-size:14px;font-weight:600;margin:16px 0 8px;color:#374151">$1</h6>');
+  html = html.replace(/^#####\s+(.+)$/gm, '<h5 style="font-size:15px;font-weight:600;margin:16px 0 8px;color:#374151">$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm, '<h4 style="font-size:16px;font-weight:600;margin:20px 0 8px;color:#1f2937">$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3 style="font-size:18px;font-weight:600;margin:20px 0 8px;color:#1f2937">$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2 style="font-size:20px;font-weight:700;margin:24px 0 10px;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:6px">$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1 style="font-size:24px;font-weight:700;margin:24px 0 12px;color:#111827;border-bottom:2px solid #e5e7eb;padding-bottom:8px">$1</h1>');
+
+  // 水平线
+  html = html.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>');
+
+  // 粗体 + 斜体
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+  // 链接（不处理图片）
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline">$1</a>');
+
+  // 图片
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:6px;margin:8px 0"/>');
+
+  // 无序列表
+  html = html.replace(/^[\s]*[-*+]\s+(.+)$/gm, '<li style="margin:4px 0;padding-left:4px">$1</li>');
+  html = html.replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul style="padding-left:24px;margin:8px 0">$1</ul>');
+
+  // 有序列表
+  html = html.replace(/^[\s]*\d+\.\s+(.+)$/gm, '<li style="margin:4px 0;padding-left:4px">$1</li>');
+
+  // 引用块
+  html = html.replace(/^&gt;\s+(.+)$/gm, '<blockquote style="border-left:3px solid #3b82f6;padding:8px 16px;margin:12px 0;color:#4b5563;background:#f0f9ff;border-radius:0 6px 6px 0">$1</blockquote>');
+
+  // 段落：连续空行分隔
+  html = html.replace(/\n\n+/g, '</p><p style="margin:8px 0;line-height:1.75">');
+  // 单换行 → <br>
+  html = html.replace(/\n/g, '<br/>');
+
+  return `<p style="margin:8px 0;line-height:1.75">${html}</p>`;
+}
+
 // ─── DocPreviewOverlay ────────────────────────────────────────────────────────
 
 function DocPreviewOverlay({ item, onClose }: { item: PreviewDocItem; onClose: () => void }) {
@@ -1599,6 +1800,14 @@ function DocPreviewOverlay({ item, onClose }: { item: PreviewDocItem; onClose: (
   }, [onClose]);
 
   const isTextOnly = !item.url && !!item.content;
+  const isMarkdown = !!item.isMarkdown && !!item.content;
+
+  // Markdown 预渲染
+  const markdownHtml = useMemo(() => {
+    if (!isMarkdown || !item.content) return '';
+    return renderMarkdownToHtml(item.content);
+  }, [isMarkdown, item.content]);
+
   // cosUrl 需要拼接数据万象文档预览参数
   const previewUrl = item.url
     ? `${item.url}${item.url.includes('?') ? '&' : '?'}ci-process=doc-preview&dstType=html&htmlwaterword=&htmlfillstyle=&htmlfront=&htmlrotate=&htmlhorizontal=&htmlvertical=`
@@ -1637,7 +1846,7 @@ function DocPreviewOverlay({ item, onClose }: { item: PreviewDocItem; onClose: (
           display: 'flex', flexDirection: 'column',
         }}
       >
-        {!isTextOnly && loading && (
+        {!isTextOnly && !isMarkdown && loading && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex',
             alignItems: 'center', justifyContent: 'center',
@@ -1648,7 +1857,16 @@ function DocPreviewOverlay({ item, onClose }: { item: PreviewDocItem; onClose: (
           </div>
         )}
 
-        {isTextOnly ? (
+        {isMarkdown ? (
+          <div
+            style={{
+              flex: 1, padding: '24px 40px', overflow: 'auto',
+              fontSize: 14, color: '#1f2937', background: '#fff',
+               margin: '0 auto', width: '100%', boxSizing: 'border-box',
+            }}
+            dangerouslySetInnerHTML={{ __html: markdownHtml }}
+          />
+        ) : isTextOnly ? (
           <pre style={{
             flex: 1, margin: 0, padding: 20,
             overflow: 'auto', fontSize: 13, lineHeight: 1.6,
@@ -1709,6 +1927,7 @@ function FileActions({
   onPreview,
   onRename,
   onMove,
+  onShare,
 }: {
   file: FileItem;
   onDelete: () => void;
@@ -1717,6 +1936,7 @@ function FileActions({
   onPreview: () => void;
   onRename: () => void;
   onMove: () => void;
+  onShare: () => void;
 }) {
   return (
     <DropdownMenu>
@@ -1740,6 +1960,10 @@ function FileActions({
             <DropdownMenuItem onClick={onDownload}>
               <Download className="w-4 h-4 mr-2 text-gray-500" />
               下载
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onShare}>
+              <Share2 className="w-4 h-4 mr-2 text-gray-500" />
+              分享
             </DropdownMenuItem>
           </>
         )}

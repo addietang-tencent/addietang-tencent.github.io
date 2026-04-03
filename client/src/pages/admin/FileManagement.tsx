@@ -48,7 +48,7 @@ import {
 // Updated Mock Data for Enterprise Spaces
 const ENTERPRISE_SPACES = [
   { id: "ent-skill-lib", name: "企业技能库", type: "公共", used: "12GB", quota: "50GB", expiry: "永久有效" },
-  { id: "ent-plugin-lib", name: "企业预设配置库", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
+  { id: "ent-plugin-lib", name: "初始技能库", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
 ];
 
 // Mock Data for Personal Spaces (Grouped)
@@ -446,7 +446,7 @@ export default function FileManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">云盘管理</h1>
-          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的私人云存储空间</p>
+          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间</p>
         </div>
       </div>
 
@@ -471,7 +471,7 @@ export default function FileManagement() {
                           <span className="text-[10px] font-bold">i</span>
                         </div>
                         <p className="text-sm text-gray-700">
-                          默认开启,赠送 <span className="font-semibold text-blue-600">100GB</span> 永久免费空间，用于存放企业级技能库和预设配置库
+                          默认开启，<span className="font-semibold text-blue-600">腾讯云存储 Agent Bucket</span> 为您赠送 <span className="font-semibold text-blue-600">50G+50G</span> 永久免费空间，用于存放企业级技能库和初始技能库
                         </p>
                       </div>
                     </TableHead>
@@ -523,19 +523,19 @@ export default function FileManagement() {
                 <div className="flex items-center justify-between gap-6 mb-5">
                   <div className="flex-1 space-y-1">
                     <h3 className="text-sm font-semibold text-gray-900">
-                      AI 智能体私有空间 需要开启云盘管理服务
+                      AI 智能体私有空间 需要开启网盘管理服务
                     </h3>
                     <p className="text-sm text-gray-600">
-                      开启后,为您赠送每个 OpenClaw 实例
-                      <span className="mx-1 font-semibold text-blue-600">3 个月 50GB</span>
-                      免费额度。到期后可以购买资源包继续使用续租
+                      开启后，<span className="font-semibold text-blue-600">腾讯云存储 Agent Bucket</span> 为您赠送每个 OpenClaw 实例
+                      <span className="mx-1 font-semibold text-blue-600">3个月 50GB</span>
+                      免费额度，到期后可以购买资源包继续使用续租
                     </p>
                   </div>
                   <Button 
                     className="h-10 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
                     onClick={handleEnableSmh}
                   >
-                    开启云盘管理服务
+                    开启网盘管理服务
                   </Button>
                 </div>
               </CardContent>
@@ -572,7 +572,7 @@ export default function FileManagement() {
                     <div className="space-y-1">
                       <h4 className="text-sm font-semibold text-gray-900">存储管理及监控</h4>
                       <p className="text-xs text-gray-600 leading-relaxed">
-                        实时监控每个用户的容量的使用情况及余量进度条提示
+                        实时监控每个AI Agent 的容量的使用情况及余量进度条提示
                       </p>
                     </div>
                   </div>

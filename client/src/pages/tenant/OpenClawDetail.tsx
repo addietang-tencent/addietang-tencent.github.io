@@ -336,15 +336,15 @@ export default function OpenClawDetail() {
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
   // 多条模型列表，每条有唯一 id；primary 表示主模型，其余为备选模型，所有模型均为应用中状态
-  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; };
+  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; };
   const [appliedModels, setAppliedModels] = useState<AppliedModel[]>([
-    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "" },
+    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "", addedAt: Date.now() },
   ]);
   const [modelIdCounter, setModelIdCounter] = useState(2);
   // 模型操作二次确认弹窗
   const [modelConfirmDialog, setModelConfirmDialog] = useState<{
     open: boolean;
-    type: "set-primary" | "delete";
+    type: "set-primary" | "delete" | "delete-backup";
     modelId: number | null;
   }>({ open: false, type: "set-primary", modelId: null });
 
@@ -687,12 +687,12 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "" };
+      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "", addedAt: Date.now() };
     } else {
       const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
       const version = currentVersions.find(v => v.value === selectedModel);
       if (!provider || !version) return;
-      newEntry = { id: modelIdCounter, providerLabel: provider.label, versionLabel: version.label, primary: false, isCustom: false, customName: "" };
+      newEntry = { id: modelIdCounter, providerLabel: provider.label, versionLabel: version.label, primary: false, isCustom: false, customName: "", addedAt: Date.now() };
     }
     setAppliedModels(prev => {
       // 当前无主模型时（列表为空或全部为备选），新模型直接成为主模型
@@ -1534,9 +1534,12 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 {appliedModels.some(m => !m.primary) && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">备选模型</p>
-                    <p className="text-xs text-gray-400 mb-2">主模型不可用时会自动切换备选模型，确保服务不中断</p>
+                    <div className="mb-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      <span>主模型不可用时会自动切换备选模型，此时备选模型消耗的token将统计到主模型下</span>
+                    </div>
                     <div className="space-y-1.5">
-                      {appliedModels.filter(m => !m.primary).map((model) => (
+                      {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
                         <div
                           key={model.id}
                           className="rounded-lg border transition-all bg-white border-gray-100 hover:bg-gray-50 p-2.5"
@@ -1587,8 +1590,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      setAppliedModels(prev => prev.filter(m => m.id !== model.id));
-                                      toast.success("备选模型已移除");
+                                      setModelConfirmDialog({ open: true, type: "delete-backup", modelId: model.id });
                                     }}
                                     className="p-1 rounded text-gray-300 hover:text-red-400 transition-colors"
                                   >
@@ -2579,12 +2581,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-blue-600">
-              {modelConfirmDialog.type === "delete" ? "确认删除主模型" : "设为主模型"}
+              {modelConfirmDialog.type === "delete" ? "确认删除主模型" : modelConfirmDialog.type === "delete-backup" ? "确认删除备选模型" : "切换主模型"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 leading-relaxed pt-1">
               {modelConfirmDialog.type === "delete"
-                ? "删除主模型将导致相关的 Gateway 服务立即停止，该操作不可恢复。"
-                : "将此模型设为主模型后，原主模型将降为备选模型。是否继续？"}
+                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
+                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
@@ -2605,6 +2609,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 if (type === "set-primary" && modelId !== null) {
                   setAppliedModels(prev => prev.map(m => ({ ...m, primary: m.id === modelId })));
                   toast.success("已设为主模型");
+                } else if (type === "delete-backup" && modelId !== null) {
+                  setAppliedModels(prev => prev.filter(m => m.id !== modelId));
+                  toast.success("备选模型已删除");
                 } else if (type === "delete" && modelId !== null) {
                   setAppliedModels(prev => {
                     const next = prev.filter(m => m.id !== modelId);
@@ -2619,7 +2626,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 }
               }}
             >
-              {modelConfirmDialog.type === "delete" ? "确认删除" : "确认设置"}
+              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup" ? "确认删除" : "确认设置"}
             </Button>
           </div>
         </DialogContent>

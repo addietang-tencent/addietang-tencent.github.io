@@ -67,7 +67,7 @@ export default function CloudDevManagement() {
           </span>
         </div>
         <p className="text-sm text-gray-500 leading-relaxed">
-          管理企业云开发环境的创建、分配与生命周期。管理员可为成员分配独立的云开发环境，统一配置运行环境与规格，为成员提供应用开发及部署能力
+          管理企业云开发环境的创建、分配与生命周期。管理员可为成员分配独立的云开发环境，统一配置运行环境与规格，为成员提供应用开发及部署能力。
         </p>
       </div>
 

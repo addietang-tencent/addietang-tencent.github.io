@@ -572,7 +572,7 @@ export default function ChatView({
                   /* Welcome state - running */
                   <div className="flex flex-col items-center justify-center h-full">
                     <img
-                      src="/lobster_3d.png"
+                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_3d_8f2c189d.png"
                       alt="OpenClaw"
                       className="w-28 h-28 mb-1 object-contain"
                       draggable={false}
@@ -600,7 +600,7 @@ export default function ChatView({
                   /* Welcome state - not running */
                   <div className="flex flex-col items-center justify-center h-full pb-16">
                     <img
-                      src="/lobster_offline_v7.png"
+                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_offline_v7_3c1d942c.png"
                       alt="OpenClaw Offline"
                       className="w-28 h-28 mb-4 object-contain"
                       draggable={false}

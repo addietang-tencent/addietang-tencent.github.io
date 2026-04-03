@@ -18,13 +18,13 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
-  ExternalLink,
   Zap,
   MapPin,
   Globe,
   Cloud,
   Sparkles,
   Wrench,
+  Pencil,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/mockData";
 
@@ -51,7 +51,7 @@ const PRODUCT_UPDATES = [
     date: "2026-03-28",
     type: "feature" as const,
     title: "记忆管理功能上线",
-    summary: "支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力。",
+    summary: "支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力，管理员可在后台统一管理企业内所有用户的记忆数据，包括查看、导出和批量清理，同时支持按部门维度设置记忆容量配额。",
   },
   {
     version: "v2.3.0",
@@ -177,6 +177,8 @@ function InlineQuotaField({
       ? "无限制"
       : Number(value).toLocaleString();
 
+  const unitText = type === "token" && value !== "unlimited" ? "Tokens / 天" : type === "integer" ? "个" : "";
+
   const handleSave = () => {
     if (type === "integer") {
       const n = parseInt(inputStr, 10);
@@ -201,37 +203,38 @@ function InlineQuotaField({
     toast.success(`${label}已保存`);
   };
 
+  const blockInvalidKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["-", "+", ".", "e", "E"].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, "");
+    setInputStr(val);
+    setDraft(val ? Number(val) : 0);
+  };
+
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs font-medium text-gray-600">
-          {label}
-          <span className="text-gray-400 font-normal ml-1">{hint}</span>
-        </Label>
-        {!editing && (
-          <button
-            onClick={() => {
-              setDraft(value);
-              setInputStr(value === "unlimited" ? "" : String(value));
-              setEditing(true);
-            }}
-            className="text-xs text-gray-400 hover:text-blue-500 transition-colors"
-          >
-            编辑
-          </button>
-        )}
-      </div>
+      <Label className="text-xs font-medium text-gray-600">
+        {label}
+        {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
+      </Label>
 
       {!editing ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 font-medium">
-          {displayValue}
-          {type === "token" && value !== "unlimited" && (
-            <span className="text-gray-400 font-normal ml-1">Tokens / 天</span>
-          )}
-          {type === "integer" && (
-            <span className="text-gray-400 font-normal ml-1">个</span>
-          )}
-        </div>
+        <button
+          onClick={() => {
+            setDraft(value);
+            setInputStr(value === "unlimited" ? "" : String(value));
+            setEditing(true);
+          }}
+          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+        >
+          <span>{displayValue}</span>
+          {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
+          <Pencil className="w-3 h-3 text-gray-300 group-hover:text-blue-500 ml-2 shrink-0 transition-colors" />
+        </button>
       ) : (
         <div className="flex items-center gap-2">
           {type === "token" && (
@@ -269,12 +272,9 @@ function InlineQuotaField({
               type="number"
               value={inputStr}
               min={0}
-              max={type === "integer" ? 999 : undefined}
-              onChange={(e) => {
-                setInputStr(e.target.value);
-                setDraft(Number(e.target.value));
-              }}
-              className="bg-white border-gray-200 text-sm h-8 min-w-0 flex-1"
+              onKeyDown={blockInvalidKeys}
+              onChange={handleInputChange}
+              className="bg-white border-gray-200 text-sm h-9 min-w-0 flex-1"
               placeholder={type === "integer" ? "0-999" : "请输入数量"}
               autoFocus
             />
@@ -287,7 +287,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={() => setEditing(false)}
-              className="h-8 px-3 text-xs"
+              className="h-9 px-3 text-xs text-gray-600"
             >
               取消
             </Button>
@@ -295,7 +295,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={handleSave}
-              className="h-8 px-3 text-xs text-gray-700"
+              className="h-9 px-3 text-xs text-gray-600"
             >
               保存
             </Button>
@@ -354,7 +354,7 @@ export default function BasicInfo() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">基础信息配置</h1>
         <p className="text-sm text-gray-500 mt-1">
-          完成以下初始化配置，让用户端可以正常运作
+          以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整
         </p>
       </div>
 
@@ -370,7 +370,7 @@ export default function BasicInfo() {
             step={1}
             done={MOCK_STEP_STATUS[1]}
             title="设置平台名称与品牌"
-            description="配置展示在用户端的网站名称和企业 Logo"
+            description="配置展示在用户端的网站名称和 Logo"
           >
             <div className="space-y-4">
               <div className="space-y-1.5">
@@ -388,7 +388,7 @@ export default function BasicInfo() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-gray-600">
-                  企业 Logo
+                  网站 Logo
                   <span className="text-gray-400 font-normal ml-1">
                     建议尺寸 200×200px，不超过 512KB
                   </span>
@@ -433,7 +433,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="text-xs text-gray-700"
+                className="text-xs text-gray-600"
               >
                 保存
               </Button>
@@ -445,12 +445,12 @@ export default function BasicInfo() {
             step={2}
             done={MOCK_STEP_STATUS[2]}
             title="配置用户默认配额"
-            description="设置新用户创建时自动应用的 OpenClaw 数量上限和每日 Tokens 上限，可在用户管理中对单个用户单独调整"
+            description="设置新用户创建时自动应用的 OpenClaw 数量上限和每日 Tokens 上限，有效控制企业成本"
           >
             <div className="space-y-4">
               <InlineQuotaField
                 label="单用户 OpenClaw 数量上限"
-                hint="（0-999 个）"
+                hint=""
                 value={clawLimit}
                 type="integer"
                 onSave={handleSaveClawLimit}
@@ -462,16 +462,6 @@ export default function BasicInfo() {
                 type="token"
                 onSave={handleSaveTokenLimit}
               />
-              <p className="text-xs text-gray-400">
-                更多配额和功能权限开关，请前往
-                <button
-                  onClick={() => navigate("/admin/platform-policy")}
-                  className="text-blue-500 hover:underline mx-1"
-                >
-                  平台策略
-                </button>
-                进行精细配置
-              </p>
             </div>
           </StepCard>
 
@@ -480,41 +470,17 @@ export default function BasicInfo() {
             step={3}
             done={MOCK_STEP_STATUS[3]}
             title="导入企业用户"
-            description="请根据企业账号体系选择导入方式，导入后统一在用户管理页进行管理"
+            description="前往用户管理页添加企业用户，添加后即可使用平台"
           >
-            <div className="grid gap-y-2" style={{ gridTemplateColumns: "auto 1fr" }}>
-              {/* 第一行 */}
-              <p className="text-xs text-gray-400 whitespace-nowrap self-center pr-4">使用企业微信 / 飞书 / 钉钉等办公软件</p>
-              <div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    window.open(
-                      "https://ci-741.account.tencentcs.com/?redirectUrl=https%3A%2F%2Fe17himtkr0083u.ci-741.workspace.tencentcs.com%2Fadmin%2F%23%2Fusers#/login",
-                      "_blank"
-                    );
-                  }}
-                  className="text-xs text-gray-600 flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  前往腾讯云 OneID 导入
-                </Button>
-              </div>
-              {/* 第二行 */}
-              <p className="text-xs text-gray-400 whitespace-nowrap self-center pr-4">使用独立账号体系</p>
-              <div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate("/admin/members")}
-                  className="text-xs text-gray-600 flex items-center gap-1.5"
-                >
-                  前往用户管理添加用户
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate("/admin/members")}
+              className="text-xs flex items-center gap-1.5 text-gray-600"
+            >
+              前往用户管理
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Button>
           </StepCard>
 
           {/* 步骤 4：配置模型 */}
@@ -522,7 +488,7 @@ export default function BasicInfo() {
             step={4}
             done={MOCK_STEP_STATUS[4]}
             title="配置至少一个模型"
-            description="为用户端配置可用的 AI 模型，用户在创建 OpenClaw 时将从已配置的模型中选择"
+            description="为用户端配置至少一个可用的 AI 模型，用户在创建 OpenClaw 时将从已配置的模型中选择"
           >
             <Button
               size="sm"
@@ -540,7 +506,7 @@ export default function BasicInfo() {
             step={5}
             done={MOCK_STEP_STATUS[5]}
             title="配置至少一个通道"
-            description="通道决定用户可以通过哪些平台（飞书、企业微信、QQ 等）与 OpenClaw 交互"
+            description="通道决定用户可以通过哪些聊天软件（企业微信、飞书、钉钉等）与 OpenClaw 对话，至少配置一个"
           >
             <Button
               size="sm"
@@ -553,12 +519,12 @@ export default function BasicInfo() {
             </Button>
           </StepCard>
 
-          {/* 步骤 6：配置私有网络和安全组 */}
+          {/* 步骤 6：配置安全组 */}
           <StepCard
             step={6}
             done={MOCK_STEP_STATUS[6]}
-            title="配置私有网络和安全组"
-            description="为 OpenClaw 云设备配置所在的私有网络（VPC）和安全组规则，确保网络连通性和访问安全"
+            title="配置安全组"
+            description="为 OpenClaw 云设备配置安全组规则，确保访问安全"
           >
             <Button
               size="sm"
@@ -566,7 +532,7 @@ export default function BasicInfo() {
               onClick={() => navigate("/admin/security-group")}
               className="text-xs flex items-center gap-1.5 text-gray-600"
             >
-              前往网络管理
+              前往安全组管理
               <ChevronRight className="w-3.5 h-3.5" />
             </Button>
           </StepCard>
@@ -643,7 +609,6 @@ export default function BasicInfo() {
                   {/* 内容 */}
                   <div className="flex-1 min-w-0 pb-1">
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <span className="text-xs font-semibold text-gray-700">{item.version}</span>
                       <span
                         className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
                           item.type === "feature"
@@ -656,7 +621,7 @@ export default function BasicInfo() {
                       </span>
                     </div>
                     <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">{item.summary}</p>
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>
                     <p className="text-xs text-gray-300 mt-1">{item.date}</p>
                   </div>
                 </div>

@@ -1127,6 +1127,29 @@ export default function MemberManagement() {
                 onChange={(v) => { setDeptFilter(v); setPage(1); }}
               />
             )}
+            {/* 普通模式：视图切换按钮组（搜索框左侧） */}
+            {!hasOneid && (
+              <div
+                className="inline-flex items-center rounded-lg p-1 gap-0.5 bg-white border border-gray-200 h-9"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+              >
+                <button
+                  className="h-7 px-3 rounded-md text-xs font-semibold text-gray-900 bg-gray-100 transition-all duration-200"
+                >
+                  全部
+                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="h-7 px-3 rounded-md text-xs font-medium text-gray-300 cursor-not-allowed flex items-center select-none transition-all duration-200"
+                    >
+                      分组
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>即将开放用户分组管理</TooltipContent>
+                </Tooltip>
+              </div>
+            )}
             {/* 搜索框 */}
             <div className="relative w-[260px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

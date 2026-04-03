@@ -445,7 +445,7 @@ export default function FileManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">云盘管理</h1>
+          <h1 className="text-2xl font-bold text-gray-900">网盘管理</h1>
           <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间</p>
         </div>
       </div>
@@ -886,7 +886,7 @@ export default function FileManagement() {
             {/* 说明内容 */}
             <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
               <p className="text-sm text-gray-700 leading-relaxed">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>每个 OpenClaw 实例<span className="font-semibold text-blue-600">50GB</span>的存储空间，到期后可以购买资源包进行续租。点击确定后才会进入最终页面
+                为您赠送 <span className="font-semibold text-blue-600">3个月</span> 每个 OpenClaw 实例 <span className="font-semibold text-blue-600">50GB</span> 的存储空间，到期后可以购买资源包进行续租。点击确定后才会进入最终页面
               </p>
             </div>
 

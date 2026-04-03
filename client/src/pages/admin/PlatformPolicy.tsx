@@ -6,10 +6,11 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Globe, UsersRound } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -22,6 +23,33 @@ import {
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
 type TokenLimit = number | "unlimited"; // -1 或 "unlimited" 表示无限制
+
+// ─── 子组件：应用范围指示器 ───────────────────────────────────────────────────
+
+function ScopeIndicator({ groupTooltip = "按分组设置不同配额 — 即将开放" }: { groupTooltip?: string }) {
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="text-gray-400">应用范围</span>
+      <div className="flex items-center gap-1">
+        <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-600 rounded-md px-2.5 py-1 font-medium">
+          <Globe className="w-3 h-3" />
+          全部用户
+        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-md px-2.5 py-1 cursor-not-allowed select-none">
+              <UsersRound className="w-3 h-3" />
+              按分组
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs max-w-[220px]">
+            {groupTooltip}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
 
 // ─── 子组件：配额卡片 ─────────────────────────────────────────────────────────
 
@@ -102,6 +130,11 @@ function QuotaCard({ icon, iconBg, title, description, value, onSave, type }: Qu
 
       {/* 分隔线 */}
       <div className="border-t border-gray-100 mb-3" />
+
+      {/* 应用范围 */}
+      <div className="mb-3">
+        <ScopeIndicator />
+      </div>
 
       {/* 值展示 / 编辑区 */}
       {!editing ? (
@@ -223,6 +256,11 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
 
       {/* 描述文字 */}
       <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+
+      {/* 分隔线 + 应用范围 */}
+      <div className="mt-3 border-t border-gray-100 pt-3">
+        <ScopeIndicator groupTooltip="按分组设置功能权限 — 即将开放" />
+      </div>
 
       {/* 额外内容（如端口信息） */}
       {extraContent && (

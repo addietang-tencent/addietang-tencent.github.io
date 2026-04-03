@@ -27,7 +27,7 @@ const CLOUD_DEV_FEATURES: {
     title: "说话即上线",
     description:
       "用自然语言描述需求，AI 自动完成代码生成、数据库搭建、云端部署的全流程，一句话交付完整应用",
-    iconBg: "#3B82F6",
+    iconBg: "#2E7CF2",
   },
   {
     icon: Building2,
@@ -48,7 +48,7 @@ const CLOUD_DEV_FEATURES: {
     title: "企业级安全与弹性",
     description:
       "依托腾讯云安全体系，自动配置权限与防护规则；按需弹性伸缩，智能优化资源配置，安全可靠的同时持续降本",
-    iconBg: "#F97316",
+    iconBg: "#FD9604",
   },
 ];
 

@@ -245,12 +245,16 @@ export default function MyOpenClaw() {
 
   // 视图模式
   const [viewMode, setViewMode] = useState<"card" | "chat">(() => {
-    return (localStorage.getItem("openclaw_view_mode") as "card" | "chat") || "card";
+    return (localStorage.getItem("openclaw_view_mode") as "card" | "chat") || "chat";
   });
   const handleViewModeChange = (mode: "card" | "chat") => {
     setViewMode(mode);
     localStorage.setItem("openclaw_view_mode", mode);
   };
+
+  // 全屏模式
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const handleToggleFullscreen = () => setIsFullscreen(prev => !prev);
 
   // 角色选择
   const [roleExpanded, setRoleExpanded] = useState(false);
@@ -477,33 +481,6 @@ export default function MyOpenClaw() {
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* View Mode Toggle */}
-              <div className="flex items-center rounded-lg bg-gray-100 p-0.5">
-                <button
-                  onClick={() => handleViewModeChange("card")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
-                    viewMode === "card"
-                      ? "text-white shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                  style={viewMode === "card" ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  卡片视图
-                </button>
-                <button
-                  onClick={() => handleViewModeChange("chat")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
-                    viewMode === "chat"
-                      ? "text-white shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                  style={viewMode === "chat" ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  对话视图
-                </button>
-              </div>
               {/* Bell Notification Button */}
               <div className="relative">
                 <button
@@ -527,30 +504,69 @@ export default function MyOpenClaw() {
             </div>
           </div>
 
-          {/* OpenClaw Cards / Chat View */}
-          {viewMode === "chat" ? (
-            <ChatView
-              claws={claws}
-              onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
-              onRestartConfirm={(claw) => setRestartConfirm(claw)}
-              onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
-              onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
-              onRetry={handleRetry}
-              allowTerminal={allowTerminal}
-              refreshingIds={refreshingIds}
-              onRefreshStatus={handleRefreshStatus}
-            />
-          ) : claws.length === 0 ? (
-            <div className="text-center py-24">
-              <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>
-              <Button onClick={() => setShowCreate(true)} variant="outline">
-                <Plus className="w-4 h-4 mr-1.5" />
-                创建 OpenClaw
-              </Button>
+          {/* Content Area */}
+          <div className="relative">
+            {/* Floating Bookmark Tabs - positioned outside content area */}
+            <div className="absolute flex flex-col gap-1 p-1 rounded-lg bg-white border border-gray-200"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)", right: "calc(100% + 12px)", top: 0 }}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewModeChange("card")}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                      viewMode === "card"
+                        ? "bg-gray-100 text-gray-900"
+                        : "bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">管理视图</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewModeChange("chat")}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                      viewMode === "chat"
+                        ? "bg-gray-100 text-gray-900"
+                        : "bg-white text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">对话视图</TooltipContent>
+              </Tooltip>
             </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-4">
+
+            {/* Main Content */}
+              {viewMode === "chat" ? (
+                <ChatView
+                  claws={claws}
+                  onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
+                  onRestartConfirm={(claw) => setRestartConfirm(claw)}
+                  onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
+                  onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
+                  onRetry={handleRetry}
+                  allowTerminal={allowTerminal}
+                  refreshingIds={refreshingIds}
+                  onRefreshStatus={handleRefreshStatus}
+                  isFullscreen={isFullscreen}
+                  onToggleFullscreen={handleToggleFullscreen}
+                />
+              ) : claws.length === 0 ? (
+                <div className="text-center py-24">
+                  <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>
+                  <Button onClick={() => setShowCreate(true)} variant="outline">
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    创建 OpenClaw
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
               {claws.map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status];
                 const isDisabled = cfg.isDisabled;
@@ -717,8 +733,9 @@ export default function MyOpenClaw() {
                   </div>
                 );
               })}
-            </div>
-          )}
+                </div>
+              )}
+          </div>
         </div>
 
         {/* Notification Panel */}

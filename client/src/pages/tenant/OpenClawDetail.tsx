@@ -314,6 +314,21 @@ export default function OpenClawDetail() {
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
   const [quickFixState, setQuickFixState] = useState<"idle" | "loading" | "success">("idle");
 
+  // 读取管控端「允许用户使用龙虾医生」开关状态（默认关闭）
+  const [lobsterDoctorEnabled, setLobsterDoctorEnabled] = useState(
+    () => localStorage.getItem("admin_allow_lobster_doctor") === "true"
+  );
+  // 监听 localStorage 变化，管控端切换开关后用户端实时响应
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "admin_allow_lobster_doctor") {
+        setLobsterDoctorEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   // ── Model state ──
   const [selectedProvider, setSelectedProvider] = useState(MODEL_PROVIDERS[0].value);
   const [selectedModel, setSelectedModel] = useState(MODEL_PROVIDERS[0].versions[0].value);
@@ -1952,8 +1967,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </div>
               </div>
 
-              {/* ===== 龙虾医生对话卡片 ===== */}
-              <DoctorChatCard instanceId={claw.instanceId} instanceName={claw.instanceId} />
+              {/* ===== 龙虾医生对话卡片（受管控端「允许用户使用龙虾医生」开关控制） ===== */}
+              {lobsterDoctorEnabled && (
+                <DoctorChatCard instanceId={claw.instanceId} instanceName={claw.instanceId} />
+              )}
 
             </div>
           )}

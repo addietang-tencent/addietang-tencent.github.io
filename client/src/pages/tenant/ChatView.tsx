@@ -15,6 +15,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -187,6 +197,7 @@ export default function ChatView({
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
+  const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const commandsRef = useRef<HTMLDivElement>(null);
@@ -289,6 +300,12 @@ export default function ChatView({
 
   const handleNewChat = () => {
     if (!selectedClawId || isTyping) return;
+    setShowNewChatConfirm(true);
+  };
+
+  const confirmNewChat = () => {
+    if (!selectedClawId) return;
+    setShowNewChatConfirm(false);
     // Send /new command
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -735,6 +752,28 @@ export default function ChatView({
           animation: typingBounce 1.4s ease-in-out infinite;
         }
       `}</style>
+
+      {/* 新建对话二次确认弹窗 */}
+      <AlertDialog open={showNewChatConfirm} onOpenChange={setShowNewChatConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认新建会话？</AlertDialogTitle>
+            <AlertDialogDescription>
+              新建会话后，当前会话记录会被清空。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmNewChat}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white hover:opacity-90"
+            >
+              确认
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -445,28 +445,36 @@ export default function MyOpenClaw() {
                   <Zap className="w-5 h-5 text-blue-600" />
                   <h3 className="font-semibold text-gray-900">快速上手</h3>
                 </div>
-                <div className="flex items-start gap-8">
+                <div className="flex items-start gap-6">
                   <div className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">创建我的 OpenClaw</p>
-                      <p className="text-xs text-gray-500 mt-0.5">点击「创建 OpenClaw」，为它取一个名字</p>
+                      <p className="text-sm font-medium text-gray-900">创建 OpenClaw</p>
+                      <p className="text-xs text-gray-500 mt-0.5">点击「创建 OpenClaw」，为你的小龙虾取一个名字</p>
                     </div>
                   </div>
-                  <div className="w-8 h-px bg-blue-200 mt-3.5 flex-shrink-0" />
+                  <div className="w-6 h-px bg-blue-200 mt-3.5 flex-shrink-0" />
                   <div className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">进入详细配置</p>
-                      <p className="text-xs text-gray-500 mt-0.5">点击 OpenClaw 卡片，配置模型和通道</p>
+                      <p className="text-sm font-medium text-gray-900">配置模型</p>
+                      <p className="text-xs text-gray-500 mt-0.5">进入「详细配置」，配置一个可用的 AI 模型</p>
                     </div>
                   </div>
-                  <div className="w-8 h-px bg-blue-200 mt-3.5 flex-shrink-0" />
+                  <div className="w-6 h-px bg-blue-200 mt-3.5 flex-shrink-0" />
                   <div className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">开始使用</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成后，即可通过聊天软件与AI对话</p>
+                      <p className="text-sm font-medium text-gray-900">浏览器对话</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在浏览器直接与 OpenClaw 对话</p>
+                    </div>
+                  </div>
+                  <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">+</div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">连接聊天软件<span className="text-[10px] font-normal text-gray-400 ml-1">可选</span></p>
+                      <p className="text-xs text-gray-400 mt-0.5">在「详细配置」中开启通道，还可以通过企微/微信/飞书等与 OpenClaw 对话</p>
                     </div>
                   </div>
                 </div>

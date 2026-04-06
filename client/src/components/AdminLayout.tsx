@@ -47,6 +47,7 @@ import { AdminModeProvider } from "@/contexts/AdminModeContext";
 // 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
   "/admin/file-management",
+  "/admin/cloud-dev",
 ]);
 
 // 标记为「功能上新」的菜单项路径（蓝色选中态，标签文案「功能上新」，橙色标签）

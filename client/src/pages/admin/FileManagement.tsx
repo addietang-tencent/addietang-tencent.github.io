@@ -48,7 +48,7 @@ import {
 // Updated Mock Data for Enterprise Spaces
 const ENTERPRISE_SPACES = [
   { id: "ent-skill-lib", name: "企业技能库", type: "公共", used: "12GB", quota: "50GB", expiry: "永久有效" },
-  { id: "ent-plugin-lib", name: "初始技能库", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
+  { id: "ent-plugin-lib", name: "初始技能包", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
 ];
 
 // Mock Data for Personal Spaces (Grouped)
@@ -446,7 +446,7 @@ export default function FileManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">网盘管理</h1>
-          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间</p>
+          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持</p>
         </div>
       </div>
 
@@ -471,7 +471,7 @@ export default function FileManagement() {
                           <span className="text-[10px] font-bold">i</span>
                         </div>
                         <p className="text-sm text-gray-700">
-                          默认开启，<span className="font-semibold text-blue-600">腾讯云存储 Agent Bucket</span> 为您赠送 <span className="font-semibold text-blue-600">50G+50G</span> 永久免费空间，用于存放企业级技能库和初始技能库
+                          默认开启，为您赠送 <span className="font-semibold text-blue-600">50G+50G</span> 永久免费空间，用于存放企业级技能库和初始技能包
                         </p>
                       </div>
                     </TableHead>
@@ -509,11 +509,11 @@ export default function FileManagement() {
             </Card>
           </div>
 
-          {/* AI 智能体私有空间 Section */}
+          {/* AI 智能体私有网盘空间 Section */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 px-1">
               <Bot className="w-5 h-5 text-purple-600" />
-              <h2 className="text-lg font-bold text-gray-900">AI 智能体私有空间</h2>
+              <h2 className="text-lg font-bold text-gray-900">AI 智能体私有网盘空间</h2>
             </div>
 
             {/* 大框包裹开通说明和功能卡片 */}
@@ -523,19 +523,19 @@ export default function FileManagement() {
                 <div className="flex items-center justify-between gap-6 mb-5">
                   <div className="flex-1 space-y-1">
                     <h3 className="text-sm font-semibold text-gray-900">
-                      AI 智能体私有空间 需要开启网盘管理服务
+                      AI 智能体私有网盘空间 需要单独开启 Agent Storage 服务
                     </h3>
                     <p className="text-sm text-gray-600">
-                      开启后，<span className="font-semibold text-blue-600">腾讯云存储 Agent Bucket</span> 为您赠送每个 OpenClaw 实例
+                      开启后，为您赠送每个 OpenClaw 实例
                       <span className="mx-1 font-semibold text-blue-600">3个月 50GB</span>
-                      免费额度，到期后可以购买资源包继续使用续租
+                      免费额度，到期后可以通过购买资源包进行续租
                     </p>
                   </div>
                   <Button 
                     className="h-10 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all whitespace-nowrap"
                     onClick={handleEnableSmh}
                   >
-                    开启网盘管理服务
+                    开启 Agent Storage 服务
                   </Button>
                 </div>
               </CardContent>
@@ -559,7 +559,7 @@ export default function FileManagement() {
                     <div className="space-y-1">
                       <h4 className="text-sm font-semibold text-gray-900">空间安全隔离</h4>
                       <p className="text-xs text-gray-600 leading-relaxed">
-                        实现不同用户 AI Agent 存储空间的完全隔离，保障数据隐私与安全
+                        实现不同 AI Agent 存储空间的完全隔离，保障数据隐私与安全
                       </p>
                     </div>
                   </div>
@@ -647,7 +647,7 @@ export default function FileManagement() {
                     <User className="w-5 h-5 text-purple-600" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-medium text-gray-500">AI 智能体私有空间</span>
+                    <span className="text-xs font-medium text-gray-500">AI 智能体私有网盘空间</span>
                     <span className="text-2xl font-bold tracking-tight text-gray-900">{stats.totalPersonalInstances}</span>
                   </div>
                 </div>
@@ -720,7 +720,7 @@ export default function FileManagement() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
           <User className="w-5 h-5 text-purple-600" />
-          <h2 className="text-lg font-bold text-gray-900">AI 智能体私有空间</h2>
+          <h2 className="text-lg font-bold text-gray-900">AI 智能体私有网盘空间</h2>
         </div>
         <Card className="shadow-sm border-gray-100 rounded-xl overflow-hidden bg-white">
           <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-white">

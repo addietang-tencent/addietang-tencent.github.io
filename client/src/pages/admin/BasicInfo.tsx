@@ -363,7 +363,7 @@ export default function BasicInfo() {
 
 
       {/* 双栏主体 */}
-      <div className="flex gap-6 items-stretch">
+        <div className="flex gap-6 items-start">
         {/* ── 左侧：分步引导 ── */}
         <div className="min-w-0 space-y-4" style={{ flex: "1 1 0" }}>
 

@@ -606,44 +606,44 @@ export default function BasicInfo() {
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
-            <div className="space-y-3 overflow-y-auto flex-1 min-h-0 pr-0.5">
+            <div className="flex flex-col justify-between flex-1 min-h-0">
               {PRODUCT_UPDATES.map((item, idx) => (
-                <div key={idx} className="flex gap-3">
+                <div key={idx} className="flex gap-2.5">
                   {/* 时间轴线 */}
                   <div className="flex flex-col items-center shrink-0">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
                         item.type === "feature"
                           ? "bg-blue-50"
                           : "bg-purple-50"
                       }`}
                     >
                       {item.type === "feature" ? (
-                        <Sparkles className="w-3 h-3 text-blue-500" />
+                        <Sparkles className="w-2.5 h-2.5 text-blue-500" />
                       ) : (
-                        <Wrench className="w-3 h-3 text-purple-500" />
+                        <Wrench className="w-2.5 h-2.5 text-purple-500" />
                       )}
                     </div>
                     {idx < PRODUCT_UPDATES.length - 1 && (
-                      <div className="w-px flex-1 bg-gray-100 mt-1.5 mb-0" style={{ minHeight: "16px" }} />
+                      <div className="w-px flex-1 bg-gray-100 mt-1 mb-0" style={{ minHeight: "8px" }} />
                     )}
                   </div>
                   {/* 内容 */}
-                  <div className="flex-1 min-w-0 pb-1">
-                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 flex-wrap mb-0.5">
                       <span
-                        className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                        className={`font-medium px-1 py-0 rounded-full ${
                           item.type === "feature"
                             ? "bg-blue-50 text-blue-600"
                             : "bg-purple-50 text-purple-600"
                         }`}
-                        style={{ fontSize: "10px" }}
+                        style={{ fontSize: "9px" }}
                       >
                         {item.type === "feature" ? "功能上线" : "体验优化"}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-1">{item.summary}</p>
+                    <p className="text-xs font-medium text-gray-800 mb-0.5 leading-tight">{item.title}</p>
+                    <p className="text-gray-400 leading-snug line-clamp-2" style={{ fontSize: "11px" }}>{item.summary}</p>
                   </div>
                 </div>
               ))}

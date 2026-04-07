@@ -603,7 +603,7 @@ export default function BasicInfo() {
           {/* 产品动态 */}
           <div
             className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", minHeight: "1125px" }}
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
             <div className="space-y-2.5">

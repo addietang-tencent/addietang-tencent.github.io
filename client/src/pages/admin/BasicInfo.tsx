@@ -541,7 +541,7 @@ export default function BasicInfo() {
         </div>
 
         {/* ── 右侧：基础信息 + API文档 + 产品动态 ── */}
-        <div className="shrink-0 flex flex-col gap-4" style={{ width: "352px" }}>
+        <div className="shrink-0 space-y-4" style={{ width: "352px" }}>
 
           {/* 平台基础信息 */}
           <div

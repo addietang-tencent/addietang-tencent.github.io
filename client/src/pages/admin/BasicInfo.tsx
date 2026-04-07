@@ -363,7 +363,7 @@ export default function BasicInfo() {
 
 
       {/* 双栏主体 */}
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-6 items-stretch">
         {/* ── 左侧：分步引导 ── */}
         <div className="min-w-0 space-y-4" style={{ flex: "1 1 0" }}>
 
@@ -540,8 +540,8 @@ export default function BasicInfo() {
           </StepCard>
         </div>
 
-        {/* ── 右侧：基础信息 + 产品动态 ── */}
-        <div className="shrink-0 space-y-4" style={{ width: "352px" }}>
+        {/* ── 右侧：基础信息 + API文档 + 产品动态 ── */}
+        <div className="shrink-0 flex flex-col gap-4" style={{ width: "352px" }}>
 
           {/* 平台基础信息 */}
           <div
@@ -602,11 +602,11 @@ export default function BasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-5"
+            className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col flex-1 min-h-0"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">产品动态</h2>
-            <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
+            <div className="space-y-3 overflow-y-auto flex-1 min-h-0 pr-0.5">
               {PRODUCT_UPDATES.map((item, idx) => (
                 <div key={idx} className="flex gap-3">
                   {/* 时间轴线 */}
@@ -643,13 +643,12 @@ export default function BasicInfo() {
                       </span>
                     </div>
                     <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>
-                    <p className="text-xs text-gray-300 mt-1">{item.date}</p>
+                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-1">{item.summary}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-gray-50">
+            <div className="mt-3 pt-2.5 border-t border-gray-50 shrink-0">
               <button className="text-xs text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1">
                 查看全部更新
                 <ChevronRight className="w-3 h-3" />

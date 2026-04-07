@@ -745,11 +745,11 @@ export default function StandardBasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col flex-1 min-h-0"
+            className="bg-white rounded-2xl border border-gray-100 p-4"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
-            <div className="space-y-2.5 overflow-y-auto flex-1 min-h-0">
+            <div className="space-y-2.5">
               {PRODUCT_UPDATES.map((item, idx) => (
                 <div key={idx} className="flex gap-3">
                   <div className="flex flex-col items-center shrink-0">
@@ -785,11 +785,12 @@ export default function StandardBasicInfo() {
                     </div>
                     <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
                     <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>
+                    <p className="text-xs text-gray-300 mt-1">{item.date}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-2.5 border-t border-gray-50 shrink-0">
+            <div className="mt-3 pt-2.5 border-t border-gray-50">
               <button className="text-xs text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1">
                 查看全部更新
                 <ChevronRight className="w-3 h-3" />

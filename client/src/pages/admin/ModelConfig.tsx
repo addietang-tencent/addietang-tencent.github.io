@@ -50,24 +50,25 @@ interface ModelRow {
   dailyLimit: number;
   provider: string; // 对应 AVAILABLE_MODELS.value
   versions: string[]; // 该厂商可用的版本列表
+  isMultimodal?: boolean; // 是否支持多模态输入
 }
 
 const MOCK_MODELS: ModelRow[] = [
   {
     id: "1", name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324",
-    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: true, isDefault: true, dailyLimit: 500000,
+    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: true, isDefault: true, isMultimodal: false, dailyLimit: 500000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
   },
   {
     id: "2", name: "腾讯云混元", version: "混元 TurboS Latest",
-    modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, isDefault: false, dailyLimit: 200000,
+    modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, isDefault: false, isMultimodal: false, dailyLimit: 200000,
     provider: "tencent-hunyuan",
     versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
   },
   {
     id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
-    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: false, isDefault: false, dailyLimit: 100000,
+    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: false, isDefault: false, isMultimodal: false, dailyLimit: 100000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
   },
@@ -148,7 +149,7 @@ export default function ModelConfig() {
     provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", modelUrl: "", dailyLimit: 100000,
   });
   const [customForm, setCustomForm] = useState({
-    provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "", dailyLimit: 100000,
+    provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "", dailyLimit: 100000, isMultimodal: false,
   });
   const [customJson, setCustomJson] = useState(DEFAULT_JSON);
 
@@ -172,7 +173,7 @@ export default function ModelConfig() {
       const name = customInputMode === "form" ? (customForm.provider || "自定义模型") : "自定义模型";
       setModels([...models, {
         id: String(Date.now()), name, version: customInputMode === "form" ? customForm.model_name : "自定义",
-        modelUrl: customForm.base_url || "", visible: true, isDefault: false, dailyLimit: customForm.dailyLimit,
+        modelUrl: customForm.base_url || "", visible: true, isDefault: false, isMultimodal: customForm.isMultimodal, dailyLimit: customForm.dailyLimit,
         provider: CUSTOM_PROVIDER_VALUE, versions: [],
       }]);
       setShowAddDialog(false);
@@ -310,6 +311,11 @@ export default function ModelConfig() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">{model.name}</p>
                       <p className="text-xs text-gray-400">{model.version}</p>
+                      {model.provider === CUSTOM_PROVIDER_VALUE && model.isMultimodal && (
+                        <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100">
+                          多模态
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -596,6 +602,16 @@ export default function ModelConfig() {
                     value={customForm.dailyLimit}
                     onChange={(e) => setCustomForm({ ...customForm, dailyLimit: Number(e.target.value) })}
                     className="bg-gray-50"
+                  />
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">多模态模型</p>
+                    <p className="text-xs text-gray-400 mt-0.5">支持图片、文件等多模态输入</p>
+                  </div>
+                  <Switch
+                    checked={customForm.isMultimodal}
+                    onCheckedChange={(v) => setCustomForm({ ...customForm, isMultimodal: v })}
                   />
                 </div>
               </>

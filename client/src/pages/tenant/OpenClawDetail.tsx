@@ -335,8 +335,9 @@ export default function OpenClawDetail() {
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("json");
   const [customJson, setCustomJson] = useState(DEFAULT_CUSTOM_JSON);
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
+  const [customMultimodal, setCustomMultimodal] = useState(false);
   // 多条模型列表，每条有唯一 id；primary 表示主模型，其余为备选模型，所有模型均为应用中状态
-  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; };
+  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; multimodal?: boolean; };
   const [appliedModels, setAppliedModels] = useState<AppliedModel[]>([
     { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "", addedAt: Date.now() },
   ]);
@@ -687,7 +688,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       const customName = customInputMode === "json"
         ? (() => { try { const parsed = JSON.parse(customJson); return parsed?.model?.name || ""; } catch { return ""; } })()
         : customForm.model_name;
-      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "", addedAt: Date.now() };
+      newEntry = { id: modelIdCounter, providerLabel: "自定义模型", versionLabel: "", primary: false, isCustom: true, customName: customName || "", addedAt: Date.now(), multimodal: customMultimodal };
     } else {
       const provider = MODEL_PROVIDERS.find(p => p.value === selectedProvider);
       const version = currentVersions.find(v => v.value === selectedModel);
@@ -1438,6 +1439,29 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </div>
                   )}
 
+                  {/* 多模态开关 */}
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-700">多模态模型</span>
+                      <span className="text-xs text-gray-400 mt-0.5">支持图片、文件等多模态输入</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={customMultimodal}
+                      onClick={() => setCustomMultimodal(v => !v)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                        customMultimodal ? "bg-blue-600" : "bg-gray-200"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform ${
+                          customMultimodal ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
                   <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
                     <a href="#" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
@@ -1490,6 +1514,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                     <span className="text-sm font-medium text-gray-800 leading-tight truncate block">自定义模型</span>
                                     {model.customName && (
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
+                                    )}
+                                    {model.multimodal && (
+                                      <span className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 w-fit">多模态</span>
                                     )}
                                   </>
                                 ) : (
@@ -1552,6 +1579,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                     <span className="text-sm font-medium text-gray-800 leading-tight truncate block">自定义模型</span>
                                     {model.customName && (
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
+                                    )}
+                                    {model.multimodal && (
+                                      <span className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 w-fit">多模态</span>
                                     )}
                                   </>
                                 ) : (

@@ -25,6 +25,8 @@ import {
   Sparkles,
   Wrench,
   Pencil,
+  BookOpen,
+  ArrowUpRight,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/mockData";
 
@@ -575,6 +577,26 @@ export default function BasicInfo() {
                   <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* API 文档 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:border-blue-200 transition-colors"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            onClick={() => window.open("/admin/api-docs", "_blank")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4 text-blue-500" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-900">API 文档</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">查阅开放接口与调用示例</p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-gray-300" />
             </div>
           </div>
 

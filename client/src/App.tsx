@@ -41,6 +41,7 @@ import OpsObservation from "./pages/admin/OpsObservation";
 import MemoryManagement from "./pages/admin/MemoryManagement";
 import FileManagement from "./pages/admin/FileManagement";
 import SkillDetailPage from "./pages/admin/SkillDetailPage";
+import ApiDocs from "./pages/admin/ApiDocs";
 import ModeAwareRoute from "./components/ModeAwareRoute";
 import StandardBasicInfo from "./pages/admin/standard/StandardBasicInfo";
 
@@ -81,6 +82,7 @@ function Router() {
       <Route path="/admin/memory-management" component={() => <AdminLayout><MemoryManagement /></AdminLayout>} />
       <Route path="/admin/file-management" component={() => <AdminLayout><FileManagement /></AdminLayout>} />
       <Route path="/admin/skill-detail/:id" component={({ params }) => <AdminLayout><SkillDetailPage skillId={params.id} /></AdminLayout>} />
+      <Route path="/admin/api-docs" component={() => <AdminLayout><ApiDocs /></AdminLayout>} />
 
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

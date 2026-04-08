@@ -46,7 +46,6 @@ import { AdminModeProvider } from "@/contexts/AdminModeContext";
 
 // 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
 const COMING_SOON_PATHS = new Set([
-  "/admin/file-management",
   "/admin/cloud-dev",
 ]);
 
@@ -74,7 +73,7 @@ const NAV_GROUPS = [
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
       { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
       { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
-      { label: "文件管理", path: "/admin/file-management", icon: FolderOpen },
+      { label: "网盘管理", path: "/admin/file-management", icon: FolderOpen },
     ],
   },
   {

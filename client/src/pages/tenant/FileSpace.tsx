@@ -667,7 +667,7 @@ export default function FileSpace({
                 <HardDrive className="w-4.5 h-4.5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 网盘空间</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 网盘管理</h3>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {spaceUsage
                     ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`

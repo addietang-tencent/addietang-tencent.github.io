@@ -5,10 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import JSZip from 'jszip';
 import { Skill } from './types';
 import { DEFAULT_CATEGORIES } from './mockData';
+import { downloadSampleSkillZip } from './downloadUtils';
 
 interface SkillUploadDialogProps {
   open: boolean;
@@ -467,7 +469,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
 
   return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[532px] max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>发布新技能</DialogTitle>
           </DialogHeader>
@@ -492,6 +494,46 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
               <p className={`text-sm mb-2 ${
                 uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'
               }`}>点击或拖拽文件上传</p>
+
+              {/* 填写要求 + 下载样例 */}
+              <div className="flex items-center justify-center gap-4 mb-3">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      填写要求
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[420px] p-4" align="center" side="bottom">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">上传要求</p>
+                    <ol className="text-sm text-gray-600 space-y-2 list-decimal pl-5">
+                      <li>ZIP 包/文件夹必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
+                      <li className="leading-relaxed">
+                        SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
+                        <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">
+{`---
+name: skill-creator
+description: this is a skill creator.
+---`}
+                        </pre>
+                      </li>
+                      <li>建议文件夹/ZIP 包名称和 name 名称保持一致</li>
+                    </ol>
+                  </PopoverContent>
+                </Popover>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); downloadSampleSkillZip(); toast.success('样例文件下载中...'); }}
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  下载样例
+                </button>
+              </div>
 
               <div className="flex gap-3 justify-center">
                 <Button
@@ -719,10 +761,10 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
                           : [...prev.categories, cat.id]
                       }));
                     }}
-                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                    className={`px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
                       formData.categories.includes(cat.id)
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-blue-600 text-white font-medium border-blue-600'
+                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                     } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {cat.name}

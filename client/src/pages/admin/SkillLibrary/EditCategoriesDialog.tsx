@@ -47,7 +47,7 @@ export default function EditCategoriesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>修改分类</DialogTitle>
           {skillName && (
@@ -61,10 +61,10 @@ export default function EditCategoriesDialog({
               <button
                 key={cat.id}
                 onClick={() => handleToggleCategory(cat.id)}
-                className={`px-3 py-1.5 text-sm rounded transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
                   selected.includes(cat.id)
-                    ? 'bg-blue-600 text-white font-medium'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white font-medium border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 {cat.name}

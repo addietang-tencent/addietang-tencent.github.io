@@ -1,4 +1,4 @@
-import { Skill, Category, OpenClawInstance } from './types';
+import { Skill, Category, OpenClawInstance, type SkillVersionRecord } from './types';
 
 // 为 GitHub Skill 创建额外的文件内容
 const githubSkillFiles: Record<string, string> = {
@@ -77,6 +77,17 @@ export const MOCK_SKILLS: Skill[] = [
       { name: 'README.md', size: 512, content: '# README\n\n## 安装\n\n```bash\nnpm install doc-summarizer\n```\n\n## 使用说明\n\n支持多种文档格式，自动提取核心要点。' },
       { name: 'docs/guide.md', size: 768, content: '# 使用指南\n\n## 快速开始\n\n1. 上传文档\n2. 选择总结模式\n3. 获取结果\n\n## 高级配置\n\n支持自定义总结长度和风格。' },
     ],
+    versionHistory: [
+      { version: '1.0.0', date: '2025-03-20', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 1024, content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...' },
+        { name: 'README.md', size: 512, content: '# README\n\n## 安装\n\n```bash\nnpm install doc-summarizer\n```\n\n## 使用说明\n\n支持多种文档格式，自动提取核心要点。' },
+        { name: 'docs/guide.md', size: 768, content: '# 使用指南\n\n## 快速开始\n\n1. 上传文档\n2. 选择总结模式\n3. 获取结果\n\n## 高级配置\n\n支持自定义总结长度和风格。' },
+      ]},
+      { version: '0.9.0', date: '2025-03-06', changeLog: '内测版本', files: [
+        { name: 'SKILL.md', size: 980, content: '# 文档总结助手（内测版）\n\n这是一个用于快速总结长文档的 Skill 内测版本...' },
+        { name: 'README.md', size: 400, content: '# README\n\n## 内测说明\n\n本版本为内测版，功能尚不完善。' },
+      ]},
+    ],
   },
   {
     id: 'skill-2',
@@ -93,6 +104,21 @@ export const MOCK_SKILLS: Skill[] = [
       { name: 'README.md', size: 512, content: '# Code Reviewer\n\n## Features\n\n- 支持 Python、JavaScript、Java 等主流语言\n- 检测代码规范和安全漏洞\n- 提供详细修改建议' },
       { name: 'config/rules.md', size: 768, content: '# 审查规则配置\n\n## 默认规则\n\n| 规则 | 说明 | 严重程度 |\n|------|------|----------|\n| no-eval | 禁止使用 eval | error |\n| no-console | 禁止 console.log | warning |' },
     ],
+    versionHistory: [
+      { version: '2.1.0', date: '2025-03-18', changeLog: '1、修改描述字段 from 自动审查代码 to 自动审查代码质量和安全问题\n2、更新SKILL文件', files: [
+        { name: 'SKILL.md', size: 1024, content: '# 代码审查工具\n\n这是一个用于代码审查的 Skill...' },
+        { name: 'README.md', size: 512, content: '# Code Reviewer\n\n## Features\n\n- 支持 Python、JavaScript、Java 等主流语言\n- 检测代码规范和安全漏洞\n- 提供详细修改建议' },
+        { name: 'config/rules.md', size: 768, content: '# 审查规则配置\n\n## 默认规则\n\n| 规则 | 说明 | 严重程度 |\n|------|------|----------|\n| no-eval | 禁止使用 eval | error |\n| no-console | 禁止 console.log | warning |' },
+      ]},
+      { version: '2.0.0', date: '2025-03-04', changeLog: '1、新增 Java 语言支持\n2、更新SKILL文件', files: [
+        { name: 'SKILL.md', size: 980, content: '# 代码审查工具 v2.0\n\n支持 Python、JavaScript、Java 三种语言的代码审查。' },
+        { name: 'README.md', size: 480, content: '# Code Reviewer v2.0\n\n## What\'s New\n\n- 新增 Java 语言支持\n- 优化检测引擎' },
+      ]},
+      { version: '1.0.0', date: '2025-02-18', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# 代码审查工具 v1.0\n\n支持 Python、JavaScript 的代码审查。' },
+        { name: 'README.md', size: 400, content: '# Code Reviewer v1.0\n\n## Features\n\n- 支持 Python、JavaScript\n- 基础代码规范检测' },
+      ]},
+    ],
   },
   {
     id: 'skill-3',
@@ -108,6 +134,21 @@ export const MOCK_SKILLS: Skill[] = [
       { name: 'SKILL.md', size: 1024, content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...' },
       { name: 'README.md', size: 512, content: '# Log Analyzer\n\n## 概述\n\n自动分析系统日志，快速定位问题根因。\n\n## 支持的日志类型\n\n- 应用日志\n- 系统日志\n- 数据库日志' },
       { name: 'examples/usage.md', size: 768, content: '# 使用示例\n\n## 基础用法\n\n```bash\nlog-analyzer --input /var/log/app.log\n```\n\n## 过滤特定错误\n\n```bash\nlog-analyzer --input /var/log/app.log --level error\n```' },
+    ],
+    versionHistory: [
+      { version: '1.5.2', date: '2025-03-15', changeLog: '1、修复日志分析异常\n2、更新SKILL文件', files: [
+        { name: 'SKILL.md', size: 1024, content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...' },
+        { name: 'README.md', size: 512, content: '# Log Analyzer\n\n## 概述\n\n自动分析系统日志，快速定位问题根因。\n\n## 支持的日志类型\n\n- 应用日志\n- 系统日志\n- 数据库日志' },
+        { name: 'examples/usage.md', size: 768, content: '# 使用示例\n\n## 基础用法\n\n```bash\nlog-analyzer --input /var/log/app.log\n```\n\n## 过滤特定错误\n\n```bash\nlog-analyzer --input /var/log/app.log --level error\n```' },
+      ]},
+      { version: '1.5.0', date: '2025-03-01', changeLog: '1、新增数据库日志支持', files: [
+        { name: 'SKILL.md', size: 980, content: '# 日志分析器 v1.5\n\n新增数据库日志支持。' },
+        { name: 'README.md', size: 480, content: '# Log Analyzer v1.5\n\n## What\'s New\n\n- 新增数据库日志支持\n- 优化分析引擎' },
+      ]},
+      { version: '1.0.0', date: '2025-02-15', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# 日志分析器 v1.0\n\n基础日志分析功能。' },
+        { name: 'README.md', size: 400, content: '# Log Analyzer v1.0\n\n## Features\n\n- 支持应用日志分析\n- 自动提取错误信息' },
+      ]},
     ],
   },
   {
@@ -157,13 +198,25 @@ The \`gh api\` command is useful for accessing data not available through other 
       { name: 'SKILL.md', size: 1024, content: githubSkillFiles['SKILL.md'] },
       { name: 'hha/ha.md', size: 512, content: githubSkillFiles['hha/ha.md'] },
     ],
+    versionHistory: [
+      { version: '1.0.0', date: '2025-03-20', changeLog: '正式版发布', files: [
+        { name: 'SKILL.md', size: 1024, content: githubSkillFiles['SKILL.md'] },
+        { name: 'hha/ha.md', size: 512, content: githubSkillFiles['hha/ha.md'] },
+      ]},
+      { version: '0.9.0', date: '2025-03-06', changeLog: '1、新增 gh api 功能\n2、更新SKILL文件', files: [
+        { name: 'SKILL.md', size: 900, content: '---\nname: github\ndescription: "Interact with GitHub using the gh CLI."\n---\n\n# GitHub Skill (v0.9)\n\nBeta version with gh api support.' },
+      ]},
+      { version: '0.8.0', date: '2025-02-20', changeLog: '内测版本', files: [
+        { name: 'SKILL.md', size: 800, content: '---\nname: github\ndescription: "GitHub CLI integration."\n---\n\n# GitHub Skill (v0.8)\n\nAlpha version.' },
+      ]},
+    ],
   },
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
   { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed' },
   { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success' },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0' },
   { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed' },
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success' },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0' },
 ];

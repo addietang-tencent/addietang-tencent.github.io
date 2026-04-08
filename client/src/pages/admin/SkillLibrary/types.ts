@@ -12,8 +12,16 @@ export const DISTRIBUTION_STATUS_MAP: Record<DistributionStatus, { label: string
   not_distributed: { label: '未下发', color: 'text-gray-500 bg-gray-50' },
   distributing:    { label: '下发中', color: 'text-blue-600 bg-blue-50' },
   success:         { label: '成功', color: 'text-green-700 bg-green-50' },
-  failed:          { label: '失败', color: 'text-red-700 bg-red-50' },
+  failed:          { label: '下发失败', color: 'text-red-700 bg-red-50' },
 };
+
+/** 版本历史记录 */
+export interface SkillVersionRecord {
+  version: string;
+  date: string; // ISO 日期字符串
+  changeLog?: string;
+  files?: Array<{ name: string; size: number; content?: string }>;
+}
 
 export interface Skill {
   id: string;
@@ -32,6 +40,8 @@ export interface Skill {
   lastDistributionTime?: Date;
   lastDistributionInstanceCount?: number;
   lastDistributionSuccessCount?: number;
+  /** 版本历史记录 */
+  versionHistory?: SkillVersionRecord[];
 }
 
 export interface Category {
@@ -58,6 +68,8 @@ export interface OpenClawInstance {
   status: InstanceStatus;
   createdAt: string; // ISO 日期字符串
   distributionStatus?: DistributionStatus;
+  /** 已下发的版本号（用于判断"待更新"状态） */
+  distributedVersion?: string;
 }
 
 export interface DistributionRecord {

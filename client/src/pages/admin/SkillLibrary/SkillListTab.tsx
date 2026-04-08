@@ -3,31 +3,49 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, Edit2 } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Edit2, MoreHorizontal, Download, Trash2, Pencil, Loader } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLocation } from 'wouter';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import EditCategoriesDialog from './EditCategoriesDialog';
+import SkillUpdateDialog from './SkillUpdateDialog';
+import DeleteSkillDialog from './DeleteSkillDialog';
 import { Skill } from './types';
 import {
   getSkillDistributionSummary,
-  hasInProgressDistribution,
   addDistributionRecord,
   updateDistributionRecord,
   createDistributionRecordId,
   type CachedDistributionRecord,
   type SkillDistributionSummary,
 } from './distributionCache';
+import { downloadSkillAsZip } from './downloadUtils';
 
 // localStorage 缓存 key
 const SKILLS_CACHE_KEY = 'skillhub_enterprise_skills_cache';
+const SKILLS_CACHE_VERSION_KEY = 'skillhub_enterprise_skills_cache_version';
+// 当 MOCK 数据结构变更时递增此版本号，强制刷新缓存
+const SKILLS_CACHE_VERSION = '3';
 
 // 从 localStorage 加载缓存的 skills
 const loadCachedSkills = (): Skill[] => {
   try {
+    const cachedVersion = localStorage.getItem(SKILLS_CACHE_VERSION_KEY);
+    // 缓存版本不匹配时清除旧缓存，使用最新 MOCK 数据
+    if (cachedVersion !== SKILLS_CACHE_VERSION) {
+      localStorage.removeItem(SKILLS_CACHE_KEY);
+      localStorage.setItem(SKILLS_CACHE_VERSION_KEY, SKILLS_CACHE_VERSION);
+      return MOCK_SKILLS;
+    }
     const cached = localStorage.getItem(SKILLS_CACHE_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
@@ -48,6 +66,7 @@ const loadCachedSkills = (): Skill[] => {
 const saveCachedSkills = (skills: Skill[]) => {
   try {
     localStorage.setItem(SKILLS_CACHE_KEY, JSON.stringify(skills));
+    localStorage.setItem(SKILLS_CACHE_VERSION_KEY, SKILLS_CACHE_VERSION);
   } catch (e) {
     console.warn('缓存 skills 失败:', e);
   }
@@ -60,7 +79,7 @@ interface SkillListTabProps {
 export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [skills, setSkills] = useState<Skill[]>(loadCachedSkills);
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
@@ -72,6 +91,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [editingSkillCategories, setEditingSkillCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updateSkillId, setUpdateSkillId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
+  const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
 
@@ -105,8 +129,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const filteredSkills = skills.filter((skill: any) => {
     const matchesSearch = skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 ||
-      skill.categories.some((catId: string) => selectedCategories.includes(catId));
+    const matchesCategory = selectedCategory === null ||
+      skill.categories.some((catId: string) => catId === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -223,44 +247,52 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
     }
   };
 
-  const getDistributionStatusDisplay = (skill: any) => {
-    const summary = distributionSummaries[skill.id];
-    if (!summary) return null;
-    if (summary.lastDistributionStatus === 'not_distributed') return null;
+  // 更新 Skill
+  const handleUpdate = (skillId: string) => {
+    setUpdateSkillId(skillId);
+    setUpdateDialogOpen(true);
+  };
 
-    const isDistributing = summary.lastDistributionStatus === 'distributing';
+  const handleSkillUpdated = (updatedSkill: Skill) => {
+    setSkills(prev => {
+      const updated = prev.map(s => s.id === updatedSkill.id ? updatedSkill : s);
+      saveCachedSkills(updated);
+      return updated;
+    });
+    setUpdateDialogOpen(false);
+    setUpdateSkillId(null);
+  };
 
-    let label: string;
-    let colorClass: string;
+  // 删除 Skill
+  const handleDelete = (skillId: string) => {
+    setDeleteSkillId(skillId);
+    setDeleteDialogOpen(true);
+  };
 
-    if (isDistributing) {
-      label = `下发中 ${summary.lastDistributionProgress}%`;
-      colorClass = 'text-blue-600 bg-blue-50';
-    } else {
-      const total = summary.lastDistributionInstanceCount || 0;
-      const success = summary.lastDistributionSuccessCount ?? total;
-      label = `已下发(${success}/${total}成功)`;
-      if (success === total) {
-        // 全部成功：绿色底绿色字
-        colorClass = 'text-green-700 bg-green-50';
-      } else {
-        // 部分成功：黄色底黄色字
-        colorClass = 'text-yellow-700 bg-yellow-50';
-      }
+  const handleSkillDeleted = () => {
+    if (!deleteSkillId) return;
+    const skillName = skills.find(s => s.id === deleteSkillId)?.name || '';
+    setSkills(prev => {
+      const updated = prev.filter(s => s.id !== deleteSkillId);
+      saveCachedSkills(updated);
+      return updated;
+    });
+    toast.success(`Skill「${skillName}」已删除`);
+    setDeleteDialogOpen(false);
+    setDeleteSkillId(null);
+  };
+
+  // 下载 Skill
+  const handleDownload = async (skill: Skill) => {
+    setDownloadingSkillId(skill.id);
+    try {
+      await downloadSkillAsZip(skill);
+      toast.success(`「${skill.name}」下载完成`);
+    } catch {
+      toast.error('下载失败，请重试');
+    } finally {
+      setDownloadingSkillId(null);
     }
-
-    return (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setDefaultTabForDetail('distribution');
-          setSelectedSkillId(skill.id);
-        }}
-        className={`inline-block px-3 py-1 rounded text-sm font-medium ${colorClass} cursor-pointer hover:opacity-80 transition-opacity`}
-      >
-        {label}
-      </button>
-    );
   };
 
   /** 检查某个 skill 是否有进行中的下发（用于禁用按钮） */
@@ -280,6 +312,21 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           setDefaultTabForDetail('overview');
         }}
         defaultTab={defaultTabForDetail}
+        onSkillUpdate={(updatedSkill) => {
+          setSkills(prev => {
+            const updated = prev.map(s => s.id === updatedSkill.id ? updatedSkill : s);
+            saveCachedSkills(updated);
+            return updated;
+          });
+        }}
+        onSkillDelete={(id) => {
+          setSkills(prev => {
+            const updated = prev.filter(s => s.id !== id);
+            saveCachedSkills(updated);
+            return updated;
+          });
+          setSelectedSkillId(null);
+        }}
       />
     );
   }
@@ -301,7 +348,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
         {/* 视图切换、发布按钮 */}
         <div className="flex items-center justify-end gap-4">
-          
+
           {/* 视图切换 */}
           <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
             <button
@@ -337,20 +384,24 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       {/* 分类筛选 */}
       <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
         <div className="flex items-center gap-2 flex-wrap flex-1">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`px-3.5 py-1.5 text-sm rounded-full border transition-colors ${
+              selectedCategory === null
+                ? 'bg-blue-600 text-white font-medium border-blue-600'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            全部
+          </button>
           {categories.map((cat: any) => (
             <button
               key={cat.id}
-              onClick={() => {
-                setSelectedCategories(prev =>
-                  prev.includes(cat.id)
-                    ? prev.filter(id => id !== cat.id)
-                    : [...prev, cat.id]
-                );
-              }}
-              className={`px-3 py-1.5 text-sm rounded transition-colors ${
-                selectedCategories.includes(cat.id)
-                  ? 'bg-blue-600 text-white font-medium'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-3.5 py-1.5 text-sm rounded-full border transition-colors ${
+                selectedCategory === cat.id
+                  ? 'bg-blue-600 text-white font-medium border-blue-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
               }`}
             >
               {cat.name}
@@ -373,165 +424,340 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       {/* 卡片视图 */}
       {viewMode === 'card' && sortedSkills.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
-          {sortedSkills.map(skill => (
-            <div
-              key={skill.id}
-              onClick={() => handleViewDetail(skill.id)}
-              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
-            >
-              {/* 名称 + 版本 */}
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-gray-900 flex-1">{skill.name}</h3>
-                <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
-                  v{skill.version}
-                </span>
-              </div>
-
-              {/* 分类 */}
-              <div className="flex flex-wrap gap-1 mb-3 items-center">
-                {skill.categories.map((catId: string) => (
-                  <span
-                    key={catId}
-                    className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                  >
-                    {getCategoryName(catId)}
-                  </span>
-                ))}
-                <TooltipProvider>
-                  <Tooltip delayDuration={1000}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingSkillId(skill.id);
-                          setEditingSkillCategories(skill.categories);
-                          setEditCategoryDialogOpen(true);
-                        }}
-                        className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                      仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              {/* 描述 */}
-              <p className="text-sm text-gray-600 line-clamp-2 mb-3">{skill.description}</p>
-
-              {/* 下发状态 */}
-              {getDistributionStatusDisplay(skill) && (
-                <div className="mb-3">
-                  {getDistributionStatusDisplay(skill)}
-                </div>
-              )}
-
-              {/* 下发按钮 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDistribute(skill.id);
-                }}
-                disabled={isDistributing(skill.id)}
-                className={`w-full cursor-pointer ${
-                  isDistributing(skill.id)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
-                title={isDistributing(skill.id) ? '有下发任务进行中，请等待完成' : ''}
+          {sortedSkills.map(skill => {
+            const summary = distributionSummaries[skill.id];
+            const distributing = isDistributing(skill.id);
+            return (
+              <div
+                key={skill.id}
+                onClick={() => handleViewDetail(skill.id)}
+                className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
               >
-                <Send className="w-4 h-4 mr-2" />
-                {isDistributing(skill.id) ? '下发中' : '下发'}
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* 列表视图 */}
-      {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="space-y-3">
-          {sortedSkills.map(skill => (
-            <div
-              key={skill.id}
-              onClick={() => handleViewDetail(skill.id)}
-              className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
-            >
-              {/* 第一行：名称 + 版本 + 分类 + 状态 + 下发按钮 */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <h3 className="font-semibold text-gray-900">{skill.name}</h3>
+                {/* 名称 + 版本 */}
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-semibold text-gray-900 flex-1">{skill.name}</h3>
                   <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
                     v{skill.version}
                   </span>
-                  <div className="flex flex-wrap gap-1 items-center">
-                    {skill.categories.map((catId: string) => (
-                      <span
-                        key={catId}
-                        className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                      >
-                        {getCategoryName(catId)}
-                      </span>
-                    ))}
-                    <TooltipProvider>
-                      <Tooltip delayDuration={1000}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingSkillId(skill.id);
-                              setEditingSkillCategories(skill.categories);
-                              setEditCategoryDialogOpen(true);
-                            }}
-                            className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors ml-1"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                          仅修改Skill的分类，近期会上线更新功能，届时可更换文件或修改Skill名称等信息。
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
                 </div>
 
-                {/* 下发状态 */}
-                {getDistributionStatusDisplay(skill) && (
-                  <div className="mx-3">
-                    {getDistributionStatusDisplay(skill)}
-                  </div>
-                )}
+                {/* 分类 */}
+                <div className="flex flex-wrap gap-1 mb-3 items-center">
+                  {skill.categories.map((catId: string) => (
+                    <span
+                      key={catId}
+                      className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                    >
+                      {getCategoryName(catId)}
+                    </span>
+                  ))}
+                  <TooltipProvider>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSkillId(skill.id);
+                            setEditingSkillCategories(skill.categories);
+                            setEditCategoryDialogOpen(true);
+                          }}
+                          className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
+                        编辑分类
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
 
-                {/* 下发按钮 */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDistribute(skill.id);
-                  }}
-                  disabled={isDistributing(skill.id)}
-                  className={`shrink-0 cursor-pointer ml-2 ${
-                    isDistributing(skill.id)
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
-                  title={isDistributing(skill.id) ? '有下发任务进行中，请等待完成' : ''}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {isDistributing(skill.id) ? '下发中' : '下发'}
-                </Button>
+                {/* 描述 */}
+                <p className="text-sm text-gray-600 line-clamp-2 mb-3">{skill.description || '-'}</p>
+
+                {/* 操作 */}
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDistribute(skill.id)}
+                    disabled={distributing}
+                    className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Send className="w-3 h-3 mr-1" />
+                    {distributing ? '下发中' : '下发'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUpdate(skill.id)}
+                    disabled={distributing}
+                    className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Pencil className="w-3 h-3 mr-1" />
+                    更新
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDownload(skill)}
+                        disabled={downloadingSkillId === skill.id}
+                      >
+                        {downloadingSkillId === skill.id
+                          ? <Loader className="w-4 h-4 mr-2 animate-spin" />
+                          : <Download className="w-4 h-4 mr-2" />}
+                        下载
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(skill.id)}
+                        disabled={distributing}
+                        className=""
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-              {/* 第二行：描述 */}
-              <p className="text-sm text-gray-600 line-clamp-2">{skill.description}</p>
-            </div>
-          ))}
+            );
+          })}
+        </div>
+      )}
+
+      {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
+      {viewMode === 'list' && sortedSkills.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="text-sm" style={{ minWidth: '1230px', width: '100%', tableLayout: 'fixed' }}>
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10"
+                    style={{ width: '180px', minWidth: '180px' }}
+                  >
+                    名称/Slug
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '400px', minWidth: '400px' }}>描述</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
+                  <th
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-10"
+                    style={{ width: '220px', minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                  >
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSkills.map(skill => {
+                  const summary = distributionSummaries[skill.id];
+                  const distributing = isDistributing(skill.id);
+                  
+                  // 下发状态显示：两行结构
+                  const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
+                  let statusLine1 = '正常'; // 第一行：状态
+                  let statusLine2 = '未下发'; // 第二行：下发进度
+                  let statusLine1Color = 'text-gray-700';
+                  let statusLine2Color = 'text-gray-400';
+                  let statusLine2Bg = ''; // 底色
+                  let statusLine2HoverBg = ''; // hover 加深底色
+                  if (summary) {
+                    if (summary.lastDistributionStatus === 'distributing') {
+                      statusLine1 = '下发中';
+                      statusLine1Color = 'text-blue-600';
+                      statusLine2 = `${summary.lastDistributionProgress || 0}%`;
+                      statusLine2Color = 'text-blue-600';
+                      statusLine2Bg = 'bg-blue-50';
+                      statusLine2HoverBg = 'hover:bg-blue-100';
+                    } else if (hasDistribution) {
+                      statusLine1 = '正常';
+                      statusLine1Color = 'text-gray-700';
+                      const total = summary.lastDistributionInstanceCount || 0;
+                      const success = summary.lastDistributionSuccessCount ?? total;
+                      statusLine2 = `已下发（${success}/${total}成功）`;
+                      if (success === total) {
+                        statusLine2Color = 'text-green-600';
+                        statusLine2Bg = 'bg-green-50';
+                        statusLine2HoverBg = 'hover:bg-green-100';
+                      } else {
+                        statusLine2Color = 'text-yellow-600';
+                        statusLine2Bg = 'bg-yellow-50';
+                        statusLine2HoverBg = 'hover:bg-yellow-100';
+                      }
+                    }
+                  }
+
+                  return (
+                    <tr
+                      key={skill.id}
+                      onClick={() => handleViewDetail(skill.id)}
+                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group"
+                    >
+                      {/* 名称 / Slug — 固定左侧 */}
+                      <td
+                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors"
+                        style={{ minWidth: '180px' }}
+                      >
+                        <div className="font-medium text-gray-900 truncate" title={skill.name}>{skill.name}</div>
+                        <div className="text-xs text-gray-400 font-mono mt-0.5 truncate" title={skill.slug}>{skill.slug}</div>
+                      </td>
+                      {/* 状态/最近下发进度 */}
+                      <td className="px-4 py-3" style={{ minWidth: '150px' }}>
+                        <div className={`text-sm font-medium ${statusLine1Color}`}>{statusLine1}</div>
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (hasDistribution) {
+                              setDefaultTabForDetail('distribution');
+                              setSelectedSkillId(skill.id);
+                            }
+                          }}
+                          className={hasDistribution
+                            ? `inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
+                            : `text-xs mt-0.5 ${statusLine2Color}`
+                          }
+                        >
+                          {statusLine2}
+                        </div>
+                      </td>
+                      {/* 版本号 */}
+                      <td className="px-4 py-3" style={{ minWidth: '80px' }}>
+                        <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                          v{skill.version}
+                        </span>
+                      </td>
+                      {/* 描述 */}
+                      <td className="px-4 py-3" style={{ minWidth: '400px' }}>
+                        <span className="text-sm text-gray-600 line-clamp-2">{skill.description || '-'}</span>
+                      </td>
+                      {/* 分类 — 最多显示 2 个标签，超出 +N，右侧编辑按钮 */}
+                      <td className="px-4 py-3" style={{ minWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {skill.categories.slice(0, 4).map((catId: string) => (
+                            <span key={catId} className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                              {getCategoryName(catId)}
+                            </span>
+                          ))}
+                          {skill.categories.length > 4 && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-block px-1.5 py-0.5 bg-white text-gray-500 text-xs rounded border border-gray-200 cursor-default hover:bg-gray-50 transition-colors">
+                                    +{skill.categories.length - 4}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-white text-gray-700 text-xs max-w-[240px] border border-gray-200 shadow-sm">
+                                  <div className="flex flex-wrap gap-1">
+                                    {skill.categories.slice(4).map((catId: string) => (
+                                      <span key={catId} className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                                        {getCategoryName(catId)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <TooltipProvider>
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingSkillId(skill.id);
+                                    setEditingSkillCategories(skill.categories);
+                                    setEditCategoryDialogOpen(true);
+                                  }}
+                                  className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
+                                编辑分类
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      </td>
+                      {/* 最后更新时间 */}
+                      <td className="px-4 py-3" style={{ minWidth: '120px' }}>
+                        <span className="text-sm text-gray-500">
+                          {skill.uploadTime.toLocaleDateString('zh-CN')}
+                        </span>
+                      </td>
+                      {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
+                      <td
+                        className="px-4 py-3 bg-white sticky right-0 z-10 group-hover:bg-gray-50 transition-colors"
+                        style={{ minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {/* 下发按钮 */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDistribute(skill.id)}
+                            disabled={distributing}
+                            className={`h-7 text-xs min-w-[62px] ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <Send className="w-3 h-3 mr-1" />
+                            {distributing ? '下发中' : '下发'}
+                          </Button>
+                          {/* 更新按钮 */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUpdate(skill.id)}
+                            disabled={distributing}
+                            className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <Pencil className="w-3 h-3 mr-1" />
+                            更新
+                          </Button>
+                          {/* 更多下拉：下载 / 删除 */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                                <MoreHorizontal className="w-3.5 h-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleDownload(skill)}
+                                disabled={downloadingSkillId === skill.id}
+                              >
+                                {downloadingSkillId === skill.id
+                                  ? <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                  : <Download className="w-4 h-4 mr-2" />}
+                                下载
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(skill.id)}
+                                disabled={distributing}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                删除
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -547,7 +773,37 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           open={distributeDialogOpen}
           onOpenChange={setDistributeDialogOpen}
           skillName={skills.find(s => s.id === distributeSkillId)?.name || ''}
+          skillVersion={skills.find(s => s.id === distributeSkillId)?.version}
           onDistributionStart={handleDistributeStart}
+        />
+      )}
+
+      {/* 更新对话框 */}
+      {updateSkillId && (() => {
+        const updateSkill = skills.find(s => s.id === updateSkillId);
+        return updateSkill ? (
+          <SkillUpdateDialog
+            open={updateDialogOpen}
+            onOpenChange={(open) => {
+              setUpdateDialogOpen(open);
+              if (!open) setUpdateSkillId(null);
+            }}
+            skill={updateSkill}
+            onConfirm={handleSkillUpdated}
+          />
+        ) : null;
+      })()}
+
+      {/* 删除确认对话框 */}
+      {deleteSkillId && (
+        <DeleteSkillDialog
+          open={deleteDialogOpen}
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) setDeleteSkillId(null);
+          }}
+          skillName={skills.find(s => s.id === deleteSkillId)?.name || ''}
+          onConfirm={handleSkillDeleted}
         />
       )}
 

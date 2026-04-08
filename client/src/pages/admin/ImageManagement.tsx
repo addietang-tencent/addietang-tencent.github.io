@@ -1,25 +1,23 @@
 /**
  * ImageManagement - 管控端镜像管理页
- * 用户创建 OpenClaw 时启动的云服务器镜像管理
- * 企业可使用自定义镜像，并随时导入最新版本
+ * 管理智能体运行环境镜像，支持公共镜像（官方维护）和自定义镜像
+ * 生效镜像将作为新建和一键升级的目标版本
  */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown } from "lucide-react";
+import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown, ShieldCheck, UserCog } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
 const PUBLIC_IMAGES = [
   { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", group: "public" },
+  { id: "img-clawpro-base-v3.28", name: "ClawPro 官方基础镜像 v3.28", group: "public" },
 ];
 
 const CUSTOM_IMAGES = [
@@ -32,14 +30,59 @@ const CUSTOM_IMAGES = [
 
 const ALL_IMPORTABLE = [...PUBLIC_IMAGES, ...CUSTOM_IMAGES];
 
-const MOCK_IMAGES = [
-  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", status: "available", disk: "系统盘 150GiB", os: "CentOS 7.9 64位", createTime: "2025-12-01", active: true },
-  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", disk: "系统盘 100GiB", os: "CentOS 7.9 64位", createTime: "2025-09-15", active: false },
-  { id: "img-cust-i9j0k1l2", name: "openclaw-prod-2025Q4", status: "creating", disk: "系统盘 200GiB", os: "Ubuntu 22.04 64位", createTime: "2026-03-01", active: false },
+// 镜像类型：public = 公共镜像（官方维护）, custom = 自定义镜像（用户维护）
+type ImageType = "public" | "custom";
+
+interface ImageRow {
+  id: string;
+  name: string;
+  status: string;
+  type: ImageType;
+  openclawVersion: string;
+  os: string;
+  createTime: string;
+  active: boolean;
+}
+
+const MOCK_IMAGES: ImageRow[] = [
+  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", status: "available", type: "public", openclawVersion: "OpenClaw 2026.3.28", os: "CentOS 7.9 64位", createTime: "2025-12-01 10:30:00", active: true },
+  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", type: "custom", openclawVersion: "", os: "CentOS 7.9 64位", createTime: "2025-09-15 14:22:35", active: false },
+  { id: "img-cust-i9j0k1l2", name: "openclaw-prod-2025Q4", status: "creating", type: "custom", openclawVersion: "", os: "Ubuntu 22.04 64位", createTime: "2026-03-01 09:15:42", active: false },
 ];
 
+function ImageTypeBadge({ type }: { type: ImageType }) {
+  if (type === "public") {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 cursor-default">
+            <ShieldCheck className="w-3 h-3" />
+            公共镜像
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+          由官方维护，自动跟进平台程序版本更新，无需用户自行维护
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600 border border-orange-100 cursor-default">
+          <UserCog className="w-3 h-3" />
+          自定义镜像
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+        由用户自行制作和维护，官方不负责版本更新，适用于有特殊运行环境需求的场景
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function ImageManagement() {
-  const [images, setImages] = useState(MOCK_IMAGES);
+  const [images, setImages] = useState<ImageRow[]>(MOCK_IMAGES);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,7 +92,6 @@ export default function ImageManagement() {
 
   const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
 
-  // 当 Dialog 关闭时，同时关闭下拉列表
   const handleDialogOpenChange = (open: boolean) => {
     setShowImportDialog(open);
     if (!open) {
@@ -59,14 +101,12 @@ export default function ImageManagement() {
     }
   };
 
-  // 点击下拉列表外部关闭下拉列表
   const handleClickOutsideImageList = (e: React.MouseEvent) => {
     if (imageListRef.current && !imageListRef.current.contains(e.target as Node)) {
       setShowImageList(false);
     }
   };
 
-  // 根据搜索词过滤镜像
   const filteredImages = ALL_IMPORTABLE.filter((img) =>
     img.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     img.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -83,18 +123,26 @@ export default function ImageManagement() {
     }, 1200);
   };
 
+  const formatNow = () => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
   const handleImport = () => {
     if (!selectedImageId) { toast.error("请选择要导入的镜像"); return; }
     const alreadyExists = images.find((img) => img.id === selectedImageId);
     if (alreadyExists) { toast.error("该镜像已在列表中"); return; }
     const img = ALL_IMPORTABLE.find((i) => i.id === selectedImageId)!;
+    const isPublic = img.group === "public";
     setImages([...images, {
       id: img.id,
       name: img.name,
       status: "available",
-      disk: "系统盘 150GiB",
+      type: isPublic ? "public" : "custom",
+      openclawVersion: isPublic ? "OpenClaw 2026.4.2" : "",
       os: "CentOS 7.9 64位",
-      createTime: new Date().toISOString().slice(0, 10),
+      createTime: formatNow(),
       active: false,
     }]);
     setShowImportDialog(false);
@@ -105,20 +153,24 @@ export default function ImageManagement() {
 
   return (
     <>
-      <div className="page-enter max-w-5xl">
+      <div className="page-enter max-w-[1100px]">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">镜像管理</h1>
           <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-            管理用户创建 OpenClaw 时所使用的云服务器镜像。企业可导入自定义镜像以满足特定的运行环境需求；当镜像有版本更新时，也可随时导入最新镜像并切换生效，确保用户始终使用最新版本的运行环境。
+            管理智能体运行环境镜像。公共镜像由官方持续维护更新；企业也可导入自定义镜像以满足特定运行环境需求。
           </p>
         </div>
 
         {/* 提示说明 */}
         <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-600 leading-relaxed">
-            同一时间只有一个镜像处于「生效」状态。切换生效镜像后，新创建的 OpenClaw 将使用该镜像启动云服务器；已运行中的 OpenClaw 不受影响。
-          </p>
+          <div className="text-xs text-blue-600 leading-relaxed space-y-1">
+            <p>同一时间只有一个镜像处于「生效」状态。生效镜像将作为<span className="font-semibold">新建</span>和<span className="font-semibold">一键升级</span>的目标版本：</p>
+            <ul className="list-disc list-inside space-y-0.5 ml-1">
+              <li>新创建的智能体将直接使用生效镜像启动</li>
+              <li>已运行的智能体可通过「一键升级」切换到生效镜像版本，升级时保留原有智能体配置</li>
+            </ul>
+          </div>
         </div>
 
         <div
@@ -140,26 +192,41 @@ export default function ImageManagement() {
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">镜像 ID / 名称</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">状态</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">硬盘</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作系统</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">导入时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">镜像类型</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">状态</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 tracking-wide">
+                  <div className="flex items-center gap-1">
+                    智能体版本
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default inline-flex">
+                          <Info className="w-3 h-3 text-gray-400" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[220px] text-xs leading-relaxed">
+                        镜像中内置的智能体版本，自定义镜像暂不支持自动识别
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作系统</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">导入时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {images.map((img) => (
                 <tr key={img.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">{img.name}</p>
-                        <p className="text-xs text-gray-400 font-mono">{img.id}</p>
-                      </div>
-
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{img.name}</p>
+                      <p className="text-xs text-gray-400 font-mono">{img.id}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4">
+                    <ImageTypeBadge type={img.type} />
+                  </td>
+                  <td className="px-4 py-4">
                     {img.status === "available" ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -172,10 +239,33 @@ export default function ImageManagement() {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{img.disk}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{img.os}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{img.createTime}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4">
+                    {img.openclawVersion ? (
+                      <div className="leading-tight">
+                        <span className="text-sm text-gray-700">OpenClaw</span>
+                        <br />
+                        <span className="text-xs text-gray-500 font-mono">{img.openclawVersion.replace("OpenClaw ", "")}</span>
+                      </div>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-gray-400 cursor-default">未识别</span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[200px] text-xs leading-relaxed">
+                          自定义镜像暂不支持自动识别智能体版本信息
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-gray-600">{img.os}</td>
+                  <td className="px-4 py-4">
+                    <div className="text-sm text-gray-500 leading-tight">
+                      <span className="whitespace-nowrap">{img.createTime.split(" ")[0]}</span>
+                      <br />
+                      <span className="text-xs text-gray-400 whitespace-nowrap">{img.createTime.split(" ")[1]}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">设为生效</span>
@@ -184,7 +274,7 @@ export default function ImageManagement() {
                           onCheckedChange={(v) => {
                             if (!v) return;
                             setImages(images.map((i) => ({ ...i, active: i.id === img.id })));
-                            toast.success(`镜像「${img.name}」已设为生效，新创建的 OpenClaw 将使用此镜像`);
+                            toast.success(`镜像「${img.name}」已设为生效，将作为新建和一键升级的目标版本`);
                           }}
                         />
                       </div>
@@ -247,7 +337,6 @@ export default function ImageManagement() {
             <div className="space-y-2">
               <Label>选择镜像</Label>
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                {/* 选择框 */}
                 <button
                   onClick={() => setShowImageList(!showImageList)}
                   className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
@@ -265,12 +354,10 @@ export default function ImageManagement() {
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
                 </button>
               </div>
-              <p className="text-xs text-gray-400">镜像大小不允许超过50M</p>
+              <p className="text-xs text-gray-400">镜像大小不允许超过50GiB</p>
 
-              {/* 展开的镜像列表 */}
               {showImageList && (
                 <div ref={imageListRef} className="border border-gray-200 rounded-lg bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                  {/* 搜索框 */}
                   <div className="relative p-2 border-b border-gray-100">
                     <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -284,12 +371,13 @@ export default function ImageManagement() {
                     />
                   </div>
 
-                  {/* 镜像列表 */}
                   <div className="max-h-64 overflow-y-auto">
                     {filteredPublic.length > 0 && (
                       <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                          腾讯云镜像
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0 flex items-center gap-1.5">
+                          <ShieldCheck className="w-3 h-3 text-blue-400" />
+                          公共镜像
+                          <span className="text-gray-400 font-normal">（官方维护）</span>
                         </div>
                         {filteredPublic.map((img) => (
                           <div
@@ -315,8 +403,10 @@ export default function ImageManagement() {
 
                     {filteredCustom.length > 0 && (
                       <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0 flex items-center gap-1.5">
+                          <UserCog className="w-3 h-3 text-orange-400" />
                           自定义镜像
+                          <span className="text-gray-400 font-normal">（用户维护）</span>
                         </div>
                         {filteredCustom.map((img) => (
                           <div

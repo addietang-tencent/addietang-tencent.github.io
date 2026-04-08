@@ -2,9 +2,13 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader } from 'lucide-react';
+import { toast } from 'sonner';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
+import SkillUpdateDialog from './SkillUpdateDialog';
+import DeleteSkillDialog from './DeleteSkillDialog';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,6 +33,7 @@ import {
   createDistributionRecordId,
   type CachedDistributionRecord,
 } from './distributionCache';
+import { downloadSkillAsZip } from './downloadUtils';
 
 // 懒加载 react-syntax-highlighter 减少首屏包体积
 const SyntaxHighlighter = lazy(() =>
@@ -69,6 +74,8 @@ interface SkillDetailProps {
   onBack: () => void;
   skills?: any[];
   defaultTab?: string;
+  onSkillUpdate?: (updatedSkill: Skill) => void;
+  onSkillDelete?: (skillId: string) => void;
 }
 
 // hljs 亮色主题样式
@@ -104,8 +111,11 @@ const hljsStyle: Record<string, React.CSSProperties> = {
   'hljs-strong': { fontWeight: 'bold' },
 };
 
-export default function SkillDetail({ skillId, onBack, skills, defaultTab }: SkillDetailProps) {
+export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
@@ -165,9 +175,33 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     }
   }, [skill?.versions, selectedVersion]);
   
+  // 版本切换时重置文件展开状态
+  useEffect(() => {
+    if (selectedVersion) {
+      setExpandedFile('SKILL.md');
+      setExpandedDirs(new Set());
+    }
+  }, [selectedVersion]);
+
+  // 根据选中版本获取文件列表（如选中的是非最新版本，则从 versionHistory 中取）
+  const currentVersionFiles = useMemo(() => {
+    if (!skill) return [];
+    // 如果选中的版本是最新版本（versions[0]）或者没有选中版本，使用 skill.files
+    if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
+      return skill.files || [];
+    }
+    // 从 versionHistory 中查找对应版本的文件列表
+    const versionRecord = skill.versionHistory?.find(v => v.version === selectedVersion);
+    if (versionRecord?.files && versionRecord.files.length > 0) {
+      return versionRecord.files;
+    }
+    // 如果历史版本没有文件记录，回退到当前文件
+    return skill.files || [];
+  }, [skill, selectedVersion]);
+
   // 剥离唯一顶层文件夹：如果所有文件都在同一个顶层目录下，则去掉该前缀
   const { processedFiles, strippedPrefix } = useMemo(() => {
-    const rawFiles = skill?.files || [];
+    const rawFiles = currentVersionFiles;
     if (rawFiles.length === 0) return { processedFiles: rawFiles, strippedPrefix: '' };
     
     const topDirs = new Set<string>();
@@ -189,7 +223,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
       };
     }
     return { processedFiles: rawFiles, strippedPrefix: '' };
-  }, [skill?.files]);
+  }, [currentVersionFiles]);
 
   // 可展示的文件扩展名（文本类文件）
   const VIEWABLE_EXTENSIONS = ['.md', '.xml', '.json', '.txt', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.sh', '.bat', '.py', '.js', '.ts', '.css', '.html', '.htm', '.svg', '.env', '.gitignore', '.dockerfile'];
@@ -334,13 +368,25 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
   };
 
   const getFileContent = (fileName: string): string => {
-    if (fileName === 'SKILL.md') return skill?.content || '';
+    // 使用当前选中版本的文件列表（而不是始终用最新版本的 skill.files）
+    const versionFiles = currentVersionFiles;
+
+    // 对 SKILL.md，也优先从当前版本的文件列表中取
+    if (fileName === 'SKILL.md' || fileName.toLowerCase() === 'skill.md') {
+      const skillMdFile = versionFiles.find(f => f.name.toLowerCase() === 'skill.md' || f.name.toLowerCase().endsWith('/skill.md'));
+      if (skillMdFile?.content) return skillMdFile.content;
+      // 如果当前版本是最新版本，回退到 skill.content
+      if (!selectedVersion || selectedVersion === skill?.versions?.[0]) {
+        return skill?.content || '';
+      }
+      return '';
+    }
     // 如果剥离了顶层文件夹，查找时还原为原始路径
     const originalName = strippedPrefix ? strippedPrefix + fileName : fileName;
-    const file = findFileInTree(skill?.files || [], originalName);
+    const file = findFileInTree(versionFiles, originalName);
     if (file?.content) return file.content;
     // 也尝试直接用处理后的路径查找
-    const file2 = findFileInTree(skill?.files || [], fileName);
+    const file2 = findFileInTree(versionFiles, fileName);
     if (file2?.content) return file2.content;
     return '';
   };
@@ -445,6 +491,41 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
     simulateDistribution(recordId, failedInstances.length);
   };
 
+  // 下载 Skill
+  const handleDownload = async () => {
+    if (!skill) return;
+    setIsDownloading(true);
+    try {
+      await downloadSkillAsZip(skill);
+      toast.success(`「${skill.name}」下载完成`);
+    } catch {
+      toast.error('下载失败，请重试');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // 更新 Skill 回调
+  const handleSkillUpdate = (updatedSkill: Skill) => {
+    if (onSkillUpdate) {
+      onSkillUpdate(updatedSkill);
+    }
+    // 重置版本选择，让 useEffect 自动选中最新版本
+    setSelectedVersion('');
+    setUpdateDialogOpen(false);
+  };
+
+  // 删除 Skill 回调
+  const handleSkillDelete = () => {
+    if (!skill) return;
+    if (onSkillDelete) {
+      onSkillDelete(skill.id);
+    }
+    toast.success(`Skill「${skill.name}」已删除`);
+    setDeleteDialogOpen(false);
+    onBack();
+  };
+
   if (!skill) {
     return (
       <div className="text-center py-12">
@@ -483,7 +564,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
       {/* 技能基本信息 */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
             <p className="text-sm text-gray-500 mb-3">slug: {skill.slug}</p>
@@ -501,18 +582,63 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                   </span>
                 ))}
               </div>
-              {skill.description && (
-                <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
-              )}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-gray-500">上传时间</p>
-            <p className="text-sm font-semibold text-gray-900">
-              {skill.uploadTime.toLocaleDateString('zh-CN')}
-            </p>
+
+          {/* F-06 操作按钮 */}
+          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+            <TooltipProvider>
+              {/* 更新按钮 */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setUpdateDialogOpen(true)}
+                      disabled={hasInProgress}
+                      className={hasInProgress ? 'opacity-50 cursor-not-allowed' : ''}
+                    >
+                      <Pencil className="w-4 h-4 mr-1.5" />
+                      更新
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {hasInProgress && (
+                  <TooltipContent className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">仅支持状态为正常的 Skill</TooltipContent>
+                )}
+              </Tooltip>
+
+              {/* 删除按钮 */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      disabled={hasInProgress}
+                      className={hasInProgress ? 'opacity-50 cursor-not-allowed' : ''}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1.5" />
+                      删除
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {hasInProgress && (
+                  <TooltipContent className="bg-gray-900 text-white text-xs">仅支持状态为正常的 Skill</TooltipContent>
+                )}
+              </Tooltip>
+
+              {/* 下载按钮 */}
+              <Button variant="outline" onClick={handleDownload} disabled={isDownloading}>
+                {isDownloading ? <Loader className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
+                下载
+              </Button>
+            </TooltipProvider>
           </div>
         </div>
+        {skill.description && (
+          <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
+        )}
       </div>
 
       {/* Tab 页面 */}
@@ -542,7 +668,16 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-4 p-0">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <MDXRenderer content={skill.content || ''} />
+              <MDXRenderer content={(() => {
+                // 如果选中的是最新版本或未选中，用 skill.content
+                if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
+                  return skill.content || '';
+                }
+                // 否则从当前版本文件列表中取 SKILL.md 内容
+                const versionFiles = currentVersionFiles;
+                const skillMdFile = versionFiles.find(f => f.name.toLowerCase() === 'skill.md' || f.name.toLowerCase().endsWith('/skill.md'));
+                return skillMdFile?.content || skill.content || '';
+              })()} />
             </div>
           </TabsContent>
 
@@ -558,32 +693,50 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                     {skill.versions?.map((ver: string, idx: number) => {
                       const isLatest = idx === 0;
                       const isSelected = selectedVersion === ver;
-                      // 根据版本索引生成模拟日期（从 uploadTime 往前推）
-                      const versionDate = new Date(skill.uploadTime);
-                      versionDate.setDate(versionDate.getDate() - idx * 14);
-                      const dateStr = `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
+                      // 从版本历史中获取详细信息
+                      const versionRecord = skill.versionHistory?.find(v => v.version === ver);
+                      const dateStr = versionRecord?.date || (() => {
+                        const versionDate = new Date(skill.uploadTime);
+                        versionDate.setDate(versionDate.getDate() - idx * 14);
+                        return `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
+                      })();
                       return (
-                        <button
-                          key={ver}
-                          onClick={() => setSelectedVersion(ver)}
-                          className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
-                            isSelected
-                              ? 'bg-blue-50 border-l-[3px] border-l-blue-500'
-                              : 'hover:bg-gray-50 cursor-pointer'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-sm font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
-                              {ver}
-                            </span>
-                            {isLatest && (
-                              <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
-                                最新
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-gray-400 mt-0.5">{dateStr}</p>
-                        </button>
+                        <TooltipProvider key={ver}>
+                          <Tooltip delayDuration={1000}>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => setSelectedVersion(ver)}
+                                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                                  isSelected
+                                    ? 'bg-blue-50'
+                                    : 'hover:bg-gray-50 cursor-pointer'
+                                }`}
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                                    {ver}
+                                  </span>
+                                  {isLatest && (
+                                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                                      最新
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <p className="text-[10px] text-gray-400">{dateStr}</p>
+                                  {/* ℹ️ 图标点击展示更新信息 */}
+                                  <span className="ml-auto cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                                    <Info className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                                  </span>
+                                </div>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="bg-white text-gray-700 text-xs max-w-[260px] p-3 border border-gray-200 shadow-sm">
+                              <p className="font-medium mb-1.5 text-gray-900">更新说明</p>
+                              <p className="whitespace-pre-line leading-relaxed">{versionRecord?.changeLog || '暂无更新说明'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       );
                     })}
                   </div>
@@ -591,8 +744,16 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
 
                 {/* 中列：文件列表 */}
                 <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                  <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center justify-between">
                     <p className="text-xs font-medium text-gray-900">{selectedVersion || skill.version}</p>
+                    <button
+                      onClick={handleDownload}
+                      disabled={isDownloading}
+                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      title="下载此版本 ZIP"
+                    >
+                      {isDownloading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                    </button>
                   </div>
                   <div className="flex-1 overflow-y-auto">
                     {renderFileTree(processedFiles)}
@@ -737,7 +898,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">
-                              #{distributionRecords.length - idx} · {new Date(record.timestamp).toLocaleString('zh-CN')}
+                              #{idx + 1} · v{skill.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -796,7 +957,26 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab }: Ski
         open={distributeDialogOpen}
         onOpenChange={setDistributeDialogOpen}
         skillName={skill.name}
+        skillVersion={skill.version}
         onDistributionStart={handleDistributionStart}
+      />
+
+      {/* 更新对话框 */}
+      {skill && (
+        <SkillUpdateDialog
+          open={updateDialogOpen}
+          onOpenChange={setUpdateDialogOpen}
+          skill={skill}
+          onConfirm={(updatedSkill) => handleSkillUpdate(updatedSkill)}
+        />
+      )}
+
+      {/* 删除确认对话框 */}
+      <DeleteSkillDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        skillName={skill.name}
+        onConfirm={handleSkillDelete}
       />
 
       {/* 分发详情对话框 */}

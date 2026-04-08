@@ -354,9 +354,6 @@ export default function FileManagement() {
               </div>
               <div className="h-8 w-px bg-gray-200"></div>
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
                 <span>共计 <span className="font-semibold text-gray-900 tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
               </div>
             </div>
@@ -425,7 +422,7 @@ export default function FileManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
                             <Bot className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex flex-col min-w-0">
@@ -435,15 +432,10 @@ export default function FileManagement() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white shrink-0 font-semibold text-xs">
-                            {item.avatar}
-                          </div>
-                          <span className="text-sm text-gray-900 truncate">{item.creator}</span>
-                        </div>
+                        <span className="text-sm text-gray-900 truncate">{item.creator}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-600">
+                        <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
                           {item.type}
                         </span>
                       </td>
@@ -481,8 +473,8 @@ export default function FileManagement() {
       <Dialog open={disableDialogOpen} onOpenChange={setDisableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-amber-600">
-              <AlertTriangle className="w-5 h-5" />
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <AlertTriangle className="w-5 h-5 text-gray-500" />
               确认关闭网盘
             </DialogTitle>
           </DialogHeader>
@@ -490,10 +482,10 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要关闭 <span className="font-bold text-gray-900">"{instanceToDisable?.name}"</span> 的网盘功能吗？
             </p>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div className="text-xs text-amber-800 space-y-1">
+                <AlertTriangle className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
+                <div className="text-xs text-gray-700 space-y-1">
                   <p className="font-semibold">关闭网盘后：</p>
                   <ul className="list-disc list-inside space-y-0.5 ml-1">
                     <li>该实例将无法访问网盘中的文件</li>
@@ -514,7 +506,7 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmDisable}
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
             >
               确认关闭
             </Button>
@@ -527,17 +519,17 @@ export default function FileManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-5 h-5 text-purple-600" />
+              <Bot className="w-5 h-5 text-gray-500" />
               批量启用网盘服务
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-gray-700">
-              您确定要为选中的 <span className="font-semibold text-purple-600 tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
+              您确定要为选中的 <span className="font-semibold text-gray-900 tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
             </p>
-            <div className="flex items-start gap-2.5 bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
-              <Bot className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-purple-800 space-y-1 leading-relaxed">
+            <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <Bot className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
+              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>每个实例将获得 3个月50GB 免费额度</li>
@@ -557,8 +549,7 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmBatchEnable}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white btn-primary-glow"
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
             >
               确认启用
             </Button>
@@ -571,7 +562,7 @@ export default function FileManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-5 h-5 text-purple-600" />
+              <Bot className="w-5 h-5 text-gray-500" />
               启用网盘服务
             </DialogTitle>
           </DialogHeader>
@@ -579,9 +570,9 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为 <span className="font-bold text-gray-900">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
             </p>
-            <div className="flex items-start gap-2.5 bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
-              <Bot className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
-              <div className="text-xs text-purple-800 space-y-1 leading-relaxed">
+            <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <Bot className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
+              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>该实例将获得 3个月50GB 免费额度</li>
@@ -601,8 +592,7 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmSingleEnable}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white btn-primary-glow"
+              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
             >
               确认启用
             </Button>

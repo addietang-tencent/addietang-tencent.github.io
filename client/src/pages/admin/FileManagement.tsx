@@ -17,7 +17,8 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
-  Info
+  Info,
+  ChevronLeft
 } from "lucide-react";
 
 // Updated Mock Data for Enterprise Spaces
@@ -36,6 +37,16 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-6", instanceId: "ins-s03n7heo", instanceName: "Leo的项目助手", creator: "leo@acompany.com", avatar: "L", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-7", instanceId: "ins-x11m9zzz", instanceName: "Leo的文档库", creator: "leo@acompany.com", avatar: "L", type: "个人", used: "15GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-8", instanceId: "ins-x11m9zzz", instanceName: "Leo的文档库", creator: "carol@acompany.com", avatar: "C", type: "个人", used: "12GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-9", instanceId: "ins-p99k3mnn", instanceName: "Emma的数据分析", creator: "emma@acompany.com", avatar: "E", type: "个人", used: "7GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-10", instanceId: "ins-q22l4roo", instanceName: "David的代码助手", creator: "david@acompany.com", avatar: "D", type: "个人", used: "9GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-11", instanceId: "ins-r33m5spp", instanceName: "Sarah的研究工具", creator: "sarah@acompany.com", avatar: "S", type: "个人", used: "4GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-12", instanceId: "ins-t44n6tqq", instanceName: "Jack的文案助手", creator: "jack@acompany.com", avatar: "J", type: "个人", used: "6GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-13", instanceId: "ins-u55o7urr", instanceName: "Lisa的设计工具", creator: "lisa@acompany.com", avatar: "L", type: "个人", used: "11GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-14", instanceId: "ins-v66p8vss", instanceName: "Tom的营销助手", creator: "tom@acompany.com", avatar: "T", type: "个人", used: "8GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-15", instanceId: "ins-w77q9wtt", instanceName: "Amy的翻译工具", creator: "amy@acompany.com", avatar: "A", type: "个人", used: "3GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-16", instanceId: "ins-x88r0xuu", instanceName: "Mike的产品分析", creator: "mike@acompany.com", avatar: "M", type: "个人", used: "13GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-17", instanceId: "ins-y99s1yvv", instanceName: "Kate的客服助手", creator: "kate@acompany.com", avatar: "K", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-18", instanceId: "ins-z00t2zww", instanceName: "Ryan的技术文档", creator: "ryan@acompany.com", avatar: "R", type: "个人", used: "10GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
 ];
 
 const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
@@ -68,6 +79,8 @@ export default function FileManagement() {
   const [batchEnableDialogOpen, setBatchEnableDialogOpen] = useState(false);
   const [singleEnableDialogOpen, setSingleEnableDialogOpen] = useState(false);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleToggleInstance = (instanceId: string, instanceName: string, currentEnabled: boolean) => {
     if (currentEnabled) {
@@ -197,6 +210,21 @@ export default function FileManagement() {
       item.instanceId.toLowerCase().includes(query) ||
       item.creator.toLowerCase().includes(query)
     );
+  }, [searchQuery]);
+
+  // 计算总页数
+  const totalPages = Math.ceil(filteredPersonalSpaces.length / itemsPerPage);
+
+  // 获取当前页数据
+  const paginatedPersonalSpaces = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredPersonalSpaces.slice(startIndex, endIndex);
+  }, [filteredPersonalSpaces, currentPage]);
+
+  // 当搜索条件变化时重置到第一页
+  React.useEffect(() => {
+    setCurrentPage(1);
   }, [searchQuery]);
 
   return (
@@ -392,7 +420,7 @@ export default function FileManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredPersonalSpaces.length === 0 ? (
+              {paginatedPersonalSpaces.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
@@ -403,7 +431,7 @@ export default function FileManagement() {
                   </td>
                 </tr>
               ) : (
-                filteredPersonalSpaces.map((item) => {
+                paginatedPersonalSpaces.map((item) => {
                   const isEnabled = instancesEnabled[item.id];
                   const isSelected = selectedInstances.has(item.id);
                   return (
@@ -466,6 +494,76 @@ export default function FileManagement() {
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
+              <div className="text-sm text-gray-500">
+                显示 <span className="font-medium text-gray-900">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="font-medium text-gray-900">{Math.min(currentPage * itemsPerPage, filteredPersonalSpaces.length)}</span> 条，
+                共 <span className="font-medium text-gray-900">{filteredPersonalSpaces.length}</span> 条记录
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                    // 显示逻辑：始终显示第1页、最后一页、当前页及其前后各1页
+                    const showPage = 
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 1 && page <= currentPage + 1);
+                    
+                    const showEllipsisBefore = page === currentPage - 1 && currentPage > 3;
+                    const showEllipsisAfter = page === currentPage + 1 && currentPage < totalPages - 2;
+
+                    if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
+                      return null;
+                    }
+
+                    if (showEllipsisBefore || showEllipsisAfter) {
+                      return (
+                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className={`h-8 w-8 p-0 ${
+                          currentPage === page 
+                            ? "bg-gray-900 text-white hover:bg-gray-800" 
+                            : "hover:bg-gray-50"
+                        }`}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -474,7 +572,7 @@ export default function FileManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <AlertTriangle className="w-5 h-5 text-gray-500" />
+              <AlertTriangle className="w-4 h-4 text-gray-500" />
               确认关闭网盘
             </DialogTitle>
           </DialogHeader>
@@ -519,7 +617,7 @@ export default function FileManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-5 h-5 text-gray-500" />
+              <Bot className="w-4 h-4 text-gray-500" />
               批量启用网盘服务
             </DialogTitle>
           </DialogHeader>
@@ -562,7 +660,7 @@ export default function FileManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-5 h-5 text-gray-500" />
+              <Bot className="w-4 h-4 text-gray-500" />
               启用网盘服务
             </DialogTitle>
           </DialogHeader>

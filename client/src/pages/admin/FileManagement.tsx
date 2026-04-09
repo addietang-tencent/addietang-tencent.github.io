@@ -492,7 +492,7 @@ export default function FileManagement() {
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
                       disabled={disabledInstancesCount === 0}
-                      className={disabledInstancesCount === 0 ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
+                      className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
                       aria-label="全选"
                     />
                     <span className={disabledInstancesCount === 0 ? "text-gray-400" : ""}>全选</span>
@@ -544,7 +544,7 @@ export default function FileManagement() {
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
                           disabled={isEnabled}
-                          className={isEnabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
+                          className={isEnabled ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
@@ -616,67 +616,37 @@ export default function FileManagement() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
               <div className="text-sm text-gray-500">
-                显示 <span className="font-medium text-gray-900">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="font-medium text-gray-900">{Math.min(currentPage * itemsPerPage, filteredPersonalSpaces.length)}</span> 条，
-                共 <span className="font-medium text-gray-900">{filteredPersonalSpaces.length}</span> 条记录
+                显示 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredPersonalSpaces.length)} 条，共 {filteredPersonalSpaces.length} 条记录
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                    // 显示逻辑：始终显示第1页、最后一页、当前页及其前后各1页
-                    const showPage = 
-                      page === 1 || 
-                      page === totalPages || 
-                      (page >= currentPage - 1 && page <= currentPage + 1);
-                    
-                    const showEllipsisBefore = page === currentPage - 1 && currentPage > 3;
-                    const showEllipsisAfter = page === currentPage + 1 && currentPage < totalPages - 2;
-
-                    if (!showPage && !showEllipsisBefore && !showEllipsisAfter) {
-                      return null;
-                    }
-
-                    if (showEllipsisBefore || showEllipsisAfter) {
-                      return (
-                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className={`h-8 w-8 p-0 ${
-                          currentPage === page 
-                            ? "bg-gray-900 text-white hover:bg-gray-800" 
-                            : "hover:bg-gray-50"
-                        }`}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
-                </div>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-8 w-8 p-0 rounded-full transition-all ${
+                      currentPage === page
+                        ? "bg-gray-900 text-white hover:bg-gray-800"
+                        : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </Button>
+                ))}
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
@@ -690,8 +660,7 @@ export default function FileManagement() {
       <Dialog open={disableDialogOpen} onOpenChange={setDisableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <AlertTriangle className="w-4 h-4 text-gray-500" />
+            <DialogTitle className="text-gray-900">
               确认关闭网盘
             </DialogTitle>
           </DialogHeader>
@@ -700,14 +669,11 @@ export default function FileManagement() {
               您确定要关闭 <span className="font-bold text-gray-900">"{instanceToDisable?.name}"</span> 的网盘功能吗？
             </p>
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
-                <div className="text-xs text-gray-700 space-y-1">
-                  <p className="font-semibold">关闭网盘后：</p>
-                  <div className="space-y-0.5 ml-1">
-                    <p>该实例将无法访问网盘中的文件</p>
-                    <p>15天内网盘数据可恢复</p>
-                  </div>
+              <div className="text-xs text-gray-700 space-y-1">
+                <p className="font-semibold">关闭网盘后：</p>
+                <div className="space-y-0.5 ml-1">
+                  <p>• 该实例将无法访问网盘中的文件</p>
+                  <p>• 15天内网盘数据可恢复</p>
                 </div>
               </div>
             </div>
@@ -725,8 +691,7 @@ export default function FileManagement() {
       <Dialog open={batchEnableDialogOpen} onOpenChange={setBatchEnableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-4 h-4 text-gray-500" />
+            <DialogTitle className="text-gray-900">
               批量启用网盘服务
             </DialogTitle>
           </DialogHeader>
@@ -734,8 +699,7 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为选中的 <span className="font-semibold text-gray-900 tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
             </p>
-            <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-              <Bot className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -759,8 +723,7 @@ export default function FileManagement() {
       <Dialog open={singleEnableDialogOpen} onOpenChange={setSingleEnableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-4 h-4 text-gray-500" />
+            <DialogTitle className="text-gray-900">
               启用网盘服务
             </DialogTitle>
           </DialogHeader>
@@ -768,8 +731,7 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为 <span className="font-bold text-gray-900">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
             </p>
-            <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-              <Bot className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -793,8 +755,7 @@ export default function FileManagement() {
       <Dialog open={recoverDialogOpen} onOpenChange={setRecoverDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-4 h-4 text-gray-500" />
+            <DialogTitle className="text-gray-900">
               恢复网盘服务
             </DialogTitle>
           </DialogHeader>
@@ -802,9 +763,8 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为 <span className="font-bold text-gray-900">"{instanceToRecover?.name}"</span> 恢复网盘服务吗?
             </p>
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-              <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-600 space-y-1 leading-relaxed">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">恢复后：</p>
                 <div className="space-y-0.5 ml-1">
                   <p>• 该实例将重新获得网盘访问权限</p>
@@ -826,8 +786,7 @@ export default function FileManagement() {
       <Dialog open={autoBindToggleDialogOpen} onOpenChange={setAutoBindToggleDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-gray-900">
-              <Bot className="w-4 h-4 text-gray-500" />
+            <DialogTitle className="text-gray-900">
               {pendingAutoBindValue ? "开启自动绑定网盘" : "关闭自动绑定网盘"}
             </DialogTitle>
           </DialogHeader>
@@ -837,9 +796,8 @@ export default function FileManagement() {
                 ? "您确定要开启新增实例自动绑定网盘功能吗?" 
                 : "您确定要关闭新增实例自动绑定网盘功能吗?"}
             </p>
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-              <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-600 space-y-1 leading-relaxed">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 {pendingAutoBindValue ? (
                   <>
                     <p className="font-semibold">开启后：</p>

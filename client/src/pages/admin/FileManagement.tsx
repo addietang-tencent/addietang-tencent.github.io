@@ -73,24 +73,42 @@ export default function FileManagement() {
       return acc;
     }, {} as Record<string, boolean>)
   );
+  // 追踪曾经启用过的实例（用于显示"可恢复"状态）
+  const [instancesEverEnabled, setInstancesEverEnabled] = useState<Record<string, boolean>>(
+    PERSONAL_SPACES_DATA.reduce((acc, item) => {
+      acc[item.id] = item.enabled; // 初始状态与当前启用状态相同
+      return acc;
+    }, {} as Record<string, boolean>)
+  );
   const [selectedInstances, setSelectedInstances] = useState<Set<string>>(new Set());
   const [disableDialogOpen, setDisableDialogOpen] = useState(false);
   const [instanceToDisable, setInstanceToDisable] = useState<{ id: string; name: string } | null>(null);
   const [batchEnableDialogOpen, setBatchEnableDialogOpen] = useState(false);
   const [singleEnableDialogOpen, setSingleEnableDialogOpen] = useState(false);
+  const [recoverDialogOpen, setRecoverDialogOpen] = useState(false);
+  const [autoBindToggleDialogOpen, setAutoBindToggleDialogOpen] = useState(false);
+  const [pendingAutoBindValue, setPendingAutoBindValue] = useState<boolean | null>(null);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
+  const [instanceToRecover, setInstanceToRecover] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const handleToggleInstance = (instanceId: string, instanceName: string, currentEnabled: boolean) => {
+  const handleToggleInstance = (instanceId: string, instanceName: string, currentEnabled: boolean, wasEverEnabled: boolean) => {
     if (currentEnabled) {
       // 如果当前是开启状态，尝试关闭时弹出确认对话框
       setInstanceToDisable({ id: instanceId, name: instanceName });
       setDisableDialogOpen(true);
     } else {
-      // 如果当前是关闭状态，弹出开启确认对话框
-      setInstanceToEnable({ id: instanceId, name: instanceName });
-      setSingleEnableDialogOpen(true);
+      // 如果当前是关闭状态，判断是恢复还是首次启用
+      if (wasEverEnabled) {
+        // 曾经启用过，弹出恢复对话框
+        setInstanceToRecover({ id: instanceId, name: instanceName });
+        setRecoverDialogOpen(true);
+      } else {
+        // 首次启用，弹出开启确认对话框
+        setInstanceToEnable({ id: instanceId, name: instanceName });
+        setSingleEnableDialogOpen(true);
+      }
     }
   };
 
@@ -119,10 +137,13 @@ export default function FileManagement() {
   const handleConfirmBatchEnable = () => {
     // 启用所有选中的实例
     const newEnabled = { ...instancesEnabled };
+    const newEverEnabled = { ...instancesEverEnabled };
     selectedInstances.forEach(instanceId => {
       newEnabled[instanceId] = true;
+      newEverEnabled[instanceId] = true; // 标记为曾经启用过
     });
     setInstancesEnabled(newEnabled);
+    setInstancesEverEnabled(newEverEnabled);
     setSelectedInstances(new Set()); // 清空选中状态
     setBatchEnableDialogOpen(false);
   };
@@ -137,6 +158,10 @@ export default function FileManagement() {
         ...prev,
         [instanceToEnable.id]: true
       }));
+      setInstancesEverEnabled(prev => ({
+        ...prev,
+        [instanceToEnable.id]: true // 标记为曾经启用过
+      }));
     }
     setSingleEnableDialogOpen(false);
     setInstanceToEnable(null);
@@ -145,6 +170,41 @@ export default function FileManagement() {
   const handleCancelSingleEnable = () => {
     setSingleEnableDialogOpen(false);
     setInstanceToEnable(null);
+  };
+
+  const handleConfirmRecover = () => {
+    if (instanceToRecover) {
+      setInstancesEnabled(prev => ({
+        ...prev,
+        [instanceToRecover.id]: true
+      }));
+      // wasEverEnabled 保持 true，不需要再次设置
+    }
+    setRecoverDialogOpen(false);
+    setInstanceToRecover(null);
+  };
+
+  const handleCancelRecover = () => {
+    setRecoverDialogOpen(false);
+    setInstanceToRecover(null);
+  };
+
+  const handleAutoBindToggle = (checked: boolean) => {
+    setPendingAutoBindValue(checked);
+    setAutoBindToggleDialogOpen(true);
+  };
+
+  const handleConfirmAutoBindToggle = () => {
+    if (pendingAutoBindValue !== null) {
+      setAutoBindNewInstance(pendingAutoBindValue);
+    }
+    setAutoBindToggleDialogOpen(false);
+    setPendingAutoBindValue(null);
+  };
+
+  const handleCancelAutoBindToggle = () => {
+    setAutoBindToggleDialogOpen(false);
+    setPendingAutoBindValue(null);
   };
 
   // 计算未启用的实例数量
@@ -246,7 +306,7 @@ export default function FileManagement() {
           gradient="from-blue-500 to-blue-600"
         />
         <StatCard 
-          title="已开通 AI 智能体私有空间" 
+          title="已开通智能体网盘" 
           value={stats.totalPersonalInstances}
           icon={Bot} 
           gradient="from-purple-500 to-purple-600"
@@ -264,7 +324,7 @@ export default function FileManagement() {
         <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-600 leading-relaxed">
-            默认开启,为您赠送 <span className="font-semibold">50G+50G</span> 永久免费空间,用于存放企业级技能库和初始技能包
+            默认开启,为您赠送 <span className="font-semibold">50GB + 50GB</span> 永久免费空间,用于存放企业级技能库和初始技能包
           </p>
         </div>
 
@@ -325,7 +385,7 @@ export default function FileManagement() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-purple-600" />
-          <h2 className="font-semibold text-gray-900">AI 智能体私有空间</h2>
+          <h2 className="font-semibold text-gray-900">智能体网盘</h2>
         </div>
 
         {/* 信息提示横幅 */}
@@ -377,7 +437,7 @@ export default function FileManagement() {
                 </div>
                 <Switch 
                   checked={autoBindNewInstance}
-                  onCheckedChange={setAutoBindNewInstance}
+                  onCheckedChange={handleAutoBindToggle}
                 />
               </div>
               <div className="h-8 w-px bg-gray-200"></div>
@@ -391,15 +451,19 @@ export default function FileManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[3%]">
-                  <Checkbox
-                    checked={isAllSelected}
-                    onCheckedChange={handleSelectAll}
-                    disabled={disabledInstancesCount === 0}
-                    aria-label="全选"
-                  />
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[6%]">
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <Checkbox
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                      disabled={disabledInstancesCount === 0}
+                      className={disabledInstancesCount === 0 ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
+                      aria-label="全选"
+                    />
+                    <span className={disabledInstancesCount === 0 ? "text-gray-400" : ""}>全选</span>
+                  </div>
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[25%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[23%]">
                   OpenClaw 实例
                 </th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
@@ -433,6 +497,7 @@ export default function FileManagement() {
               ) : (
                 paginatedPersonalSpaces.map((item) => {
                   const isEnabled = instancesEnabled[item.id];
+                  const wasEverEnabled = instancesEverEnabled[item.id];
                   const isSelected = selectedInstances.has(item.id);
                   return (
                     <tr 
@@ -440,13 +505,13 @@ export default function FileManagement() {
                       className="hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                        {!isEnabled && (
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
-                            aria-label={`选择 ${item.instanceName}`}
-                          />
-                        )}
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
+                          disabled={isEnabled}
+                          className={isEnabled ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
+                          aria-label={`选择 ${item.instanceName}`}
+                        />
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -475,6 +540,13 @@ export default function FileManagement() {
                               免费
                             </span>
                           </span>
+                        ) : wasEverEnabled ? (
+                          <span className="tabular-nums">
+                            {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                            <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                              可恢复
+                            </span>
+                          </span>
                         ) : (
                           <span className="text-gray-400">未启用</span>
                         )}
@@ -485,7 +557,7 @@ export default function FileManagement() {
                       <td className="px-6 py-4">
                         <Switch 
                           checked={isEnabled}
-                          onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled)}
+                          onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
                         />
                       </td>
                     </tr>
@@ -585,11 +657,10 @@ export default function FileManagement() {
                 <AlertTriangle className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" />
                 <div className="text-xs text-gray-700 space-y-1">
                   <p className="font-semibold">关闭网盘后：</p>
-                  <ul className="list-disc list-inside space-y-0.5 ml-1">
-                    <li>该实例将无法访问网盘中的文件</li>
-                    <li>已存储的文件将被永久删除</li>
-                    <li>此操作不可撤销</li>
-                  </ul>
+                  <div className="space-y-0.5 ml-1">
+                    <p>• 该实例将无法访问网盘中的文件</p>
+                    <p>• 15天内网盘数据可恢复</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -604,7 +675,7 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmDisable}
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
             >
               确认关闭
             </Button>
@@ -647,7 +718,8 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmBatchEnable}
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="flex-1 text-white hover:opacity-90 transition-opacity"
             >
               确认启用
             </Button>
@@ -675,7 +747,7 @@ export default function FileManagement() {
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>该实例将获得 3个月50GB 免费额度</li>
                   <li>实例可以访问专属网盘空间</li>
-                  <li>到期后可购买资源包续租</li>
+                  <li>到期后可以进行续租</li>
                 </ul>
               </div>
             </div>
@@ -690,9 +762,110 @@ export default function FileManagement() {
             </Button>
             <Button
               onClick={handleConfirmSingleEnable}
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="flex-1 text-white hover:opacity-90 transition-opacity"
             >
               确认启用
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recover Confirmation Dialog */}
+      <Dialog open={recoverDialogOpen} onOpenChange={setRecoverDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <Bot className="w-4 h-4 text-gray-500" />
+              恢复网盘服务
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-gray-700">
+              您确定要为 <span className="font-bold text-gray-900">"{instanceToRecover?.name}"</span> 恢复网盘服务吗?
+            </p>
+            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-blue-600 space-y-1 leading-relaxed">
+                <p className="font-semibold">恢复后：</p>
+                <div className="space-y-0.5 ml-1">
+                  <p>• 该实例将重新获得网盘访问权限</p>
+                  <p>• 之前的数据将被恢复</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCancelRecover}
+              className="flex-1"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirmRecover}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="flex-1 text-white hover:opacity-90 transition-opacity"
+            >
+              确认恢复
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Auto-Bind Toggle Confirmation Dialog */}
+      <Dialog open={autoBindToggleDialogOpen} onOpenChange={setAutoBindToggleDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
+              <Bot className="w-4 h-4 text-gray-500" />
+              {pendingAutoBindValue ? "开启自动绑定网盘" : "关闭自动绑定网盘"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-gray-700">
+              {pendingAutoBindValue 
+                ? "您确定要开启新增实例自动绑定网盘功能吗?" 
+                : "您确定要关闭新增实例自动绑定网盘功能吗?"}
+            </p>
+            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-blue-600 space-y-1 leading-relaxed">
+                {pendingAutoBindValue ? (
+                  <>
+                    <p className="font-semibold">开启后：</p>
+                    <div className="space-y-0.5 ml-1">
+                      <p>• 新创建的 AI 智能体实例将自动分配网盘空间</p>
+                      <p>• 实例可以立即使用网盘服务</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold">关闭后：</p>
+                    <div className="space-y-0.5 ml-1">
+                      <p>• 新创建的实例将不会自动分配网盘空间</p>
+                      <p>• 需要手动为实例开启网盘服务</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCancelAutoBindToggle}
+              className="flex-1"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirmAutoBindToggle}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="flex-1 text-white hover:opacity-90 transition-opacity"
+            >
+              确认{pendingAutoBindValue ? "开启" : "关闭"}
             </Button>
           </DialogFooter>
         </DialogContent>

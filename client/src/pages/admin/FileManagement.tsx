@@ -6,6 +6,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -80,6 +86,8 @@ export default function FileManagement() {
       return acc;
     }, {} as Record<string, boolean>)
   );
+  // 追踪实例的关闭时间（用于计算剩余天数）
+  const [instancesDisabledTime, setInstancesDisabledTime] = useState<Record<string, Date>>({});
   const [selectedInstances, setSelectedInstances] = useState<Set<string>>(new Set());
   const [disableDialogOpen, setDisableDialogOpen] = useState(false);
   const [instanceToDisable, setInstanceToDisable] = useState<{ id: string; name: string } | null>(null);
@@ -118,6 +126,11 @@ export default function FileManagement() {
         ...prev,
         [instanceToDisable.id]: false
       }));
+      // 记录关闭时间
+      setInstancesDisabledTime(prev => ({
+        ...prev,
+        [instanceToDisable.id]: new Date()
+      }));
     }
     setDisableDialogOpen(false);
     setInstanceToDisable(null);
@@ -138,12 +151,15 @@ export default function FileManagement() {
     // 启用所有选中的实例
     const newEnabled = { ...instancesEnabled };
     const newEverEnabled = { ...instancesEverEnabled };
+    const newDisabledTimes = { ...instancesDisabledTime };
     selectedInstances.forEach(instanceId => {
       newEnabled[instanceId] = true;
       newEverEnabled[instanceId] = true; // 标记为曾经启用过
+      delete newDisabledTimes[instanceId]; // 清除关闭时间
     });
     setInstancesEnabled(newEnabled);
     setInstancesEverEnabled(newEverEnabled);
+    setInstancesDisabledTime(newDisabledTimes);
     setSelectedInstances(new Set()); // 清空选中状态
     setBatchEnableDialogOpen(false);
   };
@@ -178,6 +194,12 @@ export default function FileManagement() {
         ...prev,
         [instanceToRecover.id]: true
       }));
+      // 清除关闭时间记录
+      setInstancesDisabledTime(prev => {
+        const newTimes = { ...prev };
+        delete newTimes[instanceToRecover.id];
+        return newTimes;
+      });
       // wasEverEnabled 保持 true，不需要再次设置
     }
     setRecoverDialogOpen(false);
@@ -205,6 +227,19 @@ export default function FileManagement() {
   const handleCancelAutoBindToggle = () => {
     setAutoBindToggleDialogOpen(false);
     setPendingAutoBindValue(null);
+  };
+
+  // 计算可恢复的剩余天数
+  const getRemainingDays = (instanceId: string): number => {
+    const disabledTime = instancesDisabledTime[instanceId];
+    if (!disabledTime) return 15; // 如果没有关闭时间记录，默认显示15天
+    
+    const now = new Date();
+    const diffTime = now.getTime() - disabledTime.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const remainingDays = 15 - diffDays;
+    
+    return Math.max(0, remainingDays); // 确保不返回负数
   };
 
   // 计算未启用的实例数量
@@ -541,11 +576,23 @@ export default function FileManagement() {
                             </span>
                           </span>
                         ) : wasEverEnabled ? (
-                          <span className="tabular-nums">
-                            {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                            <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
-                              可恢复
+                          <span className="tabular-nums flex items-center gap-1">
+                            <span>
+                              {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                              <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                                可恢复
+                              </span>
                             </span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </span>
                         ) : (
                           <span className="text-gray-400">未启用</span>
@@ -658,25 +705,16 @@ export default function FileManagement() {
                 <div className="text-xs text-gray-700 space-y-1">
                   <p className="font-semibold">关闭网盘后：</p>
                   <div className="space-y-0.5 ml-1">
-                    <p>• 该实例将无法访问网盘中的文件</p>
-                    <p>• 15天内网盘数据可恢复</p>
+                    <p>该实例将无法访问网盘中的文件</p>
+                    <p>15天内网盘数据可恢复</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelDisable}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmDisable}
-              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-            >
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelDisable}>取消</Button>
+            <Button onClick={handleConfirmDisable} className="bg-red-500 hover:bg-red-600 text-white">
               确认关闭
             </Button>
           </DialogFooter>
@@ -708,19 +746,9 @@ export default function FileManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelBatchEnable}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmBatchEnable}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white hover:opacity-90 transition-opacity"
-            >
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelBatchEnable}>取消</Button>
+            <Button onClick={handleConfirmBatchEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认启用
             </Button>
           </DialogFooter>
@@ -752,19 +780,9 @@ export default function FileManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelSingleEnable}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmSingleEnable}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white hover:opacity-90 transition-opacity"
-            >
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
+            <Button onClick={handleConfirmSingleEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认启用
             </Button>
           </DialogFooter>
@@ -795,19 +813,9 @@ export default function FileManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelRecover}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmRecover}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white hover:opacity-90 transition-opacity"
-            >
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelRecover}>取消</Button>
+            <Button onClick={handleConfirmRecover} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认恢复
             </Button>
           </DialogFooter>
@@ -852,19 +860,9 @@ export default function FileManagement() {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelAutoBindToggle}
-              className="flex-1"
-            >
-              取消
-            </Button>
-            <Button
-              onClick={handleConfirmAutoBindToggle}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="flex-1 text-white hover:opacity-90 transition-opacity"
-            >
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelAutoBindToggle}>取消</Button>
+            <Button onClick={handleConfirmAutoBindToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认{pendingAutoBindValue ? "开启" : "关闭"}
             </Button>
           </DialogFooter>

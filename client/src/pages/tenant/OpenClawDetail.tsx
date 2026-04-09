@@ -1443,7 +1443,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-gray-700">多模态模型</span>
-                      <span className="text-xs text-gray-400 mt-0.5">支持图片、文件等多模态输入</span>
+                      <span className="text-xs text-gray-400 mt-0.5">支持图片、文字多模态输入</span>
                     </div>
                     <button
                       type="button"

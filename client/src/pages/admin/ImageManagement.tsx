@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown, ShieldCheck, UserCog } from "lucide-react";
+import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown } from "lucide-react";
 
 // Mock 镜像列表（模拟从腾讯云拉取）
 const PUBLIC_IMAGES = [
@@ -30,7 +30,7 @@ const CUSTOM_IMAGES = [
 
 const ALL_IMPORTABLE = [...PUBLIC_IMAGES, ...CUSTOM_IMAGES];
 
-// 镜像类型：public = 公共镜像（官方维护）, custom = 自定义镜像（用户维护）
+// 镜像类型：public = 公共镜像（腾讯云维护）, custom = 自定义镜像（企业维护）
 type ImageType = "public" | "custom";
 
 interface ImageRow {
@@ -55,13 +55,12 @@ function ImageTypeBadge({ type }: { type: ImageType }) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 cursor-default">
-            <ShieldCheck className="w-3 h-3" />
-            公共镜像
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 cursor-default">
+            公共
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
-          由官方维护，自动跟进平台程序版本更新，无需用户自行维护
+          由腾讯云维护，自动跟进平台程序版本更新，无需企业自行维护
         </TooltipContent>
       </Tooltip>
     );
@@ -69,13 +68,12 @@ function ImageTypeBadge({ type }: { type: ImageType }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600 border border-orange-100 cursor-default">
-          <UserCog className="w-3 h-3" />
-          自定义镜像
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default">
+          自定义
         </span>
       </TooltipTrigger>
       <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
-        由用户自行制作和维护，官方不负责版本更新，适用于有特殊运行环境需求的场景
+        由企业自行制作和维护，官方不负责版本更新，适用于有特殊运行环境需求的场景
       </TooltipContent>
     </Tooltip>
   );
@@ -247,14 +245,11 @@ export default function ImageManagement() {
                         <span className="text-xs text-gray-500 font-mono">{img.openclawVersion.replace("OpenClaw ", "")}</span>
                       </div>
                     ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-xs text-gray-400 cursor-default">未识别</span>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-[200px] text-xs leading-relaxed">
-                          自定义镜像暂不支持自动识别智能体版本信息
-                        </TooltipContent>
-                      </Tooltip>
+                      <div className="text-xs text-gray-400 leading-tight">
+                        <span>自定义镜像</span>
+                        <br />
+                        <span>暂不支持自动识别</span>
+                      </div>
                     )}
                   </td>
                   <td className="px-4 py-4 text-sm text-gray-600">{img.os}</td>
@@ -374,10 +369,9 @@ export default function ImageManagement() {
                   <div className="max-h-64 overflow-y-auto">
                     {filteredPublic.length > 0 && (
                       <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0 flex items-center gap-1.5">
-                          <ShieldCheck className="w-3 h-3 text-blue-400" />
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
                           公共镜像
-                          <span className="text-gray-400 font-normal">（官方维护）</span>
+                          <span className="text-gray-400 font-normal">（腾讯云维护）</span>
                         </div>
                         {filteredPublic.map((img) => (
                           <div
@@ -403,10 +397,9 @@ export default function ImageManagement() {
 
                     {filteredCustom.length > 0 && (
                       <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0 flex items-center gap-1.5">
-                          <UserCog className="w-3 h-3 text-orange-400" />
+                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
                           自定义镜像
-                          <span className="text-gray-400 font-normal">（用户维护）</span>
+                          <span className="text-gray-400 font-normal">（企业维护）</span>
                         </div>
                         {filteredCustom.map((img) => (
                           <div

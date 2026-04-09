@@ -607,7 +607,7 @@ export default function ModelConfig() {
                 <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">多模态模型</p>
-                    <p className="text-xs text-gray-400 mt-0.5">支持图片、文件等多模态输入</p>
+                    <p className="text-xs text-gray-400 mt-0.5">支持图片、文字多模态输入</p>
                   </div>
                   <Switch
                     checked={customForm.isMultimodal}

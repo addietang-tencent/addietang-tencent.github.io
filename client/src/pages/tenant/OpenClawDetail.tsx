@@ -1360,8 +1360,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               </div>
             </div>
 
-            {/* Upper: config inputs - fixed */}
-            <div className="p-5 space-y-3 flex-shrink-0">
+            {/* Scrollable content area */}
+            <div className="overflow-y-auto flex-1">
+            {/* Upper: config inputs */}
+            <div className="p-5 space-y-3">
               {/* 模型厂商选择 */}
               <Select value={selectedProvider} onValueChange={handleProviderChange}>
                 <SelectTrigger className="w-full bg-gray-50 border-gray-200">
@@ -1490,8 +1492,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               </Tooltip>
 
             </div>
-            {/* Lower: model list - scrollable */}
-            <div className="px-5 pb-5 overflow-y-auto flex-1">
+            {/* Lower: model list */}
+            <div className="px-5 pb-5">
               <div className="pt-2 border-t border-gray-50">
                 <div className="flex items-center gap-1.5 mb-2">
                   <p className="text-xs text-gray-400">已应用模型</p>
@@ -1516,7 +1518,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
                                     )}
                                     {model.multimodal && (
-                                      <span className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 w-fit">多模态</span>
+                                      <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100 w-fit">多模态</span>
                                     )}
                                   </>
                                 ) : (
@@ -1581,7 +1583,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.customName}</span>
                                     )}
                                     {model.multimodal && (
-                                      <span className="inline-flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 w-fit">多模态</span>
+                                      <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100 w-fit">多模态</span>
                                     )}
                                   </>
                                 ) : (
@@ -1640,6 +1642,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 )}
               </div>
             </div>
+            </div>{/* end scrollable */}
           </div>
 
           {/* ===== Channel Column ===== */}

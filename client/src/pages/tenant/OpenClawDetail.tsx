@@ -337,9 +337,9 @@ export default function OpenClawDetail() {
   const [customForm, setCustomForm] = useState({ provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "" });
   const [customMultimodal, setCustomMultimodal] = useState(false);
   // 多条模型列表，每条有唯一 id；primary 表示主模型，其余为备选模型，所有模型均为应用中状态
-  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; multimodal?: boolean; isDefault?: boolean; };
+  type AppliedModel = { id: number; providerLabel: string; versionLabel: string; primary: boolean; isCustom: boolean; customName: string; addedAt: number; multimodal?: boolean; };
   const [appliedModels, setAppliedModels] = useState<AppliedModel[]>([
-    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "", addedAt: Date.now(), isDefault: true },
+    { id: 1, providerLabel: "腾讯云 DeepSeek", versionLabel: "DeepSeek V3 0324", primary: true, isCustom: false, customName: "", addedAt: Date.now() },
   ]);
   const [modelIdCounter, setModelIdCounter] = useState(2);
   // 模型操作二次确认弹窗
@@ -1527,9 +1527,6 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                     {model.versionLabel && (
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.versionLabel}</span>
                                     )}
-                                    {model.isDefault && (
-                                      <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200 w-fit">管理员预置</span>
-                                    )}
                                   </>
                                 )}
                               </div>
@@ -1594,9 +1591,6 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                                     <span className="text-sm font-medium text-gray-800 leading-tight truncate block">{model.providerLabel}</span>
                                     {model.versionLabel && (
                                       <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate block">{model.versionLabel}</span>
-                                    )}
-                                    {model.isDefault && (
-                                      <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200 w-fit">管理员预置</span>
                                     )}
                                   </>
                                 )}

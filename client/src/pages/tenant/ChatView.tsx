@@ -176,18 +176,29 @@ export default function ChatView({
     return sortedClaws.length > 0 ? sortedClaws[0].id : null;
   });
 
-  // Update selection if claws change and selected is gone
+  // Track previous claws count to detect new additions
+  const prevClawsCountRef = useRef(claws.length);
+
+  // Update selection if claws change: auto-select newest when a new claw is added
   useEffect(() => {
     if (claws.length === 0) {
       setSelectedClawId(null);
+      prevClawsCountRef.current = 0;
       return;
     }
+    // A new claw was added → select the newest one
+    if (claws.length > prevClawsCountRef.current && prevClawsCountRef.current > 0) {
+      setSelectedClawId(sortedClaws[0]?.id ?? null);
+    }
+    // Selected claw was deleted → fallback to newest
     if (selectedClawId && !claws.find(c => c.id === selectedClawId)) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
+    // No selection yet → select newest
     if (!selectedClawId && claws.length > 0) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
+    prevClawsCountRef.current = claws.length;
   }, [claws, selectedClawId]);
 
   const selectedClaw = claws.find(c => c.id === selectedClawId) ?? null;
@@ -413,18 +424,52 @@ export default function ChatView({
                     }
                     onClick={() => setSelectedClawId(claw.id)}
                   >
-                    {/* Row 1: Status dot + Name + More menu (hover) */}
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                        <StatusDotSmall status={claw.status} />
-                        <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
-                          {claw.name}
-                        </h4>
-                      </div>
+                    {/* Row 1: Name + Status badge */}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
+                        {claw.name}
+                      </h4>
+                      <StatusBadgeSmall status={claw.status} />
+                    </div>
+                    {/* Row 2: Role capsule + Instance ID */}
+                    <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                      {claw.roleName && (
+                        <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
+                          style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)", fontSize: "10px" }}>
+                          {claw.roleName}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
+                    </div>
+                    {/* Row 3: Created time */}
+                    <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
+                    {/* Row 4: Detail config button + More menu */}
+                    <div className="flex items-center justify-between mt-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
+                              claw.status === "running"
+                                ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer"
+                                : "text-gray-300 cursor-not-allowed"
+                            }`}
+                            disabled={claw.status !== "running"}
+                            onClick={(e) => { e.stopPropagation(); if (claw.status === "running") navigate(`/openclaw/${claw.id}`); }}
+                          >
+                            <Settings className="w-3 h-3" />
+                            详细配置
+                          </button>
+                        </TooltipTrigger>
+                        {claw.status !== "running" && (
+                          <TooltipContent side="bottom" className="text-xs">
+                            当前状态不支持进入详细配置
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/item:opacity-100 flex-shrink-0 ${
+                            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0 ${
                               isSelected
                                 ? "text-blue-500 hover:text-blue-700 hover:bg-blue-100/60"
                                 : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/60"
@@ -494,18 +539,6 @@ export default function ChatView({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    {/* Row 2: Role capsule + Instance ID */}
-                    <div className="flex items-center gap-1.5 mt-1 min-w-0">
-                      {claw.roleName && (
-                        <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
-                          style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)", fontSize: "10px" }}>
-                          {claw.roleName}
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
-                    </div>
-                    {/* Row 3: Created time */}
-                    <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
                   </div>
                 );
               })}
@@ -522,34 +555,9 @@ export default function ChatView({
           </div>
         ) : (
           <>
-            {/* Top Bar - Name + Status + Actions */}
-            <div className="flex items-center justify-between px-4 h-10 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 truncate">{selectedClaw.name}</h3>
-                <StatusBadgeSmall status={selectedClaw.status} />
-              </div>
+            {/* Top Bar - Actions only */}
+            <div className="flex items-center justify-end px-4 h-10 border-b border-gray-100 flex-shrink-0">
               <div className="flex items-center gap-2 flex-shrink-0">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className={`flex items-center gap-1 text-xs h-7 px-2 rounded-lg transition-colors ${
-                        isRunning
-                          ? "text-gray-500 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
-                          : "text-gray-300 cursor-not-allowed"
-                      }`}
-                      disabled={!isRunning}
-                      onClick={() => isRunning && navigate(`/openclaw/${selectedClaw.id}`)}
-                    >
-                      <Settings className="w-3.5 h-3.5" />
-                      详细配置
-                    </button>
-                  </TooltipTrigger>
-                  {!isRunning && (
-                    <TooltipContent side="bottom" className="text-xs">
-                      当前 OpenClaw 状态不支持进入详细配置
-                    </TooltipContent>
-                  )}
-                </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button

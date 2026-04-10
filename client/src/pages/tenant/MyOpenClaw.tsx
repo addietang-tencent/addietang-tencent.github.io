@@ -4,7 +4,7 @@
  * - 快速上手引导（始终显示，可手动关闭）
  * - OpenClaw 卡片列表（支持 8 种状态）
  * - 创建 OpenClaw 弹窗
- * - 通知中心已迁移至 TenantLayout
+ * - 通知 Bell 图标和面板
  * - 操作确认弹窗（重启、重装、删除）
  * - 自动轮询状态转换
  */
@@ -38,7 +38,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
   LayoutGrid, MessageSquare,
 } from "lucide-react";
 import ChatView from "./ChatView";
@@ -66,6 +66,11 @@ interface OpenClawItem {
   roleName?: string; // 角色名称
 }
 
+interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+}
 
 const STATUS_CONFIG: Record<OpenClawStatus, {
   label: string;
@@ -256,6 +261,10 @@ export default function MyOpenClaw() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const visibleRoles = MOCK_ROLES.filter((r) => r.visible);
 
+  // 通知相关
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
 
   // 确认弹窗
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: OpenClawStatus } | null>(null);
@@ -275,7 +284,23 @@ export default function MyOpenClaw() {
   // 自动轮询
   const pollingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-
+  // 初始化通知（模拟）
+  useEffect(() => {
+    // Mock 通知消息：7 条删除相关通知
+    const mockNotifications: Notification[] = [
+      // 场景 1: 被管理员在腾讯云控制台删除
+      { id: "notif-1", message: "「Noah的分析助手」已被删除", timestamp: "2026-03-26 10:30" },
+      { id: "notif-2", message: "「Eve的编程助手」已被删除", timestamp: "2026-03-26 09:15" },
+      { id: "notif-3", message: "「Leo的创意助手」已被删除", timestamp: "2026-03-26 08:45" },
+      { id: "notif-4", message: "「Alice的工作助手」已被删除", timestamp: "2026-03-26 07:20" },
+      // 场景 2: 被管理员在管控端删除
+      { id: "notif-5", message: "「Bob的数据分析」已被管理员删除", timestamp: "2026-03-25 18:20" },
+      { id: "notif-6", message: "「Carol的内容创作」已被管理员删除", timestamp: "2026-03-25 15:45" },
+      { id: "notif-7", message: "「David的代码生成」已被管理员删除", timestamp: "2026-03-25 12:10" },
+    ];
+    setNotifications(mockNotifications);
+    setHasUnread(true);
+  }, []);
 
   // 自动轮询逻辑
   useEffect(() => {
@@ -376,6 +401,28 @@ export default function MyOpenClaw() {
     toast.success(`「${name}」正在重试...`);
   };
 
+  const handleAddNotification = (message: string) => {
+    const notification: Notification = {
+      id: `notif-${Date.now()}`,
+      message,
+      timestamp: new Date().toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
+    };
+    setNotifications(prev => [notification, ...prev]);
+    setHasUnread(true);
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const handleClearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const handleOpenNotificationPanel = () => {
+    setShowNotificationPanel(true);
+    setHasUnread(false);
+  };
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -419,7 +466,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">浏览器对话</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在浏览器直接与 OpenClaw 对话</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与 OpenClaw 对话</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />
@@ -442,7 +489,18 @@ export default function MyOpenClaw() {
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
-
+              {/* Bell Notification Button */}
+              <div className="relative">
+                <button
+                  onClick={handleOpenNotificationPanel}
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
+                >
+                  <Bell className="w-5 h-5" />
+                  {hasUnread && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                  )}
+                </button>
+              </div>
               <Button
                 onClick={() => setShowCreate(true)}
                 className="text-white btn-primary-glow"
@@ -688,8 +746,58 @@ export default function MyOpenClaw() {
           </div>
         </div>
 
-        {/* Notification Panel 已迁移至 TenantLayout */}
+        {/* Notification Panel */}
+        {showNotificationPanel && (
+          <div className="fixed inset-0 z-50" onClick={() => setShowNotificationPanel(false)}>
+            <div className="absolute right-6 top-24 w-80 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 flex flex-col"
+              onClick={(e) => e.stopPropagation()}>
+              {/* Header - Fixed */}
+              <div className="p-3 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
+                  <button
+                    onClick={() => handleClearAllNotifications()}
+                    className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    全部删除
+                  </button>
+                </div>
+              </div>
 
+              {/* Notifications List - Scrollable */}
+              <div className="overflow-y-auto" style={{
+                maxHeight: notifications.length > 5 ? 'calc(5 * 60px)' : 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#d1d5db #f3f4f6',
+                paddingRight: '4px'
+              }}>
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <p className="text-xs text-gray-400">暂无消息</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {notifications.map((notif) => (
+                      <div key={notif.id} className="p-3 hover:bg-gray-50 transition-colors" style={{minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs text-gray-700 flex-1 line-clamp-2">{notif.message}</p>
+                          <button
+                            onClick={() => handleDeleteNotification(notif.id)}
+                            className="text-gray-400 hover:text-gray-900 transition-colors flex-shrink-0"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1" style={{fontSize: '11px'}}>{notif.timestamp}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Restart Confirm Dialog */}
         <Dialog open={!!restartConfirm} onOpenChange={(open) => { if (!open) setRestartConfirm(null); }}>

@@ -33,10 +33,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
-  Terminal, UserRoundCog, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
+  Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw, Check, ArrowLeftRight
+  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -44,7 +44,16 @@ import {
 import { MOCK_DEPARTMENTS, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
-type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending";
+type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
+const LATEST_VERSION = "2026.4.2";
+
+interface PluginVersions {
+  wechat: string;
+  dingtalk: string;
+  feishu: string;
+  wecom: string;
+  qq: string;
+}
 
 interface Claw {
   id: string;
@@ -53,6 +62,8 @@ interface Claw {
   creator: string;
   createTime: string;
   status: ClawStatus;
+  version: string;
+  pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
 }
@@ -71,23 +82,34 @@ const STATUS_CONFIG: Record<ClawStatus, {
   shutdown:    { label: "已关机",   badgeClass: "badge-shutdown", dotColor: "bg-gray-400" },
   maintaining: { label: "维护中",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
   pending:     { label: "待处理",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
+  upgrading:   { label: "升级中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
 };
 
+const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
+
 const MOCK_CLAWS: Claw[] = [
-  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running" },
-  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running" },
-  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown" },
-  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running" },
-  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail" },
-  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running" },
-  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating" },
-  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running" },
-  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "maintaining" },
-  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running" },
-  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail" },
-  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running" },
-  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "loading" },
-  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending" },
+  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",   version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
+  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail", version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",   version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "running", version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
+  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",   version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "maintaining", version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "15", instanceId: "ins-v36q0krh", name: "Olivia的运营助手",  creator: "olivia@acompany.com",  createTime: "2026-03-14 09:00:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "16", instanceId: "ins-w47r1lsi", name: "Peter的财务助手",  creator: "peter@acompany.com",   createTime: "2026-03-15 10:20:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "17", instanceId: "ins-x58s2mtj", name: "Quinn的法务助手",  creator: "quinn@acompany.com",   createTime: "2026-03-16 11:45:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "18", instanceId: "ins-y69t3nuk", name: "Rachel的HR助手",      creator: "rachel@acompany.com",  createTime: "2026-03-17 13:10:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "19", instanceId: "ins-z70u4ovl", name: "Sam的产品助手",    creator: "sam@acompany.com",     createTime: "2026-03-18 14:30:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
 ];
 
 const PAGE_SIZE = 10;
@@ -250,6 +272,65 @@ export default function OpenClawMonitor() {
   const [reinstallInput, setReinstallInput] = useState("");
   const [deleteInput, setDeleteInput] = useState("");
 
+  // 批量更新
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
+  const [pluginVersionTarget, setPluginVersionTarget] = useState<Claw | null>(null);
+
+  // 版本列筛选
+  const VERSION_OPTIONS = ["2026.3.28", "2026.4.2", "unrecognized"] as const;
+  type VersionFilter = typeof VERSION_OPTIONS[number];
+  const [showVersionFilter, setShowVersionFilter] = useState(false);
+  const [selectedVersions, setSelectedVersions] = useState<Set<VersionFilter>>(new Set(VERSION_OPTIONS));
+  const versionFilterButtonRef = useRef<HTMLButtonElement>(null);
+  const [versionFilterPosition, setVersionFilterPosition] = useState<{ top: number; left: number } | null>(null);
+  const [pendingVersions, setPendingVersions] = useState<Set<VersionFilter>>(new Set(VERSION_OPTIONS));
+
+  const handleVersionFilterChange = (v: VersionFilter, checked: boolean) => {
+    setPendingVersions(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(v); else next.delete(v);
+      return next;
+    });
+  };
+
+  const handleVersionFilterReset = () => setPendingVersions(new Set(VERSION_OPTIONS));
+
+  const handleVersionFilterConfirm = () => {
+    setSelectedVersions(new Set(pendingVersions));
+    setShowVersionFilter(false);
+    setPage(1);
+  };
+
+  // 判断某实例是否可更新（仅运行中）
+  const isUpgradable = (claw: Claw) => claw.status === "running";
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      // 全选勾选当前筛选结果的所有页所有实例，不限状态
+      if (checked) { allFilteredIds.forEach(id => next.add(id)); }
+      else { allFilteredIds.forEach(id => next.delete(id)); }
+      return next;
+    });
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
+
+  const confirmBatchUpgrade = () => {
+    const ids = Array.from(selectedIds);
+    setClaws(prev => prev.map(c => ids.includes(c.id) ? { ...c, status: "upgrading" as ClawStatus } : c));
+    setSelectedIds(new Set());
+    setShowBatchUpgradeDialog(false);
+    toast.success(`已开始升级 ${ids.length} 个实例`);
+  };
+
   // 详情抽屉
   const [showDetailDrawer, setShowDetailDrawer] = useState(false);
   const [drawerLoading, setDrawerLoading] = useState(false);
@@ -272,11 +353,6 @@ export default function OpenClawMonitor() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-
-  // 权限开关
-  const [allowTerminal, setAllowTerminal] = useState(() => {
-    return localStorage.getItem("admin_allow_terminal") === "true";
-  });
 
   // 计算统计数据
   const countByStatus = (status: ClawStatus | ClawStatus[]) => {
@@ -384,9 +460,42 @@ export default function OpenClawMonitor() {
     return selectedStatuses.has(c.status);
   });
 
-  const totalPages = Math.max(1, Math.ceil(statusFiltered.length / PAGE_SIZE));
+  const getVersionKey = (version: string): VersionFilter => {
+    if (version === "2026.3.28") return "2026.3.28";
+    if (version === "2026.4.2") return "2026.4.2";
+    return "unrecognized";
+  };
+
+  const versionFiltered = statusFiltered.filter((c) => {
+    if (selectedVersions.size === VERSION_OPTIONS.length) return true;
+    return selectedVersions.has(getVersionKey(c.version));
+  });
+
+  const totalPages = Math.max(1, Math.ceil(versionFiltered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const paginated = statusFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const paginated = versionFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // 当前页所有实例 id
+  const pageIds = paginated.map(c => c.id);
+  // 全筛选结果的所有 id（全选范围）
+  const allFilteredIds = versionFiltered.map(c => c.id);
+  // 全选状态：当前筛选结果所有实例全部被勾选
+  const isAllSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.has(id));
+  // 部分勾选：有且仅有部分实例被勾选（不显示 indeterminate，直接显示未勾选）
+  const isIndeterminate = false;
+
+  // 批量更新按钮禁用逻辑
+  const selectedCount = selectedIds.size;
+  const selectedClaws = claws.filter(c => selectedIds.has(c.id));
+  const hasNonRunning = selectedClaws.some(c => !isUpgradable(c));
+  const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning;
+  const batchTooltip = selectedCount === 0
+    ? '请先选择实例'
+    : selectedCount > 20
+    ? '批量更新数量不可大于20'
+    : hasNonRunning
+    ? '仅运行中的实例支持更新'
+    : '';
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -412,7 +521,7 @@ export default function OpenClawMonitor() {
   const confirmReinstall = () => {
     if (!reinstallTarget) return;
     const claw = claws.find(c => c.id === reinstallTarget);
-    setClaws(claws.map(c => c.id === reinstallTarget ? { ...c, status: "loading" as ClawStatus } : c));
+    setClaws(claws.map(c => c.id === reinstallTarget ? { ...c, status: "running" as ClawStatus } : c));
     setReinstallTarget(null);
     setReinstallInput("");
     toast.success(`正在重新安装 ${claw?.name}...`);
@@ -658,7 +767,31 @@ export default function OpenClawMonitor() {
                 />
               </div>
             </div>
-            {/* 智能体迁移按钮 */}
+            {/* 批量更新按鈕 */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <Button
+                    onClick={() => !batchDisabled && setShowBatchUpgradeDialog(true)}
+                    disabled={batchDisabled}
+                    style={!batchDisabled ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
+                    className={`text-white rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                      batchDisabled ? "bg-gray-300 cursor-not-allowed" : "btn-primary-glow"
+                    }`}
+                  >
+                    <CircleArrowUp className="w-3.5 h-3.5" />
+                    批量更新
+                    {selectedCount > 0 && (
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {batchDisabled && batchTooltip && (
+                <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
+              )}
+            </Tooltip>
+            {/* 智能体迁移按鈕 */}
             <Link href="/admin/agent-migration">
               <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
                 <ArrowLeftRight className="w-3.5 h-3.5" />
@@ -671,11 +804,22 @@ export default function OpenClawMonitor() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50 relative">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '25%' }}>名称 / ID</th>
+                {/* 复选框列 */}
+                <th className="py-3 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                      onCheckedChange={(v) => handleSelectAll(!!v)}
+                      className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 data-[state=indeterminate]:bg-blue-500 data-[state=indeterminate]:border-blue-500"
+                    />
+                    <span className="text-xs font-medium text-gray-500 whitespace-nowrap">全选</span>
+                  </div>
+                </th>
+                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '16%', paddingLeft: '4px' }}>名称 / ID</th>
                 {hasOneid && (
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">用户归属</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">用户归属</th>
                 )}
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '10%' : '15%' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '7%' : '10%' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -736,15 +880,75 @@ export default function OpenClawMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '20%' }}>创建人</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '18%' : '20%' }}>创建时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '16%' : '20%' }}>操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建人</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '10%' : '12%' }}>
+                  <div className="flex items-center gap-2 relative z-40">
+                    智能体版本
+                    <button
+                      ref={versionFilterButtonRef}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      onClick={() => {
+                        if (versionFilterButtonRef.current) {
+                          const rect = versionFilterButtonRef.current.getBoundingClientRect();
+                          setVersionFilterPosition({
+                            top: rect.bottom + window.scrollY + 8,
+                            left: rect.left + window.scrollX
+                          });
+                        }
+                        setPendingVersions(new Set(selectedVersions));
+                        setShowVersionFilter(!showVersionFilter);
+                      }}
+                    >
+                      <Filter className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                    {showVersionFilter && versionFilterPosition && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowVersionFilter(false)}
+                          style={{ pointerEvents: 'auto' }}
+                        />
+                        <div
+                          className="fixed w-52 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform"
+                          style={{
+                            top: `${versionFilterPosition.top}px`,
+                            left: `${versionFilterPosition.left}px`,
+                            pointerEvents: 'auto'
+                          }}
+                        >
+                          <div className="p-3 space-y-2">
+                            {([
+                              { key: "2026.3.28" as VersionFilter, label: "OpenClaw/2026.3.28" },
+                              { key: "2026.4.2" as VersionFilter, label: "OpenClaw/2026.4.2" },
+                              { key: "unrecognized" as VersionFilter, label: "未识别" },
+                            ]).map(({ key, label }) => (
+                              <label key={key} className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={pendingVersions.has(key)}
+                                  onCheckedChange={(checked) => handleVersionFilterChange(key, !!checked)}
+                                />
+                                <span className="text-sm text-gray-700 normal-case">{label}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="border-t border-gray-100 p-2 flex gap-2">
+                            <Button variant="outline" size="sm" onClick={handleVersionFilterReset} className="flex-1">重置</Button>
+                            <Button size="sm" onClick={handleVersionFilterConfirm} className="flex-1">确认</Button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '8%' : '9%' }}>插件版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={hasOneid ? 6 : 5} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 10 : 9} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
@@ -753,10 +957,23 @@ export default function OpenClawMonitor() {
                   const isRunning = claw.status === "running";
                   const statusConfig = STATUS_CONFIG[claw.status];
 
+                  const upgradable = isUpgradable(claw);
+                  // 所有状态均可勾选，不再禁用复选框
+                  const checkboxDisabled = false;
+                  const checkboxTooltip = "";
+
                   return (
                     <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
+                      {/* 复选框 */}
+                      <td className="py-4 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+                        <Checkbox
+                          checked={selectedIds.has(claw.id)}
+                          onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
+                          className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                        />
+                      </td>
                       {/* 名称/ID */}
-                      <td className="px-6 py-4">
+                      <td className="pr-4 py-4" style={{ paddingLeft: '4px' }}>
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
@@ -774,29 +991,48 @@ export default function OpenClawMonitor() {
                       </td>
                       {/* 用户归属 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-4 py-4 text-sm text-gray-600">
                           {claw.department ? claw.department.replace(/\//g, " / ") : "—"}
                         </td>
                       )}
                       {/* 状态列 */}
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
                           {statusConfig.label}
                         </span>
                       </td>
                       {/* 创建人 */}
-                      <td className="px-6 py-4 text-sm text-gray-500">{claw.creator}</td>
+                      <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
                       {/* 创建时间 */}
-                      <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      {/* 智能体版本 */}
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium text-gray-500">OpenClaw</span>
+                          <span className="text-xs font-mono text-gray-500">
+                            {claw.version}
+
+                          </span>
+                        </div>
+                      </td>
+                      {/* 插件版本 */}
+                      <td className="px-4 py-4">
+                        <button
+                          className="text-xs text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+                          onClick={() => setPluginVersionTarget(claw)}
+                        >
+                          查看详情
+                        </button>
+                      </td>
                       {/* 操作 */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3 h-5">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3 h-5 whitespace-nowrap">
                           {/* 终端 */}
                           {!isRunning ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none">
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none whitespace-nowrap">
                                   <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
                                   终端
                                 </span>
@@ -807,7 +1043,7 @@ export default function OpenClawMonitor() {
                             </Tooltip>
                           ) : (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none"
+                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
                               onClick={() => handleOpenTerminal(claw)}
                             >
                               <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
@@ -818,7 +1054,7 @@ export default function OpenClawMonitor() {
                           {/* 关机/开机 */}
                           {claw.status === "running" ? (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none"
+                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
                               onClick={() => setShutdownTarget(claw.id)}
                             >
                               <Power className="w-3.5 h-3.5 flex-shrink-0" />
@@ -826,14 +1062,14 @@ export default function OpenClawMonitor() {
                             </button>
                           ) : claw.status === "shutdown" ? (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none"
+                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
                               onClick={() => setShutdownTarget(claw.id)}
                             >
                               <Power className="w-3.5 h-3.5 flex-shrink-0" />
                               开机
                             </button>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-gray-300 leading-none">
+                            <span className="inline-flex items-center gap-1 text-xs text-gray-300 leading-none whitespace-nowrap">
                               <Power className="w-3.5 h-3.5 flex-shrink-0" />
                               开机
                             </span>
@@ -843,7 +1079,7 @@ export default function OpenClawMonitor() {
                           {["creating", "loading", "pending"].includes(claw.status) ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none">
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-300 cursor-not-allowed leading-none whitespace-nowrap">
                                   <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
                                   删除
                                 </span>
@@ -854,7 +1090,7 @@ export default function OpenClawMonitor() {
                             </Tooltip>
                           ) : (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none"
+                              className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none whitespace-nowrap"
                               onClick={() => handleDeleteClick(claw)}
                             >
                               <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
@@ -907,53 +1143,41 @@ export default function OpenClawMonitor() {
 
           {/* Pagination */}
           <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              共 {statusFiltered.length} 条记录
-              {statusFiltered.length > 0 && `，第 ${safePage} / ${totalPages} 页`}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(Math.max(1, safePage - 1))}
-                disabled={safePage === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs text-gray-400 px-2">第 {safePage} 页</span>
-              <button
-                onClick={() => setPage(Math.min(totalPages, safePage + 1))}
-                disabled={safePage === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            <span className="text-xs text-gray-400">共 {statusFiltered.length} 条记录</span>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={safePage === 1}
+                  onClick={() => setPage(safePage - 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium transition-colors border ${
+                      p === safePage
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-500'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  disabled={safePage === totalPages}
+                  onClick={() => setPage(safePage + 1)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 底部权限开关区域 */}
-        <div className="mt-6 bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          <div className="flex items-center justify-between px-6 py-5">
-            <div className="flex items-center gap-4">
-              <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
-                <UserRoundCog className="text-white" style={{ width: "18px", height: "18px" }} />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">允许成员进入 OpenClaw 终端</p>
-                <p className="text-xs text-gray-400 mt-0.5">开启后，所有用户在用户端可看到「进入终端」选项，进入对应 OpenClaw 云服务器的终端</p>
-              </div>
-            </div>
-            <Switch
-              checked={allowTerminal}
-              onCheckedChange={(v) => {
-                setAllowTerminal(v);
-                localStorage.setItem("admin_allow_terminal", String(v));
-                toast.success(v ? "已允许成员进入终端" : "已禁止成员进入终端");
-              }}
-            />
-          </div>
-        </div>
       </div>
 
       {/* 关机/开机确认弹窗 */}
@@ -985,7 +1209,7 @@ export default function OpenClawMonitor() {
             <DialogTitle className="text-base font-bold text-gray-900">确认重新安装</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-600 leading-relaxed">
-            重新安装后该 OpenClaw「{claws.find(c => c.id === reinstallTarget)?.name}」的所有配置和数据将丢失且无法恢复，确认重新安装吗？
+            将使用最新镜像重新安装「{claws.find(c => c.id === reinstallTarget)?.name}」，清除当前所有配置且无法恢复，安装完成后需重新配置模型和通道。
           </p>
           <div>
             <label className="text-sm font-medium text-gray-700">请输入「重装」以确认</label>
@@ -1016,7 +1240,9 @@ export default function OpenClawMonitor() {
             <DialogTitle className="text-base font-bold text-gray-900">确认删除</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-600 leading-relaxed">
-            删除后该 OpenClaw「{claws.find(c => c.id === deleteTarget)?.name}」将无法恢复，确认删除吗？
+            {claws.find(c => c.id === deleteTarget)?.status === "createFail"
+              ? `此操作将移除「${claws.find(c => c.id === deleteTarget)?.name}」该创建失败的记录，底层资源将由系统自动回收。`
+              : `此操作不可撤销。「${claws.find(c => c.id === deleteTarget)?.name}」实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复。`}
           </p>
           {claws.find(c => c.id === deleteTarget)?.status === "running" && (
             <div>
@@ -1039,6 +1265,143 @@ export default function OpenClawMonitor() {
               确认删除
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量更新确认弹窗 */}
+      <Dialog open={showBatchUpgradeDialog} onOpenChange={setShowBatchUpgradeDialog}>
+        <DialogContent className="sm:max-w-[640px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900">批量更新</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+            <p>1. 更新版本预计需要 5～10 分钟不等，期间 OpenClaw 实例不可使用。</p>
+            <p>2. OpenClaw 版本将会升级至当前生效镜像对应的版本，请先将目标镜像指定为生效状态再执行升级操作。</p>
+            <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
+          </div>
+          <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
+          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-xl">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前版本</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前状态</th>
+                  <th className="text-center px-4 py-2 text-xs font-medium text-gray-500">插件是否最新版本</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {claws.filter(c => selectedIds.has(c.id)).map(c => {
+                  const sc = STATUS_CONFIG[c.status];
+                  return (
+                    <tr key={c.id} className="hover:bg-gray-50/50">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white" style={{ fontSize: '10px' }}>C</span>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">{c.name}</div>
+                            <div className="text-xs text-gray-400 font-mono">{c.instanceId}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className="font-mono text-xs text-gray-500">{c.version}</span>
+
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className={`${sc.badgeClass} text-xs inline-flex items-center gap-1`}>
+                          <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${sc.dotColor}`} />
+                          {sc.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        {(() => {
+                          const RECOMMENDED: PluginVersions = { wechat: '3.2.1', dingtalk: '2.1.0', feishu: '1.8.5', wecom: '4.0.2', qq: '1.3.0' };
+                          const isLatest = (['wechat', 'dingtalk', 'feishu', 'wecom', 'qq'] as const).every(
+                            k => c.pluginVersions[k] === RECOMMENDED[k]
+                          );
+                          return isLatest
+                            ? <span className="text-xs text-green-600">是</span>
+                            : <span className="text-xs text-red-500">否</span>;
+                        })()}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <button
+                          onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
+                          className="text-xs text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+                        >
+                          移除
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
+            <Button onClick={confirmBatchUpgrade} className="bg-blue-500 hover:bg-blue-600 text-white">
+              确认更新
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 插件版本弹窗 */}
+      <Dialog open={!!pluginVersionTarget} onOpenChange={(open) => { if (!open) setPluginVersionTarget(null); }}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900">插件版本</DialogTitle>
+          </DialogHeader>
+          {pluginVersionTarget && (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">实例：<span className="font-medium text-gray-700">{pluginVersionTarget.name}</span></p>
+              <div className="rounded-xl border border-gray-100 overflow-hidden">
+                {/* 表头 */}
+                <div className="grid grid-cols-3 px-4 py-2 bg-gray-50/80 border-b border-gray-100">
+                  <span className="text-xs font-medium text-gray-500">插件</span>
+                  <span className="text-xs font-medium text-gray-500">当前版本</span>
+                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                    建议升级版本
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="w-3 h-3 text-gray-400 cursor-help flex-shrink-0" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs max-w-[200px]">
+                          适配当前生效镜像中openclaw版本的最新插件版本
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </span>
+                </div>
+                {([
+                  { label: '微信', key: 'wechat', recommended: '3.2.1' },
+                  { label: '钉钉', key: 'dingtalk', recommended: '2.1.0' },
+                  { label: '飞书', key: 'feishu', recommended: '1.8.5' },
+                  { label: '企业微信', key: 'wecom', recommended: '4.0.2' },
+                  { label: 'QQ', key: 'qq', recommended: '1.3.0' },
+                ] as const).map(({ label, key, recommended }, idx, arr) => {
+                  const current = pluginVersionTarget.pluginVersions[key];
+                  const isUpToDate = current === recommended;
+                  return (
+                    <div key={key} className={`grid grid-cols-3 items-center px-4 py-2.5 ${idx < arr.length - 1 ? 'border-b border-gray-50' : ''} hover:bg-gray-50/50`}>
+                      <span className="text-sm text-gray-600">{label}</span>
+                      <span className="text-sm font-mono text-gray-700">{current}</span>
+                      {isUpToDate
+                        ? <span className="text-sm text-green-600">已是最新版本</span>
+                        : <span className="text-sm font-mono text-gray-700">{recommended}</span>
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -1216,7 +1579,7 @@ export default function OpenClawMonitor() {
                     <table className="w-full text-sm table-fixed">
                       <colgroup>
                         <col style={{ width: '30%' }} />
-                        <col style={{ width: '18%' }} />
+                        <col style={{ width: '13%' }} />
                         <col style={{ width: '28%' }} />
                         <col style={{ width: '24%' }} />
                       </colgroup>

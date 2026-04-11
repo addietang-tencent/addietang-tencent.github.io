@@ -5,6 +5,7 @@
  * - 顶部固定导航栏 (64px)
  * - 主色 #007AFF
  */
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { SITE_CONFIG } from "@/lib/mockData";
 import {
@@ -15,7 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronDown, KeyRound, LogOut, Settings, UserCog } from "lucide-react";
+import {
+  Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
@@ -26,6 +29,319 @@ const NAV_ITEMS = [
 ];
 
 const CURRENT_USER = "alice@acompany.com";
+
+// ==================== 通知类型定义 ====================
+
+type NotificationCategory = "success" | "failure" | "notice";
+
+interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+  category: NotificationCategory;
+}
+
+const NOTIFICATION_CATEGORY_CONFIG: Record<
+  NotificationCategory,
+  { label: string; icon: React.ReactNode; bgColor: string; textColor: string }
+> = {
+  success: {
+    label: "成功",
+    icon: <span style={{ fontFamily: '"微软雅黑", "Microsoft YaHei", sans-serif' }}>✓</span>,
+    bgColor: "bg-green-50",
+    textColor: "text-green-700",
+  },
+  failure: {
+    label: "错误",
+    icon: (
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+        <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round"/>
+        <line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+    bgColor: "bg-red-50",
+    textColor: "text-red-700",
+  },
+  notice: {
+    label: "通知",
+    icon: <span style={{ fontFamily: '"微软雅黑", "Microsoft YaHei", sans-serif' }}>ℹ</span>,
+    bgColor: "bg-blue-50",
+    textColor: "text-blue-700",
+  },
+};
+
+const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: "n1",
+    message: "『Alice的工作助手』TAT 执行命令错误：脚本返回非零退出码 (exit code 1)",
+    timestamp: "2026-03-26 11:05",
+    category: "failure",
+  },
+  {
+    id: "n2",
+    message: "『Noah的分析助手』命令执行超时，已自动终止（超时阈值 60s）",
+    timestamp: "2026-03-26 10:42",
+    category: "failure",
+  },
+  {
+    id: "n3",
+    message: "『Bob的数据分析』重启失败，实例状态异常，请联系管理员",
+    timestamp: "2026-03-26 09:30",
+    category: "failure",
+  },
+  {
+    id: "n4",
+    message: "『Eve的编程助手』TAT Agent 离线，命令下发失败",
+    timestamp: "2026-03-25 17:15",
+    category: "failure",
+  },
+  {
+    id: "n5",
+    message: "『Alice的工作助手』API 密钥存在泄露风险，请立即轮换",
+    timestamp: "2026-03-25 14:00",
+    category: "failure",
+  },
+  {
+    id: "n6",
+    message: "检测到异常登录行为：账号 bob@bcompany.com 于境外 IP 登录，请确认",
+    timestamp: "2026-03-24 08:55",
+    category: "failure",
+  },
+  {
+    id: "n7",
+    message: "『Alice的工作助手』已成功删除",
+    timestamp: "2026-03-23 15:30",
+    category: "success",
+  },
+  {
+    id: "n8",
+    message: "『Noah的分析助手』创建成功，已进入运行状态",
+    timestamp: "2026-03-22 10:10",
+    category: "success",
+  },
+  {
+    id: "n9",
+    message: "『Bob的数据分析』配置更新成功",
+    timestamp: "2026-03-21 09:00",
+    category: "success",
+  },
+  {
+    id: "n10",
+    message: "平台版本已更新至 v2.4.0，新增多模型切换与指令库功能，点击查看更新日志",
+    timestamp: "2026-03-20 09:00",
+    category: "notice",
+  },
+];
+
+// ==================== 通知面板组件 ====================
+
+function NotificationPanel() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showPanel, setShowPanel] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | NotificationCategory>("all");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setNotifications(MOCK_NOTIFICATIONS);
+    setHasUnread(true);
+  }, []);
+
+  // 点击弹窗外部关闭
+  useEffect(() => {
+    if (!showPanel) return;
+    const handleMouseDown = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setShowPanel(false);
+      }
+    };
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [showPanel]);
+
+  const handleOpen = () => {
+    setShowPanel((prev) => !prev);
+    setHasUnread(false);
+  };
+
+  const handleDelete = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const handleClearAll = () => {
+    setNotifications([]);
+  };
+
+  const handleCopy = (notif: Notification) => {
+    navigator.clipboard.writeText(notif.message).then(() => {
+      setCopiedId(notif.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  const tabs: { key: "all" | NotificationCategory; label: string }[] = [
+    { key: "all",     label: "全部" },
+    { key: "success", label: "成功" },
+    { key: "failure", label: "错误" },
+    { key: "notice",  label: "通知" },
+  ];
+
+  const filteredNotifs = activeTab === "all"
+    ? notifications
+    : notifications.filter((n) => n.category === activeTab);
+
+  return (
+    <div className="relative">
+      {/* Bell 触发按钮 */}
+      <button
+        onClick={handleOpen}
+        className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
+      >
+        <Bell style={{ width: "18px", height: "18px" }} />
+        {hasUnread && (
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+        )}
+      </button>
+
+      {/* 通知面板 */}
+      {showPanel && (
+        <div
+          ref={panelRef}
+          className="fixed right-4 top-[68px] w-80 bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col z-[200]"
+          style={{ maxHeight: filteredNotifs.length > 4 ? "400px" : undefined }}
+        >
+          {/* Header + Tabs */}
+          <div className="px-3 pt-3 pb-0 flex-shrink-0">
+            <div className="flex items-center justify-between mb-2.5">
+              <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
+              <button
+                onClick={handleClearAll}
+                className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                全部删除
+              </button>
+            </div>
+            {/* Filter Tabs */}
+            <div className="flex gap-0.5 border-b border-gray-100">
+              {tabs.map((tab) => {
+                const count =
+                  tab.key === "all"
+                    ? notifications.length
+                    : notifications.filter((n) => n.category === tab.key).length;
+                const isActive = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={[
+                      "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-t-md transition-colors relative",
+                      isActive
+                        ? "text-blue-600 bg-blue-50/60"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {tab.label}
+                    {count > 0 && (
+                      <span
+                        className={[
+                          "inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-semibold",
+                          isActive
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-gray-100 text-gray-500",
+                        ].join(" ")}
+                      >
+                        {count}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 消息列表（可滚动） */}
+          <div
+            className="overflow-y-auto flex-1"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db #f3f4f6" }}
+          >
+            {filteredNotifs.length === 0 ? (
+              <div className="p-6 text-center">
+                <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-xs text-gray-400">暂无消息</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {filteredNotifs.map((notif) => {
+                  const catCfg = NOTIFICATION_CATEGORY_CONFIG[notif.category];
+                  const isCopied = copiedId === notif.id;
+                  return (
+                    <div
+                      key={notif.id}
+                      className="px-3 py-2.5 hover:bg-gray-50/70 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs text-gray-700 flex-1 leading-relaxed line-clamp-2">
+                          {notif.message}
+                        </p>
+                        <button
+                          onClick={() => handleDelete(notif.id)}
+                          className="text-gray-300 hover:text-gray-600 transition-colors flex-shrink-0 mt-0.5"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={[
+                              "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium",
+                              catCfg.bgColor,
+                              catCfg.textColor,
+                            ].join(" ")}
+                          >
+                            {catCfg.icon}
+                            {catCfg.label}
+                          </span>
+                          <span className="text-gray-400" style={{ fontSize: "11px" }}>
+                            {notif.timestamp}
+                          </span>
+                        </div>
+                        {notif.category === "failure" && (
+                          <button
+                            onClick={() => handleCopy(notif)}
+                            className={[
+                              "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded transition-colors",
+                              isCopied
+                                ? "text-green-600 bg-green-50"
+                                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+                            ].join(" ")}
+                            title="复制详情"
+                          >
+                            {isCopied ? (
+                              <><Check className="w-3 h-3" />已复制</>
+                            ) : (
+                              <><Copy className="w-3 h-3" />复制详情</>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==================== TenantLayout ====================
 
 export default function TenantLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -73,8 +389,11 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
             })}
           </nav>
 
-          {/* Right Side: Admin Button + User Menu */}
+          {/* Right Side: Bell + Admin Button + User Menu */}
           <div className="flex items-center gap-2">
+            {/* 消息中心 */}
+            <NotificationPanel />
+
             {/* 管理后台按钮：仅管理员可见 */}
             {isAdmin && (
               <Link href="/admin/basic-info">

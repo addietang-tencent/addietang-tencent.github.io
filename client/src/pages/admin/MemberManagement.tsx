@@ -1604,7 +1604,7 @@ export default function MemberManagement() {
 
         {/* Table - 全部视图 */}
         {viewMode === "all" && (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden w-full min-w-0"
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
           {/* 卡片 header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
@@ -1666,8 +1666,8 @@ export default function MemberManagement() {
               </div>
             )}
           </div>
-          <div className="overflow-x-auto" style={{ overscrollBehaviorX: "contain" }}>
-          <table className="min-w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
@@ -1692,7 +1692,7 @@ export default function MemberManagement() {
                 )}
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">分组</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
                     OpenClaw 上限
@@ -1746,7 +1746,7 @@ export default function MemberManagement() {
                       <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                     )}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-4 py-4 whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>
                     <div className="flex items-center gap-1 max-w-[140px]">
                     {groupNames.length === 0 ? (
                       <span className="text-sm text-gray-300">—</span>

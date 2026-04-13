@@ -1,11 +1,12 @@
 /**
  * ChatView - 对话视图组件
  * Design: 「流动蓝图」Fluid Blueprint
- * - 左侧 OpenClaw 列表面板（无搜索框、无头像）
- * - 右侧对话区（欢迎态 + 对话态 + 三点loading + 输入框）
+ * - 左侧 OpenClaw 列表 / 浏览器模式下极简 rail
+ * - 中间对话区（欢迎态 + 对话态 + 输入框）
+ * - 右侧云端浏览器区（MVP：执行中可查看，空闲时可操作）
  */
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,14 +30,42 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import {
-  MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  RotateCcw, Terminal, UserMinus, Send, Plus, Mic, ChevronUp, ChevronDown, Sparkles, ArrowRight,
-  MessageSquarePlus, Maximize2, Minimize2,
+  MoreVertical,
+  Settings,
+  RefreshCw,
+  HardDriveDownload,
+  Trash2,
+  RotateCcw,
+  Terminal,
+  UserMinus,
+  Send,
+  Plus,
+  Mic,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  ArrowRight,
+  MessageSquarePlus,
+  Maximize2,
+  Minimize2,
+  Globe,
+  Monitor,
+  Eye,
+  MousePointerClick,
+  X,
 } from "lucide-react";
 
 // Types - must match MyOpenClaw
+// 产品要求：页面主工作态只保留 3 种
+
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+type WorkspaceMode = "chat" | "chat_with_browser" | "browser_fullscreen";
+type BrowserSite = "home" | "search" | "news" | "docs";
+
+type BrowserTaskState = "idle" | "running";
+type BrowserPanelStatus = "loading" | "ready";
 
 interface OpenClawItem {
   id: string;
@@ -59,6 +88,29 @@ interface ChatMessage {
   timestamp: number;
 }
 
+interface BrowserPanelState {
+  mode: WorkspaceMode;
+  taskState: BrowserTaskState;
+  panelStatus: BrowserPanelStatus;
+  panelLoadProgress: number;
+  site: BrowserSite;
+  url: string;
+  pageTitle: string;
+  pageDescription: string;
+  addressInput: string;
+  activeQuery: string;
+  lastSyncedAt: string;
+  liveCaption: string;
+  lastUserAction: string;
+  statusNote: string;
+  isManualOperating: boolean;
+}
+
+interface BrowserScenarioStep {
+  delay: number;
+  patch: Partial<BrowserPanelState>;
+}
+
 const STATUS_CONFIG: Record<OpenClawStatus, {
   label: string;
   dotColor?: string;
@@ -79,66 +131,148 @@ const STATUS_CONFIG: Record<OpenClawStatus, {
 };
 
 const MOCK_QUICK_COMMANDS = [
-  "每天早上 9 点抓取 AI 行业新闻发我",
+  "帮我搜索下今天的新闻",
   "总结这份报告的核心结论",
   "帮我写一份项目进度周报",
-  "半小时后提醒我开会",
-];
-
-const MOCK_AI_RESPONSES = [
-  "好的，我来帮你处理这个任务。让我先了解一下具体需求...",
-  "收到！我已经开始执行了，稍后会把结果发给你。",
-  "没问题，我会持续关注并及时提醒你。",
-  "好嘞，这个任务我很擅长，马上开始！",
+  "查一下 OpenClaw 的使用文档",
 ];
 
 const COMMAND_LIST = [
   { command: "/new", label: "新建会话" },
   { command: "/compact", label: "压缩上下文" },
   { command: "/status", label: "查看状态" },
-  { command: "/stop", label: "停止当前任务" },
   { command: "/commands", label: "全部指令" },
 ];
+
+const CLOUD_BROWSER_HOME = "https://cloud.tencent.com/";
+const CHAT_PANE_DEFAULT_WIDTH = 420;
+const CHAT_PANE_MIN_WIDTH = 320;
+const CHAT_PANE_MAX_WIDTH = 640;
+const BROWSER_PANE_MIN_WIDTH = 520;
+const RESIZE_HANDLE_WIDTH = 8;
+
+const formatSyncTime = () =>
+  new Date().toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const createDefaultBrowserState = (claw?: OpenClawItem, clawId?: string): BrowserPanelState => ({
+  mode: "chat",
+  taskState: "idle",
+  panelStatus: "ready",
+  panelLoadProgress: 100,
+  site: "home",
+  url: CLOUD_BROWSER_HOME,
+  pageTitle: "腾讯云",
+  pageDescription: claw ? `已连接 ${claw.name} 对应的云端浏览器，默认保持在腾讯云页面。` : `已连接当前 OpenClaw 实例，默认保持在腾讯云页面。`,
+  addressInput: CLOUD_BROWSER_HOME,
+  activeQuery: "",
+  lastSyncedAt: formatSyncTime(),
+  liveCaption: "浏览器处于查看态，可实时查看当前画面。",
+  lastUserAction: clawId ? `已打开 ${CLOUD_BROWSER_HOME}` : "已打开腾讯云首页",
+  statusNote: "空闲",
+  isManualOperating: false,
+});
+
+const buildBrowserScenario = (prompt: string): { steps: BrowserScenarioStep[]; totalDuration: number; finalAction: string } => ({
+  steps: [
+    {
+      delay: 250,
+      patch: {
+        site: "home",
+        url: CLOUD_BROWSER_HOME,
+        pageTitle: "腾讯云",
+        pageDescription: "正在进入腾讯云页面并准备执行任务。",
+        addressInput: CLOUD_BROWSER_HOME,
+        activeQuery: "",
+        liveCaption: "正在打开腾讯云页面...",
+        lastUserAction: "AI 正在进入腾讯云页面",
+        statusNote: "执行中",
+        lastSyncedAt: formatSyncTime(),
+      },
+    },
+    {
+      delay: 1200,
+      patch: {
+        site: "search",
+        url: CLOUD_BROWSER_HOME,
+        pageTitle: "腾讯云",
+        pageDescription: `正在腾讯云页面内处理「${prompt}」。`,
+        addressInput: CLOUD_BROWSER_HOME,
+        activeQuery: prompt,
+        liveCaption: `正在处理「${prompt}」...`,
+        lastUserAction: "AI 正在腾讯云页面内执行任务",
+        statusNote: "执行中",
+        lastSyncedAt: formatSyncTime(),
+      },
+    },
+  ],
+  totalDuration: 2200,
+  finalAction: `已在腾讯云页面完成「${prompt}」`,
+});
+
+const getMockAssistantReply = (prompt: string) => `收到，我已经在腾讯云页面里开始处理「${prompt}」，你可以在右侧继续查看执行过程。`;
 
 // Status dot for sidebar list
 const StatusDotSmall = ({ status }: { status: OpenClawStatus }) => {
   const cfg = STATUS_CONFIG[status];
   if (status === "loading") {
     return (
-      <span className="inline-block flex-shrink-0 animate-spin"
-        style={{ borderWidth: "1.5px", borderStyle: "solid", borderColor: `${cfg.dotColor} transparent transparent transparent`, width: "6px", height: "6px", borderRadius: "50%" }} />
+      <span
+        className="inline-block flex-shrink-0 animate-spin"
+        style={{
+          borderWidth: "1.5px",
+          borderStyle: "solid",
+          borderColor: `${cfg.dotColor} transparent transparent transparent`,
+          width: "6px",
+          height: "6px",
+          borderRadius: "50%",
+        }}
+      />
     );
   }
+
   if (status === "creating") {
     return (
-      <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
-        style={{ background: cfg.dotColor, animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }} />
+      <span
+        className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0"
+        style={{ background: cfg.dotColor, animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" }}
+      />
     );
   }
+
   return <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: cfg.dotColor }} />;
 };
 
 const StatusBadgeSmall = ({ status }: { status: OpenClawStatus }) => {
   const cfg = STATUS_CONFIG[status];
   const badge = (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 leading-none"
-      style={{ background: cfg.bgColor, color: cfg.textColor, fontSize: "10px" }}>
+    <span
+      className="inline-flex h-[18px] items-center gap-1 px-1.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0 leading-none"
+      style={{ background: cfg.bgColor, color: cfg.textColor, fontSize: "10px" }}
+    >
       <StatusDotSmall status={status} />
       {cfg.label}
     </span>
   );
+
   if (cfg.tooltipText && status !== "running") {
     return (
       <Tooltip>
-        <TooltipTrigger asChild><span className="inline-flex flex-shrink-0">{badge}</span></TooltipTrigger>
-        <TooltipContent side="bottom" className="text-xs">{cfg.tooltipText}</TooltipContent>
+        <TooltipTrigger asChild>
+          <span className="inline-flex flex-shrink-0">{badge}</span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-xs">
+          {cfg.tooltipText}
+        </TooltipContent>
       </Tooltip>
     );
   }
+
   return badge;
 };
 
-// Three-dot loading animation
 const TypingIndicator = () => (
   <div className="flex items-center gap-1 py-2 px-1">
     <span className="w-2 h-2 rounded-full bg-gray-400 typing-dot" style={{ animationDelay: "0ms" }} />
@@ -162,58 +296,376 @@ interface ChatViewProps {
 }
 
 export default function ChatView({
-  claws, onDeleteConfirm, onRestartConfirm, onReinstallConfirm,
-  onRemoveRoleConfirm, onRetry, allowTerminal, refreshingIds, onRefreshStatus,
-  isFullscreen, onToggleFullscreen,
+  claws,
+  onDeleteConfirm,
+  onRestartConfirm,
+  onReinstallConfirm,
+  onRemoveRoleConfirm,
+  onRetry,
+  allowTerminal,
+  refreshingIds,
+  onRefreshStatus,
+  isFullscreen,
+  onToggleFullscreen,
 }: ChatViewProps) {
   const [, navigate] = useLocation();
-  // Select the newest claw by default
-  const sortedClaws = [...claws].sort((a, b) => {
-    // Sort by createdAt descending (newest first)
-    return b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id);
-  });
-  const [selectedClawId, setSelectedClawId] = useState<string | null>(() => {
-    return sortedClaws.length > 0 ? sortedClaws[0].id : null;
-  });
+  const sortedClaws = [...claws].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
 
-  // Track previous claws count to detect new additions
+  const [selectedClawId, setSelectedClawId] = useState<string | null>(() => (sortedClaws.length > 0 ? sortedClaws[0].id : null));
+  const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>({});
+  const [typingMap, setTypingMap] = useState<Record<string, boolean>>({});
+  const [browserMap, setBrowserMap] = useState<Record<string, BrowserPanelState>>({});
+  const [inputText, setInputText] = useState("");
+  const [showCommands, setShowCommands] = useState(false);
+  const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
+  const [isTenantHeaderVisible, setIsTenantHeaderVisible] = useState(true);
+  const [leftPaneWidth, setLeftPaneWidth] = useState(CHAT_PANE_DEFAULT_WIDTH);
+  const [isResizing, setIsResizing] = useState(false);
+
   const prevClawsCountRef = useRef(claws.length);
+  const workspaceRef = useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const commandsRef = useRef<HTMLDivElement>(null);
+  const clawsRef = useRef(claws);
+  const browserTaskTimersRef = useRef<Record<string, number[]>>({});
+  const browserPanelLoadTimersRef = useRef<Record<string, number[]>>({});
+  const tenantHeaderRef = useRef<HTMLElement | null>(null);
+  const tenantMainRef = useRef<HTMLElement | null>(null);
+  const tenantHeaderHideTimerRef = useRef<number | null>(null);
+  const tenantLayoutRestoreRef = useRef<{
+    header: {
+      transform: string;
+      opacity: string;
+      transition: string;
+      willChange: string;
+      pointerEvents: string;
+    };
+    main: {
+      paddingTop: string;
+      transition: string;
+    };
+  } | null>(null);
 
-  // Update selection if claws change: auto-select newest when a new claw is added
+  const selectedBrowserMode: WorkspaceMode = selectedClawId ? browserMap[selectedClawId]?.mode ?? "chat" : "chat";
+  const shouldAutoHideTenantHeader = selectedBrowserMode !== "chat";
+  const isInstanceSwitchLocked = selectedBrowserMode !== "chat";
+
+  const clampLeftPaneWidth = useCallback((nextWidth: number, containerWidth: number) => {
+    const maxWidthByContainer = containerWidth > 0 ? containerWidth - BROWSER_PANE_MIN_WIDTH - RESIZE_HANDLE_WIDTH : CHAT_PANE_MAX_WIDTH;
+    const effectiveMaxWidth = Math.max(CHAT_PANE_MIN_WIDTH, Math.min(CHAT_PANE_MAX_WIDTH, maxWidthByContainer));
+    return Math.min(Math.max(nextWidth, CHAT_PANE_MIN_WIDTH), effectiveMaxWidth);
+  }, []);
+
+  useEffect(() => {
+    clawsRef.current = claws;
+  }, [claws]);
+
   useEffect(() => {
     if (claws.length === 0) {
       setSelectedClawId(null);
       prevClawsCountRef.current = 0;
       return;
     }
-    // A new claw was added → select the newest one
-    if (claws.length > prevClawsCountRef.current && prevClawsCountRef.current > 0) {
+
+    if (!isInstanceSwitchLocked && claws.length > prevClawsCountRef.current && prevClawsCountRef.current > 0) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
-    // Selected claw was deleted → fallback to newest
-    if (selectedClawId && !claws.find(c => c.id === selectedClawId)) {
+
+    if (selectedClawId && !claws.find((claw) => claw.id === selectedClawId)) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
-    // No selection yet → select newest
+
     if (!selectedClawId && claws.length > 0) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
+
     prevClawsCountRef.current = claws.length;
-  }, [claws, selectedClawId]);
+  }, [claws, isInstanceSwitchLocked, selectedClawId, sortedClaws]);
 
-  const selectedClaw = claws.find(c => c.id === selectedClawId) ?? null;
+  const getDefaultBrowserState = useCallback((clawId: string) => {
+    const claw = clawsRef.current.find((item) => item.id === clawId);
+    return createDefaultBrowserState(claw, clawId);
+  }, []);
 
-  // Chat messages per claw
-  const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>({});
-  const [inputText, setInputText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showCommands, setShowCommands] = useState(false);
-  const [showNewChatConfirm, setShowNewChatConfirm] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const commandsRef = useRef<HTMLDivElement>(null);
+  const updateBrowserState = useCallback(
+    (clawId: string, updater: (prev: BrowserPanelState) => BrowserPanelState) => {
+      setBrowserMap((prev) => ({
+        ...prev,
+        [clawId]: updater(prev[clawId] ?? getDefaultBrowserState(clawId)),
+      }));
+    },
+    [getDefaultBrowserState],
+  );
 
-  const currentMessages = selectedClawId ? (chatMap[selectedClawId] ?? []) : [];
+  useEffect(() => {
+    setBrowserMap((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      const aliveIds = new Set(claws.map((claw) => claw.id));
+
+      claws.forEach((claw) => {
+        if (!next[claw.id]) {
+          next[claw.id] = createDefaultBrowserState(claw);
+          changed = true;
+        }
+      });
+
+      Object.keys(next).forEach((clawId) => {
+        if (!aliveIds.has(clawId)) {
+          delete next[clawId];
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+  }, [claws]);
+
+  const clearBrowserTaskTimers = useCallback((clawId?: string) => {
+    if (clawId) {
+      (browserTaskTimersRef.current[clawId] ?? []).forEach((timer) => window.clearTimeout(timer));
+      delete browserTaskTimersRef.current[clawId];
+      return;
+    }
+
+    Object.values(browserTaskTimersRef.current).forEach((timers) => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    });
+    browserTaskTimersRef.current = {};
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearBrowserTaskTimers();
+    };
+  }, [clearBrowserTaskTimers]);
+
+  const clearBrowserPanelLoadTimers = useCallback((clawId?: string) => {
+    if (clawId) {
+      (browserPanelLoadTimersRef.current[clawId] ?? []).forEach((timer) => window.clearTimeout(timer));
+      delete browserPanelLoadTimersRef.current[clawId];
+      return;
+    }
+
+    Object.values(browserPanelLoadTimersRef.current).forEach((timers) => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    });
+    browserPanelLoadTimersRef.current = {};
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearBrowserPanelLoadTimers();
+    };
+  }, [clearBrowserPanelLoadTimers]);
+
+  const startBrowserPanelLoading = useCallback((clawId: string) => {
+    clearBrowserPanelLoadTimers(clawId);
+    updateBrowserState(clawId, (prev) => ({
+      ...prev,
+      panelStatus: "loading",
+      panelLoadProgress: 8,
+      isManualOperating: false,
+      liveCaption: "云端浏览器启动中，请稍候。",
+      statusNote: "启动中",
+      lastUserAction: "正在启动云端浏览器",
+      lastSyncedAt: formatSyncTime(),
+    }));
+
+    const progressSteps = [
+      { delay: 160, progress: 18 },
+      { delay: 360, progress: 34 },
+      { delay: 700, progress: 58 },
+      { delay: 1080, progress: 74 },
+      { delay: 1460, progress: 84 },
+      { delay: 1860, progress: 89 },
+    ];
+
+    browserPanelLoadTimersRef.current[clawId] = progressSteps.map((step) =>
+      window.setTimeout(() => {
+        updateBrowserState(clawId, (prev) => ({
+          ...prev,
+          panelStatus: prev.taskState === "running" ? prev.panelStatus : "loading",
+          panelLoadProgress: Math.max(prev.panelLoadProgress, step.progress),
+        }));
+      }, step.delay),
+    );
+
+    const finishTimer = window.setTimeout(() => {
+      updateBrowserState(clawId, (prev) => ({
+        ...prev,
+        panelStatus: "ready",
+        panelLoadProgress: 100,
+        isManualOperating: false,
+        liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+        statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
+        lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已连接云端浏览器",
+        lastSyncedAt: formatSyncTime(),
+      }));
+      delete browserPanelLoadTimersRef.current[clawId];
+    }, 2140);
+
+    browserPanelLoadTimersRef.current[clawId] = [...(browserPanelLoadTimersRef.current[clawId] ?? []), finishTimer];
+  }, [clearBrowserPanelLoadTimers, updateBrowserState]);
+
+  const clearTenantHeaderHideTimer = useCallback(() => {
+    if (tenantHeaderHideTimerRef.current !== null) {
+      window.clearTimeout(tenantHeaderHideTimerRef.current);
+      tenantHeaderHideTimerRef.current = null;
+    }
+  }, []);
+
+  const applyTenantHeaderVisibility = useCallback((visible: boolean) => {
+    const header = tenantHeaderRef.current;
+    if (!header) return;
+
+    const main = tenantMainRef.current;
+    setIsTenantHeaderVisible(visible);
+    header.style.transform = visible ? "translateY(0)" : "translateY(calc(-100% - 8px))";
+    header.style.opacity = visible ? "1" : "0";
+    header.style.pointerEvents = visible ? "auto" : "none";
+
+    if (main) {
+      main.style.paddingTop = visible ? "64px" : "0px";
+    }
+  }, []);
+
+  const showTenantHeader = useCallback(() => {
+    clearTenantHeaderHideTimer();
+    applyTenantHeaderVisibility(true);
+  }, [applyTenantHeaderVisibility, clearTenantHeaderHideTimer]);
+
+  const hideTenantHeader = useCallback(() => {
+    clearTenantHeaderHideTimer();
+    applyTenantHeaderVisibility(false);
+  }, [applyTenantHeaderVisibility, clearTenantHeaderHideTimer]);
+
+  const scheduleHideTenantHeader = useCallback(
+    (delay = 120) => {
+      clearTenantHeaderHideTimer();
+      tenantHeaderHideTimerRef.current = window.setTimeout(() => {
+        applyTenantHeaderVisibility(false);
+        tenantHeaderHideTimerRef.current = null;
+      }, delay);
+    },
+    [applyTenantHeaderVisibility, clearTenantHeaderHideTimer],
+  );
+
+  useEffect(() => {
+    const header = document.querySelector("header.fixed.top-0.left-0.right-0.z-50") as HTMLElement | null;
+    const main = document.querySelector("main.pt-16") as HTMLElement | null;
+
+    if (!header) return;
+
+    tenantHeaderRef.current = header;
+    tenantMainRef.current = main;
+    tenantLayoutRestoreRef.current = {
+      header: {
+        transform: header.style.transform,
+        opacity: header.style.opacity,
+        transition: header.style.transition,
+        willChange: header.style.willChange,
+        pointerEvents: header.style.pointerEvents,
+      },
+      main: {
+        paddingTop: main?.style.paddingTop ?? "",
+        transition: main?.style.transition ?? "",
+      },
+    };
+
+    header.style.transition = "transform 180ms ease, opacity 180ms ease";
+    header.style.willChange = "transform, opacity";
+    if (main) {
+      main.style.transition = "padding-top 180ms ease";
+    }
+
+    const handleHeaderMouseEnter = () => showTenantHeader();
+    const handleHeaderMouseLeave = () => {
+      if (!shouldAutoHideTenantHeader) return;
+      scheduleHideTenantHeader();
+    };
+
+    header.addEventListener("mouseenter", handleHeaderMouseEnter);
+    header.addEventListener("mouseleave", handleHeaderMouseLeave);
+
+    if (shouldAutoHideTenantHeader) {
+      hideTenantHeader();
+    } else {
+      showTenantHeader();
+    }
+
+    return () => {
+      clearTenantHeaderHideTimer();
+      header.removeEventListener("mouseenter", handleHeaderMouseEnter);
+      header.removeEventListener("mouseleave", handleHeaderMouseLeave);
+
+      const restore = tenantLayoutRestoreRef.current;
+      if (restore) {
+        header.style.transform = restore.header.transform;
+        header.style.opacity = restore.header.opacity;
+        header.style.transition = restore.header.transition;
+        header.style.willChange = restore.header.willChange;
+        header.style.pointerEvents = restore.header.pointerEvents;
+        if (main) {
+          main.style.paddingTop = restore.main.paddingTop;
+          main.style.transition = restore.main.transition;
+        }
+      }
+
+      tenantHeaderRef.current = null;
+      tenantMainRef.current = null;
+      tenantLayoutRestoreRef.current = null;
+    };
+  }, [clearTenantHeaderHideTimer, hideTenantHeader, scheduleHideTenantHeader, shouldAutoHideTenantHeader, showTenantHeader]);
+
+  const setClawTyping = useCallback((clawId: string, value: boolean) => {
+    setTypingMap((prev) => {
+      if (prev[clawId] === value) return prev;
+      return { ...prev, [clawId]: value };
+    });
+  }, []);
+
+  const selectedClaw = claws.find((claw) => claw.id === selectedClawId) ?? null;
+  const currentMessages = selectedClawId ? chatMap[selectedClawId] ?? [] : [];
+  const currentIsTyping = selectedClawId ? typingMap[selectedClawId] ?? false : false;
+  const currentBrowserState = selectedClawId ? browserMap[selectedClawId] ?? getDefaultBrowserState(selectedClawId) : null;
+  const workspaceMode: WorkspaceMode = currentBrowserState?.mode ?? "chat";
+  const isRunning = selectedClaw?.status === "running";
+  const isBrowserPanelLoading = currentBrowserState?.panelStatus === "loading";
+  const isBrowserTaskRunning = currentBrowserState?.taskState === "running";
+  const isBrowserManualOperating = !!currentBrowserState?.isManualOperating && !isBrowserTaskRunning && !isBrowserPanelLoading;
+  const isBrowserReadonly = !currentBrowserState || isBrowserPanelLoading || isBrowserTaskRunning || !currentBrowserState.isManualOperating;
+  const isBrowserToolbarBusy = isBrowserPanelLoading || isBrowserTaskRunning;
+  const browserOperationButtonLabel = isBrowserTaskRunning ? "进入操作" : isBrowserManualOperating ? "退出操作" : "进入操作";
+  const chatPaneStyle = workspaceMode === "chat_with_browser"
+    ? {
+        width: `${leftPaneWidth}px`,
+        minWidth: `${CHAT_PANE_MIN_WIDTH}px`,
+        maxWidth: `${CHAT_PANE_MAX_WIDTH}px`,
+      }
+    : undefined;
+
+  const handleResizeStart = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (workspaceMode !== "chat_with_browser") return;
+      event.preventDefault();
+      setIsResizing(true);
+    },
+    [workspaceMode],
+  );
+
+  const handleSelectClaw = useCallback(
+    (clawId: string) => {
+      // 产品规则：浏览器打开后锁定当前实例，不允许继续切换
+      if (workspaceMode !== "chat") {
+        toast.message("请先收起云端浏览器，再切换 OpenClaw 实例");
+        return;
+      }
+      setSelectedClawId(clawId);
+    },
+    [workspaceMode],
+  );
 
   const scrollToBottom = useCallback(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -221,462 +673,688 @@ export default function ChatView({
 
   useEffect(() => {
     scrollToBottom();
-  }, [currentMessages, isTyping, scrollToBottom]);
+  }, [currentMessages, currentIsTyping, scrollToBottom]);
 
-  const handleSend = () => {
-    if (!inputText.trim() || !selectedClawId || isTyping) return;
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: "user",
-      content: inputText.trim(),
-      timestamp: Date.now(),
-    };
-    setChatMap(prev => ({
-      ...prev,
-      [selectedClawId]: [...(prev[selectedClawId] ?? []), userMsg],
-    }));
-    setInputText("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
-
-    // Simulate AI response
-    setIsTyping(true);
-    const delay = 1500 + Math.random() * 1500;
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content: MOCK_AI_RESPONSES[Math.floor(Math.random() * MOCK_AI_RESPONSES.length)],
-        timestamp: Date.now(),
-      };
-      setChatMap(prev => ({
-        ...prev,
-        [selectedClawId]: [...(prev[selectedClawId] ?? []), aiMsg],
-      }));
-      setIsTyping(false);
-    }, delay);
-  };
-
-  const handleQuickCommand = (cmd: string) => {
-    if (!selectedClawId || isTyping) return;
-    setInputText("");
-    const userMsg: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: "user",
-      content: cmd,
-      timestamp: Date.now(),
-    };
-    setChatMap(prev => ({
-      ...prev,
-      [selectedClawId]: [...(prev[selectedClawId] ?? []), userMsg],
-    }));
-
-    setIsTyping(true);
-    const delay = 1500 + Math.random() * 1500;
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content: MOCK_AI_RESPONSES[Math.floor(Math.random() * MOCK_AI_RESPONSES.length)],
-        timestamp: Date.now(),
-      };
-      setChatMap(prev => ({
-        ...prev,
-        [selectedClawId]: [...(prev[selectedClawId] ?? []), aiMsg],
-      }));
-      setIsTyping(false);
-    }, delay);
-  };
-
-  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputText(e.target.value);
-    // Auto resize
-    const el = e.target;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 120) + "px";
-  };
-
-  // Close commands popover on click outside
   useEffect(() => {
     if (!showCommands) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (commandsRef.current && !commandsRef.current.contains(e.target as Node)) {
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (commandsRef.current && !commandsRef.current.contains(event.target as Node)) {
         setShowCommands(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showCommands]);
 
+  useEffect(() => {
+    if (workspaceMode !== "chat_with_browser") {
+      if (isResizing) {
+        setIsResizing(false);
+      }
+      return;
+    }
+
+    const syncPaneWidth = () => {
+      const containerWidth = workspaceRef.current?.clientWidth ?? 0;
+      setLeftPaneWidth((prev) => clampLeftPaneWidth(prev, containerWidth));
+    };
+
+    syncPaneWidth();
+    window.addEventListener("resize", syncPaneWidth);
+    return () => window.removeEventListener("resize", syncPaneWidth);
+  }, [clampLeftPaneWidth, isResizing, workspaceMode]);
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (workspaceMode !== "chat_with_browser") return;
+
+      const containerRect = workspaceRef.current?.getBoundingClientRect();
+      if (!containerRect) return;
+
+      setLeftPaneWidth(clampLeftPaneWidth(event.clientX - containerRect.left, containerRect.width));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    const previousCursor = document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [clampLeftPaneWidth, isResizing, workspaceMode]);
+
+  const appendMessage = useCallback((clawId: string, message: ChatMessage) => {
+    setChatMap((prev) => ({
+      ...prev,
+      [clawId]: [...(prev[clawId] ?? []), message],
+    }));
+  }, []);
+
+  const queueAssistantReply = useCallback(
+    (clawId: string, prompt: string, reply: string, withBrowserMotion = true) => {
+      clearBrowserTaskTimers(clawId);
+      setClawTyping(clawId, true);
+
+      let totalDuration = 1000;
+      let finalAction = "已完成任务";
+
+      if (withBrowserMotion) {
+        const scenario = buildBrowserScenario(prompt);
+        totalDuration = scenario.totalDuration;
+        finalAction = scenario.finalAction;
+
+        updateBrowserState(clawId, (prev) => ({
+          ...prev,
+          taskState: "running",
+          isManualOperating: false,
+          liveCaption: "OpenClaw 正在执行任务...",
+          statusNote: "执行中",
+          lastUserAction: "AI 正在接管浏览器",
+          lastSyncedAt: formatSyncTime(),
+        }));
+
+        browserTaskTimersRef.current[clawId] = scenario.steps.map((step) =>
+          window.setTimeout(() => {
+            updateBrowserState(clawId, (prev) => ({
+              ...prev,
+              ...step.patch,
+            }));
+          }, step.delay),
+        );
+      } else {
+        totalDuration = 700 + Math.round(Math.random() * 350);
+        browserTaskTimersRef.current[clawId] = [];
+      }
+
+      const finishTaskTimer = window.setTimeout(() => {
+        if (withBrowserMotion) {
+          updateBrowserState(clawId, (prev) => ({
+            ...prev,
+            taskState: "idle",
+            isManualOperating: false,
+            liveCaption: "执行完成，可继续查看当前浏览器画面。",
+            statusNote: "空闲",
+            lastUserAction: finalAction,
+            lastSyncedAt: formatSyncTime(),
+          }));
+        }
+      }, totalDuration);
+
+      const replyTimer = window.setTimeout(() => {
+        appendMessage(clawId, {
+          id: `msg-${Date.now()}`,
+          role: "assistant",
+          content: reply,
+          timestamp: Date.now(),
+        });
+        setClawTyping(clawId, false);
+      }, totalDuration + 260);
+
+      browserTaskTimersRef.current[clawId] = [
+        ...(browserTaskTimersRef.current[clawId] ?? []),
+        finishTaskTimer,
+        replyTimer,
+      ];
+    },
+    [appendMessage, clearBrowserTaskTimers, setClawTyping, updateBrowserState],
+  );
+
+  const sendPrompt = useCallback(
+    (prompt: string) => {
+      if (!selectedClawId || !prompt.trim() || currentIsTyping) return;
+
+      const content = prompt.trim();
+      appendMessage(selectedClawId, {
+        id: `msg-${Date.now()}`,
+        role: "user",
+        content,
+        timestamp: Date.now(),
+      });
+
+      queueAssistantReply(selectedClawId, content, getMockAssistantReply(content), workspaceMode !== "chat" && currentBrowserState?.panelStatus === "ready");
+    },
+    [appendMessage, currentBrowserState?.panelStatus, currentIsTyping, queueAssistantReply, selectedClawId, workspaceMode],
+  );
+
+  const handleSend = () => {
+    if (!inputText.trim()) return;
+    sendPrompt(inputText);
+    setInputText("");
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "56px";
+    }
+  };
+
+  const handleQuickCommand = (command: string) => {
+    if (!selectedClawId || currentIsTyping) return;
+    sendPrompt(command);
+  };
+
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    const element = e.target;
+    element.style.height = "auto";
+    element.style.height = `${Math.min(element.scrollHeight, 120)}px`;
+  };
+
   const handleNewChat = () => {
-    if (!selectedClawId || isTyping) return;
+    if (!selectedClawId || currentIsTyping) return;
     setShowNewChatConfirm(true);
   };
 
   const confirmNewChat = () => {
     if (!selectedClawId) return;
+
     setShowNewChatConfirm(false);
-    // Send /new command
-    const userMsg: ChatMessage = {
+    const userMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       role: "user",
       content: "/new",
       timestamp: Date.now(),
     };
-    setChatMap(prev => ({
+
+    setChatMap((prev) => ({
       ...prev,
-      [selectedClawId]: [...(prev[selectedClawId] ?? []), userMsg],
+      [selectedClawId]: [userMessage],
     }));
-    setIsTyping(true);
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content: "好的，已新建会话。之前的对话上下文已清除，我们重新开始吧！",
-        timestamp: Date.now(),
-      };
-      setChatMap(prev => ({
-        ...prev,
-        [selectedClawId]: [...(prev[selectedClawId] ?? []), aiMsg],
-      }));
-      setIsTyping(false);
-    }, 1000);
+
+    queueAssistantReply(selectedClawId, "/new", "好的，已新建会话。之前的对话上下文已清空，我们重新开始吧！", false);
   };
 
   const handleSendCommand = (command: string) => {
-    if (!selectedClawId || isTyping) return;
+    if (!selectedClawId || currentIsTyping) return;
+
     setShowCommands(false);
-    const userMsg: ChatMessage = {
+    appendMessage(selectedClawId, {
       id: `msg-${Date.now()}`,
       role: "user",
       content: command,
       timestamp: Date.now(),
-    };
-    setChatMap(prev => ({
-      ...prev,
-      [selectedClawId]: [...(prev[selectedClawId] ?? []), userMsg],
-    }));
-    setIsTyping(true);
+    });
+
     const responseMap: Record<string, string> = {
-      "/new": "好的，已新建会话。之前的对话上下文已清除，我们重新开始吧！",
+      "/new": "好的，已新建会话。之前的对话上下文已清空，我们重新开始吧！",
       "/compact": "已压缩上下文，当前保留最近 10 条对话记录。",
-      "/status": "当前状态：运行中 | 模型：GPT-4o | 已用 Token：1,234 | 剩余配额：98,766",
-      "/stop": "已停止当前任务。",
-      "/commands": "可用指令：\n/new — 新建会话\n/compact — 压缩上下文\n/status — 查看状态\n/stop — 停止当前任务\n/commands — 全部指令",
+      "/status": `当前状态：${selectedClaw?.status === "running" ? "运行中" : "不可对话"} | 最近同步：${currentBrowserState?.lastSyncedAt ?? formatSyncTime()}`,
+      "/commands": "可用指令：\n/new — 新建会话\n/compact — 压缩上下文\n/status — 查看状态\n/commands — 全部指令",
     };
-    setTimeout(() => {
-      const aiMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        role: "assistant",
-        content: responseMap[command] || "未知指令，请输入 /commands 查看全部指令。",
-        timestamp: Date.now(),
-      };
-      setChatMap(prev => ({
-        ...prev,
-        [selectedClawId]: [...(prev[selectedClawId] ?? []), aiMsg],
-      }));
-      setIsTyping(false);
-    }, 800 + Math.random() * 500);
+
+    queueAssistantReply(selectedClawId, command, responseMap[command] || "未知指令，请输入 /commands 查看全部指令。", false);
   };
 
-  const isRunning = selectedClaw?.status === "running";
+  const setWorkspaceModeForSelectedClaw = (nextMode: WorkspaceMode) => {
+    if (!selectedClawId) return;
+    updateBrowserState(selectedClawId, (prev) => ({ ...prev, mode: nextMode }));
+  };
+
+  const handleOpenBrowser = () => {
+    if (!selectedClawId || !selectedClaw) return;
+
+    if (selectedClaw.status !== "running") {
+      toast.error("当前 OpenClaw 未运行，暂时无法打开云端浏览器");
+      return;
+    }
+
+    updateBrowserState(selectedClawId, (prev) => ({
+      ...prev,
+      mode: "chat_with_browser",
+      panelStatus: "loading",
+      panelLoadProgress: 8,
+      isManualOperating: false,
+      liveCaption: "云端浏览器启动中，请稍候。",
+      statusNote: "启动中",
+      lastUserAction: "正在启动云端浏览器",
+      lastSyncedAt: formatSyncTime(),
+    }));
+    startBrowserPanelLoading(selectedClawId);
+  };
+
+  const handleToggleBrowserFullscreen = () => {
+    if (!selectedClawId || isBrowserPanelLoading) return;
+    setWorkspaceModeForSelectedClaw(workspaceMode === "browser_fullscreen" ? "chat_with_browser" : "browser_fullscreen");
+  };
+
+  const handleCollapseBrowser = () => {
+    if (!selectedClawId) return;
+    clearBrowserPanelLoadTimers(selectedClawId);
+    updateBrowserState(selectedClawId, (prev) => ({
+      ...prev,
+      mode: "chat",
+      panelStatus: "ready",
+      panelLoadProgress: 100,
+      isManualOperating: false,
+      liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+      lastSyncedAt: formatSyncTime(),
+    }));
+  };
+
+  const handleToggleManualOperation = () => {
+    if (!selectedClawId || !currentBrowserState) return;
+    if (currentBrowserState.taskState === "running" || currentBrowserState.panelStatus === "loading") return;
+
+    updateBrowserState(selectedClawId, (prev) => {
+      const nextManualOperating = !prev.isManualOperating;
+      return {
+        ...prev,
+        isManualOperating: nextManualOperating,
+        liveCaption: nextManualOperating
+          ? "已进入人工操作，可直接操作浏览器。"
+          : "浏览器已切回查看态，可实时查看当前画面。",
+        lastUserAction: nextManualOperating ? "已进入人工操作" : "已退出人工操作",
+        lastSyncedAt: formatSyncTime(),
+      };
+    });
+  };
+
+  const handleBrowserRefresh = () => {
+    if (!selectedClawId || isBrowserPanelLoading) return;
+
+    updateBrowserState(selectedClawId, (prev) => ({
+      ...prev,
+      panelStatus: "loading",
+      panelLoadProgress: 8,
+      isManualOperating: false,
+      liveCaption: "云端浏览器启动中，请稍候。",
+      statusNote: "启动中",
+      lastUserAction: "正在重新连接云端浏览器",
+      lastSyncedAt: formatSyncTime(),
+    }));
+    startBrowserPanelLoading(selectedClawId);
+  };
+
+  const renderBrowserContent = () => {
+    if (!selectedClaw || !currentBrowserState) return null;
+
+    if (currentBrowserState.panelStatus === "loading") {
+      return (
+        <div
+          className="flex min-h-[480px] w-full items-center justify-center rounded-[28px] border border-gray-200 bg-gray-100"
+          style={{ boxShadow: "inset 0 1px 2px rgba(255,255,255,0.6)" }}
+        >
+          <div className="w-full max-w-md px-8">
+            <p className="mb-4 text-center text-sm text-gray-500">
+              请稍等，云端浏览器启动中，预计需要 1 ~ 2 分钟
+            </p>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+              <div
+                className="h-full rounded-full transition-[width] duration-500 ease-out"
+                style={{
+                  width: `${currentBrowserState.panelLoadProgress}%`,
+                  background: "linear-gradient(135deg, #007AFF, #5856D6)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className="flex min-h-[480px] w-full items-center justify-center rounded-[28px] border border-gray-200 bg-gray-100"
+        style={{ boxShadow: "inset 0 1px 2px rgba(255,255,255,0.6)" }}
+      >
+        <span className="text-lg font-medium tracking-[0.08em] text-gray-500">云端浏览器</span>
+      </div>
+    );
+  };
+
+  const showFullListSidebar = workspaceMode === "chat";
+  const showBrowserPane = workspaceMode !== "chat";
+  const showChatPane = workspaceMode !== "browser_fullscreen";
+  const isWorkspaceFullscreen = workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen);
+  const workspaceTopClass = shouldAutoHideTenantHeader && !isTenantHeaderVisible ? "top-0" : "top-16";
 
   return (
-    <div
+    <>
+      {shouldAutoHideTenantHeader && (
+        <div
+          className="fixed left-1/2 top-0 z-[45] flex h-5 w-24 -translate-x-1/2 items-start justify-center"
+          onMouseEnter={showTenantHeader}
+          onMouseLeave={() => scheduleHideTenantHeader(180)}
+          aria-hidden="true"
+        >
+          <div className={`mt-1 h-1 w-16 rounded-full bg-gray-300/80 transition-all duration-200 ${isTenantHeaderVisible ? "opacity-0" : "opacity-100"}`} />
+        </div>
+      )}
+
+      <div
+      ref={workspaceRef}
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
-        isFullscreen
-          ? "fixed inset-0 top-16 z-40 rounded-none border-none"
+        isWorkspaceFullscreen
+          ? `fixed inset-0 ${workspaceTopClass} z-40 rounded-none border-none`
           : "rounded-2xl border border-gray-100"
       }`}
-      style={isFullscreen
-        ? { boxShadow: "none" }
-        : { boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "calc(100vh - 200px)", minHeight: "500px" }
+      style={
+        workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen)
+          ? { boxShadow: "none" }
+          : { boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "calc(100vh - 200px)", minHeight: "560px" }
       }
     >
-      {/* Left Panel - OpenClaw List */}
-      <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
-        <div className="px-4 h-10 flex items-center">
-          <h3 className="text-xs text-gray-400">选择 OpenClaw</h3>
-        </div>
-        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
-          {claws.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <p className="text-xs text-gray-400">暂无 OpenClaw</p>
-            </div>
-          ) : (
-            <div>
-              {sortedClaws.map((claw, index) => {
-                const isSelected = claw.id === selectedClawId;
-                const cfg = STATUS_CONFIG[claw.status];
-                const isLast = index === sortedClaws.length - 1;
-                return (
-                  <div
-                    key={claw.id}
-                    className={`mx-2 my-2 px-3 py-2.5 cursor-pointer transition-all duration-150 group/item rounded-xl ${
-                      isSelected
-                        ? "bg-blue-50"
-                        : "bg-gray-100/70 hover:bg-gray-100"
-                    }`}
-                    style={isSelected
-                      ? { boxShadow: "0 2px 8px rgba(0,122,255,0.1)", border: "1px solid rgba(0,122,255,0.25)" }
-                      : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
-                    }
-                    onClick={() => setSelectedClawId(claw.id)}
-                  >
-                    {/* Row 1: Name + Status badge */}
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
-                        {claw.name}
-                      </h4>
-                      <StatusBadgeSmall status={claw.status} />
-                    </div>
-                    {/* Row 2: Role capsule + Instance ID */}
-                    <div className="flex items-center gap-1.5 mt-1 min-w-0">
-                      {claw.roleName && (
-                        <span className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
-                          style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)", fontSize: "10px" }}>
-                          {claw.roleName}
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
-                    </div>
-                    {/* Row 3: Created time */}
-                    <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
-                    {/* Row 4: Detail config button + More menu */}
-                    <div className="flex items-center justify-between mt-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
-                              claw.status === "running"
-                                ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer"
-                                : "text-gray-300 cursor-not-allowed"
-                            }`}
-                            disabled={claw.status !== "running"}
-                            onClick={(e) => { e.stopPropagation(); if (claw.status === "running") navigate(`/openclaw/${claw.id}`); }}
+      {showFullListSidebar && (
+        <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
+          <div className="px-4 h-10 flex items-center">
+            <h3 className="text-xs text-gray-400">选择 OpenClaw</h3>
+          </div>
+          <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
+            {claws.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <p className="text-xs text-gray-400">暂无 OpenClaw</p>
+              </div>
+            ) : (
+              <div>
+                {sortedClaws.map((claw) => {
+                  const isSelected = claw.id === selectedClawId;
+                  const isConfigEnabled = claw.status === "running";
+
+                  return (
+                    <div
+                      key={claw.id}
+                      className={`mx-2 my-2 px-3 py-2.5 cursor-pointer transition-all duration-150 group/item rounded-xl ${
+                        isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
+                      }`}
+                      style={
+                        isSelected
+                          ? { boxShadow: "0 2px 8px rgba(0,122,255,0.1)", border: "1px solid rgba(0,122,255,0.25)" }
+                          : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
+                      }
+                      onClick={() => handleSelectClaw(claw.id)}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>
+                        <StatusBadgeSmall status={claw.status} />
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                        {claw.roleName && (
+                          <span
+                            className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
+                            style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)", fontSize: "10px" }}
                           >
-                            <Settings className="w-3 h-3" />
-                            详细配置
-                          </button>
-                        </TooltipTrigger>
-                        {claw.status !== "running" && (
-                          <TooltipContent side="bottom" className="text-xs">
-                            当前状态不支持进入详细配置
-                          </TooltipContent>
+                            {claw.roleName}
+                          </span>
                         )}
-                      </Tooltip>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0 ${
-                              isSelected
-                                ? "text-blue-500 hover:text-blue-700 hover:bg-blue-100/60"
-                                : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/60"
-                            }`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="w-3.5 h-3.5" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-52">
-                          {claw.status === "running" ? (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRestartConfirm({ id: claw.id, name: claw.name }); }}>
-                              <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
-                              重启
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                              <RotateCcw className="w-4 h-4 mr-2 text-gray-400" />
-                              重启
-                            </DropdownMenuItem>
+                        <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
+                                isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
+                              }`}
+                              disabled={!isConfigEnabled}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isConfigEnabled) navigate(`/openclaw/${claw.id}`);
+                              }}
+                            >
+                              <Settings className="w-3 h-3" />
+                              详细配置
+                            </button>
+                          </TooltipTrigger>
+                          {!isConfigEnabled && (
+                            <TooltipContent side="bottom" className="text-xs">
+                              当前状态不支持进入详细配置
+                            </TooltipContent>
                           )}
-                          {claw.status === "running" ? (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onReinstallConfirm({ id: claw.id, name: claw.name }); }}>
-                              <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                              重新安装
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                              <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                              重新安装
-                            </DropdownMenuItem>
-                          )}
-                          {allowTerminal && (
-                            claw.status === "running" ? (
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}>
-                                <Terminal className="w-4 h-4 mr-2 text-gray-500" />
-                                进入终端
+                        </Tooltip>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0 ${
+                                isSelected ? "text-blue-500 hover:text-blue-700 hover:bg-blue-100/60" : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/60"
+                              }`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="w-3.5 h-3.5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            {claw.status === "running" ? (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRestartConfirm({ id: claw.id, name: claw.name }); }}>
+                                <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
+                                重启
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                <Terminal className="w-4 h-4 mr-2 text-gray-400" />
-                                进入终端
+                                <RotateCcw className="w-4 h-4 mr-2 text-gray-400" />
+                                重启
                               </DropdownMenuItem>
-                            )
-                          )}
-                          {claw.roleName && claw.roleName !== "通用助手" && claw.status === "running" && (
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRemoveRoleConfirm({ id: claw.id, name: claw.name, roleName: claw.roleName! }); }}>
-                              <UserMinus className="w-4 h-4 mr-2 text-gray-500" />
-                              移除角色
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          {["creating", "loading", "pending"].includes(claw.status) ? (
-                            <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed text-red-600">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={(e) => { e.stopPropagation(); onDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); }}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              删除
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            )}
+                            {claw.status === "running" ? (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onReinstallConfirm({ id: claw.id, name: claw.name }); }}>
+                                <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
+                                重新安装
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
+                                重新安装
+                              </DropdownMenuItem>
+                            )}
+                            {allowTerminal && (
+                              claw.status === "running" ? (
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}>
+                                  <Terminal className="w-4 h-4 mr-2 text-gray-500" />
+                                  进入终端
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                  <Terminal className="w-4 h-4 mr-2 text-gray-400" />
+                                  进入终端
+                                </DropdownMenuItem>
+                              )
+                            )}
+                            {claw.roleName && claw.roleName !== "通用助手" && claw.status === "running" && (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRemoveRoleConfirm({ id: claw.id, name: claw.name, roleName: claw.roleName! }); }}>
+                                <UserMinus className="w-4 h-4 mr-2 text-gray-500" />
+                                移除角色
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            {claw.status === "loadFail" && (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRetry(claw.id, claw.name); }}>
+                                <RefreshCw className="w-4 h-4 mr-2 text-gray-500" />
+                                重试恢复
+                              </DropdownMenuItem>
+                            )}
+                            {["creating", "loading", "pending"].includes(claw.status) ? (
+                              <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed text-red-600">
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                删除
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={(e) => { e.stopPropagation(); onDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); }}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                删除
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Right Panel - Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {!selectedClaw ? (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm text-gray-400">请选择一个 OpenClaw 开始对话</p>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            {/* Top Bar - Actions only */}
-            <div className="flex items-center justify-end px-4 h-10 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Tooltip>
-                  <TooltipTrigger asChild>
+        </div>
+      )}
+
+      {showChatPane && (
+        <div
+          className={`min-w-0 flex flex-col ${
+            workspaceMode === "chat" ? "flex-1" : "flex-shrink-0"
+          }`}
+          style={chatPaneStyle}
+        >
+          {!selectedClaw ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm text-gray-400">请选择一个 OpenClaw 开始对话</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between px-4 h-12 border-b border-gray-100 flex-shrink-0 bg-white/90 backdrop-blur-sm">
+                <div className="min-w-0 flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate">{selectedClaw.name}</h3>
+                    <p className="text-xs text-gray-400 truncate mt-0.5">{selectedClaw.instanceId}</p>
+                  </div>
+                  <div className="flex-shrink-0 self-center">
+                    <StatusBadgeSmall status={selectedClaw.status} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {isRunning && (
                     <button
                       onClick={handleNewChat}
-                      disabled={!isRunning || isTyping}
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
-                        isRunning
-                          ? "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                          : "text-gray-300 cursor-not-allowed"
-                      }`}
+                      disabled={currentIsTyping}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40"
                     >
-                      <MessageSquarePlus className="w-4 h-4" />
+                      <MessageSquarePlus className="w-3.5 h-3.5" />
+                      新建会话
                     </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
-                    {isRunning ? "新建对话" : "当前 OpenClaw 状态无法新建对话"}
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={onToggleFullscreen}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                    >
-                      {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">{isFullscreen ? "收起全屏" : "全屏展开"}</TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
+                  )}
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto px-8 py-6" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
-              {currentMessages.length === 0 ? (
-                isRunning ? (
-                  /* Welcome state - running */
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <img
-                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_3d_8f2c189d.png"
-                      alt="OpenClaw"
-                      className="w-28 h-28 mb-1 object-contain"
-                      draggable={false}
-                    />
-                    <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                      你好，今天我们来做些什么呢？
-                    </h2>
-                    <div className="flex flex-col gap-2 w-full max-w-md">
-                      {MOCK_QUICK_COMMANDS.map((cmd, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleQuickCommand(cmd)}
-                          className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150 text-left group/cmd"
-                          disabled={isTyping}
-                        >
-                          <span className="text-blue-500 flex-shrink-0">
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                          <span className="text-sm text-gray-700 group-hover/cmd:text-gray-900">{cmd}</span>
-                        </button>
-                      ))}
+                  {/* 产品规则：会话态右上角只保留“会话全屏”与“打开云端浏览器” */}
+                  {workspaceMode === "chat" && (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={onToggleFullscreen}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          >
+                            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          {isFullscreen ? "收起全屏" : "会话全屏"}
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={handleOpenBrowser}
+                            disabled={!isRunning}
+                            aria-label="打开云端浏览器"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                          >
+                            <Monitor className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">
+                          {isRunning ? "打开当前 OpenClaw 的云端浏览器" : "当前 OpenClaw 未运行，暂不可打开浏览器"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className={`flex-1 overflow-y-auto ${workspaceMode === "chat" ? "px-8 py-6" : "px-5 py-5"}`} style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
+                {currentMessages.length === 0 ? (
+                  isRunning ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <img
+                        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_3d_8f2c189d.png"
+                        alt="OpenClaw"
+                        className="w-28 h-28 mb-1 object-contain"
+                        draggable={false}
+                      />
+                      <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
+                        你好，今天我们来做些什么呢？
+                      </h2>
+                      <div className="flex flex-col gap-2 w-full max-w-md">
+                        {MOCK_QUICK_COMMANDS.map((command) => (
+                          <button
+                            key={command}
+                            onClick={() => handleQuickCommand(command)}
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150 text-left group/cmd"
+                            disabled={currentIsTyping}
+                          >
+                            <span className="text-blue-500 flex-shrink-0">
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </span>
+                            <span className="text-sm text-gray-700 group-hover/cmd:text-gray-900">{command}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  /* Welcome state - not running */
-                  <div className="flex flex-col items-center justify-center h-full pb-16">
-                    <img
-                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_offline_v7_3c1d942c.png"
-                      alt="OpenClaw Offline"
-                      className="w-28 h-28 mb-4 object-contain"
-                      draggable={false}
-                    />
-                    <p className="text-base font-medium text-gray-900 mb-1">
-                      当前 OpenClaw 未在运行中，暂时无法对话
-                    </p>
-                    <p className="text-xs text-gray-400 mb-4">
-                      你可以刷新状态查看最新情况或选择其他 OpenClaw
-                    </p>
-                    <button
-                      onClick={(e) => onRefreshStatus(e, selectedClaw.id, selectedClaw.name)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${refreshingIds.has(selectedClaw.id) ? "animate-spin" : ""}`} />
-                      刷新状态
-                    </button>
-                  </div>
-                )
-              ) : (
-                /* Conversation state */
-                <div className="max-w-3xl mx-auto space-y-6">
-                  {currentMessages.map((msg) => (
-                    <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                      {msg.role === "user" ? (
-                        <div className="max-w-[70%] px-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 leading-relaxed">
-                          {msg.content}
-                        </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full pb-16">
+                      <img
+                        src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_offline_v7_3c1d942c.png"
+                        alt="OpenClaw Offline"
+                        className="w-28 h-28 mb-4 object-contain"
+                        draggable={false}
+                      />
+                      <p className="text-base font-medium text-gray-900 mb-1">当前 OpenClaw 未在运行中，暂时无法对话</p>
+                      <p className="text-xs text-gray-400 mb-4">你可以刷新状态查看最新情况或选择其他 OpenClaw</p>
+                      {selectedClaw.status === "loadFail" ? (
+                        <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="outline" size="sm" className="text-xs">
+                          <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                          重试恢复
+                        </Button>
                       ) : (
-                        <div className="max-w-[85%] text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
-                          {msg.content}
-                        </div>
+                        <button
+                          onClick={(e) => onRefreshStatus(e, selectedClaw.id, selectedClaw.name)}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${refreshingIds.has(selectedClaw.id) ? "animate-spin" : ""}`} />
+                          刷新状态
+                        </button>
                       )}
                     </div>
-                  ))}
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <TypingIndicator />
-                    </div>
-                  )}
-                  <div ref={chatEndRef} />
-                </div>
-              )}
-            </div>
+                  )
+                ) : (
+                  <div className={`mx-auto space-y-6 ${workspaceMode === "chat" ? "max-w-3xl" : "max-w-full"}`}>
+                    {currentMessages.map((message) => (
+                      <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                        {message.role === "user" ? (
+                          <div className="max-w-[78%] px-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 leading-relaxed">
+                            {message.content}
+                          </div>
+                        ) : (
+                          <div className="max-w-[90%] text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {currentIsTyping && (
+                      <div className="flex justify-start">
+                        <TypingIndicator />
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+                )}
+              </div>
 
-            {/* Input Area */}
-            {isRunning && (
-            <div className="flex-shrink-0 px-8 pb-4">
-                <>
-                  <div className="bg-white rounded-2xl border border-gray-200 relative"
-                    style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              {isRunning && (
+                <div className={`flex-shrink-0 ${workspaceMode === "chat" ? "px-8 pb-4" : "px-4 pb-4"}`}>
+                  <div className="bg-white rounded-2xl border border-gray-200 relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                     <textarea
                       ref={textareaRef}
                       value={inputText}
@@ -691,7 +1369,7 @@ export default function ChatView({
                       rows={2}
                       className="w-full px-4 pt-3 pb-2 text-sm text-gray-900 placeholder:text-gray-400 resize-none focus:outline-none bg-transparent"
                       style={{ minHeight: "56px", maxHeight: "120px" }}
-                      disabled={isTyping}
+                      disabled={currentIsTyping}
                     />
                     <div className="flex items-center justify-between px-2 pb-2">
                       <div className="flex items-center gap-0.5">
@@ -701,7 +1379,7 @@ export default function ChatView({
                         <div className="w-px h-4 bg-gray-200 mx-1" />
                         <div className="relative" ref={commandsRef}>
                           <button
-                            onClick={() => setShowCommands(!showCommands)}
+                            onClick={() => setShowCommands((prev) => !prev)}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xs font-medium"
                           >
                             <Sparkles className="w-3.5 h-3.5" />
@@ -709,8 +1387,7 @@ export default function ChatView({
                             {showCommands ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
                           </button>
                           {showCommands && (
-                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg border border-gray-200 py-1.5 z-50"
-                              style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
+                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg border border-gray-200 py-1.5 z-50" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
                               {COMMAND_LIST.map((item) => (
                                 <button
                                   key={item.command}
@@ -731,9 +1408,9 @@ export default function ChatView({
                         </button>
                         <button
                           onClick={handleSend}
-                          disabled={!inputText.trim() || isTyping}
+                          disabled={!inputText.trim() || currentIsTyping}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all duration-150 disabled:opacity-30"
-                          style={{ background: inputText.trim() && !isTyping ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#d1d5db" }}
+                          style={{ background: inputText.trim() && !currentIsTyping ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#d1d5db" }}
                         >
                           <Send className="w-3 h-3" />
                         </button>
@@ -741,17 +1418,134 @@ export default function ChatView({
                     </div>
                   </div>
                   <p className="text-center text-gray-400 mt-2" style={{ fontSize: "10px" }}>
-                    只要您在「详细配置」中配置了一个可用模型，您可以直接在浏览器与 OpenClaw 对话
+                    发送任务后，如已打开云端浏览器，你可以在右侧实时查看执行过程
                   </p>
-                </>
-            </div>
-            )}
-          </>
-        )}
-      </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
-      {/* CSS for typing dots */}
+      {workspaceMode === "chat_with_browser" && (
+        <div
+          role="separator"
+          aria-label="调整会话区与浏览器区宽度"
+          aria-orientation="vertical"
+          className={`group relative flex w-2 shrink-0 cursor-col-resize items-stretch justify-center transition-colors duration-150 ${
+            isResizing ? "bg-blue-50/70" : "hover:bg-blue-50/40"
+          }`}
+          onMouseDown={handleResizeStart}
+        >
+          <span
+            className={`my-4 w-px rounded-full transition-colors duration-150 ${
+              isResizing ? "bg-blue-300" : "bg-gray-200 group-hover:bg-gray-300"
+            }`}
+          />
+        </div>
+      )}
+
+      {showBrowserPane && selectedClaw && currentBrowserState && (
+        <div
+          className="flex-1 min-w-0 flex flex-col bg-[linear-gradient(180deg,rgba(248,250,252,0.95),rgba(255,255,255,0.98))]"
+          style={workspaceMode === "chat_with_browser" ? { minWidth: `${BROWSER_PANE_MIN_WIDTH}px` } : undefined}
+        >
+          {/* 产品规则：浏览器相关按钮全部归浏览器工具条 */}
+          <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <Globe className="w-4 h-4" />
+              </div>
+              <span className="text-sm font-medium text-gray-900">云端浏览器</span>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleToggleManualOperation}
+                disabled={isBrowserToolbarBusy}
+                className={`h-8 rounded-lg px-3 text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                  isBrowserToolbarBusy
+                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                    : isBrowserManualOperating
+                      ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                      : "bg-gray-100 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                {isBrowserManualOperating ? <Eye className="w-3.5 h-3.5" /> : <MousePointerClick className="w-3.5 h-3.5" />}
+                {browserOperationButtonLabel}
+              </button>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleBrowserRefresh}
+                    disabled={isBrowserPanelLoading}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">重新连接 / 刷新画面</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleToggleBrowserFullscreen}
+                    disabled={isBrowserPanelLoading}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                  >
+                    {workspaceMode === "browser_fullscreen" ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {workspaceMode === "browser_fullscreen" ? "退出浏览器全屏" : "浏览器全屏"}
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleCollapseBrowser}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">收起浏览器</TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+
+
+          <div
+            className="relative flex-1 min-h-0 overflow-hidden"
+            onClickCapture={(e) => {
+              if (isBrowserReadonly) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+          >
+            <div className="relative h-full overflow-y-auto px-4 py-4" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
+              <div className={`${isBrowserReadonly ? "pointer-events-none select-none " : ""}relative flex min-h-full items-center`}>
+                <div className="pointer-events-none absolute left-0 right-0 top-0 flex items-center text-xs text-gray-400">
+                  <div className="flex items-center gap-2">
+                    {isBrowserReadonly ? <Eye className="w-3.5 h-3.5" /> : <MousePointerClick className="w-3.5 h-3.5" />}
+                    <span>{currentBrowserState.liveCaption}</span>
+                  </div>
+                </div>
+                {renderBrowserContent()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 1; }
+        }
         @keyframes typingBounce {
           0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
           30% { transform: translateY(-4px); opacity: 1; }
@@ -761,7 +1555,6 @@ export default function ChatView({
         }
       `}</style>
 
-      {/* 新建对话二次确认弹窗 */}
       <AlertDialog open={showNewChatConfirm} onOpenChange={setShowNewChatConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -783,5 +1576,6 @@ export default function ChatView({
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   );
 }

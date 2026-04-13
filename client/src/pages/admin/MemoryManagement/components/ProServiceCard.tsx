@@ -198,6 +198,8 @@ interface ProServiceCardProps {
   disabled?: boolean;
   /** 禁用时 hover 提示文案 */
   disabledTooltip?: string;
+  /** 点击"前往实例列表"按钮时的回调 */
+  onGoToInstanceList?: () => void;
 }
 
 export const ProServiceCard: React.FC<ProServiceCardProps> = ({
@@ -210,6 +212,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
   onRetry,
   disabled = false,
   disabledTooltip = '',
+  onGoToInstanceList,
 }) => {
   const [activationDialogOpen, setActivationDialogOpen] = useState(false);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
@@ -315,6 +318,9 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                       <h3 className="font-bold text-white text-lg">Memory Pro 版</h3>
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-amber-900 tracking-wide">
                         🎁 限时免费
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white/20 text-white backdrop-blur-sm">
+                        免费体验中
                       </span>
                     </div>
                     <p className="text-blue-100 text-sm mt-0.5">
@@ -621,6 +627,9 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-amber-900 tracking-wide">
                   🎁 限时免费（至 6.15）
                 </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-600">
+                  免费体验中
+                </span>
                 {isInitializing && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-xs">
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -733,6 +742,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           onOpenChange={setCloseDialogOpen}
           onConfirm={onClosed}
           ocCount={proUsedCount}
+          onGoToInstanceList={onGoToInstanceList}
         />
       </div>
     </TooltipProvider>

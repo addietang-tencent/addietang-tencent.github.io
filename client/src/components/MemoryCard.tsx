@@ -2,16 +2,16 @@
  * MemoryCard - Memory 配置卡片组件
  * 用于 OpenClaw 详细配置页面，支持启用/禁用 Memory 功能
  * 
- * 设计理念：
- * - 极简入口：只有一个 Toggle 开关，无需额外配置
- * - 风险前置：启用/禁用都需要二次确认 + 橙色警告
- * - 状态清晰：三种状态（未启用/已启用/加载中）有明确视觉区分
+ * 遵循 OpenClaw Enterprise 设计规范：
+ * - 卡片圆角：rounded-2xl (16px)
+ * - 统一阴影：通过 inline style 设置
+ * - 图标容器：使用品牌渐变
+ * - 状态颜色：使用语义色
  */
 
 import { useState } from "react";
-import { Brain, AlertCircle, ExternalLink } from "lucide-react";
+import { Brain, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import EnableMemoryDialog from "./EnableMemoryDialog";
 import DisableMemoryDialog from "./DisableMemoryDialog";
@@ -36,16 +36,13 @@ export default function MemoryCard({
 
   // ── Toggle Handler ──
   const handleToggleChange = (checked: boolean) => {
-    // 防止加载中时操作
     if (isLoading) return;
 
     setPendingToggleState(checked);
 
     if (checked) {
-      // 打开启用弹窗
       setEnableDialogOpen(true);
     } else {
-      // 打开禁用弹窗
       setDisableDialogOpen(true);
     }
   };
@@ -56,9 +53,7 @@ export default function MemoryCard({
     setIsLoading(true);
 
     try {
-      // 模拟 API 调用
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
       setIsEnabled(true);
       toast.success("Memory 功能已启用！");
     } catch (error) {
@@ -75,9 +70,7 @@ export default function MemoryCard({
     setIsLoading(true);
 
     try {
-      // 模拟 API 调用
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
       setIsEnabled(false);
       toast.success("Memory 功能已禁用");
     } catch (error) {
@@ -97,26 +90,26 @@ export default function MemoryCard({
     setDisableDialogOpen(false);
   };
 
-  // ── Compute Status Colors ──
+  // ── Compute Status Colors - 符合设计规范的语义色 ──
   const getStatusColor = () => {
     if (isLoading) {
       return {
-        indicator: "bg-amber-400",
-        text: "text-amber-600",
-        bg: "bg-amber-50",
-        border: "border-amber-100",
+        indicator: "bg-yellow-500",
+        text: "text-yellow-600",
+        bg: "bg-yellow-50",
+        border: "border-yellow-100",
       };
     }
     if (isEnabled) {
       return {
         indicator: "bg-green-500",
-        text: "text-green-700",
+        text: "text-green-600",
         bg: "bg-green-50",
         border: "border-green-100",
       };
     }
     return {
-      indicator: "bg-gray-300",
+      indicator: "bg-gray-400",
       text: "text-gray-600",
       bg: "bg-gray-50",
       border: "border-gray-100",
@@ -142,10 +135,13 @@ export default function MemoryCard({
           height: "476px",
         }}
       >
-        {/* ── Header ── */}
-        <div className="p-5 border-b border-gray-50">
-          <div className="flex items-center gap-2 justify-center">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+        {/* ── Header - 符合设计规范 ── */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-6 h-6 rounded-md flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
               <Brain className="w-3.5 h-3.5 text-white" />
             </div>
             <h2 className="font-semibold text-gray-900">记忆 (TDAI-Memory)</h2>
@@ -153,10 +149,13 @@ export default function MemoryCard({
         </div>
 
         {/* ── Content ── */}
-        <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+        <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
           {/* Version Badge */}
           <div>
-            <div className="inline-block px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-medium mb-3">
+            <div 
+              className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white mb-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
               TDAI-Memory Free 版
             </div>
 
@@ -167,7 +166,7 @@ export default function MemoryCard({
             </p>
           </div>
 
-          {/* Status Block */}
+          {/* Status Block - 使用设计规范的状态颜色 */}
           <div
             className={`rounded-lg border p-4 flex items-center justify-between ${statusColor.bg} ${statusColor.border}`}
           >
@@ -187,7 +186,15 @@ export default function MemoryCard({
             />
           </div>
 
-
+          {/* 信息提示 - 符合设计规范的提示横幅 */}
+          {!isEnabled && (
+            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-600 leading-relaxed">
+                启用后，OpenClaw 将自动记忆对话中的关键信息，为用户提供更个性化的服务体验。
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

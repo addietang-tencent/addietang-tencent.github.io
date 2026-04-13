@@ -50,7 +50,6 @@ import {
   MessageSquarePlus,
   Maximize2,
   Minimize2,
-  Globe,
   Monitor,
   Eye,
   MousePointerClick,
@@ -1454,7 +1453,7 @@ export default function ChatView({
           <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                <Globe className="w-4 h-4" />
+                <Monitor className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium text-gray-900">云端浏览器</span>
             </div>

@@ -1,38 +1,47 @@
 import React from 'react';
-import { Search, RefreshCw, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Zap, Search, ShieldCheck, LayoutGrid } from 'lucide-react';
 
 const FEATURES = [
-  { icon: Search, title: '语义级检索', desc: '关键字 + 语义双路检索，理解意图而非仅匹配文字', color: '#7C3AED' },
-  { icon: RefreshCw, title: '记忆可迁移', desc: '记忆独立于应用实例存储，更换实例时数据无缝迁移', color: '#2563EB' },
-  { icon: ShieldCheck, title: '数据安全保障', desc: '支持数据备份与回档，降低误删除风险', color: '#F59E0B' },
-  { icon: LayoutGrid, title: '集中管理', desc: '统一管控所有实例的记忆资源，可视化分配与回收', color: '#16A34A' },
+  { icon: Zap, title: '上下文卸载', desc: '打破多轮交互成本与效果瓶颈，针对长任务自动优化上下文，在 Token 消耗直降超 50% 的同时，实现精准去噪，复杂任务完成率提升超 23%', color: '#F59E0B', tag: '即将上线' },
+  { icon: Search, title: '混合双路检索', desc: '融合"关键字 + 向量语义"双路召回，精准捕获深层关联，让 Agent 的回答更精准', color: '#2563EB' },
+  { icon: ShieldCheck, title: '企业级安全保障', desc: '提供完善的数据备份与强加密机制，匹配企业级数据隐私与合规要求', color: '#14B8A6' },
+  { icon: LayoutGrid, title: '全局资源管控', desc: '一站式可视化看板，统一管控所有实例的记忆资源，运维更省心', color: '#7C3AED' },
 ];
 
 export const FeatureGrid: React.FC = () => {
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-sm font-semibold text-gray-500">Pro 版独有能力</h3>
-        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-100">
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <h3 className="text-xs font-semibold text-gray-500">Pro 版独有能力</h3>
+        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-violet-50 text-violet-600 border border-violet-100">
           升级解锁
         </span>
       </div>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         {FEATURES.map((f) => {
           const Icon = f.icon;
           return (
             <div
               key={f.title}
-              className="p-5 rounded-xl border border-gray-100 bg-gray-50/30 text-center hover:border-gray-200 hover:shadow-sm transition-all"
+              className="p-3 rounded-lg border border-gray-100 bg-white/60 hover:border-gray-200 hover:shadow-sm transition-all flex items-start gap-2.5"
             >
               <div
-                className="w-11 h-11 rounded-xl mx-auto mb-3 flex items-center justify-center"
+                className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
                 style={{ background: `${f.color}10` }}
               >
-                <Icon className="w-5 h-5" style={{ color: f.color }} />
+                <Icon className="w-4 h-4" style={{ color: f.color }} />
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-1">{f.title}</h4>
-              <p className="text-xs text-gray-400 leading-relaxed">{f.desc}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <h4 className="text-xs font-semibold text-gray-900">{f.title}</h4>
+                  {f.tag && (
+                    <span className="text-[9px] px-1 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100">
+                      {f.tag}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed line-clamp-2">{f.desc}</p>
+              </div>
             </div>
           );
         })}

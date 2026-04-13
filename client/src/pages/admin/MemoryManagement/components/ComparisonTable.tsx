@@ -1,73 +1,181 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Shield, Zap, Crown, Check, Database, Lock, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+
+interface ComparisonTableProps {
+  // Pro 服务是否已开通
+  isProActive?: boolean;
+}
 
 /**
- * Free 版 vs Pro 版对比表格
+ * 版本对比展示：Free 版 → Pro 版
  * 
- * 展示两个版本的功能差异
+ * 方案 B：仅做功能对比展示，开通入口集中在服务概览区域
+ * 
+ * 遵循 OpenClaw Enterprise 设计规范：
+ * - 品牌渐变：linear-gradient(135deg, #007AFF, #5856D6)
+ * - 卡片圆角：rounded-2xl (16px)
+ * - 统一阴影：通过 inline style 设置
+ * - 图标：仅使用 lucide-react，禁止 emoji
+ * - Pro 已开通时支持折叠
  */
-export const ComparisonTable: React.FC = () => {
-  const comparisonData = [
-    {
-      feature: '存储方式',
-      free: '本地单机数据库',
-      pro: '腾讯云向量数据库（VDB）',
-    },
-    {
-      feature: '检索方式',
-      free: '关键词匹配',
-      pro: '语义 + 关键字双路检索',
-    },
-    {
-      feature: '数据安全',
-      free: '无备份',
-      pro: '✓ 备份 / 回档 / 权限',
-    },
-    {
-      feature: '规模化支持',
-      free: '建议 < 1万条',
-      pro: '✓ 无限制',
-    },
-    {
-      feature: 'Embedding 能力（语义理解能力）',
-      free: '无',
-      pro: '✓ 内置专业 Embedding能力（语义匹配）',
-    },
-  ];
+export const ComparisonTable: React.FC<ComparisonTableProps> = ({ 
+  isProActive = false,
+}) => {
+  // 折叠状态：Pro 已开通时默认折叠
+  const [isExpanded, setIsExpanded] = useState(!isProActive);
+
+  // 当 isProActive 变化时，更新折叠状态
+  useEffect(() => {
+    if (isProActive) {
+      setIsExpanded(false); // Pro 开通后自动折叠
+    } else {
+      setIsExpanded(true); // Pro 未开通时展开
+    }
+  }, [isProActive]);
+
+  // Pro 已开通且折叠时，显示展开按钮（右对齐，向上移动到标题行）
+  if (isProActive && !isExpanded) {
+    return (
+      <div className="flex justify-end -mt-7">
+        <button
+          onClick={() => setIsExpanded(true)}
+          className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+        >
+          <span>展开</span>
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {/* 对比表格 */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse rounded-[12px] overflow-hidden border border-[#E8EAF0]">
-          <thead>
-            <tr>
-              <th className="px-[18px] py-[14px] text-left text-[13.5px] font-semibold bg-[#f3f4f6] text-[#374151] w-[34%]">
-                对比项
-              </th>
-              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#d1fae5] text-[#065f46]">
-                Free 版
-              </th>
-              <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#ede9fe] text-[#5b21b6]">
-                Pro 版
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {comparisonData.map((row, index) => (
-              <tr key={index} className="border-t border-[#E8EAF0] hover:bg-[#fafbfc] transition-colors">
-                <td className="px-[18px] py-[14px] text-left text-[13px] font-medium text-[#374151] bg-white">
-                  {row.feature}
-                </td>
-                <td className="px-[18px] py-[14px] text-center text-[13px] text-[#374151] bg-white">
-                  {row.free}
-                </td>
-                <td className="px-[18px] py-[14px] text-center text-[13px] font-medium text-[#5b21b6] bg-white">
-                  {row.pro}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* 如果 Pro 已开通，显示收起按钮（右对齐，向上移动到标题行） */}
+      {isProActive && isExpanded && (
+        <div className="flex justify-end -mt-7 mb-4">
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            <span>收起</span>
+            <ChevronUp className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-[1fr_1.5fr] gap-5 ${!isProActive ? 'mt-4' : ''}`}>
+        {/* Free 版卡片 */}
+        <div 
+          className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all duration-200 flex flex-col"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+        >
+          {/* 头部 */}
+          <div className="flex items-center gap-3 mb-5">
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: '#007AFF' }}
+            >
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[15px] font-semibold text-gray-900">Free 版</h3>
+              <span className="text-xs text-gray-500">入门方案</span>
+            </div>
+          </div>
+
+          {/* 能力列表 */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700">本地文件持久化</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <Minus className="w-3 h-3 text-gray-400" />
+              </div>
+              <span className="text-sm text-gray-500">仅关键词检索</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <Minus className="w-3 h-3 text-gray-400" />
+              </div>
+              <span className="text-sm text-gray-500">小于 1 万条记忆数据</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pro 版卡片 */}
+        <div 
+          className="bg-white rounded-2xl border border-blue-200 p-5 hover:shadow-md transition-all duration-200 flex flex-col"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+        >
+          {/* 头部 */}
+          <div className="flex items-center gap-3 mb-5">
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: '#007AFF' }}
+            >
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[15px] font-semibold text-gray-900">Pro 版</h3>
+              <span className="text-xs text-blue-600 font-medium">企业级方案</span>
+            </div>
+            {/* 已开通状态标签 */}
+            {isProActive && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-medium">
+                <Check className="w-3 h-3" />
+                已开通
+              </div>
+            )}
+          </div>
+
+          {/* 核心能力列表 */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
+                <Check className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700">腾讯云向量数据库 (VDB)</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
+                <Check className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700">语义 + 关键词双路检索</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
+                <Check className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700">支持百万级记忆数据</span>
+            </div>
+          </div>
+
+          {/* 企业级特性 Grid */}
+          <div className="grid grid-cols-2 gap-2.5 mt-4">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <Sparkles className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">上下文卸载，Token 节省 50%+</span>
+              <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">全链路加密，保障数据安全</span>
+              <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <Database className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">数据备份，可靠性更高</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
+              <span className="text-sm text-gray-600">租户权限隔离，访问更安全</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

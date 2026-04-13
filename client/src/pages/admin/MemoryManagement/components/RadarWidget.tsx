@@ -19,8 +19,8 @@ const BENCHMARK_DATA = [
 
 const TOTAL = { openClaw: 47.85, tdaiMemory: 76.10 };
 
-const CX = 120;
-const CY = 120;
+const CX = 195;
+const CY = 160;
 const R = 90;
 const AXES = BENCHMARK_DATA.length;
 
@@ -73,7 +73,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
     () =>
       BENCHMARK_DATA.map((d, i) => {
         const angle = (360 / AXES) * i;
-        const { x, y } = polar(angle, R + 16);
+        const { x, y } = polar(angle, R + 35);
         const norm = ((angle % 360) + 360) % 360;
         let anchor: 'start' | 'middle' | 'end' = 'middle';
         if (norm > 20 && norm < 160) anchor = 'start';
@@ -86,7 +86,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
             textAnchor={anchor}
             dominantBaseline="middle"
             fill={hovered ? '#374151' : '#9ca3af'}
-            fontSize={8.5}
+            fontSize={11}
             fontFamily="Inter, sans-serif"
             fontWeight={hovered ? 500 : 400}
             style={{ transition: 'fill 0.3s, font-weight 0.3s' }}
@@ -102,10 +102,10 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
     <motion.div
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
-      className="relative cursor-pointer select-none"
-      style={{ width: 338, height: 338 }}
+      className="relative cursor-pointer select-none w-full"
+      style={{ maxWidth: 420, aspectRatio: '390 / 320' }}
     >
-      <svg viewBox="0 0 240 240" className="w-full h-full" style={{ overflow: 'visible' }}>
+      <svg viewBox="0 0 390 320" className="w-full h-full">
         <defs>
           <radialGradient id="rwGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor={hovered ? 'rgba(0,122,255,0.06)' : 'rgba(0,122,255,0.02)'} />
@@ -147,19 +147,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
         {rings}
         {axisLines}
 
-        {/* Percentage labels on rings */}
-        {[20, 40, 60, 80, 100].map((pct, i) => (
-          <text
-            key={pct}
-            x={CX + 3}
-            y={CY - (((i + 1) / 5) * R) + 3}
-            fill="#d1d5db"
-            fontSize={7}
-            fontFamily="Inter, sans-serif"
-          >
-            {pct}
-          </text>
-        ))}
+        {/* Percentage labels on rings — removed per design request */}
 
         {/* OpenClaw area — always visible */}
         <motion.polygon
@@ -239,7 +227,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               transition={{ duration: 0.25 }}
               className="text-center"
             >
-              <div className="text-[10px] text-gray-400 mb-0.5">Memory Free 版</div>
+              <div className="text-[10px] text-blue-500 font-medium mb-0.5">Memory Pro 版</div>
               <div
                 className="text-lg font-bold font-mono"
                 style={{ color: '#007AFF', textShadow: '0 0 12px rgba(0,122,255,0.25)' }}

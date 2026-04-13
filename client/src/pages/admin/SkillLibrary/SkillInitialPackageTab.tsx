@@ -851,7 +851,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-white text-gray-700 text-xs max-w-[200px] text-center border border-gray-200 shadow-sm">
+                        <TooltipContent side="top" className="max-w-[200px] text-center">
                           生效中的技能包不可删除
                         </TooltipContent>
                       </Tooltip>

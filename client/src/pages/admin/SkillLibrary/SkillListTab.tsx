@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, Edit2, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import EditCategoriesDialog from './EditCategoriesDialog';
-import EditScopeDialog from './EditScopeDialog';
+import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import { Skill, type SkillScope } from './types';
@@ -35,7 +35,7 @@ import { downloadSkillAsZip } from './downloadUtils';
 const SKILLS_CACHE_KEY = 'skillhub_enterprise_skills_cache';
 const SKILLS_CACHE_VERSION_KEY = 'skillhub_enterprise_skills_cache_version';
 // 当 MOCK 数据结构变更时递增此版本号，强制刷新缓存
-const SKILLS_CACHE_VERSION = '4';
+const SKILLS_CACHE_VERSION = '5';
 
 // 从 localStorage 加载缓存的 skills
 const loadCachedSkills = (): Skill[] => {
@@ -77,6 +77,35 @@ interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
 }
 
+/** 仅当子元素文本溢出（出现 ...）时，hover 1s 后才显示 Tooltip */
+function OverflowTooltip({ content, children }: { content: React.ReactNode; children: React.ReactElement }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLElement>(null);
+
+  return (
+    <Tooltip
+      delayDuration={1000}
+      open={open}
+      onOpenChange={(next) => {
+        if (next) {
+          const el = triggerRef.current;
+          if (el && el.scrollWidth > el.clientWidth) {
+            setOpen(true);
+          }
+          // 没溢出时 open 保持 false，tooltip 不弹
+        } else {
+          setOpen(false);
+        }
+      }}
+    >
+      <TooltipTrigger asChild ref={triggerRef}>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent side="top">{content}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -102,11 +131,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState('');
   const scopeDropdownRef = useRef<HTMLDivElement>(null);
-  // 编辑应用范围弹窗
-  const [editScopeDialogOpen, setEditScopeDialogOpen] = useState(false);
-  const [editingScopeSkillId, setEditingScopeSkillId] = useState<string | null>(null);
-  const [editingScopeValue, setEditingScopeValue] = useState<SkillScope>('public');
-  const [editingScopeGroupIds, setEditingScopeGroupIds] = useState<string[]>([]);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -412,7 +436,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
+              <TooltipContent side="bottom" className="max-w-[280px]">
                 <p className="break-words">
                   {selectedScope === null
                     ? '全部应用范围'
@@ -468,7 +492,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 </button>
               )}
               {/* 分组列表 */}
-              <div className="max-h-40 overflow-y-auto">
+              <div className="max-h-60 overflow-y-auto">
                 {MOCK_GROUPS
                   .filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()))
                   .map(group => (
@@ -528,32 +552,32 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
-        <div className="flex items-center gap-2 flex-wrap flex-1">
+      <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+            selectedCategory === null
+              ? 'text-white border-transparent'
+              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+          }`}
+          style={selectedCategory === null ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+        >
+          全部
+        </button>
+        {categories.map((cat: any) => (
           <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-3.5 py-1.5 text-sm rounded-full border transition-colors ${
-              selectedCategory === null
-                ? 'bg-blue-600 text-white font-medium border-blue-600'
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              selectedCategory === cat.id
+                ? 'text-white border-transparent'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
+            style={selectedCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
           >
-            全部
+            {cat.name}
           </button>
-          {categories.map((cat: any) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3.5 py-1.5 text-sm rounded-full border transition-colors ${
-                selectedCategory === cat.id
-                  ? 'bg-blue-600 text-white font-medium border-blue-600'
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
       {/* 空状态 */}
@@ -581,21 +605,49 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 {/* 名称 + 版本 */}
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900 flex-1">{skill.name}</h3>
-                  <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                     v{skill.version}
                   </span>
                 </div>
 
-                {/* 分类 */}
-                <div className="flex flex-wrap gap-1 mb-3 items-center">
-                  {skill.categories.map((catId: string) => (
-                    <span
-                      key={catId}
-                      className="inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
-                    >
-                      {getCategoryName(catId)}
-                    </span>
-                  ))}
+                {/* 分类 — 灰色胶囊，最多两行 + +n，hover显示全部 */}
+                <div className="flex flex-wrap gap-1 mb-3 items-center" style={{ maxHeight: '52px', overflow: 'hidden' }}>
+                  {(() => {
+                    const maxVisible = 3;
+                    const total = skill.categories.length;
+                    const visible = skill.categories.slice(0, maxVisible);
+                    const overflow = total - maxVisible;
+                    return (
+                      <>
+                        {visible.map((catId: string) => (
+                          <span
+                            key={catId}
+                            className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap"
+                          >
+                            {getCategoryName(catId)}
+                          </span>
+                        ))}
+                        {overflow > 0 && (
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
+                                +{overflow}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[320px]">
+                              <div className="flex flex-wrap gap-1">
+                                {skill.categories.map((catId: string) => (
+                                  <span key={catId} className="inline-block px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">
+                                    {getCategoryName(catId)}
+                                  </span>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </>
+                    );
+                  })()}
                   <Tooltip delayDuration={1000}>
                       <TooltipTrigger asChild>
                         <button
@@ -605,47 +657,45 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                             setEditingSkillCategories(skill.categories);
                             setEditCategoryDialogOpen(true);
                           }}
-                          className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
+                          className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
                         >
                           <Edit2 className="w-3 h-3" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
+                      <TooltipContent side="top">
                         编辑分类
                       </TooltipContent>
                     </Tooltip>
                 </div>
 
                 {/* 描述 */}
-                <p className="text-sm text-gray-600 line-clamp-2 mb-2">{skill.description || '-'}</p>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-2 cursor-default">{skill.description || '-'}</p>
+                  </TooltipTrigger>
+                  {skill.description && skill.description.length > 60 && (
+                    <TooltipContent side="bottom" className="max-w-[320px]">
+                      <p className="text-xs whitespace-pre-wrap">{skill.description}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
 
-                {/* 应用范围 — 灰色胶囊标签 */}
-                <div className="flex items-center gap-1 mb-3 flex-wrap">
-                  <span className="text-xs text-gray-400">范围：</span>
-                  {getScopeLabels(skill).map((label, idx) => (
-                    <span key={idx} className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                      {label}
-                    </span>
-                  ))}
-                  <Tooltip delayDuration={1000}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingScopeSkillId(skill.id);
-                            setEditingScopeValue(skill.scope || 'public');
-                            setEditingScopeGroupIds([...(skill.groupIds || [])]);
-                            setEditScopeDialogOpen(true);
-                          }}
-                          className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
-                        编辑应用范围
-                      </TooltipContent>
-                    </Tooltip>
+                {/* 应用范围 — 使用 Popover 编辑 */}
+                <div className="flex items-center gap-1 mb-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  <span className="text-xs text-gray-400">应用范围：</span>
+                  <EditScopePopover
+                    groups={MOCK_GROUPS}
+                    currentScope={skill.scope || 'public'}
+                    currentGroupIds={skill.groupIds || []}
+                    scopeLabels={getScopeLabels(skill)}
+                    isPublic={skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0}
+                    onConfirm={(scope, groupIds) => {
+                      setSkills(prev => prev.map(s =>
+                        s.id === skill.id ? { ...s, scope, groupIds } : s
+                      ));
+                      toast.success('应用范围修改成功');
+                    }}
+                  />
                 </div>
 
                 {/* 操作 */}
@@ -689,9 +739,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       <DropdownMenuItem
                         onClick={() => handleDelete(skill.id)}
                         disabled={distributing}
-                        className=""
+                        className="text-red-600 focus:text-red-600"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className="w-4 h-4 mr-2 text-gray-500" />
                         删除
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -707,7 +757,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="text-sm" style={{ minWidth: '1430px', width: '100%', tableLayout: 'fixed' }}>
+            <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
@@ -718,7 +768,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '350px', minWidth: '350px' }}>描述</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
@@ -778,10 +828,14 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       {/* 名称 / Slug — 固定左侧 */}
                       <td
                         className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors"
-                        style={{ minWidth: '180px' }}
+                        style={{ minWidth: '180px', maxWidth: '260px' }}
                       >
-                        <div className="font-medium text-gray-900 truncate" title={skill.name}>{skill.name}</div>
-                        <div className="text-xs text-gray-400 font-mono mt-0.5 truncate" title={skill.slug}>{skill.slug}</div>
+                        <OverflowTooltip content={skill.name}>
+                          <div className="font-medium text-gray-900 truncate max-w-[220px]">{skill.name}</div>
+                        </OverflowTooltip>
+                        <OverflowTooltip content={skill.slug}>
+                          <div className="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[220px]">{skill.slug}</div>
+                        </OverflowTooltip>
                       </td>
                       {/* 状态/最近下发进度 */}
                       <td className="px-4 py-3" style={{ minWidth: '150px' }}>
@@ -795,7 +849,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                             }
                           }}
                           className={hasDistribution
-                            ? `inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded text-xs font-medium cursor-pointer transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
+                            ? `inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
                             : `text-xs mt-0.5 ${statusLine2Color}`
                           }
                         >
@@ -804,106 +858,98 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       </td>
                       {/* 版本号 */}
                       <td className="px-4 py-3" style={{ minWidth: '80px' }}>
-                        <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                        <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                           v{skill.version}
                         </span>
                       </td>
                       {/* 描述 */}
-                      <td className="px-4 py-3" style={{ minWidth: '400px' }}>
-                        <span className="text-sm text-gray-600 line-clamp-2">{skill.description || '-'}</span>
-                      </td>
-                      {/* 分类 — 最多显示 2 个标签，超出 +N，右侧编辑按钮 */}
-                      <td className="px-4 py-3" style={{ minWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {skill.categories.slice(0, 4).map((catId: string) => (
-                            <span key={catId} className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                              {getCategoryName(catId)}
-                            </span>
-                          ))}
-                          {skill.categories.length > 4 && (
-                            <Tooltip delayDuration={1000}>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-block px-1.5 py-0.5 bg-white text-gray-500 text-xs rounded border border-gray-200 cursor-default hover:bg-gray-50 transition-colors">
-                                    +{skill.categories.length - 4}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="bg-white text-gray-700 text-xs max-w-[240px] border border-gray-200 shadow-sm">
-                                  <div className="flex flex-wrap gap-1">
-                                    {skill.categories.slice(4).map((catId: string) => (
-                                      <span key={catId} className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                                        {getCategoryName(catId)}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                            </Tooltip>
+                      <td className="px-4 py-3" style={{ minWidth: '370px', maxWidth: '370px', overflow: 'hidden' }}>
+                        <Tooltip delayDuration={1000}>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="text-sm text-gray-600 cursor-default block"
+                              style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                wordBreak: 'break-all',
+                              }}
+                            >{skill.description || '-'}</span>
+                          </TooltipTrigger>
+                          {skill.description && skill.description.length > 40 && (
+                            <TooltipContent side="bottom" className="max-w-[400px]">
+                              <p className="text-xs whitespace-pre-wrap">{skill.description}</p>
+                            </TooltipContent>
                           )}
-                          <Tooltip delayDuration={1000}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingSkillId(skill.id);
-                                    setEditingSkillCategories(skill.categories);
-                                    setEditCategoryDialogOpen(true);
-                                  }}
-                                  className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
-                                编辑分类
-                              </TooltipContent>
-                          </Tooltip>
-                        </div>
+                        </Tooltip>
                       </td>
-                      {/* 应用范围 — 灰色胶囊标签，复用分类列样式 */}
+                      {/* 分类 — 灰色胶囊标签，最多两行，超出 +N，hover显示全部 */}
                       <td className="px-4 py-3" style={{ minWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {getScopeLabels(skill).slice(0, 4).map((label, idx) => (
-                            <span key={idx} className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                              {label}
-                            </span>
-                          ))}
-                          {getScopeLabels(skill).length > 4 && (
-                            <Tooltip delayDuration={1000}>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-block px-1.5 py-0.5 bg-white text-gray-500 text-xs rounded border border-gray-200 cursor-default hover:bg-gray-50 transition-colors">
-                                    +{getScopeLabels(skill).length - 4}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="bg-white text-gray-700 text-xs max-w-[240px] border border-gray-200 shadow-sm">
-                                  <div className="flex flex-wrap gap-1">
-                                    {getScopeLabels(skill).slice(4).map((label, idx) => (
-                                      <span key={idx} className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                                        {label}
+                        {(() => {
+                          const maxVisible = 3;
+                          const total = skill.categories.length;
+                          const visible = skill.categories.slice(0, maxVisible);
+                          const overflow = total - maxVisible;
+                          return (
+                            <div className="flex items-center gap-1 flex-wrap" style={{ maxHeight: '52px', overflow: 'hidden' }}>
+                              {visible.map((catId: string) => (
+                                <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap">
+                                  {getCategoryName(catId)}
+                                </span>
+                              ))}
+                              {overflow > 0 && (
+                                <Tooltip delayDuration={300}>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
+                                        +{overflow}
                                       </span>
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                            </Tooltip>
-                          )}
-                          <Tooltip delayDuration={1000}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingScopeSkillId(skill.id);
-                                    setEditingScopeValue(skill.scope || 'public');
-                                    setEditingScopeGroupIds([...(skill.groupIds || [])]);
-                                    setEditScopeDialogOpen(true);
-                                  }}
-                                  className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-white rounded transition-colors"
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">
-                                编辑应用范围
-                              </TooltipContent>
-                          </Tooltip>
-                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-[320px]">
+                                      <span className="text-xs">
+                                        {skill.categories.map((catId: string) => getCategoryName(catId)).join('，')}
+                                      </span>
+                                    </TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Tooltip delayDuration={1000}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingSkillId(skill.id);
+                                        setEditingSkillCategories(skill.categories);
+                                        setEditCategoryDialogOpen(true);
+                                      }}
+                                      className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                                    >
+                                      <Edit2 className="w-3 h-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    编辑分类
+                                  </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      {/* 应用范围 — 使用 Popover 编辑 */}
+                      <td className="px-4 py-3" style={{ minWidth: '140px' }} onClick={(e) => e.stopPropagation()}>
+                        <EditScopePopover
+                          groups={MOCK_GROUPS}
+                          currentScope={skill.scope || 'public'}
+                          currentGroupIds={skill.groupIds || []}
+                          scopeLabels={getScopeLabels(skill)}
+                          isPublic={skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0}
+                          onConfirm={(scope, groupIds) => {
+                            setSkills(prev => prev.map(s =>
+                              s.id === skill.id ? { ...s, scope, groupIds } : s
+                            ));
+                            toast.success('应用范围修改成功');
+                          }}
+                        />
                       </td>
                       {/* 最后更新时间 */}
                       <td className="px-4 py-3" style={{ minWidth: '120px' }}>
@@ -960,8 +1006,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                               <DropdownMenuItem
                                 onClick={() => handleDelete(skill.id)}
                                 disabled={distributing}
+                                className="text-red-600 focus:text-red-600"
                               >
-                                <Trash2 className="w-4 h-4 mr-2" />
+                                <Trash2 className="w-4 h-4 mr-2 text-gray-500" />
                                 删除
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -1049,37 +1096,6 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             setEditCategoryDialogOpen(false);
             setEditingSkillId(null);
             setEditingSkillCategories([]);
-          }
-        }}
-      />
-
-      {/* 编辑应用范围弹窗 */}
-      <EditScopeDialog
-        open={editScopeDialogOpen}
-        onOpenChange={(open) => {
-          setEditScopeDialogOpen(open);
-          if (!open) {
-            setEditingScopeSkillId(null);
-            setEditingScopeValue('public');
-            setEditingScopeGroupIds([]);
-          }
-        }}
-        groups={MOCK_GROUPS}
-        currentScope={editingScopeValue}
-        currentGroupIds={editingScopeGroupIds}
-        skillName={editingScopeSkillId ? skills.find(s => s.id === editingScopeSkillId)?.name : undefined}
-        onConfirm={(scope, groupIds) => {
-          if (editingScopeSkillId) {
-            setSkills(prev => prev.map(skill =>
-              skill.id === editingScopeSkillId
-                ? { ...skill, scope, groupIds }
-                : skill
-            ));
-            toast.success('应用范围修改成功');
-            setEditScopeDialogOpen(false);
-            setEditingScopeSkillId(null);
-            setEditingScopeValue('public');
-            setEditingScopeGroupIds([]);
           }
         }}
       />

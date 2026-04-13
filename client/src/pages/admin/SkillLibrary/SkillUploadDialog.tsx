@@ -5,14 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import JSZip from 'jszip';
 import { Skill, type SkillScope } from './types';
 import { DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import { downloadSampleSkillZip } from './downloadUtils';
-import { Globe, Users, Search as SearchIcon, Check } from 'lucide-react';
 
 interface SkillUploadDialogProps {
   open: boolean;
@@ -189,7 +188,6 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
     groupIds: [] as string[],
   });
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [groupPopoverOpen, setGroupPopoverOpen] = useState(false);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -778,10 +776,10 @@ description: this is a skill creator.
                           : [...prev.categories, cat.id]
                       }));
                     }}
-                    className={`px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                       formData.categories.includes(cat.id)
-                        ? 'bg-blue-600 text-white font-medium border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                        ? 'border-blue-200 bg-blue-50 text-blue-600'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                     } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {cat.name}
@@ -793,103 +791,122 @@ description: this is a skill creator.
             {/* 应用范围 */}
             <div>
               <Label className="text-sm">应用范围</Label>
-              <div className="flex items-center gap-2 mt-2">
-                <button
-                  disabled={!hasSuccessfulUpload}
-                  onClick={() => {
-                    if (!hasSuccessfulUpload) return;
-                    setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }));
-                  }}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
-                    formData.scope === 'public'
-                      ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
-                      : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-                  } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  全部用户
-                </button>
-                <button
-                  disabled={!hasSuccessfulUpload}
-                  onClick={() => {
-                    if (!hasSuccessfulUpload) return;
-                    setFormData(prev => ({ ...prev, scope: 'private' }));
-                  }}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
-                    formData.scope === 'private'
-                      ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
-                      : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-                  } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  按分组
-                </button>
+              <div className="mt-2 space-y-3">
+                {/* 两个胶囊切换按钮 + 下拉框同行 */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    disabled={!hasSuccessfulUpload}
+                    onClick={() => {
+                      if (!hasSuccessfulUpload) return;
+                      setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }));
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      formData.scope === 'public'
+                        ? 'border-blue-200 bg-blue-50 text-blue-600'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    全部用户
+                  </button>
+                  <button
+                    disabled={!hasSuccessfulUpload}
+                    onClick={() => {
+                      if (!hasSuccessfulUpload) return;
+                      setFormData(prev => ({ ...prev, scope: 'private' }));
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      formData.scope === 'private'
+                        ? 'border-blue-200 bg-blue-50 text-blue-600'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    按分组
+                  </button>
 
-                {formData.scope === 'private' && hasSuccessfulUpload && (
-                  <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
-                    <Tooltip delayDuration={1000} open={groupPopoverOpen ? false : undefined}>
+                  {/* 选择按分组后，右侧出现下拉选择器 */}
+                  {formData.scope === 'private' && hasSuccessfulUpload && (
+                    <Popover>
+                      <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors max-w-[200px]">
-                              <span className="truncate text-left">
-                                {formData.groupIds.length === 0
-                                  ? '选择分组'
-                                  : MOCK_GROUPS.filter(g => formData.groupIds.includes(g.id)).map(g => g.name).join('、')}
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                              <span className="truncate">
+                                {formData.groupIds.length > 0
+                                  ? `已选 ${formData.groupIds.length} 个分组`
+                                  : '选择分组…'}
                               </span>
-                              <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
                             </button>
                           </PopoverTrigger>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
-                          <p className="break-words">
-                            {formData.groupIds.length === 0
-                              ? '选择分组'
-                              : MOCK_GROUPS.filter(g => formData.groupIds.includes(g.id)).map(g => g.name).join('、')}
-                          </p>
-                        </TooltipContent>
+                        {formData.groupIds.length > 0 && (
+                          <TooltipContent side="bottom" className="max-w-[280px]">
+                            <p className="text-xs leading-relaxed">
+                              {formData.groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid).join('，')}
+                            </p>
+                          </TooltipContent>
+                        )}
                       </Tooltip>
-                    <PopoverContent className="w-52 p-2" align="start" sideOffset={4} onWheel={(e) => e.stopPropagation()}>
-                      <div className="relative mb-2">
-                        <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                        <input
-                          placeholder="搜索分组..."
-                          value={groupSearchQuery}
-                          onChange={(e) => setGroupSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        />
-                      </div>
-                      <div className="max-h-48 overflow-y-auto overscroll-contain space-y-0.5" onWheel={(e) => e.stopPropagation()}>
-                        {MOCK_GROUPS
-                          .filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase()))
-                          .map(group => (
+                      <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
+                        <div className="p-2 border-b border-gray-100">
+                          <div className="relative">
+                            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input
+                              placeholder="搜索分组…"
+                              value={groupSearchQuery}
+                              onChange={(e) => setGroupSearchQuery(e.target.value)}
+                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-[200px] overflow-y-auto p-1">
+                          {MOCK_GROUPS
+                            .filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase()))
+                            .map(group => {
+                              const checked = formData.groupIds.includes(group.id);
+                              return (
+                                <button
+                                  key={group.id}
+                                  onClick={() => {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      groupIds: prev.groupIds.includes(group.id)
+                                        ? prev.groupIds.filter(id => id !== group.id)
+                                        : [...prev.groupIds, group.id]
+                                    }));
+                                  }}
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                                >
+                                  <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                                    checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                                  }`}>
+                                    {checked && <Check className="w-2.5 h-2.5 text-white" />}
+                                  </span>
+                                  <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                                </button>
+                              );
+                            })}
+                          {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
+                            <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
+                          <p className="text-[11px] text-gray-400">
+                            已选 {formData.groupIds.length} 个分组
+                          </p>
+                          {formData.groupIds.length > 0 && (
                             <button
-                              key={group.id}
-                              onClick={() => {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  groupIds: prev.groupIds.includes(group.id)
-                                    ? prev.groupIds.filter(id => id !== group.id)
-                                    : [...prev.groupIds, group.id]
-                                }));
-                              }}
-                              className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                              onClick={() => setFormData(prev => ({ ...prev, groupIds: [] }))}
+                              className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
                             >
-                              <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                                formData.groupIds.includes(group.id)
-                                  ? 'bg-blue-600 border-blue-600'
-                                  : 'border-gray-300'
-                              }`}>
-                                {formData.groupIds.includes(group.id) && (
-                                  <Check className="w-3 h-3 text-white" />
-                                )}
-                              </div>
-                              <span className="truncate text-left" title={group.name}>{group.name}</span>
+                              清除
                             </button>
-                          ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
               </div>
             </div>
           </div>

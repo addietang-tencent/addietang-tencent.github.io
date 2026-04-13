@@ -569,14 +569,14 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
             <p className="text-sm text-gray-500 mb-3">slug: {skill.slug}</p>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded">
+              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                 v{skill.version}
               </span>
               <div className="flex gap-1 flex-wrap">
                 {skill.categories.map((catId: string) => (
                   <span
                     key={catId}
-                    className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded"
+                    className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
                   >
                     {getCategoryName(catId)}
                   </span>
@@ -586,14 +586,14 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               <span className="text-sm text-gray-400 ml-2">|</span>
               <span className="text-sm text-gray-500">应用范围：</span>
               {skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0 ? (
-                <span className="inline-block px-3 py-1 bg-green-50 text-green-700 text-sm rounded">
+                <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
                   全部用户
                 </span>
               ) : (
                 skill.groupIds.map((gId: string) => (
                   <span
                     key={gId}
-                    className="inline-block px-3 py-1 bg-purple-50 text-purple-700 text-sm rounded"
+                    className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
                   >
                     {MOCK_GROUPS.find(g => g.id === gId)?.name || gId}
                   </span>
@@ -620,7 +620,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   </span>
                 </TooltipTrigger>
                 {hasInProgress && (
-                  <TooltipContent className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm">仅支持状态为正常的 Skill</TooltipContent>
+                  <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
                 )}
               </Tooltip>
 
@@ -632,15 +632,15 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       variant="outline"
                       onClick={() => setDeleteDialogOpen(true)}
                       disabled={hasInProgress}
-                      className={hasInProgress ? 'opacity-50 cursor-not-allowed' : ''}
+                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 border-gray-200`}
                     >
-                      <Trash2 className="w-4 h-4 mr-1.5" />
+                      <Trash2 className="w-4 h-4 mr-1.5 text-gray-500" />
                       删除
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {hasInProgress && (
-                  <TooltipContent className="bg-gray-900 text-white text-xs">仅支持状态为正常的 Skill</TooltipContent>
+                  <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
                 )}
               </Tooltip>
 
@@ -745,8 +745,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                                 </div>
                               </button>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-white text-gray-700 text-xs max-w-[260px] p-3 border border-gray-200 shadow-sm">
-                              <p className="font-medium mb-1.5 text-gray-900">更新说明</p>
+                            <TooltipContent side="right" className="max-w-[260px] p-3">
+                              <p className="font-medium mb-1.5">更新说明</p>
                               <p className="whitespace-pre-line leading-relaxed">{versionRecord?.changeLog || '暂无更新说明'}</p>
                             </TooltipContent>
                           </Tooltip>

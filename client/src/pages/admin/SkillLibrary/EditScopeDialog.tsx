@@ -1,182 +1,241 @@
 /**
- * 编辑应用范围弹窗
- * - 一行内：全部用户 / 按分组 胶囊按钮 + 按分组时右侧下拉多选
+ * 编辑应用范围 Popover 气泡
+ * - 参考模型配置 ScopePopover 交互
+ * - 两个胶囊按钮：全部用户 / 按分组
+ * - 按分组时：搜索框 + checkbox 列表 + 已选计数 + 清除筛选
+ * - 底部：取消 / 确认
  */
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Globe, Users, ChevronDown, Search, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Search, Check, Edit2, X } from 'lucide-react';
 import { type SkillScope, type Group } from './types';
 
-interface EditScopeDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface EditScopePopoverProps {
   groups: Group[];
   currentScope: SkillScope;
   currentGroupIds: string[];
-  skillName?: string;
   onConfirm: (scope: SkillScope, groupIds: string[]) => void;
+  /** 应用范围展示标签 */
+  scopeLabels: string[];
+  /** 是否是 public 范围 */
+  isPublic: boolean;
 }
 
-export default function EditScopeDialog({
-  open,
-  onOpenChange,
+export default function EditScopePopover({
   groups,
   currentScope,
   currentGroupIds,
-  skillName,
   onConfirm,
-}: EditScopeDialogProps) {
-  const [scope, setScope] = useState<SkillScope>('public');
-  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  scopeLabels,
+  isPublic,
+}: EditScopePopoverProps) {
+  const [open, setOpen] = useState(false);
+  const [draftScope, setDraftScope] = useState<SkillScope>('public');
+  const [draftGroupIds, setDraftGroupIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [groupPopoverOpen, setGroupPopoverOpen] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      setScope(currentScope);
-      setSelectedGroupIds([...currentGroupIds]);
+  // 每次打开时同步当前状态
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setDraftScope(currentScope);
+      setDraftGroupIds([...currentGroupIds]);
       setSearchQuery('');
     }
-  }, [open, currentScope, currentGroupIds]);
+    setOpen(v);
+  };
 
   const filteredGroups = groups.filter(g =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleToggleGroup = (groupId: string) => {
-    setSelectedGroupIds(prev =>
-      prev.includes(groupId)
-        ? prev.filter(id => id !== groupId)
-        : [...prev, groupId]
+  const toggleGroup = (gid: string) => {
+    setDraftGroupIds(prev =>
+      prev.includes(gid) ? prev.filter(id => id !== gid) : [...prev, gid]
     );
   };
 
+  const handleClearSelection = () => {
+    setDraftGroupIds([]);
+    setSearchQuery('');
+  };
+
+  const isConfirmDisabled = draftScope === 'private' && draftGroupIds.length === 0;
+
   const handleConfirm = () => {
-    onConfirm(scope, scope === 'public' ? [] : selectedGroupIds);
-    onOpenChange(false);
+    if (isConfirmDisabled) return;
+    onConfirm(draftScope, draftScope === 'public' ? [] : draftGroupIds);
+    setOpen(false);
   };
 
-  const handleCancel = () => {
-    onOpenChange(false);
-  };
+  // 渲染范围徽章
+  const renderBadges = () => {
+    if (isPublic) {
+      return (
+        <span className="inline-block px-3 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+          全部用户
+        </span>
+      );
+    }
 
-  const selectedGroupNames = groups
-    .filter(g => selectedGroupIds.includes(g.id))
-    .map(g => g.name);
+    // 按分组：第一个分组名 + +N
+    const firstName = scopeLabels[0] || '';
+    const rest = scopeLabels.length - 1;
+    const tooltipText = scopeLabels.join('，');
+
+    return (
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 cursor-default">
+            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full max-w-[100px] truncate">
+              {firstName}
+            </span>
+            {rest > 0 && (
+              <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full whitespace-nowrap">
+                +{rest}
+              </span>
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+          {tooltipText}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
 
   return (
-    <Dialog open={open} onOpenChange={handleCancel}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>修改应用范围</DialogTitle>
-          {skillName && (
-            <p className="text-sm text-gray-600 mt-2">请设置 {skillName} Skill 的应用范围</p>
-          )}
-        </DialogHeader>
+    <div className="inline-flex items-center gap-1.5">
+      {renderBadges()}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+            title="编辑应用范围"
+          >
+            <Edit2 className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-68 p-0"
+          align="start"
+          sideOffset={6}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+            {/* 全部用户 / 按分组 胶囊切换按钮 */}
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setDraftScope('public')}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftScope === 'public'
+                    ? 'border-blue-200 bg-blue-50 text-blue-600'
+                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                全部用户
+              </button>
+              <button
+                onClick={() => setDraftScope('private')}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftScope === 'private'
+                    ? 'border-blue-200 bg-blue-50 text-blue-600'
+                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                按分组
+              </button>
+            </div>
 
-        <div className="space-y-4">
-          {/* 一行：范围切换 + 下拉 */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setScope('public')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
-                scope === 'public'
-                  ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              全部用户
-            </button>
-            <button
-              onClick={() => setScope('private')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
-                scope === 'private'
-                  ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
-                  : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              按分组
-            </button>
+            {/* 分组列表（仅 private 模式） */}
+            {draftScope === 'private' && (
+              <div className="space-y-1.5">
+                {/* 搜索框 */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="搜索分组…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
 
-            {scope === 'private' && (
-              <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
-                <Tooltip delayDuration={1000} open={groupPopoverOpen ? false : undefined}>
-                    <TooltipTrigger asChild>
-                      <PopoverTrigger asChild>
-                        <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors max-w-[200px]">
-                          <span className="truncate text-left">
-                            {selectedGroupIds.length === 0
-                              ? '选择分组'
-                              : selectedGroupNames.join('、')}
+                {/* 分组 checkbox 列表 */}
+                <div className="max-h-[200px] overflow-y-auto space-y-0.5">
+                  {filteredGroups.length === 0 ? (
+                    <p className="text-[11px] text-gray-400 text-center py-3">无匹配分组</p>
+                  ) : (
+                    filteredGroups.map((group) => {
+                      const checked = draftGroupIds.includes(group.id);
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => toggleGroup(group.id)}
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <span
+                            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                              checked
+                                ? 'bg-blue-500 border-blue-500'
+                                : 'border-gray-300 bg-white'
+                            }`}
+                          >
+                            {checked && <Check className="w-2.5 h-2.5 text-white" />}
                           </span>
-                          <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span className="text-xs text-gray-700 truncate">{group.name}</span>
                         </button>
-                      </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
-                      <p className="break-words">
-                        {selectedGroupIds.length === 0
-                          ? '选择分组'
-                          : selectedGroupNames.join('、')}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                <PopoverContent className="w-52 p-2" align="start" sideOffset={4}>
-                  <div className="relative mb-2">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input
-                      placeholder="搜索分组..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    />
-                  </div>
-                  <div className="max-h-40 overflow-y-auto space-y-0.5">
-                    {filteredGroups.map((group) => (
-                      <button
-                        key={group.id}
-                        onClick={() => handleToggleGroup(group.id)}
-                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                          selectedGroupIds.includes(group.id)
-                            ? 'bg-blue-600 border-blue-600'
-                            : 'border-gray-300'
-                        }`}>
-                          {selectedGroupIds.includes(group.id) && (
-                            <Check className="w-3 h-3 text-white" />
-                          )}
-                        </div>
-                        <span className="truncate text-left" title={group.name}>{group.name}</span>
-                      </button>
-                    ))}
-                    {filteredGroups.length === 0 && (
-                      <p className="text-xs text-gray-400 py-2 text-center">没有匹配的分组</p>
-                    )}
-                  </div>
-                </PopoverContent>
-              </Popover>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* 已选数量 + 清除筛选 */}
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[11px] text-gray-400">
+                    已选 {draftGroupIds.length} 个分组
+                  </p>
+                  {draftGroupIds.length > 0 && (
+                    <button
+                      onClick={handleClearSelection}
+                      className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline"
+                    >
+                      清除筛选
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
-            取消
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={scope === 'private' && selectedGroupIds.length === 0}
-          >
-            确认
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          {/* 底部按钮 */}
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3"
+              disabled={isConfirmDisabled}
+              onClick={handleConfirm}
+              style={isConfirmDisabled ? undefined : { background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }

@@ -26,7 +26,7 @@ import {
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
   Loader2, X, FileText, ExternalLink, RefreshCw, Users, Check,
-  FolderOpen, UserMinus, FolderPlus,
+  FolderOpen, UserMinus, FolderPlus, ChevronUp,
 } from "lucide-react";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
@@ -34,29 +34,6 @@ const PAGE_SIZE = 10;
 
 // ─── 分组选择框触发器（自适应截断） ──────────────────────────────────────────
 function GroupSelectTrigger({ names }: { names: string[] }) {
-  const fullText = names.join(", ");
-  const containerRef = React.useRef<HTMLSpanElement>(null);
-  const [visibleCount, setVisibleCount] = React.useState(names.length);
-  const [measured, setMeasured] = React.useState(false);
-
-  React.useEffect(() => {
-    setVisibleCount(names.length);
-    setMeasured(false);
-  }, [names.length, fullText]);
-
-  React.useEffect(() => {
-    if (names.length === 0 || measured) return;
-    const el = containerRef.current;
-    if (!el) return;
-    requestAnimationFrame(() => {
-      if (el.scrollWidth > el.clientWidth) {
-        setVisibleCount((prev) => Math.max(1, prev - 1));
-      } else {
-        setMeasured(true);
-      }
-    });
-  }, [visibleCount, names, measured]);
-
   if (names.length === 0) {
     return (
       <div className="w-full overflow-hidden">
@@ -68,21 +45,19 @@ function GroupSelectTrigger({ names }: { names: string[] }) {
     );
   }
 
-  const remaining = names.length - visibleCount;
-  const displayText = remaining > 0
-    ? `${names.slice(0, visibleCount).join(", ")} +${remaining}`
-    : fullText;
+  const fullText = names.join(", ");
+  const displayText = names.length === 1 ? names[0] : `${names[0]} +${names.length - 1}`;
 
   const btn = (
     <div className="w-full overflow-hidden">
       <button type="button" className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50">
-        <span ref={containerRef} className="text-gray-900 overflow-hidden text-ellipsis whitespace-nowrap text-left" style={{ minWidth: 0, flex: "1 1 0%" }}>{displayText}</span>
+        <span className="text-gray-900 truncate text-left" style={{ minWidth: 0, flex: "1 1 0%" }}>{displayText}</span>
         <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
       </button>
     </div>
   );
 
-  if (remaining > 0) {
+  if (names.length > 1) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>{btn}</TooltipTrigger>
@@ -192,7 +167,42 @@ const MOCK_GROUPS_INIT: MemberGroup[] = [
   { id: "grp-4", name: "产品运营与市场推广团队", memberIds: ["alice@acompany.com", "kate@acompany.com"], createdAt: "2025-08-15" },
 ];
 
-/** 生成随机密码，格式 Oc@xxxxxxxx */
+// ─── 分组关联配置 mock 数据 ──────────────────────────────────────────────────
+interface GroupRelatedConfig {
+  type: string;
+  typePath: string; // 跳转路径
+  items: { id: string; name: string }[];
+}
+
+const MOCK_GROUP_CONFIGS: Record<string, GroupRelatedConfig[]> = {
+  "grp-1": [
+    { type: "模型配置", typePath: "/admin/model-config", items: [
+      { id: "m1", name: "腾讯云混元 - 混元 TurboS Latest" },
+    ]},
+    { type: "企业技能", typePath: "/admin/skill-config", items: [
+      { id: "s1", name: "Web 搜索" }, { id: "s2", name: "代码解释器" }, { id: "s3", name: "文档分析" },
+    ]},
+  ],
+  "grp-2": [
+    { type: "模型配置", typePath: "/admin/model-config", items: [
+      { id: "m1", name: "腾讯云混元 - 混元 TurboS Latest" }, { id: "m2", name: "腾讯云 DeepSeek - DeepSeek V3 0324" },
+    ]},
+    { type: "企业技能", typePath: "/admin/skill-config", items: [
+      { id: "s1", name: "Web 搜索" }, { id: "s2", name: "代码解释器" }, { id: "s3", name: "文档分析" },
+      { id: "s4", name: "图片生成" }, { id: "s5", name: "数据分析" }, { id: "s6", name: "翻译助手" },
+      { id: "s7", name: "知识库问答" }, { id: "s8", name: "邮件撰写" }, { id: "s9", name: "会议纪要" }, { id: "s10", name: "PPT 生成" },
+    ]},
+    { type: "通道配置", typePath: "/admin/channel-config", items: [
+      { id: "c1", name: "默认通道" }, { id: "c2", name: "高级通道" }, { id: "c3", name: "专属通道" },
+    ]},
+  ],
+  "grp-3": [],
+  "grp-4": [
+    { type: "企业技能", typePath: "/admin/skill-config", items: [
+      { id: "s1", name: "Web 搜索" }, { id: "s4", name: "图片生成" },
+    ]},
+  ],
+};
 function generatePassword(): string {
   const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let pwd = "Oc@";
@@ -384,7 +394,7 @@ function AddMemberFormFields({
                   <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-0" align="start">
+              <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-gray-100">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -407,12 +417,22 @@ function AddMemberFormFields({
                     <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>
                   )}
                 </div>
-                <div className="border-t border-gray-100 p-2">
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    {values.groupIds.length > 0 ? (
+                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
+                    ) : (
+                      <span className="text-[11px] text-gray-400"> </span>
+                    )}
+                    {values.groupIds.length > 0 && (
+                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
+                    )}
+                  </div>
                   <button
-                    className="w-full h-7 flex items-center justify-center gap-1 rounded-md text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
                   >
-                    <FolderPlus className="w-3.5 h-3.5" />新建分组
+                    <FolderPlus className="w-3 h-3" />新建分组
                   </button>
                 </div>
               </PopoverContent>
@@ -577,7 +597,7 @@ function EditMemberFormFields({
                   <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-0" align="start">
+              <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-gray-100">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -596,12 +616,22 @@ function EditMemberFormFields({
                   {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
                   {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
                 </div>
-                <div className="border-t border-gray-100 p-2">
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    {values.groupIds.length > 0 ? (
+                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
+                    ) : (
+                      <span className="text-[11px] text-gray-400"> </span>
+                    )}
+                    {values.groupIds.length > 0 && (
+                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
+                    )}
+                  </div>
                   <button
-                    className="w-full h-7 flex items-center justify-center gap-1 rounded-md text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
                   >
-                    <FolderPlus className="w-3.5 h-3.5" />新建分组
+                    <FolderPlus className="w-3 h-3" />新建分组
                   </button>
                 </div>
               </PopoverContent>
@@ -766,7 +796,7 @@ function OneidEditMemberFormFields({
                   <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-0" align="start">
+              <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-gray-100">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -785,12 +815,22 @@ function OneidEditMemberFormFields({
                   {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
                   {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
                 </div>
-                <div className="border-t border-gray-100 p-2">
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                    {values.groupIds.length > 0 ? (
+                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
+                    ) : (
+                      <span className="text-[11px] text-gray-400"> </span>
+                    )}
+                    {values.groupIds.length > 0 && (
+                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
+                    )}
+                  </div>
                   <button
-                    className="w-full h-7 flex items-center justify-center gap-1 rounded-md text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
                   >
-                    <FolderPlus className="w-3.5 h-3.5" />新建分组
+                    <FolderPlus className="w-3 h-3" />新建分组
                   </button>
                 </div>
               </PopoverContent>
@@ -1188,7 +1228,7 @@ export default function MemberManagement() {
   const [newGroupName, setNewGroupName] = useState("");
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editingGroupName, setEditingGroupName] = useState("");
-  const [deleteGroupDialog, setDeleteGroupDialog] = useState<{ open: boolean; groupId: string; groupName: string; memberCount: number } | null>(null);
+  const [deleteGroupDialog, setDeleteGroupDialog] = useState<{ open: boolean; groupId: string; groupName: string; memberCount: number; configRefreshing: boolean } | null>(null);
   const [showAddToGroupDialog, setShowAddToGroupDialog] = useState(false);
   const [addToGroupSearch, setAddToGroupSearch] = useState("");
   const [addToGroupSelected, setAddToGroupSelected] = useState<string[]>([]);
@@ -1197,6 +1237,7 @@ export default function MemberManagement() {
   const [groupListSearch, setGroupListSearch] = useState("");
   const [groupPopoverReopenKey, setGroupPopoverReopenKey] = useState(0);
   const [removeFromGroupDialog, setRemoveFromGroupDialog] = useState<{ open: boolean; groupId: string; groupName: string; memberId: string } | null>(null);
+  const [configSectionExpanded, setConfigSectionExpanded] = useState(false);
 
   // 筛选逻辑：hasOneid 模式时支持部门和角色筛选
   const filtered = sortedMembers.filter((m) => {
@@ -1712,7 +1753,7 @@ export default function MemberManagement() {
                     ) : groupNames.length === 1 ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-600 max-w-[130px] overflow-hidden text-ellipsis whitespace-nowrap cursor-default">{groupNames[0]}</span>
+                          <span className="badge-shutdown max-w-[130px] truncate inline-block align-middle cursor-default">{groupNames[0]}</span>
                         </TooltipTrigger>
                         <TooltipContent>{groupNames[0]}</TooltipContent>
                       </Tooltip>
@@ -1720,8 +1761,8 @@ export default function MemberManagement() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="inline-flex items-center gap-1 cursor-default">
-                            <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-600 max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{groupNames[0]}</span>
-                            <span className="text-xs text-gray-400">+{groupNames.length - 1}</span>
+                            <span className="badge-shutdown max-w-[100px] truncate inline-block align-middle">{groupNames[0]}</span>
+                            <span className="badge-shutdown whitespace-nowrap">+{groupNames.length - 1}</span>
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>{groupNames.join(", ")}</TooltipContent>
@@ -1881,7 +1922,7 @@ export default function MemberManagement() {
           <div className="flex gap-4">
             {/* 左侧分组列表 */}
             <div
-              className="w-[240px] shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden self-start"
+              className="w-[280px] shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden self-start"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
             >
               {/* 顶部：新建分组 + 搜索 */}
@@ -1939,14 +1980,14 @@ export default function MemberManagement() {
                         className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === group.id ? "text-blue-600 font-medium" : "text-gray-700"}`}
                         onClick={() => { setSelectedGroupId(group.id); setGroupPage(1); }}
                       >
-                        <FolderOpen className="w-4 h-4 flex-shrink-0 opacity-60" />
+                        <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
                         <span className="truncate">{group.name}</span>
                         <span className="text-xs text-gray-400 shrink-0">({group.memberIds.length})</span>
                       </button>
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+                        <button className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors shrink-0 ${selectedGroupId === group.id ? "text-blue-500 hover:bg-blue-100" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}>
                           <MoreHorizontal className="w-3.5 h-3.5" />
                         </button>
                       </DropdownMenuTrigger>
@@ -1954,7 +1995,7 @@ export default function MemberManagement() {
                         <DropdownMenuItem className="text-xs text-gray-600 focus:text-gray-600 focus:bg-gray-50" onClick={() => { setEditingGroupId(group.id); setEditingGroupName(group.name); }}>
                           <Pencil className="w-3.5 h-3.5 mr-2" />重命名
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => setDeleteGroupDialog({ open: true, groupId: group.id, groupName: group.name, memberCount: group.memberIds.length })}>
+                        <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => setDeleteGroupDialog({ open: true, groupId: group.id, groupName: group.name, memberCount: group.memberIds.length, configRefreshing: false })}>
                           <Trash2 className="w-3.5 h-3.5 mr-2" />删除分组
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -1972,7 +2013,7 @@ export default function MemberManagement() {
                   className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors border-t border-gray-100 ${selectedGroupId === "__ungrouped__" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                   onClick={() => { setSelectedGroupId("__ungrouped__"); setGroupPage(1); }}
                 >
-                  <FolderOpen className="w-4 h-4 flex-shrink-0 opacity-60" />
+                  <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
                   <span className="truncate text-left">未分组</span>
                   <span className="text-xs text-gray-400 shrink-0">({(() => { const allGroupedIds = new Set(groups.flatMap((g) => g.memberIds)); return sortedMembers.filter((m) => !allGroupedIds.has(m.id)).length; })()})</span>
                 </button>
@@ -2025,11 +2066,9 @@ export default function MemberManagement() {
                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户归属</th>
                           )}
                           <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">OpenClaw 上限</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">每日 Tokens 上限</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">加入时间</th>
-                          <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
+                          {selectedGroupId !== "__ungrouped__" && (
+                            <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
@@ -2051,106 +2090,18 @@ export default function MemberManagement() {
                                 {member.role === "admin" ? "管理员" : "用户"}
                               </Badge>
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              {member.status === "active" ? (
-                                <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
-                              ) : (
-                                <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-4"><span className="text-sm text-gray-700">{member.clawLimit}</span></td>
-                            <td className="px-4 py-4"><span className="text-sm text-gray-700">{member.tokenLimit.toLocaleString()}</span></td>
-                            <td className="px-4 py-4 whitespace-nowrap"><span className="text-sm text-gray-500">{member.joinTime}</span></td>
-                              <td className="px-4 py-4">
-                                <div className="flex items-center justify-center gap-0.5">
-                                  {selectedGroupId !== "__ungrouped__" && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 h-7 w-7 p-0" onClick={() => setRemoveFromGroupDialog({ open: true, groupId: selectedGroupId, groupName: groups.find((g) => g.id === selectedGroupId)?.name || "", memberId: member.id })}>
-                                          <UserMinus className="w-3.5 h-3.5" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>从分组中移除</TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                  {hasOneid ? (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="text-gray-400 hover:text-blue-600 h-7 w-7 p-0" onClick={() => openEditDialog(member)}>
-                                          <Pencil className="w-3.5 h-3.5" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>编辑</TooltipContent>
-                                    </Tooltip>
-                                  ) : (
-                                    <>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-blue-600 h-7 w-7 p-0" onClick={() => openEditDialog(member)}>
-                                            <Pencil className="w-3.5 h-3.5" />
-                                          </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>编辑</TooltipContent>
-                                      </Tooltip>
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
-                                            <MoreHorizontal className="w-3.5 h-3.5" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                          {member.id === initialAdminId ? (
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                                  <Key className="w-3.5 h-3.5 mr-2" />重置密码
-                                                </span>
-                                              </TooltipTrigger>
-                                              <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">初始管理员账号不允许重置密码</TooltipContent>
-                                            </Tooltip>
-                                          ) : (
-                                            <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
-                                              <Key className="w-3.5 h-3.5 mr-2" />重置密码
-                                            </DropdownMenuItem>
-                                          )}
-                                          {member.id === initialAdminId ? (
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                                  <UserX className="w-3.5 h-3.5 mr-2" />禁用
-                                                </span>
-                                              </TooltipTrigger>
-                                              <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
-                                            </Tooltip>
-                                          ) : member.status === "active" ? (
-                                            <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => openDisableConfirm(member)}>
-                                              <UserX className="w-3.5 h-3.5 mr-2" />禁用
-                                            </DropdownMenuItem>
-                                          ) : (
-                                            <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => openEnableConfirm(member)}>
-                                              <UserCheck className="w-3.5 h-3.5 mr-2" />启用
-                                            </DropdownMenuItem>
-                                          )}
-                                          {member.id === initialAdminId ? (
-                                            <Tooltip>
-                                              <TooltipTrigger asChild>
-                                                <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
-                                                  <Trash2 className="w-3.5 h-3.5 mr-2" />删除
-                                                </span>
-                                              </TooltipTrigger>
-                                              <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
-                                            </Tooltip>
-                                          ) : (
-                                            <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => openDeleteCheck(member)}>
-                                              <Trash2 className="w-3.5 h-3.5 mr-2" />删除
-                                            </DropdownMenuItem>
-                                          )}
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    </>
-                                  )}
-                                </div>
+                            {selectedGroupId !== "__ungrouped__" && (
+                              <td className="px-4 py-4 text-center">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 h-7 w-7 p-0" onClick={() => setRemoveFromGroupDialog({ open: true, groupId: selectedGroupId, groupName: groups.find((g) => g.id === selectedGroupId)?.name || "", memberId: member.id })}>
+                                      <UserMinus className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>从分组中移除</TooltipContent>
+                                </Tooltip>
                               </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -2784,28 +2735,82 @@ export default function MemberManagement() {
 
       {/* 删除分组确认 Dialog */}
       <Dialog open={!!deleteGroupDialog?.open} onOpenChange={(open) => { if (!open) setDeleteGroupDialog(null); }}>
-        <DialogContent className="sm:max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>删除分组</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-3">
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">分组名称</span>
-              <span className="text-sm font-medium text-gray-900">{deleteGroupDialog?.groupName}</span>
-            </div>
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">分组内用户数</span>
-              <span className="text-sm font-semibold text-gray-800">{deleteGroupDialog?.memberCount ?? 0} 人</span>
-            </div>
-            <div className="rounded-lg bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600">
-              删除分组后，组内用户不会被删除，仅解除分组关联。
-            </div>
-          </div>
+          {(() => {
+            const configs = deleteGroupDialog ? (MOCK_GROUP_CONFIGS[deleteGroupDialog.groupId] || []) : [];
+            const hasRelatedConfigs = configs.some((c) => c.items.length > 0);
+            return (
+              <div className="py-2 space-y-3">
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-500">分组名称</span>
+                  <span className="text-sm font-medium text-gray-900">{deleteGroupDialog?.groupName}</span>
+                </div>
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-500">分组内用户数</span>
+                  <span className="text-sm font-semibold text-gray-800">{deleteGroupDialog?.memberCount ?? 0} 人</span>
+                </div>
+
+                {/* 已应用配置 */}
+                <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-500">已应用配置</span>
+                    <button
+                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      title="刷新"
+                      onClick={() => {
+                        if (!deleteGroupDialog) return;
+                        setDeleteGroupDialog({ ...deleteGroupDialog, configRefreshing: true });
+                        setTimeout(() => {
+                          setDeleteGroupDialog((prev) => prev ? { ...prev, configRefreshing: false } : null);
+                        }, 1200);
+                      }}
+                    >
+                      {deleteGroupDialog?.configRefreshing ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                  {hasRelatedConfigs ? (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {configs.filter((c) => c.items.length > 0).map((c) => (
+                        <span key={c.type} className="badge-shutdown">{c.type}({c.items.length})</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-green-600">无关联配置</span>
+                  )}
+                </div>
+
+                {/* 状态提示 */}
+                {hasRelatedConfigs ? (
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
+                    <p className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />以上配置的应用范围包含该分组，请先前往对应配置页面移除该分组后再执行删除。</p>
+                    <p className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />删除分组后，组内用户不会被删除，仅解除分组关联。</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
+                    该分组无关联配置，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteGroupDialog(null)}>取消</Button>
-            <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => deleteGroupDialog && handleDeleteGroup(deleteGroupDialog.groupId)}>
-              确认删除
-            </Button>
+            {(() => {
+              const configs = deleteGroupDialog ? (MOCK_GROUP_CONFIGS[deleteGroupDialog.groupId] || []) : [];
+              const hasRelatedConfigs = configs.some((c) => c.items.length > 0);
+              return !hasRelatedConfigs && (
+                <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={() => deleteGroupDialog && handleDeleteGroup(deleteGroupDialog.groupId)}>
+                  确认删除
+                </Button>
+              );
+            })()}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -2943,7 +2948,10 @@ export default function MemberManagement() {
               })()}
             </div>
             {addToGroupSelected.length > 0 && (
-              <p className="text-xs text-gray-500">已选择 {addToGroupSelected.length} 名用户</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">已选择 {addToGroupSelected.length} 名用户</span>
+                <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => setAddToGroupSelected([])}>清除筛选</button>
+              </div>
             )}
           </div>
           <DialogFooter>

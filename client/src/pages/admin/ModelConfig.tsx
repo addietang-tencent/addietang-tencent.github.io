@@ -176,10 +176,10 @@ function ScopePopover({
     toast.success("应用范围已更新");
   };
 
-  // 解析已选分组名
-  const selectedGroupNames = model.visibilityGroupIds
-    .map((gid) => groups.find((g) => g.id === gid)?.name)
-    .filter(Boolean) as string[];
+  // 解析已选分组名（按 groups 原始顺序排列，确保展示第一个是列表中最靠前的）
+  const selectedGroupNames = groups
+    .filter((g) => model.visibilityGroupIds.includes(g.id))
+    .map((g) => g.name);
 
   // 徽章区域
   const renderBadges = () => {
@@ -200,7 +200,7 @@ function ScopePopover({
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <span className="badge-shutdown max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+            <span className="badge-shutdown max-w-[100px] truncate inline-block align-middle">
               {firstName}
             </span>
             {rest > 0 && (
@@ -218,7 +218,7 @@ function ScopePopover({
   };
 
   return (
-    <div className="inline-flex items-end gap-1.5 min-h-[20px]">
+    <div className="inline-flex items-end gap-1.5 min-h-[20px] max-w-[140px]">
       {renderBadges()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
@@ -576,7 +576,7 @@ export default function ModelConfig() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
                   <div className="flex items-center gap-1">
                     应用范围
                     <Tooltip>
@@ -591,7 +591,7 @@ export default function ModelConfig() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[5%]">操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[5%]">操作</th>
               </tr>
             </thead>
             <tbody>

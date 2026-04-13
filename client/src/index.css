@@ -210,6 +210,11 @@
     background: rgba(142, 142, 147, 0.12);
     color: #6b7280;
   }
+  .badge-purple {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    background: rgba(147, 51, 234, 0.1);
+    color: #7c3aed;
+  }
 
   /* Sidebar nav item */
   .nav-item {

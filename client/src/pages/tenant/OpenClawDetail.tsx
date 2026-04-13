@@ -433,6 +433,12 @@ export default function OpenClawDetail() {
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
   const [activeDetailTab, setActiveDetailTab] = useState("basic");
 
+  // ── Memory 状态 ──
+  // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
+  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none'>('pro');
+  // Pro 版配额是否可用（从管控端获取）
+  const [proQuotaAvailable] = useState(true);
+
   // ── 智能体迁移状态 ──
   const [migrationOpen, setMigrationOpen] = useState(false);
   const [migrationStep, setMigrationStep] = useState<"export" | "waitUpload" | "import" | "importing" | "success" | "failed">("export");
@@ -1920,8 +1926,18 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ minHeight: "400px", boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-              <MemoryPreview memoryServiceEnabled={true} openclawVersion="3.24" />
+            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <MemoryPreview 
+                memoryStatus={memoryStatus}
+                proQuotaAvailable={proQuotaAvailable}
+                showConfidence={false}
+                onStatusChange={async (newStatus) => {
+                  // TODO: 调用后端接口切换 Memory 状态
+                  // await api.changeMemoryStatus(clawId, newStatus);
+                  await new Promise(resolve => setTimeout(resolve, 1000)); // mock 延迟
+                  setMemoryStatus(newStatus);
+                }}
+              />
             </div>
           )}
 

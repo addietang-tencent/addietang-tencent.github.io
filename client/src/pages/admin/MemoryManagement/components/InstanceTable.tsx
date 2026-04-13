@@ -805,9 +805,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               // 统计选中实例的状态分布
               const noneCount = selectedInstances.filter(i => i.memoryStatus === 'none').length;
               const freeCount = selectedInstances.filter(i => i.memoryStatus === 'free').length;
+              const proCount = selectedInstances.filter(i => i.memoryStatus === 'pro').length;
               // 是否有选中且可操作的实例
               const canEnableFree = noneCount > 0;
               const canEnablePro = (noneCount > 0 || freeCount > 0);
+              const canDisable = (freeCount > 0 || proCount > 0);
               const hasSelection = selectedIds.size > 0;
               
               return (
@@ -856,6 +858,28 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                           : !canEnablePro
                             ? '所选实例均已开通 Pro 版'
                             : `为 ${noneCount + freeCount} 个实例开通 Pro 版`}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleBatchDisable}
+                        disabled={!hasSelection || !canDisable}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          hasSelection && canDisable
+                            ? 'text-red-600 bg-red-50 hover:bg-red-100'
+                            : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                        }`}
+                      >
+                        批量关闭{canDisable ? `（${freeCount + proCount}）` : ''}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {!hasSelection 
+                        ? '请先勾选实例' 
+                        : !canDisable 
+                          ? '所选实例均未开通记忆服务'
+                          : `关闭 ${freeCount + proCount} 个实例的记忆服务${proCount > 0 ? `（含 ${proCount} 个 Pro 版）` : ''}`}
                     </TooltipContent>
                   </Tooltip>
                 </>

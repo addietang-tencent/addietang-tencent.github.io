@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { ComparisonTable } from './components/ComparisonTable';
 import { InstanceTable, OcInstance, MemoryStatus } from './components/InstanceTable';
@@ -28,6 +28,9 @@ export const MemoryManagement: React.FC = () => {
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
   // 版本对比折叠状态，默认收起
   const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
+  
+  // 实例列表 ref，用于滚动定位
+  const instanceTableRef = useRef<HTMLDivElement>(null);
 
   // ========== Mock 实例数据 ==========
   const [instances, setInstances] = useState<OcInstance[]>([
@@ -82,11 +85,12 @@ export const MemoryManagement: React.FC = () => {
       if (Math.random() > 0.1) {
         setProServiceStatus('active');
         setShowSuccessBanner(true);
-        toast.success('Memory Pro 服务开通成功！');
         // 联动逻辑：如果勾选了「默认开通」，自动切换为 Pro
         if (config?.autoEnableForNewInstances) {
           setDefaultMemoryVersion('pro');
-          toast.success('已将新实例默认记忆版本切换为 Pro');
+          toast.success('Memory Pro 服务开通成功，新实例将默认开启 Pro 版');
+        } else {
+          toast.success('Memory Pro 服务开通成功！');
         }
       } else {
         setProServiceStatus('error');
@@ -114,9 +118,10 @@ export const MemoryManagement: React.FC = () => {
     // 联动逻辑：如果当前默认是 Pro，自动切换为关闭
     if (defaultMemoryVersion === 'pro') {
       setDefaultMemoryVersion('none');
-      toast.success('已将新实例默认记忆版本切换为 关闭');
+      toast.success('Memory Pro 服务已关闭，新实例将不再默认开启记忆');
+    } else {
+      toast.success('Memory Pro 服务已关闭');
     }
-    toast.success('Memory Pro 服务已关闭');
   };
 
   // 成功提示条自动消失
@@ -280,6 +285,9 @@ export const MemoryManagement: React.FC = () => {
                     <Crown className="w-5 h-5 text-purple-500" />
                   </div>
                   <span className="text-sm text-gray-500">Pro 版</span>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-400 text-amber-900">
+                    免费体验中
+                  </span>
                 </div>
                 {isProInactive && (
                   <button
@@ -403,6 +411,7 @@ export const MemoryManagement: React.FC = () => {
       </div>
 
       {/* 实例列表 */}
+      <div ref={instanceTableRef}>
       <InstanceTable 
         instances={instances} 
         loading={loading}
@@ -570,6 +579,7 @@ export const MemoryManagement: React.FC = () => {
           toast.success(`已关闭 ${selectedInstances.length} 个实例的记忆服务（${proCount > 0 ? `${proCount} 个 Pro 版` : ''}${proCount > 0 && freeCount > 0 ? '、' : ''}${freeCount > 0 ? `${freeCount} 个 Free 版` : ''}）`);
         }}
       />
+      </div>
 
       {/* 弹窗 */}
       <ProActivationDialog
@@ -583,6 +593,9 @@ export const MemoryManagement: React.FC = () => {
         onOpenChange={setCloseDialogOpen}
         onConfirm={handleClosePro}
         ocCount={stats.proCount}
+        onGoToInstanceList={() => {
+          instanceTableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
       />
     </div>
   );

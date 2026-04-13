@@ -90,9 +90,12 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
           </div>
 
           {/* 配额说明 */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 space-y-2">
             <p className="text-xs text-blue-700 leading-relaxed">
               开通后将获得 <strong>{FIXED_MEMORY_SPACES}</strong> 个记忆空间，每个记忆空间可绑定一个 OpenClaw 实例。
+            </p>
+            <p className="text-xs text-blue-700 leading-relaxed">
+              开通服务需要 3-5 分钟准备资源，准备完成后即可使用。
             </p>
           </div>
 

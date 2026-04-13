@@ -16,6 +16,7 @@ interface ProCloseDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm?: () => void;
   ocCount: number;
+  onGoToInstanceList?: () => void;
 }
 
 export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
@@ -23,6 +24,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
   onOpenChange,
   onConfirm,
   ocCount,
+  onGoToInstanceList,
 }) => {
   const [confirmText, setConfirmText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,8 +46,55 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
     onConfirm?.();
   };
 
-  const isConfirmValid = confirmText === '确认关闭';
+  const handleGoToInstanceList = () => {
+    handleClose();
+    onGoToInstanceList?.();
+  };
 
+  const isConfirmValid = confirmText === '确认关闭';
+  const hasActiveInstances = ocCount > 0;
+
+  // 如果还有已开通的实例，显示拦截提示
+  if (hasActiveInstances) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              无法关闭服务
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <div className="text-sm text-gray-700">
+              当前还有 <strong className="text-gray-900">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
+            </div>
+            
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="text-sm text-amber-800">
+                <strong>请先关闭所有实例的 Memory Pro</strong>，再执行关闭服务操作。
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              您可以前往实例列表，使用「批量关闭」功能快速关闭多个实例的 Memory Pro。
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={handleClose}>
+              我知道了
+            </Button>
+            <Button onClick={handleGoToInstanceList}>
+              前往实例列表
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // 没有已开通的实例，允许关闭服务
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[520px]">
@@ -56,9 +105,8 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {/* 当前资源使用情况 - 文字形式，放在影响提示上方 */}
           <div className="text-sm text-gray-600">
-            当前已有 <strong className="text-gray-900">{ocCount}</strong> 个实例开通了 Memory Pro 服务
+            当前没有实例开通 Memory Pro 服务，可以安全关闭。
           </div>
 
           {/* 关闭影响说明 */}
@@ -67,7 +115,11 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
             <ul className="text-sm text-gray-700 space-y-1.5">
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-500 flex-shrink-0" />
-                <span>所有已开通 Memory Pro 的实例将<strong>失去记忆能力</strong>，对应的<strong>记忆数据将被清空且不可恢复</strong></span>
+                <span>新创建的实例将<strong>无法开通 Memory Pro</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-500 flex-shrink-0" />
+                <span>如需重新使用 Memory Pro，需要重新开通服务</span>
               </li>
             </ul>
           </div>

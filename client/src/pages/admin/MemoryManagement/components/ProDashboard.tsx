@@ -133,6 +133,8 @@ interface ProDashboardProps {
   purchasedSpaces?: number;
   /** 扩容成功回调 */
   onExpand?: (addSpaces: number, newTotalSpaces: number) => void;
+  /** 点击"前往实例列表"按钮时的回调 */
+  onGoToInstanceList?: () => void;
 }
 
 export const ProDashboard: React.FC<ProDashboardProps> = ({ 
@@ -142,7 +144,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
   onRetry,
   onStatusBannerDismiss,
   purchasedSpaces = 20, // 默认 20，实际从父组件传入
-  onExpand
+  onExpand,
+  onGoToInstanceList
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -635,6 +638,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         onOpenChange={setCloseDialogOpen}
         onConfirm={onClose}
         ocCount={proUsedCount}
+        onGoToInstanceList={onGoToInstanceList}
       />
 
       {/* 扩容弹窗 */}

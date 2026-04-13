@@ -16,9 +16,13 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Info, Brain, Zap, Pencil, AlertTriangle, Star,
+  Plus, Trash2, Info, Brain, Pencil, AlertTriangle,
+  Search, Check, X,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 
@@ -51,7 +55,32 @@ interface ModelRow {
   provider: string; // 对应 AVAILABLE_MODELS.value
   versions: string[]; // 该厂商可用的版本列表
   isMultimodal?: boolean; // 是否支持多模态输入
+  visibilityScope: "all" | "groups"; // 应用范围：全部用户 / 按分组
+  visibilityGroupIds: string[]; // 按分组时选中的分组 id
 }
+
+// Mock 分组数据，与用户管理页一致
+interface MockGroup {
+  id: string;
+  name: string;
+}
+const MOCK_GROUPS: MockGroup[] = [
+  { id: "g1", name: "产品组" },
+  { id: "g2", name: "研发组" },
+  { id: "g3", name: "设计组" },
+  { id: "g4", name: "产品运营与市场推广团队" },
+  { id: "g5", name: "前端工程组" },
+  { id: "g6", name: "后端工程组" },
+  { id: "g7", name: "数据分析组" },
+  { id: "g8", name: "质量保障组" },
+  { id: "g9", name: "安全团队" },
+  { id: "g10", name: "基础架构组" },
+  { id: "g11", name: "DevOps 组" },
+  { id: "g12", name: "客户成功组" },
+  { id: "g13", name: "商务拓展组" },
+  { id: "g14", name: "内容运营组" },
+  { id: "g15", name: "AI 研究组" },
+];
 
 const MOCK_MODELS: ModelRow[] = [
   {
@@ -59,18 +88,28 @@ const MOCK_MODELS: ModelRow[] = [
     modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: true, isDefault: true, isMultimodal: false, dailyLimit: 500000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
+    visibilityScope: "all", visibilityGroupIds: [],
   },
   {
     id: "2", name: "腾讯云混元", version: "混元 TurboS Latest",
     modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, isDefault: false, isMultimodal: false, dailyLimit: 200000,
     provider: "tencent-hunyuan",
     versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
+    visibilityScope: "groups", visibilityGroupIds: ["g1", "g2", "g5", "g7", "g15"],
   },
   {
     id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
     modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: false, isDefault: false, isMultimodal: false, dailyLimit: 100000,
     provider: "tencent-deepseek",
     versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
+    visibilityScope: "all", visibilityGroupIds: [],
+  },
+  {
+    id: "4", name: "OpenAI GPT-4o", version: "GPT-4o 2024-05-13",
+    modelUrl: "https://api.openai.com/v1", visible: true, isDefault: false, isMultimodal: true, dailyLimit: 300000,
+    provider: CUSTOM_PROVIDER_VALUE,
+    versions: [],
+    visibilityScope: "all", visibilityGroupIds: [],
   },
 ];
 
@@ -84,6 +123,246 @@ const DEFAULT_JSON = `{
     "name": "model_name"
   }
 }`;
+
+// 应用范围 Popover 编辑面板
+function ScopePopover({
+  model,
+  groups,
+  onSave,
+}: {
+  model: ModelRow;
+  groups: MockGroup[];
+  onSave: (id: string, scope: "all" | "groups", groupIds: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftScope, setDraftScope] = useState<"all" | "groups">(model.visibilityScope);
+  const [draftGroupIds, setDraftGroupIds] = useState<string[]>(model.visibilityGroupIds);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 每次打开时同步当前模型的状态
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setDraftScope(model.visibilityScope);
+      setDraftGroupIds([...model.visibilityGroupIds]);
+      setSearchQuery("");
+    }
+    setOpen(v);
+  };
+
+  const filteredGroups = groups.filter((g) =>
+    g.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const hasGroups = groups.length > 0;
+
+  const toggleGroup = (gid: string) => {
+    setDraftGroupIds((prev) =>
+      prev.includes(gid) ? prev.filter((id) => id !== gid) : [...prev, gid]
+    );
+  };
+
+  const handleClearSelection = () => {
+    setDraftGroupIds([]);
+    setSearchQuery("");
+  };
+
+  // 确认按钮是否可点击
+  const isConfirmDisabled = draftScope === "groups" && (draftGroupIds.length === 0 || !hasGroups);
+
+  const handleConfirm = () => {
+    if (isConfirmDisabled) return;
+    onSave(model.id, draftScope, draftScope === "all" ? [] : draftGroupIds);
+    setOpen(false);
+    toast.success("应用范围已更新");
+  };
+
+  // 解析已选分组名
+  const selectedGroupNames = model.visibilityGroupIds
+    .map((gid) => groups.find((g) => g.id === gid)?.name)
+    .filter(Boolean) as string[];
+
+  // 徽章区域
+  const renderBadges = () => {
+    if (model.visibilityScope === "all" || selectedGroupNames.length === 0) {
+      return (
+        <span className="badge-loading whitespace-nowrap">
+          全部用户
+        </span>
+      );
+    }
+
+    // 按分组：灰色徽章 + Tooltip 展示完整名称
+    const firstName = selectedGroupNames[0];
+    const rest = selectedGroupNames.length - 1;
+    const tooltipText = selectedGroupNames.join("，");
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 cursor-default">
+            <span className="badge-shutdown max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">
+              {firstName}
+            </span>
+            {rest > 0 && (
+              <span className="badge-shutdown whitespace-nowrap">
+                +{rest}
+              </span>
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+          {tooltipText}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  return (
+    <div className="inline-flex items-end gap-1.5 min-h-[20px]">
+      {renderBadges()}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <button
+            className="self-center text-gray-300 hover:text-blue-500 transition-colors"
+            title="编辑应用范围"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-68 p-0" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+            {/* Radio 切换 */}
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setDraftScope("all")}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftScope === "all"
+                    ? "border-blue-200 bg-blue-50 text-blue-600"
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                全部用户
+              </button>
+              <button
+                onClick={() => setDraftScope("groups")}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftScope === "groups"
+                    ? "border-blue-200 bg-blue-50 text-blue-600"
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                按分组
+              </button>
+            </div>
+
+            {/* 分组列表（仅 groups 模式） */}
+            {draftScope === "groups" && (
+              <div className="space-y-1.5">
+                {!hasGroups ? (
+                  /* 无分组空状态 */
+                  <div className="text-center py-5 px-2">
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      暂无分组，请前往
+                      <a
+                        href="/admin/members"
+                        className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5"
+                        onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}
+                      >
+                        用户管理
+                      </a>
+                      建立分组
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* 搜索框 */}
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="搜索分组…"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 分组 checkbox 列表 */}
+                    <div className="max-h-[200px] overflow-y-auto space-y-0.5">
+                      {filteredGroups.length === 0 ? (
+                        <p className="text-[11px] text-gray-400 text-center py-3">无匹配分组</p>
+                      ) : (
+                        filteredGroups.map((group) => {
+                          const checked = draftGroupIds.includes(group.id);
+                          return (
+                            <button
+                              key={group.id}
+                              onClick={() => toggleGroup(group.id)}
+                              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                            >
+                              <span
+                                className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                                  checked
+                                    ? "bg-blue-500 border-blue-500"
+                                    : "border-gray-300 bg-white"
+                                }`}
+                              >
+                                {checked && <Check className="w-2.5 h-2.5 text-white" />}
+                              </span>
+                              <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                    {/* 已选数量 + 清除筛选 */}
+                    <div className="flex items-center justify-between px-1">
+                      <p className="text-[11px] text-gray-400">
+                        已选 {draftGroupIds.length} 个分组
+                      </p>
+                      {draftGroupIds.length > 0 && (
+                        <button
+                          onClick={handleClearSelection}
+                          className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline"
+                        >
+                          清除筛选
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 底部按钮 */}
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3"
+              disabled={isConfirmDisabled}
+              onClick={handleConfirm}
+              style={isConfirmDisabled ? undefined : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
 
 // 编辑配额弹窗
 function EditQuotaDialog({
@@ -153,12 +432,6 @@ export default function ModelConfig() {
   });
   const [customJson, setCustomJson] = useState(DEFAULT_JSON);
 
-  // Global quota
-  const [globalLimitMode, setGlobalLimitMode] = useState<"unlimited" | "custom">("unlimited"); // 无限制或自定义
-  const [globalLimit, setGlobalLimit] = useState(1000000);
-  const [globalLimitEditing, setGlobalLimitEditing] = useState(false);
-  const [globalLimitDraft, setGlobalLimitDraft] = useState(1000000);
-  const [allowCustomModel, setAllowCustomModel] = useState(false);
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
 
@@ -175,6 +448,7 @@ export default function ModelConfig() {
         id: String(Date.now()), name, version: customInputMode === "form" ? customForm.model_name : "自定义",
         modelUrl: customForm.base_url || "", visible: true, isDefault: false, isMultimodal: customForm.isMultimodal, dailyLimit: customForm.dailyLimit,
         provider: CUSTOM_PROVIDER_VALUE, versions: [],
+        visibilityScope: "all", visibilityGroupIds: [],
       }]);
       setShowAddDialog(false);
       toast.success("自定义模型已添加");
@@ -188,6 +462,7 @@ export default function ModelConfig() {
         modelUrl: newModel.modelUrl, visible: true, isDefault: false,
         dailyLimit: newModel.dailyLimit,
         provider: newModel.provider, versions,
+        visibilityScope: "all", visibilityGroupIds: [],
       }]);
       setShowAddDialog(false);
       setNewModel({ provider: "", version: "", modelUrl: "", dailyLimit: 100000 });
@@ -282,10 +557,10 @@ export default function ModelConfig() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[32%]">模型 URL</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">用户可见</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">模型名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">模型 URL</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
                   <div className="flex items-center gap-1">
                     默认配置
@@ -301,7 +576,22 @@ export default function ModelConfig() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[7%]">操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[13%]">
+                  <div className="flex items-center gap-1">
+                    应用范围
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default">
+                          <Info className="w-3 h-3 text-gray-400" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
+                        应用范围决定了哪些用户可以看到该模型，以及哪些用户创建新的 OpenClaw 时自动预添加该模型。「全部用户」表示所有人可见并自动预添加，「按分组」仅对指定分组用户可见并自动预添加。
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[5%]">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -333,17 +623,17 @@ export default function ModelConfig() {
                       </button>
                     </div>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 align-middle">
                     <Switch
                       checked={model.visible}
                       onCheckedChange={(v) => handleToggleVisible(model.id, v)}
                     />
                   </td>
                   {/* 默认模型单选 */}
-                  <td className="px-4 py-4">
+                  <td className="px-4 py-4 align-middle">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span>
+                        <span className="inline-flex">
                           <Switch
                             checked={model.isDefault}
                             onCheckedChange={(v) => handleSetDefault(model.id, v)}
@@ -361,7 +651,21 @@ export default function ModelConfig() {
                       </TooltipContent>
                     </Tooltip>
                   </td>
-                  <td className="px-4 py-4">
+                  {/* 应用范围 */}
+                  <td className="px-4 py-4 align-middle">
+                    <ScopePopover
+                      model={model}
+                      groups={model.id === "4" ? [] : MOCK_GROUPS}
+                      onSave={(id, scope, groupIds) => {
+                        setModels((prev) =>
+                          prev.map((m) =>
+                            m.id === id ? { ...m, visibilityScope: scope, visibilityGroupIds: groupIds } : m
+                          )
+                        );
+                      }}
+                    />
+                  </td>
+                  <td className="px-4 py-4 align-middle">
                     <button
                       onClick={() => setDeleteConfirmModel(model)}
                       className="text-gray-300 hover:text-red-500 transition-colors">
@@ -373,123 +677,10 @@ export default function ModelConfig() {
             </tbody>
           </table>
 
-          {/* 允许用户自定义模型开关 — 列表末尾 */}
-          <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-50 bg-gray-50/30">
-            <Switch
-              checked={allowCustomModel}
-              onCheckedChange={(v) => { setAllowCustomModel(v); toast.success(v ? "已允许用户添加自定义模型" : "已禁止用户添加自定义模型"); }}
-            />
-            <div>
-              <p className="text-sm font-medium text-gray-900">允许用户添加自定义模型</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                开启后，用户可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内
-              </p>
-            </div>
-          </div>
+
         </div>
 
-        {/* Part 2: Global Quota */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <h2 className="font-semibold text-gray-900">全局配额设置</h2>
-          </div>
-          <div className="space-y-3">
-            <Label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-              每日全局 TOKENS 上限
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-3.5 h-3.5 text-gray-400" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后当日将暂停服务
-                </TooltipContent>
-              </Tooltip>
-            </Label>
-            <Select
-              value={globalLimitMode}
-              onValueChange={(v) => {
-                setGlobalLimitMode(v as "unlimited" | "custom");
-                setGlobalLimitEditing(false);
-                // 保存到 localStorage
-                localStorage.setItem("globalLimitMode", v);
-                if (v === "custom") {
-                  localStorage.setItem("globalLimit", String(globalLimit));
-                }
-                // 触发 storage 事件，通知其他标签页和当前页面
-                const event = new StorageEvent("storage", {
-                  key: "globalLimitMode",
-                  newValue: v,
-                  oldValue: globalLimitMode,
-                  storageArea: localStorage,
-                });
-                window.dispatchEvent(event);
-                toast.success(v === "unlimited" ? "已设置为无限制" : "已切换为自定义数量");
-              }}
-            >
-              <SelectTrigger className="bg-gray-50 w-full max-w-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unlimited">无限制</SelectItem>
-                <SelectItem value="custom">自定义数量</SelectItem>
-              </SelectContent>
-            </Select>
-            {/* 当选择「自定义数量」时，显示数量输入框 */}
-            {globalLimitMode === "custom" && (
-              <div className="mt-4 space-y-3">
-                {globalLimitEditing ? (
-                  <div className="flex items-center gap-3">
-                    <Input
-                      type="number"
-                      value={globalLimitDraft}
-                      onChange={(e) => setGlobalLimitDraft(Number(e.target.value))}
-                      className="bg-gray-50 border-gray-200 max-w-xs"
-                      autoFocus
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        setGlobalLimit(globalLimitDraft);
-                        setGlobalLimitEditing(false);
-                        // 保存到 localStorage
-                        localStorage.setItem("globalLimitMode", "custom");
-                        localStorage.setItem("globalLimit", String(globalLimitDraft));
-                        // 触发 storage 事件，通知其他标签页
-                        window.dispatchEvent(new Event("storage"));
-                        toast.success("全局配额已保存");
-                      }}
-                      style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                    >
-                      保存
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(false); }}
-                    >
-                      取消
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-gray-700">{globalLimit.toLocaleString()}</span>
-                    <button
-                      onClick={() => { setGlobalLimitDraft(globalLimit); setGlobalLimitEditing(true); }}
-                      className="text-gray-400 hover:text-blue-500 transition-colors"
-                      title="编辑全局配额"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+
       </div>
 
       {/* Add Model Dialog */}

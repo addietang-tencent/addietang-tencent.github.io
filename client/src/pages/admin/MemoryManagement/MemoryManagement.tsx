@@ -1,43 +1,589 @@
-import React from 'react';
-import { FreeVersionCard } from './components/FreeVersionCard';
-import { ProVersionCard } from './components/ProVersionCard';
-import { FeatureGrid } from './components/FeatureGrid';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { ComparisonTable } from './components/ComparisonTable';
+import { InstanceTable, OcInstance, MemoryStatus } from './components/InstanceTable';
+import { ProActivationDialog } from './components/ProActivationDialog';
+import { ProCloseDialog } from './components/ProCloseDialog';
+import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
+import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, RotateCcw, Bot, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+// 配置常量
+const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
+
+// Pro 服务状态类型
+type ProServiceStatus = 'inactive' | 'activating' | 'active' | 'error';
 
 export const MemoryManagement: React.FC = () => {
+  // ========== Pro 服务状态 ==========
+  const [proServiceStatus, setProServiceStatus] = useState<ProServiceStatus>('inactive');
+  const [purchasedSpaces, setPurchasedSpaces] = useState<number>(0);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+  // 新实例默认记忆版本：三选一（关闭 | Free | Pro）
+  const [defaultMemoryVersion, setDefaultMemoryVersion] = useState<DefaultMemoryVersionType>('none');
+
+  // ========== 弹窗状态 ==========
+  const [activationDialogOpen, setActivationDialogOpen] = useState(false);
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false);
+  // 版本对比折叠状态，默认收起
+  const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
+
+  // ========== Mock 实例数据 ==========
+  const [instances, setInstances] = useState<OcInstance[]>([
+    { id: 'oc-000', name: '智能问答助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+    { id: 'oc-001', name: '客服助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+    { id: 'oc-002', name: '营销策划师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+    { id: 'oc-003', name: '数据分析师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+    { id: 'oc-004', name: '代码助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+    { id: 'oc-005', name: '文档编写助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+    { id: 'oc-006', name: '培训教练', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+    { id: 'oc-007', name: '产品经理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+    { id: 'oc-008', name: '人力资源顾问', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
+    { id: 'oc-009', name: '财务分析助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
+    { id: 'oc-010', name: '运维监控助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
+    { id: 'oc-011', name: '法务合规助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhengshi@tencent.com' },
+    { id: 'oc-012', name: '设计灵感助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+    { id: 'oc-013', name: '项目管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+    { id: 'oc-014', name: '内容审核助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+    { id: 'oc-015', name: '翻译助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+    { id: 'oc-016', name: '测试工程助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
+    { id: 'oc-017', name: '安全审计助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
+    { id: 'oc-018', name: '知识库管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
+  ]);
+
+  const [loading, setLoading] = useState(false);
+
+  // 统计数据
+  const stats = {
+    total: instances.length,
+    proCount: instances.filter(i => i.memoryStatus === 'pro').length,
+    freeCount: instances.filter(i => i.memoryStatus === 'free').length,
+    noneCount: instances.filter(i => i.memoryStatus === 'none').length,
+  };
+
+  // Pro 额度使用率
+  const memoryAllocationPercent = purchasedSpaces > 0
+    ? Math.round((stats.proCount / purchasedSpaces) * 100)
+    : 0;
+
+  // 状态判断
+  const isProInactive = proServiceStatus === 'inactive';
+  const isProActivating = proServiceStatus === 'activating';
+  const isProActive = proServiceStatus === 'active';
+  const isProError = proServiceStatus === 'error';
+
+  // 开通 Pro 服务（固定 500 配额）
+  const handleActivatePro = (config?: { autoEnableForNewInstances: boolean }) => {
+    setProServiceStatus('activating');
+    setPurchasedSpaces(FIXED_MEMORY_SPACES);
+    
+    setTimeout(() => {
+      if (Math.random() > 0.1) {
+        setProServiceStatus('active');
+        setShowSuccessBanner(true);
+        toast.success('Memory Pro 服务开通成功！');
+        // 联动逻辑：如果勾选了「默认开通」，自动切换为 Pro
+        if (config?.autoEnableForNewInstances) {
+          setDefaultMemoryVersion('pro');
+          toast.success('已将新实例默认记忆版本切换为 Pro');
+        }
+      } else {
+        setProServiceStatus('error');
+        setErrorMessage('服务初始化失败，请重试');
+      }
+    }, 2000);
+  };
+
+  // 重试开通
+  const handleRetry = () => {
+    setProServiceStatus('activating');
+    setErrorMessage('');
+    
+    setTimeout(() => {
+      setProServiceStatus('active');
+      setShowSuccessBanner(true);
+      toast.success('Memory Pro 服务开通成功！');
+    }, 2000);
+  };
+
+  // 关闭 Pro 服务
+  const handleClosePro = () => {
+    setProServiceStatus('inactive');
+    setPurchasedSpaces(0);
+    // 联动逻辑：如果当前默认是 Pro，自动切换为关闭
+    if (defaultMemoryVersion === 'pro') {
+      setDefaultMemoryVersion('none');
+      toast.success('已将新实例默认记忆版本切换为 关闭');
+    }
+    toast.success('Memory Pro 服务已关闭');
+  };
+
+  // 成功提示条自动消失
+  useEffect(() => {
+    if (showSuccessBanner) {
+      const timer = setTimeout(() => setShowSuccessBanner(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessBanner]);
+
   return (
     <div className="page-enter">
       {/* 页面头部 */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">记忆管理</h1>
         <p className="text-sm text-gray-500">
           让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持。
         </p>
       </div>
 
-      {/* Free 版 */}
-      <FreeVersionCard />
+      {/* 状态提示条 - 初始化中 */}
+      {isProActivating && (
+        <div className="mb-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+          <Loader2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0 animate-spin" />
+          <p className="text-xs text-blue-600 leading-relaxed">Memory Pro 正在初始化中，预计需要几分钟...</p>
+        </div>
+      )}
 
-      {/* Pro 版 */}
-      <div
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+      {/* 状态提示条 - 错误 */}
+      {isProError && (
+        <div className="mb-6 flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+          <div className="flex-1 flex items-center justify-between">
+            <p className="text-xs text-red-600 leading-relaxed">{errorMessage || 'Memory Pro 初始化失败，请重试'}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-red-600 border-red-300 hover:bg-red-100 h-7 px-3"
+              onClick={handleRetry}
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              重试
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 状态提示条 - 成功 */}
+      {showSuccessBanner && isProActive && (
+        <div className="mb-6 flex items-start gap-2.5 bg-green-50 border border-green-100 rounded-xl px-4 py-3 animate-in fade-in duration-300">
+          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+          <div className="flex-1 flex items-center justify-between">
+            <p className="text-xs text-green-600 leading-relaxed">Memory Pro 已就绪</p>
+            <button onClick={() => setShowSuccessBanner(false)} className="text-green-500 hover:text-green-700">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 顶部：版本对比说明（可折叠） */}
+      <div 
+        className="mb-6 bg-white rounded-2xl border border-gray-100 overflow-hidden"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
       >
-        {/* Hero */}
-        <div className="p-0">
-          <ProVersionCard />
-        </div>
+        {/* 折叠触发器 */}
+        <button
+          onClick={() => setVersionCompareExpanded(!versionCompareExpanded)}
+          className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Info className="w-4 h-4 text-blue-500" />
+            <span className="text-sm font-medium text-gray-700">了解 Memory Free 版与 Pro 版的区别</span>
+          </div>
+          <span className="text-sm text-blue-500 flex items-center gap-0.5">
+            {versionCompareExpanded ? '收起' : '展开'}
+            {versionCompareExpanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </span>
+        </button>
+        
+        {/* 可折叠内容 */}
+        {versionCompareExpanded && (
+          <div className="px-6 pb-5">
+            <ComparisonTable 
+              isProActive={isProActive}
+            />
+          </div>
+        )}
+      </div>
 
-        {/* Feature Grid */}
-        <div className="px-8 pt-7 pb-2">
-          <FeatureGrid />
+      {/* 服务概览 - 统计卡片 */}
+      <div 
+        className="mb-6 bg-white rounded-2xl border border-gray-100"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+      >
+        <div className="px-6 py-5 border-b border-gray-50">
+          <h2 className="font-semibold text-gray-900">服务概览</h2>
         </div>
+        <div className="p-5">
+          <div className="grid grid-cols-5 gap-4">
+            {/* 实例总数 */}
+            <div 
+              className="bg-white rounded-2xl border border-gray-100 p-5"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                  <Bot className="w-5 h-5 text-gray-500" />
+                </div>
+                <span className="text-sm text-gray-500">实例总数</span>
+              </div>
+              <div className="text-2xl font-bold text-gray-900 tabular-nums">{stats.total}</div>
+            </div>
 
-        {/* Comparison Table */}
-        <div className="px-8 pb-8">
-          <ComparisonTable />
+            {/* 未开启 */}
+            <div 
+              className="bg-white rounded-2xl border border-gray-100 p-5"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
+                  <CircleOff className="w-5 h-5 text-gray-400" />
+                </div>
+                <span className="text-sm text-gray-500">未开启</span>
+              </div>
+              <div className="text-2xl font-bold text-gray-400 tabular-nums">{stats.noneCount}</div>
+            </div>
+
+            {/* Free 版 */}
+            <div 
+              className="bg-white rounded-2xl border border-gray-100 p-5"
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50">
+                  <Zap className="w-5 h-5 text-blue-500" />
+                </div>
+                <span className="text-sm text-gray-500">Free 版</span>
+              </div>
+              <div className="text-2xl font-bold text-blue-600 tabular-nums">{stats.freeCount}</div>
+            </div>
+
+            {/* Pro 版 - 融合配额管理 */}
+            <div 
+              className={`col-span-2 rounded-2xl border p-5 ${
+                isProActive && memoryAllocationPercent >= 100 
+                  ? 'bg-white border-red-200'
+                  : isProActive && memoryAllocationPercent >= 80 
+                    ? 'bg-white border-yellow-200'
+                    : 'bg-white border-gray-100'
+              }`}
+              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-50">
+                    <Crown className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <span className="text-sm text-gray-500">Pro 版</span>
+                </div>
+                {isProInactive && (
+                  <button
+                    onClick={() => setActivationDialogOpen(true)}
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                  >
+                    立即开通
+                  </button>
+                )}
+                {isProActive && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setCloseDialogOpen(true); }}
+                    className="text-xs text-gray-500 hover:text-red-600 font-medium hover:underline"
+                  >
+                    关闭服务
+                  </button>
+                )}
+                {isProActivating && (
+                  <span className="inline-flex items-center gap-1 text-xs text-blue-500">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    初始化中
+                  </span>
+                )}
+              </div>
+
+              {/* 未开通状态 */}
+              {isProInactive && (
+                <div className="flex items-baseline gap-2 mt-3">
+                  <span className="text-2xl font-bold text-gray-400 tabular-nums">0/0</span>
+                </div>
+              )}
+
+              {/* 开通中状态 */}
+              {isProActivating && (
+                <div className="mt-3">
+                  <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mb-2" />
+                  <div className="h-2 w-full bg-gray-200 rounded-full animate-pulse" />
+                </div>
+              )}
+
+              {/* 已开通状态 */}
+              {isProActive && (
+                <div className="mt-3">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-2xl font-bold text-blue-600 tabular-nums">{stats.proCount}/{purchasedSpaces}</span>
+                    <span className="text-xs text-gray-400">已分配 <span className="text-blue-600">{stats.proCount}</span> 个，剩余 <span className="text-blue-600">{purchasedSpaces - stats.proCount}</span> 个可分配</span>
+                  </div>
+                  {/* 进度条 */}
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          memoryAllocationPercent >= 100 ? 'bg-red-500' :
+                          memoryAllocationPercent >= 80 ? 'bg-yellow-500' :
+                          'bg-blue-500'
+                        }`}
+                        style={{ width: `${Math.min(memoryAllocationPercent, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-[10px] text-gray-400">{memoryAllocationPercent}% 已用</span>
+                      {memoryAllocationPercent >= 80 && (
+                        <span className={`text-[10px] ${memoryAllocationPercent >= 100 ? 'text-red-500' : 'text-yellow-500'}`}>
+                          {memoryAllocationPercent >= 100 ? '空间已满' : '即将用完'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 错误状态 */}
+              {isProError && (
+                <div className="mt-3">
+                  <div className="text-2xl font-bold text-red-400 mb-2">初始化失败</div>
+                  <button
+                    className="w-full py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1 transition-all"
+                    onClick={(e) => { e.stopPropagation(); handleRetry(); }}
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    重试
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 记忆空间告警提示 */}
+          {isProActive && memoryAllocationPercent >= 80 && (
+            <div className={`mt-4 flex items-start gap-2.5 rounded-xl px-4 py-3 ${
+              memoryAllocationPercent >= 100
+                ? 'bg-red-50 border border-red-100'
+                : 'bg-amber-50 border border-amber-100'
+            }`}>
+              <AlertCircle className={`w-4 h-4 mt-0.5 shrink-0 ${
+                memoryAllocationPercent >= 100 ? 'text-red-500' : 'text-amber-500'
+              }`} />
+              <div className="flex-1">
+                <p className={`text-xs leading-relaxed ${
+                  memoryAllocationPercent >= 100 ? 'text-red-700' : 'text-amber-700'
+                }`}>
+                  {memoryAllocationPercent >= 100
+                    ? 'Pro 记忆空间已用完，用户将无法新开启 Memory Pro 功能。如需更多空间请联系商务。'
+                    : `Pro 记忆空间即将用完（${stats.proCount}/${purchasedSpaces}）`
+                  }
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 新实例默认记忆版本 - 三选一控件 */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <DefaultMemoryVersion
+              value={defaultMemoryVersion}
+              onChange={setDefaultMemoryVersion}
+              isProActive={isProActive}
+              isProQuotaAvailable={purchasedSpaces - stats.proCount > 0}
+            />
+          </div>
         </div>
       </div>
+
+      {/* 实例列表 */}
+      <InstanceTable 
+        instances={instances} 
+        loading={loading}
+        isProActive={isProActive}
+        proSpacesAvailable={purchasedSpaces - stats.proCount}
+        onEnableFree={async (instance) => {
+          // 第一步：立即将状态变为 free-enabling
+          setInstances(prev => prev.map(i => 
+            i.id === instance.id 
+              ? { ...i, memoryStatus: 'free-enabling' as MemoryStatus, version: 'free' as const, state: 'enabling' as const }
+              : i
+          ));
+          toast.info(`正在为「${instance.name}」开启 Free 版记忆...`);
+          
+          // 第二步：模拟 API 调用延迟
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 第三步：开启完成，更新为 free 状态
+          setInstances(prev => prev.map(i => 
+            i.id === instance.id 
+              ? { ...i, memoryStatus: 'free' as MemoryStatus, version: 'free' as const, state: 'running' as const, memoryId: `mem-local-${instance.id.split('-')[1]}`, enabledAt: new Date().toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('T', ' ') }
+              : i
+          ));
+          toast.success(`已为「${instance.name}」开启 Free 版记忆`);
+        }}
+        onEnablePro={async (instance) => {
+          if (!isProActive) {
+            toast.error('请先开通 Memory Pro 服务');
+            return;
+          }
+          if (purchasedSpaces - stats.proCount <= 0) {
+            toast.error('Pro 记忆空间已满，如需更多空间请联系商务');
+            return;
+          }
+          
+          // 判断是否从 Free 版开启（需要数据迁移）
+          const isFromFree = instance.memoryStatus === 'free';
+          
+          // 第一步：立即将状态变为 pro-enabling
+          setInstances(prev => prev.map(i => 
+            i.id === instance.id 
+              ? { ...i, memoryStatus: 'pro-enabling' as MemoryStatus, version: 'pro' as const, state: 'enabling' as const }
+              : i
+          ));
+          
+          if (isFromFree) {
+            toast.info(`正在为「${instance.name}」开启 Pro 版记忆，数据迁移中...`);
+          } else {
+            toast.info(`正在为「${instance.name}」开启 Pro 版记忆...`);
+          }
+          
+          // 第二步：模拟 API 调用延迟（如果是从 Free 迁移，时间更长）
+          await new Promise(resolve => setTimeout(resolve, isFromFree ? 4000 : 2000));
+          
+          // 第三步：开启完成，更新为 pro 状态
+          setInstances(prev => prev.map(i => 
+            i.id === instance.id 
+              ? { ...i, memoryStatus: 'pro' as MemoryStatus, version: 'pro' as const, state: 'running' as const, memoryId: `mem-${instance.id.split('-')[1]}`, enabledAt: new Date().toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('T', ' ') }
+              : i
+          ));
+          toast.success(`已为「${instance.name}」开启 Pro 版记忆`);
+        }}
+        onDisableMemory={async (instance) => {
+          const wasProVersion = instance.memoryStatus === 'pro';
+          // 模拟 API 调用延迟
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          setInstances(prev => prev.map(i => 
+            i.id === instance.id 
+              ? { ...i, memoryStatus: 'none' as MemoryStatus, version: 'none' as const, state: 'idle' as const, memoryId: '-', enabledAt: '-' }
+              : i
+          ));
+          toast.success(`已关闭「${instance.name}」的${wasProVersion ? ' Pro 版' : ' Free 版'}记忆`);
+        }}
+        onBatchEnableFree={async (selectedInstances) => {
+          toast.info(`正在为 ${selectedInstances.length} 个实例批量开通 Free 版记忆...`);
+          
+          // 第一步：将所有选中实例状态变为 free-enabling
+          setInstances(prev => prev.map(i => 
+            selectedInstances.some(s => s.id === i.id)
+              ? { ...i, memoryStatus: 'free-enabling' as MemoryStatus, version: 'free' as const, state: 'enabling' as const }
+              : i
+          ));
+          
+          // 第二步：模拟 API 调用延迟
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 第三步：开启完成
+          setInstances(prev => prev.map(i => {
+            if (selectedInstances.some(s => s.id === i.id)) {
+              return { 
+                ...i, 
+                memoryStatus: 'free' as MemoryStatus, 
+                version: 'free' as const, 
+                state: 'running' as const,
+                memoryId: `mem-local-${i.id.split('-')[1]}`,
+                enabledAt: new Date().toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('T', ' ')
+              };
+            }
+            return i;
+          }));
+          
+          toast.success(`已为 ${selectedInstances.length} 个实例开通 Free 版记忆`);
+        }}
+        onBatchEnablePro={async (selectedInstances) => {
+          toast.info(`正在为 ${selectedInstances.length} 个实例批量升级 Pro 版记忆...`);
+          
+          // 第一步：将所有选中实例状态变为 pro-enabling
+          setInstances(prev => prev.map(i => 
+            selectedInstances.some(s => s.id === i.id)
+              ? { ...i, memoryStatus: 'pro-enabling' as MemoryStatus, version: 'pro' as const, state: 'enabling' as const }
+              : i
+          ));
+          
+          // 第二步：模拟 API 调用延迟
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // 第三步：开启完成
+          setInstances(prev => prev.map(i => {
+            if (selectedInstances.some(s => s.id === i.id)) {
+              return { 
+                ...i, 
+                memoryStatus: 'pro' as MemoryStatus, 
+                version: 'pro' as const, 
+                state: 'running' as const,
+                memoryId: `mem-${i.id.split('-')[1]}`,
+                enabledAt: new Date().toLocaleString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace('T', ' ')
+              };
+            }
+            return i;
+          }));
+          
+          toast.success(`已为 ${selectedInstances.length} 个实例升级 Pro 版记忆`);
+        }}
+        onBatchDisable={async (selectedInstances) => {
+          const proCount = selectedInstances.filter(i => i.memoryStatus === 'pro').length;
+          const freeCount = selectedInstances.filter(i => i.memoryStatus === 'free').length;
+          
+          toast.info(`正在为 ${selectedInstances.length} 个实例批量关闭记忆服务...`);
+          
+          // 第一步：将所有选中实例状态变为 closing
+          setInstances(prev => prev.map(i => 
+            selectedInstances.some(s => s.id === i.id)
+              ? { ...i, memoryStatus: 'closing' as MemoryStatus, state: 'closing' as const }
+              : i
+          ));
+          
+          // 第二步：模拟 API 调用延迟
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // 第三步：关闭完成
+          setInstances(prev => prev.map(i => {
+            if (selectedInstances.some(s => s.id === i.id)) {
+              return { 
+                ...i, 
+                memoryStatus: 'none' as MemoryStatus, 
+                version: 'none' as const, 
+                state: 'idle' as const,
+                memoryId: '-',
+                enabledAt: '-'
+              };
+            }
+            return i;
+          }));
+          
+          toast.success(`已关闭 ${selectedInstances.length} 个实例的记忆服务（${proCount > 0 ? `${proCount} 个 Pro 版` : ''}${proCount > 0 && freeCount > 0 ? '、' : ''}${freeCount > 0 ? `${freeCount} 个 Free 版` : ''}）`);
+        }}
+      />
+
+      {/* 弹窗 */}
+      <ProActivationDialog
+        open={activationDialogOpen}
+        onOpenChange={setActivationDialogOpen}
+        onConfirm={handleActivatePro}
+      />
+
+      <ProCloseDialog
+        open={closeDialogOpen}
+        onOpenChange={setCloseDialogOpen}
+        onConfirm={handleClosePro}
+        ocCount={stats.proCount}
+      />
     </div>
   );
 };

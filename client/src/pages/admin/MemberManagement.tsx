@@ -401,7 +401,7 @@ function AddMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
                     <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
@@ -604,7 +604,7 @@ function EditMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
                     <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
@@ -803,7 +803,7 @@ function OneidEditMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
                     <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
@@ -1604,7 +1604,7 @@ export default function MemberManagement() {
 
         {/* Table - 全部视图 */}
         {viewMode === "all" && (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden w-full min-w-0"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
           {/* 卡片 header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
@@ -1666,8 +1666,8 @@ export default function MemberManagement() {
               </div>
             )}
           </div>
-          <div className="overflow-x-auto">
-          <table className="w-full">
+          <div className="overflow-x-auto" style={{ overscrollBehaviorX: "contain" }}>
+          <table className="min-w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
@@ -2009,14 +2009,17 @@ export default function MemberManagement() {
                   </div>
                 )}
                 {/* 未分组（放在最下面） */}
+                <div className={`flex items-center gap-1 px-4 py-2.5 transition-colors border-t border-gray-100 ${selectedGroupId === "__ungrouped__" ? "bg-blue-50" : "hover:bg-gray-50"}`}>
                 <button
-                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors border-t border-gray-100 ${selectedGroupId === "__ungrouped__" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                  className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === "__ungrouped__" ? "text-blue-600 font-medium" : "text-gray-700"}`}
                   onClick={() => { setSelectedGroupId("__ungrouped__"); setGroupPage(1); }}
                 >
                   <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
-                  <span className="truncate text-left">未分组</span>
+                  <span className="truncate">未分组</span>
                   <span className="text-xs text-gray-400 shrink-0">({(() => { const allGroupedIds = new Set(groups.flatMap((g) => g.memberIds)); return sortedMembers.filter((m) => !allGroupedIds.has(m.id)).length; })()})</span>
                 </button>
+                <div className="w-6 h-6 shrink-0" />
+                </div>
               </div>
             </div>
 

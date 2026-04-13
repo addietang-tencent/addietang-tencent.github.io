@@ -86,8 +86,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: '快速总结长文档，提取关键信息。支持多种文档格式，自动提取核心要点，生成简明扩订。适用于会议记录、研究报告、技术文档等场景。',
     version: '1.0.0',
     categories: ['1', '6'],
-    scope: 'public',
-    groupIds: [],
+    scope: 'private',
+    groupIds: ['group-4'],
     uploadTime: new Date('2025-03-20'),
     content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...',
     versions: ['1.0.0', '0.9.0'],
@@ -181,8 +181,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: 'Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.',
     version: '1.0.0',
     categories: ['2'],
-    scope: 'public',
-    groupIds: [],
+    scope: 'private',
+    groupIds: ['group-4'],
     uploadTime: new Date('2025-03-20'),
     content: `---
 name: github

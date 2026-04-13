@@ -23,7 +23,7 @@ import { MOCK_OPENCLAW_INSTANCES, MOCK_GROUPS } from './mockData';
 import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope } from './types';
 
 /** 筛选选项类型 —— 多选 */
-type FilterOption = 'not_distributed' | 'failed' | 'needs_update';
+type FilterOption = 'not_distributed' | 'failed';
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -44,7 +44,6 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
 const FILTER_OPTIONS: { key: FilterOption; label: string }[] = [
   { key: 'not_distributed', label: '未下发' },
   { key: 'failed', label: '下发失败' },
-  { key: 'needs_update', label: '待更新' },
 ];
 
 export default function BatchDistributeDialog({
@@ -89,16 +88,19 @@ export default function BatchDistributeDialog({
   // 当打开弹窗时，默认选中所有运行中且未下发或下发失败的实例
   useEffect(() => {
     if (open) {
-      setStatusFilters(['not_distributed', 'failed']);
+      setStatusFilters([]);
       setSearchQuery('');
       setCurrentPage(1);
       setPageSize(20);
       setFilterDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
-      // 如果 Skill 是按分组的，默认全部分组选中
+      // 根据 Skill 应用范围设置默认筛选
       if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
         setScopeFilters([...skillGroupIds]);
+      } else if (skillScope === 'public') {
+        // 全部用户：默认选中"全部用户"
+        setScopeFilters(['__public__']);
       } else {
         setScopeFilters([]);
       }
@@ -133,17 +135,8 @@ export default function BatchDistributeDialog({
     return statusFilters.map(k => FILTER_OPTIONS.find(o => o.key === k)?.label).filter(Boolean).join('、');
   };
 
-  /** 判断实例是否需要更新 */
-  const isNeedsUpdate = (instance: typeof MOCK_OPENCLAW_INSTANCES[0]): boolean => {
-    if (!skillVersion) return false;
-    if (instance.distributionStatus !== 'success') return false;
-    if (!instance.distributedVersion) return false;
-    return instance.distributedVersion !== skillVersion;
-  };
-
   /** 获取实例的显示状态 */
   const getInstanceFilterKey = (instance: typeof MOCK_OPENCLAW_INSTANCES[0]): FilterOption | null => {
-    if (isNeedsUpdate(instance)) return 'needs_update';
     if (instance.distributionStatus === 'not_distributed') return 'not_distributed';
     if (instance.distributionStatus === 'failed') return 'failed';
     return null;
@@ -238,17 +231,9 @@ export default function BatchDistributeDialog({
   };
 
   const getStatusDisplay = (instance: typeof MOCK_OPENCLAW_INSTANCES[0]) => {
-    if (isNeedsUpdate(instance)) {
-      return (
-        <span className="inline-flex items-center gap-1.5">
-          <span className="text-xs text-gray-400">v{instance.distributedVersion}</span>
-          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-600">待更新</span>
-        </span>
-      );
-    }
     const s = instance.distributionStatus || 'not_distributed';
     const { label, color } = DISTRIBUTION_STATUS_MAP[s];
-    return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${color}`}>{label}</span>;
+    return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>{label}</span>;
   };
 
   // 全选判断：跨所有页
@@ -263,7 +248,7 @@ export default function BatchDistributeDialog({
         <DialogHeader>
           <DialogTitle>批量下发 Skill</DialogTitle>
           <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败或待更新的实例。
+            将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败的实例。
           </DialogDescription>
         </DialogHeader>
 
@@ -299,7 +284,7 @@ export default function BatchDistributeDialog({
                     <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
+                <TooltipContent side="bottom" className="max-w-[280px]">
                   <p className="break-words">
                     {scopeFilters.length === 0
                       ? '全部应用范围'
@@ -444,7 +429,7 @@ export default function BatchDistributeDialog({
                     <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
+                <TooltipContent side="bottom" className="max-w-[280px]">
                   <p className="break-words">{getFilterDisplayText()}</p>
                 </TooltipContent>
               </Tooltip>
@@ -563,7 +548,7 @@ export default function BatchDistributeDialog({
                             </span>
                           </TooltipTrigger>
                           {scopeText !== '-' && scopeText.length > 10 && (
-                            <TooltipContent side="top" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[320px]">
+                            <TooltipContent side="top" className="max-w-[320px]">
                               <p className="break-words">应用范围：{scopeText}</p>
                             </TooltipContent>
                           )}

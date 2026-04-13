@@ -1911,14 +1911,29 @@ export default function MemberManagement() {
                   .map((group) => (
                   <div key={group.id} className={`flex items-center gap-1 px-4 py-2.5 transition-colors ${selectedGroupId === group.id ? "bg-blue-50" : "hover:bg-gray-50"}`}>
                     {editingGroupId === group.id ? (
-                      <input
-                        className="flex-1 h-6 px-2 text-sm border border-blue-300 rounded outline-none bg-white"
-                        value={editingGroupName}
-                        onChange={(e) => setEditingGroupName(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") handleRenameGroup(group.id); if (e.key === "Escape") setEditingGroupId(null); }}
-                        onBlur={() => handleRenameGroup(group.id)}
-                        autoFocus
-                      />
+                      <div className="flex-1 flex items-center gap-1 min-w-0">
+                        <input
+                          className="flex-1 min-w-0 h-6 px-2 text-sm border border-blue-300 rounded outline-none bg-white"
+                          value={editingGroupName}
+                          onChange={(e) => setEditingGroupName(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameGroup(group.id); if (e.key === "Escape") setEditingGroupId(null); }}
+                          autoFocus
+                        />
+                        <button
+                          className="w-5 h-5 flex items-center justify-center rounded text-green-600 hover:bg-green-50 transition-colors shrink-0"
+                          title="保存"
+                          onMouseDown={(e) => { e.preventDefault(); handleRenameGroup(group.id); }}
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 transition-colors shrink-0"
+                          title="取消"
+                          onMouseDown={(e) => { e.preventDefault(); setEditingGroupId(null); }}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     ) : (
                       <button
                         className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === group.id ? "text-blue-600 font-medium" : "text-gray-700"}`}

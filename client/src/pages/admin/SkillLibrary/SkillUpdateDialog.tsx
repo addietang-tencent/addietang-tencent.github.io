@@ -16,10 +16,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, Sparkles, FileText, Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { type Skill } from './types';
-import { DEFAULT_CATEGORIES } from './mockData';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { type Skill, type SkillScope } from './types';
+import { DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import { isValidSemver, compareSemver, downloadSampleSkillZip } from './downloadUtils';
+import { Globe, Users, Search as SearchIcon, Check } from 'lucide-react';
 
 interface SkillUpdateDialogProps {
   open: boolean;
@@ -118,12 +119,16 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
     version: '',
     changeLog: '',
     categories: [] as string[],
+    scope: 'public' as SkillScope,
+    groupIds: [] as string[],
   });
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const [versionError, setVersionError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const [groupPopoverOpen, setGroupPopoverOpen] = useState(false);
 
   // 初始化 - 回显已有文件和当前 Skill 信息
   useEffect(() => {
@@ -134,7 +139,10 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         version: '',
         changeLog: '',
         categories: [...skill.categories],
+        scope: skill.scope || 'public',
+        groupIds: [...(skill.groupIds || [])],
       });
+      setGroupSearchQuery('');
       // 回显已有文件
       if (skill.files && skill.files.length > 0) {
         setUploadedFiles([{
@@ -337,6 +345,8 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
       description: formData.description,
       version: formData.version,
       categories: formData.categories,
+      scope: formData.scope,
+      groupIds: formData.scope === 'public' ? [] : formData.groupIds,
       files: newFiles,
       content: newContent,
       versions: [formData.version, ...(skill.versions || [])],
@@ -503,8 +513,7 @@ description: this is a skill creator.
             <Label htmlFor="update-slug" className="text-sm">
               唯一标识 (slug) <span className="text-red-500">*</span>
             </Label>
-            <TooltipProvider delayDuration={1000}>
-              <Tooltip>
+            <Tooltip delayDuration={1000}>
                 <TooltipTrigger asChild>
                   <Input
                     id="update-slug"
@@ -517,7 +526,6 @@ description: this is a skill creator.
                   <p>slug 不允许修改</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
           </div>
 
           {/* Name */}
@@ -586,6 +594,101 @@ description: this is a skill creator.
                   {cat.name}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* 应用范围 */}
+          <div>
+            <Label className="text-sm">应用范围</Label>
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }))}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
+                  formData.scope === 'public'
+                    ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
+                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                全部用户
+              </button>
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, scope: 'private' }))}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition-colors whitespace-nowrap ${
+                  formData.scope === 'private'
+                    ? 'bg-blue-50 text-blue-600 font-medium border-blue-200'
+                    : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                按分组
+              </button>
+
+              {formData.scope === 'private' && (
+                <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
+                  <Tooltip delayDuration={1000} open={groupPopoverOpen ? false : undefined}>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors max-w-[200px]">
+                            <span className="truncate text-left">
+                              {formData.groupIds.length === 0
+                                ? '选择分组'
+                                : MOCK_GROUPS.filter(g => formData.groupIds.includes(g.id)).map(g => g.name).join('、')}
+                            </span>
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="bg-white text-gray-700 text-xs border border-gray-200 shadow-sm max-w-[280px]">
+                        <p className="break-words">
+                          {formData.groupIds.length === 0
+                            ? '选择分组'
+                            : MOCK_GROUPS.filter(g => formData.groupIds.includes(g.id)).map(g => g.name).join('、')}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  <PopoverContent className="w-52 p-2" align="start" sideOffset={4} onWheel={(e) => e.stopPropagation()}>
+                    <div className="relative mb-2">
+                      <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <input
+                        placeholder="搜索分组..."
+                        value={groupSearchQuery}
+                        onChange={(e) => setGroupSearchQuery(e.target.value)}
+                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto overscroll-contain space-y-0.5" onWheel={(e) => e.stopPropagation()}>
+                      {MOCK_GROUPS
+                        .filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase()))
+                        .map(group => (
+                          <button
+                            key={group.id}
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                groupIds: prev.groupIds.includes(group.id)
+                                  ? prev.groupIds.filter(id => id !== group.id)
+                                  : [...prev.groupIds, group.id]
+                              }));
+                            }}
+                            className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                              formData.groupIds.includes(group.id)
+                                ? 'bg-blue-600 border-blue-600'
+                                : 'border-gray-300'
+                            }`}>
+                              {formData.groupIds.includes(group.id) && (
+                                <Check className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <span className="truncate text-left" title={group.name}>{group.name}</span>
+                          </button>
+                        ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
           </div>
 

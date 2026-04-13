@@ -30,6 +30,10 @@ export interface Skill {
   description: string;
   version: string;
   categories: string[];
+  /** 应用范围：public=全部用户，private=按分组 */
+  scope: SkillScope;
+  /** 当 scope=private 时，关联的分组 ID 列表 */
+  groupIds: string[];
   uploadTime: Date;
   content?: string;
   fileContent?: string;
@@ -49,6 +53,16 @@ export interface Category {
   name: string;
   description: string;
 }
+
+/** 分组（Group） */
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+/** 应用范围类型 */
+export type SkillScope = 'public' | 'private';
 
 /** 实例运行状态 */
 export type InstanceStatus = 'running' | 'stopped' | 'starting' | 'error';
@@ -70,6 +84,8 @@ export interface OpenClawInstance {
   distributionStatus?: DistributionStatus;
   /** 已下发的版本号（用于判断"待更新"状态） */
   distributedVersion?: string;
+  /** 所属分组 ID 列表（可能属于多个分组） */
+  groupIds: string[];
 }
 
 export interface DistributionRecord {

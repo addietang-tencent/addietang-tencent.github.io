@@ -1,4 +1,21 @@
-import { Skill, Category, OpenClawInstance, type SkillVersionRecord } from './types';
+import { Skill, Category, OpenClawInstance, type SkillVersionRecord, Group } from './types';
+
+// ========== 分组 Mock 数据 ==========
+export const MOCK_GROUPS: Group[] = [
+  { id: 'group-1', name: '产品', description: '产品设计与管理团队' },
+  { id: 'group-2', name: '研发', description: '软件研发团队' },
+  { id: 'group-3', name: '财务', description: '财务与审计团队' },
+  { id: 'group-4', name: '云产品一部计算产品中心', description: '云产品一部计算产品中心团队' },
+  { id: 'group-5', name: '云产品一部分布式云产品中心', description: '云产品一部分布式云产品中心团队' },
+  { id: 'group-6', name: '云产品六部智能体产品中心', description: '云产品六部智能体产品中心团队' },
+];
+
+// 分组 → 用户映射（用于 mock 打通）
+export const GROUP_USERS: Record<string, string[]> = {
+  'group-1': ['admin', 'pm-zhang'],
+  'group-2': ['developer', 'dev-team', 'ops'],
+  'group-3': ['finance-li', 'admin'],
+};
 
 // 为 GitHub Skill 创建额外的文件内容
 const githubSkillFiles: Record<string, string> = {
@@ -69,6 +86,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: '快速总结长文档，提取关键信息。支持多种文档格式，自动提取核心要点，生成简明扩订。适用于会议记录、研究报告、技术文档等场景。',
     version: '1.0.0',
     categories: ['1', '6'],
+    scope: 'public',
+    groupIds: [],
     uploadTime: new Date('2025-03-20'),
     content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...',
     versions: ['1.0.0', '0.9.0'],
@@ -96,6 +115,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: '自动审查代码质量和安全问题。支持 Python、JavaScript、Java 等主流语言，检测代码规范、安全漏洞、性能问题。提供详细的修改建议和最佳实践。',
     version: '2.1.0',
     categories: ['2'],
+    scope: 'private',
+    groupIds: ['group-2'],
     uploadTime: new Date('2025-03-18'),
     content: '# 代码审查工具\n\n这是一个用于代码审查的 Skill...',
     versions: ['2.1.0', '2.0.0', '1.0.0'],
@@ -127,6 +148,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: '分析系统日志，快速定位问题。支持应用日志、系统日志、数据库日志等多种日志类型。自动提取错误信息、分析异常模式、帮助定位根本原因。',
     version: '1.5.2',
     categories: ['3'],
+    scope: 'private',
+    groupIds: ['group-1', 'group-2'],
     uploadTime: new Date('2025-03-15'),
     content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...',
     versions: ['1.5.2', '1.5.0', '1.0.0'],
@@ -158,6 +181,8 @@ export const MOCK_SKILLS: Skill[] = [
     description: 'Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.',
     version: '1.0.0',
     categories: ['2'],
+    scope: 'public',
+    groupIds: [],
     uploadTime: new Date('2025-03-20'),
     content: `---
 name: github
@@ -214,9 +239,9 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
-  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed' },
-  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0' },
-  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed' },
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0' },
+  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['group-1', 'group-3'] },
+  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['group-2'] },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['group-2'] },
+  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed', groupIds: ['group-1', 'group-2'] },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0', groupIds: ['group-1', 'group-2', 'group-3'] },
 ];

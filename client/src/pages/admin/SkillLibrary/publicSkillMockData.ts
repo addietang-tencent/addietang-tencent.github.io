@@ -41,7 +41,7 @@ export interface FavoriteSkill {
 export interface SkillInitialPackage {
   id: string;
   name: string;
-  scope: string; // 应用范围，目前固定"全部成员"
+  scope: string; // 应用范围，目前固定"全部用户"
   isActive: boolean; // 是否生效
   hasDraft: boolean; // 是否有未发布修改
   skills: PackageSkillItem[];
@@ -713,7 +713,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
   {
     id: 'pkg-1',
     name: '全员通用技能包',
-    scope: '全部成员',
+    scope: '全部用户',
     isActive: true,
     hasDraft: false,
     createdAt: new Date('2026-01-01'),
@@ -748,7 +748,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
   {
     id: 'pkg-2',
     name: '高级开发技能包',
-    scope: '全部成员',
+    scope: '全部用户',
     isActive: false,
     hasDraft: true,
     createdAt: new Date('2026-02-01'),

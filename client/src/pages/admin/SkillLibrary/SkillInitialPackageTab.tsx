@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
@@ -362,7 +362,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <Globe className="w-3.5 h-3.5 shrink-0" />
-            <span>应用范围：全部成员</span>
+            <span>应用范围：全部用户</span>
           </div>
         </div>
         <DialogFooter className="flex gap-2">
@@ -710,7 +710,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
     const newPkg: SkillInitialPackage = {
       id: `pkg-${Date.now()}`,
       name,
-      scope: '全部成员',
+      scope: '全部用户',
       isActive: false,
       hasDraft: false,
       skills: [],
@@ -842,8 +842,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
 
                   {/* 删除按钮 */}
                   {pkg.isActive ? (
-                    <TooltipProvider>
-                      <Tooltip delayDuration={300}>
+                    <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => {}}
@@ -856,7 +855,6 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           生效中的技能包不可删除
                         </TooltipContent>
                       </Tooltip>
-                    </TooltipProvider>
                   ) : (
                     <button
                       onClick={() => setDeleteTarget(pkg.id)}

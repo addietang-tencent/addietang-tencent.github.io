@@ -2,10 +2,10 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader } from 'lucide-react';
 import { toast } from 'sonner';
-import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
+import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
@@ -582,14 +582,30 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   </span>
                 ))}
               </div>
+              {/* 应用范围 */}
+              <span className="text-sm text-gray-400 ml-2">|</span>
+              <span className="text-sm text-gray-500">应用范围：</span>
+              {skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0 ? (
+                <span className="inline-block px-3 py-1 bg-green-50 text-green-700 text-sm rounded">
+                  全部用户
+                </span>
+              ) : (
+                skill.groupIds.map((gId: string) => (
+                  <span
+                    key={gId}
+                    className="inline-block px-3 py-1 bg-purple-50 text-purple-700 text-sm rounded"
+                  >
+                    {MOCK_GROUPS.find(g => g.id === gId)?.name || gId}
+                  </span>
+                ))
+              )}
             </div>
           </div>
 
           {/* F-06 操作按钮 */}
           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-            <TooltipProvider>
               {/* 更新按钮 */}
-              <Tooltip>
+              <Tooltip delayDuration={1000}>
                 <TooltipTrigger asChild>
                   <span>
                     <Button
@@ -609,7 +625,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               </Tooltip>
 
               {/* 删除按钮 */}
-              <Tooltip>
+              <Tooltip delayDuration={1000}>
                 <TooltipTrigger asChild>
                   <span>
                     <Button
@@ -633,7 +649,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 {isDownloading ? <Loader className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
                 下载
               </Button>
-            </TooltipProvider>
           </div>
         </div>
         {skill.description && (
@@ -701,8 +716,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         return `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
                       })();
                       return (
-                        <TooltipProvider key={ver}>
-                          <Tooltip delayDuration={1000}>
+                        <Tooltip key={ver} delayDuration={1000}>
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => setSelectedVersion(ver)}
@@ -736,7 +750,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                               <p className="whitespace-pre-line leading-relaxed">{versionRecord?.changeLog || '暂无更新说明'}</p>
                             </TooltipContent>
                           </Tooltip>
-                        </TooltipProvider>
                       );
                     })}
                   </div>
@@ -958,6 +971,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         onOpenChange={setDistributeDialogOpen}
         skillName={skill.name}
         skillVersion={skill.version}
+        skillScope={skill.scope}
+        skillGroupIds={skill.groupIds}
         onDistributionStart={handleDistributionStart}
       />
 

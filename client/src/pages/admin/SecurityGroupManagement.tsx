@@ -351,6 +351,82 @@ function buildRulesFromOptions(checkedKeys: CommonRuleOptionKey[]) {
   };
 }
 
+const DEFAULT_PANEL_ACCESS_PORT = "443";
+
+function buildPanelAccessRequiredRules(panelAccessPort: string): Array<Omit<Rule, "id">> {
+  return [
+    {
+      source: "0.0.0.0/0",
+      protocol: "TCP",
+      port: panelAccessPort,
+      policy: "允许",
+      remark: "允许访问 OpenClaw 面板",
+    },
+  ];
+}
+
+function doesRulePortCoverRequiredPort(rulePort: string, requiredPort: string) {
+  if (rulePort === "ALL") {
+    return true;
+  }
+
+  if (rulePort === requiredPort) {
+    return true;
+  }
+
+  const requiredPortNumber = Number(requiredPort);
+  if (Number.isNaN(requiredPortNumber)) {
+    return false;
+  }
+
+  return rulePort.split(",").some((segment) => {
+    const normalizedSegment = segment.trim();
+    if (normalizedSegment === requiredPort) {
+      return true;
+    }
+
+    const rangeMatch = normalizedSegment.match(/^(\d+)-(\d+)$/);
+    if (!rangeMatch) {
+      return false;
+    }
+
+    const rangeStart = Number(rangeMatch[1]);
+    const rangeEnd = Number(rangeMatch[2]);
+    return requiredPortNumber >= rangeStart && requiredPortNumber <= rangeEnd;
+  });
+}
+
+function doesRuleCoverPanelAccessRequirement(rule: Rule, expectedRule: Omit<Rule, "id">) {
+  return rule.policy === "允许"
+    && rule.source === expectedRule.source
+    && (rule.protocol === expectedRule.protocol || rule.protocol === "ALL")
+    && doesRulePortCoverRequiredPort(rule.port, expectedRule.port);
+}
+
+function buildSecurityGroupWithPanelAccessRules(securityGroup: SecurityGroup, panelAccessPort: string): SecurityGroup {
+  const requiredRules = buildPanelAccessRequiredRules(panelAccessPort);
+  const missingRules = requiredRules.filter((expectedRule) =>
+    !securityGroup.inboundRules.some((rule) => doesRuleCoverPanelAccessRequirement(rule, expectedRule))
+  );
+
+  if (missingRules.length === 0) {
+    return securityGroup;
+  }
+
+  const timestamp = Date.now();
+  const injectedRules: Rule[] = missingRules.map((rule, index) => ({
+    id: `panel-access-${timestamp}-${index}`,
+    ...rule,
+  }));
+  const inboundRules = [...injectedRules, ...securityGroup.inboundRules];
+
+  return {
+    ...securityGroup,
+    inboundRules,
+    inboundCount: inboundRules.length,
+  };
+}
+
 type NetworkConfig = {
   vpcId: string;
   zoneSubnets: Record<string, string>;
@@ -406,10 +482,13 @@ type SelectExistingSecurityGroupDialogProps = {
   selectedSecurityGroup: SecurityGroup | null;
   previewTab: "outbound" | "inbound";
   candidateSecurityGroups: SecurityGroup[];
+  shouldShowPanelAccessAssist: boolean;
+  isPanelAccessStaged: boolean;
   onOpenChange: (open: boolean) => void;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
   onSelectSecurityGroup: (sg: SecurityGroup) => void;
+  onTogglePanelAccessStaged: () => void;
   onPreviewTabChange: (tab: "outbound" | "inbound") => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -1157,6 +1236,7 @@ export default function SecurityGroupManagement() {
   const [sgSearchKeyword, setSgSearchKeyword] = useState("");
   const [sgDialogSelected, setSgDialogSelected] = useState<SecurityGroup | null>(null); // 弹窗内选中的候选
   const [sgDialogTab, setSgDialogTab] = useState<"outbound" | "inbound">("outbound");
+  const [isSgDialogPanelAccessStaged, setIsSgDialogPanelAccessStaged] = useState(false);
 
   // 新建安全组状态
   const [showCreateSgDialog, setShowCreateSgDialog] = useState(false);
@@ -1298,12 +1378,14 @@ export default function SecurityGroupManagement() {
     setSgDialogSelected(null);
     setSgDialogTab("outbound");
     setIsSgSelectorExpanded(false);
+    setIsSgDialogPanelAccessStaged(false);
     setIsSgDialogOpen(true);
   };
 
   const closeSelectSecurityGroupDialog = () => {
     setIsSgSelectorExpanded(false);
     setSgSearchKeyword("");
+    setIsSgDialogPanelAccessStaged(false);
     setIsSgDialogOpen(false);
   };
 
@@ -1438,10 +1520,13 @@ export default function SecurityGroupManagement() {
     selectedSecurityGroup,
     previewTab,
     candidateSecurityGroups,
+    shouldShowPanelAccessAssist,
+    isPanelAccessStaged,
     onOpenChange,
     onSearchChange,
     onClearSearch,
     onSelectSecurityGroup,
+    onTogglePanelAccessStaged,
     onPreviewTabChange,
     onCancel,
     onConfirm,
@@ -1452,7 +1537,7 @@ export default function SecurityGroupManagement() {
     >
       <DialogContent
         className="flex flex-col p-0 gap-0 overflow-hidden"
-        style={{ width: "min(90vw, 880px)", maxWidth: "880px", maxHeight: "min(90vh, 820px)" }}
+        style={{ width: "min(90vw, 704px)", maxWidth: "704px", maxHeight: "min(90vh, 820px)" }}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
@@ -1578,6 +1663,35 @@ export default function SecurityGroupManagement() {
                 <div className="mb-3">
                   <Label className="text-sm font-medium text-gray-700">规则预览</Label>
                 </div>
+                {shouldShowPanelAccessAssist && (
+                  <div className={`mb-3 rounded-lg border px-3 py-2.5 ${
+                    isPanelAccessStaged
+                      ? "border-blue-100 bg-blue-50"
+                      : "border-amber-100 bg-amber-50"
+                  }`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {isPanelAccessStaged ? (
+                        <Info className="h-4 w-4 shrink-0 self-center text-blue-400" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 shrink-0 self-center text-amber-500" />
+                      )}
+                      <p className={`text-xs leading-relaxed ${isPanelAccessStaged ? "text-blue-600" : "text-amber-700"}`}>
+                        {isPanelAccessStaged
+                          ? "已根据当前已启用的 ClawPro 配置，为该安全组补齐所需规则，确认后将随安全组切换一并生效。"
+                          : "检测到当前安全组缺少当前已启用的 ClawPro 配置所需规则，可能影响相关功能使用。"}
+                      </p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className={`h-8 shrink-0 text-xs ${isPanelAccessStaged ? "border-blue-200 bg-white text-blue-600 hover:bg-blue-50" : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50"}`}
+                        onClick={onTogglePanelAccessStaged}
+                      >
+                        {isPanelAccessStaged ? "取消添加" : "一键添加"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center px-4 border-b border-gray-100" style={{ minHeight: "44px" }}>
                     {(["outbound", "inbound"] as const).map((tab) => (
@@ -1646,6 +1760,21 @@ export default function SecurityGroupManagement() {
         (sg.remark ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()))
   );
   const hasNetworkTemplateWarning = hasCommonRulePreviewRule(inboundRules, NETWORK_TEMPLATE_WARNING_KEY, "inbound");
+  const activePanelAccessPort = panelPort || DEFAULT_PANEL_ACCESS_PORT;
+  const panelAccessRequiredRules = allowPanelAccess ? buildPanelAccessRequiredRules(activePanelAccessPort) : [];
+  const sgDialogMissingPanelAccessRules = Boolean(
+    allowPanelAccess
+    && sgDialogSelected
+    && panelAccessRequiredRules.some((expectedRule) =>
+      !sgDialogSelected.inboundRules.some((rule) => doesRuleCoverPanelAccessRequirement(rule, expectedRule))
+    )
+  );
+  const sgDialogPreviewSecurityGroup = sgDialogSelected && isSgDialogPanelAccessStaged
+    ? buildSecurityGroupWithPanelAccessRules(sgDialogSelected, activePanelAccessPort)
+    : sgDialogSelected;
+  const shouldShowSgDialogPanelAccessAssist = Boolean(
+    sgDialogSelected && allowPanelAccess && (sgDialogMissingPanelAccessRules || isSgDialogPanelAccessStaged)
+  );
 
   // VPC 切换且 CIDR 不一致的补充说明逻辑
   const isVpcSwitched = config.vpcId !== savedConfig.vpcId;
@@ -2440,9 +2569,11 @@ export default function SecurityGroupManagement() {
       {renderSelectExistingSecurityGroupDialog({
         open: isSgDialogOpen,
         searchKeyword: sgSearchKeyword,
-        selectedSecurityGroup: sgDialogSelected,
+        selectedSecurityGroup: sgDialogPreviewSecurityGroup,
         previewTab: sgDialogTab,
         candidateSecurityGroups: selectableSecurityGroups,
+        shouldShowPanelAccessAssist: shouldShowSgDialogPanelAccessAssist,
+        isPanelAccessStaged: isSgDialogPanelAccessStaged,
         onOpenChange: (open) => {
           if (!open) {
             closeSelectSecurityGroupDialog();
@@ -2455,6 +2586,13 @@ export default function SecurityGroupManagement() {
           setSgDialogTab("outbound");
           setIsSgSelectorExpanded(false);
           setSgSearchKeyword("");
+          setIsSgDialogPanelAccessStaged(false);
+        },
+        onTogglePanelAccessStaged: () => {
+          if (!isSgDialogPanelAccessStaged) {
+            setSgDialogTab("inbound");
+          }
+          setIsSgDialogPanelAccessStaged((prev) => !prev);
         },
         onPreviewTabChange: setSgDialogTab,
         onCancel: closeSelectSecurityGroupDialog,
@@ -2490,8 +2628,8 @@ export default function SecurityGroupManagement() {
             <Button
               className="bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => {
-                if (sgDialogSelected) {
-                  applyCurrentSecurityGroup(sgDialogSelected);
+                if (sgDialogPreviewSecurityGroup) {
+                  applyCurrentSecurityGroup(sgDialogPreviewSecurityGroup);
                   toast.success("安全组已切换，当前企业下所有 OpenClaw 将使用该安全组");
                   setIsConfirmSwitchDialogOpen(false);
                   closeSelectSecurityGroupDialog();

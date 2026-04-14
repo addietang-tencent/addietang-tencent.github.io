@@ -657,7 +657,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                             setEditingSkillCategories(skill.categories);
                             setEditCategoryDialogOpen(true);
                           }}
-                          className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors"
                         >
                           <Edit2 className="w-3 h-3" />
                         </button>
@@ -922,7 +922,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                                         setEditingSkillCategories(skill.categories);
                                         setEditCategoryDialogOpen(true);
                                       }}
-                                      className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                                      className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
                                     >
                                       <Edit2 className="w-3 h-3" />
                                     </button>

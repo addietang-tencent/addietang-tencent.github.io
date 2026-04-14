@@ -153,14 +153,14 @@ const LAST_CLAW_LIMIT = 3;
 const LAST_TOKEN_LIMIT = 50000;
 
 // ─── 分组数据模型 ─────────────────────────────────────────────────────────────
-interface MemberGroup {
+export interface MemberGroup {
   id: string;
   name: string;
   memberIds: string[];
   createdAt: string;
 }
 
-const MOCK_GROUPS_INIT: MemberGroup[] = [
+export const MOCK_GROUPS_INIT: MemberGroup[] = [
   { id: "grp-1", name: "产品组", memberIds: ["carol@acompany.com", "david@acompany.com", "eve@acompany.com", "alice@acompany.com"], createdAt: "2025-06-01" },
   { id: "grp-2", name: "研发组", memberIds: ["alice@acompany.com", "bob@acompany.com", "frank@acompany.com", "grace@acompany.com", "kate@acompany.com"], createdAt: "2025-06-05" },
   { id: "grp-3", name: "设计组", memberIds: ["iris@acompany.com", "jack@acompany.com", "frank@acompany.com"], createdAt: "2025-07-10" },

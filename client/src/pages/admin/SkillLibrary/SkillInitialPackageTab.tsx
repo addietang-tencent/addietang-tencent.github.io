@@ -2,7 +2,7 @@
  * 技能初始包 Tab
  * 设计风格：浅色主题，草稿+发布分离，生效开关
  */
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -16,16 +16,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
   CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles,
-  Search, RefreshCw
+  Search, RefreshCw, ChevronDown, Check, Edit2, Filter, Users, Pin
 } from 'lucide-react';
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
-import { MOCK_SKILLS, DEFAULT_CATEGORIES } from './mockData';
+import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Check } from 'lucide-react';
+import EditScopePopover from './EditScopeDialog';
+import { type SkillScope } from './types';
 
 // ─── 公共技能库添加弹窗 ──────────────────────────────────────────────────────────
 
@@ -151,13 +153,48 @@ interface AddEnterpriseSkillDialogProps {
   existingSkillIds: string[];
   onConfirm: (skills: PackageSkillItem[]) => void;
   onCancel: () => void;
+  /** 当前技能包的应用范围类型 */
+  pkgScopeType?: 'public' | 'private';
+  /** 当前技能包关联的分组 ID 列表 */
+  pkgGroupIds?: string[];
 }
 
-function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: AddEnterpriseSkillDialogProps) {
+function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel, pkgScopeType, pkgGroupIds }: AddEnterpriseSkillDialogProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  /** 应用范围多选筛选：空数组=全部, ['__none__']=全不选, ['__public__']=全部用户, ['grp-x']=特定分组 */
+  const [scopeFilters, setScopeFilters] = useState<string[]>([]);
+  const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
+  const [scopeSearchQuery, setScopeSearchQuery] = useState('');
+  const scopeDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭应用范围下拉
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scopeDropdownRef.current && !scopeDropdownRef.current.contains(e.target as Node)) {
+        setScopeDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 打开时根据技能包应用范围设置默认筛选
+  useEffect(() => {
+    if (open) {
+      if (pkgScopeType === 'private' && pkgGroupIds && pkgGroupIds.length > 0) {
+        setScopeFilters([...pkgGroupIds]);
+      } else if (pkgScopeType === 'public') {
+        setScopeFilters(['__public__']);
+      } else {
+        setScopeFilters([]);
+      }
+      setScopeDropdownOpen(false);
+      setScopeSearchQuery('');
+    }
+  }, [open, pkgScopeType, pkgGroupIds]);
 
   const toggleSkill = (skillId: string) => {
     setSelectedIds(prev =>
@@ -187,6 +224,9 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
     setSelectedIds([]);
     setActiveCategory('all');
     setSearchQuery('');
+    setScopeFilters([]);
+    setScopeDropdownOpen(false);
+    setScopeSearchQuery('');
     onCancel();
   };
 
@@ -195,13 +235,35 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
     setSearchQuery('');
     setActiveCategory('all');
     setSelectedIds([]);
+    setScopeFilters([]);
+    setScopeDropdownOpen(false);
+    setScopeSearchQuery('');
   };
 
   const filteredSkills = MOCK_SKILLS.filter(s => {
     const matchCategory = activeCategory === 'all' || s.categories.includes(activeCategory);
     const q = searchQuery.trim().toLowerCase();
     const matchSearch = q === '' || s.name.toLowerCase().includes(q) || (s.description ?? '').toLowerCase().includes(q);
-    return matchCategory && matchSearch;
+    // 应用范围筛选（未选或全选时不过滤）
+    let matchScope = true;
+    if (scopeFilters.length > 0) {
+      const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
+      const allSelected = allIds.every(id => scopeFilters.includes(id));
+      if (!allSelected) {
+        matchScope = false;
+        if (scopeFilters.includes('__public__') && s.scope === 'public') {
+          matchScope = true;
+        }
+        // 检查技能是否关联了选中的分组
+        const selectedGroupIds = scopeFilters.filter(f => f !== '__public__' && f !== '__none__');
+        if (selectedGroupIds.length > 0 && s.groupIds) {
+          if (selectedGroupIds.some(gid => s.groupIds.includes(gid))) {
+            matchScope = true;
+          }
+        }
+      }
+    }
+    return matchCategory && matchSearch && matchScope;
   });
 
   const renderSkillCard = (skill: typeof MOCK_SKILLS[0]) => {
@@ -243,7 +305,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col flex-1 overflow-hidden">
-          {/* 搜索框 + 刷新按钮 */}
+          {/* 搜索框 + 应用范围筛选 + 刷新按钮 */}
           <div className="px-5 pt-3 pb-2 shrink-0 flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -254,6 +316,132 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
               />
+            </div>
+            {/* 应用范围多选下拉 */}
+            <div className="relative" ref={scopeDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setScopeDropdownOpen(prev => !prev)}
+                className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <span className="truncate text-left text-xs">
+                  {(() => {
+                    const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
+                    const allSelected = allIds.every(id => scopeFilters.includes(id));
+                    if (scopeFilters.length === 0 || allSelected) return '全部应用范围';
+                    if (scopeFilters.includes('__public__') && scopeFilters.length === 1) return '全部用户';
+                    return `已选 ${scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项`;
+                  })()}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {scopeDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                  {/* 搜索框 */}
+                  <div className="px-2 pb-1.5 pt-1">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <input
+                        placeholder="搜索..."
+                        value={scopeSearchQuery}
+                        onChange={(e) => setScopeSearchQuery(e.target.value)}
+                        className="w-full pl-7 pr-2 h-7 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </div>
+                  {/* 全部应用范围（全选/全不选） */}
+                  {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (() => {
+                    const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
+                    const allSelected = allIds.every(id => scopeFilters.includes(id));
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (allSelected) {
+                            setScopeFilters([]);
+                          } else {
+                            setScopeFilters(allIds);
+                          }
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors text-gray-700"
+                      >
+                        <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                          allSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                        }`}>
+                          {allSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                        </span>
+                        <span className="truncate text-left">全部应用范围</span>
+                      </button>
+                    );
+                  })()}
+                  {/* 全部用户（多选项） */}
+                  {(!scopeSearchQuery || '全部用户'.includes(scopeSearchQuery)) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScopeFilters(prev => {
+                          if (prev.includes('__public__')) return prev.filter(f => f !== '__public__');
+                          return [...prev, '__public__'];
+                        });
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors text-gray-700"
+                    >
+                      <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                        scopeFilters.includes('__public__') ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                      }`}>
+                        {scopeFilters.includes('__public__') && <Check className="w-2.5 h-2.5 text-white" />}
+                      </span>
+                      <span className="truncate text-left">全部用户</span>
+                    </button>
+                  )}
+                  {/* 分组列表（多选） */}
+                  <div className="max-h-48 overflow-y-auto">
+                    {MOCK_GROUPS
+                      .filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()))
+                      .map(group => {
+                        const checked = scopeFilters.includes(group.id);
+                        return (
+                          <button
+                            key={group.id}
+                            type="button"
+                            onClick={() => {
+                              setScopeFilters(prev => {
+                                if (prev.includes(group.id)) return prev.filter(f => f !== group.id);
+                                return [...prev, group.id];
+                              });
+                            }}
+                            className="flex items-center gap-2 w-full px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors text-gray-700"
+                          >
+                            <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                              checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                            }`}>
+                              {checked && <Check className="w-2.5 h-2.5 text-white" />}
+                            </span>
+                            <span className="truncate text-left" title={group.name}>{group.name}</span>
+                          </button>
+                        );
+                      })}
+                    {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase())).length === 0 && scopeSearchQuery && (
+                      <p className="text-[11px] text-gray-400 py-2 text-center">没有匹配的分组</p>
+                    )}
+                  </div>
+                  {/* 底部已选信息 + 清除 */}
+                  {scopeFilters.length > 0 && (
+                    <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-100">
+                      <p className="text-[11px] text-gray-400">
+                        已选 {scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项
+                      </p>
+                      <button
+                        onClick={() => { setScopeFilters([]); setScopeSearchQuery(''); }}
+                        className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        清除
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <button
               onClick={handleRefresh}
@@ -324,12 +512,15 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel 
 interface CreatePackageDialogProps {
   open: boolean;
   existingNames: string[];
-  onConfirm: (name: string) => void;
+  onConfirm: (name: string, scopeType: 'public' | 'private', groupIds: string[]) => void;
   onCancel: () => void;
 }
 
 function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: CreatePackageDialogProps) {
   const [name, setName] = useState('');
+  const [scopeType, setScopeType] = useState<'public' | 'private'>('public');
+  const [groupIds, setGroupIds] = useState<string[]>([]);
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
 
   const trimmed = name.trim();
 
@@ -339,17 +530,28 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
       toast.error('初始技能包名称不可重复');
       return;
     }
-    onConfirm(trimmed);
+    if (scopeType === 'private' && groupIds.length === 0) {
+      toast.error('请至少选择一个分组');
+      return;
+    }
+    onConfirm(trimmed, scopeType, groupIds);
+    resetForm();
+  };
+
+  const resetForm = () => {
     setName('');
+    setScopeType('public');
+    setGroupIds([]);
+    setGroupSearchQuery('');
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { setName(''); onCancel(); } }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { resetForm(); onCancel(); } }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>新建初始技能包</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 my-2">
+        <div className="space-y-4 my-2">
           <div>
             <label className="text-sm font-medium text-gray-700 mb-1.5 block">技能包名称</label>
             <Input
@@ -360,14 +562,121 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
               autoFocus
             />
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Globe className="w-3.5 h-3.5 shrink-0" />
-            <span>应用范围：全部用户</span>
+          {/* 应用范围 */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">应用范围</label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => { setScopeType('public'); setGroupIds([]); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    scopeType === 'public'
+                      ? 'border-blue-200 bg-blue-50 text-blue-600'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  全部用户
+                </button>
+                <button
+                  onClick={() => setScopeType('private')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    scopeType === 'private'
+                      ? 'border-blue-200 bg-blue-50 text-blue-600'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  按分组
+                </button>
+
+                {/* 选择按分组后，右侧出现下拉选择器 */}
+                {scopeType === 'private' && (
+                  <Popover>
+                    <Tooltip delayDuration={1000}>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                            <span className="truncate">
+                              {groupIds.length > 0
+                                ? `已选 ${groupIds.length} 个分组`
+                                : '选择分组…'}
+                            </span>
+                            <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      {groupIds.length > 0 && (
+                        <TooltipContent side="bottom" className="max-w-[280px]">
+                          <p className="text-xs leading-relaxed">
+                            {groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid).join('，')}
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                    <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
+                      <div className="p-2 border-b border-gray-100">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                          <input
+                            placeholder="搜索分组…"
+                            value={groupSearchQuery}
+                            onChange={(e) => setGroupSearchQuery(e.target.value)}
+                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-[200px] overflow-y-auto p-1">
+                        {MOCK_GROUPS
+                          .filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase()))
+                          .map(group => {
+                            const checked = groupIds.includes(group.id);
+                            return (
+                              <button
+                                key={group.id}
+                                onClick={() => {
+                                  setGroupIds(prev =>
+                                    prev.includes(group.id)
+                                      ? prev.filter(id => id !== group.id)
+                                      : [...prev, group.id]
+                                  );
+                                }}
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                              >
+                                <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                                  checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                                }`}>
+                                  {checked && <Check className="w-2.5 h-2.5 text-white" />}
+                                </span>
+                                <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                              </button>
+                            );
+                          })}
+                        {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
+                          <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
+                        <p className="text-[11px] text-gray-400">
+                          已选 {groupIds.length} 个分组
+                        </p>
+                        {groupIds.length > 0 && (
+                          <button
+                            onClick={() => setGroupIds([])}
+                            className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            清除
+                          </button>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={() => { setName(''); onCancel(); }}>取消</Button>
-          <Button onClick={handleConfirm} disabled={!trimmed}>创建</Button>
+          <Button variant="outline" onClick={() => { resetForm(); onCancel(); }}>取消</Button>
+          <Button onClick={handleConfirm} disabled={!trimmed || (scopeType === 'private' && groupIds.length === 0)}>创建</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -407,40 +716,6 @@ function PublishConfirmDialog({ open, packageName, isActive, onConfirm, onCancel
   );
 }
 
-// ─── 切换生效确认对话框 ────────────────────────────────────────────────────────
-
-interface ActivateConfirmDialogProps {
-  open: boolean;
-  currentActiveName: string;
-  newPackageName: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function ActivateConfirmDialog({
-  open, currentActiveName, newPackageName,
-  onConfirm, onCancel
-}: ActivateConfirmDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>确认切换生效技能包</DialogTitle>
-        </DialogHeader>
-        <div className="my-2">
-          <p className="text-sm text-gray-600 leading-relaxed">
-            切换后，「{currentActiveName}」将<strong className="text-gray-900">停止生效</strong>，「{newPackageName}」将<strong className="text-gray-900">对所有新创建的 OpenClaw 生效</strong>，已创建的 OpenClaw 保持原有初始配置不受影响。
-          </p>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>取消</Button>
-          <Button onClick={onConfirm}>确认</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ─── 删除确认对话框 ────────────────────────────────────────────────────────────
 
 interface DeleteConfirmDialogProps {
@@ -469,6 +744,21 @@ function DeleteConfirmDialog({ open, packageName, onConfirm, onCancel }: DeleteC
       </DialogContent>
     </Dialog>
   );
+}
+
+// ─── 辅助函数 ─────────────────────────────────────────────────────────────────
+
+/** 获取技能包的应用范围显示标签数组 */
+function getScopeLabels(pkg: SkillInitialPackage): string[] {
+  if (pkg.scopeType === 'public' || !pkg.groupIds || pkg.groupIds.length === 0) {
+    return ['全部用户'];
+  }
+  return pkg.groupIds.map(id => MOCK_GROUPS.find(g => g.id === id)?.name || id);
+}
+
+/** 判断技能包是否为全员范围 */
+function isPublicScope(pkg: SkillInitialPackage): boolean {
+  return pkg.scopeType === 'public' || !pkg.groupIds || pkg.groupIds.length === 0;
 }
 
 // ─── 技能包详情页 ─────────────────────────────────────────────────────────────
@@ -532,6 +822,8 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
     setShowAddEnterpriseDialog(false);
   };
 
+  const scopeLabels = getScopeLabels(pkg);
+
   return (
     <div className="space-y-4">
       {/* 顶部导航 */}
@@ -564,7 +856,9 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
               <Globe className="w-3 h-3" />
-              <span>{pkg.scope}</span>
+              <span>
+                {isPublicScope(pkg) ? '全部用户' : scopeLabels.join('、')}
+              </span>
             </div>
           </div>
         </div>
@@ -669,6 +963,8 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
         existingSkillIds={localSkills.map(s => s.skillId)}
         onConfirm={handleAddEnterpriseSkills}
         onCancel={() => setShowAddEnterpriseDialog(false)}
+        pkgScopeType={pkg.scopeType}
+        pkgGroupIds={pkg.groupIds}
       />
 
       {/* 保存确认弹窗（仅已生效技能包触发） */}
@@ -694,10 +990,27 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
   const [packages, setPackages] = useState<SkillInitialPackage[]>(INITIAL_SKILL_PACKAGES_DEFAULT);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [activateTarget, setActivateTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const activePackage = packages.find(p => p.isActive);
+  // 筛选状态：null=全部, 'public'=全部用户, 'group-xxx'=特定分组
+  const [selectedScope, setSelectedScope] = useState<string | null>(null);
+  const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
+  const [scopeSearchQuery, setScopeSearchQuery] = useState('');
+  const scopeDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭应用范围下拉
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scopeDropdownRef.current && !scopeDropdownRef.current.contains(e.target as Node)) {
+        setScopeDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // 找到当前已生效的「全部用户」的技能包
+  const activeGlobalPackage = packages.find(p => p.isActive && isPublicScope(p));
 
   // 通知父组件 packages 变化
   const updatePackages = (newPackages: SkillInitialPackage[]) => {
@@ -706,11 +1019,16 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
   };
 
   // 新建技能包
-  const handleCreate = (name: string) => {
+  const handleCreate = (name: string, scopeType: 'public' | 'private', groupIds: string[]) => {
+    const scopeDisplay = scopeType === 'public'
+      ? '全部用户'
+      : groupIds.map(id => MOCK_GROUPS.find(g => g.id === id)?.name || id).join('、');
     const newPkg: SkillInitialPackage = {
       id: `pkg-${Date.now()}`,
       name,
-      scope: '全部用户',
+      scope: scopeDisplay,
+      scopeType,
+      groupIds,
       isActive: false,
       hasDraft: false,
       skills: [],
@@ -723,31 +1041,29 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
 
   // 切换生效开关
   const handleToggleActive = (pkgId: string, value: boolean) => {
+    const pkg = packages.find(p => p.id === pkgId);
+    if (!pkg) return;
+
     if (!value) {
-      // 关闭生效
+      // 关闭生效：直接关闭
       updatePackages(packages.map(p => p.id === pkgId ? { ...p, isActive: false } : p));
       return;
     }
-    // 打开生效 - 需要确认
-    setActivateTarget(pkgId);
-  };
 
-  // 确认切换生效（直接用草稿）
-  const handleActivateConfirm = () => {
-    if (!activateTarget) return;
-    updatePackages(packages.map(p => ({
-      ...p,
-      isActive: p.id === activateTarget,
-      hasDraft: p.id === activateTarget ? false : p.hasDraft,
-    })));
-    setActivateTarget(null);
-  };
-
-  // 前往发布修改
-  const handleGoPublish = () => {
-    if (!activateTarget) return;
-    setSelectedPackageId(activateTarget);
-    setActivateTarget(null);
+    // 打开生效
+    if (isPublicScope(pkg)) {
+      // 全员范围：需要检查是否已有其他全员生效的
+      if (activeGlobalPackage && activeGlobalPackage.id !== pkgId) {
+        // 已有其他全员生效的技能包，提示错误，阻止启用
+        toast.error('已有其他应用范围为「全部用户」的技能包处于启用状态，请先禁用');
+        return;
+      }
+      // 没有全员生效的，直接启用
+      updatePackages(packages.map(p => p.id === pkgId ? { ...p, isActive: true } : p));
+    } else {
+      // 按分组范围：直接启用（可同时启用任意多个非全员的）
+      updatePackages(packages.map(p => p.id === pkgId ? { ...p, isActive: true } : p));
+    }
   };
 
   // 发布修改
@@ -770,6 +1086,38 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
     ));
   };
 
+  // 修改技能包应用范围
+  // 默认不改变生效状态，但切换为"全部用户"时默认设为失效
+  const handleScopeChange = (pkgId: string, scope: SkillScope, groupIds: string[]) => {
+    updatePackages(packages.map(p => {
+      if (p.id !== pkgId) return p;
+      const scopeType = scope === 'public' ? 'public' : 'private';
+      const scopeDisplay = scopeType === 'public'
+        ? '全部用户'
+        : groupIds.map(id => MOCK_GROUPS.find(g => g.id === id)?.name || id).join('、');
+      // 切换为全部用户时，默认设为失效
+      const isActive = scopeType === 'public' ? false : p.isActive;
+      return { ...p, scopeType, groupIds, scope: scopeDisplay, isActive, updatedAt: new Date() };
+    }));
+    toast.success('应用范围修改成功');
+  };
+
+  // 筛选逻辑 + 排序：置顶生效且全员的技能包，其余按新增时间倒序
+  const filteredPackages = packages
+    .filter(pkg => {
+      if (selectedScope === null) return true;
+      if (selectedScope === 'public') return isPublicScope(pkg);
+      // group-xxx
+      return pkg.scopeType === 'private' && pkg.groupIds.includes(selectedScope);
+    })
+    .sort((a, b) => {
+      const aPinned = a.isActive && isPublicScope(a);
+      const bPinned = b.isActive && isPublicScope(b);
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+
   // 如果选中了技能包，显示详情页
   const selectedPackage = packages.find(p => p.id === selectedPackageId);
   if (selectedPackage) {
@@ -783,101 +1131,234 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
     );
   }
 
-  const activateTargetPkg = packages.find(p => p.id === activateTarget);
   const deleteTargetPkg = packages.find(p => p.id === deleteTarget);
 
   return (
     <div className="space-y-4">
       {/* 顶部操作栏 */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium text-gray-700">初始技能包列表</h3>
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <h3 style={{ fontSize: '16px' }} className="font-medium text-gray-700 shrink-0">初始技能包列表</h3>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-md whitespace-nowrap">
+            <Sparkles className="w-3 h-3 text-blue-500 shrink-0" />
+            <span className="text-xs text-blue-600">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
+          </div>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
-          <Plus className="w-4 h-4" />
-          新建
-        </Button>
-      </div>
-
-      {/* 技能包列表 */}
-      {packages.length > 0 ? (
-        <div className="space-y-3">
-          {packages.map(pkg => (
-            <div
-              key={pkg.id}
-              className="bg-white rounded-xl border border-gray-100 p-4 transition-all cursor-pointer group hover:shadow-md"
-              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-              onClick={() => setSelectedPackageId(pkg.id)}
-            >
-              <div className="flex items-center gap-3">
-                {/* 图标 */}
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#007AFF' }}>
-                  <Package className="w-5 h-5 text-white" />
-                </div>
-
-                {/* 信息 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      {pkg.scope}
-                    </span>
-                    <span>{pkg.skills.length} 个技能</span>
-                  </div>
-                </div>
-
-                {/* 操作区 */}
-                <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  {/* 生效开关 */}
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-gray-400">设为生效</span>
-                    <Switch
-                      checked={pkg.isActive}
-                      onCheckedChange={(v) => handleToggleActive(pkg.id, v)}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* 应用范围筛选下拉 */}
+          <div className="relative" ref={scopeDropdownRef}>
+            <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setScopeDropdownOpen(prev => !prev)}
+                  className="flex items-center justify-between gap-1 w-40 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="truncate text-left">
+                    {selectedScope === null
+                      ? '全部应用范围'
+                      : selectedScope === 'public'
+                        ? '全部用户'
+                        : MOCK_GROUPS.find(g => g.id === selectedScope)?.name || selectedScope}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[280px]">
+                <p className="break-words">
+                  {selectedScope === null
+                    ? '全部应用范围'
+                    : selectedScope === 'public'
+                      ? '全部用户'
+                      : MOCK_GROUPS.find(g => g.id === selectedScope)?.name || selectedScope}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            {scopeDropdownOpen && (
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                {/* 搜索框 */}
+                <div className="px-2 pb-1.5 pt-1">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <input
+                      placeholder="搜索..."
+                      value={scopeSearchQuery}
+                      onChange={(e) => setScopeSearchQuery(e.target.value)}
+                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </div>
-
-                  {/* 删除按钮 */}
-                  {pkg.isActive ? (
-                    <Tooltip delayDuration={1000}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={() => {}}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="max-w-[200px] text-center">
-                          生效中的技能包不可删除
-                        </TooltipContent>
-                      </Tooltip>
-                  ) : (
-                    <button
-                      onClick={() => setDeleteTarget(pkg.id)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                </div>
+                {/* 全部应用范围 */}
+                {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedScope(null);
+                      setScopeDropdownOpen(false);
+                      setScopeSearchQuery('');
+                    }}
+                    className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                      selectedScope === null ? 'text-blue-600 font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    <span className="truncate text-left">全部应用范围</span>
+                    {selectedScope === null && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                  </button>
+                )}
+                {/* 全部用户 */}
+                {(!scopeSearchQuery || '全部用户'.includes(scopeSearchQuery)) && (
+                  <button
+                    type="button"
+                    onClick={() => { setSelectedScope('public'); setScopeDropdownOpen(false); setScopeSearchQuery(''); }}
+                    className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                      selectedScope === 'public' ? 'text-blue-600 font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    <span className="truncate text-left">全部用户</span>
+                    {selectedScope === 'public' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                  </button>
+                )}
+                {/* 分组列表 */}
+                <div className="max-h-60 overflow-y-auto">
+                  {MOCK_GROUPS
+                    .filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()))
+                    .map(group => (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => { setSelectedScope(group.id); setScopeDropdownOpen(false); setScopeSearchQuery(''); }}
+                        className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                          selectedScope === group.id ? 'text-blue-600 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        <span className="truncate text-left" title={group.name}>{group.name}</span>
+                        {selectedScope === group.id && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                      </button>
+                    ))}
+                  {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase())).length === 0 && scopeSearchQuery && (
+                    <p className="text-xs text-gray-400 py-2 text-center">没有匹配的分组</p>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+          <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}>
+            <Plus className="w-4 h-4" />
+            新建
+          </Button>
+        </div>
+      </div>
+
+      {/* 技能包列表 */}
+      {filteredPackages.length > 0 ? (
+        <div className="space-y-3">
+          {filteredPackages.map(pkg => {
+            const scopeLabels = getScopeLabels(pkg);
+            const isPub = isPublicScope(pkg);
+            const isPinned = pkg.isActive && isPub;
+            return (
+              <div
+                key={pkg.id}
+                className="bg-white rounded-xl border border-gray-100 p-4 transition-all cursor-pointer group hover:shadow-md"
+                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                onClick={() => setSelectedPackageId(pkg.id)}
+              >
+                <div className="flex items-center gap-3">
+                  {/* 图标 */}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#007AFF' }}>
+                    <Package className="w-5 h-5 text-white" />
+                  </div>
+
+                  {/* 信息 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      {isPinned && (
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="text-blue-500 shrink-0">
+                              <Pin className="w-3.5 h-3.5" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[240px] text-center">
+                            默认置顶应用范围为全部用户且生效中的初始技能包。
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span>{pkg.skills.length} 个技能</span>
+                      {/* 应用范围标签 + 编辑 */}
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <EditScopePopover
+                          groups={MOCK_GROUPS}
+                          currentScope={pkg.scopeType === 'public' ? 'public' : 'private'}
+                          currentGroupIds={pkg.groupIds || []}
+                          scopeLabels={scopeLabels}
+                          isPublic={isPub}
+                          onConfirm={(scope, groupIds) => handleScopeChange(pkg.id, scope, groupIds)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 操作区 */}
+                  <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {/* 生效开关 */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-400">设为生效</span>
+                      <Switch
+                        checked={pkg.isActive}
+                        onCheckedChange={(v) => handleToggleActive(pkg.id, v)}
+                      />
+                    </div>
+
+                    {/* 删除按钮 */}
+                    {pkg.isActive ? (
+                      <Tooltip delayDuration={1000}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => {}}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[200px] text-center">
+                            生效中的技能包不可删除
+                          </TooltipContent>
+                        </Tooltip>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteTarget(pkg.id)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-gray-100"
           style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm font-medium">还没有初始技能包</p>
-          <p className="text-xs mt-1">点击「新建」创建第一个初始技能包</p>
-          <Button size="sm" className="mt-4 gap-1.5" onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4" />
-            新建初始技能包
-          </Button>
+          <p className="text-sm font-medium">
+            {selectedScope !== null ? '没有匹配的初始技能包' : '还没有初始技能包'}
+          </p>
+          {selectedScope === null && (
+            <>
+              <p className="text-xs mt-1">点击「新建」创建第一个初始技能包</p>
+              <Button size="sm" className="mt-4 gap-1.5" onClick={() => setShowCreateDialog(true)}>
+                <Plus className="w-4 h-4" />
+                新建初始技能包
+              </Button>
+            </>
+          )}
         </div>
       )}
 
@@ -888,17 +1369,6 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
         onConfirm={handleCreate}
         onCancel={() => setShowCreateDialog(false)}
       />
-
-      {/* 切换生效确认 */}
-      {activateTargetPkg && (
-        <ActivateConfirmDialog
-          open={!!activateTarget}
-          currentActiveName={activePackage?.name || ''}
-          newPackageName={activateTargetPkg.name}
-          onConfirm={handleActivateConfirm}
-          onCancel={() => setActivateTarget(null)}
-        />
-      )}
 
       {/* 删除确认 */}
       {deleteTargetPkg && (

@@ -41,7 +41,9 @@ export interface FavoriteSkill {
 export interface SkillInitialPackage {
   id: string;
   name: string;
-  scope: string; // 应用范围，目前固定"全部用户"
+  scope: string; // 应用范围显示文本
+  scopeType: 'public' | 'private'; // 应用范围类型：public=全部用户, private=按分组
+  groupIds: string[]; // 当 scopeType='private' 时，关联的分组 ID 列表
   isActive: boolean; // 是否生效
   hasDraft: boolean; // 是否有未发布修改
   skills: PackageSkillItem[];
@@ -714,6 +716,8 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
     id: 'pkg-1',
     name: '全员通用技能包',
     scope: '全部用户',
+    scopeType: 'public',
+    groupIds: [],
     isActive: true,
     hasDraft: false,
     createdAt: new Date('2026-01-01'),
@@ -749,6 +753,8 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
     id: 'pkg-2',
     name: '高级开发技能包',
     scope: '全部用户',
+    scopeType: 'public',
+    groupIds: [],
     isActive: false,
     hasDraft: true,
     createdAt: new Date('2026-02-01'),
@@ -785,6 +791,35 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         source: 'public',
         version: '1.2.0',
         addedAt: new Date('2026-03-01'),
+      },
+    ],
+  },
+  {
+    id: 'pkg-3',
+    name: '运维团队技能包',
+    scope: '运维组',
+    scopeType: 'private',
+    groupIds: ['grp-2'],
+    isActive: true,
+    hasDraft: false,
+    createdAt: new Date('2026-02-15'),
+    updatedAt: new Date('2026-03-15'),
+    skills: [
+      {
+        skillId: 'pub-7',
+        skillName: 'docker-ops',
+        skillNameZh: 'Docker 运维',
+        source: 'public',
+        version: '1.2.0',
+        addedAt: new Date('2026-02-20'),
+      },
+      {
+        skillId: 'pub-9',
+        skillName: 'k8s-manager',
+        skillNameZh: 'Kubernetes 管理',
+        source: 'public',
+        version: '1.6.0',
+        addedAt: new Date('2026-02-20'),
       },
     ],
   },

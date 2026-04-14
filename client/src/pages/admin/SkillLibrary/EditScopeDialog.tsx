@@ -73,7 +73,7 @@ export default function EditScopePopover({
   const renderBadges = () => {
     if (isPublic) {
       return (
-        <span className="inline-block px-3 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+        <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
           全部用户
         </span>
       );
@@ -109,15 +109,21 @@ export default function EditScopePopover({
     <div className="inline-flex items-center gap-1.5">
       {renderBadges()}
       <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
-          <button
-            onClick={(e) => e.stopPropagation()}
-            className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
-            title="编辑应用范围"
-          >
-            <Edit2 className="w-3 h-3" />
-          </button>
-        </PopoverTrigger>
+        <Tooltip delayDuration={1000}>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
+              >
+                <Edit2 className="w-3 h-3" />
+              </button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            编辑应用范围
+          </TooltipContent>
+        </Tooltip>
         <PopoverContent
           className="w-68 p-0"
           align="start"

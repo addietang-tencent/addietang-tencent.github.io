@@ -1,6 +1,6 @@
 /**
  * PluginUploadDialog - 发布插件弹窗
- * 复用 SkillUploadDialog 的逻辑，去掉分类字段，用词换成「插件」
+ * 只支持上传 ZIP，校验 openclaw.plugin.json
  */
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -9,13 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import JSZip from 'jszip';
 import { type SkillScope } from './types';
-import { MOCK_GROUPS } from './mockData';
-import { downloadSampleSkillZip } from './downloadUtils';
 
 export interface Plugin {
   id: string;
@@ -43,8 +40,9 @@ interface UploadedFile {
   size: number;
   status: 'success' | 'error' | 'pending' | 'parsing';
   error?: string;
-  skillmdContent?: string;
-  skillmdParsed?: { name?: string; description?: string };
+  pluginJsonFound?: boolean;
+  packageJsonFound?: boolean;
+  pluginJsonParsed?: { name?: string; description?: string };
   files?: Array<{ name: string; size: number; content?: string }>;
 }
 
@@ -55,32 +53,27 @@ const isTextFile = (name: string) => {
   return TEXT_EXTENSIONS.some(ext => lower.endsWith(ext));
 };
 
-const parseSkillMd = (content: string): { name?: string; description?: string } | null => {
-  const lines = content.split('\n').map(line => line.trim());
-  if (lines[0] !== '---') return null;
-  const result: { name?: string; description?: string } = {};
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.startsWith('---')) break;
-    if (line.startsWith('name:')) result.name = line.substring(5).trim();
-    else if (line.startsWith('description:')) result.description = line.substring(12).trim();
-  }
-  return Object.keys(result).length > 0 ? result : null;
-};
-
 const parseZipFile = async (file: File) => {
   try {
     const zip = new JSZip();
     const loaded = await zip.loadAsync(file);
     const files: Array<{ name: string; size: number; content?: string }> = [];
-    let skillmdContent: string | undefined;
-    let skillmdFound = false;
+    let pluginJsonFound = false;
+    let packageJsonFound = false;
     const fileEntries: Array<{ relativePath: string; zipEntry: JSZip.JSZipObject }> = [];
 
     loaded.forEach((relativePath, zipEntry) => {
       if (zipEntry.dir) return;
       if (relativePath.startsWith('__MACOSX/') || relativePath.endsWith('.DS_Store')) return;
-      if (relativePath.toLowerCase().endsWith('skill.md')) skillmdFound = true;
+      const parts = relativePath.split('/');
+      const fileName = parts[parts.length - 1];
+      // 根目录或单层文件夹下
+      if (fileName === 'openclaw.plugin.json' && parts.length <= 2) {
+        pluginJsonFound = true;
+      }
+      if (fileName === 'package.json' && parts.length <= 2) {
+        packageJsonFound = true;
+      }
       fileEntries.push({ relativePath, zipEntry });
     });
 
@@ -94,20 +87,28 @@ const parseZipFile = async (file: File) => {
     }
 
     files.sort((a, b) => {
-      if (a.name.toLowerCase() === 'skill.md') return -1;
-      if (b.name.toLowerCase() === 'skill.md') return 1;
+      if (a.name.toLowerCase().endsWith('openclaw.plugin.json')) return -1;
+      if (b.name.toLowerCase().endsWith('openclaw.plugin.json')) return 1;
       return a.name.localeCompare(b.name);
     });
 
-    if (skillmdFound) {
-      const skillmdFile = files.find(f => f.name.toLowerCase().endsWith('skill.md'));
-      if (skillmdFile?.content) skillmdContent = skillmdFile.content;
+    // 解析 openclaw.plugin.json 内容
+    let pluginJsonParsed: { name?: string; description?: string } | undefined;
+    if (pluginJsonFound) {
+      const pluginJsonFile = files.find(f => f.name.endsWith('openclaw.plugin.json'));
+      if (pluginJsonFile?.content) {
+        try {
+          const parsed = JSON.parse(pluginJsonFile.content);
+          pluginJsonParsed = {};
+          if (parsed.name && typeof parsed.name === 'string') pluginJsonParsed.name = parsed.name;
+          if (parsed.description && typeof parsed.description === 'string') pluginJsonParsed.description = parsed.description;
+        } catch { /* JSON 解析失败则不填充 */ }
+      }
     }
 
-    const skillmdParsed = skillmdContent ? parseSkillMd(skillmdContent) : undefined;
-    return { files, skillmdContent, skillmdParsed: skillmdParsed || undefined };
+    return { files, pluginJsonFound, packageJsonFound, pluginJsonParsed };
   } catch (error) {
-    return { files: [], error: `ZIP 文件解析失败: ${error instanceof Error ? error.message : '未知错误'}` };
+    return { files: [] as Array<{ name: string; size: number; content?: string }>, pluginJsonFound: false, packageJsonFound: false, pluginJsonParsed: undefined, error: `ZIP 文件解析失败: ${error instanceof Error ? error.message : '未知错误'}` };
   }
 };
 
@@ -116,17 +117,13 @@ const emptyForm = () => ({
   name: '',
   description: '',
   version: '1.0.0',
-  scope: 'public' as SkillScope,
-  groupIds: [] as string[],
 });
 
 export default function PluginUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [] }: PluginUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const [formData, setFormData] = useState(emptyForm());
-  const [groupSearchQuery, setGroupSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -134,7 +131,6 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
     setUploadedFiles([]);
     setExpandedFile(null);
     setFormData(emptyForm());
-    setGroupSearchQuery('');
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -168,7 +164,6 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
       const file = files[i];
       if (!file.name.endsWith('.zip')) continue;
       const parseResult = await parseZipFile(file);
-      const hasSKILLMd = parseResult.files.some(f => f.name.toLowerCase().endsWith('skill.md'));
 
       setUploadedFiles(prev => {
         const updated = [...prev];
@@ -176,17 +171,28 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
         if (idx !== -1) {
           if (parseResult.error) {
             updated[idx] = { name: file.name, size: file.size, status: 'error', error: parseResult.error };
-          } else if (!hasSKILLMd) {
-            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 SKILL.md 文件，请修改后重试', files: parseResult.files };
+          } else if (!parseResult.pluginJsonFound && !parseResult.packageJsonFound) {
+            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 openclaw.plugin.json 和 package.json 文件，请修改后重试', files: parseResult.files };
+          } else if (!parseResult.pluginJsonFound) {
+            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 openclaw.plugin.json 文件，请修改后重试', files: parseResult.files };
+          } else if (!parseResult.packageJsonFound) {
+            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 package.json 文件，请修改后重试', files: parseResult.files };
           } else {
-            updated[idx] = { name: file.name, size: file.size, status: 'success', files: parseResult.files, skillmdContent: parseResult.skillmdContent, skillmdParsed: parseResult.skillmdParsed };
-            if (parseResult.skillmdParsed?.name && !formData.name) setFormData(prev => ({ ...prev, name: parseResult.skillmdParsed!.name! }));
-            if (parseResult.skillmdParsed?.description && !formData.description) setFormData(prev => ({ ...prev, description: parseResult.skillmdParsed!.description! }));
+            updated[idx] = { name: file.name, size: file.size, status: 'success', files: parseResult.files, pluginJsonFound: true, packageJsonFound: true, pluginJsonParsed: parseResult.pluginJsonParsed };
+            // 自动填充表单
+            if (parseResult.pluginJsonParsed?.name && !formData.name) {
+              setFormData(prev => ({ ...prev, name: parseResult.pluginJsonParsed!.name! }));
+            }
+            if (parseResult.pluginJsonParsed?.description && !formData.description) {
+              setFormData(prev => ({ ...prev, description: parseResult.pluginJsonParsed!.description! }));
+            }
           }
         }
         return updated;
       });
     }
+    // 清空 input 以允许重复选择同一文件
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handlePublish = () => {
@@ -203,10 +209,10 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
       name: formData.name,
       description: formData.description,
       version: formData.version,
-      scope: formData.scope,
-      groupIds: formData.scope === 'public' ? [] : formData.groupIds,
+      scope: 'public',
+      groupIds: [],
       uploadTime: new Date(),
-      content: successFile?.skillmdContent || `# ${formData.name}\n\n${formData.description}`,
+      content: `# ${formData.name}\n\n${formData.description}`,
       versions: [formData.version],
       files: successFile?.files || [],
     };
@@ -234,45 +240,54 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
         <div className="space-y-6">
           {/* 文件上传区域 */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold">选择上传方式</Label>
+            <Label className="text-base font-semibold">上传插件包</Label>
             <div
               onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
               onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${uploadedFiles.length > 0 ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-blue-400'}`}
             >
               <Upload className={`w-8 h-8 mx-auto mb-2 ${uploadedFiles.length > 0 ? 'text-gray-300' : 'text-gray-400'}`} />
-              <p className={`text-sm mb-2 ${uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'}`}>点击或拖拽文件上传</p>
+              <p className={`text-sm mb-2 ${uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'}`}>
+                {uploadedFiles.length > 0 ? '如需替换，请先删除下方文件' : '点击或拖拽 ZIP 文件上传'}
+              </p>
 
               <div className="flex items-center justify-center gap-4 mb-3">
                 <Popover>
                   <PopoverTrigger asChild>
                     <button type="button" onClick={(e) => e.stopPropagation()} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                      <FileText className="w-3.5 h-3.5" />填写要求
+                      <FileText className="w-3.5 h-3.5" />上传要求
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[420px] p-4" align="center" side="bottom">
                     <p className="text-sm font-semibold text-gray-900 mb-3">上传要求</p>
                     <ol className="text-sm text-gray-600 space-y-2 list-decimal pl-5">
-                      <li>ZIP 包/文件夹必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
-                      <li className="leading-relaxed">
-                        SKILL.md 文件需包含 YAML 格式的插件名称和描述，name 和 description 后必须有空格
-                        <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">{`---\nname: my-plugin\ndescription: this is my plugin.\n---`}</pre>
-                      </li>
-                      <li>建议文件夹/ZIP 包名称和 name 名称保持一致</li>
+                      <li className="leading-relaxed"><span className="font-medium">必需文件：</span>插件ZIP包根目录必须包含 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">openclaw.plugin.json</code> 和 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">package.json</code> 文件，系统据此识别插件。</li>
+                      <li className="leading-relaxed"><span className="font-medium">命名建议：</span>为便于管理，建议压缩包（或内部文件夹）的名称，与下方您将填写的"唯一标识"保持一致。</li>
                     </ol>
                   </PopoverContent>
                 </Popover>
-                <button type="button" onClick={(e) => { e.stopPropagation(); downloadSampleSkillZip(); toast.success('样例文件下载中...'); }} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const link = document.createElement('a');
+                    link.href = '/system-info-plugin.zip';
+                    link.download = 'system-info-plugin.zip';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    toast.success('样例文件下载中...');
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                >
                   <Download className="w-3.5 h-3.5" />下载样例
                 </button>
               </div>
 
               <div className="flex gap-3 justify-center">
                 <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadedFiles.length > 0}>上传 ZIP</Button>
-                <Button variant="outline" onClick={() => folderInputRef.current?.click()} disabled={uploadedFiles.length > 0}>选择文件夹</Button>
               </div>
-              <input ref={fileInputRef} type="file" accept=".zip" multiple onChange={handleFileSelect} className="hidden" />
-              <input ref={folderInputRef} type="file" multiple onChange={handleFileSelect} className="hidden" {...({ webkitdirectory: '' } as any)} />
+              <input ref={fileInputRef} type="file" accept=".zip" onChange={handleFileSelect} className="hidden" />
             </div>
           </div>
 
@@ -323,13 +338,20 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                             </div>
                           ))}
                         </div>
-                        {file.skillmdParsed && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <p className="text-xs font-semibold text-gray-700 mb-2">SKILL.md 校验通过</p>
-                            <div className="text-xs text-green-600 space-y-1">
-                              {file.skillmdParsed.name && <p><span className="font-medium">name:</span> {file.skillmdParsed.name}</p>}
-                              {file.skillmdParsed.description && <p><span className="font-medium">description:</span> {file.skillmdParsed.description}</p>}
-                            </div>
+                        {(file.pluginJsonFound || file.packageJsonFound) && (
+                          <div className="mt-3 pt-3 border-t border-gray-200 space-y-1">
+                            {file.pluginJsonFound && (
+                              <p className="text-xs font-semibold text-green-600">openclaw.plugin.json 校验通过</p>
+                            )}
+                            {file.packageJsonFound && (
+                              <p className="text-xs font-semibold text-green-600">package.json 校验通过</p>
+                            )}
+                            {file.pluginJsonParsed && (
+                              <div className="text-xs text-green-600 space-y-0.5 mt-1">
+                                {file.pluginJsonParsed.name && <p><span className="font-medium">name:</span> {file.pluginJsonParsed.name}</p>}
+                                {file.pluginJsonParsed.description && <p><span className="font-medium">description:</span> {file.pluginJsonParsed.description}</p>}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -371,78 +393,10 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
               <Input id="p-version" disabled={!hasSuccessfulUpload} value={formData.version} onChange={(e) => setFormData({ ...formData, version: e.target.value })} placeholder="e.g., 1.0.0" className="mt-1" />
             </div>
 
-            {/* 应用范围 */}
-            <div>
-              <Label className="text-sm">应用范围</Label>
-              <div className="mt-2 space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <button disabled={!hasSuccessfulUpload} onClick={() => setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }))}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${formData.scope === 'public' ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'} ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    全部用户
-                  </button>
-                  <button disabled={!hasSuccessfulUpload} onClick={() => setFormData(prev => ({ ...prev, scope: 'private' }))}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${formData.scope === 'private' ? 'border-blue-200 bg-blue-50 text-blue-600' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'} ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    按分组
-                  </button>
-
-                  {formData.scope === 'private' && hasSuccessfulUpload && (
-                    <Popover>
-                      <Tooltip delayDuration={1000}>
-                        <TooltipTrigger asChild>
-                          <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
-                              <span className="truncate">{formData.groupIds.length > 0 ? `已选 ${formData.groupIds.length} 个分组` : '选择分组…'}</span>
-                              <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
-                            </button>
-                          </PopoverTrigger>
-                        </TooltipTrigger>
-                        {formData.groupIds.length > 0 && (
-                          <TooltipContent side="bottom" className="max-w-[280px]">
-                            <p className="text-xs leading-relaxed">{formData.groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid).join('，')}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                      <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                        <div className="p-2 border-b border-gray-100">
-                          <div className="relative">
-                            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                            <input placeholder="搜索分组…" value={groupSearchQuery} onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors" />
-                          </div>
-                        </div>
-                        <div className="max-h-[200px] overflow-y-auto p-1">
-                          {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).map(group => {
-                            const checked = formData.groupIds.includes(group.id);
-                            return (
-                              <button key={group.id} onClick={() => setFormData(prev => ({ ...prev, groupIds: prev.groupIds.includes(group.id) ? prev.groupIds.filter(id => id !== group.id) : [...prev.groupIds, group.id] }))}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                                <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'}`}>
-                                  {checked && <Check className="w-2.5 h-2.5 text-white" />}
-                                </span>
-                                <span className="text-xs text-gray-700 truncate">{group.name}</span>
-                              </button>
-                            );
-                          })}
-                          {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
-                            <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
-                          <p className="text-[11px] text-gray-400">已选 {formData.groupIds.length} 个分组</p>
-                          {formData.groupIds.length > 0 && (
-                            <button onClick={() => setFormData(prev => ({ ...prev, groupIds: [] }))} className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">清除</button>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>取消</Button>
             <Button onClick={handlePublish} disabled={!hasSuccessfulUpload} className="bg-blue-600 hover:bg-blue-700">发布插件</Button>
           </div>

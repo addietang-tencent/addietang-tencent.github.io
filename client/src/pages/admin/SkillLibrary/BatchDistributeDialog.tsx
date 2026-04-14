@@ -37,6 +37,10 @@ interface BatchDistributeDialogProps {
   /** 当前 Skill 关联的分组 ID 列表 */
   skillGroupIds?: string[];
   onDistributionStart?: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
+  /** 弹窗标题，默认 "批量下发 Skill" */
+  title?: string;
+  /** 是否显示应用范围筛选，默认 true */
+  showScopeFilter?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
@@ -54,6 +58,8 @@ export default function BatchDistributeDialog({
   skillScope,
   skillGroupIds,
   onDistributionStart,
+  title = '批量下发 Skill',
+  showScopeFilter = true,
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -85,7 +91,7 @@ export default function BatchDistributeDialog({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 当打开弹窗时，默认选中所有运行中且未下发或下发失败的实例
+  // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
   useEffect(() => {
     if (open) {
       setStatusFilters([]);
@@ -96,26 +102,29 @@ export default function BatchDistributeDialog({
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
       // 根据 Skill 应用范围设置默认筛选
-      if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
-        setScopeFilters([...skillGroupIds]);
-      } else if (skillScope === 'public') {
-        // 全部用户：默认选中"全部用户"
-        setScopeFilters(['__public__']);
+      if (showScopeFilter) {
+        if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
+          setScopeFilters([...skillGroupIds]);
+        } else if (skillScope === 'public') {
+          setScopeFilters(['__public__']);
+        } else {
+          setScopeFilters([]);
+        }
+        const validIds = MOCK_OPENCLAW_INSTANCES
+          .filter(i => {
+            if (i.status !== 'running') return false;
+            if (i.distributionStatus !== 'not_distributed' && i.distributionStatus !== 'failed') return false;
+            if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
+              return i.groupIds?.some(gId => skillGroupIds.includes(gId));
+            }
+            return true;
+          })
+          .map(i => i.id);
+        setSelectedInstances(validIds);
       } else {
         setScopeFilters([]);
+        setSelectedInstances([]);
       }
-      const validIds = MOCK_OPENCLAW_INSTANCES
-        .filter(i => {
-          if (i.status !== 'running') return false;
-          if (i.distributionStatus !== 'not_distributed' && i.distributionStatus !== 'failed') return false;
-          // 如果 Skill 是按分组的，仅默认选中对应分组的实例
-          if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
-            return i.groupIds?.some(gId => skillGroupIds.includes(gId));
-          }
-          return true;
-        })
-        .map(i => i.id);
-      setSelectedInstances(validIds);
     }
   }, [open, skillScope, skillGroupIds]);
 
@@ -246,7 +255,7 @@ export default function BatchDistributeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>批量下发 Skill</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             将 <span className="font-semibold text-gray-900">{skillName}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败的实例。
           </DialogDescription>
@@ -264,6 +273,7 @@ export default function BatchDistributeDialog({
             />
           </div>
           {/* 应用范围筛选 — 多选下拉 */}
+          {showScopeFilter && (
           <div className="relative" ref={scopeDropdownRef}>
             <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
@@ -417,6 +427,7 @@ export default function BatchDistributeDialog({
               </div>
             )}
           </div>
+          )}
           <div className="relative" ref={filterDropdownRef}>
             <Tooltip delayDuration={1000} open={filterDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>

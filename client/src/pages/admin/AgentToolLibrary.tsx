@@ -24,7 +24,7 @@ const TABS = [
   {
     id: "plugins",
     label: "企业插件库",
-    description: "上传和管理企业自定义插件，按需下发到 OpenClaw 实例，扩展 Agent 能力边界。",
+    description: "上传和管理企业自定义插件，按需下发到 OpenClaw 云服务器，扩展 Agent 能力边界。",
   },
 ];
 

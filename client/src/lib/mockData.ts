@@ -400,6 +400,10 @@ export interface Role {
   soul: string;
   skills: RoleSkill[];
   visible: boolean;
+  /** 应用范围：public=全部用户，private=按分组 */
+  scope: 'public' | 'private';
+  /** 当 scope=private 时，关联的分组 ID 列表 */
+  groupIds: string[];
 }
 
 export const MOCK_ROLES: Role[] = [
@@ -414,6 +418,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "SWOT Analyzer", version: "v1.0", source: "公共" },
     ],
     visible: true,
+    scope: "public",
+    groupIds: [],
   },
   {
     id: "role-002",
@@ -425,6 +431,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "playwright-cli", version: "v0.2", source: "公共" },
     ],
     visible: true,
+    scope: "private",
+    groupIds: ["grp-2"],
   },
   {
     id: "role-003",
@@ -439,6 +447,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "playwright-cli", version: "v0.2", source: "公共" },
     ],
     visible: true,
+    scope: "private",
+    groupIds: ["grp-3"],
   },
   {
     id: "role-004",
@@ -453,6 +463,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "pm-retrospective", version: "v1.0", source: "企业" },
     ],
     visible: true,
+    scope: "private",
+    groupIds: ["grp-1", "grp-2"],
   },
   {
     id: "role-005",
@@ -466,6 +478,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "baoyu-infographic", version: "v1.0", source: "公共" },
     ],
     visible: false,
+    scope: "public",
+    groupIds: [],
   },
   {
     id: "role-006",
@@ -480,6 +494,8 @@ export const MOCK_ROLES: Role[] = [
       { name: "baoyu-infographic", version: "v1.0", source: "公共" },
     ],
     visible: true,
+    scope: "private",
+    groupIds: ["grp-1", "grp-3", "grp-4"],
   },
 ];
 

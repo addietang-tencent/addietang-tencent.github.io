@@ -592,6 +592,7 @@ export default function ChatView({
   const [isResizing, setIsResizing] = useState(false);
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
   const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
+  const [cloudBrowserEntryPosition, setCloudBrowserEntryPosition] = useState<{ top: number; left: number } | null>(null);
 
   const prevClawsCountRef = useRef(effectiveClaws.length);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -634,16 +635,24 @@ export default function ChatView({
   }, [effectiveClaws]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const syncCloudBrowserPolicy = () => {
       setIsCloudBrowserPolicyEnabled(getAdminAllowCloudBrowserEnabled());
     };
 
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === "admin_allow_cloud_browser") {
+        syncCloudBrowserPolicy();
+      }
+    };
+
     syncCloudBrowserPolicy();
-    window.addEventListener("storage", syncCloudBrowserPolicy);
+    window.addEventListener("storage", handleStorage);
     window.addEventListener("focus", syncCloudBrowserPolicy);
 
     return () => {
-      window.removeEventListener("storage", syncCloudBrowserPolicy);
+      window.removeEventListener("storage", handleStorage);
       window.removeEventListener("focus", syncCloudBrowserPolicy);
     };
   }, []);
@@ -939,8 +948,8 @@ export default function ChatView({
   const browserStartupTargetClaw = browserStartupModal.targetClawId ? effectiveClaws.find((claw) => claw.id === browserStartupModal.targetClawId) ?? null : null;
   const isCloudBrowserImageSupported = isCloudBrowserSupportedImage(selectedClaw);
   const canShowCloudBrowserEntry = workspaceMode === "chat" && isRunning && isCloudBrowserImageSupported;
-  const isCloudBrowserEntryEnabled = canShowCloudBrowserEntry && isCloudBrowserPolicyEnabled;
-  const cloudBrowserEntryTooltipText = isCloudBrowserEntryEnabled ? "打开当前 OpenClaw 的云端浏览器" : "管理员未开启功能";
+  const isCloudBrowserEntryDisabled = canShowCloudBrowserEntry && !isCloudBrowserPolicyEnabled;
+  const cloudBrowserEntryTooltip = isCloudBrowserEntryDisabled ? "管理员未开启功能" : "云端浏览器";
   const chatPaneStyle = workspaceMode === "chat_with_browser"
     ? {
         width: `${leftPaneWidth}px`,
@@ -948,6 +957,44 @@ export default function ChatView({
         maxWidth: `${CHAT_PANE_MAX_WIDTH}px`,
       }
     : undefined;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!canShowCloudBrowserEntry || isFullscreen) {
+      setCloudBrowserEntryPosition(null);
+      return;
+    }
+
+    const updateCloudBrowserEntryPosition = () => {
+      const rect = workspaceRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      setCloudBrowserEntryPosition({
+        top: rect.top,
+        left: Math.min(rect.right + 12, window.innerWidth - 56),
+      });
+    };
+
+    updateCloudBrowserEntryPosition();
+
+    const resizeObserver = typeof ResizeObserver !== "undefined" && workspaceRef.current
+      ? new ResizeObserver(() => updateCloudBrowserEntryPosition())
+      : null;
+
+    if (resizeObserver && workspaceRef.current) {
+      resizeObserver.observe(workspaceRef.current);
+    }
+
+    window.addEventListener("resize", updateCloudBrowserEntryPosition);
+    window.addEventListener("scroll", updateCloudBrowserEntryPosition, true);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateCloudBrowserEntryPosition);
+      window.removeEventListener("scroll", updateCloudBrowserEntryPosition, true);
+    };
+  }, [canShowCloudBrowserEntry, isFullscreen]);
 
   const closeBrowserStartupModal = useCallback(() => {
     clearBrowserStartupTimers();
@@ -1434,6 +1481,41 @@ export default function ChatView({
         </div>
       )}
 
+      {canShowCloudBrowserEntry && (isFullscreen || cloudBrowserEntryPosition) && (
+        <div
+          className={isFullscreen ? `fixed right-4 ${workspaceTopClass} z-50` : "fixed z-20"}
+          style={
+            isFullscreen
+              ? undefined
+              : cloudBrowserEntryPosition
+                ? { top: cloudBrowserEntryPosition.top, left: cloudBrowserEntryPosition.left }
+                : undefined
+          }
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={isCloudBrowserEntryDisabled ? undefined : handleOpenBrowser}
+                aria-label={cloudBrowserEntryTooltip}
+                aria-disabled={isCloudBrowserEntryDisabled}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-white/95 backdrop-blur-sm transition-all duration-150 ${
+                  isCloudBrowserEntryDisabled
+                    ? "cursor-not-allowed border-gray-200 text-gray-300"
+                    : "border-gray-200 text-gray-400 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                }`}
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+              >
+                <Monitor className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="text-xs">
+              {cloudBrowserEntryTooltip}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
       <div
       ref={workspaceRef}
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
@@ -1447,6 +1529,7 @@ export default function ChatView({
           : { boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "calc(100vh - 200px)", minHeight: "560px" }
       }
     >
+
       {showFullListSidebar && (
         <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
           <div className="px-4 h-10 flex items-center">
@@ -1636,49 +1719,21 @@ export default function ChatView({
                     </button>
                   )}
 
-                  {/* 产品规则：会话态右上角只保留“会话全屏”与“打开云端浏览器” */}
+                  {/* 产品规则：会话态右上角保留会话全屏，云端浏览器入口使用外部悬浮图标 */}
                   {workspaceMode === "chat" && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={onToggleFullscreen}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                          >
-                            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          {isFullscreen ? "收起全屏" : "会话全屏"}
-                        </TooltipContent>
-                      </Tooltip>
-
-                      {canShowCloudBrowserEntry && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex">
-                              <button
-                                type="button"
-                                onClick={isCloudBrowserEntryEnabled ? handleOpenBrowser : undefined}
-                                aria-label="打开云端浏览器"
-                                aria-disabled={!isCloudBrowserEntryEnabled}
-                                disabled={!isCloudBrowserEntryEnabled}
-                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                                  isCloudBrowserEntryEnabled
-                                    ? "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                                    : "text-gray-300 bg-gray-50 cursor-not-allowed"
-                                }`}
-                              >
-                                <Monitor className="w-4 h-4" />
-                              </button>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="text-xs">
-                            {cloudBrowserEntryTooltipText}
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                    </>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={onToggleFullscreen}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        >
+                          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {isFullscreen ? "收起全屏" : "会话全屏"}
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
               </div>
@@ -1952,6 +2007,8 @@ export default function ChatView({
         </div>
       )}
 
+      </div>
+
       <Dialog
         open={browserStartupModal.visible}
         onOpenChange={(open: boolean) => {
@@ -2075,7 +2132,6 @@ export default function ChatView({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
     </>
   );
 }

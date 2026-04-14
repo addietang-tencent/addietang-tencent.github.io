@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Globe, UsersRound } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Globe, UsersRound, Cloud, AlertTriangle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -312,6 +312,12 @@ export default function PlatformPolicy() {
   });
   const [panelAccessLoading, setPanelAccessLoading] = useState(false);
 
+  // ── 云端浏览器开关状态 ──
+  const [allowCloudBrowser, setAllowCloudBrowser] = useState(() => {
+    return localStorage.getItem("admin_allow_cloud_browser") === "true";
+  });
+  const [showCloudBrowserEnableDialog, setShowCloudBrowserEnableDialog] = useState(false);
+
   // ── 龙虾医生开关状态 ──
   const [allowLobsterDoctor, setAllowLobsterDoctor] = useState(() => {
     return localStorage.getItem("admin_allow_lobster_doctor") === "true";
@@ -378,6 +384,24 @@ export default function PlatformPolicy() {
       localStorage.removeItem("admin_panel_port");
       toast.success("已禁止用户端访问 OpenClaw 面板");
     }
+  };
+
+  const handleToggleCloudBrowser = (v: boolean) => {
+    if (v) {
+      setShowCloudBrowserEnableDialog(true);
+      return;
+    }
+
+    setAllowCloudBrowser(false);
+    localStorage.setItem("admin_allow_cloud_browser", "false");
+    toast.success("已关闭 OpenClaw 云端浏览器");
+  };
+
+  const handleConfirmEnableCloudBrowser = () => {
+    setAllowCloudBrowser(true);
+    localStorage.setItem("admin_allow_cloud_browser", "true");
+    setShowCloudBrowserEnableDialog(false);
+    toast.success("已开启 OpenClaw 云端浏览器");
   };
 
   const handleToggleLobsterDoctor = (v: boolean) => {
@@ -480,6 +504,16 @@ export default function PlatformPolicy() {
               ) : null
             }
             />
+          <div className="self-start">
+            <ToggleCard
+              icon={<Cloud className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户访问 OpenClaw 云端浏览器"
+              description="开启后，用户可在 OpenClaw 会话中访问云端浏览器，查看 AI 浏览器执行过程，并在空闲时进入操作。"
+              checked={allowCloudBrowser}
+              onToggle={handleToggleCloudBrowser}
+            />
+          </div>
           <ToggleCard
             icon={<Stethoscope className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
@@ -506,6 +540,34 @@ export default function PlatformPolicy() {
           />
         </div>
       </section>
+
+      {/* 云端浏览器开启确认弹窗 */}
+      <Dialog open={showCloudBrowserEnableDialog} onOpenChange={setShowCloudBrowserEnableDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-2">
+            <DialogTitle>请配置安全组</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-start gap-2.5 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2.5">
+            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1 space-y-2.5">
+              <p className="text-xs text-amber-700 leading-relaxed">
+                开启后，用户将可以在会话中访问“云端浏览器”入口。请先在安全组入站规则中手动放通
+                <strong className="font-semibold text-amber-800"> 5900、6080、9222 </strong>
+                端口。
+              </p>
+              <p className="text-xs text-amber-700 leading-relaxed">若未完成放通，用户将无法正常访问云端浏览器。</p>
+            </div>
+          </div>
+          <DialogFooter className="mt-2 gap-2 sm:justify-end">
+            <Button variant="outline" onClick={() => setShowCloudBrowserEnableDialog(false)}>
+              取消
+            </Button>
+            <Button onClick={handleConfirmEnableCloudBrowser} className="bg-blue-600 hover:bg-blue-700 text-white">
+              确定
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 龙虾医生详情弹窗 */}
       <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>

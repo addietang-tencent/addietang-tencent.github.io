@@ -39,7 +39,6 @@ interface Notification {
   message: string;
   timestamp: string;
   category: NotificationCategory;
-  read: boolean;
 }
 
 const NOTIFICATION_CATEGORY_CONFIG: Record<
@@ -77,70 +76,60 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     message: "『Alice的工作助手』TAT 执行命令错误：脚本返回非零退出码 (exit code 1)",
     timestamp: "2026-03-26 11:05",
     category: "failure",
-    read: false,
   },
   {
     id: "n2",
     message: "『Noah的分析助手』命令执行超时，已自动终止（超时阈值 60s）",
     timestamp: "2026-03-26 10:42",
     category: "failure",
-    read: false,
   },
   {
     id: "n3",
     message: "『Bob的数据分析』重启失败，实例状态异常，请联系管理员",
     timestamp: "2026-03-26 09:30",
     category: "failure",
-    read: false,
   },
   {
     id: "n4",
     message: "『Eve的编程助手』TAT Agent 离线，命令下发失败",
     timestamp: "2026-03-25 17:15",
     category: "failure",
-    read: false,
   },
   {
     id: "n5",
     message: "『Alice的工作助手』API 密钥存在泄露风险，请立即轮换",
     timestamp: "2026-03-25 14:00",
     category: "failure",
-    read: false,
   },
   {
     id: "n6",
     message: "检测到异常登录行为：账号 bob@bcompany.com 于境外 IP 登录，请确认",
     timestamp: "2026-03-24 08:55",
     category: "failure",
-    read: false,
   },
   {
     id: "n7",
     message: "『Alice的工作助手』已成功删除",
     timestamp: "2026-03-23 15:30",
     category: "success",
-    read: false,
   },
   {
     id: "n8",
     message: "『Noah的分析助手』创建成功，已进入运行状态",
     timestamp: "2026-03-22 10:10",
     category: "success",
-    read: false,
   },
   {
     id: "n9",
     message: "『Bob的数据分析』配置更新成功",
     timestamp: "2026-03-21 09:00",
     category: "success",
-    read: false,
   },
   {
     id: "n10",
     message: "平台版本已更新至 v2.4.0，新增多模型切换与指令库功能，点击查看更新日志",
     timestamp: "2026-03-20 09:00",
     category: "notice",
-    read: false,
   },
 ];
 
@@ -149,16 +138,15 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 function NotificationPanel() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | NotificationCategory>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setNotifications(MOCK_NOTIFICATIONS);
+    setHasUnread(true);
   }, []);
-
-  const hasUnread = notifications.some((n) => !n.read);
 
   // 点击弹窗外部关闭
   useEffect(() => {
@@ -174,16 +162,7 @@ function NotificationPanel() {
 
   const handleOpen = () => {
     setShowPanel((prev) => !prev);
-  };
-
-  const handleMarkRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setHasUnread(false);
   };
 
   const handleDelete = (id: string) => {
@@ -197,8 +176,6 @@ function NotificationPanel() {
   const handleCopy = (notif: Notification) => {
     navigator.clipboard.writeText(notif.message).then(() => {
       setCopiedId(notif.id);
-      // 复制后自动标为已读
-      handleMarkRead(notif.id);
       setTimeout(() => setCopiedId(null), 2000);
     });
   };
@@ -207,17 +184,12 @@ function NotificationPanel() {
     { key: "all",     label: "全部" },
     { key: "success", label: "成功" },
     { key: "failure", label: "错误" },
+    { key: "notice",  label: "通知" },
   ];
 
   const filteredNotifs = activeTab === "all"
     ? notifications
     : notifications.filter((n) => n.category === activeTab);
-
-  // Tab 角标只计未读数量
-  const unreadCountFor = (key: "all" | NotificationCategory) =>
-    key === "all"
-      ? notifications.filter((n) => !n.read).length
-      : notifications.filter((n) => n.category === key && !n.read).length;
 
   return (
     <div className="relative">
@@ -243,26 +215,20 @@ function NotificationPanel() {
           <div className="px-3 pt-3 pb-0 flex-shrink-0">
             <div className="flex items-center justify-between mb-2.5">
               <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleClearAll}
-                  className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  全部删除
-                </button>
-                <span className="text-gray-200 text-xs">|</span>
-                <button
-                  onClick={handleMarkAllRead}
-                  className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  全部已读
-                </button>
-              </div>
+              <button
+                onClick={handleClearAll}
+                className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                全部删除
+              </button>
             </div>
             {/* Filter Tabs */}
             <div className="flex gap-0.5 border-b border-gray-100">
               {tabs.map((tab) => {
-                const count = unreadCountFor(tab.key);
+                const count =
+                  tab.key === "all"
+                    ? notifications.length
+                    : notifications.filter((n) => n.category === tab.key).length;
                 const isActive = activeTab === tab.key;
                 return (
                   <button
@@ -315,15 +281,10 @@ function NotificationPanel() {
                   return (
                     <div
                       key={notif.id}
-                      className="px-3 py-2.5 hover:bg-gray-50/70 transition-colors relative"
-                      onMouseEnter={() => setHoveredId(notif.id)}
-                      onMouseLeave={() => setHoveredId(null)}
+                      className="px-3 py-2.5 hover:bg-gray-50/70 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className={[
-                          "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
-                          notif.read ? "text-gray-400" : "text-gray-700",
-                        ].join(" ")}>
+                        <p className="text-xs text-gray-700 flex-1 leading-relaxed line-clamp-2">
                           {notif.message}
                         </p>
                         <button
@@ -349,37 +310,24 @@ function NotificationPanel() {
                             {notif.timestamp}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          {/* 标为已读：hover 时浮现，已读后隐藏 */}
-                          {!notif.read && hoveredId === notif.id && (
-                            <button
-                              onClick={() => handleMarkRead(notif.id)}
-                              className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                              title="标为已读"
-                            >
-                              <Check className="w-3 h-3" />
-                              已读
-                            </button>
-                          )}
-                          {notif.category === "failure" && (
-                            <button
-                              onClick={() => handleCopy(notif)}
-                              className={[
-                                "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded transition-colors",
-                                isCopied
-                                  ? "text-green-600 bg-green-50"
-                                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
-                              ].join(" ")}
-                              title="复制详情"
-                            >
-                              {isCopied ? (
-                                <><Check className="w-3 h-3" />已复制</>
-                              ) : (
-                                <><Copy className="w-3 h-3" />复制</>
-                              )}
-                            </button>
-                          )}
-                        </div>
+                        {notif.category === "failure" && (
+                          <button
+                            onClick={() => handleCopy(notif)}
+                            className={[
+                              "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded transition-colors",
+                              isCopied
+                                ? "text-green-600 bg-green-50"
+                                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+                            ].join(" ")}
+                            title="复制详情"
+                          >
+                            {isCopied ? (
+                              <><Check className="w-3 h-3" />已复制</>
+                            ) : (
+                              <><Copy className="w-3 h-3" />复制详情</>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

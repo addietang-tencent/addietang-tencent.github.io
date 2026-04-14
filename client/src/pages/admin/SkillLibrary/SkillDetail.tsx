@@ -458,6 +458,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           instances: record.instances.map((inst, idx) => ({
             ...inst,
             distributionStatus: (idx < successCount ? 'success' : 'failed') as DistributionStatus,
+            failReason: idx < successCount ? undefined : '命令下发失败',
           })),
         }));
       } else {
@@ -632,9 +633,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       variant="outline"
                       onClick={() => setDeleteDialogOpen(true)}
                       disabled={hasInProgress}
-                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 border-gray-200`}
+                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-gray-900 hover:text-gray-900 border-gray-200`}
                     >
-                      <Trash2 className="w-4 h-4 mr-1.5 text-gray-500" />
+                      <Trash2 className="w-4 h-4 mr-1.5" />
                       删除
                     </Button>
                   </span>
@@ -1035,6 +1036,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1055,6 +1057,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-500">
+                            {instance.failReason || '-'}
                           </td>
 
                         </tr>

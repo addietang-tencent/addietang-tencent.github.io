@@ -112,7 +112,7 @@ export default function EditScopePopover({
         <PopoverTrigger asChild>
           <button
             onClick={(e) => e.stopPropagation()}
-            className="p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+            className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
             title="编辑应用范围"
           >
             <Edit2 className="w-3 h-3" />

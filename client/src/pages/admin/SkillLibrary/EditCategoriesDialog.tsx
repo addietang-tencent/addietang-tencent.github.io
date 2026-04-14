@@ -56,16 +56,17 @@ export default function EditCategoriesDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleToggleCategory(cat.id)}
-                className={`px-3.5 py-1.5 rounded-full text-sm border transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
                   selected.includes(cat.id)
-                    ? 'bg-blue-600 text-white font-medium border-blue-600'
-                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    ? 'text-white border-transparent'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
+                style={selected.includes(cat.id) ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
               >
                 {cat.name}
               </button>

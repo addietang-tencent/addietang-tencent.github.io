@@ -508,7 +508,9 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
               }`} />
               <p className={`text-sm mb-2 ${
                 uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'
-              }`}>点击或拖拽文件上传</p>
+              }`}>
+                {uploadedFiles.length > 0 ? '如需替换，请先删除下方文件' : '点击或拖拽文件上传'}
+              </p>
 
               {/* 填写要求 + 下载样例 */}
               <div className="flex items-center justify-center gap-4 mb-3">

@@ -5,7 +5,7 @@
  * - 中间对话区（欢迎态 + 对话态 + 输入框）
  * - 右侧云端浏览器区（MVP：执行中可查看，空闲时可操作）
  */
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -54,6 +61,10 @@ import {
   Eye,
   MousePointerClick,
   X,
+  Info,
+  CheckCircle2,
+  LoaderCircle,
+  TriangleAlert,
 } from "lucide-react";
 
 // Types - must match MyOpenClaw
@@ -65,6 +76,7 @@ type BrowserSite = "home" | "search" | "news" | "docs";
 
 type BrowserTaskState = "idle" | "running";
 type BrowserPanelStatus = "loading" | "ready";
+type BrowserStartupMockMode = "default" | "always_success" | "random_fail_sg_or_package";
 
 interface OpenClawItem {
   id: string;
@@ -78,6 +90,18 @@ interface OpenClawItem {
   skills: any[];
   op?: string;
   roleName?: string;
+  os_name?: string;
+  osName?: string;
+  imageOsName?: string;
+  browserSecurityGroupReady?: boolean;
+  securityGroupPorts?: Array<string | number>;
+  browserRequiredPorts?: Array<string | number>;
+  browserComponentInstallReady?: boolean;
+  browserLaunchReady?: boolean;
+  browserStartupFailStep?: BrowserStartupStepKey;
+  browserStartupFailReason?: string;
+  browserStartupMockMode?: BrowserStartupMockMode;
+  browserStartupRandomFailSteps?: BrowserStartupStepKey[];
 }
 
 interface ChatMessage {
@@ -109,6 +133,209 @@ interface BrowserScenarioStep {
   delay: number;
   patch: Partial<BrowserPanelState>;
 }
+
+type BrowserStartupStepKey = "imageCheck" | "sgCheck" | "packageInstall" | "browserStart";
+type BrowserStartupStepStatus = "waiting" | "running" | "success" | "failed";
+type BrowserStartupFlowStatus = "idle" | "running" | "success" | "failed";
+
+interface BrowserStartupModalState {
+  visible: boolean;
+  targetClawId: string | null;
+  flowStatus: BrowserStartupFlowStatus;
+  activeStep: BrowserStartupStepKey | null;
+  failedStep: BrowserStartupStepKey | null;
+  failureReason: string;
+  steps: Record<BrowserStartupStepKey, BrowserStartupStepStatus>;
+}
+
+const BROWSER_SUPPORTED_OS_NAMES = new Set(["ubuntu24.04x86_64", "ubuntu24.04x86_64_openclaw"]);
+const BROWSER_REQUIRED_PORTS = ["5901", "6080"];
+const BROWSER_STARTUP_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "sgCheck", "packageInstall", "browserStart"];
+const BROWSER_STARTUP_VISIBLE_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "sgCheck", "packageInstall"];
+const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
+  title: string;
+  successText: string;
+  failureText: string;
+  runningText: string;
+}> = {
+  imageCheck: {
+    title: "校验镜像",
+    successText: "当前实例镜像满足云端浏览器启动条件。",
+    failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
+    runningText: "正在校验当前实例镜像能力。",
+  },
+  sgCheck: {
+    title: "校验安全组规则",
+    successText: "安全组规则校验通过，可继续启动。",
+    failureText: "安全组规则校验失败，请先放通入方向5900、6080、9222云端浏览器所需端口。",
+    runningText: "正在校验 VNC 与浏览器端口规则。",
+  },
+  packageInstall: {
+    title: "安装运行组件",
+    successText: "云端浏览器运行组件安装完成。",
+    failureText: "运行组件安装失败，请稍后重试。",
+    runningText: "正在安装云端浏览器运行组件。",
+  },
+  browserStart: {
+    title: "启动云端浏览器",
+    successText: "云端浏览器已准备就绪。",
+    failureText: "云端浏览器启动失败，请稍后重试。",
+    runningText: "正在启动云端浏览器。",
+  },
+};
+const BROWSER_STARTUP_STEP_DURATION: Record<BrowserStartupStepKey, number> = {
+  imageCheck: 520,
+  sgCheck: 720,
+  packageInstall: 980,
+  browserStart: 860,
+};
+
+const createInitialBrowserStartupSteps = (): Record<BrowserStartupStepKey, BrowserStartupStepStatus> => ({
+  imageCheck: "waiting",
+  sgCheck: "waiting",
+  packageInstall: "waiting",
+  browserStart: "waiting",
+});
+
+const createInitialBrowserStartupState = (): BrowserStartupModalState => ({
+  visible: false,
+  targetClawId: null,
+  flowStatus: "idle",
+  activeStep: null,
+  failedStep: null,
+  failureReason: "",
+  steps: createInitialBrowserStartupSteps(),
+});
+
+const UNSUPPORTED_BROWSER_OS_NAME = "centos7.9_x86_64";
+const MOCK_CLAW_NAME_CREATING = "创建中示例";
+const MOCK_CLAW_NAME_RUNNING = "运行中示例";
+const MOCK_CLAW_NAME_LONG_SUCCESS = "这是一个名称非常非常长的智能助手用来测试超长文本截断效果";
+const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["sgCheck", "packageInstall"];
+
+const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
+  if (steps.length === 0) return undefined;
+  return steps[Math.floor(Math.random() * steps.length)];
+};
+
+const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
+  if (claw.name === MOCK_CLAW_NAME_CREATING) {
+    return {
+      ...claw,
+      os_name: UNSUPPORTED_BROWSER_OS_NAME,
+    };
+  }
+
+  if (claw.name === MOCK_CLAW_NAME_RUNNING) {
+    return {
+      ...claw,
+      status: "running",
+      os_name: "ubuntu24.04x86_64",
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupMockMode: "random_fail_sg_or_package",
+      browserStartupRandomFailSteps: BROWSER_RANDOM_FAIL_STEPS,
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
+    };
+  }
+
+  if (claw.name === MOCK_CLAW_NAME_LONG_SUCCESS) {
+    return {
+      ...claw,
+      status: "running",
+      os_name: "ubuntu24.04x86_64_openclaw",
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupMockMode: "always_success",
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
+    };
+  }
+
+  return claw;
+};
+
+const resolveBrowserStartupAttemptClaw = (claw: OpenClawItem): OpenClawItem => {
+  const mockClaw = applyDemoBrowserMockFields(claw);
+
+  if (mockClaw.browserStartupMockMode === "always_success") {
+    return {
+      ...mockClaw,
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
+    };
+  }
+
+  if (mockClaw.browserStartupMockMode === "random_fail_sg_or_package") {
+    const failStep = pickRandomBrowserFailStep(mockClaw.browserStartupRandomFailSteps ?? BROWSER_RANDOM_FAIL_STEPS);
+    return {
+      ...mockClaw,
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupFailStep: failStep,
+      browserStartupFailReason: failStep ? BROWSER_STARTUP_STEP_META[failStep].failureText : undefined,
+    };
+  }
+
+  return mockClaw;
+};
+
+const getClawBrowserOsName = (claw?: OpenClawItem | null) => claw?.os_name ?? claw?.osName ?? claw?.imageOsName ?? "";
+
+const isCloudBrowserSupportedImage = (claw?: OpenClawItem | null) => {
+  if (!claw) return false;
+  const osName = getClawBrowserOsName(claw);
+  if (!osName) {
+    return claw.status === "running";
+  }
+  return BROWSER_SUPPORTED_OS_NAMES.has(osName);
+};
+
+const hasCloudBrowserSecurityRule = (claw?: OpenClawItem | null) => {
+  if (!claw) return false;
+  if (typeof claw.browserSecurityGroupReady === "boolean") {
+    return claw.browserSecurityGroupReady;
+  }
+
+  const portList = claw.securityGroupPorts ?? claw.browserRequiredPorts;
+  if (Array.isArray(portList) && portList.length > 0) {
+    const normalizedPorts = portList.map((port) => String(port));
+    return BROWSER_REQUIRED_PORTS.every((port) => normalizedPorts.includes(port));
+  }
+
+  return true;
+};
+
+const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartupStepKey) => {
+  if (claw.browserStartupFailStep === step) {
+    return claw.browserStartupFailReason || BROWSER_STARTUP_STEP_META[step].failureText;
+  }
+
+  if (step === "imageCheck" && !isCloudBrowserSupportedImage(claw)) {
+    return BROWSER_STARTUP_STEP_META.imageCheck.failureText;
+  }
+
+  if (step === "sgCheck" && !hasCloudBrowserSecurityRule(claw)) {
+    return BROWSER_STARTUP_STEP_META.sgCheck.failureText;
+  }
+
+  if (step === "packageInstall" && claw.browserComponentInstallReady === false) {
+    return BROWSER_STARTUP_STEP_META.packageInstall.failureText;
+  }
+
+  if (step === "browserStart" && claw.browserLaunchReady === false) {
+    return BROWSER_STARTUP_STEP_META.browserStart.failureText;
+  }
+
+  return "";
+};
 
 const STATUS_CONFIG: Record<OpenClawStatus, {
   label: string;
@@ -280,6 +507,43 @@ const TypingIndicator = () => (
   </div>
 );
 
+const BrowserStartupStepItem = ({
+  title,
+  status,
+  helperText,
+}: {
+  title: string;
+  status: BrowserStartupStepStatus;
+  helperText: string;
+}) => {
+  const icon = status === "success"
+    ? <CheckCircle2 className="w-5 h-5 text-green-500" />
+    : status === "failed"
+      ? <TriangleAlert className="w-5 h-5 text-amber-500" />
+      : status === "running"
+        ? <LoaderCircle className="w-5 h-5 text-blue-500 animate-spin" />
+        : <div className="w-5 h-5 rounded-full border-2 border-gray-200" />;
+
+  const textClass = status === "failed"
+    ? "text-amber-500 font-medium"
+    : status === "success"
+      ? "text-gray-600"
+      : status === "running"
+        ? "text-blue-600 font-medium"
+        : "text-gray-400";
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+        {icon}
+      </div>
+      <span className={`text-xs leading-5 ${textClass}`}>
+        {title}：{helperText}
+      </span>
+    </div>
+  );
+};
+
 interface ChatViewProps {
   claws: OpenClawItem[];
   onDeleteConfirm: (claw: { id: string; name: string; status: OpenClawStatus }) => void;
@@ -308,7 +572,8 @@ export default function ChatView({
   onToggleFullscreen,
 }: ChatViewProps) {
   const [, navigate] = useLocation();
-  const sortedClaws = [...claws].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+  const effectiveClaws = useMemo(() => claws.map(applyDemoBrowserMockFields), [claws]);
+  const sortedClaws = [...effectiveClaws].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
 
   const [selectedClawId, setSelectedClawId] = useState<string | null>(() => (sortedClaws.length > 0 ? sortedClaws[0].id : null));
   const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>({});
@@ -320,15 +585,17 @@ export default function ChatView({
   const [isTenantHeaderVisible, setIsTenantHeaderVisible] = useState(true);
   const [leftPaneWidth, setLeftPaneWidth] = useState(CHAT_PANE_DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
+  const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
 
-  const prevClawsCountRef = useRef(claws.length);
+  const prevClawsCountRef = useRef(effectiveClaws.length);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const commandsRef = useRef<HTMLDivElement>(null);
-  const clawsRef = useRef(claws);
+  const clawsRef = useRef(effectiveClaws);
   const browserTaskTimersRef = useRef<Record<string, number[]>>({});
   const browserPanelLoadTimersRef = useRef<Record<string, number[]>>({});
+  const browserStartupTimersRef = useRef<number[]>([]);
   const tenantHeaderRef = useRef<HTMLElement | null>(null);
   const tenantMainRef = useRef<HTMLElement | null>(null);
   const tenantHeaderHideTimerRef = useRef<number | null>(null);
@@ -357,30 +624,30 @@ export default function ChatView({
   }, []);
 
   useEffect(() => {
-    clawsRef.current = claws;
-  }, [claws]);
+    clawsRef.current = effectiveClaws;
+  }, [effectiveClaws]);
 
   useEffect(() => {
-    if (claws.length === 0) {
+    if (effectiveClaws.length === 0) {
       setSelectedClawId(null);
       prevClawsCountRef.current = 0;
       return;
     }
 
-    if (!isInstanceSwitchLocked && claws.length > prevClawsCountRef.current && prevClawsCountRef.current > 0) {
+    if (!isInstanceSwitchLocked && effectiveClaws.length > prevClawsCountRef.current && prevClawsCountRef.current > 0) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
 
-    if (selectedClawId && !claws.find((claw) => claw.id === selectedClawId)) {
+    if (selectedClawId && !effectiveClaws.find((claw) => claw.id === selectedClawId)) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
 
-    if (!selectedClawId && claws.length > 0) {
+    if (!selectedClawId && effectiveClaws.length > 0) {
       setSelectedClawId(sortedClaws[0]?.id ?? null);
     }
 
-    prevClawsCountRef.current = claws.length;
-  }, [claws, isInstanceSwitchLocked, selectedClawId, sortedClaws]);
+    prevClawsCountRef.current = effectiveClaws.length;
+  }, [effectiveClaws, isInstanceSwitchLocked, selectedClawId, sortedClaws]);
 
   const getDefaultBrowserState = useCallback((clawId: string) => {
     const claw = clawsRef.current.find((item) => item.id === clawId);
@@ -401,9 +668,9 @@ export default function ChatView({
     setBrowserMap((prev) => {
       const next = { ...prev };
       let changed = false;
-      const aliveIds = new Set(claws.map((claw) => claw.id));
+      const aliveIds = new Set(effectiveClaws.map((claw) => claw.id));
 
-      claws.forEach((claw) => {
+      effectiveClaws.forEach((claw) => {
         if (!next[claw.id]) {
           next[claw.id] = createDefaultBrowserState(claw);
           changed = true;
@@ -419,7 +686,7 @@ export default function ChatView({
 
       return changed ? next : prev;
     });
-  }, [claws]);
+  }, [effectiveClaws]);
 
   const clearBrowserTaskTimers = useCallback((clawId?: string) => {
     if (clawId) {
@@ -458,6 +725,17 @@ export default function ChatView({
       clearBrowserPanelLoadTimers();
     };
   }, [clearBrowserPanelLoadTimers]);
+
+  const clearBrowserStartupTimers = useCallback(() => {
+    browserStartupTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    browserStartupTimersRef.current = [];
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearBrowserStartupTimers();
+    };
+  }, [clearBrowserStartupTimers]);
 
   const startBrowserPanelLoading = useCallback((clawId: string) => {
     clearBrowserPanelLoadTimers(clawId);
@@ -625,7 +903,7 @@ export default function ChatView({
     });
   }, []);
 
-  const selectedClaw = claws.find((claw) => claw.id === selectedClawId) ?? null;
+  const selectedClaw = effectiveClaws.find((claw) => claw.id === selectedClawId) ?? null;
   const currentMessages = selectedClawId ? chatMap[selectedClawId] ?? [] : [];
   const currentIsTyping = selectedClawId ? typingMap[selectedClawId] ?? false : false;
   const currentBrowserState = selectedClawId ? browserMap[selectedClawId] ?? getDefaultBrowserState(selectedClawId) : null;
@@ -637,6 +915,8 @@ export default function ChatView({
   const isBrowserReadonly = !currentBrowserState || isBrowserPanelLoading || isBrowserTaskRunning || !currentBrowserState.isManualOperating;
   const isBrowserToolbarBusy = isBrowserPanelLoading || isBrowserTaskRunning;
   const browserOperationButtonLabel = isBrowserTaskRunning ? "进入操作" : isBrowserManualOperating ? "退出操作" : "进入操作";
+  const browserStartupTargetClaw = browserStartupModal.targetClawId ? effectiveClaws.find((claw) => claw.id === browserStartupModal.targetClawId) ?? null : null;
+  const canShowCloudBrowserEntry = workspaceMode === "chat" && isRunning && isCloudBrowserSupportedImage(selectedClaw);
   const chatPaneStyle = workspaceMode === "chat_with_browser"
     ? {
         width: `${leftPaneWidth}px`,
@@ -644,6 +924,117 @@ export default function ChatView({
         maxWidth: `${CHAT_PANE_MAX_WIDTH}px`,
       }
     : undefined;
+
+  const closeBrowserStartupModal = useCallback(() => {
+    clearBrowserStartupTimers();
+    setBrowserStartupModal(createInitialBrowserStartupState());
+  }, [clearBrowserStartupTimers]);
+
+  const enterBrowserWorkspace = useCallback((clawId: string) => {
+    updateBrowserState(clawId, (prev) => ({
+      ...prev,
+      mode: "chat_with_browser",
+      panelStatus: "ready",
+      panelLoadProgress: 100,
+      isManualOperating: false,
+      liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+      statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
+      lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已连接云端浏览器",
+      lastSyncedAt: formatSyncTime(),
+    }));
+  }, [updateBrowserState]);
+
+  const runBrowserStartupFlow = useCallback((claw: OpenClawItem, stepIndex = 0) => {
+    const step = BROWSER_STARTUP_STEP_ORDER[stepIndex];
+    if (!step) {
+      setBrowserStartupModal((prev) => ({
+        ...prev,
+        flowStatus: "success",
+        activeStep: null,
+      }));
+      return;
+    }
+
+    setBrowserStartupModal((prev) => ({
+      ...prev,
+      visible: true,
+      targetClawId: claw.id,
+      flowStatus: "running",
+      activeStep: step,
+      failedStep: null,
+      failureReason: "",
+      steps: {
+        ...prev.steps,
+        [step]: "running",
+      },
+    }));
+
+    const timer = window.setTimeout(() => {
+      const failureReason = getBrowserStartupFailureReason(claw, step);
+
+      if (failureReason) {
+        setBrowserStartupModal((prev) => ({
+          ...prev,
+          visible: true,
+          targetClawId: claw.id,
+          flowStatus: "failed",
+          activeStep: null,
+          failedStep: step,
+          failureReason,
+          steps: {
+            ...prev.steps,
+            [step]: "failed",
+          },
+        }));
+        clearBrowserStartupTimers();
+        return;
+      }
+
+      setBrowserStartupModal((prev) => ({
+        ...prev,
+        steps: {
+          ...prev.steps,
+          [step]: "success",
+        },
+      }));
+
+      runBrowserStartupFlow(claw, stepIndex + 1);
+    }, BROWSER_STARTUP_STEP_DURATION[step]);
+
+    browserStartupTimersRef.current.push(timer);
+  }, [clearBrowserStartupTimers]);
+
+  const startBrowserStartupFlow = useCallback((claw: OpenClawItem) => {
+    const attemptClaw = resolveBrowserStartupAttemptClaw(claw);
+
+    clearBrowserStartupTimers();
+    setBrowserStartupModal({
+      visible: true,
+      targetClawId: attemptClaw.id,
+      flowStatus: "running",
+      activeStep: null,
+      failedStep: null,
+      failureReason: "",
+      steps: createInitialBrowserStartupSteps(),
+    });
+
+    const kickoffTimer = window.setTimeout(() => {
+      runBrowserStartupFlow(attemptClaw, 0);
+    }, 120);
+
+    browserStartupTimersRef.current.push(kickoffTimer);
+  }, [clearBrowserStartupTimers, runBrowserStartupFlow]);
+
+  const handleConfirmBrowserStartup = useCallback(() => {
+    if (!browserStartupModal.targetClawId || browserStartupModal.flowStatus !== "success") return;
+    enterBrowserWorkspace(browserStartupModal.targetClawId);
+    closeBrowserStartupModal();
+  }, [browserStartupModal.flowStatus, browserStartupModal.targetClawId, closeBrowserStartupModal, enterBrowserWorkspace]);
+
+  const handleRetryBrowserStartup = useCallback(() => {
+    if (!browserStartupTargetClaw) return;
+    startBrowserStartupFlow(browserStartupTargetClaw);
+  }, [browserStartupTargetClaw, startBrowserStartupFlow]);
 
   const handleResizeStart = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -903,24 +1294,10 @@ export default function ChatView({
 
   const handleOpenBrowser = () => {
     if (!selectedClawId || !selectedClaw) return;
+    if (selectedClaw.status !== "running") return;
+    if (!isCloudBrowserSupportedImage(selectedClaw)) return;
 
-    if (selectedClaw.status !== "running") {
-      toast.error("当前 OpenClaw 未运行，暂时无法打开云端浏览器");
-      return;
-    }
-
-    updateBrowserState(selectedClawId, (prev) => ({
-      ...prev,
-      mode: "chat_with_browser",
-      panelStatus: "loading",
-      panelLoadProgress: 8,
-      isManualOperating: false,
-      liveCaption: "云端浏览器启动中，请稍候。",
-      statusNote: "启动中",
-      lastUserAction: "正在启动云端浏览器",
-      lastSyncedAt: formatSyncTime(),
-    }));
-    startBrowserPanelLoading(selectedClawId);
+    startBrowserStartupFlow(selectedClaw);
   };
 
   const handleToggleBrowserFullscreen = () => {
@@ -1051,7 +1428,7 @@ export default function ChatView({
             <h3 className="text-xs text-gray-400">选择 OpenClaw</h3>
           </div>
           <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
-            {claws.length === 0 ? (
+            {effectiveClaws.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <p className="text-xs text-gray-400">暂无 OpenClaw</p>
               </div>
@@ -1251,21 +1628,22 @@ export default function ChatView({
                         </TooltipContent>
                       </Tooltip>
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={handleOpenBrowser}
-                            disabled={!isRunning}
-                            aria-label="打开云端浏览器"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
-                          >
-                            <Monitor className="w-4 h-4" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          {isRunning ? "打开当前 OpenClaw 的云端浏览器" : "当前 OpenClaw 未运行，暂不可打开浏览器"}
-                        </TooltipContent>
-                      </Tooltip>
+                      {canShowCloudBrowserEntry && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={handleOpenBrowser}
+                              aria-label="打开云端浏览器"
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            >
+                              <Monitor className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            打开当前 OpenClaw 的云端浏览器
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </>
                   )}
                 </div>
@@ -1539,6 +1917,95 @@ export default function ChatView({
           </div>
         </div>
       )}
+
+      <Dialog
+        open={browserStartupModal.visible}
+        onOpenChange={(open: boolean) => {
+          if (!open) {
+            closeBrowserStartupModal();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="space-y-0 text-left">
+            <DialogTitle className="text-base font-semibold text-gray-900">启动云端浏览器</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-700">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+              <span>您可通过云端浏览器直接在浏览器中查看任务执行过程，并在空闲时进入操作。</span>
+            </div>
+
+            <p className="text-sm text-gray-500">
+              启动云端浏览器将会依次执行以下校验与准备操作，完成后即可进入：
+            </p>
+
+            <div className="space-y-2.5 py-1">
+              {BROWSER_STARTUP_VISIBLE_STEP_ORDER.map((stepKey) => {
+                const status = browserStartupModal.steps[stepKey];
+                const meta = BROWSER_STARTUP_STEP_META[stepKey];
+                const helperText = status === "failed" && browserStartupModal.failedStep === stepKey
+                  ? browserStartupModal.failureReason
+                  : status === "success"
+                    ? meta.successText
+                    : status === "running"
+                      ? meta.runningText
+                      : "等待执行";
+
+                return (
+                  <BrowserStartupStepItem
+                    key={stepKey}
+                    title={meta.title}
+                    status={status}
+                    helperText={helperText}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          <DialogFooter className="justify-center gap-3 pt-1 sm:justify-center sm:space-x-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={closeBrowserStartupModal}
+              className="px-6 text-gray-600"
+            >
+              取消
+            </Button>
+
+            {browserStartupModal.flowStatus === "failed" ? (
+              <Button
+                size="sm"
+                onClick={handleRetryBrowserStartup}
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                className="px-6 text-white hover:opacity-95"
+              >
+                重试
+              </Button>
+            ) : browserStartupModal.flowStatus === "success" ? (
+              <Button
+                size="sm"
+                onClick={handleConfirmBrowserStartup}
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                className="px-6 text-white hover:opacity-95"
+              >
+                立即进入
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled
+                className="px-6 text-white"
+                style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.55), rgba(88,86,214,0.55))" }}
+              >
+                校验中...
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <style>{`
         @keyframes pulse {

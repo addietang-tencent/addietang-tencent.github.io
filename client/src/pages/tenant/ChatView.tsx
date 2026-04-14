@@ -134,7 +134,7 @@ interface BrowserScenarioStep {
   patch: Partial<BrowserPanelState>;
 }
 
-type BrowserStartupStepKey = "imageCheck" | "sgCheck" | "packageInstall" | "browserStart";
+type BrowserStartupStepKey = "imageCheck" | "componentCheck" | "policyCheck";
 type BrowserStartupStepStatus = "waiting" | "running" | "success" | "failed";
 type BrowserStartupFlowStatus = "idle" | "running" | "success" | "failed";
 
@@ -150,8 +150,8 @@ interface BrowserStartupModalState {
 
 const BROWSER_SUPPORTED_OS_NAMES = new Set(["ubuntu24.04x86_64", "ubuntu24.04x86_64_openclaw"]);
 const BROWSER_REQUIRED_PORTS = ["5901", "6080"];
-const BROWSER_STARTUP_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "sgCheck", "packageInstall", "browserStart"];
-const BROWSER_STARTUP_VISIBLE_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "sgCheck", "packageInstall"];
+const BROWSER_STARTUP_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "componentCheck", "policyCheck"];
+const BROWSER_STARTUP_VISIBLE_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "componentCheck", "policyCheck"];
 const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
   title: string;
   successText: string;
@@ -159,43 +159,36 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
   runningText: string;
 }> = {
   imageCheck: {
-    title: "校验镜像",
+    title: "检查镜像",
     successText: "当前实例镜像满足云端浏览器启动条件。",
     failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
-    runningText: "正在校验当前实例镜像能力。",
+    runningText: "正在检查实例镜像…",
   },
-  sgCheck: {
-    title: "校验安全组规则",
-    successText: "安全组规则校验通过，可继续启动。",
-    failureText: "安全组规则校验失败，请先放通入方向5900、6080、9222云端浏览器所需端口。",
-    runningText: "正在校验 VNC 与浏览器端口规则。",
+  componentCheck: {
+    title: "检查云端浏览器运行组件",
+    successText: "云端浏览器运行组件已就绪。",
+    failureText: "云端浏览器运行组件准备失败，请重试。",
+    runningText: "正在检查云端浏览器运行组件…",
   },
-  packageInstall: {
-    title: "安装运行组件",
-    successText: "云端浏览器运行组件安装完成。",
-    failureText: "运行组件安装失败，请稍后重试。",
-    runningText: "正在安装云端浏览器运行组件。",
-  },
-  browserStart: {
-    title: "启动云端浏览器",
-    successText: "云端浏览器已准备就绪。",
-    failureText: "云端浏览器启动失败，请稍后重试。",
-    runningText: "正在启动云端浏览器。",
+  policyCheck: {
+    title: "校验组件状态及访问策略",
+    successText: "组件状态与访问策略校验通过，可继续启动。",
+    failureText: "组件状态或安全组规则异常，请检查安全组端口5900、6080、9222是否在入站规则放通，如确认放通则请重试。",
+    runningText: "正在校验组件状态及访问策略…",
   },
 };
 const BROWSER_STARTUP_STEP_DURATION: Record<BrowserStartupStepKey, number> = {
   imageCheck: 520,
-  sgCheck: 720,
-  packageInstall: 980,
-  browserStart: 860,
+  componentCheck: 980,
+  policyCheck: 720,
 };
 
 const createInitialBrowserStartupSteps = (): Record<BrowserStartupStepKey, BrowserStartupStepStatus> => ({
   imageCheck: "waiting",
-  sgCheck: "waiting",
-  packageInstall: "waiting",
-  browserStart: "waiting",
+  componentCheck: "waiting",
+  policyCheck: "waiting",
 });
+
 
 const createInitialBrowserStartupState = (): BrowserStartupModalState => ({
   visible: false,
@@ -211,7 +204,7 @@ const UNSUPPORTED_BROWSER_OS_NAME = "centos7.9_x86_64";
 const MOCK_CLAW_NAME_CREATING = "创建中示例";
 const MOCK_CLAW_NAME_RUNNING = "运行中示例";
 const MOCK_CLAW_NAME_LONG_SUCCESS = "这是一个名称非常非常长的智能助手用来测试超长文本截断效果";
-const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["sgCheck", "packageInstall"];
+const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["componentCheck", "policyCheck"];
 
 const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
   if (steps.length === 0) return undefined;
@@ -327,16 +320,12 @@ const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartup
     return BROWSER_STARTUP_STEP_META.imageCheck.failureText;
   }
 
-  if (step === "sgCheck" && !hasCloudBrowserSecurityRule(claw)) {
-    return BROWSER_STARTUP_STEP_META.sgCheck.failureText;
+  if (step === "componentCheck" && claw.browserComponentInstallReady === false) {
+    return BROWSER_STARTUP_STEP_META.componentCheck.failureText;
   }
 
-  if (step === "packageInstall" && claw.browserComponentInstallReady === false) {
-    return BROWSER_STARTUP_STEP_META.packageInstall.failureText;
-  }
-
-  if (step === "browserStart" && claw.browserLaunchReady === false) {
-    return BROWSER_STARTUP_STEP_META.browserStart.failureText;
+  if (step === "policyCheck" && !hasCloudBrowserSecurityRule(claw)) {
+    return BROWSER_STARTUP_STEP_META.policyCheck.failureText;
   }
 
   return "";
@@ -1719,22 +1708,6 @@ export default function ChatView({
                     </button>
                   )}
 
-                  {/* 产品规则：会话态右上角保留会话全屏，云端浏览器入口使用外部悬浮图标 */}
-                  {workspaceMode === "chat" && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={onToggleFullscreen}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        >
-                          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="text-xs">
-                        {isFullscreen ? "收起全屏" : "会话全屏"}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
                 </div>
               </div>
 
@@ -2029,7 +2002,7 @@ export default function ChatView({
             </div>
 
             <p className="text-sm text-gray-500">
-              启动云端浏览器将会依次执行以下校验与准备操作，完成后即可进入：
+              启动云端浏览器将会依次执行以下检查与准备操作，完成后即可进入：
             </p>
 
             <div className="space-y-2.5 py-1">

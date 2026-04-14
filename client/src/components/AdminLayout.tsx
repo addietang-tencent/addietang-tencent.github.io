@@ -55,6 +55,7 @@ const NEW_FEATURE_PATHS = new Set([
   "/admin/security-management",
   "/admin/session-management",
   "/admin/skill-config",
+  "/admin/agent-tool-library",
 ]);
 
 const NAV_GROUPS = [
@@ -72,6 +73,7 @@ const NAV_GROUPS = [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
       { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
+      { label: "Agent 工具库", path: "/admin/agent-tool-library", icon: Puzzle },
       { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
       { label: "网盘管理", path: "/admin/file-management", icon: FolderOpen },
     ],

@@ -313,6 +313,11 @@ const hasCloudBrowserSecurityRule = (claw?: OpenClawItem | null) => {
   return true;
 };
 
+const getAdminAllowCloudBrowserEnabled = () => {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("admin_allow_cloud_browser") === "true";
+};
+
 const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartupStepKey) => {
   if (claw.browserStartupFailStep === step) {
     return claw.browserStartupFailReason || BROWSER_STARTUP_STEP_META[step].failureText;
@@ -586,6 +591,7 @@ export default function ChatView({
   const [leftPaneWidth, setLeftPaneWidth] = useState(CHAT_PANE_DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
+  const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
 
   const prevClawsCountRef = useRef(effectiveClaws.length);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -626,6 +632,21 @@ export default function ChatView({
   useEffect(() => {
     clawsRef.current = effectiveClaws;
   }, [effectiveClaws]);
+
+  useEffect(() => {
+    const syncCloudBrowserPolicy = () => {
+      setIsCloudBrowserPolicyEnabled(getAdminAllowCloudBrowserEnabled());
+    };
+
+    syncCloudBrowserPolicy();
+    window.addEventListener("storage", syncCloudBrowserPolicy);
+    window.addEventListener("focus", syncCloudBrowserPolicy);
+
+    return () => {
+      window.removeEventListener("storage", syncCloudBrowserPolicy);
+      window.removeEventListener("focus", syncCloudBrowserPolicy);
+    };
+  }, []);
 
   useEffect(() => {
     if (effectiveClaws.length === 0) {
@@ -916,7 +937,10 @@ export default function ChatView({
   const isBrowserToolbarBusy = isBrowserPanelLoading || isBrowserTaskRunning;
   const browserOperationButtonLabel = isBrowserTaskRunning ? "进入操作" : isBrowserManualOperating ? "退出操作" : "进入操作";
   const browserStartupTargetClaw = browserStartupModal.targetClawId ? effectiveClaws.find((claw) => claw.id === browserStartupModal.targetClawId) ?? null : null;
-  const canShowCloudBrowserEntry = workspaceMode === "chat" && isRunning && isCloudBrowserSupportedImage(selectedClaw);
+  const isCloudBrowserImageSupported = isCloudBrowserSupportedImage(selectedClaw);
+  const canShowCloudBrowserEntry = workspaceMode === "chat" && isRunning && isCloudBrowserImageSupported;
+  const isCloudBrowserEntryEnabled = canShowCloudBrowserEntry && isCloudBrowserPolicyEnabled;
+  const cloudBrowserEntryTooltipText = isCloudBrowserEntryEnabled ? "打开当前 OpenClaw 的云端浏览器" : "管理员未开启功能";
   const chatPaneStyle = workspaceMode === "chat_with_browser"
     ? {
         width: `${leftPaneWidth}px`,
@@ -1296,6 +1320,7 @@ export default function ChatView({
     if (!selectedClawId || !selectedClaw) return;
     if (selectedClaw.status !== "running") return;
     if (!isCloudBrowserSupportedImage(selectedClaw)) return;
+    if (!isCloudBrowserPolicyEnabled) return;
 
     startBrowserStartupFlow(selectedClaw);
   };
@@ -1631,16 +1656,25 @@ export default function ChatView({
                       {canShowCloudBrowserEntry && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
-                              onClick={handleOpenBrowser}
-                              aria-label="打开云端浏览器"
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                            >
-                              <Monitor className="w-4 h-4" />
-                            </button>
+                            <span className="inline-flex">
+                              <button
+                                type="button"
+                                onClick={isCloudBrowserEntryEnabled ? handleOpenBrowser : undefined}
+                                aria-label="打开云端浏览器"
+                                aria-disabled={!isCloudBrowserEntryEnabled}
+                                disabled={!isCloudBrowserEntryEnabled}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                                  isCloudBrowserEntryEnabled
+                                    ? "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                                    : "text-gray-300 bg-gray-50 cursor-not-allowed"
+                                }`}
+                              >
+                                <Monitor className="w-4 h-4" />
+                              </button>
+                            </span>
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="text-xs">
-                            打开当前 OpenClaw 的云端浏览器
+                            {cloudBrowserEntryTooltipText}
                           </TooltipContent>
                         </Tooltip>
                       )}

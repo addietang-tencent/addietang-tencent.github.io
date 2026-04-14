@@ -320,7 +320,16 @@ export default function PluginListTab() {
                   <h3 className="font-semibold text-gray-900 flex-1 truncate">{plugin.name}</h3>
                   <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
                 </div>
-                <p className="text-sm text-gray-600 line-clamp-2 mb-4" style={{ minHeight: '2.5rem' }}>{plugin.description || '-'}</p>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 cursor-default" style={{ minHeight: '2.5rem' }}>{plugin.description || '-'}</p>
+                  </TooltipTrigger>
+                  {plugin.description && plugin.description.length > 40 && (
+                    <TooltipContent side="bottom" className="max-w-[320px]">
+                      <p className="text-xs whitespace-pre-wrap">{plugin.description}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
                 <div className="flex items-center gap-1 mt-auto" onClick={(e) => e.stopPropagation()}>
                   <Button variant="outline" size="sm" onClick={() => handleDistribute(plugin.id)} disabled={dist} className={`h-7 text-xs ${dist ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <Send className="w-3 h-3 mr-1" />

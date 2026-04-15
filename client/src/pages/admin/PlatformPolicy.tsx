@@ -6,11 +6,14 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Globe, UsersRound, Cloud, AlertTriangle } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, AlertTriangle, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -24,29 +27,144 @@ import {
 
 type TokenLimit = number | "unlimited"; // -1 或 "unlimited" 表示无限制
 
-// ─── 子组件：应用范围指示器 ───────────────────────────────────────────────────
+// ─── 子组件：应用范围指示器（带 Popover 编辑） ─────────────────────────────────
 
 function ScopeIndicator({ groupTooltip = "按分组设置不同配额 — 即将开放" }: { groupTooltip?: string }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="text-gray-400">应用范围</span>
-      <div className="flex items-center gap-1">
-        <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-600 rounded-md px-2.5 py-1 font-medium">
-          <Globe className="w-3 h-3" />
-          全部用户
-        </span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-400 border border-gray-200 rounded-md px-2.5 py-1 cursor-not-allowed select-none">
-              <UsersRound className="w-3 h-3" />
-              按分组
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs max-w-[220px]">
-            {groupTooltip}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <span className="badge-loading whitespace-nowrap">全部用户</span>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className="text-gray-300 hover:text-blue-500 transition-colors"
+            title="编辑应用范围"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+            <div className="flex gap-1.5">
+              <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-blue-200 bg-blue-50 text-blue-600">
+                全部用户
+              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-gray-200 bg-white text-gray-300 cursor-not-allowed">
+                    按分组
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                  {groupTooltip}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3"
+              onClick={() => { setOpen(false); toast.success("应用范围已更新"); }}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+// ─── 子组件：访问方式指示器（带 Popover 编辑） ─────────────────────────────────
+
+function AccessModeIndicator({ mode, onSave }: { mode: "public" | "private"; onSave: (m: "public" | "private") => void }) {
+  const [open, setOpen] = useState(false);
+  const [draftMode, setDraftMode] = useState(mode);
+
+  const handleOpenChange = (v: boolean) => {
+    if (v) setDraftMode(mode);
+    setOpen(v);
+  };
+
+  const handleConfirm = () => {
+    onSave(draftMode);
+    setOpen(false);
+    toast.success(draftMode === "public" ? "已切换为公网访问" : "已切换为私网访问");
+  };
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="text-gray-400">访问方式</span>
+      <span className="badge-shutdown whitespace-nowrap">
+        {mode === "public" ? "公网访问" : "私网访问"}
+      </span>
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <button
+            className="text-gray-300 hover:text-blue-500 transition-colors"
+            title="编辑访问方式"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setDraftMode("public")}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftMode === "public"
+                    ? "border-blue-200 bg-blue-50 text-blue-600"
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                公网访问
+              </button>
+              <button
+                onClick={() => setDraftMode("private")}
+                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  draftMode === "private"
+                    ? "border-blue-200 bg-blue-50 text-blue-600"
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                私网访问
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3"
+              onClick={handleConfirm}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="cursor-default">
+            <Info className="w-3 h-3 text-gray-400" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs max-w-[320px] leading-relaxed">
+          <p className="mb-1.5"><span className="font-medium">公网访问：</span>用户通过公网直接访问 OpenClaw 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，推荐选择。</p>
+          <p><span className="font-medium">私网访问：</span>用户通过同一私有网络访问 OpenClaw 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }
@@ -224,10 +342,11 @@ interface ToggleCardProps {
   checked: boolean;
   loading?: boolean;
   onToggle: (v: boolean) => void;
+  afterScope?: React.ReactNode;
   extraContent?: React.ReactNode;
 }
 
-function ToggleCard({ icon, iconBg, title, description, checked, loading, onToggle, extraContent }: ToggleCardProps) {
+function ToggleCard({ icon, iconBg, title, description, checked, loading, onToggle, afterScope, extraContent }: ToggleCardProps) {
   return (
     <div
       className="bg-white rounded-2xl border border-gray-100 p-4"
@@ -258,8 +377,9 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
       <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
 
       {/* 分隔线 + 应用范围 */}
-      <div className="mt-3 border-t border-gray-100 pt-3">
+      <div className="mt-3 border-t border-gray-100 pt-3 space-y-2.5">
         <ScopeIndicator groupTooltip="按分组设置功能权限 — 即将开放" />
+        {afterScope}
       </div>
 
       {/* 额外内容（如端口信息） */}
@@ -303,6 +423,9 @@ export default function PlatformPolicy() {
   });
   const [allowTerminal, setAllowTerminal] = useState(() => {
     return localStorage.getItem("admin_allow_terminal") === "true";
+  });
+  const [panelAccessMode, setPanelAccessMode] = useState<"public" | "private">(() => {
+    return (localStorage.getItem("admin_panel_access_mode") as "public" | "private") || "public";
   });
   const [allowPanelAccess, setAllowPanelAccess] = useState(() => {
     return localStorage.getItem("admin_allow_panel_access") === "true";
@@ -487,6 +610,15 @@ export default function PlatformPolicy() {
             checked={allowPanelAccess}
             loading={panelAccessLoading}
             onToggle={handleTogglePanelAccess}
+            afterScope={
+              <AccessModeIndicator
+                mode={panelAccessMode}
+                onSave={(m) => {
+                  setPanelAccessMode(m);
+                  localStorage.setItem("admin_panel_access_mode", m);
+                }}
+              />
+            }
             extraContent={
               allowPanelAccess && panelPort ? (
                 <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">

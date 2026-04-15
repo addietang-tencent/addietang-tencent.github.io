@@ -375,14 +375,14 @@ export default function PlatformPolicy() {
         localStorage.setItem("admin_allow_panel_access", "true");
         localStorage.setItem("admin_panel_port", randomPort);
         setPanelAccessLoading(false);
-        toast.success("已开启用户端访问 OpenClaw 面板");
+        toast.success("已开启用户端访问 Agent 面板");
       }, 3000);
     } else {
       setAllowPanelAccess(false);
       setPanelPort(null);
       localStorage.setItem("admin_allow_panel_access", "false");
       localStorage.removeItem("admin_panel_port");
-      toast.success("已禁止用户端访问 OpenClaw 面板");
+      toast.success("已禁止用户端访问 Agent 面板");
     }
   };
 
@@ -394,14 +394,14 @@ export default function PlatformPolicy() {
 
     setAllowCloudBrowser(false);
     localStorage.setItem("admin_allow_cloud_browser", "false");
-    toast.success("已关闭 OpenClaw 云端浏览器");
+    toast.success("已关闭 Agent 云端浏览器");
   };
 
   const handleConfirmEnableCloudBrowser = () => {
     setAllowCloudBrowser(true);
     localStorage.setItem("admin_allow_cloud_browser", "true");
     setShowCloudBrowserEnableDialog(false);
-    toast.success("已开启 OpenClaw 云端浏览器");
+    toast.success("已开启 Agent 云端浏览器");
   };
 
   const handleToggleLobsterDoctor = (v: boolean) => {
@@ -425,8 +425,8 @@ export default function PlatformPolicy() {
           <QuotaCard
             icon={<Zap className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
-            title="单用户 OpenClaw 数量上限"
-            description="单用户最多可以创建的 OpenClaw 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+            title="单用户 Agent 数量上限"
+            description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             value={clawLimit}
             onSave={handleSaveClawLimit}
             type="integer"
@@ -467,23 +467,23 @@ export default function PlatformPolicy() {
             icon={<Cpu className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户添加自定义模型"
-            description="开启后，用户可在 OpenClaw 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内"
+            description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内"
             checked={allowCustomModel}
             onToggle={handleToggleCustomModel}
           />
           <ToggleCard
             icon={<Terminal className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
-            title="允许用户进入 OpenClaw 终端"
-            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 OpenClaw 云服务器的终端"
+            title="允许用户进入 Agent 终端"
+            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端"
             checked={allowTerminal}
             onToggle={handleToggleTerminal}
           />
           <ToggleCard
             icon={<Monitor className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
-            title="允许用户访问 OpenClaw 面板"
-            description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 OpenClaw 面板"
+            title="允许用户访问 Agent 面板"
+            description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板"
             checked={allowPanelAccess}
             loading={panelAccessLoading}
             onToggle={handleTogglePanelAccess}
@@ -508,8 +508,8 @@ export default function PlatformPolicy() {
             <ToggleCard
               icon={<Cloud className="w-4 h-4 text-white" />}
               iconBg="bg-gradient-to-br from-green-500 to-green-600"
-              title="允许用户访问 OpenClaw 云端浏览器"
-              description="开启后，用户可在 OpenClaw 会话中访问云端浏览器，查看 AI 浏览器执行过程，并在空闲时进入操作。"
+              title="允许用户访问 Agent 云端浏览器"
+              description="开启后，用户可在 Agent 会话中访问云端浏览器，查看 AI 浏览器执行过程，并在空闲时进入操作。"
               checked={allowCloudBrowser}
               onToggle={handleToggleCloudBrowser}
             />
@@ -518,7 +518,7 @@ export default function PlatformPolicy() {
             icon={<Stethoscope className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户使用龙虾医生"
-            description="开启后，所有用户在用户端可免费使用「龙虾医生」 AI 诊断功能，自动检测并对话式修复 OpenClaw 运行问题。"
+            description="开启后，所有用户在用户端可免费使用「龙虾医生」 AI 诊断功能，自动检测并对话式修复 Agent 运行问题。"
             checked={allowLobsterDoctor}
             onToggle={handleToggleLobsterDoctor}
             extraContent={
@@ -578,8 +578,8 @@ export default function PlatformPolicy() {
               <p className="text-sm font-medium text-gray-900">工作原理</p>
               <p>当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
               <ol className="space-y-1.5 pl-5 list-decimal">
-                <li>创建一个临时按量计费的龙虾医生 OpenClaw 节点</li>
-                <li>通过该节点对用户的目标 OpenClaw 进行检测和修复</li>
+                <li>创建一个临时按量计费的龙虾医生 Agent 节点</li>
+                <li>通过该节点对用户的目标 Agent 进行检测和修复</li>
                 <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
               </ol>
             </div>

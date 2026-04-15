@@ -27,19 +27,19 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每个 OpenClaw 自动预装的技能集合，支持从公共技能库和企业技能库中挑选。",
+    description: "配置每个实例自动预装的技能集合，支持从公共技能库和企业技能库中挑选，当前仅 OpenClaw 支持，其他 Agent 暂不支持预装。",
     comingSoon: false,
   },
   {
     id: "roles",
     label: "角色设定",
-    description: "创建和管理角色预设，用户在创建 OpenClaw 时可选择管理员配置好的角色，快速获得对应技能组合。",
+    description: "创建和管理角色预设，用户在创建实例时可选择管理员配置好的角色，快速获得对应技能组合。当前仅 OpenClaw 支持，其他 Agent 暂不支持设置。",
     comingSoon: false,
   },
   {
     id: "source",
     label: "技能安装来源",
-    description: "控制用户在 OpenClaw 配置页中可以从哪些来源浏览和安装新技能。",
+    description: "控制用户在实例配置页中可以从哪些来源浏览和安装新技能。",
     comingSoon: false,
   },
 ];

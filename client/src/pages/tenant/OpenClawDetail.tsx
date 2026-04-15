@@ -1281,7 +1281,33 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </button>
               ) : (
                 <button
-                  onClick={() => setShowUpdateConfirmDialog(true)}
+                  onClick={() => {
+                    // 检查当前实例的 agentType 是否有对应的生效镜像
+                    const agentTypeRaw = (claw as any).agentType as string | undefined;
+                    if (agentTypeRaw) {
+                      try {
+                        // 将实例的 agentType 小写形式映射到镜像管理中的标准形式
+                        const typeMap: Record<string, string> = {
+                          openclaw: "openclaw",
+                          hermes: "hermesagent",
+                          lightclawace: "lightclawace",
+                        };
+                        const normalizedType = typeMap[agentTypeRaw.toLowerCase()] ?? agentTypeRaw.toLowerCase();
+                        const raw = localStorage.getItem("admin_images");
+                        const imgs: Array<{ agentType: string; active: boolean }> = raw ? JSON.parse(raw) : [];
+                        // 将镜像的 agentType 也进行同样的规范化匹配
+                        const hasActive = imgs.some((i) => {
+                          const imgNorm = typeMap[i.agentType.toLowerCase()] ?? i.agentType.toLowerCase();
+                          return imgNorm === normalizedType && i.active;
+                        });
+                        if (!hasActive) {
+                          toast.error("暂无生效的 Agent 类型镜像，请联系管理员处理");
+                          return;
+                        }
+                      } catch { /* ignore */ }
+                    }
+                    setShowUpdateConfirmDialog(true);
+                  }}
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
                 >
                   <ArrowUpCircle className="w-3.5 h-3.5" />

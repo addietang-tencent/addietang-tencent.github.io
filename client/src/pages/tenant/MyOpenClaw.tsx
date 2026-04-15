@@ -1127,7 +1127,7 @@ export default function MyOpenClaw() {
                     }
                   }}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-2 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

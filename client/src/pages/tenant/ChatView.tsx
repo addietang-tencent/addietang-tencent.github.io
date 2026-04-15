@@ -1525,8 +1525,8 @@ export default function ChatView({
           <div className="px-3 h-10 flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 w-full">
-                  <span className="font-medium">选择 Agent</span>
+                <button className="flex items-center gap-1.5 text-xs text-gray-800 hover:text-gray-900 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 w-full border border-gray-200 bg-gray-50">
+                  <span className="font-medium truncate flex-1 text-left">{selectedClaw ? selectedClaw.name : "选择 Agent"}</span>
                   <ChevronDown className="w-3 h-3 ml-auto flex-shrink-0" />
                 </button>
               </DropdownMenuTrigger>
@@ -1585,11 +1585,6 @@ export default function ChatView({
                   ].filter(g => g.items.length > 0);
                   return sidebarGroups.map(group => (
                     <div key={group.key}>
-                      {/* 分组标题 */}
-                      <div className="flex items-center gap-1.5 px-3 pt-3 pb-1">
-                        <span className="text-xs font-semibold text-gray-500">{group.label}</span>
-                        <div className="flex-1 h-px bg-gray-100" />
-                      </div>
                       {group.items.map((claw) => {
                   const isSelected = claw.id === selectedClawId;
                   const isConfigEnabled = claw.status === "running";

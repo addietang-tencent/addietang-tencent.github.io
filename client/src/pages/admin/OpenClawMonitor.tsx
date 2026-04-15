@@ -63,6 +63,7 @@ interface Claw {
   createTime: string;
   status: ClawStatus;
   version: string;
+  agentType: 'OpenClaw' | 'Hermes' | 'LightclawACE';
   pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
@@ -88,28 +89,28 @@ const STATUS_CONFIG: Record<ClawStatus, {
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
 
 const MOCK_CLAWS: Claw[] = [
-  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",   version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
-  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail", version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",   version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "running", version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
-  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",   version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "maintaining", version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "15", instanceId: "ins-v36q0krh", name: "Olivia的运营助手",  creator: "olivia@acompany.com",  createTime: "2026-03-14 09:00:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "16", instanceId: "ins-w47r1lsi", name: "Peter的财务助手",  creator: "peter@acompany.com",   createTime: "2026-03-15 10:20:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "17", instanceId: "ins-x58s2mtj", name: "Quinn的法务助手",  creator: "quinn@acompany.com",   createTime: "2026-03-16 11:45:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "18", instanceId: "ins-y69t3nuk", name: "Rachel的HR助手",      creator: "rachel@acompany.com",  createTime: "2026-03-17 13:10:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "19", instanceId: "ins-z70u4ovl", name: "Sam的产品助手",    creator: "sam@acompany.com",     createTime: "2026-03-18 14:30:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
+  { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
+  { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "maintaining", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "15", instanceId: "ins-v36q0krh", name: "Olivia的运营助手",  creator: "olivia@acompany.com",  createTime: "2026-03-14 09:00:00", status: "running",     version: "2026.4.2",  agentType: "LightclawACE", pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "16", instanceId: "ins-w47r1lsi", name: "Peter的财务助手",  creator: "peter@acompany.com",   createTime: "2026-03-15 10:20:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "17", instanceId: "ins-x58s2mtj", name: "Quinn的法务助手",  creator: "quinn@acompany.com",   createTime: "2026-03-16 11:45:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "18", instanceId: "ins-y69t3nuk", name: "Rachel的HR助手",      creator: "rachel@acompany.com",  createTime: "2026-03-17 13:10:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "19", instanceId: "ins-z70u4ovl", name: "Sam的产品助手",    creator: "sam@acompany.com",     createTime: "2026-03-18 14:30:00", status: "running",     version: "2026.4.2",  agentType: "LightclawACE", pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
 ];
 
 const PAGE_SIZE = 10;
@@ -275,32 +276,8 @@ export default function OpenClawMonitor() {
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
-  const [pluginVersionTarget, setPluginVersionTarget] = useState<Claw | null>(null);
 
   // 版本列筛选
-  const VERSION_OPTIONS = ["2026.3.28", "2026.4.2", "unrecognized"] as const;
-  type VersionFilter = typeof VERSION_OPTIONS[number];
-  const [showVersionFilter, setShowVersionFilter] = useState(false);
-  const [selectedVersions, setSelectedVersions] = useState<Set<VersionFilter>>(new Set(VERSION_OPTIONS));
-  const versionFilterButtonRef = useRef<HTMLButtonElement>(null);
-  const [versionFilterPosition, setVersionFilterPosition] = useState<{ top: number; left: number } | null>(null);
-  const [pendingVersions, setPendingVersions] = useState<Set<VersionFilter>>(new Set(VERSION_OPTIONS));
-
-  const handleVersionFilterChange = (v: VersionFilter, checked: boolean) => {
-    setPendingVersions(prev => {
-      const next = new Set(prev);
-      if (checked) next.add(v); else next.delete(v);
-      return next;
-    });
-  };
-
-  const handleVersionFilterReset = () => setPendingVersions(new Set(VERSION_OPTIONS));
-
-  const handleVersionFilterConfirm = () => {
-    setSelectedVersions(new Set(pendingVersions));
-    setShowVersionFilter(false);
-    setPage(1);
-  };
 
   // 判断某实例是否可更新（仅运行中）
   const isUpgradable = (claw: Claw) => claw.status === "running";
@@ -460,16 +437,8 @@ export default function OpenClawMonitor() {
     return selectedStatuses.has(c.status);
   });
 
-  const getVersionKey = (version: string): VersionFilter => {
-    if (version === "2026.3.28") return "2026.3.28";
-    if (version === "2026.4.2") return "2026.4.2";
-    return "unrecognized";
-  };
 
-  const versionFiltered = statusFiltered.filter((c) => {
-    if (selectedVersions.size === VERSION_OPTIONS.length) return true;
-    return selectedVersions.has(getVersionKey(c.version));
-  });
+  const versionFiltered = statusFiltered;
 
   const totalPages = Math.max(1, Math.ceil(versionFiltered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -488,11 +457,14 @@ export default function OpenClawMonitor() {
   const selectedCount = selectedIds.size;
   const selectedClaws = claws.filter(c => selectedIds.has(c.id));
   const hasNonRunning = selectedClaws.some(c => !isUpgradable(c));
-  const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning;
+  const hasNonOpenClaw = selectedClaws.some(c => c.agentType !== 'OpenClaw');
+  const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning || hasNonOpenClaw;
   const batchTooltip = selectedCount === 0
     ? '请先选择实例'
     : selectedCount > 20
-    ? '批量更新数量不可大于20'
+    ? '批量更新数量不可大丠20'
+    : hasNonOpenClaw
+    ? '仅OpenClaw实例支持更新'
     : hasNonRunning
     ? '仅运行中的实例支持更新'
     : '';
@@ -882,73 +854,15 @@ export default function OpenClawMonitor() {
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建人</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '10%' : '12%' }}>
-                  <div className="flex items-center gap-2 relative z-40">
-                    智能体版本
-                    <button
-                      ref={versionFilterButtonRef}
-                      className="p-1 hover:bg-gray-200 rounded"
-                      onClick={() => {
-                        if (versionFilterButtonRef.current) {
-                          const rect = versionFilterButtonRef.current.getBoundingClientRect();
-                          setVersionFilterPosition({
-                            top: rect.bottom + window.scrollY + 8,
-                            left: rect.left + window.scrollX
-                          });
-                        }
-                        setPendingVersions(new Set(selectedVersions));
-                        setShowVersionFilter(!showVersionFilter);
-                      }}
-                    >
-                      <Filter className="w-3.5 h-3.5 text-gray-400" />
-                    </button>
-                    {showVersionFilter && versionFilterPosition && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setShowVersionFilter(false)}
-                          style={{ pointerEvents: 'auto' }}
-                        />
-                        <div
-                          className="fixed w-52 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform"
-                          style={{
-                            top: `${versionFilterPosition.top}px`,
-                            left: `${versionFilterPosition.left}px`,
-                            pointerEvents: 'auto'
-                          }}
-                        >
-                          <div className="p-3 space-y-2">
-                            {([
-                              { key: "2026.3.28" as VersionFilter, label: "OpenClaw/2026.3.28" },
-                              { key: "2026.4.2" as VersionFilter, label: "OpenClaw/2026.4.2" },
-                              { key: "unrecognized" as VersionFilter, label: "未识别" },
-                            ]).map(({ key, label }) => (
-                              <label key={key} className="flex items-center gap-2 cursor-pointer">
-                                <Checkbox
-                                  checked={pendingVersions.has(key)}
-                                  onCheckedChange={(checked) => handleVersionFilterChange(key, !!checked)}
-                                />
-                                <span className="text-sm text-gray-700 normal-case">{label}</span>
-                              </label>
-                            ))}
-                          </div>
-                          <div className="border-t border-gray-100 p-2 flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleVersionFilterReset} className="flex-1">重置</Button>
-                            <Button size="sm" onClick={handleVersionFilterConfirm} className="flex-1">确认</Button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '8%' : '9%' }}>插件版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '9%' : '10%' }}>Agent 版本</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={hasOneid ? 10 : 9} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 11 : 10} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 OpenClaw
                   </td>
                 </tr>
@@ -1006,24 +920,13 @@ export default function OpenClawMonitor() {
                       <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
                       {/* 创建时间 */}
                       <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
-                      {/* 智能体版本 */}
+                      {/* 智能体 */}
                       <td className="px-4 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-medium text-gray-500">OpenClaw</span>
-                          <span className="text-xs font-mono text-gray-500">
-                            {claw.version}
-
-                          </span>
-                        </div>
+                        <span className="text-xs font-medium text-gray-500">{claw.agentType}</span>
                       </td>
-                      {/* 插件版本 */}
+                      {/* Agent 版本 */}
                       <td className="px-4 py-4">
-                        <button
-                          className="text-xs text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
-                          onClick={() => setPluginVersionTarget(claw)}
-                        >
-                          查看详情
-                        </button>
+                        <span className="text-xs font-mono text-gray-500">{claw.version}</span>
                       </td>
                       {/* 操作 */}
                       <td className="px-4 py-4">
@@ -1285,9 +1188,9 @@ export default function OpenClawMonitor() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前版本</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent 版本</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前状态</th>
-                  <th className="text-center px-4 py-2 text-xs font-medium text-gray-500">插件是否最新版本</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">操作</th>
                 </tr>
               </thead>
@@ -1308,25 +1211,16 @@ export default function OpenClawMonitor() {
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
+                        <span className="text-xs font-medium text-gray-500">{c.agentType}</span>
+                      </td>
+                      <td className="px-4 py-2.5">
                         <span className="font-mono text-xs text-gray-500">{c.version}</span>
-
                       </td>
                       <td className="px-4 py-2.5">
                         <span className={`${sc.badgeClass} text-xs inline-flex items-center gap-1`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${sc.dotColor}`} />
                           {sc.label}
                         </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-center">
-                        {(() => {
-                          const RECOMMENDED: PluginVersions = { wechat: '3.2.1', dingtalk: '2.1.0', feishu: '1.8.5', wecom: '4.0.2', qq: '1.3.0' };
-                          const isLatest = (['wechat', 'dingtalk', 'feishu', 'wecom', 'qq'] as const).every(
-                            k => c.pluginVersions[k] === RECOMMENDED[k]
-                          );
-                          return isLatest
-                            ? <span className="text-xs text-green-600">是</span>
-                            : <span className="text-xs text-red-500">否</span>;
-                        })()}
                       </td>
                       <td className="px-4 py-2.5">
                         <button
@@ -1351,59 +1245,6 @@ export default function OpenClawMonitor() {
         </DialogContent>
       </Dialog>
 
-      {/* 插件版本弹窗 */}
-      <Dialog open={!!pluginVersionTarget} onOpenChange={(open) => { if (!open) setPluginVersionTarget(null); }}>
-        <DialogContent className="sm:max-w-[520px]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">插件版本</DialogTitle>
-          </DialogHeader>
-          {pluginVersionTarget && (
-            <div className="space-y-3">
-              <p className="text-xs text-gray-500">实例：<span className="font-medium text-gray-700">{pluginVersionTarget.name}</span></p>
-              <div className="rounded-xl border border-gray-100 overflow-hidden">
-                {/* 表头 */}
-                <div className="grid grid-cols-3 px-4 py-2 bg-gray-50/80 border-b border-gray-100">
-                  <span className="text-xs font-medium text-gray-500">插件</span>
-                  <span className="text-xs font-medium text-gray-500">当前版本</span>
-                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                    建议升级版本
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <HelpCircle className="w-3 h-3 text-gray-400 cursor-help flex-shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs max-w-[200px]">
-                          适配当前生效镜像中openclaw版本的最新插件版本
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </span>
-                </div>
-                {([
-                  { label: '微信', key: 'wechat', recommended: '3.2.1' },
-                  { label: '钉钉', key: 'dingtalk', recommended: '2.1.0' },
-                  { label: '飞书', key: 'feishu', recommended: '1.8.5' },
-                  { label: '企业微信', key: 'wecom', recommended: '4.0.2' },
-                  { label: 'QQ', key: 'qq', recommended: '1.3.0' },
-                ] as const).map(({ label, key, recommended }, idx, arr) => {
-                  const current = pluginVersionTarget.pluginVersions[key];
-                  const isUpToDate = current === recommended;
-                  return (
-                    <div key={key} className={`grid grid-cols-3 items-center px-4 py-2.5 ${idx < arr.length - 1 ? 'border-b border-gray-50' : ''} hover:bg-gray-50/50`}>
-                      <span className="text-sm text-gray-600">{label}</span>
-                      <span className="text-sm font-mono text-gray-700">{current}</span>
-                      {isUpToDate
-                        ? <span className="text-sm text-green-600">已是最新版本</span>
-                        : <span className="text-sm font-mono text-gray-700">{recommended}</span>
-                      }
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* OpenClaw 详情抽屉 */}
       {showDetailDrawer && selectedClaw && (

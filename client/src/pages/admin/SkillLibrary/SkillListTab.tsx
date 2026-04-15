@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,11 +126,17 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
   const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
-  // 应用范围筛选：null=全部, 'public'=全部用户, 'group-xxx'=特定分组
-  const [selectedScope, setSelectedScope] = useState<string | null>(null);
+  // 应用范围筛选：含 'public'=全部用户, 含 'grp-xxx'=特定分组（多选）
+  // 空 Set = 未选任何范围（按钮显示"选择应用范围"）；全选时包含 public + 所有 groupId
+  const allScopeKeys = useMemo(() => ['public', ...MOCK_GROUPS.map(g => g.id)], []);
+  const [selectedScopes, setSelectedScopes] = useState<Set<string>>(new Set());
   const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState('');
   const scopeDropdownRef = useRef<HTMLDivElement>(null);
+  // 保存编辑弹窗打开前的滚动位置（含表格水平滚动），关闭后恢复
+  const scrollPositionRef = useRef<{ x: number; y: number; tableScrollLeft?: number } | null>(null);
+  // 表格水平滚动容器 ref
+  const tableScrollRef = useRef<HTMLDivElement>(null);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -195,12 +201,18 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       skill.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === null ||
       skill.categories.some((catId: string) => catId === selectedCategory);
-    // 应用范围筛选
+    // 应用范围筛选（多选）
     let matchesScope = true;
-    if (selectedScope === 'public') {
-      matchesScope = skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0;
-    } else if (selectedScope && selectedScope.startsWith('group-')) {
-      matchesScope = skill.scope === 'private' && skill.groupIds?.includes(selectedScope);
+    if (selectedScopes.size === 0) {
+      // 没有选中任何范围 → 不筛选，显示全部
+      matchesScope = true;
+    } else {
+      const hasPublic = selectedScopes.has('public');
+      const groupScopes = [...selectedScopes].filter(s => s !== 'public');
+      // 满足任一选中条件即匹配
+      const matchPublic = hasPublic && (skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0);
+      const matchGroup = groupScopes.length > 0 && skill.scope === 'private' && skill.groupIds?.some(gid => selectedScopes.has(gid));
+      matchesScope = !!(matchPublic || matchGroup);
     }
     return matchesSearch && matchesCategory && matchesScope;
   });
@@ -417,37 +429,54 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           />
         </div>
 
-        {/* 应用范围下拉筛选 — 自定义下拉支持搜索 */}
+        {/* 应用范围下拉筛选 — 多选 checkbox 层级结构 */}
         <div className="relative" ref={scopeDropdownRef}>
           <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
               <TooltipTrigger asChild>
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 w-40 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
-                    {selectedScope === null
-                      ? '全部应用范围'
-                      : selectedScope === 'public'
-                        ? '全部用户'
-                        : MOCK_GROUPS.find(g => g.id === selectedScope)?.name || selectedScope}
+                    {selectedScopes.size === 0
+                      ? '选择应用范围'
+                      : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
+                        ? '全部应用范围'
+                        : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[280px]">
                 <p className="break-words">
-                  {selectedScope === null
-                    ? '全部应用范围'
-                    : selectedScope === 'public'
-                      ? '全部用户'
-                      : MOCK_GROUPS.find(g => g.id === selectedScope)?.name || selectedScope}
+                  {selectedScopes.size === 0
+                    ? '选择应用范围'
+                    : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
+                      ? '全部应用范围'
+                      : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                 </p>
               </TooltipContent>
             </Tooltip>
-          {scopeDropdownOpen && (
-            <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+          {scopeDropdownOpen && (() => {
+            const filteredGroups = MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()));
+            const showPublic = !scopeSearchQuery || '全部用户'.includes(scopeSearchQuery);
+            const showGroupSection = !scopeSearchQuery || '按分组'.includes(scopeSearchQuery) || filteredGroups.length > 0;
+
+            const toggleScope = (key: string) => {
+              setSelectedScopes(prev => {
+                const next = new Set(prev);
+                if (next.has(key)) {
+                  next.delete(key);
+                } else {
+                  next.add(key);
+                }
+                return next;
+              });
+            };
+
+            return (
+            <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
               {/* 搜索框 */}
               <div className="px-2 pb-1.5 pt-1">
                 <div className="relative">
@@ -461,59 +490,100 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   />
                 </div>
               </div>
-              {/* 全部应用范围 — 选中时点击不做任何操作（单选模式） */}
-              {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (
+              {/* 全部应用范围 — 全选/全不选切换 */}
+              {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (() => {
+                const isAllSelected = allScopeKeys.length > 0 && allScopeKeys.every(k => selectedScopes.has(k));
+                return (
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedScope(null);
-                    setScopeDropdownOpen(false);
+                    if (isAllSelected) {
+                      // 全选状态 → 清空所有勾选
+                      setSelectedScopes(new Set());
+                    } else {
+                      // 非全选（包括空Set或部分选中） → 全选
+                      setSelectedScopes(new Set(allScopeKeys));
+                    }
                     setScopeSearchQuery('');
                   }}
-                  className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                    selectedScope === null ? 'text-blue-600 font-medium' : 'text-gray-700'
-                  }`}
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
+                  <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
+                    isAllSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {isAllSelected && <Check className="w-3 h-3 text-white" />}
+                  </span>
                   <span className="truncate text-left">全部应用范围</span>
-                  {selectedScope === null && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
                 </button>
+                );
+              })()}
+              {/* 全部用户 区域 */}
+              {showPublic && (
+                <>
+                  <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
+                    全部用户
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleScope('public')}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
+                      selectedScopes.has('public') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                    }`}>
+                      {selectedScopes.has('public') && <Check className="w-3 h-3 text-white" />}
+                    </span>
+                    <span className="truncate text-left">全部用户</span>
+                  </button>
+                </>
               )}
-              {/* 全部用户 */}
-              {(!scopeSearchQuery || '全部用户'.includes(scopeSearchQuery)) && (
-                <button
-                  type="button"
-                  onClick={() => { setSelectedScope('public'); setScopeDropdownOpen(false); setScopeSearchQuery(''); }}
-                  className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                    selectedScope === 'public' ? 'text-blue-600 font-medium' : 'text-gray-700'
-                  }`}
-                >
-                  <span className="truncate text-left">全部用户</span>
-                  {selectedScope === 'public' && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                </button>
+              {/* 按分组 区域 */}
+              {showGroupSection && (
+                <>
+                  <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
+                    按分组
+                  </div>
+                  <div className="max-h-44 overflow-y-auto">
+                    {filteredGroups.map(group => (
+                      <button
+                        key={group.id}
+                        type="button"
+                        onClick={() => toggleScope(group.id)}
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
+                          selectedScopes.has(group.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                        }`}>
+                          {selectedScopes.has(group.id) && <Check className="w-3 h-3 text-white" />}
+                        </span>
+                        <span className="truncate text-left" title={group.name}>{group.name}</span>
+                      </button>
+                    ))}
+                    {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
+                      <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
+                    )}
+                  </div>
+                </>
               )}
-              {/* 分组列表 */}
-              <div className="max-h-60 overflow-y-auto">
-                {MOCK_GROUPS
-                  .filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()))
-                  .map(group => (
-                    <button
-                      key={group.id}
-                      type="button"
-                      onClick={() => { setSelectedScope(group.id); setScopeDropdownOpen(false); setScopeSearchQuery(''); }}
-                      className={`flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                        selectedScope === group.id ? 'text-blue-600 font-medium' : 'text-gray-700'
-                      }`}
-                    >
-                      <span className="truncate text-left" title={group.name}>{group.name}</span>
-                      {selectedScope === group.id && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                    </button>
-                  ))}
-                {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase())).length === 0 && scopeSearchQuery && (
-                  <p className="text-xs text-gray-400 py-2 text-center">没有匹配的分组</p>
-                )}
-              </div>
+              {/* 底部：已选数量 + 清除筛选 */}
+              {selectedScopes.size > 0 && (
+                <div className="border-t border-gray-100 mt-1 px-3 py-2 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedScopes(new Set());
+                      setScopeSearchQuery('');
+                    }}
+                    className="text-xs text-blue-500 hover:text-blue-600"
+                  >
+                    清除
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* 视图切换、发布按钮 */}
@@ -653,6 +723,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            scrollPositionRef.current = { x: window.scrollX, y: window.scrollY };
                             setEditingSkillId(skill.id);
                             setEditingSkillCategories(skill.categories);
                             setEditCategoryDialogOpen(true);
@@ -741,7 +812,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                         disabled={distributing}
                         className="text-red-600 focus:text-red-600"
                       >
-                        <Trash2 className="w-4 h-4 mr-2 text-gray-500" />
+                        <Trash2 className="w-4 h-4 mr-2 text-red-500" />
                         删除
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -756,7 +827,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" ref={tableScrollRef}>
             <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -918,6 +989,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
+                                        scrollPositionRef.current = { x: window.scrollX, y: window.scrollY, tableScrollLeft: tableScrollRef.current?.scrollLeft };
                                         setEditingSkillId(skill.id);
                                         setEditingSkillCategories(skill.categories);
                                         setEditCategoryDialogOpen(true);
@@ -1008,7 +1080,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                                 disabled={distributing}
                                 className="text-red-600 focus:text-red-600"
                               >
-                                <Trash2 className="w-4 h-4 mr-2 text-gray-500" />
+                                <Trash2 className="w-4 h-4 mr-2 text-red-500" />
                                 删除
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -1040,6 +1112,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           skillScope={skills.find(s => s.id === distributeSkillId)?.scope}
           skillGroupIds={skills.find(s => s.id === distributeSkillId)?.groupIds}
           onDistributionStart={handleDistributeStart}
+          instances={MOCK_OPENCLAW_INSTANCES}
+          groups={MOCK_GROUPS}
         />
       )}
 
@@ -1080,6 +1154,17 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           if (!open) {
             setEditingSkillId(null);
             setEditingSkillCategories([]);
+            // 恢复弹窗打开前的滚动位置
+            if (scrollPositionRef.current) {
+              const saved = scrollPositionRef.current;
+              requestAnimationFrame(() => {
+                window.scrollTo(saved.x, saved.y);
+                if (saved.tableScrollLeft !== undefined && tableScrollRef.current) {
+                  tableScrollRef.current.scrollLeft = saved.tableScrollLeft;
+                }
+                scrollPositionRef.current = null;
+              });
+            }
           }
         }}
         categories={categories}
@@ -1096,6 +1181,17 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             setEditCategoryDialogOpen(false);
             setEditingSkillId(null);
             setEditingSkillCategories([]);
+            // 恢复弹窗打开前的滚动位置
+            if (scrollPositionRef.current) {
+              const saved = scrollPositionRef.current;
+              requestAnimationFrame(() => {
+                window.scrollTo(saved.x, saved.y);
+                if (saved.tableScrollLeft !== undefined && tableScrollRef.current) {
+                  tableScrollRef.current.scrollLeft = saved.tableScrollLeft;
+                }
+                scrollPositionRef.current = null;
+              });
+            }
           }
         }}
       />

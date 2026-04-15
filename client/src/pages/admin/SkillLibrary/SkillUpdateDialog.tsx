@@ -400,7 +400,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
                 {hasNewUpload ? '如需替换，请先删除下方文件' : '点击或拖拽文件上传'}
               </p>
 
-              {/* 填写要求 + 下载样例 */}
+              {/* 上传要求 + 下载样例 */}
               <div className="flex items-center justify-center gap-4 mb-3">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -410,13 +410,13 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
                       className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
                     >
                       <FileText className="w-3.5 h-3.5" />
-                      填写要求
+                      上传要求
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[420px] p-4" align="center" side="bottom">
                     <p className="text-sm font-semibold text-gray-900 mb-3">上传要求</p>
                     <ol className="text-sm text-gray-600 space-y-2 list-decimal pl-5">
-                      <li>ZIP 包/文件夹必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
+                      <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
                       <li className="leading-relaxed">
                         SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
                         <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">
@@ -732,6 +732,12 @@ description: this is a skill creator.
               className="mt-1"
               rows={3}
             />
+          </div>
+
+          {/* 更新提示 */}
+          <div className="text-xs text-gray-400 leading-relaxed space-y-0.5">
+            <p>提示：仅更新企业技能库中的技能版本。</p>
+            <p>已下发至 openclaw 实例的技能不会同步升级，需手动重新下发。</p>
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader } from 'lucide-react';
 import { toast } from 'sonner';
-import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
+import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
@@ -633,7 +633,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       variant="outline"
                       onClick={() => setDeleteDialogOpen(true)}
                       disabled={hasInProgress}
-                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-gray-900 hover:text-gray-900 border-gray-200`}
+                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
                     >
                       <Trash2 className="w-4 h-4 mr-1.5" />
                       删除
@@ -975,6 +975,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         skillScope={skill.scope}
         skillGroupIds={skill.groupIds}
         onDistributionStart={handleDistributionStart}
+        instances={MOCK_OPENCLAW_INSTANCES}
+        groups={MOCK_GROUPS}
       />
 
       {/* 更新对话框 */}
@@ -997,7 +999,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
       {/* 分发详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-2xl max-h-96">
+        <DialogContent className="max-w-3xl max-h-96">
           <DialogHeader>
             <DialogTitle>下发详情</DialogTitle>
           </DialogHeader>
@@ -1034,7 +1036,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700 min-w-[140px]">实例ID</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
                     </tr>
@@ -1050,7 +1052,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       filteredInstances.map((instance) => (
                         <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="px-4 py-2 text-gray-900">{instance.name}</td>
-                          <td className="px-4 py-2 text-gray-600 font-mono">{instance.id}</td>
+                          <td className="px-4 py-2 text-gray-600 font-mono whitespace-nowrap">{instance.id}</td>
                           <td className="px-4 py-2">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                               DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'

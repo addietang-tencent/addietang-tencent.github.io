@@ -570,7 +570,12 @@ export default function ChatView({
   const effectiveClaws = useMemo(() => claws.map(applyDemoBrowserMockFields), [claws]);
   const sortedClaws = [...effectiveClaws].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
 
-  const [selectedClawId, setSelectedClawId] = useState<string | null>(() => (sortedClaws.length > 0 ? sortedClaws[0].id : null));
+  const [selectedClawId, setSelectedClawId] = useState<string | null>(() => {
+    if (sortedClaws.length === 0) return null;
+    // 默认选中第一个 OpenClaw 类型的实例，没有则选第一个
+    const firstOpenclaw = sortedClaws.find((c) => !c.agentType || c.agentType === "openclaw");
+    return (firstOpenclaw ?? sortedClaws[0]).id;
+  });
   const [chatMap, setChatMap] = useState<Record<string, ChatMessage[]>>({});
   const [typingMap, setTypingMap] = useState<Record<string, boolean>>({});
   const [browserMap, setBrowserMap] = useState<Record<string, BrowserPanelState>>({});

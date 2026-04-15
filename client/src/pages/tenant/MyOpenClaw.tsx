@@ -778,7 +778,7 @@ export default function MyOpenClaw() {
                             进入终端
                           </Button>
                           <Button
-                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) setPanelDialog({ id: claw.id, name: claw.name }); }}
+                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
                             variant="outline"
                             size="sm"
                             className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}

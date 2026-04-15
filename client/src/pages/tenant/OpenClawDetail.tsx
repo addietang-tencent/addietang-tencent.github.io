@@ -1301,7 +1301,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           return imgNorm === normalizedType && i.active;
                         });
                         if (!hasActive) {
-                          toast.error("暂无生效的 Agent 类型镜像，请联系管理员处理");
+                          toast.error("暂无生效的OpenClaw类型镜像，请联系管理员处理");
                           return;
                         }
                       } catch { /* ignore */ }

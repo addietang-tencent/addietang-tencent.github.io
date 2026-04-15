@@ -503,6 +503,7 @@ export default function PluginListTab() {
         onDistributionStart={handleDistributeStart}
         title="批量下发插件"
         showScopeFilter={false}
+        instances={MOCK_OPENCLAW_INSTANCES}
       />
 
       {/* 删除确认弹窗 */}

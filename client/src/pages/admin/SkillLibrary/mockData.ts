@@ -7,13 +7,6 @@ export const MOCK_GROUPS: Group[] = MOCK_GROUPS_INIT.map(g => ({
   name: g.name,
 }));
 
-// 分组 → 用户映射（用于 mock 打通）
-export const GROUP_USERS: Record<string, string[]> = {
-  'grp-1': ['admin', 'pm-zhang'],
-  'grp-2': ['developer', 'dev-team', 'ops'],
-  'grp-3': ['finance-li', 'admin'],
-};
-
 // 为 GitHub Skill 创建额外的文件内容
 const githubSkillFiles: Record<string, string> = {
   'SKILL.md': `---
@@ -236,6 +229,8 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
+  { id: 'oc-7', name: 'OpenClaw-预发布环境', createdBy: 'admin', status: 'running', createdAt: '2026-04-05T11:00:00Z', distributionStatus: 'success', distributedVersion: '0.8.0', groupIds: ['grp-1', 'grp-2'] },
+  { id: 'oc-6', name: 'OpenClaw-回归测试', createdBy: 'dev-team', status: 'running', createdAt: '2026-04-01T09:30:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2', 'grp-3'] },
   { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-3'] },
   { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['grp-2'], failReason: '命令下发失败' },
   { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2'] },

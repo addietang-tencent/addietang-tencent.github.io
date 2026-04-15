@@ -90,6 +90,7 @@ interface OpenClawItem {
   skills: any[];
   op?: string;
   roleName?: string;
+  agentType?: string;
   os_name?: string;
   osName?: string;
   imageOsName?: string;
@@ -1521,24 +1522,85 @@ export default function ChatView({
 
       {showFullListSidebar && (
         <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
-          <div className="px-4 h-10 flex items-center">
-            <h3 className="text-xs text-gray-400">选择 OpenClaw</h3>
+          <div className="px-3 h-10 flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 w-full">
+                  <span className="font-medium">选择 Agent</span>
+                  <ChevronDown className="w-3 h-3 ml-auto flex-shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuItem
+                  className="text-xs cursor-pointer"
+                  onClick={() => {}}
+                >
+                  OpenClaw
+                </DropdownMenuItem>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DropdownMenuItem
+                        className="text-xs text-gray-300 cursor-not-allowed focus:bg-transparent focus:text-gray-300"
+                        disabled
+                      >
+                        Hermes
+                      </DropdownMenuItem>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs">
+                    暂不支持对话视图
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DropdownMenuItem
+                        className="text-xs text-gray-300 cursor-not-allowed focus:bg-transparent focus:text-gray-300"
+                        disabled
+                      >
+                        LightclawACE
+                      </DropdownMenuItem>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs">
+                    暂不支持对话视图
+                  </TooltipContent>
+                </Tooltip>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
             {effectiveClaws.length === 0 ? (
               <div className="text-center py-12 px-4">
-                <p className="text-xs text-gray-400">暂无 OpenClaw</p>
+                <p className="text-xs text-gray-400">暂无 Agent</p>
               </div>
             ) : (
               <div>
-                {sortedClaws.map((claw) => {
+                {(() => {
+                  const sidebarGroups: { key: string; label: string; items: typeof sortedClaws }[] = [
+                    { key: "openclaw", label: "OpenClaw", items: sortedClaws.filter(c => !c.agentType || c.agentType === "openclaw") },
+                    { key: "hermes", label: "Hermes", items: sortedClaws.filter(c => c.agentType === "hermes") },
+                    { key: "lightclawace", label: "LightclawACE", items: sortedClaws.filter(c => c.agentType === "lightclawace") },
+                  ].filter(g => g.items.length > 0);
+                  return sidebarGroups.map(group => (
+                    <div key={group.key}>
+                      {/* 分组标题 */}
+                      <div className="flex items-center gap-1.5 px-3 pt-3 pb-1">
+                        <span className="text-xs font-semibold text-gray-500">{group.label}</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
+                      {group.items.map((claw) => {
                   const isSelected = claw.id === selectedClawId;
                   const isConfigEnabled = claw.status === "running";
+                  const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
 
                   return (
                     <div
                       key={claw.id}
-                      className={`mx-2 my-2 px-3 py-2.5 cursor-pointer transition-all duration-150 group/item rounded-xl ${
+                      className={`mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-xl ${
+                        isNonOpenclaw ? "cursor-default" : "cursor-pointer"
+                      } ${
                         isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
                       }`}
                       style={
@@ -1546,7 +1608,7 @@ export default function ChatView({
                           ? { boxShadow: "0 2px 8px rgba(0,122,255,0.1)", border: "1px solid rgba(0,122,255,0.25)" }
                           : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
                       }
-                      onClick={() => handleSelectClaw(claw.id)}
+                      onClick={() => { if (!isNonOpenclaw) handleSelectClaw(claw.id); }}
                     >
                       <div className="flex items-center gap-1.5 min-w-0">
                         <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>
@@ -1565,6 +1627,31 @@ export default function ChatView({
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
                       <div className="flex items-center justify-between mt-2">
+                        {isNonOpenclaw ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
+                                isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
+                              }`}
+                              disabled={!isConfigEnabled}
+                              onClick={(e) => { e.stopPropagation(); if (isConfigEnabled) window.open(`/terminal/${claw.id}`, "_blank"); }}
+                            >
+                              <Terminal className="w-3 h-3" />
+                              进入终端
+                            </button>
+                            <span className="text-gray-200">|</span>
+                            <button
+                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
+                                isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
+                              }`}
+                              disabled={!isConfigEnabled}
+                              onClick={(e) => { e.stopPropagation(); }}
+                            >
+                              <Monitor className="w-3 h-3" />
+                              开启面板
+                            </button>
+                          </div>
+                        ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
@@ -1587,6 +1674,7 @@ export default function ChatView({
                             </TooltipContent>
                           )}
                         </Tooltip>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
@@ -1613,12 +1701,12 @@ export default function ChatView({
                             {claw.status === "running" ? (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                 <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                                重新安装
+                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
                                 <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                                重新安装
+                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
                               </DropdownMenuItem>
                             )}
                             {allowTerminal && (
@@ -1667,6 +1755,9 @@ export default function ChatView({
                     </div>
                   );
                 })}
+                    </div>
+                  ));
+                })()}
               </div>
             )}
           </div>

@@ -39,8 +39,15 @@ import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
-  LayoutGrid, MessageSquare,
+  LayoutGrid, MessageSquare, Monitor, Copy,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
@@ -65,6 +72,7 @@ interface OpenClawItem {
   op?: string; // 操作标记：restart, reinstall
   roleName?: string; // 角色名称
   memoryStatus?: 'none' | 'free' | 'pro'; // 记忆状态
+  agentType?: "openclaw" | "hermes" | "lightclawace"; // Agent 类型
 }
 
 interface Notification {
@@ -257,6 +265,9 @@ export default function MyOpenClaw() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const handleToggleFullscreen = () => setIsFullscreen(prev => !prev);
 
+  // Agent 类型
+  const [agentType, setAgentType] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
+
   // 角色选择
   const [roleExpanded, setRoleExpanded] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -274,12 +285,15 @@ export default function MyOpenClaw() {
   const [hasUnread, setHasUnread] = useState(false);
 
   // 确认弹窗
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: OpenClawStatus } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: OpenClawStatus; memoryStatus?: 'none' | 'free' | 'pro' } | null>(null);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirmInput, setReinstallConfirmInput] = useState("");
   const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ id: string; name: string; roleName: string } | null>(null);
+
+  // 开启面板弹窗
+  const [panelDialog, setPanelDialog] = useState<{ id: string; name: string } | null>(null);
 
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
   
@@ -362,13 +376,14 @@ export default function MyOpenClaw() {
       instanceId: `ins-${ts.toString(36).slice(-8)}`,
       name: newName.trim(),
       status: "creating",
+      agentType: agentType,
       createdAt: new Date().toLocaleString("zh-CN"),
       model: "",
       modelVersion: "",
       channels: [],
       skills: [],
-      roleName: selectedRole?.name ?? "通用助手",
-      memoryStatus: enableMemory ? memoryVersion : 'none', // 记忆状态
+      roleName: agentType === "openclaw" ? (selectedRole?.name ?? "通用助手") : undefined,
+      memoryStatus: agentType === "openclaw" && enableMemory ? memoryVersion : 'none', // 记忆状态
     };
     setClaws([...claws, newClaw]);
     setNewName("");
@@ -457,8 +472,8 @@ export default function MyOpenClaw() {
                   <div className="flex items-start gap-3">
                     <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">创建 OpenClaw</p>
-                      <p className="text-xs text-gray-500 mt-0.5">点击「创建 OpenClaw」，为你的小龙虾取一个名字</p>
+                      <p className="text-sm font-medium text-gray-900">创建 Agent</p>
+                      <p className="text-xs text-gray-500 mt-0.5">点击「创建 Agent」，为你的 Agent 取一个名字</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-blue-200 mt-3.5 flex-shrink-0" />
@@ -493,7 +508,7 @@ export default function MyOpenClaw() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">我的 OpenClaw</h1>
+              <h1 className="text-2xl font-bold text-gray-900">我的 Agent</h1>
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
@@ -515,7 +530,7 @@ export default function MyOpenClaw() {
                 style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
               >
                 <Plus className="w-4 h-4 mr-1.5" />
-                创建 OpenClaw
+                创建 Agent
               </Button>
             </div>
           </div>
@@ -575,25 +590,43 @@ export default function MyOpenClaw() {
               ) : claws.length === 0 ? (
                 <div className="text-center py-24">
                   <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">还没有 OpenClaw，快来创建第一个吧！</p>
+                  <p className="text-gray-400 mb-4">还没有 Agent，快来创建第一个吧！</p>
                   <Button onClick={() => setShowCreate(true)} variant="outline">
                     <Plus className="w-4 h-4 mr-1.5" />
-                    创建 OpenClaw
+                    创建 Agent
                   </Button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-4">
-              {claws.map((claw) => {
-                const cfg = STATUS_CONFIG[claw.status];
+              ) : (() => {
+                // 按 agentType 分组
+                const groups: { key: string; label: string; items: OpenClawItem[] }[] = [
+                  { key: "openclaw",    label: "OpenClaw",    items: claws.filter(c => !c.agentType || c.agentType === "openclaw") },
+                  { key: "hermes",     label: "Hermes",      items: claws.filter(c => c.agentType === "hermes") },
+                  { key: "lightclawace", label: "LightclawACE", items: claws.filter(c => c.agentType === "lightclawace") },
+                ].filter(g => g.items.length > 0);
+
+                return (
+                  <div className="space-y-8">
+                  {groups.map(group => (
+                    <div key={group.key}>
+                      {/* 分组标题 */}
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-sm font-semibold text-gray-700">{group.label}</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{group.items.length}</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+              {group.items.map((claw) => {
+                const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
                 const isLoadFail = claw.status === "loadFail";
+                const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
 
                 return (
                   <div key={claw.id}
-                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
+                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled && !isNonOpenclaw ? "hover:-translate-y-0.5 cursor-pointer" : isNonOpenclaw && !isDisabled ? "hover:-translate-y-0.5" : "cursor-default"}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-                    onClick={() => { if (!isDisabled) navigate(`/openclaw/${claw.id}`); }}
+                    onClick={() => { if (!isDisabled && !isNonOpenclaw) navigate(`/openclaw/${claw.id}`); }}
                   >
                     {/* Card Header */}
                     <div className="p-5">
@@ -639,12 +672,12 @@ export default function MyOpenClaw() {
                               {claw.status === "running" ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                                  重新安装 OpenClaw
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                                  重新安装 OpenClaw
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                                 </DropdownMenuItem>
                               )}
 
@@ -713,7 +746,31 @@ export default function MyOpenClaw() {
 
                     {/* Card Actions */}
                     <div className="px-5 pb-4 border-t border-gray-50 pt-3">
-                      {isLoadFail ? (
+                      {isNonOpenclaw ? (
+                        /* Hermes / LightclawACE 类型：进入终端 + 开启面板 */
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}
+                            variant="outline"
+                            size="sm"
+                            className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                            disabled={isDisabled}
+                          >
+                            <Terminal className="w-3.5 h-3.5 mr-1.5" />
+                            进入终端
+                          </Button>
+                          <Button
+                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) setPanelDialog({ id: claw.id, name: claw.name }); }}
+                            variant="outline"
+                            size="sm"
+                            className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                            disabled={isDisabled}
+                          >
+                            <Monitor className="w-3.5 h-3.5 mr-1.5" />
+                            开启面板
+                          </Button>
+                        </div>
+                      ) : isLoadFail ? (
                         <Button
                           onClick={(e) => { e.stopPropagation(); handleRetry(claw.id, claw.name); }}
                           variant="outline"
@@ -749,8 +806,12 @@ export default function MyOpenClaw() {
                   </div>
                 );
               })}
-                </div>
-              )}
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                );
+              })()}
           </div>
         </div>
 
@@ -932,8 +993,64 @@ export default function MyOpenClaw() {
           </DialogContent>
         </Dialog>
 
+        {/* Panel Dialog - 开启面板 */}
+        <Dialog open={!!panelDialog} onOpenChange={(open) => { if (!open) setPanelDialog(null); }}>
+          <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-gray-900">开启OpenClaw面板</DialogTitle>
+            </DialogHeader>
+            {/* 安全警告 */}
+            <div className="bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
+              <p className="text-sm font-semibold text-orange-600 leading-relaxed">
+                访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
+              </p>
+            </div>
+            {/* 信息行 */}
+            <div className="space-y-3 py-1">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500 w-24 shrink-0">WebSocket URL</span>
+                <span className="flex-1 text-sm text-gray-800 font-mono truncate">
+                  http://43.139.137.45:38341/knmnz8?token=8512b8ef...
+                </span>
+                <button
+                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => { navigator.clipboard.writeText("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb"); toast.success("已复制"); }}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="h-px bg-gray-100" />
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500 w-24 shrink-0">网关令牌</span>
+                <span className="flex-1 text-sm text-gray-800 font-mono truncate">
+                  8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb
+                </span>
+                <button
+                  className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => { navigator.clipboard.writeText("8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb"); toast.success("已复制"); }}
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            {/* 说明文字 */}
+            <p className="text-sm text-gray-500 leading-relaxed">
+              用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。
+            </p>
+            <DialogFooter>
+              <Button
+                className="w-full"
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                onClick={() => { window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
+              >
+                立即访问
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Create Dialog */}
-        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setRoleExpanded(false); setSelectedRole(null); } }}>
+        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); } }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -941,14 +1058,14 @@ export default function MyOpenClaw() {
                   style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
                   🦞
                 </div>
-                创建 OpenClaw
+                创建 Agent
               </DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4">
               {/* Name Input */}
               <div>
                 <Label htmlFor="claw-name" className="text-sm font-medium text-gray-700">
-                  OpenClaw 名称
+                  Agent 名称
                 </Label>
                 <Input
                   id="claw-name"
@@ -964,7 +1081,32 @@ export default function MyOpenClaw() {
                 </p>
               </div>
 
-              {/* Role Selection - Collapsible Panel */}
+              {/* Agent Type Select */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Agent 类型</Label>
+                <Select
+                  value={agentType}
+                  onValueChange={(v) => {
+                    setAgentType(v as "openclaw" | "hermes" | "lightclawace");
+                    if (v !== "openclaw") {
+                      setRoleExpanded(false);
+                      setSelectedRole(null);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="openclaw">OpenClaw</SelectItem>
+                    <SelectItem value="hermes">Hermes</SelectItem>
+                    <SelectItem value="lightclawace">LightclawACE</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Role Selection - Collapsible Panel (仅 OpenClaw 类型显示) */}
+              {agentType === "openclaw" && (
               <div className="border border-gray-100 rounded-xl overflow-hidden">
                 <button
                   type="button"
@@ -1056,8 +1198,10 @@ export default function MyOpenClaw() {
                 )}
               </div>
 
-              {/* 记忆功能选项 - 仅当管控端开启时显示 */}
-              {globalMemoryEnabled && (
+              )}
+
+              {/* 记忆功能选项 - 仅当管控端开启且 Agent 类型为 OpenClaw 时显示 */}
+              {agentType === "openclaw" && globalMemoryEnabled && (
                 <div className="border border-gray-100 rounded-xl overflow-hidden">
                   <div className="px-4 py-3">
                     {/* 开通记忆功能开关 */}

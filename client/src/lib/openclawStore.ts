@@ -12,6 +12,7 @@ export interface OpenClawItem {
   instanceId: string;
   name: string;
   status: string;
+  agentType?: "openclaw" | "hermes" | "lightclawace";
   createdAt: string;
   model: string;
   modelVersion: string;
@@ -19,6 +20,7 @@ export interface OpenClawItem {
   skills: any[];
   op?: string;
   roleName?: string;
+  memoryStatus?: 'none' | 'free' | 'pro';
 }
 
 /** 从 localStorage 读取列表，首次使用 MOCK 数据初始化 */

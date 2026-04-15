@@ -273,11 +273,7 @@ export default function MyOpenClaw() {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const visibleRoles = MOCK_ROLES.filter((r) => r.visible);
 
-  // Memory 相关（Mock 数据 - 管控端配置）
-  const globalMemoryEnabled = true; // 管控端是否开启了 Memory 功能
-  const memoryProQuotaAvailable = true; // Memory Pro 配额是否充足（改为 false 可测试配额不足场景）
-  const [enableMemory, setEnableMemory] = useState(true); // 用户是否勾选开通记忆功能
-  const [memoryVersion, setMemoryVersion] = useState<'free' | 'pro'>('pro'); // 记忆版本选择
+
 
   // 通知相关
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -386,7 +382,7 @@ export default function MyOpenClaw() {
       channels: [],
       skills: [],
       roleName: agentType === "openclaw" ? (selectedRole?.name ?? "通用助手") : undefined,
-      memoryStatus: agentType === "openclaw" && enableMemory ? memoryVersion : 'none', // 记忆状态
+      memoryStatus: 'none', // 记忆状态
     };
     setClaws([...claws, newClaw]);
     setNewName("");
@@ -1233,109 +1229,6 @@ export default function MyOpenClaw() {
 
               )}
 
-              {/* 记忆功能选项 - 仅当管控端开启且 Agent 类型为 OpenClaw 时显示 */}
-              {agentType === "openclaw" && globalMemoryEnabled && (
-                <div className="border border-gray-100 rounded-xl overflow-hidden">
-                  <div className="px-4 py-3">
-                    {/* 开通记忆功能开关 */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-md flex items-center justify-center"
-                          style={{ background: "linear-gradient(135deg, #8B5CF6, #A78BFA)" }}>
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium text-gray-700">开通记忆功能</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setEnableMemory(!enableMemory)}
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                          enableMemory 
-                            ? "bg-purple-500 border-purple-500" 
-                            : "bg-white border-gray-300 hover:border-gray-400"
-                        }`}
-                      >
-                        {enableMemory && (
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 ml-7">
-                      让 AI 记住你的偏好和习惯，提供个性化服务
-                    </p>
-                    
-                    {/* 版本选择 - 仅在开启记忆功能时显示 */}
-                    {enableMemory && (
-                      <div className="mt-3 ml-7 space-y-2">
-                        <p className="text-xs text-gray-500 font-medium">版本选择</p>
-                        <div className="flex gap-2">
-                          {/* Free 版 */}
-                          <button
-                            type="button"
-                            onClick={() => setMemoryVersion('free')}
-                            className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-all ${
-                              memoryVersion === 'free'
-                                ? 'border-purple-300 bg-purple-50 text-purple-700'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="flex items-center justify-center gap-1.5">
-                              <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
-                                memoryVersion === 'free' ? 'border-purple-500' : 'border-gray-300'
-                              }`}>
-                                {memoryVersion === 'free' && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                                )}
-                              </div>
-                              <span>Free 基础版</span>
-                            </div>
-                            <p className="text-xs text-gray-400 mt-1">免费</p>
-                          </button>
-                          
-                          {/* Pro 版 */}
-                          <button
-                            type="button"
-                            onClick={() => memoryProQuotaAvailable && setMemoryVersion('pro')}
-                            disabled={!memoryProQuotaAvailable}
-                            className={`flex-1 px-3 py-2 rounded-lg border text-sm transition-all ${
-                              !memoryProQuotaAvailable
-                                ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
-                                : memoryVersion === 'pro'
-                                  ? 'border-purple-300 bg-purple-50 text-purple-700'
-                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="flex items-center justify-center gap-1.5">
-                              <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
-                                !memoryProQuotaAvailable
-                                  ? 'border-gray-300'
-                                  : memoryVersion === 'pro' ? 'border-purple-500' : 'border-gray-300'
-                              }`}>
-                                {memoryVersion === 'pro' && memoryProQuotaAvailable && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                                )}
-                              </div>
-                              <span>Pro 专业版</span>
-                              {memoryProQuotaAvailable && (
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-600">推荐</span>
-                              )}
-                            </div>
-                            {memoryProQuotaAvailable ? (
-                              <p className="text-xs text-gray-400 mt-1">更强大的记忆能力</p>
-                            ) : (
-                              <p className="text-xs text-amber-600 mt-1">配额不足</p>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowCreate(false)}>取消</Button>

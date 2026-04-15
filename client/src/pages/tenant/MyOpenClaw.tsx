@@ -295,6 +295,9 @@ export default function MyOpenClaw() {
   // 开启面板弹窗
   const [panelDialog, setPanelDialog] = useState<{ id: string; name: string } | null>(null);
 
+  // 卡片视图 Agent 类型子 Tab
+  const [activeAgentTab, setActiveAgentTab] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
+
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
   
   // 从管控端同步的开关

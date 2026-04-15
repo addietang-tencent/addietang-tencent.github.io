@@ -68,7 +68,7 @@ export const DisableConfirmDialog: React.FC<DisableConfirmDialogProps> = ({
               <div>
                 <h4 className="font-semibold text-[#92400e] mb-2">关闭后效果</h4>
                 <ul className="text-sm text-[#92400e] space-y-1">
-                  <li>• 新创建的 OpenClaw 实例将<strong>不再默认启用</strong>记忆功能。</li>
+                  <li>• 新创建的 Agent 将<strong>不再默认启用</strong>记忆功能。</li>
                   <li>• 所有现有实例的记忆插件将被<strong>禁用</strong>（插件保留，但停止工作）。</li>
                   <li>• 已产生的记忆数据不会删除，重新开启后可恢复使用。</li>
                 </ul>

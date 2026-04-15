@@ -168,8 +168,8 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    port: 3000,
-    strictPort: false, // Will find next available port if 3000 is busy
+    port: 3002,
+    strictPort: false, // Will find next available port if 3002 is busy
     host: true,
     proxy: {
       "/api/ai": {

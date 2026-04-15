@@ -8,6 +8,7 @@ import {
   Filter,
   Bot,
   X,
+  Info,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -514,14 +515,14 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           content: (
             <div className="space-y-3">
               <p className="text-gray-600 text-sm leading-relaxed">
-                即将为 <span className="font-semibold text-gray-900">{count}</span> 个 OpenClaw 实例开启 Memory Free 服务。
+                即将为 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 开启 Memory Free 服务。
               </p>
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-blue-700 text-sm">开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
               </div>
               {selectedInstances.length > count && (
                 <p className="text-xs text-gray-500">
-                  注：已选中 {selectedInstances.length} 个实例，其中 {selectedInstances.length - count} 个已开启记忆，将被跳过。
+                  注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已开启记忆，将被跳过。
                 </p>
               )}
             </div>
@@ -541,11 +542,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           content: (
             <div className="space-y-3">
               <p className="text-gray-600 text-sm leading-relaxed">
-                确认为 <span className="font-semibold text-gray-900">{count}</span> 个 OpenClaw 实例开启 Memory Pro 服务？
+                确认为 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 开启 Memory Pro 服务？
               </p>
               {fromFreeCount > 0 && (
                 <p className="text-gray-500 text-sm leading-relaxed">
-                  其中 {fromFreeCount} 个实例将从 Free 版升级，数据将自动迁移。
+                  其中 {fromFreeCount} 个 Agent 将从 Free 版升级，数据将自动迁移。
                 </p>
               )}
               <p className="text-gray-500 text-sm leading-relaxed">
@@ -556,7 +557,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </div>
               {selectedInstances.length > count && (
                 <p className="text-xs text-gray-500">
-                  注：已选中 {selectedInstances.length} 个实例，其中 {selectedInstances.length - count} 个已是 Pro 版，将被跳过。
+                  注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已是 Pro 版，将被跳过。
                 </p>
               )}
             </div>
@@ -577,7 +578,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           content: (
             <div className="space-y-3">
               <p className="text-gray-600 text-sm leading-relaxed">
-                即将关闭 <span className="font-semibold text-gray-900">{count}</span> 个 OpenClaw 实例的 Memory 服务。
+                即将关闭 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 的 Memory 服务。
               </p>
               {proCount > 0 && freeCount > 0 && (
                 <p className="text-gray-500 text-sm">
@@ -613,7 +614,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </div>
               {selectedInstances.length > count && (
                 <p className="text-xs text-gray-500">
-                  注：已选中 {selectedInstances.length} 个实例，其中 {selectedInstances.length - count} 个未开启记忆，将被跳过。
+                  注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个未开启记忆，将被跳过。
                 </p>
               )}
             </div>
@@ -638,7 +639,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             content: (
               <div className="space-y-3">
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  确认为 OpenClaw 实例「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Free 服务？
+                  确认为 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Free 服务？
                 </p>
                 <p className="text-gray-500 text-sm leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
@@ -655,7 +656,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             content: (
               <div className="space-y-3">
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  确认为 OpenClaw 实例「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Pro 服务？
+                  确认为 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Pro 服务？
                 </p>
                 {isFromFree && (
                   <p className="text-gray-500 text-sm leading-relaxed">
@@ -680,7 +681,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             content: (
               <div className="space-y-3">
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  确认关闭 OpenClaw 实例「<span className="font-medium text-gray-900">{targetInstance.name}</span>」的 Memory 服务？
+                  确认关闭 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」的 Memory 服务？
                 </p>
                 <p className="text-gray-500 text-sm leading-relaxed">
                   关闭后将重启 Gateway 服务，届时会有短暂的服务中断。
@@ -892,7 +893,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="搜索实例名称或 ID"
+              placeholder="搜索 Agent 名称或 ID"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 bg-white w-64"
@@ -934,8 +935,18 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   }}
                 />
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-1/3">
-                OpenClaw 实例名称/ID
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 tracking-wide w-1/3">
+                <div className="flex items-center gap-1.5">
+                  <span>Agent 名称/ID</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>目前仅 OpenClaw 类型的 Agent 支持 Memory 功能</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-1/3">
                 创建人
@@ -1035,7 +1046,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   <div className="bg-blue-50 border-b border-blue-100 px-6 py-2.5 text-center text-sm">
                     {isSelectAll ? (
                       <span className="text-blue-700">
-                        已选择全部 <strong>{selectedIds.size}</strong> 个实例。
+                        已选择全部 <strong>{selectedIds.size}</strong> 个 Agent。
                         <button
                           onClick={handleClearSelection}
                           className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
@@ -1050,7 +1061,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                           onClick={handleSelectAllPages}
                           className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
                         >
-                          选择全部 {totalSelectableCount} 个实例
+                          选择全部 {totalSelectableCount} 个 Agent
                         </button>
                       </span>
                     )}

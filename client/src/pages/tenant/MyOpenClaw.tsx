@@ -587,35 +587,66 @@ export default function MyOpenClaw() {
                   isFullscreen={isFullscreen}
                   onToggleFullscreen={handleToggleFullscreen}
                 />
-              ) : claws.length === 0 ? (
-                <div className="text-center py-24">
-                  <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                  <p className="text-gray-400 mb-4">还没有 Agent，快来创建第一个吧！</p>
-                  <Button onClick={() => setShowCreate(true)} variant="outline">
-                    <Plus className="w-4 h-4 mr-1.5" />
-                    创建 Agent
-                  </Button>
-                </div>
               ) : (() => {
-                // 按 agentType 分组
-                const groups: { key: string; label: string; items: OpenClawItem[] }[] = [
-                  { key: "openclaw",    label: "OpenClaw",    items: claws.filter(c => !c.agentType || c.agentType === "openclaw") },
-                  { key: "hermes",     label: "Hermes",      items: claws.filter(c => c.agentType === "hermes") },
-                  { key: "lightclawace", label: "LightclawACE", items: claws.filter(c => c.agentType === "lightclawace") },
-                ].filter(g => g.items.length > 0);
+                // 三类 Tab 定义
+                const agentTabs: { key: "openclaw" | "hermes" | "lightclawace"; label: string }[] = [
+                  { key: "openclaw",     label: "OpenClaw" },
+                  { key: "hermes",      label: "Hermes" },
+                  { key: "lightclawace", label: "LightclawACE" },
+                ];
+                // 当前 Tab 过滤后的实例
+                const tabItems = claws.filter(c =>
+                  activeAgentTab === "openclaw"
+                    ? (!c.agentType || c.agentType === "openclaw")
+                    : c.agentType === activeAgentTab
+                );
 
                 return (
-                  <div className="space-y-8">
-                  {groups.map(group => (
-                    <div key={group.key}>
-                      {/* 分组标题 */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-sm font-semibold text-gray-700">{group.label}</span>
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{group.items.length}</span>
-                        <div className="flex-1 h-px bg-gray-100" />
+                  <div>
+                    {/* 横向子 Tab */}
+                    <div className="flex items-center gap-1 mb-5 border-b border-gray-100">
+                      {agentTabs.map(tab => {
+                        const count = claws.filter(c =>
+                          tab.key === "openclaw"
+                            ? (!c.agentType || c.agentType === "openclaw")
+                            : c.agentType === tab.key
+                        ).length;
+                        const isActive = activeAgentTab === tab.key;
+                        return (
+                          <button
+                            key={tab.key}
+                            onClick={() => setActiveAgentTab(tab.key)}
+                            className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                              isActive
+                                ? "text-blue-600"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
+                          >
+                            {tab.label}
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                              isActive ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-400"
+                            }`}>{count}</span>
+                            {isActive && (
+                              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 当前 Tab 内容 */}
+                    {tabItems.length === 0 ? (
+                      <div className="text-center py-24">
+                        <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                        <p className="text-gray-400 mb-4">暂无 {agentTabs.find(t => t.key === activeAgentTab)?.label} 实例</p>
+                        <Button onClick={() => setShowCreate(true)} variant="outline">
+                          <Plus className="w-4 h-4 mr-1.5" />
+                          创建 Agent
+                        </Button>
                       </div>
+                    ) : (
                       <div className="grid grid-cols-3 gap-4">
-              {group.items.map((claw) => {
+              {tabItems.map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
@@ -806,9 +837,8 @@ export default function MyOpenClaw() {
                   </div>
                 );
               })}
-                      </div>
                     </div>
-                  ))}
+                  )}
                   </div>
                 );
               })()}

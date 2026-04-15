@@ -24,12 +24,13 @@ import {
   ChevronRight,
   AlertTriangle,
   Info,
-  ChevronLeft
+  ChevronLeft,
+  Trash2
 } from "lucide-react";
 
 // Updated Mock Data for Enterprise Spaces
 const ENTERPRISE_SPACES = [
-  { id: "ent-001", name: "企业技能库", type: "公共", used: "12GB", quota: "50GB", expiry: "永久有效" },
+  { id: "ent-001", name: "Agent 工具库", type: "公共", used: "12GB", quota: "50GB", expiry: "永久有效" },
   { id: "ent-002", name: "初始技能包", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
 ];
 
@@ -73,6 +74,7 @@ const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
 export default function FileManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [autoBindNewInstance, setAutoBindNewInstance] = useState(true);
+  const [allowUserSelfEnable, setAllowUserSelfEnable] = useState(true);
   const [instancesEnabled, setInstancesEnabled] = useState<Record<string, boolean>>(
     PERSONAL_SPACES_DATA.reduce((acc, item) => {
       acc[item.id] = item.enabled;
@@ -95,7 +97,9 @@ export default function FileManagement() {
   const [singleEnableDialogOpen, setSingleEnableDialogOpen] = useState(false);
   const [recoverDialogOpen, setRecoverDialogOpen] = useState(false);
   const [autoBindToggleDialogOpen, setAutoBindToggleDialogOpen] = useState(false);
+  const [allowUserSelfEnableDialogOpen, setAllowUserSelfEnableDialogOpen] = useState(false);
   const [pendingAutoBindValue, setPendingAutoBindValue] = useState<boolean | null>(null);
+  const [pendingAllowUserSelfEnableValue, setPendingAllowUserSelfEnableValue] = useState<boolean | null>(null);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
   const [instanceToRecover, setInstanceToRecover] = useState<{ id: string; name: string } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -229,6 +233,24 @@ export default function FileManagement() {
     setPendingAutoBindValue(null);
   };
 
+  const handleAllowUserSelfEnableToggle = (checked: boolean) => {
+    setPendingAllowUserSelfEnableValue(checked);
+    setAllowUserSelfEnableDialogOpen(true);
+  };
+
+  const handleConfirmAllowUserSelfEnableToggle = () => {
+    if (pendingAllowUserSelfEnableValue !== null) {
+      setAllowUserSelfEnable(pendingAllowUserSelfEnableValue);
+    }
+    setAllowUserSelfEnableDialogOpen(false);
+    setPendingAllowUserSelfEnableValue(null);
+  };
+
+  const handleCancelAllowUserSelfEnableToggle = () => {
+    setAllowUserSelfEnableDialogOpen(false);
+    setPendingAllowUserSelfEnableValue(null);
+  };
+
   // 计算可恢复的剩余天数
   const getRemainingDays = (instanceId: string): number => {
     const disabledTime = instancesDisabledTime[instanceId];
@@ -359,7 +381,7 @@ export default function FileManagement() {
         <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-600 leading-relaxed">
-            默认开启,为您赠送 <span className="font-semibold">50GB + 50GB</span> 永久免费空间,用于存放企业级技能库和初始技能包
+            默认开启,为您赠送 <span className="font-semibold">50GB + 50GB</span> 永久免费空间,用于存放 Agent 工具库和初始技能包
           </p>
         </div>
 
@@ -418,9 +440,18 @@ export default function FileManagement() {
 
       {/* AI Agent Private Space Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-purple-600" />
-          <h2 className="font-semibold text-gray-900">智能体网盘</h2>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-purple-600" />
+            <h2 className="font-semibold text-gray-900">智能体网盘</h2>
+          </div>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 h-9 px-4 text-sm border-gray-300 hover:border-gray-400 rounded-lg transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            回收站
+          </Button>
         </div>
 
         {/* 信息提示横幅 */}
@@ -473,6 +504,18 @@ export default function FileManagement() {
                 <Switch 
                   checked={autoBindNewInstance}
                   onCheckedChange={handleAutoBindToggle}
+                />
+              </div>
+              <div className="h-8 w-px bg-gray-200"></div>
+              {/* Allow User Self Enable Configuration */}
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-700">允许用户自行开启网盘</span>
+                  <span className="text-xs text-gray-500">开启后,用户可在自己的实例中自主开启网盘服务</span>
+                </div>
+                <Switch 
+                  checked={allowUserSelfEnable}
+                  onCheckedChange={handleAllowUserSelfEnableToggle}
                 />
               </div>
               <div className="h-8 w-px bg-gray-200"></div>
@@ -822,6 +865,51 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelAutoBindToggle}>取消</Button>
             <Button onClick={handleConfirmAutoBindToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认{pendingAutoBindValue ? "开启" : "关闭"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Allow User Self Enable Toggle Confirmation Dialog */}
+      <Dialog open={allowUserSelfEnableDialogOpen} onOpenChange={setAllowUserSelfEnableDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              {pendingAllowUserSelfEnableValue ? "允许用户自行开启网盘" : "禁止用户自行开启网盘"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-gray-700">
+              {pendingAllowUserSelfEnableValue 
+                ? "您确定要允许用户自行开启网盘服务吗?" 
+                : "您确定要禁止用户自行开启网盘服务吗?"}
+            </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
+                {pendingAllowUserSelfEnableValue ? (
+                  <>
+                    <p className="font-semibold">开启后：</p>
+                    <div className="space-y-0.5 ml-1">
+                      <p>• 用户可在自己的实例详情页中自主开启网盘服务</p>
+                      <p>• 无需管理员手动开启</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold">关闭后：</p>
+                    <div className="space-y-0.5 ml-1">
+                      <p>• 用户无法自行开启网盘服务</p>
+                      <p>• 需要由管理员统一管理开启</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelAllowUserSelfEnableToggle}>取消</Button>
+            <Button onClick={handleConfirmAllowUserSelfEnableToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+              确认{pendingAllowUserSelfEnableValue ? "允许" : "禁止"}
             </Button>
           </DialogFooter>
         </DialogContent>

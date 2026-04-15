@@ -89,7 +89,6 @@ function normalizeImages(imgs: ImageRow[]): ImageRow[] {
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
 export default function ImageManagement() {
-<<<<<<< HEAD
   const [images, setImages] = useState<ImageRow[]>(() => {
     try {
       const raw = localStorage.getItem("admin_images");
@@ -102,9 +101,6 @@ export default function ImageManagement() {
     setImages(next);
     localStorage.setItem("admin_images", JSON.stringify(next));
   };
-=======
-  const [images, setImages] = useState<ImageRow[]>(() => normalizeImages(MOCK_IMAGES));
->>>>>>> c9fb2e2 (refactor(admin): 记忆管理页面文案优化及主干代码合并)
   const [customAgentTypes, setCustomAgentTypes] = useState<AgentTypeConfig[]>([]);
   // 已添加到页面的类型（value 列表），初始只展示有镜像的
   const [addedTypes, setAddedTypes] = useState<string[]>(() => {
@@ -242,11 +238,7 @@ export default function ImageManagement() {
     if (config && config.versionRegex && !validateVersion(config, importAgentVersion)) { toast.error("版本格式不正确"); return; }
     if (images.some((img) => img.id === selectedImageId)) { toast.error("该镜像已在列表中"); return; }
     const img = ALL_IMPORTABLE.find((i) => i.id === selectedImageId)!;
-<<<<<<< HEAD
     syncImages([...images, {
-=======
-    setImages([...images, {
->>>>>>> c9fb2e2 (refactor(admin): 记忆管理页面文案优化及主干代码合并)
       id: img.id, name: img.name, status: "available",
       type: img.group === "public" ? "public" : "custom",
       agentType: importAgentType, agentVersion: importAgentVersion.trim(),
@@ -262,17 +254,10 @@ export default function ImageManagement() {
   const handleToggleActive = (imgId: string, agentType: string, enable: boolean) => {
     if (!enable) {
       if (agentType === defaultAgentType) { toast.error("用户端首选类型必须有一个启用的镜像，无法取消"); return; }
-<<<<<<< HEAD
       syncImages(images.map((i) => i.id === imgId ? { ...i, active: false } : i));
       toast.success("已取消启用"); return;
     }
     syncImages(images.map((i) => i.agentType === agentType ? { ...i, active: i.id === imgId } : i));
-=======
-      setImages(images.map((i) => i.id === imgId ? { ...i, active: false } : i));
-      toast.success("已取消启用"); return;
-    }
-    setImages(images.map((i) => i.agentType === agentType ? { ...i, active: i.id === imgId } : i));
->>>>>>> c9fb2e2 (refactor(admin): 记忆管理页面文案优化及主干代码合并)
     const img = images.find((i) => i.id === imgId);
     toast.success(`「${img?.name}」已启用为 ${getTypeLabel(agentType)} 的目标镜像`);
   };
@@ -287,11 +272,7 @@ export default function ImageManagement() {
     const img = images.find((i) => i.id === imgId);
     if (!img) return;
     if (img.active && img.agentType === defaultAgentType) { toast.error("该镜像为用户端首选类型的启用镜像，无法删除"); return; }
-<<<<<<< HEAD
     syncImages(images.filter((i) => i.id !== imgId));
-=======
-    setImages(images.filter((i) => i.id !== imgId));
->>>>>>> c9fb2e2 (refactor(admin): 记忆管理页面文案优化及主干代码合并)
     toast.success("镜像已删除");
   };
 

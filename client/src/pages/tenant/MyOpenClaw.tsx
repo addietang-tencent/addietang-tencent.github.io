@@ -778,7 +778,11 @@ export default function MyOpenClaw() {
                             进入终端
                           </Button>
                           <Button
+<<<<<<< HEAD
                             onClick={(e) => { e.stopPropagation(); if (!isDisabled) window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
+=======
+                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) setPanelDialog({ id: claw.id, name: claw.name }); }}
+>>>>>>> c9fb2e2 (refactor(admin): 记忆管理页面文案优化及主干代码合并)
                             variant="outline"
                             size="sm"
                             className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}

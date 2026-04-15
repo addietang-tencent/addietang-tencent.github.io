@@ -114,14 +114,14 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
     let description = '';
     
     if (pendingValue === 'none') {
-      title = '新建 OpenClaw 默认关闭记忆';
-      description = '新建 OpenClaw 将不会自动开启记忆功能。';
+      title = '新建 Agent 默认关闭记忆';
+      description = '新建 Agent 将不会自动开启记忆功能。';
     } else if (pendingValue === 'free') {
-      title = '新建 OpenClaw 默认开启「Memory Free版」';
-      description = '新建 OpenClaw 将自动开启 Free 版记忆功能。';
+      title = '新建 Agent 默认开启「Memory Free版」';
+      description = '新建 Agent 将自动开启 Free 版记忆功能。';
     } else if (pendingValue === 'pro') {
-      title = '新建 OpenClaw 默认开启「Memory Pro版」';
-      description = '新建 OpenClaw 将自动开启 Pro 版记忆功能，并消耗相应配额。';
+      title = '新建 Agent 默认开启「Memory Pro版」';
+      description = '新建 Agent 将自动开启 Pro 版记忆功能，并消耗相应配额。';
     }
 
     return {
@@ -134,13 +134,13 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
     <TooltipProvider>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">新建 OpenClaw 默认记忆版本</span>
+          <span className="text-sm font-medium text-gray-700">新建 Agent 默认记忆版本</span>
           <Tooltip>
             <TooltipTrigger asChild>
               <Info className="w-4 h-4 text-gray-400 cursor-help" />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-xs">
-              <p className="text-xs">新建 OpenClaw 将自动开启所选版本的记忆功能</p>
+              <p className="text-xs">新建 Agent 将自动开启所选版本的记忆功能</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -196,9 +196,9 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
         
         {/* 说明文字 */}
         <span className="text-xs text-gray-400">
-          {value === 'none' && '新建 OpenClaw 不自动开启记忆'}
-          {value === 'free' && '新建 OpenClaw 自动开启 Free版'}
-          {value === 'pro' && '新建 OpenClaw 自动开启 Pro版'}
+          {value === 'none' && '新建 Agent 不自动开启记忆'}
+          {value === 'free' && '新建 Agent 自动开启 Free版'}
+          {value === 'pro' && '新建 Agent 自动开启 Pro版'}
         </span>
       </div>
 

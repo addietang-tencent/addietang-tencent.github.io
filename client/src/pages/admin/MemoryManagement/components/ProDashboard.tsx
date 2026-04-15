@@ -95,7 +95,7 @@ const memoryStatusConfig = {
   },
 };
 
-// Mock 数据 - 18 个 OpenClaw 实例（全部开通 Pro，模拟 90% 配额使用率）
+// Mock 数据 - 18 个 Agent（全部开通 Pro，模拟 90% 配额使用率）
 const mockOcList: Array<{ 
   id: string; 
   name: string; 
@@ -473,7 +473,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="搜索实例名称或 ID"
+                  placeholder="搜索 Agent 名称或 ID"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 w-64"

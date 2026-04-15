@@ -28,7 +28,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 增量配置：新创建的实例是否默认开通 Pro
+  // 增量配置：新创建的 Agent 是否默认开通 Pro
   const [autoEnableForNewInstances, setAutoEnableForNewInstances] = useState(true);
 
   const handleConfirm = async () => {
@@ -92,7 +92,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
           {/* 配额说明 */}
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 space-y-2">
             <p className="text-xs text-blue-700 leading-relaxed">
-              开通后将获得 <strong>{FIXED_MEMORY_SPACES}</strong> 个记忆空间，每个记忆空间可绑定一个 OpenClaw 实例。
+              开通后将获得 <strong>{FIXED_MEMORY_SPACES}</strong> 个记忆空间，每个记忆空间可绑定一个 Agent。
             </p>
             <p className="text-xs text-blue-700 leading-relaxed">
               开通服务需要 3-5 分钟准备资源，准备完成后即可使用。
@@ -121,7 +121,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
                   checked={autoEnableForNewInstances} 
                   onCheckedChange={setAutoEnableForNewInstances}
                 />
-                <span className="text-xs text-gray-400">新创建的实例自动开通 Pro 版</span>
+                <span className="text-xs text-gray-400">新创建的 Agent 自动开通 Pro 版</span>
               </div>
             </div>
           </div>

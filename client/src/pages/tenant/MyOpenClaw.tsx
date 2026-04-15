@@ -995,7 +995,7 @@ export default function MyOpenClaw() {
 
         {/* Panel Dialog - 开启面板 */}
         <Dialog open={!!panelDialog} onOpenChange={(open) => { if (!open) setPanelDialog(null); }}>
-          <DialogContent className="w-auto max-w-[90vw] min-w-[420px]">
+          <DialogContent className="sm:max-w-[640px]">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">开启面板</DialogTitle>
             </DialogHeader>

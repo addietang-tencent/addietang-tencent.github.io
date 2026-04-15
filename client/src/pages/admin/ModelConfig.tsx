@@ -532,9 +532,17 @@ export default function ModelConfig() {
       <div className="page-enter space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            配置企业用户可使用的大模型。配置好的模型会展示在企业用户的模型选择里；如果只有一个模型，企业用户将直接使用，无需选择。
-          </p>
+          <div className="mt-2 flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2.5">
+            <svg className="mt-0.5 shrink-0 w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+            <div className="space-y-1">
+              <p className="text-xs text-blue-600 leading-relaxed">
+                <span className="font-semibold">用户可见：</span>开启后，该模型会展示在用户端的模型选项列表中。
+              </p>
+              <p className="text-xs text-blue-600 leading-relaxed">
+                <span className="font-semibold">默认配置：</span>用户在创建新实例（仅限 OpenClaw，其他 Agent 暂不支持）时，该模型将被自动预添加，用户无需手动配置。
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Part 1: Model List */}
@@ -561,21 +569,7 @@ export default function ModelConfig() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
-                  <div className="flex items-center gap-1">
-                    默认配置
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="cursor-default">
-                          <Info className="w-3 h-3 text-gray-400" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[200px] text-xs leading-relaxed">
-                        用户在创建新 OpenClaw 实例时，该模型将被自动预添加，用户无需手动配置。
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">默认配置</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
                   <div className="flex items-center gap-1">
                     应用范围

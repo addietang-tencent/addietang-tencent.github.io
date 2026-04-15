@@ -1531,7 +1531,7 @@ export default function ChatView({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1.5 text-xs text-gray-800 hover:text-gray-900 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 w-full border border-gray-200 bg-gray-50">
-                  <span className="font-medium truncate flex-1 text-left">{selectedClaw ? selectedClaw.name : "OpenClaw"}</span>
+                  <span className="font-medium truncate flex-1 text-left">OpenClaw</span>
                   <ChevronDown className="w-3 h-3 ml-auto flex-shrink-0" />
                 </button>
               </DropdownMenuTrigger>

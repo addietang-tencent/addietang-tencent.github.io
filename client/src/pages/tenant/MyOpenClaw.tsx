@@ -488,7 +488,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">浏览器对话</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与 OpenClaw 对话</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与OpenClaw对话（其他Agent暂不支持）</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />
@@ -511,18 +511,6 @@ export default function MyOpenClaw() {
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
-              {/* Bell Notification Button */}
-              <div className="relative">
-                <button
-                  onClick={handleOpenNotificationPanel}
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
-                >
-                  <Bell className="w-5 h-5" />
-                  {hasUnread && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                  )}
-                </button>
-              </div>
               <Button
                 onClick={() => setShowCreate(true)}
                 className="text-white btn-primary-glow"
@@ -790,7 +778,7 @@ export default function MyOpenClaw() {
                             进入终端
                           </Button>
                           <Button
-                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) setPanelDialog({ id: claw.id, name: claw.name }); }}
+                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
                             variant="outline"
                             size="sm"
                             className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}

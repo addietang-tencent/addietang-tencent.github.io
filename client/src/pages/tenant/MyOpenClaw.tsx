@@ -569,10 +569,40 @@ export default function MyOpenClaw() {
                   onToggleFullscreen={handleToggleFullscreen}
                 />
               ) : (() => {
+                const AGENT_TABS = [
+                  { value: "openclaw" as const, label: "OpenClaw" },
+                  { value: "hermes" as const, label: "Hermes" },
+                  { value: "lightclawace" as const, label: "LightclawACE" },
+                ] as const;
+                const tabClaws = claws.filter(c => (c.agentType || "openclaw") === activeAgentTab);
                 return (
                   <div>
+                    {/* 横向子 Tab */}
+                    <div className="flex gap-1 mb-4 border-b border-gray-100 pb-0">
+                      {AGENT_TABS.map(tab => {
+                        const count = claws.filter(c => (c.agentType || "openclaw") === tab.value).length;
+                        return (
+                          <button
+                            key={tab.value}
+                            onClick={() => setActiveAgentTab(tab.value)}
+                            className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                              activeAgentTab === tab.value
+                                ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
+                                : "text-gray-500 hover:text-gray-700"
+                            }`}
+                          >
+                            {tab.label}
+                            {count > 0 && (
+                              <span className={`ml-1.5 text-xs px-1.5 py-0.5 rounded-full ${
+                                activeAgentTab === tab.value ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
+                              }`}>{count}</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                     {/* 单页展示所有实例 */}
-                    {claws.length === 0 ? (
+                    {tabClaws.length === 0 ? (
                       <div className="text-center py-24">
                         <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
                         <p className="text-gray-400 mb-4">暂无实例</p>
@@ -583,7 +613,7 @@ export default function MyOpenClaw() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 gap-4">
-              {[...claws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
+              {[...tabClaws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;

@@ -606,11 +606,11 @@ export default function MyOpenClaw() {
                     <span
                       className="absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap"
                       style={{
-                        background: "linear-gradient(135deg, #60B0FF, #9B8FFF)",
-                        color: "white",
+                        background: "#E5E7EB",
+                        color: "#4B5563",
                         borderTopLeftRadius: "0.75rem",
                         borderBottomRightRadius: "0.75rem",
-                        boxShadow: "2px 2px 6px rgba(96,176,255,0.25)"
+                        boxShadow: "none"
                       }}
                     >
                       {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}

@@ -1,7 +1,8 @@
 /**
  * ImageManagement - 管控端镜像管理页
- * 支持系统预设 + 自定义 Agent 类型，按需添加到页面
+ * 支持三种系统预设 Agent 类型（OpenClaw / Hermes Agent / LightClaw ACE）
  * 每个类型独立管理镜像，可设置启用镜像和用户端首选类型
+ * 删除镜像后重新导入自动回填上次的 type/version（可编辑）
  */
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,29 +13,30 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown, Star, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown, Star, ChevronDown, ChevronRight, Plus, Pencil } from "lucide-react";
 
-// ─── Agent 类型定义 ────────────────────────────────────────────────────────────
+// ─── Agent 类型定义（仅系统预设，本期不支持自定义）─────────────────────────────
 interface AgentTypeConfig {
   value: string;
   label: string;
-  isSystem: boolean;
   versionPlaceholder: string;
-  versionRegex: RegExp | null;
+  versionRegex: RegExp;
 }
 
-const SYSTEM_AGENT_TYPES: AgentTypeConfig[] = [
-  { value: "Agent", label: "Agent", isSystem: true, versionPlaceholder: "如 2026.4.2", versionRegex: /^\d{4}\.\d{1,2}\.\d{1,2}$/ },
-  { value: "HermesAgent", label: "Hermes Agent", isSystem: true, versionPlaceholder: "如 0.8.0", versionRegex: /^\d+\.\d+\.\d+$/ },
-  { value: "LightClawACE", label: "LightClaw ACE", isSystem: true, versionPlaceholder: "如 1.0.2", versionRegex: /^\d+\.\d+\.\d+$/ },
+const AGENT_TYPES: AgentTypeConfig[] = [
+  { value: "OpenClaw", label: "OpenClaw", versionPlaceholder: "如 2026.4.2", versionRegex: /^\d{4}\.\d{1,2}\.\d{1,2}$/ },
+  { value: "HermesAgent", label: "Hermes Agent", versionPlaceholder: "如 0.8.0", versionRegex: /^\d+\.\d+\.\d+$/ },
+  { value: "LightClawACE", label: "LightClaw ACE", versionPlaceholder: "如 1.0.2", versionRegex: /^\d+\.\d+\.\d+$/ },
 ];
 
+const getTypeConfig = (value: string) => AGENT_TYPES.find((t) => t.value === value);
+const getTypeLabel = (value: string) => getTypeConfig(value)?.label ?? value;
+
 function validateVersion(config: AgentTypeConfig, version: string): boolean {
-  if (!config.versionRegex) return version.trim().length > 0;
   if (!config.versionRegex.test(version)) return false;
   if (config.value === "Agent") {
     const [y, m, d] = version.split(".").map(Number);
@@ -59,8 +61,6 @@ const CUSTOM_IMAGES = [
   { id: "img-cust-q7r8s9t0", name: "agent-test-v2.0", group: "custom" as const },
 ];
 
-const ALL_IMPORTABLE = [...PUBLIC_IMAGES, ...CUSTOM_IMAGES];
-
 type ImageType = "public" | "custom";
 
 interface ImageRow {
@@ -75,12 +75,23 @@ interface ImageRow {
   active: boolean;
 }
 
+// 删除历史记录：记住镜像上次的 type + version
+interface DeletedImageHistory {
+  agentType: string;
+  agentVersion: string;
+}
+
+const PUBLIC_IMAGE_ROWS: ImageRow[] = PUBLIC_IMAGES.map((p) => ({
+  id: p.id, name: p.name, status: "available", type: "public" as ImageType,
+  agentType: p.agentType, agentVersion: p.agentVersion, os: "CentOS 7.9 64位",
+  createTime: "2025-12-01 10:30:00", active: true,
+}));
+
 const MOCK_IMAGES: ImageRow[] = [
-  { id: "img-agent-official", name: "云服务器 Agent 镜像", status: "available", type: "public", agentType: "Agent", agentVersion: "2026.3.28", os: "CentOS 7.9 64位", createTime: "2025-12-01 10:30:00", active: true },
-  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", type: "custom", agentType: "Agent", agentVersion: "2025.9.1", os: "CentOS 7.9 64位", createTime: "2025-09-15 14:22:35", active: false },
-  { id: "img-hermes-official", name: "Hermes Agent 官方镜像", status: "available", type: "public", agentType: "HermesAgent", agentVersion: "0.8.0", os: "Ubuntu 22.04 64位", createTime: "2026-02-10 08:00:00", active: true },
+  ...PUBLIC_IMAGE_ROWS,
+  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", type: "custom", agentType: "OpenClaw", agentVersion: "2025.9.1", os: "CentOS 7.9 64位", createTime: "2025-09-15 14:22:35", active: false },
   { id: "img-cust-legacy-001", name: "legacy-image-v1", status: "available", type: "custom", agentType: "", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-06-01 12:00:00", active: false },
-  { id: "img-cust-legacy-002", name: "legacy-image-active", status: "available", type: "custom", agentType: "Agent", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-05-15 09:00:00", active: false },
+  { id: "img-cust-legacy-002", name: "legacy-image-active", status: "available", type: "custom", agentType: "OpenClaw", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-05-15 09:00:00", active: false },
 ];
 
 function normalizeImages(imgs: ImageRow[]): ImageRow[] {
@@ -89,26 +100,16 @@ function normalizeImages(imgs: ImageRow[]): ImageRow[] {
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
 export default function ImageManagement() {
-  const [images, setImages] = useState<ImageRow[]>(() => {
-    try {
-      const raw = localStorage.getItem("admin_images");
-      if (raw) return JSON.parse(raw) as ImageRow[];
-    } catch { /* ignore */ }
-    return normalizeImages(MOCK_IMAGES);
-  });
-  // 每次 images 变更时同步到 localStorage
-  const syncImages = (next: ImageRow[]) => {
-    setImages(next);
-    localStorage.setItem("admin_images", JSON.stringify(next));
-  };
-  const [customAgentTypes, setCustomAgentTypes] = useState<AgentTypeConfig[]>([]);
-  // 已添加到页面的类型（value 列表），初始只展示有镜像的
+  const [images, setImages] = useState<ImageRow[]>(() => normalizeImages(MOCK_IMAGES));
+  // 已添加到页面的类型列表，初始只展示有镜像的
   const [addedTypes, setAddedTypes] = useState<string[]>(() => {
-    const fromImages = Array.from(new Set(normalizeImages(MOCK_IMAGES).map((i) => i.agentType).filter(Boolean)));
-    return fromImages;
+    return Array.from(new Set(normalizeImages(MOCK_IMAGES).map((i) => i.agentType).filter(Boolean)));
   });
   const [defaultAgentType, setDefaultAgentType] = useState("Agent");
   const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(new Set());
+
+  // 删除历史：imageId -> { agentType, agentVersion }
+  const [deletedHistory, setDeletedHistory] = useState<Map<string, DeletedImageHistory>>(new Map());
 
   // 导入弹窗
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -120,43 +121,33 @@ export default function ImageManagement() {
   const [refreshing, setRefreshing] = useState(false);
   const [showImageList, setShowImageList] = useState(false);
   const imageListRef = useRef<HTMLDivElement>(null);
+  // 标记当前是否为历史回填（回填后仍可编辑）
+  const [isHistoryPrefilled, setIsHistoryPrefilled] = useState(false);
 
-  // 添加类型弹窗
+  // 添加类型弹窗（仅预设选择，无自定义）
   const [showAddTypeDialog, setShowAddTypeDialog] = useState(false);
-  const [addTypeMode, setAddTypeMode] = useState<"preset" | "custom">("preset");
   const [selectedPresetType, setSelectedPresetType] = useState("");
-  const [newTypeName, setNewTypeName] = useState("");
-  const [typeNameError, setTypeNameError] = useState("");
 
-  // 导入弹窗内快捷添加
-  const [showInlineAddType, setShowInlineAddType] = useState(false);
-  const [inlineTypeName, setInlineTypeName] = useState("");
-  const [inlineTypeError, setInlineTypeError] = useState("");
+  // 编辑自定义镜像弹窗
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingImageId, setEditingImageId] = useState("");
+  const [editAgentType, setEditAgentType] = useState("");
+  const [editAgentVersion, setEditAgentVersion] = useState("");
+  const [editVersionError, setEditVersionError] = useState("");
 
-  // 所有已注册的类型配置（系统 + 自定义）
-  const allTypeConfigs = [...SYSTEM_AGENT_TYPES, ...customAgentTypes];
-  const getTypeConfig = (value: string) => allTypeConfigs.find((t) => t.value === value);
-  const getTypeLabel = (value: string) => getTypeConfig(value)?.label ?? value;
+  // 导入弹窗的目标 agentType 上下文
+  const [importTargetAgentType, setImportTargetAgentType] = useState("");
 
-  const selectedImage = ALL_IMPORTABLE.find((img) => img.id === selectedImageId);
-  const isPublicSelected = selectedImage && "agentType" in selectedImage;
+  const selectedImage = CUSTOM_IMAGES.find((img) => img.id === selectedImageId);
 
-  // 页面展示的类型顺序：按 addedTypes 顺序
-  const displayTypes = addedTypes.filter((v) => allTypeConfigs.some((c) => c.value === v));
+  // 页面展示的类型顺序
+  const displayTypes = addedTypes.filter((v) => AGENT_TYPES.some((c) => c.value === v));
 
-  // 尚未添加到页面的系统预设类型
-  const availablePresets = SYSTEM_AGENT_TYPES.filter((t) => !addedTypes.includes(t.value));
+  // 尚未添加到页面的预设类型
+  const availablePresets = AGENT_TYPES.filter((t) => !addedTypes.includes(t.value));
 
   const toggleCollapse = (type: string) => {
     setCollapsedTypes((prev) => { const n = new Set(prev); if (n.has(type)) n.delete(type); else n.add(type); return n; });
-  };
-
-  // ─── 添加类型到页面 ───
-  const validateCustomName = (name: string): string => {
-    if (!name.trim()) return "请输入类型名称";
-    if (allTypeConfigs.some((t) => t.label.toLowerCase() === name.trim().toLowerCase() || t.value.toLowerCase() === name.trim().toLowerCase()))
-      return "该名称与已有类型重复，请使用其他名称";
-    return "";
   };
 
   const addPresetToPage = (value: string) => {
@@ -165,22 +156,10 @@ export default function ImageManagement() {
     toast.success(`已添加「${getTypeLabel(value)}」`);
   };
 
-  const addCustomType = (name: string): string => {
-    const err = validateCustomName(name);
-    if (err) return err;
-    const value = name.trim().replace(/\s+/g, "_");
-    const newConfig: AgentTypeConfig = { value, label: name.trim(), isSystem: false, versionPlaceholder: "请填写正确版本格式", versionRegex: null };
-    setCustomAgentTypes([...customAgentTypes, newConfig]);
-    setAddedTypes([...addedTypes, value]);
-    toast.success(`已添加自定义 Agent 类型「${name.trim()}」`);
-    return "";
-  };
-
   const handleRemoveType = (value: string) => {
     if (images.some((i) => i.agentType === value)) { toast.error("该类型下还有镜像，请先删除所有镜像"); return; }
-    if (defaultAgentType === value) { toast.error("不能删除用户端首选类型"); return; }
+    if (defaultAgentType === value) { toast.error("不能删除用户端默认类型"); return; }
     setAddedTypes(addedTypes.filter((v) => v !== value));
-    setCustomAgentTypes(customAgentTypes.filter((t) => t.value !== value));
     toast.success("已移除该 Agent 类型");
   };
 
@@ -190,7 +169,7 @@ export default function ImageManagement() {
     if (!open) {
       setSelectedImageId(""); setImportAgentType(""); setImportAgentVersion("");
       setVersionError(""); setSearchQuery(""); setShowImageList(false);
-      setShowInlineAddType(false); setInlineTypeName(""); setInlineTypeError("");
+      setIsHistoryPrefilled(false); setImportTargetAgentType("");
     }
   };
 
@@ -198,11 +177,10 @@ export default function ImageManagement() {
     if (imageListRef.current && !imageListRef.current.contains(e.target as Node)) setShowImageList(false);
   };
 
-  const filteredImportImages = ALL_IMPORTABLE.filter((img) =>
+  const filteredImportImages = CUSTOM_IMAGES.filter((img) =>
     img.id.toLowerCase().includes(searchQuery.toLowerCase()) || img.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const filteredPublic = filteredImportImages.filter((img) => img.group === "public");
-  const filteredCustom = filteredImportImages.filter((img) => img.group === "custom");
+  const filteredCustom = filteredImportImages;
 
   const handleRefresh = () => { setRefreshing(true); setTimeout(() => { setRefreshing(false); toast.success("镜像列表已刷新"); }, 1200); };
 
@@ -213,16 +191,26 @@ export default function ImageManagement() {
 
   const handleSelectImage = (imgId: string) => {
     setSelectedImageId(imgId); setShowImageList(false); setSearchQuery("");
-    const pub = PUBLIC_IMAGES.find((p) => p.id === imgId);
-    if (pub) { setImportAgentType(pub.agentType); setImportAgentVersion(pub.agentVersion); setVersionError(""); }
-    else { setImportAgentType(""); setImportAgentVersion(""); setVersionError(""); }
+    // 自定义镜像：检查是否有删除历史，有则自动回填（可编辑）
+    const history = deletedHistory.get(imgId);
+    if (history && history.agentType) {
+      setImportAgentType(history.agentType);
+      setImportAgentVersion(history.agentVersion || "");
+      setIsHistoryPrefilled(true);
+      setVersionError("");
+    } else {
+      // 如果有目标 agentType 上下文（从分组按钮进来），自动设置
+      setImportAgentType(importTargetAgentType || "");
+      setImportAgentVersion("");
+      setVersionError(""); setIsHistoryPrefilled(false);
+    }
   };
 
   const handleVersionChange = (v: string) => {
     setImportAgentVersion(v);
     if (v && importAgentType) {
       const config = getTypeConfig(importAgentType);
-      if (config && config.versionRegex && !config.versionRegex.test(v)) {
+      if (config && !config.versionRegex.test(v)) {
         setVersionError(`格式不正确，请输入 ${config.versionPlaceholder.replace("如 ", "")} 格式`);
       } else if (importAgentType === "Agent" && config && !validateVersion(config, v)) {
         setVersionError("日期不合法");
@@ -235,17 +223,23 @@ export default function ImageManagement() {
     if (!importAgentType) { toast.error("请选择 Agent 类型"); return; }
     if (!importAgentVersion.trim()) { toast.error("请填写 Agent 版本"); return; }
     const config = getTypeConfig(importAgentType);
-    if (config && config.versionRegex && !validateVersion(config, importAgentVersion)) { toast.error("版本格式不正确"); return; }
+    if (config && !validateVersion(config, importAgentVersion)) { toast.error("版本格式不正确"); return; }
     if (images.some((img) => img.id === selectedImageId)) { toast.error("该镜像已在列表中"); return; }
-    const img = ALL_IMPORTABLE.find((i) => i.id === selectedImageId)!;
-    syncImages([...images, {
+    const img = CUSTOM_IMAGES.find((i) => i.id === selectedImageId)!;
+    setImages([...images, {
       id: img.id, name: img.name, status: "available",
-      type: img.group === "public" ? "public" : "custom",
+      type: "custom",
       agentType: importAgentType, agentVersion: importAgentVersion.trim(),
       os: "CentOS 7.9 64位", createTime: formatNow(), active: false,
     }]);
-    // 自动添加类型到页面（如果还没添加）
+    // 自动添加类型到页面
     if (!addedTypes.includes(importAgentType)) setAddedTypes([...addedTypes, importAgentType]);
+    // 清除该镜像的删除历史
+    if (deletedHistory.has(selectedImageId)) {
+      const newHistory = new Map(deletedHistory);
+      newHistory.delete(selectedImageId);
+      setDeletedHistory(newHistory);
+    }
     handleDialogOpenChange(false);
     toast.success(`镜像「${img.name}」已导入至 ${getTypeLabel(importAgentType)}`);
   };
@@ -253,11 +247,11 @@ export default function ImageManagement() {
   // ─── 启用/首选/删除 ───
   const handleToggleActive = (imgId: string, agentType: string, enable: boolean) => {
     if (!enable) {
-      if (agentType === defaultAgentType) { toast.error("用户端首选类型必须有一个启用的镜像，无法取消"); return; }
-      syncImages(images.map((i) => i.id === imgId ? { ...i, active: false } : i));
+      if (agentType === defaultAgentType) { toast.error("用户端默认类型必须有一个启用的镜像，无法取消"); return; }
+      setImages(images.map((i) => i.id === imgId ? { ...i, active: false } : i));
       toast.success("已取消启用"); return;
     }
-    syncImages(images.map((i) => i.agentType === agentType ? { ...i, active: i.id === imgId } : i));
+    setImages(images.map((i) => i.agentType === agentType ? { ...i, active: i.id === imgId } : i));
     const img = images.find((i) => i.id === imgId);
     toast.success(`「${img?.name}」已启用为 ${getTypeLabel(agentType)} 的目标镜像`);
   };
@@ -265,23 +259,61 @@ export default function ImageManagement() {
   const handleSetDefaultType = (agentType: string) => {
     if (!images.some((i) => i.agentType === agentType && i.active)) { toast.error(`请先为 ${getTypeLabel(agentType)} 启用一个镜像`); return; }
     setDefaultAgentType(agentType);
-    toast.success(`已将「${getTypeLabel(agentType)}」设为用户端首选类型`);
+    toast.success(`已将「${getTypeLabel(agentType)}」设为用户端默认类型`);
   };
 
   const handleDelete = (imgId: string) => {
     const img = images.find((i) => i.id === imgId);
     if (!img) return;
-    if (img.active && img.agentType === defaultAgentType) { toast.error("该镜像为用户端首选类型的启用镜像，无法删除"); return; }
-    syncImages(images.filter((i) => i.id !== imgId));
+    if (img.active && img.agentType === defaultAgentType) { toast.error("该镜像为用户端默认类型的启用镜像，无法删除"); return; }
+    // 记录删除历史（type + version），下次导入同一镜像时自动回填
+    if (img.agentType || img.agentVersion) {
+      const newHistory = new Map(deletedHistory);
+      newHistory.set(imgId, { agentType: img.agentType, agentVersion: img.agentVersion });
+      setDeletedHistory(newHistory);
+    }
+    setImages(images.filter((i) => i.id !== imgId));
     toast.success("镜像已删除");
   };
 
   const canImport = selectedImageId && importAgentType && importAgentVersion.trim() && !versionError;
 
-  // 导入弹窗中所有可选的类型（已注册的）
-  const allSelectableTypes = allTypeConfigs;
-  const systemSelectableTypes = allSelectableTypes.filter((t) => t.isSystem);
-  const customSelectableTypes = allSelectableTypes.filter((t) => !t.isSystem);
+  const openImportForType = (agentType: string) => {
+    setImportTargetAgentType(agentType);
+    setImportAgentType(agentType);
+    setShowImportDialog(true);
+  };
+
+  const openEditDialog = (img: ImageRow) => {
+    setEditingImageId(img.id);
+    setEditAgentType(img.agentType);
+    setEditAgentVersion(img.agentVersion);
+    setEditVersionError("");
+    setShowEditDialog(true);
+  };
+
+  const handleEditVersionChange = (v: string) => {
+    setEditAgentVersion(v);
+    if (v && editAgentType) {
+      const config = getTypeConfig(editAgentType);
+      if (config && !config.versionRegex.test(v)) {
+        setEditVersionError(`格式不正确，请输入 ${config.versionPlaceholder.replace("如 ", "")} 格式`);
+      } else if (editAgentType === "OpenClaw" && config && !validateVersion(config, v)) {
+        setEditVersionError("日期不合法");
+      } else { setEditVersionError(""); }
+    } else { setEditVersionError(""); }
+  };
+
+  const handleEditSave = () => {
+    if (!editAgentType) { toast.error("请选择 Agent 类型"); return; }
+    if (!editAgentVersion.trim()) { toast.error("请填写 Agent 版本"); return; }
+    const config = getTypeConfig(editAgentType);
+    if (config && !validateVersion(config, editAgentVersion)) { toast.error("版本格式不正确"); return; }
+    setImages(images.map((i) => i.id === editingImageId ? { ...i, agentType: editAgentType, agentVersion: editAgentVersion.trim() } : i));
+    if (!addedTypes.includes(editAgentType)) setAddedTypes([...addedTypes, editAgentType]);
+    setShowEditDialog(false);
+    toast.success("镜像信息已更新");
+  };
 
   return (
     <>
@@ -293,23 +325,17 @@ export default function ImageManagement() {
           </p>
         </div>
 
-        {/* 操作栏 */}
-        <div className="flex items-center justify-end mb-4">
-          <Button size="sm" onClick={() => setShowImportDialog(true)} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            导入镜像
-          </Button>
-        </div>
-
         {/* 按 agentType 分组展示 */}
         <div className="space-y-6">
           {displayTypes.map((agentType) => {
-            const typeImages = images.filter((i) => i.agentType === agentType);
+            const typeImages = images.filter((i) => i.agentType === agentType).sort((a, b) => {
+              if (a.type === "public" && b.type !== "public") return -1;
+              if (a.type !== "public" && b.type === "public") return 1;
+              return 0;
+            });
             const isDefault = defaultAgentType === agentType;
             const isCollapsed = collapsedTypes.has(agentType);
             const activeImg = typeImages.find((i) => i.active);
-            const typeConfig = getTypeConfig(agentType);
-            const isSystemType = typeConfig?.isSystem ?? false;
 
             return (
               <div
@@ -324,7 +350,6 @@ export default function ImageManagement() {
                       {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                     <h2 className="font-semibold text-gray-900">{getTypeLabel(agentType)}</h2>
-                    {!isSystemType && <span className="text-xs text-purple-500 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">自定义</span>}
                     <span className="text-xs text-gray-400">{typeImages.length} 个镜像</span>
                     {/* 用户端状态 */}
                     {activeImg ? (
@@ -335,7 +360,7 @@ export default function ImageManagement() {
                           </span>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
-                          当前启用：{activeImg.name}（{activeImg.agentVersion}），支持用户创建该类型 Agent；一键升级将此镜像版本作为升级目标版本
+                          当前启用：{activeImg.name}{activeImg.agentVersion ? `（${activeImg.agentVersion}）` : ""}，支持用户创建该类型 Agent；一键升级将此镜像版本作为升级目标版本
                         </TooltipContent>
                       </Tooltip>
                     ) : (
@@ -355,11 +380,11 @@ export default function ImageManagement() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-white cursor-default" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                            <Star className="w-3 h-3" /> 用户端首选
+                            <Star className="w-3 h-3" /> 用户端默认
                           </span>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
-                          用户创建 Agent 时会优先选此类型，也支持手动切换
+                          用户创建 Agent 时会默认选此类型，也支持手动切换
                         </TooltipContent>
                       </Tooltip>
                     )}
@@ -369,10 +394,10 @@ export default function ImageManagement() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button variant="outline" size="sm" className="text-xs" onClick={() => handleSetDefaultType(agentType)}>
-                            <Star className="w-3 h-3 mr-1" /> 设为用户端首选
+                            <Star className="w-3 h-3 mr-1" /> 设为用户端默认
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[220px] text-xs leading-relaxed">设为用户端优先选择的 Agent 类型</TooltipContent>
+                        <TooltipContent className="max-w-[220px] text-xs leading-relaxed">设为用户端默认选择的 Agent 类型</TooltipContent>
                       </Tooltip>
                     )}
                     <Tooltip>
@@ -390,6 +415,7 @@ export default function ImageManagement() {
                 {!isCollapsed && (
                   <div className="bg-white">
                     {typeImages.length > 0 ? (
+                    <>
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -404,11 +430,20 @@ export default function ImageManagement() {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                           {typeImages.map((img) => (
-                            <tr key={img.id} className={`hover:bg-gray-50/50 transition-colors ${img.type === "public" ? "border-l-2 border-l-blue-400" : "border-l-2 border-l-transparent"}`}>
+                            <tr key={img.id} className={`hover:bg-gray-50/50 transition-colors ${img.type === "public" ? "bg-blue-50/40" : ""}`}
+                              style={img.type === "public" ? { borderLeft: "3px solid #3B82F6" } : { borderLeft: "3px solid transparent" }}>
                               <td className="px-6 py-4">
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">{img.name}</p>
                                   <p className="text-xs text-gray-400 font-mono">{img.id}</p>
+                                  {img.type === "public" && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 border border-blue-200 whitespace-nowrap mt-1 cursor-default">腾讯云维护</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-[260px] text-xs leading-relaxed">由腾讯云维护，自动跟进平台程序版本更新，无需企业自行维护</TooltipContent>
+                                    </Tooltip>
+                                  )}
                                 </div>
                               </td>
                               <td className="px-4 py-4">
@@ -431,7 +466,7 @@ export default function ImageManagement() {
                                 ) : (
                                   <div className="text-xs leading-tight">
                                     <span className="text-orange-500">未填写</span><br />
-                                    <span className="text-gray-400">删除后重新导入可编辑</span>
+                                    <span className="text-gray-400">请编辑版本信息</span>
                                   </div>
                                 )}
                               </td>
@@ -441,7 +476,7 @@ export default function ImageManagement() {
                                     <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由腾讯云维护，自动跟进平台程序版本更新，无需企业自行维护</TooltipContent></Tooltip>
                                 ) : (
                                   <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default">自定义</span></TooltipTrigger>
-                                    <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行制作和维护，官方不负责版本更新</TooltipContent></Tooltip>
+                                    <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行制作和维护，腾讯云不负责版本更新和维护</TooltipContent></Tooltip>
                                 )}
                               </td>
                               <td className="px-4 py-4">
@@ -484,7 +519,24 @@ export default function ImageManagement() {
                                       <Switch checked={img.active} onCheckedChange={(v) => handleToggleActive(img.id, agentType, v)} />
                                     )}
                                   </div>
-                                  {img.active ? (
+                                  {img.type === "custom" && (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button onClick={() => openEditDialog(img)} className="text-gray-400 hover:text-blue-500 transition-colors" title="编辑镜像信息">
+                                          <Pencil className="w-4 h-4" />
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>编辑 Agent 类型和版本</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                  {img.type === "public" ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex cursor-not-allowed"><Trash2 className="w-4 h-4 text-gray-200" /></span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left">公共镜像不可删除</TooltipContent>
+                                    </Tooltip>
+                                  ) : img.active ? (
                                     <Tooltip><TooltipTrigger asChild><span className="inline-flex cursor-not-allowed"><Trash2 className="w-4 h-4 text-gray-200" /></span></TooltipTrigger>
                                       <TooltipContent side="left">启用中的镜像无法删除</TooltipContent></Tooltip>
                                   ) : (
@@ -496,11 +548,22 @@ export default function ImageManagement() {
                           ))}
                         </tbody>
                       </table>
+                      <div className="px-6 py-3 border-t border-gray-50 flex justify-start">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-xs" onClick={() => openImportForType(agentType)}>
+                              <Plus className="w-3 h-3 mr-1" /> 添加自定义镜像
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行制作和维护，腾讯云不负责版本更新和维护</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </>
                     ) : (
                       <div className="px-6 py-10 text-center">
                         <p className="text-sm text-gray-400 mb-2">暂无镜像</p>
-                        <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowImportDialog(true)}>
-                          <Download className="w-3 h-3 mr-1" /> 导入镜像
+                        <Button variant="outline" size="sm" className="text-xs" onClick={() => openImportForType(agentType)}>
+                          <Plus className="w-3 h-3 mr-1" /> 添加自定义镜像
                         </Button>
                       </div>
                     )}
@@ -510,82 +573,53 @@ export default function ImageManagement() {
             );
           })}
 
-          {/* 底部：添加 Agent 类型 */}
-          <button
-            onClick={() => { setShowAddTypeDialog(true); setAddTypeMode("preset"); setSelectedPresetType(""); setNewTypeName(""); setTypeNameError(""); }}
-            className="w-full rounded-2xl border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50/40 hover:bg-blue-50/70 transition-all py-6 flex flex-col items-center gap-2 group"
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-              <Plus className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-sm font-semibold transition-colors" style={{ color: "#5856D6" }}>添加 Agent 类型</span>
-            <span className="text-xs text-gray-500">从系统预设选择或创建自定义类型</span>
-          </button>
+          {/* 底部：添加 Agent 类型（仅从预设选择） */}
+          {availablePresets.length > 0 && (
+            <button
+              onClick={() => { setShowAddTypeDialog(true); setSelectedPresetType(""); }}
+              className="w-full rounded-2xl border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50/40 hover:bg-blue-50/70 transition-all py-6 flex flex-col items-center gap-2 group"
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-semibold transition-colors" style={{ color: "#5856D6" }}>添加 Agent 类型</span>
+              <span className="text-xs text-gray-500">从系统预设中选择（{availablePresets.map((t) => t.label).join("、")}）</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ─── 添加 Agent 类型弹窗 ─── */}
+      {/* ─── 添加 Agent 类型弹窗（仅预设） ─── */}
       <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>添加 Agent 类型</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            {/* 模式切换 */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setAddTypeMode("preset"); setTypeNameError(""); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${addTypeMode === "preset" ? "bg-blue-50 text-blue-600 border border-blue-200" : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"}`}
-              >系统预设</button>
-              <button
-                onClick={() => { setAddTypeMode("custom"); setTypeNameError(""); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${addTypeMode === "custom" ? "bg-blue-50 text-blue-600 border border-blue-200" : "bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100"}`}
-              >自定义类型</button>
-            </div>
-
-            {addTypeMode === "preset" ? (
+            {availablePresets.length > 0 ? (
               <div className="space-y-2">
-                {availablePresets.length > 0 ? (
-                  <>
-                    <Label>选择预设类型</Label>
-                    <Select value={selectedPresetType} onValueChange={setSelectedPresetType}>
-                      <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择" /></SelectTrigger>
-                      <SelectContent>
-                        {availablePresets.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </>
-                ) : (
-                  <div className="py-4 text-center text-sm text-gray-400">所有系统预设类型均已添加</div>
-                )}
+                <Label>选择预设类型</Label>
+                <Select value={selectedPresetType} onValueChange={setSelectedPresetType}>
+                  <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择" /></SelectTrigger>
+                  <SelectContent>
+                    {availablePresets.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
               </div>
             ) : (
-              <div className="space-y-2">
-                <Label>类型名称 <span className="text-red-400">*</span></Label>
-                <Input placeholder="如 MyCustomAgent" value={newTypeName}
-                  onChange={(e) => { setNewTypeName(e.target.value); setTypeNameError(""); }}
-                  className={`bg-gray-50 ${typeNameError ? "border-red-300" : ""}`} autoFocus />
-                {typeNameError && <p className="text-xs text-red-500 font-medium">{typeNameError}</p>}
-                <p className="text-xs text-orange-500">名称需唯一，不能与已有类型重复</p>
-              </div>
+              <div className="py-4 text-center text-sm text-gray-400">所有预设类型均已添加</div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddTypeDialog(false)}>取消</Button>
             <Button
               onClick={() => {
-                if (addTypeMode === "preset") {
-                  if (!selectedPresetType) { toast.error("请选择一个类型"); return; }
-                  addPresetToPage(selectedPresetType);
-                  setShowAddTypeDialog(false);
-                } else {
-                  const err = addCustomType(newTypeName);
-                  if (err) { setTypeNameError(err); return; }
-                  setShowAddTypeDialog(false);
-                }
+                if (!selectedPresetType) { toast.error("请选择一个类型"); return; }
+                addPresetToPage(selectedPresetType);
+                setShowAddTypeDialog(false);
               }}
-              disabled={addTypeMode === "preset" ? !selectedPresetType : !newTypeName.trim()}
-              style={(addTypeMode === "preset" ? selectedPresetType : newTypeName.trim()) ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
+              disabled={!selectedPresetType}
+              style={selectedPresetType ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
             >添加</Button>
           </DialogFooter>
         </DialogContent>
@@ -594,7 +628,7 @@ export default function ImageManagement() {
       {/* ─── 导入镜像弹窗 ─── */}
       <Dialog open={showImportDialog} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>导入镜像</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>添加自定义镜像</DialogTitle></DialogHeader>
 
           <div className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2.5 -mt-1">
             <Info className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
@@ -631,16 +665,6 @@ export default function ImageManagement() {
                       autoFocus onClick={(e) => e.stopPropagation()} />
                   </div>
                   <div className="max-h-64 overflow-y-auto">
-                    {filteredPublic.length > 0 && (<div>
-                      <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">公共镜像 <span className="text-gray-400 font-normal">（腾讯云维护）</span></div>
-                      {filteredPublic.map((img) => (
-                        <div key={img.id} onClick={(e) => { e.stopPropagation(); handleSelectImage(img.id); }}
-                          className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${selectedImageId === img.id ? "bg-blue-50 border-l-2 border-blue-500" : ""}`}>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                            <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
-                          </div></div>))}
-                    </div>)}
                     {filteredCustom.length > 0 && (<div>
                       <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">自定义镜像 <span className="text-gray-400 font-normal">（企业维护）</span></div>
                       {filteredCustom.map((img) => (
@@ -660,78 +684,96 @@ export default function ImageManagement() {
             {/* Step 2: Agent 类型 */}
             <div className="space-y-2">
               <Label>Agent 类型 <span className="text-red-400">*</span></Label>
-              {isPublicSelected ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-500">
-                  {getTypeLabel((selectedImage as any).agentType)}
-                  <span className="text-xs text-gray-400 ml-2">（公共镜像自动匹配）</span>
-                </div>
-              ) : showInlineAddType ? (
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <Input placeholder="输入新类型名称" value={inlineTypeName} autoFocus
-                      onChange={(e) => { setInlineTypeName(e.target.value); setInlineTypeError(""); }}
-                      className={`bg-gray-50 flex-1 ${inlineTypeError ? "border-red-300" : ""}`} />
-                    <Button size="sm" variant="outline" className="shrink-0" onClick={() => {
-                      const err = addCustomType(inlineTypeName);
-                      if (err) { setInlineTypeError(err); return; }
-                      const value = inlineTypeName.trim().replace(/\s+/g, "_");
-                      setImportAgentType(value); setImportAgentVersion(""); setVersionError("");
-                      setShowInlineAddType(false); setInlineTypeName("");
-                    }}>确定</Button>
-                    <Button size="sm" variant="ghost" className="shrink-0 px-2" onClick={() => { setShowInlineAddType(false); setInlineTypeName(""); setInlineTypeError(""); }}>
-                      <X className="w-4 h-4" /></Button>
-                  </div>
-                  {inlineTypeError && <p className="text-xs text-red-500 font-medium">{inlineTypeError}</p>}
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Select value={importAgentType} onValueChange={(v) => { setImportAgentType(v); setImportAgentVersion(""); setVersionError(""); }}>
-                    <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择 Agent 类型" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>系统预设</SelectLabel>
-                        {systemSelectableTypes.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
-                      </SelectGroup>
-                      {customSelectableTypes.length > 0 && (
-                        <SelectGroup>
-                          <SelectLabel>自定义类型</SelectLabel>
-                          {customSelectableTypes.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
-                        </SelectGroup>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <button onClick={() => setShowInlineAddType(true)} className="text-xs text-blue-500 hover:text-blue-600 flex items-center gap-0.5 transition-colors">
-                    <Plus className="w-3 h-3" /> 添加新类型
-                  </button>
-                </div>
-              )}
+              <div className="space-y-1">
+                <Select value={importAgentType} onValueChange={(v) => { setImportAgentType(v); setImportAgentVersion(""); setVersionError(""); }}>
+                  <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择 Agent 类型" /></SelectTrigger>
+                  <SelectContent>
+                    {AGENT_TYPES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+                {isHistoryPrefilled && importAgentType && (
+                  <p className="text-xs text-blue-500">已自动填入上次配置，可修改</p>
+                )}
+              </div>
             </div>
 
             {/* Step 3: 版本 */}
             <div className="space-y-2">
               <Label>Agent 版本 <span className="text-red-400">*</span></Label>
-              {isPublicSelected ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-500 font-mono">
-                  {(selectedImage as any).agentVersion}
-                  <span className="text-xs text-gray-400 ml-2 font-normal">（公共镜像自动匹配）</span>
-                </div>
-              ) : (
-                <>
-                  <Input placeholder={importAgentType ? (getTypeConfig(importAgentType)?.versionPlaceholder || "请输入版本号") : "请先选择 Agent 类型"}
-                    value={importAgentVersion} onChange={(e) => handleVersionChange(e.target.value)}
-                    className={`bg-gray-50 font-mono ${versionError ? "border-red-300 focus-visible:ring-red-500" : ""}`} disabled={!importAgentType} />
-                  {versionError && <p className="text-xs text-red-500">{versionError}</p>}
-                  {importAgentType && !versionError && getTypeConfig(importAgentType)?.versionRegex && (
-                    <p className="text-xs text-gray-400">格式：{getTypeConfig(importAgentType)?.versionPlaceholder}</p>
-                  )}
-                </>
+              <Input placeholder={importAgentType ? (getTypeConfig(importAgentType)?.versionPlaceholder || "请输入版本号") : "请先选择 Agent 类型"}
+                value={importAgentVersion} onChange={(e) => handleVersionChange(e.target.value)}
+                className={`bg-gray-50 font-mono ${versionError ? "border-red-300 focus-visible:ring-red-500" : ""}`} disabled={!importAgentType} />
+              {versionError && <p className="text-xs text-red-500">{versionError}</p>}
+              {importAgentType && !versionError && getTypeConfig(importAgentType)?.versionRegex && (
+                <p className="text-xs text-gray-400">格式：{getTypeConfig(importAgentType)?.versionPlaceholder}</p>
+              )}
+              {isHistoryPrefilled && importAgentVersion && !versionError && (
+                <p className="text-xs text-blue-500">已自动填入上次版本，可修改</p>
               )}
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => handleDialogOpenChange(false)}>取消</Button>
-            <Button onClick={handleImport} disabled={!canImport} style={canImport ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}>导入</Button>
+            <Button onClick={handleImport} disabled={!canImport} style={canImport ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}>添加</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── 编辑自定义镜像弹窗 ─── */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>编辑镜像信息</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {(() => { const editImg = images.find((i) => i.id === editingImageId); return editImg ? (
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 px-4 py-3">
+                  <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">镜像名称 / ID</p>
+                  <p className="text-sm font-semibold text-gray-900">{editImg.name}</p>
+                  <p className="text-xs text-gray-400 font-mono mt-0.5">{editImg.id}</p>
+                </div>
+                <div className="px-4 py-2.5 flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-gray-400">当前类型</span>
+                    <span className="font-medium text-gray-700">{editImg.agentType ? getTypeLabel(editImg.agentType) : "未设置"}</span>
+                  </div>
+                  <div className="w-px h-3 bg-gray-200" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-gray-400">当前版本</span>
+                    <span className="font-medium text-gray-700 font-mono">{editImg.agentVersion || "未设置"}</span>
+                  </div>
+                </div>
+              </div>
+            ) : null; })()}
+            <div className="space-y-2">
+              <Label>Agent 类型 <span className="text-red-400">*</span></Label>
+              <Select value={editAgentType} onValueChange={(v) => { setEditAgentType(v); setEditAgentVersion(""); setEditVersionError(""); }}>
+                <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择 Agent 类型" /></SelectTrigger>
+                <SelectContent>
+                  {AGENT_TYPES.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Agent 版本 <span className="text-red-400">*</span></Label>
+              <Input placeholder={editAgentType ? (getTypeConfig(editAgentType)?.versionPlaceholder || "请输入版本号") : "请先选择 Agent 类型"}
+                value={editAgentVersion} onChange={(e) => handleEditVersionChange(e.target.value)}
+                className={`bg-gray-50 font-mono ${editVersionError ? "border-red-300 focus-visible:ring-red-500" : ""}`} disabled={!editAgentType} />
+              {editVersionError && <p className="text-xs text-red-500">{editVersionError}</p>}
+              {editAgentType && !editVersionError && getTypeConfig(editAgentType)?.versionRegex && (
+                <p className="text-xs text-gray-400">格式：{getTypeConfig(editAgentType)?.versionPlaceholder}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>取消</Button>
+            <Button
+              onClick={handleEditSave}
+              disabled={!editAgentType || !editAgentVersion.trim() || !!editVersionError}
+              style={editAgentType && editAgentVersion.trim() && !editVersionError ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
+            >保存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -231,7 +231,7 @@ export default function SsoLoginDemo() {
             <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-purple-600 bg-purple-50 mb-4">
               功能与特色
             </span>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">企业版 Agent 的功能与特色</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">企业版 OpenClaw 的功能与特色</h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
               专为企业场景设计，提供完善的管控能力和极致的使用体验
             </p>
@@ -283,7 +283,7 @@ export default function SsoLoginDemo() {
             </div>
             <span className="text-sm text-gray-500">{SITE_CONFIG.name}</span>
           </div>
-          <p className="text-xs text-gray-400">© 2026 企业版 Agent. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© 2026 企业版 OpenClaw. All rights reserved.</p>
         </div>
       </footer>
 

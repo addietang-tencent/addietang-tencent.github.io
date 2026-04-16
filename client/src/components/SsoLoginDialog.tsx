@@ -431,7 +431,7 @@ const SsoLoginDialog: React.FC<SsoLoginDialogProps> = ({ visible, onClose }) => 
 
         <div className="flex flex-col max-h-[85vh] overflow-hidden">
           <div className="px-8 pt-8 pb-2 flex-shrink-0">
-            <DialogHeaderSection siteName="Agent Enterprise" />
+            <DialogHeaderSection siteName="OpenClaw Enterprise" />
           </div>
 
           <div className="px-8 pb-8 overflow-y-auto flex-1 min-h-0">

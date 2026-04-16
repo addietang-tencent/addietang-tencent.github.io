@@ -46,7 +46,7 @@ const MOCK_LOGS = [
     requestTime: "2026-03-09 11:20:05", responseTime: "2026-03-09 11:20:06", success: true,
     detail: {
       eventId: "8cg79999-31de-6254-d003-h4g4h0094ef2",
-      request: '{"siteName":"A公司企业版Agent","siteDesc":"企业专属AI助理平台"}',
+      request: '{"siteName":"A公司企业版OpenClaw","siteDesc":"企业专属AI助理平台"}',
       endDate: "2026-03-09 11:20:06", serviceAccount: "true",
       userAgent: "okhttp/4.10.0", invokerName: "ak.SUPERADMIN",
       duration: "89", application: "openclaw-enterprise",

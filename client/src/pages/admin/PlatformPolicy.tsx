@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, AlertTriangle, Info } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, AlertTriangle, Info, MessageSquare } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -441,6 +441,12 @@ export default function PlatformPolicy() {
   });
   const [showCloudBrowserEnableDialog, setShowCloudBrowserEnableDialog] = useState(false);
 
+  // ── 对话视图开关状态 ──
+  const [allowChatView, setAllowChatView] = useState(() => {
+    const v = localStorage.getItem("admin_allow_chat_view");
+    return v !== null ? v === "true" : true; // 默认开启
+  });
+
   // ── 龙虾医生开关状态 ──
   const [allowLobsterDoctor, setAllowLobsterDoctor] = useState(() => {
     return localStorage.getItem("admin_allow_lobster_doctor") === "true";
@@ -507,6 +513,12 @@ export default function PlatformPolicy() {
       localStorage.removeItem("admin_panel_port");
       toast.success("已禁止用户端访问 Agent 面板");
     }
+  };
+
+  const handleToggleChatView = (v: boolean) => {
+    setAllowChatView(v);
+    localStorage.setItem("admin_allow_chat_view", String(v));
+    toast.success(v ? "已允许用户使用对话视图" : "已关闭对话视图");
   };
 
   const handleToggleCloudBrowser = (v: boolean) => {
@@ -638,10 +650,20 @@ export default function PlatformPolicy() {
             />
           <div className="self-start">
             <ToggleCard
+              icon={<MessageSquare className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户使用对话视图"
+              description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）"
+              checked={allowChatView}
+              onToggle={handleToggleChatView}
+            />
+          </div>
+          <div className="self-start">
+            <ToggleCard
               icon={<Cloud className="w-4 h-4 text-white" />}
               iconBg="bg-gradient-to-br from-green-500 to-green-600"
               title="允许用户访问 Agent 云端浏览器"
-              description="开启后，用户可在 Agent 会话中访问云端浏览器，查看 AI 浏览器执行过程，并在空闲时进入操作。"
+              description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
               checked={allowCloudBrowser}
               onToggle={handleToggleCloudBrowser}
             />

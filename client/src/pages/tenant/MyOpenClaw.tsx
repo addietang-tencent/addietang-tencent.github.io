@@ -1,9 +1,9 @@
 /**
- * MyAgent - 我的 Agent 页面
+ * MyOpenClaw - 我的 OpenClaw 页面
  * Design: 「流动蓝图」Fluid Blueprint
  * - 快速上手引导（始终显示，可手动关闭）
- * - Agent 卡片列表（支持 8 种状态）
- * - 创建 Agent 弹窗
+ * - OpenClaw 卡片列表（支持 8 种状态）
+ * - 创建 OpenClaw 弹窗
  * - 通知 Bell 图标和面板
  * - 操作确认弹窗（重启、重装、删除）
  * - 自动轮询状态转换
@@ -38,32 +38,25 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
-  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, Sparkles, UserMinus,
+  Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, UserMinus,
   LayoutGrid, MessageSquare, Monitor, Copy,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
 import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
 
-const DISABLED_TIP = "您的 Agent 已被管理员停用，无法操作";
+const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // 8 种状态配置
-type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 
-interface AgentItem {
+interface OpenClawItem {
   id: string;
   instanceId: string;
   name: string;
-  status: AgentStatus;
+  status: OpenClawStatus;
   createdAt: string;
   model: string;
   modelVersion: string;
@@ -81,7 +74,7 @@ interface Notification {
   timestamp: string;
 }
 
-const STATUS_CONFIG: Record<AgentStatus, {
+const STATUS_CONFIG: Record<OpenClawStatus, {
   label: string;
   dotColor?: string;
   bgColor: string;
@@ -164,7 +157,7 @@ const STATUS_CONFIG: Record<AgentStatus, {
 };
 
 // 状态点组件
-const StatusDot = ({ status }: { status: AgentStatus }) => {
+const StatusDot = ({ status }: { status: OpenClawStatus }) => {
   const cfg = STATUS_CONFIG[status];
   
   if (status === "loading") {
@@ -206,7 +199,7 @@ const StatusDot = ({ status }: { status: AgentStatus }) => {
   );
 };
 
-const StatusBadge = ({ status }: { status: AgentStatus }) => {
+const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
   const cfg = STATUS_CONFIG[status];
   const tooltipText = cfg.tooltipText;
 
@@ -236,11 +229,11 @@ const StatusBadge = ({ status }: { status: AgentStatus }) => {
   return badge;
 };
 
-export default function MyAgent() {
+export default function MyOpenClaw() {
   const [, navigate] = useLocation();
-  const [claws, setClawsRaw] = useState<AgentItem[]>(() => loadClawList() as AgentItem[]);
+  const [claws, setClawsRaw] = useState<OpenClawItem[]>(() => loadClawList() as OpenClawItem[]);
   // 包装 setClaws，每次更新同步到 store
-  const setClaws = (v: AgentItem[] | ((prev: AgentItem[]) => AgentItem[])) => {
+  const setClaws = (v: OpenClawItem[] | ((prev: OpenClawItem[]) => OpenClawItem[])) => {
     setClawsRaw((prev) => {
       const next = typeof v === "function" ? v(prev) : v;
       saveClawList(next);
@@ -267,6 +260,7 @@ export default function MyAgent() {
 
   // Agent 类型
   const [agentType, setAgentType] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
+  const [typeExpanded, setTypeExpanded] = useState(false);
 
   // 角色选择
   const [roleExpanded, setRoleExpanded] = useState(false);
@@ -281,7 +275,7 @@ export default function MyAgent() {
   const [hasUnread, setHasUnread] = useState(false);
 
   // 确认弹窗
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: AgentStatus; memoryStatus?: 'none' | 'free' | 'pro' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: OpenClawStatus; memoryStatus?: 'none' | 'free' | 'pro' } | null>(null);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
@@ -366,11 +360,11 @@ export default function MyAgent() {
 
   const handleCreate = () => {
     if (!newName.trim()) {
-      toast.error("请输入 Agent 名称");
+      toast.error("请输入 OpenClaw 名称");
       return;
     }
     const ts = Date.now();
-    const newClaw: AgentItem = {
+    const newClaw: OpenClawItem = {
       id: `oc-${ts}`,
       instanceId: `ins-${ts.toString(36).slice(-8)}`,
       name: newName.trim(),
@@ -406,20 +400,20 @@ export default function MyAgent() {
   };
 
   const handleRestart = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
     setRestartConfirm(null);
     toast.success(`「${name}」正在重启...`);
   };
 
   const handleReinstall = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus, op: "reinstall" } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus, op: "reinstall" } : c));
     setReinstallConfirm(null);
     setReinstallConfirmInput("");
     toast.success(`「${name}」正在重新安装...`);
   };
 
   const handleRetry = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
     toast.success(`「${name}」正在重试...`);
   };
 
@@ -496,7 +490,7 @@ export default function MyAgent() {
                     <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">+</div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">连接聊天软件<span className="text-[10px] font-normal text-gray-400 ml-1">可选</span></p>
-                      <p className="text-xs text-gray-400 mt-0.5">在「详细配置」中开启通道，还可以通过企微/微信/飞书等与 Agent 对话</p>
+                      <p className="text-xs text-gray-400 mt-0.5">在「详细配置」中开启通道，还可以通过企微/微信/飞书等与 OpenClaw 对话</p>
                     </div>
                   </div>
                 </div>
@@ -590,7 +584,7 @@ export default function MyAgent() {
                     ) : (
                       <div className="grid grid-cols-3 gap-4">
               {[...claws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
-                const cfg = STATUS_CONFIG[claw.status as AgentStatus];
+                const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
                 const isLoadFail = claw.status === "loadFail";
@@ -606,8 +600,8 @@ export default function MyAgent() {
                     <span
                       className="absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap"
                       style={{
-                        background: "#E5E7EB",
-                        color: "#4B5563",
+                        background: "#F3F4F6",
+                        color: "#9CA3AF",
                         borderTopLeftRadius: "0.75rem",
                         borderBottomRightRadius: "0.75rem",
                         boxShadow: "none"
@@ -619,9 +613,9 @@ export default function MyAgent() {
                     <div className="p-5 pt-8">
                       <div className="flex items-start justify-between mb-3">
                         <div className="relative">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-opacity ${isGrayAvatar ? "opacity-40" : ""}`}
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden transition-opacity ${isGrayAvatar ? "opacity-40" : ""}`}
                             style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
-                            🦞
+                            <img src="/lobster_web_200.png" alt="Agent" className="w-full h-full object-cover" />
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0 flex-nowrap">
@@ -661,12 +655,12 @@ export default function MyAgent() {
                               {claw.status === "running" ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 Agent"}
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 Agent"}
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                                 </DropdownMenuItem>
                               )}
 
@@ -718,7 +712,7 @@ export default function MyAgent() {
                       </div>
 
                       {/* Name and Info */}
-                      <h3 className={`font-semibold text-base mb-0.5 transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
+                      <h3 className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
                       <div className="flex items-center gap-2 mb-0.5">
@@ -863,7 +857,7 @@ export default function MyAgent() {
               <DialogTitle className="text-base font-bold text-gray-900">确认重启</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-gray-600 leading-relaxed">
-              重启后该 Agent「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
+              重启后该 OpenClaw「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
             </p>
             <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setRestartConfirm(null)}>取消</Button>
@@ -921,12 +915,12 @@ export default function MyAgent() {
                 ? `此操作将移除「${deleteConfirm?.name}」该创建失败的记录，底层资源将由系统自动回收。`
                 : `此操作不可撤销。「${deleteConfirm?.name}」实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复。`}
             </p>
-            {/* 记忆数据清理提示 - 仅当该 Agent 开启了记忆功能时显示 */}
+            {/* 记忆数据清理提示 - 仅当该 OpenClaw 开启了记忆功能时显示 */}
             {deleteConfirm?.status !== "createFail" && deleteConfirm?.memoryStatus && deleteConfirm.memoryStatus !== 'none' && (
               <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700">
-                  该 Agent 已开启 Memory {deleteConfirm.memoryStatus === 'pro' ? 'Pro' : 'Free'}，相关记忆数据也将被一并清理。
+                  该 OpenClaw 已开启 Memory {deleteConfirm.memoryStatus === 'pro' ? 'Pro' : 'Free'}，相关记忆数据也将被一并清理。
                 </p>
               </div>
             )}
@@ -966,7 +960,7 @@ export default function MyAgent() {
             <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
               <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-600 leading-relaxed">
-                移除角色不会删除已有的技能配置，Agent 将回退为「通用助手」。
+                移除角色不会删除已有的技能配置，OpenClaw 将回退为「通用助手」。
               </p>
             </div>
             <DialogFooter className="gap-2 pt-2">
@@ -1038,7 +1032,7 @@ export default function MyAgent() {
         </Dialog>
 
         {/* Create Dialog */}
-        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); } }}>
+        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setTypeExpanded(false); setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); } }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -1069,53 +1063,85 @@ export default function MyAgent() {
                 </p>
               </div>
 
-              {/* Agent Type Select */}
+              {/* Agent Type - Collapsible Row */}
               <div>
-                <Select
-                  value={agentType}
-                  onValueChange={(v) => {
-                    setAgentType(v as "openclaw" | "hermes" | "lightclawace");
-                    if (v !== "openclaw") {
-                      setRoleExpanded(false);
-                      setSelectedRole(null);
-                    }
-                  }}
+                <button
+                  type="button"
+                  onClick={() => setTypeExpanded(!typeExpanded)}
+                  className="w-full flex items-center justify-between py-1 group/type"
                 >
-                  <SelectTrigger className="mt-2 w-auto inline-flex border-0 shadow-none px-0 focus:ring-0 text-sm font-medium text-gray-700 hover:text-gray-900 gap-0.5 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:text-gray-400 [&>svg]:flex-shrink-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="openclaw">Agent</SelectItem>
-                    <SelectItem value="hermes">Hermes</SelectItem>
-                    <SelectItem value="lightclawace">LightclawACE</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">Agent 类型</span>
+                    <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full">可选</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-400">
+                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes" : "LightclawACE"}
+                    </span>
+                    {typeExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5 text-gray-300" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-300" />
+                    )}
+                  </div>
+                </button>
+                {typeExpanded && (
+                  <div className="flex flex-wrap gap-2 pt-2 pb-1">
+                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes"], ["lightclawace", "LightclawACE"]] as const).map(([value, label]) => {
+                      const isSelected = agentType === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            setAgentType(value as "openclaw" | "hermes" | "lightclawace");
+                            if (value !== "openclaw") {
+                              setRoleExpanded(false);
+                              setSelectedRole(null);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                            isSelected
+                              ? "bg-gray-200 text-gray-700"
+                              : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Role Selection - Collapsible Panel (仅 Agent 类型显示) */}
+              {/* Role Selection - Collapsible Row (仅 OpenClaw 类型显示) */}
               {agentType === "openclaw" && (
-              <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div>
                 <button
                   type="button"
                   onClick={() => setRoleExpanded(!roleExpanded)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/50 transition-colors"
+                  className="w-full flex items-center justify-between py-1 group/role"
                 >
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-medium text-gray-700">赋予角色身份</span>
-                    <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">可选</span>
+                    <span className="text-xs text-gray-500">角色身份</span>
+                    <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-full">可选</span>
                   </div>
-                  {roleExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-gray-400">
+                      {selectedRole ? selectedRole.name : "通用助手"}
+                    </span>
+                    {roleExpanded ? (
+                      <ChevronUp className="w-3.5 h-3.5 text-gray-300" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-300" />
+                    )}
+                  </div>
                 </button>
 
                 {roleExpanded && (
-                  <div className="border-t border-gray-50">
+                  <div className="pt-2 pb-1">
                     {/* Fixed height container with scroll */}
-                    <div className="px-4 py-3 overflow-y-auto" style={{ maxHeight: "220px" }}>
+                    <div className="overflow-y-auto" style={{ maxHeight: "220px" }}>
                       {/* Role Tags */}
                       <div className="flex flex-wrap gap-2">
                         {visibleRoles.map((role) => {
@@ -1125,25 +1151,28 @@ export default function MyAgent() {
                               key={role.id}
                               type="button"
                               onClick={() => setSelectedRole(isSelected ? null : role)}
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                                 isSelected
-                                  ? "text-white shadow-sm"
-                                  : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200"
+                                  ? "bg-gray-200 text-gray-700"
+                                  : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200"
                               }`}
-                              style={isSelected ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : undefined}
                             >
                               {role.name}
                             </button>
                           );
                         })}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRole(null)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                            !selectedRole
+                              ? "bg-gray-200 text-gray-700"
+                              : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200"
+                          }`}
+                        >
+                          通用助手（默认）
+                        </button>
                       </div>
-
-                      {/* Hint when no role selected */}
-                      {!selectedRole && (
-                        <p className="text-xs text-gray-400 mt-3">
-                          默认赋予「通用助手」角色
-                        </p>
-                      )}
 
                       {/* Role Detail - shown when a role is selected */}
                       {selectedRole && (

@@ -1287,8 +1287,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     if (agentTypeRaw) {
                       try {
                         // 将实例的 agentType 小写形式映射到镜像管理中的标准形式
+                        // 实例 agentType: openclaw/hermes/lightclawace（小写）
+                        // 镜像 agentType: OpenClaw/HermesAgent/LightClawACE
                         const typeMap: Record<string, string> = {
-                          agent: "openclaw",
+                          openclaw: "openclaw",
                           hermes: "hermesagent",
                           lightclawace: "lightclawace",
                         };

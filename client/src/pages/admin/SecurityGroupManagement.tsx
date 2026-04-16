@@ -179,6 +179,97 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
   },
 ];
 
+const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
+  {
+    id: "sg-office005",
+    name: "Office-Standard-SG",
+    remark: "办公网标准安全组，适合常规员工办公实例",
+    inboundCount: 4,
+    outboundCount: 2,
+    inboundRules: [
+      { id: "o1", source: "10.10.0.0/16", protocol: "TCP", port: "22", policy: "允许", remark: "办公网 SSH" },
+      { id: "o2", source: "10.10.0.0/16", protocol: "TCP", port: "3389", policy: "允许", remark: "办公网远程桌面" },
+      { id: "o3", source: "10.10.0.0/16", protocol: "TCP", port: "443", policy: "允许", remark: "办公系统 HTTPS" },
+      { id: "o4", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: DEFAULT_OUTBOUND,
+  },
+  {
+    id: "sg-data006",
+    name: "Data-Processing-SG",
+    remark: "数据处理节点专用，保留必要服务访问",
+    inboundCount: 3,
+    outboundCount: 2,
+    inboundRules: [
+      { id: "dp1", source: "172.20.0.0/16", protocol: "TCP", port: "22", policy: "允许", remark: "运维 SSH" },
+      { id: "dp2", source: "172.20.0.0/16", protocol: "TCP", port: "9090", policy: "允许", remark: "监控采集" },
+      { id: "dp3", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: DEFAULT_OUTBOUND,
+  },
+  {
+    id: "sg-bastion007",
+    name: "Bastion-Only-SG",
+    remark: "仅允许堡垒机来源访问的安全组",
+    inboundCount: 2,
+    outboundCount: 1,
+    inboundRules: [
+      { id: "b1", source: "10.200.0.12/32", protocol: "TCP", port: "22", policy: "允许", remark: "堡垒机 SSH" },
+      { id: "b2", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: [
+      { id: "bo1", source: "-", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通所有出站流量" },
+    ],
+  },
+  {
+    id: "sg-app008",
+    name: "Application-Cluster-SG",
+    remark: "应用集群通用安全组，放通服务编排端口",
+    inboundCount: 4,
+    outboundCount: 2,
+    inboundRules: [
+      { id: "a1", source: "10.30.0.0/16", protocol: "TCP", port: "8080", policy: "允许", remark: "应用服务入口" },
+      { id: "a2", source: "10.30.0.0/16", protocol: "TCP", port: "8443", policy: "允许", remark: "应用服务 HTTPS" },
+      { id: "a3", source: "10.30.0.0/16", protocol: "TCP", port: "22", policy: "允许", remark: "集群运维 SSH" },
+      { id: "a4", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: DEFAULT_OUTBOUND,
+  },
+  {
+    id: "sg-audit009",
+    name: "Audit-Readonly-SG",
+    remark: "审计查看实例，限制仅查询与日志上报",
+    inboundCount: 3,
+    outboundCount: 2,
+    inboundRules: [
+      { id: "ar1", source: "10.40.8.0/24", protocol: "TCP", port: "22", policy: "允许", remark: "审计网 SSH" },
+      { id: "ar2", source: "10.40.8.0/24", protocol: "TCP", port: "5601", policy: "允许", remark: "日志检索" },
+      { id: "ar3", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: DEFAULT_OUTBOUND,
+  },
+  {
+    id: "sg-trial010",
+    name: "Trial-Sandbox-SG",
+    remark: "试用沙箱环境，方便演示分页与搜索效果",
+    inboundCount: 3,
+    outboundCount: 1,
+    inboundRules: [
+      { id: "t1", source: "192.168.50.0/24", protocol: "TCP", port: "22", policy: "允许", remark: "试用环境 SSH" },
+      { id: "t2", source: "192.168.50.0/24", protocol: "TCP", port: "443", policy: "允许", remark: "试用环境 HTTPS" },
+      { id: "t3", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "默认拒绝其余访问" },
+    ],
+    outboundRules: [
+      { id: "to1", source: "-", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通所有出站流量" },
+    ],
+  },
+];
+
+const MOCK_SECURITY_GROUP_DIALOG_CANDIDATES = [
+  ...MOCK_SECURITY_GROUPS,
+  ...MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES,
+];
+
 // ─── 类型定义 ─────────────────────────────────────────────────────────────────
 
 type Rule = {
@@ -443,7 +534,7 @@ const TABS = [
   {
     id: "security",
     label: "安全组",
-    description: "配置 Agent 云服务器的入站与出站规则，管控网络流量策略。",
+    description: "配置 Agent 所在云服务器的入站与出站规则，管控网络流量策略。",
   },
   {
     id: "public",
@@ -482,17 +573,22 @@ type SelectExistingSecurityGroupDialogProps = {
   selectedSecurityGroup: SecurityGroup | null;
   previewTab: "outbound" | "inbound";
   candidateSecurityGroups: SecurityGroup[];
+  candidatePage: number;
+  candidateTotalPages: number;
   shouldShowPanelAccessAssist: boolean;
   isPanelAccessStaged: boolean;
   onOpenChange: (open: boolean) => void;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
   onSelectSecurityGroup: (sg: SecurityGroup) => void;
+  onCandidatePageChange: (page: number) => void;
   onTogglePanelAccessStaged: () => void;
   onPreviewTabChange: (tab: "outbound" | "inbound") => void;
   onCancel: () => void;
   onConfirm: () => void;
 };
+
+const SECURITY_GROUP_DIALOG_PAGE_SIZE = 5;
 
 function CreateSecurityGroupDialog({
   open,
@@ -509,10 +605,10 @@ function CreateSecurityGroupDialog({
 }: CreateSecurityGroupDialogProps) {
   const { inbound: previewInbound, outbound: previewOutbound } = buildRulesFromOptions(checkedOptions);
   const previewRules = previewTab === "inbound" ? previewInbound : previewOutbound;
-  const hasRiskyRule = [...previewInbound, ...previewOutbound].some(
-    (rule) =>
-      (rule.source === "0.0.0.0/0" || rule.source === "::/0") &&
-      rule.policy === "允许"
+  const hasRiskyRule = [previewInbound, previewOutbound].some((rules) =>
+    rules.some((rule) =>
+      (rule.source === "0.0.0.0/0" || rule.source === "::/0") && rule.policy === "允许"
+    )
   );
 
   return (
@@ -1232,8 +1328,8 @@ export default function SecurityGroupManagement() {
   const [currentSg, setCurrentSg] = useState<SecurityGroup | null>(initialDefaultSecurityGroup);
   const [isSgDialogOpen, setIsSgDialogOpen] = useState(false);
   const [isConfirmSwitchDialogOpen, setIsConfirmSwitchDialogOpen] = useState(false);
-  const [isSgSelectorExpanded, setIsSgSelectorExpanded] = useState(false);
   const [sgSearchKeyword, setSgSearchKeyword] = useState("");
+  const [sgDialogCandidatePage, setSgDialogCandidatePage] = useState(1);
   const [sgDialogSelected, setSgDialogSelected] = useState<SecurityGroup | null>(null); // 弹窗内选中的候选
   const [sgDialogTab, setSgDialogTab] = useState<"outbound" | "inbound">("outbound");
   const [isSgDialogPanelAccessStaged, setIsSgDialogPanelAccessStaged] = useState(false);
@@ -1375,16 +1471,16 @@ export default function SecurityGroupManagement() {
 
   const openSelectSecurityGroupDialog = () => {
     setSgSearchKeyword("");
+    setSgDialogCandidatePage(1);
     setSgDialogSelected(null);
     setSgDialogTab("outbound");
-    setIsSgSelectorExpanded(false);
     setIsSgDialogPanelAccessStaged(false);
     setIsSgDialogOpen(true);
   };
 
   const closeSelectSecurityGroupDialog = () => {
-    setIsSgSelectorExpanded(false);
     setSgSearchKeyword("");
+    setSgDialogCandidatePage(1);
     setIsSgDialogPanelAccessStaged(false);
     setIsSgDialogOpen(false);
   };
@@ -1520,12 +1616,15 @@ export default function SecurityGroupManagement() {
     selectedSecurityGroup,
     previewTab,
     candidateSecurityGroups,
+    candidatePage,
+    candidateTotalPages,
     shouldShowPanelAccessAssist,
     isPanelAccessStaged,
     onOpenChange,
     onSearchChange,
     onClearSearch,
     onSelectSecurityGroup,
+    onCandidatePageChange,
     onTogglePanelAccessStaged,
     onPreviewTabChange,
     onCancel,
@@ -1558,31 +1657,6 @@ export default function SecurityGroupManagement() {
               </p>
             </div>
             <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setIsSgSelectorExpanded((prev) => !prev)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition-colors hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    {selectedSecurityGroup ? (
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-medium text-gray-900">
-                          {selectedSecurityGroup.name}（id：{selectedSecurityGroup.id}）
-                        </div>
-                        <div className="mt-0.5 truncate text-xs text-gray-500">
-                          {selectedSecurityGroup.remark || "—"}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-400">请选择要使用的安全组</span>
-                    )}
-                  </div>
-                  <ChevronDown className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${isSgSelectorExpanded ? "rotate-180" : ""}`} />
-                </div>
-              </button>
-
-              {isSgSelectorExpanded && (
                 <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
                   <div className="relative border-b border-gray-100 p-4">
                     <Search className="absolute left-7 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -1603,59 +1677,87 @@ export default function SecurityGroupManagement() {
                     )}
                   </div>
 
-                  <div
-                    style={{ maxHeight: "240px", overflowY: "auto", scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}
-                  >
+                  <div>
                     {candidateSecurityGroups.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-10 text-gray-400">
                         <Shield className="w-10 h-10 mb-3 opacity-30" />
                         <p className="text-sm">未找到匹配的安全组</p>
                       </div>
                     ) : (
-                      <div className="flex flex-col">
-                        {candidateSecurityGroups.map((sg) => {
-                          const isSelected = selectedSecurityGroup?.id === sg.id;
-                          return (
-                            <button
-                              key={sg.id}
-                              onClick={() => onSelectSecurityGroup(sg)}
-                              className={`w-full text-left px-4 py-2.5 border-b border-gray-100 last:border-b-0 transition-colors ${
-                                isSelected
-                                  ? "bg-blue-50"
-                                  : "hover:bg-gray-50"
-                              }`}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="mt-0.5 shrink-0">
-                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                    isSelected
-                                      ? "border-blue-500 bg-blue-500"
-                                      : "border-gray-300 bg-white"
-                                  }`}>
-                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      <>
+                        <div className="flex flex-col">
+                          {candidateSecurityGroups.map((sg) => {
+                            const isSelected = selectedSecurityGroup?.id === sg.id;
+                            return (
+                              <button
+                                key={sg.id}
+                                onClick={() => onSelectSecurityGroup(sg)}
+                                className={`w-full text-left px-4 py-2.5 border-b border-gray-100 last:border-b-0 transition-colors ${
+                                  isSelected
+                                    ? "bg-blue-50"
+                                    : "hover:bg-gray-50"
+                                }`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className="mt-0.5 shrink-0">
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                      isSelected
+                                        ? "border-blue-500 bg-blue-500"
+                                        : "border-gray-300 bg-white"
+                                    }`}>
+                                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                    </div>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-800"}`}>{sg.name}</span>
+                                      <span className="text-xs text-gray-400 font-mono shrink-0 truncate max-w-[140px]">(id: {sg.id})</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-0.5 truncate">{sg.remark || "—"}</p>
+                                  </div>
+                                  <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-gray-400 whitespace-nowrap">
+                                    <span>入站 {sg.inboundCount} 条</span>
+                                    <span className="text-gray-200">|</span>
+                                    <span>出站 {sg.outboundCount} 条</span>
                                   </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-800"}`}>{sg.name}</span>
-                                    <span className="text-xs text-gray-400 font-mono shrink-0">(id: {sg.id})</span>
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-0.5 truncate">{sg.remark || "—"}</p>
-                                </div>
-                                <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-gray-400">
-                                  <span>入站 {sg.inboundCount} 条</span>
-                                  <span className="text-gray-200">|</span>
-                                  <span>出站 {sg.outboundCount} 条</span>
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {candidateTotalPages > 1 && (
+                          <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 px-4 py-2.5">
+                            <span className="text-xs text-gray-400">第 {candidatePage} / {candidateTotalPages} 页</span>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700"
+                                disabled={candidatePage === 1}
+                                onClick={() => onCandidatePageChange(candidatePage - 1)}
+                              >
+                                <ChevronLeft className="mr-1 h-3.5 w-3.5" />
+                                上一页
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700"
+                                disabled={candidatePage === candidateTotalPages}
+                                onClick={() => onCandidatePageChange(candidatePage + 1)}
+                              >
+                                下一页
+                                <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
-              )}
             </div>
 
             {selectedSecurityGroup && (
@@ -1669,26 +1771,25 @@ export default function SecurityGroupManagement() {
                       ? "border-blue-100 bg-blue-50"
                       : "border-amber-100 bg-amber-50"
                   }`}>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-start gap-2">
                       {isPanelAccessStaged ? (
-                        <Info className="h-4 w-4 shrink-0 self-center text-blue-400" />
+                        <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-400" />
                       ) : (
-                        <AlertTriangle className="h-4 w-4 shrink-0 self-center text-amber-500" />
+                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
                       )}
                       <p className={`text-xs leading-relaxed ${isPanelAccessStaged ? "text-blue-600" : "text-amber-700"}`}>
                         {isPanelAccessStaged
                           ? "已根据当前已启用的 ClawPro 配置，为该安全组补齐所需规则，确认后将随安全组切换一并生效。"
                           : "检测到当前安全组缺少当前已启用的 ClawPro 配置所需规则，可能影响相关功能使用。"}
+                        {" "}
+                        <button
+                          type="button"
+                          onClick={onTogglePanelAccessStaged}
+                          className={`inline-flex items-center whitespace-nowrap align-middle rounded-md border px-2 py-0.5 text-xs font-medium transition-colors ${isPanelAccessStaged ? "border-blue-200 bg-white text-blue-600 hover:bg-blue-50" : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50"}`}
+                        >
+                          {isPanelAccessStaged ? "取消添加" : "一键添加"}
+                        </button>
                       </p>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className={`h-8 shrink-0 text-xs ${isPanelAccessStaged ? "border-blue-200 bg-white text-blue-600 hover:bg-blue-50" : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50"}`}
-                        onClick={onTogglePanelAccessStaged}
-                      >
-                        {isPanelAccessStaged ? "取消添加" : "一键添加"}
-                      </Button>
                     </div>
                   </div>
                 )}
@@ -1751,7 +1852,7 @@ export default function SecurityGroupManagement() {
 
   const availableSubnets = config.vpcId ? (MOCK_SUBNETS[config.vpcId] ?? []) : [];
   const currentTab = TABS.find((t) => t.id === activeTab)!;
-  const selectableSecurityGroups = MOCK_SECURITY_GROUPS.filter(
+  const selectableSecurityGroups = MOCK_SECURITY_GROUP_DIALOG_CANDIDATES.filter(
     (sg) =>
       sg.id !== currentSg?.id &&
       (sgSearchKeyword === "" ||
@@ -1759,6 +1860,19 @@ export default function SecurityGroupManagement() {
         sg.id.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
         (sg.remark ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()))
   );
+  const selectableSecurityGroupTotalPages = Math.max(1, Math.ceil(selectableSecurityGroups.length / SECURITY_GROUP_DIALOG_PAGE_SIZE));
+  const selectableSecurityGroupCurrentPage = Math.min(sgDialogCandidatePage, selectableSecurityGroupTotalPages);
+  const pagedSelectableSecurityGroups = selectableSecurityGroups.slice(
+    (selectableSecurityGroupCurrentPage - 1) * SECURITY_GROUP_DIALOG_PAGE_SIZE,
+    selectableSecurityGroupCurrentPage * SECURITY_GROUP_DIALOG_PAGE_SIZE
+  );
+
+  useEffect(() => {
+    if (sgDialogCandidatePage > selectableSecurityGroupTotalPages) {
+      setSgDialogCandidatePage(1);
+    }
+  }, [sgDialogCandidatePage, selectableSecurityGroupTotalPages]);
+
   const hasNetworkTemplateWarning = hasCommonRulePreviewRule(inboundRules, NETWORK_TEMPLATE_WARNING_KEY, "inbound");
   const activePanelAccessPort = panelPort || DEFAULT_PANEL_ACCESS_PORT;
   const panelAccessRequiredRules = allowPanelAccess ? buildPanelAccessRequiredRules(activePanelAccessPort) : [];
@@ -1887,7 +2001,7 @@ export default function SecurityGroupManagement() {
                       </Button>
                     </div>
 
-                    <p className="text-xs text-gray-400">设置完成后，当前企业下所有 Agent 云服务器将默认关联该安全组</p>
+                    <p className="text-xs text-gray-400">设置完成后，当前企业下所有 Agent 所在云服务器将默认关联该安全组</p>
                   </div>
                 </div>
               )}
@@ -2571,7 +2685,9 @@ export default function SecurityGroupManagement() {
         searchKeyword: sgSearchKeyword,
         selectedSecurityGroup: sgDialogPreviewSecurityGroup,
         previewTab: sgDialogTab,
-        candidateSecurityGroups: selectableSecurityGroups,
+        candidateSecurityGroups: pagedSelectableSecurityGroups,
+        candidatePage: selectableSecurityGroupCurrentPage,
+        candidateTotalPages: selectableSecurityGroupTotalPages,
         shouldShowPanelAccessAssist: shouldShowSgDialogPanelAccessAssist,
         isPanelAccessStaged: isSgDialogPanelAccessStaged,
         onOpenChange: (open) => {
@@ -2579,15 +2695,22 @@ export default function SecurityGroupManagement() {
             closeSelectSecurityGroupDialog();
           }
         },
-        onSearchChange: setSgSearchKeyword,
-        onClearSearch: () => setSgSearchKeyword(""),
+        onSearchChange: (value) => {
+          setSgSearchKeyword(value);
+          setSgDialogCandidatePage(1);
+        },
+        onClearSearch: () => {
+          setSgSearchKeyword("");
+          setSgDialogCandidatePage(1);
+        },
         onSelectSecurityGroup: (sg) => {
           setSgDialogSelected(sg);
           setSgDialogTab("outbound");
-          setIsSgSelectorExpanded(false);
           setSgSearchKeyword("");
+          setSgDialogCandidatePage(1);
           setIsSgDialogPanelAccessStaged(false);
         },
+        onCandidatePageChange: setSgDialogCandidatePage,
         onTogglePanelAccessStaged: () => {
           if (!isSgDialogPanelAccessStaged) {
             setSgDialogTab("inbound");
@@ -2615,7 +2738,7 @@ export default function SecurityGroupManagement() {
               <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <div className="text-sm text-red-600 leading-relaxed">
                 <ul className="list-disc pl-4 space-y-1">
-                  <li>当前企业下<span className="font-semibold">所有 Agent 云服务器</span>将统一使用该安全组，包括已有和后续新增的 Agent 云服务器。</li>
+                  <li>当前企业下<span className="font-semibold">所有 Agent 所在云服务器</span>将统一使用该安全组，包括已有和后续新增的 <span className="font-semibold">Agent 云服务器</span>。</li>
                   <li>如安全组已经关联了您的其他腾讯云资源，则后续安全组规则修改将<span className="font-semibold">同步影响这些资源</span>，请谨慎操作</li>
                 </ul>
               </div>

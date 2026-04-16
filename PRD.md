@@ -4,6 +4,7 @@
 1. [Tokens 监控](#tokens-监控)
 2. [运维观测](#运维观测)
 3. [会话管理](#会话管理)
+4. [镜像管理（本期迭代）](#镜像管理本期迭代)
 
 ---
 
@@ -407,6 +408,215 @@
 
 ### 认证
 - 所有接口需要在请求头中包含 `Authorization: Bearer <token>`
+
+---
+
+## 镜像管理（本期迭代）
+
+> **分支**：feature/admin-image-management  
+> **日期**：2026-04-15  
+> **状态**：前端开发完成，待后端对齐
+
+### 页面概述
+**镜像管理** 是管控端的运行环境管理页面，管理不同 Agent 类型的运行环境镜像。本期核心改造：将镜像启用模式从「全局单镜像」升级为「按 Agent 类型多镜像」，支持平台同时运行多种 Agent 启动模板，并为每个镜像建立可持久化的版本信息。
+
+### 核心改造
+
+#### 1. 镜像启用逻辑改造：单启用 → 按类型多启用
+
+##### 1.1 变更说明
+
+| 维度 | 改造前 | 改造后 |
+|------|--------|--------|
+| 启用粒度 | 全局唯一一个 `activeImageId` | 每个 `agentType` 各自维护一个启用镜像 |
+| 启动模板 | 平台 1 个启动模板 | 平台 1~N 个启动模板（每个已启用类型对应一个） |
+| 用户端选择 | 无类型选择 | 用户创建 Agent 时可选择已启用的类型 |
+
+##### 1.2 启用规则
+
+| 规则 | 说明 |
+|------|------|
+| 类型内唯一 | 同一 `agentType` 下最多一个镜像 `active=true`，启用新镜像时自动取消该类型下旧的启用镜像 |
+| 无版本禁止启用 | `agentVersion` 为空的镜像不允许启用（前端 Switch 禁用 + hover 提示；后端接口拒绝） |
+| 存量兼容（无版本已启用） | 已 `active=true` 但无版本的存量镜像，保持当前运行不中断，但给**强警告提示**：版本列显示黄色 `⚠ 未填写版本` 标签，Switch hover 提示"该镜像缺少版本信息，建议尽快删除后重新导入并填写版本" |
+| 存量兼容（无版本未启用） | Switch 禁用（灰色不可点击），hover 提示"缺少 Agent 版本信息，无法启用。请删除后重新导入并填写版本" |
+
+##### 1.3 用户端首选逻辑
+
+| 规则 | 说明 |
+|------|------|
+| 全局唯一 | 仅一个 `agentType` 可设为"用户端首选"，存储为 `defaultAgentType` |
+| 设置前提 | 该类型下必须有已启用的镜像，否则拒绝设置 |
+| 首选类型约束 | 首选类型的启用镜像不可取消启用、不可删除 |
+| 非首选类型 | 可取消启用（取消后该类型在用户端不可选） |
+| 用户端表现 | 用户创建 Agent 时默认选中首选类型，也可手动切换其他已启用类型 |
+| 一键升级 | 以该类型启用镜像的版本作为升级目标版本 |
+
+##### 1.4 前端改造
+- 镜像列表按 `agentType` 分组展示，每组为一个可折叠的卡片模块
+- 每个模块标题栏显示：类型名称、镜像数量、启用状态标签（用户端可选/不可选）、首选标签
+- 每行镜像独立的 Switch 启用开关
+- 无版本镜像：未启用的 Switch 禁用 + Tooltip 提示
+- 存量已启用无版本镜像：版本列显示黄色 `⚠ 未填写版本` 标签 + Tooltip 提示建议操作
+
+##### 1.5 后端改造
+- **数据模型**：原全局 `activeImageId` 改为按 `agentType` 维护，新增 `default_agent_type` 全局配置字段
+- **启用接口**：新增 `agentVersion` 非空校验；启用时事务内先取消同类型旧启用，再设置新启用
+- **启动模板**：从 1 个扩展为 N 个，每个已启用类型对应一个启动模板
+
+**接口规范**：
+
+- **PUT /api/images/{imageId}/activate**
+  - 参数：`imageId`
+  - 校验：`agentVersion` 非空，否则返回 400
+  - 逻辑：事务内取消同 `agentType` 下旧启用镜像，设置目标镜像 `active=true`
+  - 返回：`{ success, data: { imageId, agentType, active } }`
+
+- **PUT /api/images/{imageId}/deactivate**
+  - 参数：`imageId`
+  - 校验：若该镜像所属 `agentType` 为 `defaultAgentType`，拒绝取消
+  - 返回：`{ success }`
+
+- **PUT /api/config/default-agent-type**
+  - 参数：`{ agentType }`
+  - 校验：该类型下必须有 `active=true` 的镜像
+  - 返回：`{ success, data: { defaultAgentType } }`
+
+- **GET /api/config/default-agent-type**
+  - 返回：`{ defaultAgentType }`
+
+---
+
+#### 2. 导入镜像支持选择 Agent 类型 + 版本
+
+##### 2.1 变更说明
+导入镜像时必须指定 `agentType` 和 `agentVersion`，不再允许无类型/无版本的裸导入。
+
+##### 2.2 导入弹窗交互
+
+| 步骤 | 公共镜像 | 自定义镜像（首次导入） | 自定义镜像（删除后重新导入） |
+|------|----------|----------------------|--------------------------|
+| 选择镜像 | 从腾讯云镜像列表选择 | 从腾讯云镜像列表选择 | 从腾讯云镜像列表选择 |
+| Agent 类型 | 自动匹配，只读不可改 | 手动从下拉选择 | **自动回填上次配置，可编辑** |
+| Agent 版本 | 自动填充，只读不可改 | 手动输入，需校验格式 | **自动回填上次版本，可编辑** |
+
+> 删除镜像时后端记录该镜像的 `agentType` + `agentVersion`；再次导入同一镜像时自动回填，并提示"已自动填入上次配置，可修改"。
+
+##### 2.3 支持的 Agent 类型（本期）
+
+| 类型 | 版本格式 | 示例 | 校验规则 |
+|------|----------|------|----------|
+| OpenClaw | `YYYY.M.D`（日期格式） | `2026.4.2` | 正则 `^\d{4}\.\d{1,2}\.\d{1,2}$` + 日期合法性 |
+| Hermes Agent | semver | `0.8.0` | 正则 `^\d+\.\d+\.\d+$` |
+| LightClaw ACE | semver | `1.0.2` | 正则 `^\d+\.\d+\.\d+$` |
+
+> **本期仅支持以上三个系统预设类型，不支持自定义 Agent 类型。** 自定义类型后续迭代考虑。
+
+##### 2.4 其他规则
+- 同一镜像 ID 不允许重复导入
+- 镜像大小不超过 50GiB（后端校验）
+- 版本信息导入后不可在列表页直接编辑（需删除后重新导入，此时会自动回填上次配置）
+- 前后端双重校验版本格式
+
+##### 2.5 前端改造
+- 导入弹窗新增 Agent 类型下拉（仅三个系统预设类型）
+- 导入弹窗新增 Agent 版本输入框，根据类型动态显示 placeholder 和格式校验
+- 镜像列表分"公共镜像（腾讯云维护）"和"自定义镜像（企业维护）"两组展示
+- 支持搜索镜像 ID/名称、刷新列表
+- **删除后重新导入**：自动回填上次的 type/version，蓝色提示"已自动填入上次配置，可修改"
+
+##### 2.6 后端改造
+- 镜像导入接口新增 `agentType`（必填）、`agentVersion`（必填）参数
+- 后端双重校验版本格式（同前端校验规则）
+- 写入 images 表对应字段
+- **删除镜像时记录历史**：后端需在 `image_delete_history` 表（或同表软删除）保存 `imageId` + `agentType` + `agentVersion`，供重新导入时查询回填
+
+**接口规范**：
+
+- **POST /api/images/import**
+  - 参数：`{ imageId, agentType, agentVersion }`
+  - 校验：imageId 不重复、agentVersion 格式合法、镜像大小 ≤ 50GiB
+  - 返回：`{ success, data: { id, name, agentType, agentVersion, type, status, os, createTime } }`
+
+- **GET /api/images/importable**
+  - 功能：代理查询腾讯云 CVM 可导入的镜像列表
+  - 参数：`{ keyword? }`（可选搜索关键词）
+  - 返回：`{ publicImages: [{ id, name, agentType, agentVersion }], customImages: [{ id, name }] }`
+
+- **GET /api/images/delete-history/{imageId}**
+  - 功能：查询该镜像上次删除前的 type/version 配置
+  - 返回：`{ agentType?, agentVersion? }`（无历史则返回空）
+
+---
+
+#### 3. 镜像版本信息持久化
+
+##### 3.1 变更说明
+版本信息从前端硬编码改为后端持久化存储，前端从接口读取。
+
+##### 3.2 数据库改造
+
+**images 表新增字段**：
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `agent_type` | `VARCHAR(64)` | `NULL` | Agent 类型标识，如 `OpenClaw`、`HermesAgent`、`LightClawACE` |
+| `agent_version` | `VARCHAR(32)` | `NULL` | Agent 版本号 |
+
+**新增 image_delete_history 表**（或复用软删除字段）：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `image_id` | `VARCHAR(64)` PK | 镜像 ID |
+| `agent_type` | `VARCHAR(64)` | 删除前的 Agent 类型 |
+| `agent_version` | `VARCHAR(32)` | 删除前的 Agent 版本 |
+| `deleted_at` | `TIMESTAMP` | 删除时间 |
+
+##### 3.3 存量数据迁移
+
+| 场景 | 迁移策略 |
+|------|----------|
+| 无 `agent_type` 的存量镜像 | 默认填充 `OpenClaw` |
+| `agent_version` 留空 | 不强制填充，保持为空 |
+| 已 `active=true` 且无版本 | 保持运行不中断，前端给强警告提示 |
+| 原全局 `activeImageId` | 迁移为该镜像所属 `agentType` 下的启用镜像 |
+| `defaultAgentType` | 初始设为 `OpenClaw` |
+
+##### 3.4 接口改造
+
+| 接口 | 改造内容 |
+|------|----------|
+| 镜像列表查询 | 返回 `agentType`、`agentVersion` 字段，支持按 `agentType` 分组 |
+| 镜像导入 | 新增 `agentType`、`agentVersion` 必填参数 |
+| 镜像启用 | 校验 `agentVersion` 非空 |
+| 镜像删除 | 校验：首选类型的启用镜像不可删除；删除时写入 delete_history |
+
+**接口规范**：
+
+- **GET /api/images**
+  - 参数：`{ agentType? }`（可选过滤）
+  - 返回：`{ data: [{ id, name, status, type, agentType, agentVersion, os, createTime, active }] }`
+
+- **DELETE /api/images/{imageId}**
+  - 校验：启用中且所属类型为首选类型的镜像不可删除
+  - 副作用：写入 `image_delete_history` 表
+  - 返回：`{ success }`
+
+---
+
+### 用户端联动（后续跟进）
+
+| 联动点 | 说明 |
+|--------|------|
+| 创建 Agent | 展示已启用类型列表，默认选中首选类型 |
+| 一键升级 | 以对应类型启用镜像版本为目标版本 |
+| Agent 详情 | 展示 `agentType` + `agentVersion` 信息 |
+
+### 后续迭代预留
+
+| 功能 | 说明 |
+|------|------|
+| 自定义 Agent 类型 | 支持管理员自行创建新的 Agent 类型（本期仅支持三个系统预设） |
 
 ---
 

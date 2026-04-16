@@ -488,7 +488,7 @@ export default function MyAgent() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">浏览器对话</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与Agent对话（其他Agent暂不支持）</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与OpenClaw对话（其他Agent暂不支持）</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />

@@ -15,7 +15,7 @@ import { Plus, Trash2, FileText, Upload, ExternalLink } from "lucide-react";
 
 const DEFAULT_DOCS = [
   { id: "1", title: "Agent 概念介绍", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
-  { id: "2", title: "企业版 Agent 的功能与特色", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
+  { id: "2", title: "ClawPro平台的功能与特色", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
   { id: "3", title: "部署 Agent 指引", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
   { id: "4", title: "Agent 进阶玩法", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
 ];

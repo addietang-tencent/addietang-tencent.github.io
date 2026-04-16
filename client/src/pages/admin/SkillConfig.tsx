@@ -27,13 +27,13 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每个实例自动预装的技能集合，支持从公共技能库和企业技能库中挑选，当前仅 Agent 支持，其他 Agent 暂不支持预装。",
+    description: "配置每个实例自动预装的技能集合，支持从公共技能库和企业技能库中挑选，当前仅 OpenClaw 支持，其他 Agent 暂不支持预装。",
     comingSoon: false,
   },
   {
     id: "roles",
     label: "角色设定",
-    description: "创建和管理角色预设，用户在创建实例时可选择管理员配置好的角色，快速获得对应技能组合。当前仅 Agent 支持，其他 Agent 暂不支持设置。",
+    description: "创建和管理角色预设，用户在创建实例时可选择管理员配置好的角色，快速获得对应技能组合。当前仅 OpenClaw 支持，其他 Agent 暂不支持设置。",
     comingSoon: false,
   },
   {

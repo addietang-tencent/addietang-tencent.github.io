@@ -610,7 +610,7 @@ export default function PlatformPolicy() {
             icon={<Terminal className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户进入 Agent 终端"
-            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端（当前此开关仅对agent生效）。"
+            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端（当前此开关仅对openclaw云服务器生效）。"
             checked={allowTerminal}
             onToggle={handleToggleTerminal}
           />

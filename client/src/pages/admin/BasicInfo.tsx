@@ -314,7 +314,7 @@ export default function BasicInfo() {
   const [, navigate] = useLocation();
 
   // ── 步骤 1：平台名称与品牌 ──
-  const [siteName, setSiteName] = useState("A公司企业版Agent");
+  const [siteName, setSiteName] = useState("A公司企业版OpenClaw");
   const [logo, setLogo] = useState<File | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const MAX_FILE_SIZE = 512 * 1024;

@@ -46,9 +46,9 @@ Agent 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独立
     id: "features",
     icon: Star,
     color: "from-purple-500 to-purple-600",
-    title: "企业版 Agent 的功能与特色",
+    title: "ClawPro平台的功能与特色",
     desc: "了解企业版专属功能，包括多成员管理、配额控制、统一配置等",
-    content: `# 企业版 Agent 的功能与特色
+    content: `# ClawPro平台的功能与特色
 
 ## 企业版核心优势
 

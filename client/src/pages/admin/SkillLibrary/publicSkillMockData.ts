@@ -57,6 +57,7 @@ export interface PackageSkillItem {
   skillNameZh?: string;
   source: 'public' | 'enterprise'; // 来源
   version: string;
+  originalVersion?: string; // 刷新前的原始版本号（仅在版本被刷新后存在）
   addedAt: Date;
 }
 
@@ -728,7 +729,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'web-search-pro',
         skillNameZh: '网络搜索增强',
         source: 'public',
-        version: '3.2.1',
+        version: '3.1.0',
         addedAt: new Date('2026-01-15'),
       },
       {
@@ -736,7 +737,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'email-writer',
         skillNameZh: '邮件撰写助手',
         source: 'public',
-        version: '2.3.0',
+        version: '2.1.0',
         addedAt: new Date('2026-01-20'),
       },
       {
@@ -773,7 +774,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'github',
         skillNameZh: 'GitHub 工具',
         source: 'public',
-        version: '2.1.0',
+        version: '1.5.0',
         addedAt: new Date('2026-02-10'),
       },
       {
@@ -781,7 +782,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'code-reviewer',
         skillNameZh: '代码审查助手',
         source: 'public',
-        version: '1.4.0',
+        version: '1.3.0',
         addedAt: new Date('2026-02-15'),
       },
       {
@@ -791,6 +792,14 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         source: 'public',
         version: '1.2.0',
         addedAt: new Date('2026-03-01'),
+      },
+      {
+        skillId: 'skill-2',
+        skillName: 'code-reviewer',
+        skillNameZh: '代码审查工具',
+        source: 'enterprise',
+        version: '2.0.0',
+        addedAt: new Date('2026-03-05'),
       },
     ],
   },
@@ -810,7 +819,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'docker-ops',
         skillNameZh: 'Docker 运维',
         source: 'public',
-        version: '1.2.0',
+        version: '1.0.0',
         addedAt: new Date('2026-02-20'),
       },
       {
@@ -818,7 +827,7 @@ export const INITIAL_SKILL_PACKAGES_DEFAULT: SkillInitialPackage[] = [
         skillName: 'k8s-manager',
         skillNameZh: 'Kubernetes 管理',
         source: 'public',
-        version: '1.6.0',
+        version: '1.4.0',
         addedAt: new Date('2026-02-20'),
       },
     ],

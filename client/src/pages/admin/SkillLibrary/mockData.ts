@@ -226,6 +226,90 @@ The \`gh api\` command is useful for accessing data not available through other 
       ]},
     ],
   },
+  {
+    id: 'skill-5',
+    slug: 'sql-optimizer',
+    name: 'SQL 查询优化助手',
+    description: '自动分析 SQL 查询语句，识别性能瓶颈并提供优化建议。支持 MySQL、PostgreSQL、TiDB 等主流数据库，提供索引建议、查询重写、执行计划分析等功能。',
+    version: '1.2.0',
+    categories: ['8', '2'],
+    scope: 'public',
+    groupIds: [],
+    uploadTime: new Date('2025-03-25'),
+    content: '# SQL 查询优化助手\n\n这是一个用于 SQL 查询优化的 Skill...',
+    versions: ['1.2.0', '1.1.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024, content: '# SQL 查询优化助手\n\n这是一个用于 SQL 查询优化的 Skill...' },
+      { name: 'README.md', size: 512, content: '# SQL Optimizer\n\n## 功能\n\n- 自动分析 SQL 查询性能\n- 索引建议\n- 查询重写优化' },
+    ],
+    versionHistory: [
+      { version: '1.2.0', date: '2025-03-25', changeLog: '1、新增 TiDB 支持\n2、优化索引建议算法\n3、新增执行计划可视化', files: [
+        { name: 'SKILL.md', size: 1024, content: '# SQL 查询优化助手\n\n这是一个用于 SQL 查询优化的 Skill...' },
+      ]},
+      { version: '1.1.0', date: '2025-03-10', changeLog: '1、新增 PostgreSQL 支持\n2、优化建议准确率提升 30%', files: [
+        { name: 'SKILL.md', size: 980, content: '# SQL 查询优化助手 v1.1\n\n新增 PostgreSQL 支持。' },
+      ]},
+      { version: '1.0.0', date: '2025-02-20', changeLog: '首次发布，支持 MySQL', files: [
+        { name: 'SKILL.md', size: 900, content: '# SQL 查询优化助手 v1.0\n\n支持 MySQL 查询优化。' },
+      ]},
+    ],
+  },
+  {
+    id: 'skill-6',
+    slug: 'k8s-troubleshooter',
+    name: 'K8s 故障排查助手',
+    description: '面向 Kubernetes 集群的智能故障排查工具。支持 Pod 异常诊断、网络问题定位、资源配额分析、Events 日志解读，快速定位并修复集群问题。',
+    version: '2.0.0',
+    categories: ['3'],
+    scope: 'private',
+    groupIds: ['grp-2'],
+    uploadTime: new Date('2025-04-01'),
+    content: '# K8s 故障排查助手\n\n这是一个用于 Kubernetes 故障排查的 Skill...',
+    versions: ['2.0.0', '1.5.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024, content: '# K8s 故障排查助手\n\n这是一个用于 Kubernetes 故障排查的 Skill...' },
+      { name: 'README.md', size: 512, content: '# K8s Troubleshooter\n\n## 功能\n\n- Pod 异常诊断\n- 网络问题定位\n- 资源配额分析' },
+    ],
+    versionHistory: [
+      { version: '2.0.0', date: '2025-04-01', changeLog: '1、全新诊断引擎，支持多集群\n2、新增网络拓扑可视化\n3、支持自定义告警规则', files: [
+        { name: 'SKILL.md', size: 1024, content: '# K8s 故障排查助手\n\n这是一个用于 Kubernetes 故障排查的 Skill...' },
+      ]},
+      { version: '1.5.0', date: '2025-03-15', changeLog: '1、新增 Events 日志智能解读\n2、优化 Pod 异常诊断流程', files: [
+        { name: 'SKILL.md', size: 980, content: '# K8s 故障排查助手 v1.5\n\n新增 Events 日志智能解读。' },
+      ]},
+      { version: '1.0.0', date: '2025-02-28', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# K8s 故障排查助手 v1.0\n\n基础 Kubernetes 故障排查。' },
+      ]},
+    ],
+  },
+  {
+    id: 'skill-7',
+    slug: 'meeting-summary',
+    name: '会议纪要生成器',
+    description: '基于会议录音或文字记录，自动生成结构化会议纪要。支持议题提取、待办事项追踪、决策记录，并可与企业微信/飞书集成推送。',
+    version: '1.3.0',
+    categories: ['1', '7'],
+    scope: 'public',
+    groupIds: [],
+    uploadTime: new Date('2025-03-28'),
+    content: '# 会议纪要生成器\n\n这是一个用于会议纪要生成的 Skill...',
+    versions: ['1.3.0', '1.2.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024, content: '# 会议纪要生成器\n\n这是一个用于会议纪要生成的 Skill...' },
+      { name: 'README.md', size: 512, content: '# Meeting Summary\n\n## 功能\n\n- 自动提取议题和决策\n- 生成待办事项\n- 支持企业微信推送' },
+    ],
+    versionHistory: [
+      { version: '1.3.0', date: '2025-03-28', changeLog: '1、新增飞书集成\n2、优化议题提取准确率\n3、支持多语言会议记录', files: [
+        { name: 'SKILL.md', size: 1024, content: '# 会议纪要生成器\n\n这是一个用于会议纪要生成的 Skill...' },
+      ]},
+      { version: '1.2.0', date: '2025-03-10', changeLog: '1、新增企业微信推送\n2、优化待办事项追踪', files: [
+        { name: 'SKILL.md', size: 980, content: '# 会议纪要生成器 v1.2\n\n新增企业微信推送。' },
+      ]},
+      { version: '1.0.0', date: '2025-02-25', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# 会议纪要生成器 v1.0\n\n基础会议纪要生成。' },
+      ]},
+    ],
+  },
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [

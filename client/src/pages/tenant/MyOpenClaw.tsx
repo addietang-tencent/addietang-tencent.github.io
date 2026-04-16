@@ -384,7 +384,7 @@ export default function MyOpenClaw() {
       roleName: agentType === "openclaw" ? (selectedRole?.name ?? "通用助手") : undefined,
       memoryStatus: 'none', // 记忆状态
     };
-    setClaws([...claws, newClaw]);
+    setClaws([newClaw, ...claws]);
     setNewName("");
     setSelectedRole(null);
     setRoleExpanded(false);
@@ -575,57 +575,13 @@ export default function MyOpenClaw() {
                   onToggleFullscreen={handleToggleFullscreen}
                 />
               ) : (() => {
-                // 三类 Tab 定义
-                const agentTabs: { key: "openclaw" | "hermes" | "lightclawace"; label: string }[] = [
-                  { key: "openclaw",     label: "OpenClaw" },
-                  { key: "hermes",      label: "Hermes" },
-                  { key: "lightclawace", label: "LightclawACE" },
-                ];
-                // 当前 Tab 过滤后的实例
-                const tabItems = claws.filter(c =>
-                  activeAgentTab === "openclaw"
-                    ? (!c.agentType || c.agentType === "openclaw")
-                    : c.agentType === activeAgentTab
-                );
-
                 return (
                   <div>
-                    {/* 横向子 Tab */}
-                    <div className="flex items-center gap-1 mb-5 border-b border-gray-100">
-                      {agentTabs.map(tab => {
-                        const count = claws.filter(c =>
-                          tab.key === "openclaw"
-                            ? (!c.agentType || c.agentType === "openclaw")
-                            : c.agentType === tab.key
-                        ).length;
-                        const isActive = activeAgentTab === tab.key;
-                        return (
-                          <button
-                            key={tab.key}
-                            onClick={() => setActiveAgentTab(tab.key)}
-                            className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
-                              isActive
-                                ? "text-blue-600"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            {tab.label}
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                              isActive ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-400"
-                            }`}>{count}</span>
-                            {isActive && (
-                              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* 当前 Tab 内容 */}
-                    {tabItems.length === 0 ? (
+                    {/* 单页展示所有实例 */}
+                    {claws.length === 0 ? (
                       <div className="text-center py-24">
                         <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                        <p className="text-gray-400 mb-4">暂无 {agentTabs.find(t => t.key === activeAgentTab)?.label} 实例</p>
+                        <p className="text-gray-400 mb-4">暂无实例</p>
                         <Button onClick={() => setShowCreate(true)} variant="outline">
                           <Plus className="w-4 h-4 mr-1.5" />
                           创建 Agent
@@ -633,7 +589,7 @@ export default function MyOpenClaw() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 gap-4">
-              {tabItems.map((claw) => {
+              {[...claws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
@@ -642,16 +598,31 @@ export default function MyOpenClaw() {
 
                 return (
                   <div key={claw.id}
-                    className={`bg-white rounded-2xl border border-gray-100 overflow-hidden transition-all duration-200 group relative ${!isDisabled && !isNonOpenclaw ? "hover:-translate-y-0.5 cursor-pointer" : isNonOpenclaw && !isDisabled ? "hover:-translate-y-0.5" : "cursor-default"}`}
+                    className={`bg-white rounded-2xl border border-gray-100 transition-all duration-200 group relative ${!isDisabled && !isNonOpenclaw ? "hover:-translate-y-0.5 cursor-pointer" : isNonOpenclaw && !isDisabled ? "hover:-translate-y-0.5" : "cursor-default"}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
                     onClick={() => { if (!isDisabled && !isNonOpenclaw) navigate(`/openclaw/${claw.id}`); }}
                   >
+                    {/* Agent Type Tag - 左上角融合卡片内 */}
+                    <span
+                      className="absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap"
+                      style={{
+                        background: "linear-gradient(135deg, #60B0FF, #9B8FFF)",
+                        color: "white",
+                        borderTopLeftRadius: "0.75rem",
+                        borderBottomRightRadius: "0.75rem",
+                        boxShadow: "2px 2px 6px rgba(96,176,255,0.25)"
+                      }}
+                    >
+                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                    </span>
                     {/* Card Header */}
-                    <div className="p-5">
+                    <div className="p-5 pt-8">
                       <div className="flex items-start justify-between mb-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-opacity ${isGrayAvatar ? "opacity-40" : ""}`}
-                          style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
-                          🦞
+                        <div className="relative">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-opacity ${isGrayAvatar ? "opacity-40" : ""}`}
+                            style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
+                            🦞
+                          </div>
                         </div>
                         <div className="flex items-center gap-1.5 flex-shrink-0 flex-nowrap">
                           <StatusBadge status={claw.status} />
@@ -1100,7 +1071,6 @@ export default function MyOpenClaw() {
 
               {/* Agent Type Select */}
               <div>
-                <Label className="text-sm font-medium text-gray-700">Agent 类型</Label>
                 <Select
                   value={agentType}
                   onValueChange={(v) => {
@@ -1111,7 +1081,7 @@ export default function MyOpenClaw() {
                     }
                   }}
                 >
-                  <SelectTrigger className="mt-2 w-full">
+                  <SelectTrigger className="mt-2 w-auto inline-flex border-0 shadow-none px-0 focus:ring-0 text-sm font-medium text-gray-700 hover:text-gray-900 gap-0.5 [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:text-gray-400 [&>svg]:flex-shrink-0">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

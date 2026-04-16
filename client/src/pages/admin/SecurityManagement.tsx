@@ -34,7 +34,7 @@ const SECURITY_CARDS = [
     id: "skills-scanning",
     title: "Skills 供应链安全扫描",
     description:
-      "对 OpenClaw 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信",
+      "对 Agent 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信",
     icon: AlertCircle,
     color: "#FF9500",
   },

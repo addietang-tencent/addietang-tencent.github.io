@@ -288,7 +288,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               )}
             </div>
             <p className="text-sm text-gray-500">
-              基于腾讯云向量数据库的企业级记忆服务，统一管理所有 OpenClaw 的记忆资源。由腾讯云数据库 Agent Memory 服务提供支持。
+              基于腾讯云向量数据库的企业级记忆服务，统一管理所有 Agent 的记忆资源。由腾讯云数据库 Agent Memory 服务提供支持。
             </p>
           </div>
           <Tooltip>

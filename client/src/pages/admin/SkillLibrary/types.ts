@@ -75,7 +75,7 @@ export const INSTANCE_STATUS_MAP: Record<InstanceStatus, { label: string; color:
   error:    { label: '异常', color: 'text-red-700 bg-red-50' },
 };
 
-export interface OpenClawInstance {
+export interface AgentInstance {
   id: string;
   name: string;
   createdBy: string;
@@ -98,7 +98,7 @@ export interface DistributionRecord {
   successCount: number;
   failedCount: number;
   status: DistributionStatus;
-  instances: OpenClawInstance[];
+  instances: AgentInstance[];
 }
 
 export interface BucketInfo {

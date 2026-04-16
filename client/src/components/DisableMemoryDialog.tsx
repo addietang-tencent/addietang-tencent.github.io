@@ -42,7 +42,7 @@ export default function DisableMemoryDialog({
           {/* Main Description */}
           <DialogDescription className="text-sm text-gray-600 leading-relaxed">
             禁用后将卸载 TDAI-Memory 记忆插件，已有记忆数据不会删除，但也不会被使用。卸载过程中将自动重启
-            OpenClaw Gateway 服务。
+            Agent Gateway 服务。
           </DialogDescription>
 
           {/* Warning Block */}

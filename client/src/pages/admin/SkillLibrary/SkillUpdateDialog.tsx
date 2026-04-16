@@ -737,7 +737,7 @@ description: this is a skill creator.
           {/* 更新提示 */}
           <div className="text-xs text-gray-400 leading-relaxed space-y-0.5">
             <p>提示：仅更新企业技能库中的技能版本。</p>
-            <p>已下发至 openclaw 实例的技能不会同步升级，需手动重新下发。</p>
+            <p>已下发至 agent 实例的技能不会同步升级，需手动重新下发。</p>
           </div>
         </div>
 

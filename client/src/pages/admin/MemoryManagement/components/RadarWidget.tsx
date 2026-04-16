@@ -1,7 +1,7 @@
 /**
- * RadarWidget — OpenClaw Design System (Light theme)
+ * RadarWidget — Agent Design System (Light theme)
  * Adapted from Deep Space Tech radar with idle/hover progressive reveal
- * Colors: Brand Blue #007AFF / Purple #5856D6 for TDAI, Gray for OpenClaw
+ * Colors: Brand Blue #007AFF / Purple #5856D6 for TDAI, Gray for Agent
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -149,7 +149,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
 
         {/* Percentage labels on rings — removed per design request */}
 
-        {/* OpenClaw area — always visible */}
+        {/* Agent area — always visible */}
         <motion.polygon
           points={ocPoints}
           fill="rgba(156,163,175,0.12)"
@@ -244,7 +244,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               transition={{ duration: 0.25 }}
               className="text-center"
             >
-              <div className="text-[10px] text-gray-400 mb-0.5">OpenClaw 原生</div>
+              <div className="text-[10px] text-gray-400 mb-0.5">Agent 原生</div>
               <div className="text-lg font-bold font-mono text-gray-400">
                 {TOTAL.openClaw}%
               </div>

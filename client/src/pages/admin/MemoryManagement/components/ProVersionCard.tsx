@@ -150,7 +150,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
                 </div>
                 {/* 引导说明 */}
                 <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-                  开通后，用户可在 OpenClaw 设置页面自行选择启用 Memory Pro 版
+                  开通后，用户可在 Agent 设置页面自行选择启用 Memory Pro 版
                 </p>
               </div>
             )}

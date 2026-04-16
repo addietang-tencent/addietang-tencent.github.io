@@ -1599,7 +1599,7 @@ function RoleEditModal({
             <div className="flex items-center justify-between">
               <div>
                 <Label className="text-sm font-medium text-gray-700">用户可见</Label>
-                <p className="text-xs text-gray-400 mt-0.5">启用后，员工创建 OpenClaw 时可选择此角色</p>
+                <p className="text-xs text-gray-400 mt-0.5">启用后，员工创建 Agent 时可选择此角色</p>
               </div>
               <Switch checked={visible} onCheckedChange={setVisible} />
             </div>
@@ -1963,7 +1963,7 @@ export default function SkillRolesTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除角色</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除角色「{deleteTarget?.name}」吗？删除后，已选择该角色的 OpenClaw 不受影响，但新创建的 OpenClaw 将无法再选择此角色。此操作不可撤销。
+              确定要删除角色「{deleteTarget?.name}」吗？删除后，已选择该角色的 Agent 不受影响，但新创建的 Agent 将无法再选择此角色。此操作不可撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

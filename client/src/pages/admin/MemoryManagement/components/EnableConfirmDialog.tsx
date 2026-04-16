@@ -69,7 +69,7 @@ export const EnableConfirmDialog: React.FC<EnableConfirmDialogProps> = ({
                 <h4 className="font-semibold text-[#1e40af] mb-2">开启后效果</h4>
                 <ul className="text-sm text-[#1e40af] space-y-1">
                   <li>• 新创建的 Agent 将<strong>默认安装并启用</strong> Memory Free 版记忆插件。</li>
-                  <li>• 所有现有 Agent 将会<strong>自动安装</strong>此插件，安装过程需要重启 OpenClaw Gateway 服务。</li>
+                  <li>• 所有现有 Agent 将会<strong>自动安装</strong>此插件，安装过程需要重启 Agent Gateway 服务。</li>
                 </ul>
               </div>
             </div>

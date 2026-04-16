@@ -40,7 +40,7 @@ export const adminSiteEndpoints: EndpointDetail[] = [
   "https://example.com/api/admin/config?template_path=internet_accessible&template_path=system_disk"`,
     responseExample: `{
   "config": {
-    "name": "OpenClaw",
+    "name": "Agent",
     "has_logo": true,
     "cvm_region": "广州",
     "available_zones": ["ap-guangzhou-3", "ap-guangzhou-4"],
@@ -70,7 +70,7 @@ export const adminSiteEndpoints: EndpointDetail[] = [
       { name: "gateway_ui_port", type: "int", description: "Gateway UI 端口号（仅在开启时返回）" },
     ],
     requestExample: `curl -X POST -H "Authorization: Bearer hk-xxx" \\
-  -d "name=OpenClaw&global_token_quota_day=-1&terminal_enabled=true" \\
+  -d "name=Agent&global_token_quota_day=-1&terminal_enabled=true" \\
   https://example.com/api/admin/config`,
     responseExample: `{"ok": true}`,
     errorCodes: [

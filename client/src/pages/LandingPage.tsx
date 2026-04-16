@@ -2,9 +2,9 @@
  * LandingPage - 产品介绍页
  * Design: 「流动蓝图」Fluid Blueprint
  * - 首屏：小龙虾形象 + 标题 + CTA按钮
- * - 第二屏：OpenClaw概念介绍
+ * - 第二屏：Agent概念介绍
  * - 第三屏：企业版功能与特色
- * - 未登录用户可访问，已登录用户跳转到「我的 OpenClaw」
+ * - 未登录用户可访问，已登录用户跳转到「我的 Agent」
  */
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/my-openclaw">
-              <Button variant="ghost" size="sm" className="text-gray-600">进入我的OpenClaw</Button>
+              <Button variant="ghost" size="sm" className="text-gray-600">进入我的Agent</Button>
             </Link>
             {isAdmin && (
               <Link href="/admin/basic-info">
@@ -163,7 +163,7 @@ export default function LandingPage() {
           <div className="mt-12 flex items-center justify-center gap-8 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">1</div>
-              <span>创建 OpenClaw</span>
+              <span>创建 Agent</span>
             </div>
             <div className="w-8 h-px bg-gray-200" />
             <div className="flex items-center gap-2">

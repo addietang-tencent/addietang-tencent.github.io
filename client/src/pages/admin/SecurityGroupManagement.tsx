@@ -60,7 +60,7 @@ const DEFAULT_INBOUND = [
   { id: "9", source: "192.168.0.0/16", protocol: "ALL", port: "ALL", policy: "允许", remark: "放通内网（云私有网络）" },
   { id: "10", source: "0.0.0.0/0", protocol: "TCP", port: "80", policy: "允许", remark: "Web 服务 HTTP（Apache、Nginx 等）" },
   { id: "11", source: "0.0.0.0/0", protocol: "TCP", port: "443", policy: "允许", remark: "Web 服务 HTTPS（Apache、Nginx 等）" },
-  { id: "12", source: "0.0.0.0/0", protocol: "TCP", port: "18789", policy: "允许", remark: "OpenClaw 服务端口" },
+  { id: "12", source: "0.0.0.0/0", protocol: "TCP", port: "18789", policy: "允许", remark: "Agent 服务端口" },
   { id: "13", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
 ];
 
@@ -124,7 +124,7 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
   {
     id: "sg-current001",
     name: "clawpro-default",
-    remark: "OpenClaw 默认安全组",
+    remark: "Agent 默认安全组",
     inboundCount: 13,
     outboundCount: 2,
     inboundRules: DEFAULT_INBOUND,
@@ -156,7 +156,7 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
     outboundCount: 1,
     inboundRules: [
       { id: "s1", source: "10.0.0.0/8", protocol: "TCP", port: "22", policy: "允许", remark: "内网 SSH" },
-      { id: "s2", source: "10.0.0.0/8", protocol: "TCP", port: "18789", policy: "允许", remark: "OpenClaw 内网端口" },
+      { id: "s2", source: "10.0.0.0/8", protocol: "TCP", port: "18789", policy: "允许", remark: "Agent 内网端口" },
       { id: "s3", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
     ],
     outboundRules: [
@@ -215,7 +215,7 @@ type CommonRuleOption = {
 const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
   {
     key: "block-inter-vpc",
-    label: "限制 OpenClaw 互访",
+    label: "限制 Agent 互访",
     description: "",
     defaultChecked: true,
     rules: {
@@ -225,7 +225,7 @@ const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
           protocol: "ALL",
           port: "ALL",
           policy: "拒绝",
-          remark: "限制 VPC 下 OpenClaw 云服务器互访",
+          remark: "限制 VPC 下 Agent 云服务器互访",
         },
       ],
       outbound: [],
@@ -360,7 +360,7 @@ function buildPanelAccessRequiredRules(panelAccessPort: string): Array<Omit<Rule
       protocol: "TCP",
       port: panelAccessPort,
       policy: "允许",
-      remark: "允许访问 OpenClaw 面板",
+      remark: "允许访问 Agent 面板",
     },
   ];
 }
@@ -438,17 +438,17 @@ const TABS = [
   {
     id: "vpc",
     label: "私有网络和子网",
-    description: "配置 OpenClaw 云服务器的私有网络和子网部署策略。",
+    description: "配置 Agent 云服务器的私有网络和子网部署策略。",
   },
   {
     id: "security",
     label: "安全组",
-    description: "配置 OpenClaw 云服务器的入站与出站规则，管控网络流量策略。",
+    description: "配置 Agent 云服务器的入站与出站规则，管控网络流量策略。",
   },
   {
     id: "public",
     label: "公网",
-    description: "配置 OpenClaw 云服务器的公网 IP 和带宽策略。",
+    description: "配置 Agent 云服务器的公网 IP 和带宽策略。",
   },
   {
     id: "coming",
@@ -597,7 +597,7 @@ function CreateSecurityGroupDialog({
               <div className="bg-amber-50 px-3 py-2.5 rounded-md flex items-start gap-2 border border-amber-100">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  当前规则中包含来源/目标为 0.0.0.0/0 或 ::/0 的允许规则，可能带来安全风险。建议创建 OpenClaw 云服务器后及时收紧访问范围，仅保留必要的来源或目标。
+                  当前规则中包含来源/目标为 0.0.0.0/0 或 ::/0 的允许规则，可能带来安全风险。建议创建 Agent 云服务器后及时收紧访问范围，仅保留必要的来源或目标。
                 </p>
               </div>
             )}
@@ -606,7 +606,7 @@ function CreateSecurityGroupDialog({
               <div className="bg-amber-50 px-3 py-2.5 rounded-md flex items-start gap-2 border border-amber-100">
                 <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  无任何规则时 OpenClaw 将无法正常使用，请在创建后手动配置规则。至少放通一条出站规则，否则所有出站流量将被拒绝。
+                  无任何规则时 Agent 将无法正常使用，请在创建后手动配置规则。至少放通一条出站规则，否则所有出站流量将被拒绝。
                 </p>
               </div>
             )}
@@ -703,7 +703,7 @@ export default function SecurityGroupManagement() {
   const [outboundRules, setOutboundRules] = useState<Rule[]>(initialDefaultSecurityGroup?.outboundRules ?? []);
   const [securityTab, setSecurityTab] = useState<"outbound" | "inbound">("outbound");
 
-  // 用户端访问 OpenClaw 面板开关 - 持久化到 localStorage
+  // 用户端访问 Agent 面板开关 - 持久化到 localStorage
   const [allowPanelAccess, setAllowPanelAccess] = useState(() => {
     return localStorage.getItem("admin_allow_panel_access") === "true";
   });
@@ -742,11 +742,11 @@ export default function SecurityGroupManagement() {
     failReason?: string;
   };
 
-  const migrationDialogTitle = "OpenClaw 云服务器网络迁移";
+  const migrationDialogTitle = "Agent 云服务器网络迁移";
   const migrationFlowSteps = ["确认迁移范围", "执行迁移", "查看迁移结果"] as const;
-  const confirmTableColumns = ["用户名", "OpenClaw 云服务器", "当前网络", "目标网络", "说明"] as const;
-  const executionTableColumns = ["用户名", "OpenClaw 云服务器", "迁移任务状态"] as const;
-  const resultTableColumns = ["用户名", "OpenClaw 云服务器", "当前网络", "迁移任务状态", "说明"] as const;
+  const confirmTableColumns = ["用户名", "Agent 云服务器", "当前网络", "目标网络", "说明"] as const;
+  const executionTableColumns = ["用户名", "Agent 云服务器", "迁移任务状态"] as const;
+  const resultTableColumns = ["用户名", "Agent 云服务器", "当前网络", "迁移任务状态", "说明"] as const;
   const confirmTableGridClass = "grid grid-cols-[1.3fr_1.4fr_1.7fr_1.7fr_1.8fr]";
   const executionTableGridClass = "grid grid-cols-[1.5fr_1.5fr_1fr]";
   const resultTableGridClass = "grid grid-cols-[1.3fr_1.4fr_1.7fr_1fr_2fr]";
@@ -967,11 +967,11 @@ export default function SecurityGroupManagement() {
       <div className="min-w-0 flex-1">
         <p className="text-xs leading-relaxed text-amber-800">
           {migrationBannerState === "running" ? (
-            <>OpenClaw 云服务器迁移任务正在执行中。单击「<button onClick={openMigrationProgressDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看进度</button>」可查看实例迁移情况。</>
+            <>Agent 云服务器迁移任务正在执行中。单击「<button onClick={openMigrationProgressDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看进度</button>」可查看实例迁移情况。</>
           ) : migrationBannerState === "failed" ? (
-            <>仍有 OpenClaw 云服务器未完成迁移，请根据失败原因处理后重试。单击「<button onClick={() => openMigrationResultDialog("failed")} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看失败实例并继续迁移。</>
+            <>仍有 Agent 云服务器未完成迁移，请根据失败原因处理后重试。单击「<button onClick={() => openMigrationResultDialog("failed")} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看失败实例并继续迁移。</>
           ) : (
-            <>检测到当前企业下仍有 OpenClaw 云服务器运行在用户个人 VPC 中，为避免后续网络管理和实例治理持续分散，建议尽快发起迁移。单击「<button onClick={openMigrationConfirmDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看迁移范围并确认迁移。</>
+            <>检测到当前企业下仍有 Agent 云服务器运行在用户个人 VPC 中，为避免后续网络管理和实例治理持续分散，建议尽快发起迁移。单击「<button onClick={openMigrationConfirmDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看迁移范围并确认迁移。</>
           )}
         </p>
       </div>
@@ -991,8 +991,8 @@ export default function SecurityGroupManagement() {
           <div className="flex items-start gap-2.5 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2.5">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-amber-700">
-              <li>迁移过程中，OpenClaw 云服务器会重启；迁移完成后，内网 IP 默认会发生变化，请提前告知相关用户。</li>
-              <li>仅迁移“可迁移”列表的 OpenClaw 云服务器，您可查看暂不支持迁移的 OpenClaw 云服务器，按提示处理后在发起迁移。</li>
+              <li>迁移过程中，Agent 云服务器会重启；迁移完成后，内网 IP 默认会发生变化，请提前告知相关用户。</li>
+              <li>仅迁移“可迁移”列表的 Agent 云服务器，您可查看暂不支持迁移的 Agent 云服务器，按提示处理后在发起迁移。</li>
             </ul>
           </div>
 
@@ -1021,7 +1021,7 @@ export default function SecurityGroupManagement() {
               </div>
               <div className="shrink-0 text-xs text-gray-400">
                 <span>
-                  涉及 OpenClaw 云服务器数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.instanceCount}</span>
+                  涉及 Agent 云服务器数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.instanceCount}</span>
                 </span>
                 <span className="mx-2 text-gray-300">｜</span>
                 <span>
@@ -1554,7 +1554,7 @@ export default function SecurityGroupManagement() {
             <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
               <p className="text-xs leading-relaxed text-blue-600">
-                以下安全组均为已在腾讯云控制台创建的安全组，您可按需选择，作为当前企业下 OpenClaw 的安全组。
+                以下安全组均为已在腾讯云控制台创建的安全组，您可按需选择，作为当前企业下 Agent 的安全组。
               </p>
             </div>
             <div className="space-y-3">
@@ -1821,7 +1821,7 @@ export default function SecurityGroupManagement() {
             <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
               <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="text-xs text-amber-800 leading-relaxed space-y-1">
-                <p>• 当前企业下<span className="font-semibold">所有 OpenClaw 云服务器</span>共用同一个安全组。切换安全组或修改安全组规则后，将立即统一生效，请谨慎操作。</p>
+                <p>• 当前企业下<span className="font-semibold">所有 Agent 云服务器</span>共用同一个安全组。切换安全组或修改安全组规则后，将立即统一生效，请谨慎操作。</p>
                 <p>• 如该安全组已关联其他腾讯云资源，后续对安全组规则的修改也会<span className="font-semibold">同步影响</span>这些资源，请谨慎操作。</p>
               </div>
             </div>
@@ -1887,7 +1887,7 @@ export default function SecurityGroupManagement() {
                       </Button>
                     </div>
 
-                    <p className="text-xs text-gray-400">设置完成后，当前企业下所有 OpenClaw 云服务器将默认关联该安全组</p>
+                    <p className="text-xs text-gray-400">设置完成后，当前企业下所有 Agent 云服务器将默认关联该安全组</p>
                   </div>
                 </div>
               )}
@@ -1968,15 +1968,15 @@ export default function SecurityGroupManagement() {
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1.5">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><span className="font-medium">私有网络（VPC）：</span>选择「自动分配」时，系统会为企业统一分配 VPC，所有用户创建的 OpenClaw 云服务器将默认共享该 VPC；您也可以选择其他已有 VPC，作为企业统一使用的 VPC。</span>
+                <span><span className="font-medium">私有网络（VPC）：</span>选择「自动分配」时，系统会为企业统一分配 VPC，所有用户创建的 Agent 云服务器将默认共享该 VPC；您也可以选择其他已有 VPC，作为企业统一使用的 VPC。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><span className="font-medium">子网：</span>选择「自动分配」 VPC 时，系统会将 OpenClaw 云服务器随机部署到系统分配可用区的子网下；您也可选择其他的 VPC 下的子网，或选择「不分配」跳过该可用区部署。</span>
+                <span><span className="font-medium">子网：</span>选择「自动分配」 VPC 时，系统会将 Agent 云服务器随机部署到系统分配可用区的子网下；您也可选择其他的 VPC 下的子网，或选择「不分配」跳过该可用区部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span>如需限制实例间的内网互访，请将安全策略设置为内网不互通，以实现 OpenClaw 云服务器间的隔离。</span>
+                <span>如需限制实例间的内网互访，请将安全策略设置为内网不互通，以实现 Agent 云服务器间的隔离。</span>
               </li>
             </ul>
           </div>
@@ -2127,7 +2127,7 @@ export default function SecurityGroupManagement() {
                         <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 cursor-default shrink-0" />
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-[240px] text-xs leading-relaxed">
-                        系统自动选择的 OpenClaw 云服务器主力可用区，不可修改。可通过指定子网来规定云服务器部署在哪个可用区。
+                        系统自动选择的 Agent 云服务器主力可用区，不可修改。可通过指定子网来规定云服务器部署在哪个可用区。
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -2485,7 +2485,7 @@ export default function SecurityGroupManagement() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  为 OpenClaw 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
+                  为 Agent 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
                 </p>
               </div>
             </div>
@@ -2502,7 +2502,7 @@ export default function SecurityGroupManagement() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold text-gray-900 mb-1">公网极速接入</h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 OpenClaw 各场景下极速、灵活、稳定的网络接入体验
+                  提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 Agent 各场景下极速、灵活、稳定的网络接入体验
                 </p>
               </div>
             </div>
@@ -2519,7 +2519,7 @@ export default function SecurityGroupManagement() {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  为 OpenClaw 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同
+                  为 Agent 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同
                 </p>
               </div>
             </div>
@@ -2561,7 +2561,7 @@ export default function SecurityGroupManagement() {
           MOCK_SECURITY_GROUPS.unshift(newSg);
           applyCurrentSecurityGroup(newSg);
           closeCreateSecurityGroupDialog();
-          toast.success("创建成功，当前企业下所有 OpenClaw 将使用该安全组");
+          toast.success("创建成功，当前企业下所有 Agent 将使用该安全组");
         }}
       />
 
@@ -2615,7 +2615,7 @@ export default function SecurityGroupManagement() {
               <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <div className="text-sm text-red-600 leading-relaxed">
                 <ul className="list-disc pl-4 space-y-1">
-                  <li>当前企业下<span className="font-semibold">所有 OpenClaw 云服务器</span>将统一使用该安全组，包括已有和后续新增的 OpenClaw 云服务器。</li>
+                  <li>当前企业下<span className="font-semibold">所有 Agent 云服务器</span>将统一使用该安全组，包括已有和后续新增的 Agent 云服务器。</li>
                   <li>如安全组已经关联了您的其他腾讯云资源，则后续安全组规则修改将<span className="font-semibold">同步影响这些资源</span>，请谨慎操作</li>
                 </ul>
               </div>
@@ -2630,7 +2630,7 @@ export default function SecurityGroupManagement() {
               onClick={() => {
                 if (sgDialogPreviewSecurityGroup) {
                   applyCurrentSecurityGroup(sgDialogPreviewSecurityGroup);
-                  toast.success("安全组已切换，当前企业下所有 OpenClaw 将使用该安全组");
+                  toast.success("安全组已切换，当前企业下所有 Agent 将使用该安全组");
                   setIsConfirmSwitchDialogOpen(false);
                   closeSelectSecurityGroupDialog();
                 }
@@ -2960,7 +2960,7 @@ export default function SecurityGroupManagement() {
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
               确认保存当前私有网络和子网配置？<br />
-              修改后将对后续新创建的 OpenClaw 云服务器生效。
+              修改后将对后续新创建的 Agent 云服务器生效。
             </p>
             {hasNetworkTemplateWarning && (
               <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">

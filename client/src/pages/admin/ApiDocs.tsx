@@ -587,7 +587,7 @@ export default function ApiDocs() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">简介</h1>
               <p className="text-sm text-gray-500 leading-relaxed">
-                腾讯云 ClawPro（OpenClaw 企业版）提供完整的 REST API，支持通过 API Token 进行自动化管理。
+                腾讯云 ClawPro（Agent 企业版）提供完整的 REST API，支持通过 API Token 进行自动化管理。
               </p>
             </div>
             <div>

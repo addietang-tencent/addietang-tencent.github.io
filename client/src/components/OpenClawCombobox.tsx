@@ -1,7 +1,7 @@
 /**
- * OpenClawCombobox - OpenClaw 名称筛选组件
- * 功能：支持搜索和单选 OpenClaw 名称
- * 特点：默认显示「全部 OpenClaw」，支持模糊搜索，有清空按钮
+ * AgentCombobox - Agent 名称筛选组件
+ * 功能：支持搜索和单选 Agent 名称
+ * 特点：默认显示「全部 Agent」，支持模糊搜索，有清空按钮
  */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,36 +11,36 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface OpenClawComboboxProps {
-  value?: string; // 选中的 OpenClaw 名称，为空表示「全部」
+interface AgentComboboxProps {
+  value?: string; // 选中的 Agent 名称，为空表示「全部」
   onValueChange?: (value: string) => void; // 回调函数
   placeholder?: string;
   className?: string;
 }
 
-// Mock OpenClaw 列表（实际应从 API 获取）
+// Mock Agent 列表（实际应从 API 获取）
 const OPENCLAW_LIST = [
-  { id: "001", name: "OpenClaw-A" },
-  { id: "002", name: "OpenClaw-B" },
-  { id: "003", name: "OpenClaw-C" },
-  { id: "004", name: "OpenClaw-D" },
-  { id: "005", name: "OpenClaw-E" },
-  { id: "006", name: "OpenClaw-F" },
-  { id: "007", name: "OpenClaw-G" },
-  { id: "008", name: "OpenClaw-H" },
+  { id: "001", name: "Agent-A" },
+  { id: "002", name: "Agent-B" },
+  { id: "003", name: "Agent-C" },
+  { id: "004", name: "Agent-D" },
+  { id: "005", name: "Agent-E" },
+  { id: "006", name: "Agent-F" },
+  { id: "007", name: "Agent-G" },
+  { id: "008", name: "Agent-H" },
 ];
 
-export function OpenClawCombobox({
+export function AgentCombobox({
   value = "",
   onValueChange,
-  placeholder = "搜索 OpenClaw 名称...",
+  placeholder = "搜索 Agent 名称...",
   className,
-}: OpenClawComboboxProps) {
+}: AgentComboboxProps) {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
   // 获取显示的文本
-  const displayText = value ? value : "全部 OpenClaw";
+  const displayText = value ? value : "全部 Agent";
 
   // 过滤列表
   const filteredList = searchValue
@@ -96,7 +96,7 @@ export function OpenClawCombobox({
             className="h-9"
           />
           <CommandList className="max-h-[200px]">
-            <CommandEmpty>未找到匹配的 OpenClaw</CommandEmpty>
+            <CommandEmpty>未找到匹配的 Agent</CommandEmpty>
             <CommandGroup>
               {/* 全部选项 */}
               <CommandItem
@@ -117,10 +117,10 @@ export function OpenClawCombobox({
                     !value ? "opacity-100 text-blue-600" : "opacity-0"
                   )}
                 />
-                全部 OpenClaw
+                全部 Agent
               </CommandItem>
 
-              {/* OpenClaw 列表 */}
+              {/* Agent 列表 */}
               {filteredList.map((item) => (
                 <CommandItem
                   key={item.id}

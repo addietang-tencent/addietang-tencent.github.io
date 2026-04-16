@@ -78,7 +78,7 @@ export function parseEndpointNavId(id: string): { sectionId: string; endpointNam
 }
 
 export const navTree: NavItem[] = [
-  { id: "intro", label: "简介", keywords: ["基础信息", "Base URL", "协议", "数据格式", "REST API", "ClawPro", "OpenClaw"] },
+  { id: "intro", label: "简介", keywords: ["基础信息", "Base URL", "协议", "数据格式", "REST API", "ClawPro", "Agent"] },
   { id: "changelog", label: "更新历史", keywords: ["版本", "发布", "变更", "更新日志"] },
   { id: "overview", label: "API 概览", keywords: ["接口列表", "汇总", "所有接口"] },
   {
@@ -128,7 +128,7 @@ export const overviewSections: OverviewSection[] = [
       { name: "GET /openclaw/zones", description: "查询当前地域下的可用区列表" },
       { name: "POST /openclaw/set-gateway-ui", description: "为指定实例开启 Gateway UI 面板" },
       { name: "POST /openclaw/retry", description: "重试加载失败的实例" },
-      { name: "GET /openclaw/check-openclaw-port", description: "检查实例上的服务端口是否正在运行" },
+      { name: "GET /openclaw/check-agent-port", description: "检查实例上的服务端口是否正在运行" },
       { name: "GET /openclaw/check-gateway-access", description: "检查实例的 Gateway UI 端口安全组是否可访问" },
       { name: "POST /openclaw/set-env", description: "为指定实例批量设置或删除环境变量" },
       { name: "GET /openclaw/env", description: "查询指定实例当前的环境变量列表" },
@@ -391,7 +391,7 @@ export const changelogEntries = [
             name: "实例管理",
             items: [
               "POST /openclaw/retry（重试加载失败的实例）",
-              "GET /openclaw/check-openclaw-port（检查实例服务端口）",
+              "GET /openclaw/check-agent-port（检查实例服务端口）",
               "GET /openclaw/check-gateway-access（检查 Gateway UI 端口可访问性）",
             ],
           },

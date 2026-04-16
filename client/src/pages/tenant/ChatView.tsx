@@ -1,7 +1,7 @@
 /**
  * ChatView - 对话视图组件
  * Design: 「流动蓝图」Fluid Blueprint
- * - 左侧 OpenClaw 列表 / 浏览器模式下极简 rail
+ * - 左侧 Agent 列表 / 浏览器模式下极简 rail
  * - 中间对话区（欢迎态 + 对话态 + 输入框）
  * - 右侧云端浏览器区（MVP：执行中可查看，空闲时可操作）
  */
@@ -67,10 +67,10 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-// Types - must match MyOpenClaw
+// Types - must match MyAgent
 // 产品要求：页面主工作态只保留 3 种
 
-type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 type WorkspaceMode = "chat" | "chat_with_browser" | "browser_fullscreen";
 type BrowserSite = "home" | "search" | "news" | "docs";
 
@@ -78,11 +78,11 @@ type BrowserTaskState = "idle" | "running";
 type BrowserPanelStatus = "loading" | "ready";
 type BrowserStartupMockMode = "default" | "always_success" | "random_fail_sg_or_package";
 
-interface OpenClawItem {
+interface AgentItem {
   id: string;
   instanceId: string;
   name: string;
-  status: OpenClawStatus;
+  status: AgentStatus;
   createdAt: string;
   model: string;
   modelVersion: string;
@@ -155,7 +155,7 @@ interface BrowserStartupModalState {
   steps: Record<BrowserStartupStepKey, BrowserStartupStepStatus>;
 }
 
-const BROWSER_SUPPORTED_OS_NAMES = new Set(["ubuntu24.04x86_64", "ubuntu24.04x86_64_openclaw"]);
+const BROWSER_SUPPORTED_OS_NAMES = new Set(["ubuntu24.04x86_64", "ubuntu24.04x86_64_agent"]);
 const BROWSER_REQUIRED_PORTS = ["5901", "6080"];
 const BROWSER_STARTUP_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "componentCheck", "policyCheck"];
 const BROWSER_STARTUP_VISIBLE_STEP_ORDER: BrowserStartupStepKey[] = ["imageCheck", "componentCheck", "policyCheck"];
@@ -168,7 +168,7 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
   imageCheck: {
     title: "检查镜像",
     successText: "当前云服务器镜像满足云端浏览器启动条件。",
-    failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
+    failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 Agent。",
     runningText: "正在检查实例镜像…",
   },
   componentCheck: {
@@ -220,7 +220,7 @@ const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
   return steps[Math.floor(Math.random() * steps.length)];
 };
 
-const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
+const applyDemoBrowserMockFields = (claw: AgentItem): AgentItem => {
   if (claw.name === MOCK_CLAW_NAME_CREATING) {
     return {
       ...claw,
@@ -247,7 +247,7 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
     return {
       ...claw,
       status: "running",
-      os_name: "ubuntu24.04x86_64_openclaw",
+      os_name: "ubuntu24.04x86_64_agent",
       browserSecurityGroupReady: true,
       browserComponentInstallReady: true,
       browserLaunchReady: true,
@@ -260,7 +260,7 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
   return claw;
 };
 
-const resolveBrowserStartupAttemptClaw = (claw: OpenClawItem): OpenClawItem => {
+const resolveBrowserStartupAttemptClaw = (claw: AgentItem): AgentItem => {
   const mockClaw = applyDemoBrowserMockFields(claw);
 
   if (mockClaw.browserStartupMockMode === "always_success") {
@@ -289,9 +289,9 @@ const resolveBrowserStartupAttemptClaw = (claw: OpenClawItem): OpenClawItem => {
   return mockClaw;
 };
 
-const getClawBrowserOsName = (claw?: OpenClawItem | null) => claw?.os_name ?? claw?.osName ?? claw?.imageOsName ?? "";
+const getClawBrowserOsName = (claw?: AgentItem | null) => claw?.os_name ?? claw?.osName ?? claw?.imageOsName ?? "";
 
-const isCloudBrowserSupportedImage = (claw?: OpenClawItem | null) => {
+const isCloudBrowserSupportedImage = (claw?: AgentItem | null) => {
   if (!claw) return false;
   const osName = getClawBrowserOsName(claw);
   if (!osName) {
@@ -300,7 +300,7 @@ const isCloudBrowserSupportedImage = (claw?: OpenClawItem | null) => {
   return BROWSER_SUPPORTED_OS_NAMES.has(osName);
 };
 
-const hasCloudBrowserSecurityRule = (claw?: OpenClawItem | null) => {
+const hasCloudBrowserSecurityRule = (claw?: AgentItem | null) => {
   if (!claw) return false;
   if (typeof claw.browserSecurityGroupReady === "boolean") {
     return claw.browserSecurityGroupReady;
@@ -325,7 +325,7 @@ const createSyntheticRefreshStatusEvent = () => ({
   stopPropagation() {},
 }) as React.MouseEvent<HTMLButtonElement>;
 
-const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartupStepKey) => {
+const getBrowserStartupFailureReason = (claw: AgentItem, step: BrowserStartupStepKey) => {
   if (claw.browserStartupFailStep === step) {
     return claw.browserStartupFailReason || BROWSER_STARTUP_STEP_META[step].failureText;
   }
@@ -345,7 +345,7 @@ const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartup
   return "";
 };
 
-const STATUS_CONFIG: Record<OpenClawStatus, {
+const STATUS_CONFIG: Record<AgentStatus, {
   label: string;
   dotColor?: string;
   bgColor: string;
@@ -368,7 +368,7 @@ const MOCK_QUICK_COMMANDS = [
   "帮我搜索下今天的新闻",
   "总结这份报告的核心结论",
   "帮我写一份项目进度周报",
-  "查一下 OpenClaw 的使用文档",
+  "查一下 Agent 的使用文档",
 ];
 
 const COMMAND_LIST = [
@@ -391,7 +391,7 @@ const formatSyncTime = () =>
     minute: "2-digit",
   });
 
-const createDefaultBrowserState = (claw?: OpenClawItem, clawId?: string): BrowserPanelState => ({
+const createDefaultBrowserState = (claw?: AgentItem, clawId?: string): BrowserPanelState => ({
   mode: "chat",
   taskState: "idle",
   panelStatus: "ready",
@@ -399,7 +399,7 @@ const createDefaultBrowserState = (claw?: OpenClawItem, clawId?: string): Browse
   site: "home",
   url: CLOUD_BROWSER_HOME,
   pageTitle: "腾讯云",
-  pageDescription: claw ? `已连接 ${claw.name} 对应的云端浏览器，默认保持在腾讯云页面。` : `已连接当前 OpenClaw 实例，默认保持在腾讯云页面。`,
+  pageDescription: claw ? `已连接 ${claw.name} 对应的云端浏览器，默认保持在腾讯云页面。` : `已连接当前 Agent 实例，默认保持在腾讯云页面。`,
   addressInput: CLOUD_BROWSER_HOME,
   activeQuery: "",
   lastSyncedAt: formatSyncTime(),
@@ -449,7 +449,7 @@ const buildBrowserScenario = (prompt: string): { steps: BrowserScenarioStep[]; t
 const getMockAssistantReply = (prompt: string) => `收到，我已经在腾讯云页面里开始处理「${prompt}」，你可以在右侧继续查看执行过程。`;
 
 // Status dot for sidebar list
-const StatusDotSmall = ({ status }: { status: OpenClawStatus }) => {
+const StatusDotSmall = ({ status }: { status: AgentStatus }) => {
   const cfg = STATUS_CONFIG[status];
   if (status === "loading") {
     return (
@@ -479,7 +479,7 @@ const StatusDotSmall = ({ status }: { status: OpenClawStatus }) => {
   return <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: cfg.dotColor }} />;
 };
 
-const StatusBadgeSmall = ({ status }: { status: OpenClawStatus }) => {
+const StatusBadgeSmall = ({ status }: { status: AgentStatus }) => {
   const cfg = STATUS_CONFIG[status];
   const badge = (
     <span
@@ -553,8 +553,8 @@ const BrowserStartupStepItem = ({
 };
 
 interface ChatViewProps {
-  claws: OpenClawItem[];
-  onDeleteConfirm: (claw: { id: string; name: string; status: OpenClawStatus }) => void;
+  claws: AgentItem[];
+  onDeleteConfirm: (claw: { id: string; name: string; status: AgentStatus }) => void;
   onRestartConfirm: (claw: { id: string; name: string }) => void;
   onReinstallConfirm: (claw: { id: string; name: string }) => void;
   onRemoveRoleConfirm: (claw: { id: string; name: string; roleName: string }) => void;
@@ -585,7 +585,7 @@ export default function ChatView({
 
   const [selectedClawId, setSelectedClawId] = useState<string | null>(() => {
     if (sortedClaws.length === 0) return null;
-    // 默认选中第一个 OpenClaw 类型的实例，没有则选第一个
+    // 默认选中第一个 Agent 类型的实例，没有则选第一个
     const firstOpenclaw = sortedClaws.find((c) => !c.agentType || c.agentType === "openclaw");
     return (firstOpenclaw ?? sortedClaws[0]).id;
   });
@@ -777,7 +777,7 @@ export default function ChatView({
     };
   }, [clearBrowserStartupTimers]);
 
-  const requestClawStatusRefresh = useCallback((claw: OpenClawItem) => {
+  const requestClawStatusRefresh = useCallback((claw: AgentItem) => {
     onRefreshStatus(createSyntheticRefreshStatusEvent(), claw.id, claw.name);
   }, [onRefreshStatus]);
 
@@ -1141,7 +1141,7 @@ export default function ChatView({
     }));
   }, [updateBrowserState]);
 
-  const runBrowserStartupFlow = useCallback((claw: OpenClawItem, stepIndex = 0) => {
+  const runBrowserStartupFlow = useCallback((claw: AgentItem, stepIndex = 0) => {
     const step = BROWSER_STARTUP_STEP_ORDER[stepIndex];
     if (!step) {
       setBrowserStartupModal((prev) => ({
@@ -1201,7 +1201,7 @@ export default function ChatView({
     browserStartupTimersRef.current.push(timer);
   }, [clearBrowserStartupTimers]);
 
-  const startBrowserStartupFlow = useCallback((claw: OpenClawItem) => {
+  const startBrowserStartupFlow = useCallback((claw: AgentItem) => {
     const attemptClaw = resolveBrowserStartupAttemptClaw(claw);
 
     clearBrowserStartupTimers();
@@ -1246,7 +1246,7 @@ export default function ChatView({
     (clawId: string) => {
       // 产品规则：浏览器打开后锁定当前实例，不允许继续切换
       if (workspaceMode !== "chat") {
-        toast.message("请先收起云端浏览器，再切换 OpenClaw 实例");
+        toast.message("请先收起云端浏览器，再切换 Agent 实例");
         return;
       }
       setSelectedClawId(clawId);
@@ -1349,7 +1349,7 @@ export default function ChatView({
           ...prev,
           taskState: "running",
           isManualOperating: false,
-          liveCaption: "OpenClaw 正在执行任务...",
+          liveCaption: "Agent 正在执行任务...",
           statusNote: "执行中",
           lastUserAction: "AI 正在接管浏览器",
           lastSyncedAt: formatSyncTime(),
@@ -1689,7 +1689,7 @@ export default function ChatView({
               <div>
                 {(() => {
                   const sidebarGroups: { key: string; label: string; items: typeof sortedClaws }[] = [
-                    { key: "openclaw", label: "OpenClaw", items: sortedClaws.filter(c => !c.agentType || c.agentType === "openclaw") },
+                    { key: "openclaw", label: "Agent", items: sortedClaws.filter(c => !c.agentType || c.agentType === "openclaw") },
                     { key: "hermes", label: "Hermes", items: sortedClaws.filter(c => c.agentType === "hermes") },
                     { key: "lightclawace", label: "LightclawACE", items: sortedClaws.filter(c => c.agentType === "lightclawace") },
                   ].filter(g => g.items.length > 0);
@@ -1721,7 +1721,7 @@ export default function ChatView({
                         className="absolute -top-2 -right-1 z-10 text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                         style={{ background: "#E5E7EB", color: "#4B5563", boxShadow: "none" }}
                       >
-                        {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                        {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "Agent"}
                       </span>
                       <div className="flex items-center gap-1.5 min-w-0 pr-8">
                         <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>
@@ -1893,7 +1893,7 @@ export default function ChatView({
         >
           {!selectedClaw ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-gray-400">请选择一个 OpenClaw 开始对话</p>
+              <p className="text-sm text-gray-400">请选择一个 Agent 开始对话</p>
             </div>
           ) : (
             <>
@@ -1928,7 +1928,7 @@ export default function ChatView({
                     <div className="flex flex-col items-center justify-center h-full">
                       <img
                         src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_3d_8f2c189d.png"
-                        alt="OpenClaw"
+                        alt="Agent"
                         className="w-28 h-28 mb-1 object-contain"
                         draggable={false}
                       />
@@ -1955,12 +1955,12 @@ export default function ChatView({
                     <div className="flex flex-col items-center justify-center h-full pb-16">
                       <img
                         src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/lobster_offline_v7_3c1d942c.png"
-                        alt="OpenClaw Offline"
+                        alt="Agent Offline"
                         className="w-28 h-28 mb-4 object-contain"
                         draggable={false}
                       />
-                      <p className="text-base font-medium text-gray-900 mb-1">当前 OpenClaw 未在运行中，暂时无法对话</p>
-                      <p className="text-xs text-gray-400 mb-4">你可以刷新状态查看最新情况或选择其他 OpenClaw</p>
+                      <p className="text-base font-medium text-gray-900 mb-1">当前 Agent 未在运行中，暂时无法对话</p>
+                      <p className="text-xs text-gray-400 mb-4">你可以刷新状态查看最新情况或选择其他 Agent</p>
                       {selectedClaw.status === "loadFail" ? (
                         <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="outline" size="sm" className="text-xs">
                           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />

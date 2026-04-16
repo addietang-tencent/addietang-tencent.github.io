@@ -13,20 +13,20 @@ const DOC_CATEGORIES = [
     icon: BookOpen,
     color: "from-blue-500 to-blue-600",
     title: "OpenClaw 概念介绍",
-    desc: "了解 OpenClaw 的核心概念、架构设计和基本工作原理",
+    desc: "了解 Agent 的核心概念、架构设计和基本工作原理",
     content: `# OpenClaw 概念介绍
 
-## 什么是 OpenClaw？
+## 什么是 Agent？
 
-OpenClaw 是一个开源的 AI Agent 框架，专为企业和个人用户设计，让你能够快速创建、部署和管理专属的 AI 智能助理。
+Agent 是一个开源的 AI Agent 框架，专为企业和个人用户设计，让你能够快速创建、部署和管理专属的 AI 智能助理。
 
 ## 核心概念
 
 ### Agent（智能体）
-OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独立的配置，包括使用的大模型、接入的通道和安装的技能。
+Agent 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独立的配置，包括使用的大模型、接入的通道和安装的技能。
 
 ### 模型（Model）
-模型是 Agent 的"大脑"，决定了 Agent 的智能水平和能力范围。OpenClaw 支持接入多种主流大模型，包括腾讯云 DeepSeek、混元等。
+模型是 Agent 的"大脑"，决定了 Agent 的智能水平和能力范围。Agent 支持接入多种主流大模型，包括腾讯云 DeepSeek、混元等。
 
 ### 通道（Channel）
 通道是用户与 Agent 交互的入口，支持企业微信、飞书、钉钉、QQ 等主流即时通讯工具。
@@ -37,8 +37,8 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
 ## 工作原理
 
 1. 用户通过 IM 工具发送消息
-2. 消息通过通道传入 OpenClaw
-3. OpenClaw 调用大模型处理请求
+2. 消息通过通道传入 Agent
+3. Agent 调用大模型处理请求
 4. 如需要，调用相关技能执行任务
 5. 将结果返回给用户`,
   },
@@ -46,14 +46,14 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
     id: "features",
     icon: Star,
     color: "from-purple-500 to-purple-600",
-    title: "企业版 OpenClaw 的功能与特色",
+    title: "企业版 Agent 的功能与特色",
     desc: "了解企业版专属功能，包括多成员管理、配额控制、统一配置等",
-    content: `# 企业版 OpenClaw 的功能与特色
+    content: `# 企业版 Agent 的功能与特色
 
 ## 企业版核心优势
 
 ### 🏢 多成员协同
-支持企业内多名成员各自创建和管理专属 OpenClaw，统一在企业账号体系下管理，互不干扰。
+支持企业内多名成员各自创建和管理专属 Agent，统一在企业账号体系下管理，互不干扰。
 
 ### 🔐 企业级安全管控
 - 完善的成员权限管理
@@ -68,32 +68,32 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
 部署在腾讯云服务器上，7×24 小时稳定运行，随时随地通过 IM 工具与你的 AI 助理对话。
 
 ### ⚡ 一键配置，小白也能快速上手
-极简的创建流程，只需输入名称即可创建 OpenClaw，再按步骤配置通道，几分钟内即可拥有专属 AI 助理。
+极简的创建流程，只需输入名称即可创建 Agent，再按步骤配置通道，几分钟内即可拥有专属 AI 助理。
 
 ### 📊 实时监控与审计
-全面的运营监控面板，实时掌握 OpenClaw 运行状态和 Tokens 消耗情况，操作记录全程可追溯。`,
+全面的运营监控面板，实时掌握 Agent 运行状态和 Tokens 消耗情况，操作记录全程可追溯。`,
   },
   {
     id: "deploy",
     icon: Rocket,
     color: "from-green-500 to-green-600",
-    title: "部署 OpenClaw 指引",
+    title: "部署 Agent 指引",
     desc: "从创建到配置的完整部署流程，帮助你快速上手",
-    content: `# 部署 OpenClaw 指引
+    content: `# 部署 Agent 指引
 
 ## 快速开始
 
-### 第一步：创建 OpenClaw
+### 第一步：创建 Agent
 
-1. 登录企业版 OpenClaw 平台
-2. 进入「我的 OpenClaw」页面
-3. 点击「创建 OpenClaw」按钮
+1. 登录企业版 Agent 平台
+2. 进入「我的 Agent」页面
+3. 点击「创建 Agent」按钮
 4. 输入一个有意义的名称（如「工作助手」、「代码助手」）
 5. 点击「创建」完成创建
 
 ### 第二步：配置模型
 
-1. 点击刚创建的 OpenClaw 卡片，进入详细配置页
+1. 点击刚创建的 Agent 卡片，进入详细配置页
 2. 在「模型」面板中，选择你想使用的大模型（如腾讯云 DeepSeek）
 3. 选择具体的模型版本（如 DeepSeek V3 0324）
 4. 输入对应的 API Key
@@ -114,7 +114,7 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
 
 ### 第五步：开始使用
 
-配置完成后，你的 OpenClaw 就会开始运行。打开你配置的 IM 工具，找到对应的机器人，开始对话吧！`,
+配置完成后，你的 Agent 就会开始运行。打开你配置的 IM 工具，找到对应的机器人，开始对话吧！`,
   },
   {
     id: "advanced",
@@ -126,7 +126,7 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
 
 ## 多模型切换
 
-你可以为同一个 OpenClaw 配置多个模型，根据不同的任务需求灵活切换：
+你可以为同一个 Agent 配置多个模型，根据不同的任务需求灵活切换：
 
 - **日常对话**：使用轻量级模型，响应更快、成本更低
 - **复杂推理**：切换到更强大的模型，获得更准确的答案
@@ -162,7 +162,7 @@ OpenClaw 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独
 
 ## 最佳实践
 
-1. **为不同场景创建不同的 OpenClaw**，避免一个助手承担过多职责
+1. **为不同场景创建不同的 Agent**，避免一个助手承担过多职责
 2. **定期检查 Tokens 消耗**，合理规划使用量
 3. **及时更新技能版本**，获取最新功能和修复
 4. **善用重启功能**，遇到异常时快速恢复`,
@@ -220,7 +220,7 @@ export default function HelpDocs() {
       <div className="max-w-4xl mx-auto px-6 py-8 page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">帮助文档</h1>
-          <p className="text-sm text-gray-500 mt-1">了解 OpenClaw 的使用方法和最佳实践</p>
+          <p className="text-sm text-gray-500 mt-1">了解 Agent 的使用方法和最佳实践</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

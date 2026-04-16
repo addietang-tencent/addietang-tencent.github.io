@@ -1,5 +1,5 @@
 /**
- * OpenClawList - 管控端 OpenClaw 列表页
+ * AgentList - 管控端 Agent 列表页
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
 import { useState, useEffect, useRef } from "react";
@@ -63,7 +63,7 @@ interface Claw {
   createTime: string;
   status: ClawStatus;
   version: string;
-  agentType: 'OpenClaw' | 'Hermes' | 'LightclawACE';
+  agentType: 'Agent' | 'Hermes' | 'LightclawACE';
   pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
@@ -89,28 +89,28 @@ const STATUS_CONFIG: Record<ClawStatus, {
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
 
 const MOCK_CLAWS: Claw[] = [
-  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
   { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  agentType: "Agent",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
+  { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
   { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  agentType: "Agent",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "maintaining", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: DEFAULT_PLUGIN_VERSIONS },
+  { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", agentType: "Agent",    pluginVersions: DEFAULT_PLUGIN_VERSIONS },
   { id: "15", instanceId: "ins-v36q0krh", name: "Olivia的运营助手",  creator: "olivia@acompany.com",  createTime: "2026-03-14 09:00:00", status: "running",     version: "2026.4.2",  agentType: "LightclawACE", pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "16", instanceId: "ins-w47r1lsi", name: "Peter的财务助手",  creator: "peter@acompany.com",   createTime: "2026-03-15 10:20:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "16", instanceId: "ins-w47r1lsi", name: "Peter的财务助手",  creator: "peter@acompany.com",   createTime: "2026-03-15 10:20:00", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "17", instanceId: "ins-x58s2mtj", name: "Quinn的法务助手",  creator: "quinn@acompany.com",   createTime: "2026-03-16 11:45:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "18", instanceId: "ins-y69t3nuk", name: "Rachel的HR助手",      creator: "rachel@acompany.com",  createTime: "2026-03-17 13:10:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "18", instanceId: "ins-y69t3nuk", name: "Rachel的HR助手",      creator: "rachel@acompany.com",  createTime: "2026-03-17 13:10:00", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "19", instanceId: "ins-z70u4ovl", name: "Sam的产品助手",    creator: "sam@acompany.com",     createTime: "2026-03-18 14:30:00", status: "running",     version: "2026.4.2",  agentType: "LightclawACE", pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "Agent",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
 ];
 
 const PAGE_SIZE = 10;
@@ -158,7 +158,7 @@ function InstanceDepartmentTreeNode({
   );
 }
 
-// ─── 部门筛选弹出框（OpenClaw 列表页用） ──────────────────────────────────────
+// ─── 部门筛选弹出框（Agent 列表页用） ──────────────────────────────────────
 function InstanceDepartmentFilter({
   departments, value, onChange,
 }: {
@@ -244,7 +244,7 @@ function InstanceDepartmentFilter({
   );
 }
 
-export default function OpenClawMonitor() {
+export default function AgentMonitor() {
   const [, setLocation] = useLocation();
   const { hasOneid } = useAdminMode();
   const [claws, setClaws] = useState<Claw[]>(
@@ -457,14 +457,14 @@ export default function OpenClawMonitor() {
   const selectedCount = selectedIds.size;
   const selectedClaws = claws.filter(c => selectedIds.has(c.id));
   const hasNonRunning = selectedClaws.some(c => !isUpgradable(c));
-  const hasNonOpenClaw = selectedClaws.some(c => c.agentType !== 'OpenClaw');
-  const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning || hasNonOpenClaw;
+  const hasNonAgent = selectedClaws.some(c => c.agentType !== 'Agent');
+  const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning || hasNonAgent;
   const batchTooltip = selectedCount === 0
     ? '请先选择实例'
     : selectedCount > 20
     ? '批量更新数量不可大丠20'
-    : hasNonOpenClaw
-    ? '仅OpenClaw实例支持更新'
+    : hasNonAgent
+    ? '仅Agent支持更新'
     : hasNonRunning
     ? '仅运行中的实例支持更新'
     : '';
@@ -572,8 +572,8 @@ export default function OpenClawMonitor() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">OpenClaw 列表</h1>
-            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 OpenClaw 云服务器。</p>
+            <h1 className="text-2xl font-bold text-gray-900">Agent 列表</h1>
+            <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 Agent 云服务器。</p>
           </div>
           <div className="flex items-center gap-2">
             <input
@@ -863,7 +863,7 @@ export default function OpenClawMonitor() {
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={hasOneid ? 11 : 10} className="px-6 py-12 text-center text-sm text-gray-400">
-                    暂无符合条件的 OpenClaw
+                    暂无符合条件的 Agent
                   </td>
                 </tr>
               ) : (
@@ -1023,7 +1023,7 @@ export default function OpenClawMonitor() {
                                 onClick={() => handleReinstallClick(claw)}
                               >
                                 <HardDriveDownload className="w-3.5 h-3.5 mr-2" />
-                                重新安装 OpenClaw
+                                重新安装 Agent
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50 cursor-pointer"
@@ -1093,8 +1093,8 @@ export default function OpenClawMonitor() {
           </DialogHeader>
           <p className="text-sm text-gray-600 leading-relaxed">
             {claws.find(c => c.id === shutdownTarget)?.status === "running"
-              ? <>关机后该 OpenClaw「{claws.find(c => c.id === shutdownTarget)?.name}」将无法使用，直到重新开机。确认关机吗？</>
-              : <>开机后该 OpenClaw「{claws.find(c => c.id === shutdownTarget)?.name}」将重新运行。确认开机吗？</>}
+              ? <>关机后该 Agent「{claws.find(c => c.id === shutdownTarget)?.name}」将无法使用，直到重新开机。确认关机吗？</>
+              : <>开机后该 Agent「{claws.find(c => c.id === shutdownTarget)?.name}」将重新运行。确认开机吗？</>}
           </p>
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
@@ -1178,8 +1178,8 @@ export default function OpenClawMonitor() {
             <DialogTitle className="text-base font-bold text-gray-900">批量更新</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p>1. 更新版本预计需要 5～10 分钟不等，期间 OpenClaw 实例不可使用。</p>
-            <p>2. OpenClaw 版本将会升级至当前生效镜像对应的版本，请先将目标镜像指定为生效状态再执行升级操作。</p>
+            <p>1. 更新版本预计需要 5～10 分钟不等，期间 Agent 实例不可使用。</p>
+            <p>2. Agent 版本将会升级至当前生效镜像对应的版本，请先将目标镜像指定为生效状态再执行升级操作。</p>
             <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
           </div>
           <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
@@ -1246,7 +1246,7 @@ export default function OpenClawMonitor() {
       </Dialog>
 
 
-      {/* OpenClaw 详情抽屉 */}
+      {/* Agent 详情抽屉 */}
       {showDetailDrawer && selectedClaw && (
         <div className="fixed inset-0 z-50 flex">
           <div
@@ -1256,7 +1256,7 @@ export default function OpenClawMonitor() {
           <div className="w-[593px] bg-white shadow-lg flex flex-col">
             {/* 抽屉头 */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
-              <h2 className="text-lg font-semibold text-gray-900">OpenClaw 详情</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Agent 详情</h2>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"

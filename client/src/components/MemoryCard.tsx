@@ -1,8 +1,8 @@
 /**
  * MemoryCard - Memory 配置卡片组件
- * 用于 OpenClaw 详细配置页面，支持启用/禁用 Memory 功能
+ * 用于 Agent 详细配置页面，支持启用/禁用 Memory 功能
  * 
- * 遵循 OpenClaw Enterprise 设计规范：
+ * 遵循 Agent Enterprise 设计规范：
  * - 卡片圆角：rounded-2xl (16px)
  * - 统一阴影：通过 inline style 设置
  * - 图标容器：使用品牌渐变
@@ -24,7 +24,7 @@ interface MemoryCardProps {
 
 export default function MemoryCard({
   clawId = "demo-claw",
-  clawName = "Demo OpenClaw",
+  clawName = "Demo Agent",
   onNavigateToAdmin,
 }: MemoryCardProps) {
   // ── State Management ──
@@ -161,7 +161,7 @@ export default function MemoryCard({
 
             {/* Description */}
             <p className="text-sm text-gray-600 leading-relaxed">
-              腾讯云自研 Agent 记忆系统，让 OpenClaw
+              腾讯云自研 Agent 记忆系统，让 Agent
               跨会话记住用户偏好、任务进度与历史决策，持续提供个性化服务。
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function MemoryCard({
             <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
               <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-600 leading-relaxed">
-                启用后，OpenClaw 将自动记忆对话中的关键信息，为用户提供更个性化的服务体验。
+                启用后，Agent 将自动记忆对话中的关键信息，为用户提供更个性化的服务体验。
               </p>
             </div>
           )}

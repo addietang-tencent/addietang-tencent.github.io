@@ -20,7 +20,7 @@ import {
 import { Search } from 'lucide-react';
 import { type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
 
-interface OpenClawInstance {
+interface AgentInstance {
   id: string;
   name: string;
   createdBy: string;
@@ -31,7 +31,7 @@ interface DistributeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   skillName: string;
-  instances: OpenClawInstance[];
+  instances: AgentInstance[];
   onDistribute: (selectedInstanceIds: string[]) => void;
   onViewProgress: () => void;
 }
@@ -113,7 +113,7 @@ export default function DistributeDialog({
               <div>
                 <p className="font-medium text-gray-900">已开始安装流程</p>
                 <p className="text-sm text-gray-600 mt-1">
-                  已向 {selectedInstances.length} 个 OpenClaw 实例下发 {skillName}
+                  已向 {selectedInstances.length} 个 Agent 实例下发 {skillName}
                 </p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function DistributeDialog({
         <DialogHeader>
           <DialogTitle>下发 {skillName}</DialogTitle>
           <DialogDescription>
-            选择要下发该 Skill 的 OpenClaw 实例
+            选择要下发该 Skill 的 Agent 实例
           </DialogDescription>
         </DialogHeader>
 
@@ -146,7 +146,7 @@ export default function DistributeDialog({
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="搜索 OpenClaw 云服务器..."
+              placeholder="搜索 Agent 云服务器..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

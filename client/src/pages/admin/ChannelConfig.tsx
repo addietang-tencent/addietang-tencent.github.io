@@ -285,7 +285,7 @@ export default function ChannelConfig() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
         <p className="text-sm text-gray-500 mt-1">
-          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。当前仅 OpenClaw 支持，其他 Agent 暂不支持。
+          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。当前仅 Agent 支持，其他 Agent 暂不支持。
         </p>
       </div>
 
@@ -355,7 +355,7 @@ export default function ChannelConfig() {
         {/* ① 修改1：补充「仅支持长连接」说明 */}
         <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
           <p className="text-xs text-gray-500">
-            企业可配置自研 IM 通道信息，添加后用户可在 OpenClaw 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。目前自定义通道仅支持 WebSocket 长连接方式接入。
+            企业可配置自研 IM 通道信息，添加后用户可在 Agent 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。目前自定义通道仅支持 WebSocket 长连接方式接入。
             <a
               href="#"
               className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors"
@@ -484,7 +484,7 @@ export default function ChannelConfig() {
             <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <p className="text-xs text-amber-700 leading-relaxed">
-                使用自定义通道前，企业需先开发与 OpenClaw 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
+                使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
               </p>
             </div>
 
@@ -507,7 +507,7 @@ export default function ChannelConfig() {
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Channel ID <span className="text-red-400">*</span></label>
                   <Input
-                    placeholder="写入 openclaw.json 的 key，需与插件名一致"
+                    placeholder="写入 agent.json 的 key，需与插件名一致"
                     value={form.channelId}
                     onChange={(e) => setForm(f => ({ ...f, channelId: e.target.value }))}
                     className="bg-gray-50 border-gray-200 text-sm font-mono"
@@ -648,7 +648,7 @@ export default function ChannelConfig() {
           <DialogHeader>
             <DialogTitle>确认删除</DialogTitle>
             <DialogDescription>
-              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 OpenClaw 配置不受影响。此操作不可撤销。
+              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。此操作不可撤销。
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 pt-2">

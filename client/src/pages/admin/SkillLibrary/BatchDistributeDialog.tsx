@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Search, ChevronDown, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope, type OpenClawInstance, type Group } from './types';
+import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope, type AgentInstance, type Group } from './types';
 
 /** 筛选选项类型 —— 多选 */
 type FilterOption = 'not_distributed' | 'failed' | 'pending_update';
@@ -40,8 +40,8 @@ interface BatchDistributeDialogProps {
   title?: string;
   /** 是否显示应用范围筛选，默认 true */
   showScopeFilter?: boolean;
-  /** OpenClaw 实例列表（外部传入） */
-  instances: OpenClawInstance[];
+  /** Agent 实例列表（外部传入） */
+  instances: AgentInstance[];
   /** 分组列表（外部传入，showScopeFilter=true 时必传） */
   groups?: Group[];
 }
@@ -171,7 +171,7 @@ export default function BatchDistributeDialog({
   };
 
   /** 获取实例的显示状态（运行时计算，pending_update 不是持久化状态） */
-  const getInstanceFilterKey = (instance: OpenClawInstance): FilterOption | null => {
+  const getInstanceFilterKey = (instance: AgentInstance): FilterOption | null => {
     if (instance.distributionStatus === 'not_distributed') return 'not_distributed';
     if (instance.distributionStatus === 'failed') return 'failed';
     // 已下发成功 + 版本与当前 Skill 最新版本不一致 → 待更新
@@ -266,7 +266,7 @@ export default function BatchDistributeDialog({
     onOpenChange(false);
   };
 
-  const getStatusDisplay = (instance: OpenClawInstance) => {
+  const getStatusDisplay = (instance: AgentInstance) => {
     const filterKey = getInstanceFilterKey(instance);
     // 待更新：黄色样式 + 老版本号
     if (filterKey === 'pending_update') {
@@ -294,7 +294,7 @@ export default function BatchDistributeDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? `(v${skillVersion})` : ''}</span> 下发到选中的 OpenClaw 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败、待更新的实例。
+            将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? `(v${skillVersion})` : ''}</span> 下发到选中的 Agent 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败、待更新的实例。
           </DialogDescription>
         </DialogHeader>
 

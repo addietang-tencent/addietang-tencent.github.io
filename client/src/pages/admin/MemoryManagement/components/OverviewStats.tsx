@@ -11,7 +11,7 @@ interface OverviewStatsProps {
 /**
  * 记忆空间概览统计组件
  * 
- * 遵循 OpenClaw Enterprise 设计规范：
+ * 遵循 Agent Enterprise 设计规范：
  * - 卡片圆角：rounded-2xl
  * - 统一阴影：通过 inline style 设置
  * - 图标容器：使用规范渐变色
@@ -103,7 +103,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
         <div className="mt-4 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-600 leading-relaxed">
-            当前暂无实例开启记忆功能。可在各 OpenClaw 的「设置 → Memory」中开启 Free 或 Pro 版本。
+            当前暂无实例开启记忆功能。可在各 Agent 的「设置 → Memory」中开启 Free 或 Pro 版本。
           </p>
         </div>
       )}

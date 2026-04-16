@@ -23,7 +23,7 @@ const publicEndpoints: EndpointDetail[] = [
     ],
     requestExample: `curl https://example.com/api/site`,
     responseExample: `{
-  "name": "OpenClaw",
+  "name": "Agent",
   "has_logo": true
 }`,
     errorCodes: [],
@@ -349,7 +349,7 @@ const instanceEndpoints: EndpointDetail[] = [
   },
   {
     method: "GET",
-    path: "/openclaw/check-openclaw-port",
+    path: "/openclaw/check-agent-port",
     description: "检查指定实例上的服务端口是否正在运行。",
     auth: "必须",
     inputParams: [
@@ -359,7 +359,7 @@ const instanceEndpoints: EndpointDetail[] = [
       { name: "running", type: "bool", description: "服务端口是否正在运行" },
     ],
     requestExample: `curl -H "Authorization: Bearer hk-xxx" \\
-  "https://example.com/api/openclaw/check-openclaw-port?id=1"`,
+  "https://example.com/api/openclaw/check-agent-port?id=1"`,
     responseExample: `{"running": true}`,
     errorCodes: [{ code: "400", error: "缺少参数 id" }],
   },
@@ -393,7 +393,7 @@ const instanceEndpoints: EndpointDetail[] = [
   {
     method: "POST",
     path: "/openclaw/set-env",
-    description: "为指定实例批量设置或删除环境变量。采用增量更新模式——只修改传入的 key，保留已有的其他 key。设置成功后会自动重启 openclaw-gateway 服务使变量生效。",
+    description: "为指定实例批量设置或删除环境变量。采用增量更新模式——只修改传入的 key，保留已有的其他 key。设置成功后会自动重启 agent-gateway 服务使变量生效。",
     auth: "必须",
     contentType: "application/json",
     inputParams: [
@@ -628,7 +628,7 @@ const channelEndpoints: EndpointDetail[] = [
     auth: "必须",
     inputParams: [
       { name: "id", type: "string", required: "是", description: "实例 ID（Query 参数）" },
-      { name: "channel", type: "string", required: "否", description: "通道类型，可选值：qqbot（默认）、feishu、openclaw-weixin" },
+      { name: "channel", type: "string", required: "否", description: "通道类型，可选值：qqbot（默认）、feishu、agent-weixin" },
     ],
     outputParams: [
       { name: "event: qrcode", type: "SSE", description: '展示二维码 {"action":"show_qrcode","url":"..."}' },

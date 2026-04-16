@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { OpenClawCombobox } from "@/components/OpenClawCombobox";
+import { AgentCombobox } from "@/components/OpenClawCombobox";
 import {
   Tooltip as UITooltip,
   TooltipContent as UITooltipContent,
@@ -363,7 +363,7 @@ export default function TokensMonitor() {
   const [authCheckInterval, setAuthCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const [showFreeQuotaDialog, setShowFreeQuotaDialog] = useState(false);
   const [freeQuotaAgreed, setFreeQuotaAgreed] = useState(false);
-  const [selectedOpenClaw, setSelectedOpenClaw] = useState(""); // OpenClaw 名称筛选
+  const [selectedAgent, setSelectedAgent] = useState(""); // Agent 名称筛选
   const [globalLimit, setGlobalLimit] = useState<number | null>(() => {
     const mode = localStorage.getItem("globalLimitMode");
     if (mode === "unlimited") return null;
@@ -650,7 +650,7 @@ export default function TokensMonitor() {
     { sessionId: "06468225", sessionName: "我感觉现在仅表盘可观测细节这人，...", channel: "Feishu Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-08 13:14", rounds: 51, tokens: 1880000, cost: 0.2700, duration: "28m 52s" },
     { sessionId: "a9c7eb8b", sessionName: "请帮我列出 /etc 目录下所有 .conf ...", channel: "Webchat", model: "deepseek-v3.2", lastActiveTime: "2026-03-04 20:23", rounds: 47, tokens: 1590000, cost: 0.2242, duration: "12m 5s" },
     { sessionId: "a46be600", sessionName: "nihao / 帮我看看你的session-cost...", channel: "QQ Dm", model: "deepseek-v3.2", lastActiveTime: "2026-03-07 23:29", rounds: 35, tokens: 965000, cost: 0.1359, duration: "679m 41s" },
-    { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 openclaw 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
+    { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 agent 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
   ];
   const sessionPaged = sessionStats.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
 
@@ -955,7 +955,7 @@ export default function TokensMonitor() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
-                      <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 OpenClaw 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+                      <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
                     </div>
                     <Button
                       onClick={handleOpenCLS}
@@ -983,7 +983,7 @@ export default function TokensMonitor() {
                           className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                         />
                         <label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1">
-                          为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 OpenClaw 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
+                          为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
                         </label>
                       </div>
                     </div>
@@ -1134,14 +1134,14 @@ export default function TokensMonitor() {
                   </li>
                 </ul>
               </div>
-              {/* 顶部：关闭 CLS 按钮（右上角）+ OpenClaw 搜索框（左下方）*/}
+              {/* 顶部：关闭 CLS 按钮（右上角）+ Agent 搜索框（左下方）*/}
               <div className="flex items-start justify-between mb-6 gap-4">
-                {/* 左侧：OpenClaw 名称筛选 */}
+                {/* 左侧：Agent 名称筛选 */}
                 <div className="flex-1">
-                  <label className="text-xs font-medium text-gray-700 block mb-2">OpenClaw名称：</label>
-                  <OpenClawCombobox
-                    value={selectedOpenClaw}
-                    onValueChange={setSelectedOpenClaw}
+                  <label className="text-xs font-medium text-gray-700 block mb-2">Agent名称：</label>
+                  <AgentCombobox
+                    value={selectedAgent}
+                    onValueChange={setSelectedAgent}
                     className="max-w-xs"
                   />
                 </div>
@@ -1272,7 +1272,7 @@ export default function TokensMonitor() {
           <div className="space-y-4 my-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
               <p className="text-sm text-gray-700">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> OpenClaw 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
+                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
                   onClick={(e) => {

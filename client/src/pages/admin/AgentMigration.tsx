@@ -88,12 +88,12 @@ const MOCK_USER_INSTANCES: Record<string, { id: string; instanceId: string; name
 };
 
 const MOCK_SRC_INSTANCES = [
-  { instanceId: "lhins-abc001", name: "OpenClaw-张三", region: "ap-guangzhou", status: "running" },
-  { instanceId: "lhins-abc002", name: "OpenClaw-李四", region: "ap-guangzhou", status: "running" },
-  { instanceId: "lhins-abc003", name: "OpenClaw-王五", region: "ap-beijing", status: "running" },
-  { instanceId: "lhins-abc004", name: "OpenClaw-赵六", region: "ap-beijing", status: "shutdown" },
-  { instanceId: "lhins-abc005", name: "OpenClaw-Alice", region: "ap-guangzhou", status: "running" },
-  { instanceId: "lhins-abc006", name: "OpenClaw-Bob", region: "ap-shanghai", status: "running" },
+  { instanceId: "lhins-abc001", name: "Agent-张三", region: "ap-guangzhou", status: "running" },
+  { instanceId: "lhins-abc002", name: "Agent-李四", region: "ap-guangzhou", status: "running" },
+  { instanceId: "lhins-abc003", name: "Agent-王五", region: "ap-beijing", status: "running" },
+  { instanceId: "lhins-abc004", name: "Agent-赵六", region: "ap-beijing", status: "shutdown" },
+  { instanceId: "lhins-abc005", name: "Agent-Alice", region: "ap-guangzhou", status: "running" },
+  { instanceId: "lhins-abc006", name: "Agent-Bob", region: "ap-shanghai", status: "running" },
 ];
 
 const MOCK_HISTORY: MigrationHistory[] = [
@@ -165,7 +165,7 @@ export default function AgentMigration() {
   const [srcLoading, setSrcLoading] = useState(false);
   const [srcLoaded, setSrcLoaded] = useState(false);
   const [stopGateway, setStopGateway] = useState(true);
-  const [containerDirs, setContainerDirs] = useState("/root/.openclaw");
+  const [containerDirs, setContainerDirs] = useState("/root/.agent");
 
   // EKS/IDC: COS upload state
   const [cosLoaded, setCosLoaded] = useState(false);
@@ -262,14 +262,14 @@ export default function AgentMigration() {
   // ==================== CSV Import/Export ====================
 
   const downloadSrcCsv = () => {
-    const header = "源端标识,ClawPro用户名,OpenClaw实例名";
+    const header = "源端标识,ClawPro用户名,Agent名";
     const data = rows.map((r) => `${r.srcId},,`);
     downloadBlob(makeCsvBlob(header, data), `migration_${batchId}_template.csv`);
     toast.success("模板已下载，请补充第 2、3 列后上传");
   };
 
   const downloadCosCsv = () => {
-    const header = "COS文件名,ClawPro用户名,OpenClaw实例名";
+    const header = "COS文件名,ClawPro用户名,Agent名";
     const data = cosFiles.map((f) => `${f},,`);
     downloadBlob(makeCsvBlob(header, data), `cos_files_${batchId}_template.csv`);
     toast.success("COS 文件列表模板已下载");
@@ -330,11 +330,11 @@ export default function AgentMigration() {
   // ==================== Upload Script (EKS/IDC) ====================
 
   const uploadScript = useMemo(() => {
-    const dirs = containerDirs || "/root/.openclaw";
-    const stop = stopGateway ? 'echo "停止 Gateway..."\nopenclaw gateway stop 2>/dev/null || true\n' : "";
+    const dirs = containerDirs || "/root/.agent";
+    const stop = stopGateway ? 'echo "停止 Gateway..."\nagent gateway stop 2>/dev/null || true\n' : "";
     const packCmd = sourceType === "eks"
       ? `tar -czf /tmp/openclaw-state.tgz ${dirs.split(",").map((d) => d.trim()).join(" ")}`
-      : `tar -czf /tmp/openclaw-state.tgz -C /root .openclaw`;
+      : `tar -czf /tmp/openclaw-state.tgz -C /root .agent`;
     return `#!/bin/bash
 # 批次: ${batchId} | 桶: ${cosBucket}
 COS_BUCKET="${cosBucket}"
@@ -422,10 +422,10 @@ rm -f /tmp/openclaw-state.tgz`;
       {/* Header */}
       <div className="mb-6">
         <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 mb-2 transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" /> 返回 OpenClaw 列表
+          <ArrowLeft className="w-3.5 h-3.5" /> 返回 Agent 列表
         </button>
         <h1 className="text-2xl font-bold text-gray-900">智能体迁移</h1>
-        <p className="text-sm text-gray-500 mt-0.5">批量迁移其他平台的 OpenClaw 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 OpenClaw 详情页操作。</p>
+        <p className="text-sm text-gray-500 mt-0.5">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
       </div>
 
       {/* ==================== Section 1: 源端配置 ==================== */}
@@ -482,7 +482,7 @@ rm -f /tmp/openclaw-state.tgz`;
           {sourceType === "eks" && (
             <div className="flex-1">
               <Label className="text-xs text-gray-500 mb-1 block">待迁移目录（逗号分隔）</Label>
-              <Input value={containerDirs} onChange={(e) => setContainerDirs(e.target.value)} placeholder="/root/.openclaw" className="h-8 text-xs font-mono" />
+              <Input value={containerDirs} onChange={(e) => setContainerDirs(e.target.value)} placeholder="/root/.agent" className="h-8 text-xs font-mono" />
             </div>
           )}
         </div>
@@ -587,7 +587,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={() => {
-                const header = "ClawPro用户名,用户邮箱,OpenClaw实例数,实例列表(实例名:实例ID)";
+                const header = "ClawPro用户名,用户邮箱,Agent数,实例列表(实例名:实例ID)";
                 const data = MOCK_USERS.map((u) => {
                   const insts = MOCK_USER_INSTANCES[u.id] || [];
                   const instList = insts.map((i) => `${i.name}:${i.instanceId}`).join("|");
@@ -606,7 +606,7 @@ rm -f /tmp/openclaw-state.tgz`;
               </label>
             </div>
             <div className="text-xs text-gray-400">
-              CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,OpenClaw实例名</code>（第一行为表头）
+              CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
             </div>
             {rows.length > 0 && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-2.5">
@@ -640,7 +640,7 @@ rm -f /tmp/openclaw-state.tgz`;
                         </TableHead>
                         <TableHead className="text-xs py-2 w-[30px]"></TableHead>
                         <TableHead className="text-xs py-2">ClawPro 用户</TableHead>
-                        <TableHead className="text-xs py-2">OpenClaw 实例</TableHead>
+                        <TableHead className="text-xs py-2">Agent 实例</TableHead>
                         <TableHead className="text-xs py-2 w-[40px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -757,7 +757,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <Play className="w-4 h-4 mr-1.5" />
                 开始迁移（{validRows.length} 台）
               </Button>
-              <span className="text-xs text-gray-400">将创建临时实例「<strong className="text-gray-600">[迁移操作台] {batchId}</strong>」，完成后请在 OpenClaw 列表删除</span>
+              <span className="text-xs text-gray-400">将创建临时实例「<strong className="text-gray-600">[迁移操作台] {batchId}</strong>」，完成后请在 Agent 列表删除</span>
             </div>
           </>
         ) : (
@@ -821,7 +821,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => toast.info("跳转到列表")} className="h-7 text-xs">
-                    <ExternalLink className="w-3 h-3 mr-1" /> OpenClaw 列表
+                    <ExternalLink className="w-3 h-3 mr-1" /> Agent 列表
                   </Button>
                   <Button size="sm" onClick={resetAll} style={{ background: "#007AFF" }} className="h-7 text-xs">
                     <RefreshCw className="w-3 h-3 mr-1" /> 新建迁移

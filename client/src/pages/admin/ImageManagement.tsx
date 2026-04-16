@@ -28,7 +28,7 @@ interface AgentTypeConfig {
 }
 
 const SYSTEM_AGENT_TYPES: AgentTypeConfig[] = [
-  { value: "OpenClaw", label: "OpenClaw", isSystem: true, versionPlaceholder: "如 2026.4.2", versionRegex: /^\d{4}\.\d{1,2}\.\d{1,2}$/ },
+  { value: "Agent", label: "Agent", isSystem: true, versionPlaceholder: "如 2026.4.2", versionRegex: /^\d{4}\.\d{1,2}\.\d{1,2}$/ },
   { value: "HermesAgent", label: "Hermes Agent", isSystem: true, versionPlaceholder: "如 0.8.0", versionRegex: /^\d+\.\d+\.\d+$/ },
   { value: "LightClawACE", label: "LightClaw ACE", isSystem: true, versionPlaceholder: "如 1.0.2", versionRegex: /^\d+\.\d+\.\d+$/ },
 ];
@@ -36,7 +36,7 @@ const SYSTEM_AGENT_TYPES: AgentTypeConfig[] = [
 function validateVersion(config: AgentTypeConfig, version: string): boolean {
   if (!config.versionRegex) return version.trim().length > 0;
   if (!config.versionRegex.test(version)) return false;
-  if (config.value === "OpenClaw") {
+  if (config.value === "Agent") {
     const [y, m, d] = version.split(".").map(Number);
     const date = new Date(y, m - 1, d);
     return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
@@ -46,7 +46,7 @@ function validateVersion(config: AgentTypeConfig, version: string): boolean {
 
 // ─── Mock 镜像数据 ─────────────────────────────────────────────────────────────
 const PUBLIC_IMAGES = [
-  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", group: "public" as const, agentType: "OpenClaw", agentVersion: "2026.3.28" },
+  { id: "img-agent-official", name: "云服务器 Agent 镜像", group: "public" as const, agentType: "Agent", agentVersion: "2026.3.28" },
   { id: "img-hermes-official", name: "Hermes Agent 官方镜像", group: "public" as const, agentType: "HermesAgent", agentVersion: "0.8.0" },
   { id: "img-lightclaw-official", name: "LightClaw ACE 官方镜像", group: "public" as const, agentType: "LightClawACE", agentVersion: "1.0.2" },
 ];
@@ -76,15 +76,15 @@ interface ImageRow {
 }
 
 const MOCK_IMAGES: ImageRow[] = [
-  { id: "img-openclaw-official", name: "云服务器 OpenClaw 镜像", status: "available", type: "public", agentType: "OpenClaw", agentVersion: "2026.3.28", os: "CentOS 7.9 64位", createTime: "2025-12-01 10:30:00", active: true },
-  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", type: "custom", agentType: "OpenClaw", agentVersion: "2025.9.1", os: "CentOS 7.9 64位", createTime: "2025-09-15 14:22:35", active: false },
+  { id: "img-agent-official", name: "云服务器 Agent 镜像", status: "available", type: "public", agentType: "Agent", agentVersion: "2026.3.28", os: "CentOS 7.9 64位", createTime: "2025-12-01 10:30:00", active: true },
+  { id: "img-cust-a1b2c3d4", name: "openclaw-custom-v1.0", status: "available", type: "custom", agentType: "Agent", agentVersion: "2025.9.1", os: "CentOS 7.9 64位", createTime: "2025-09-15 14:22:35", active: false },
   { id: "img-hermes-official", name: "Hermes Agent 官方镜像", status: "available", type: "public", agentType: "HermesAgent", agentVersion: "0.8.0", os: "Ubuntu 22.04 64位", createTime: "2026-02-10 08:00:00", active: true },
   { id: "img-cust-legacy-001", name: "legacy-image-v1", status: "available", type: "custom", agentType: "", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-06-01 12:00:00", active: false },
-  { id: "img-cust-legacy-002", name: "legacy-image-active", status: "available", type: "custom", agentType: "OpenClaw", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-05-15 09:00:00", active: false },
+  { id: "img-cust-legacy-002", name: "legacy-image-active", status: "available", type: "custom", agentType: "Agent", agentVersion: "", os: "CentOS 7.9 64位", createTime: "2025-05-15 09:00:00", active: false },
 ];
 
 function normalizeImages(imgs: ImageRow[]): ImageRow[] {
-  return imgs.map((img) => img.agentType ? img : { ...img, agentType: "OpenClaw" });
+  return imgs.map((img) => img.agentType ? img : { ...img, agentType: "Agent" });
 }
 
 // ─── 主组件 ────────────────────────────────────────────────────────────────────
@@ -107,7 +107,7 @@ export default function ImageManagement() {
     const fromImages = Array.from(new Set(normalizeImages(MOCK_IMAGES).map((i) => i.agentType).filter(Boolean)));
     return fromImages;
   });
-  const [defaultAgentType, setDefaultAgentType] = useState("OpenClaw");
+  const [defaultAgentType, setDefaultAgentType] = useState("Agent");
   const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(new Set());
 
   // 导入弹窗
@@ -224,7 +224,7 @@ export default function ImageManagement() {
       const config = getTypeConfig(importAgentType);
       if (config && config.versionRegex && !config.versionRegex.test(v)) {
         setVersionError(`格式不正确，请输入 ${config.versionPlaceholder.replace("如 ", "")} 格式`);
-      } else if (importAgentType === "OpenClaw" && config && !validateVersion(config, v)) {
+      } else if (importAgentType === "Agent" && config && !validateVersion(config, v)) {
         setVersionError("日期不合法");
       } else { setVersionError(""); }
     } else { setVersionError(""); }

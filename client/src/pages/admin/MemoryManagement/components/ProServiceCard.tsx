@@ -124,7 +124,7 @@ function DimensionRow({
 
       {/* Dual bars stacked */}
       <div className="space-y-[2px]">
-        {/* OpenClaw bar */}
+        {/* Agent bar */}
         <div className="flex items-center gap-1.5">
           <div className="flex-1 h-[4px] rounded-full overflow-hidden bg-gray-100">
             <div
@@ -400,7 +400,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 <div className="flex items-center gap-5 mt-3">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
-                    <span className="text-xs text-gray-400">OpenClaw 原生</span>
+                    <span className="text-xs text-gray-400">Agent 原生</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div
@@ -438,7 +438,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 <div className="flex items-center gap-4 mb-4">
                   {/* 原生分数 */}
                   <div className="flex-1 text-center px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">OpenClaw 原生</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Agent 原生</p>
                     <p className="text-2xl font-bold text-gray-400 font-mono">
                       <AnimatedCounter value={TOTAL.native} delay={200} duration={1800} />
                     </p>
@@ -638,7 +638,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 )}
               </div>
               <p className="text-sm text-gray-500 mt-0.5">
-                基于腾讯云向量数据库的企业级记忆服务，统一管理所有 OpenClaw 的记忆资源。
+                基于腾讯云向量数据库的企业级记忆服务，统一管理所有 Agent 的记忆资源。
               </p>
             </div>
           </div>

@@ -91,7 +91,7 @@ export default function ServerManagement() {
       <div className="page-enter">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">云服务器管理</h1>
-          <p className="text-sm text-gray-500 mt-1">管理企业版 OpenClaw 所使用的云服务器镜像和安全组策略。</p>
+          <p className="text-sm text-gray-500 mt-1">管理企业版 Agent 所使用的云服务器镜像和安全组策略。</p>
         </div>
 
         <Tabs defaultValue="images">

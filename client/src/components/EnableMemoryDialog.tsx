@@ -41,7 +41,7 @@ export default function EnableMemoryDialog({
           {/* Main Description */}
           <DialogDescription className="text-sm text-gray-600 leading-relaxed">
             启用 Memory 记忆功能需要安装 TDAI-Memory 记忆插件，安装过程中将自动重启
-            OpenClaw Gateway 服务。
+            Agent Gateway 服务。
           </DialogDescription>
 
           {/* Warning Block */}

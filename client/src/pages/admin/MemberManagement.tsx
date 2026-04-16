@@ -75,7 +75,7 @@ function GroupSelectTrigger({ names }: { names: string[] }) {
 // vpcName: 自动分配时形如 "openclaw/{username}"，自定义时为 null
 // hasVpcResources: 自动分配 VPC 下是否有关联云资源（null 表示自定义 VPC 不适用）
 const MOCK_MEMBERS_BASE = [
-  // 规则：有 OpenClaw 必有关联资源；无 OpenClaw 可能有也可能没有关联资源
+  // 规则：有 Agent 必有关联资源；无 Agent 可能有也可能没有关联资源
   { id: "alice@acompany.com", role: "admin", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-01-10", vpcType: "auto" as const, vpcName: "openclaw/alice", hasVpcResources: true },   // 有 claw → 必有资源
   { id: "bob@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-02-15", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },              // 自定义 VPC
   { id: "carol@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-03-01", vpcType: "auto" as const, vpcName: "openclaw/carol", hasVpcResources: true },  // 有 claw → 必有资源
@@ -465,14 +465,14 @@ function AddMemberFormFields({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              OpenClaw 数量上限 <span className="text-red-500">*</span>
+              Agent 数量上限 <span className="text-red-500">*</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
+                <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -651,14 +651,14 @@ function EditMemberFormFields({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              OpenClaw 数量上限
+              Agent 数量上限
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
+                <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -849,14 +849,14 @@ function OneidEditMemberFormFields({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
-              OpenClaw 数量上限
+              Agent 数量上限
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
                     <Info className="w-3.5 h-3.5 text-gray-400" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
+                <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
               </Tooltip>
             </Label>
             <Input
@@ -1168,7 +1168,7 @@ export default function MemberManagement() {
   const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // OneID 同步结果弹窗：展示因名下有未清理 OpenClaw 而无法删除的用户
+  // OneID 同步结果弹窗：展示因名下有未清理 Agent 而无法删除的用户
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
     failedUsers: { id: string; clawCount: number; vpcName?: string }[];
@@ -1294,7 +1294,7 @@ export default function MemberManagement() {
       id: newMember.id, role: newMember.role, status: "active",
       clawLimit: newMember.clawLimit, tokenLimit: newMember.tokenLimit,
       clawCount: 0, joinTime: new Date().toISOString().slice(0, 10),
-      vpcType: "auto" as const, vpcName: `openclaw/${newMember.id.split("@")[0]}`, hasVpcResources: false,
+      vpcType: "auto" as const, vpcName: `agent/${newMember.id.split("@")[0]}`, hasVpcResources: false,
     }]);
     // 将新用户添加到选中的分组
     if (newMember.groupIds.length > 0) {
@@ -1370,7 +1370,7 @@ export default function MemberManagement() {
       // 模拟新增用户数量
       const addedCount = 0;
 
-      // 检查每个被删除用户名下的 OpenClaw 数量
+      // 检查每个被删除用户名下的 Agent 数量
       const failedUsers: { id: string; clawCount: number; vpcName?: string }[] = [];
       let deletedCount = 0;
       // 模拟私有网络绑定情况
@@ -1383,11 +1383,11 @@ export default function MemberManagement() {
           if (!oneidDeletedUserIds.includes(m.id)) return m;
           const hasVpc = !!vpcBindings[m.id];
           if (m.clawCount > 0 || hasVpc) {
-            // 有未清理的 OpenClaw 或有私有网络绑定，不能删除，改为禁用
+            // 有未清理的 Agent 或有私有网络绑定，不能删除，改为禁用
             failedUsers.push({ id: m.id, clawCount: m.clawCount, vpcName: vpcBindings[m.id] });
             return { ...m, status: "disabled" };
           } else {
-            // 无 OpenClaw，直接删除
+            // 无 Agent，直接删除
             deletedCount++;
             return { ...m, _deleted: true };
           }
@@ -1841,10 +1841,10 @@ export default function MemberManagement() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
-                    OpenClaw 上限
+                    Agent 上限
                     <Tooltip>
                       <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
-                      <TooltipContent>单个企业用户最多可以创建的 OpenClaw 数量</TooltipContent>
+                      <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
                     </Tooltip>
                   </div>
                 </th>
@@ -2606,7 +2606,7 @@ export default function MemberManagement() {
                   const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
                   const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
                   const parts: React.ReactNode[] = [];
-                  if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 OpenClaw 无法直接删除</React.Fragment>);
+                  if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 Agent 无法直接删除</React.Fragment>);
                   if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
                   return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
                 })()}
@@ -2622,7 +2622,7 @@ export default function MemberManagement() {
                   <thead>
                     <tr className="border-b border-gray-50 bg-gray-50/50">
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 OpenClaw</th>
+                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
                       <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
                     </tr>
@@ -2663,7 +2663,7 @@ export default function MemberManagement() {
             <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
               <p className="font-semibold">无法删除用户</p>
               <p>
-                删除用户需要该用户名下没有任何 OpenClaw。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
+                删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
               </p>
               {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
                 <p>
@@ -2702,9 +2702,9 @@ export default function MemberManagement() {
               <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
             </div>
 
-            {/* 名下 OpenClaw 数量（单行） */}
+            {/* 名下 Agent 数量（单行） */}
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className="text-sm text-gray-500">名下 Agent 数量</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-semibold ${(deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-600" : "text-green-600"
                   }`}>
@@ -2785,8 +2785,8 @@ export default function MemberManagement() {
                 return (
                   <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
                     {deleteCheckDialog?.vpcType === "auto"
-                      ? `该用户名下没有 OpenClaw，且私有网络无关联资源，可以删除。`
-                      : `该用户名下没有 OpenClaw，可以删除。`
+                      ? `该用户名下没有 Agent，且私有网络无关联资源，可以删除。`
+                      : `该用户名下没有 Agent，可以删除。`
                     }
                   </div>
                 );
@@ -2797,7 +2797,7 @@ export default function MemberManagement() {
               if (!clawOk) {
                 reasons.push(
                   <p key="claw">
-                    删除用户需要该用户名下没有任何 OpenClaw。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
+                    删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
                   </p>
                 );
               }
@@ -2854,15 +2854,15 @@ export default function MemberManagement() {
               <span className="text-sm font-medium text-gray-900">{disableConfirmDialog?.memberId}</span>
             </div>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className="text-sm text-gray-500">名下 Agent 数量</span>
               <span className="text-sm font-semibold text-gray-800">{disableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
             <div className="rounded-lg bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 space-y-2">
               <p className="font-medium">禁用后将产生以下影响：</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>
-                <li>名下所有 OpenClaw 云服务器<span className="font-semibold">关机</span>（数据不删除）</li>
-                <li>用户将<span className="font-semibold">无法与 OpenClaw 机器人对话</span></li>
+                <li>名下所有 Agent 云服务器<span className="font-semibold">关机</span>（数据不删除）</li>
+                <li>用户将<span className="font-semibold">无法与 Agent 机器人对话</span></li>
               </ul>
             </div>
           </div>
@@ -2893,15 +2893,15 @@ export default function MemberManagement() {
               <span className="text-sm font-medium text-gray-900">{enableConfirmDialog?.memberId}</span>
             </div>
             <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 OpenClaw 数量</span>
+              <span className="text-sm text-gray-500">名下 Agent 数量</span>
               <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
             <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700 space-y-2">
               <p className="font-medium">启用后将产生以下影响：</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>该用户可以<span className="font-semibold">继续登录</span>用户端</li>
-                <li>名下所有 OpenClaw 云服务器将<span className="font-semibold">开机</span>，恢复运行</li>
-                <li>用户可以<span className="font-semibold">恢复与 OpenClaw 机器人对话</span></li>
+                <li>名下所有 Agent 云服务器将<span className="font-semibold">开机</span>，恢复运行</li>
+                <li>用户可以<span className="font-semibold">恢复与 Agent 机器人对话</span></li>
               </ul>
             </div>
           </div>

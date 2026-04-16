@@ -1,9 +1,9 @@
 /**
- * OpenClawDetail - OpenClaw 详细配置页
+ * AgentDetail - Agent 详细配置页
  * Design: 「流动蓝图」Fluid Blueprint
  * - 三栏布局：模型 | 通道 | 技能
  * - 参考图片风格：白色卡片，标题带彩色图标
- * - Header：名称、动态状态 badge（8 种状态）、一键更新、开启 OpenClaw 面板
+ * - Header：名称、动态状态 badge（8 种状态）、一键更新、开启 Agent 面板
  * - 基础配置 Tab：模型配置、通道配置、技能配置
  */
 import { useState, useEffect, useRef } from "react";
@@ -52,11 +52,11 @@ import { findClawById, onClawListChange } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 
-// ─── 实例状态配置（与 MyOpenClaw 保持一致） ──────────────────────────────────────
+// ─── 实例状态配置（与 MyAgent 保持一致） ──────────────────────────────────────
 
-type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 
-const INSTANCE_STATUS_CONFIG: Record<OpenClawStatus, {
+const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   label: string;
   badgeClass: string;
   dotColor?: string;
@@ -170,7 +170,7 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
   {
     value: "wework-app",
     label: "企业微信应用",
-    descText: "通过企业微信应用接口，将 OpenClaw 接入企业微信应用，支持消息互动与业务集成。",
+    descText: "通过企业微信应用接口，将 Agent 接入企业微信应用，支持消息互动与业务集成。",
     detailUrl: "#",
     fields: [
       { key: "corpId",         label: "企业微信应用的Corp ID",           secret: false },
@@ -206,7 +206,7 @@ const CHANNEL_OPTIONS: ChannelConfig[] = [
   {
     value: "wechat",
     label: "微信",
-    descText: "通过微信扫码授权，将 OpenClaw 接入微信，支持微信消息交互。",
+    descText: "通过微信扫码授权，将 Agent 接入微信，支持微信消息交互。",
     detailUrl: "#",
     wechatMode: true,
   },
@@ -287,7 +287,7 @@ type AppliedChannel = {
 
 // ─── 主组件 ──────────────────────────────────────────────────────────────────────
 
-export default function OpenClawDetail() {
+export default function AgentDetail() {
   const [, params] = useRoute("/openclaw/:id");
   const clawId = params?.id;
 
@@ -307,7 +307,7 @@ export default function OpenClawDetail() {
   const claw = clawData;
 
   const clawName = claw.name;
-  const clawStatus = (claw.status || "running") as OpenClawStatus;
+  const clawStatus = (claw.status || "running") as AgentStatus;
   const statusCfg = INSTANCE_STATUS_CONFIG[clawStatus] ?? INSTANCE_STATUS_CONFIG.running;
 
   // ── Configuration state ──
@@ -453,13 +453,13 @@ export default function OpenClawDetail() {
   const migrationCosKey = `single/${clawData?.instanceId || "unknown"}-${Math.random().toString(36).substring(2, 8)}.tgz`;
   const migrationPresignedUrl = `https://${migrationCosBucket}.cos.ap-guangzhou.myqcloud.com/${migrationCosKey}?q-sign-algorithm=sha1&q-ak=AKID****&q-sign-time=****&q-signature=****`;
 
-  const migrationExportCommand = `# 在源端 OpenClaw 终端执行以下命令
-openclaw gateway stop
-tar -czf /tmp/openclaw-export.tgz -C /root .openclaw
+  const migrationExportCommand = `# 在源端 Agent 终端执行以下命令
+agent gateway stop
+tar -czf /tmp/openclaw-export.tgz -C /root .agent
 curl -X PUT --upload-file /tmp/openclaw-export.tgz \\
   "${migrationPresignedUrl}"
 rm -f /tmp/openclaw-export.tgz
-openclaw gateway start
+agent gateway start
 echo "✅ 导出完成，数据已上传到 COS"`;
 
   const handleCheckUpload = () => {
@@ -484,7 +484,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         setTimeout(() => {
           if (Math.random() < 0.9) {
             setMigrationStep("success");
-            toast.success("迁移成功！OpenClaw 已重启");
+            toast.success("迁移成功！Agent 已重启");
           } else {
             setMigrationStep("failed");
             setMigrationError("Gateway 重启超时，请手动检查");
@@ -509,7 +509,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
   const [updateStepsDone, setUpdateStepsDone] = useState<number>(0);
   const updateSteps = [
     "环境准备",
-    "OpenClaw 安装",
+    "Agent 安装",
     "Doctor 修复",
     "Gateway 安装",
     "Clawhub 安装",
@@ -528,7 +528,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       if (done >= updateSteps.length) {
         setIsUpdating(false);
         setShowUpdateProgressDialog(false);
-        toast.success("OpenClaw 已更新至最新版本");
+        toast.success("Agent 已更新至最新版本");
         return;
       }
       const delay = 800 + Math.random() * 2200; // 0.8s ~ 3s 随机
@@ -1288,7 +1288,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       try {
                         // 将实例的 agentType 小写形式映射到镜像管理中的标准形式
                         const typeMap: Record<string, string> = {
-                          openclaw: "openclaw",
+                          agent: "openclaw",
                           hermes: "hermesagent",
                           lightclawace: "lightclawace",
                         };
@@ -1301,7 +1301,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           return imgNorm === normalizedType && i.active;
                         });
                         if (!hasActive) {
-                          toast.error("暂无生效的OpenClaw类型镜像，请联系管理员处理");
+                          toast.error("暂无生效的Agent类型镜像，请联系管理员处理");
                           return;
                         }
                       } catch { /* ignore */ }
@@ -1328,7 +1328,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   }`}
                 >
                   <Monitor className="w-3.5 h-3.5" />
-                  开启OpenClaw面板
+                  开启Agent面板
                 </button>
               </TooltipTrigger>
               {!allowPanelAccess && (
@@ -1843,7 +1843,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </TooltipTrigger>
                     {hasQueueing && (
                       <TooltipContent side="top" className="text-xs max-w-[220px] text-justify">
-                        当前有技能正在安装队列中，请等待安装完成后再添加新技能，以免影响 OpenClaw 的正常运行。
+                        当前有技能正在安装队列中，请等待安装完成后再添加新技能，以免影响 Agent 的正常运行。
                       </TooltipContent>
                     )}
                   </Tooltip>
@@ -1893,7 +1893,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                         </span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs max-w-[220px] text-justify">
-                        待安装技能通常为管理员为您预配置的初始技能，安装过程不影响正常对话。只要模型与通道配置完毕，即可随时开始与 OpenClaw 对话。
+                        待安装技能通常为管理员为您预配置的初始技能，安装过程不影响正常对话。只要模型与通道配置完毕，即可随时开始与 Agent 对话。
                       </TooltipContent>
                     </Tooltip>
                     <p className="text-xs text-gray-400">待安装技能（{pendingSkills.length}）</p>
@@ -1995,7 +1995,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     <li className="flex items-center gap-2 text-sm text-gray-700">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
                       自动执行
-                      <code className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-xs">openclaw doctor --fix</code>
+                      <code className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-xs">agent doctor --fix</code>
                     </li>
                     <li className="flex items-center gap-2 text-sm text-gray-700">
                       <span className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" />
@@ -2037,7 +2037,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           </svg>
                           <span className="text-gray-800">执行完成</span>
                         </span>
-                        <span className="text-xs text-gray-400">请前往 OpenClaw 对话确认问题是否已解决</span>
+                        <span className="text-xs text-gray-400">请前往 Agent 对话确认问题是否已解决</span>
                       </div>
                     )}
                   </div>
@@ -2228,7 +2228,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
-                  <span className="text-gray-800 font-medium">OpenClaw机器人-8791</span>
+                  <span className="text-gray-800 font-medium">Agent机器人-8791</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-gray-500 shrink-0">管理地址：</span>
@@ -2276,7 +2276,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
-                  <span className="text-gray-800 font-medium">OpenClaw机器人-4598</span>
+                  <span className="text-gray-800 font-medium">Agent机器人-4598</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-gray-500 shrink-0">管理地址：</span>
@@ -2352,19 +2352,19 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         </DialogContent>
       </Dialog>
 
-      {/* ===== OpenClaw 面板 进度弹窗 ===== */}
+      {/* ===== Agent 面板 进度弹窗 ===== */}
       <Dialog open={showWebUIProgressDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIProgressDialog(false);
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
-            <DialogDescription className="sr-only">开启OpenClaw面板</DialogDescription>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启Agent面板</DialogTitle>
+            <DialogDescription className="sr-only">开启Agent面板</DialogDescription>
             <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               <span>OpenClaw 面板（WebUI）是 OpenClaw 官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
             </div>
-            <p className="text-sm text-gray-500 mt-3">开启OpenClaw面板将会依次执行以下操作，确定后将自动执行：</p>
+            <p className="text-sm text-gray-500 mt-3">开启Agent面板将会依次执行以下操作，确定后将自动执行：</p>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">
             {/* 步骤1：放通端口 */}
@@ -2408,7 +2408,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   : webUIStep >= 2
                   ? "生成链接：链接已生成"
                   : webUIStep === 1
-                  ? "生成链接：正在为您生成OpenClaw面板访问链接，预计5~10秒..."
+                  ? "生成链接：正在为您生成Agent面板访问链接，预计5~10秒..."
                   : "生成链接：等待放通端口完成"}
               </span>
             </div>
@@ -2434,13 +2434,13 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         </DialogContent>
       </Dialog>
 
-      {/* ===== OpenClaw 面板 结果弹窗 ===== */}
+      {/* ===== Agent 面板 结果弹窗 ===== */}
       <Dialog open={showWebUIResultDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIResultDialog(false);
       }}>
         <DialogContent className="w-[90vw] max-w-lg overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">开启OpenClaw面板</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启Agent面板</DialogTitle>
           </DialogHeader>
           {/* 警告文字 */}
           <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
@@ -2498,7 +2498,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </DialogHeader>
           <div className="text-sm text-gray-700 leading-relaxed space-y-2 py-1">
             <p>Agent版本将会升级至管理员指定生效镜像所对应的版本，且不支持跨Agent类型升级。</p>
-            <p>更新版本预计需要 5～10 分钟不等，请您耐心等待。更新期间 OpenClaw 网关服务暂停，面板不可操作。</p>
+            <p>更新版本预计需要 5～10 分钟不等，请您耐心等待。更新期间 Agent 网关服务暂停，面板不可操作。</p>
             <p>更新版本后模型（Models）、通道（Channels）、技能（Skills）和记忆均不会丢失。</p>
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -2527,7 +2527,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-gray-900">正在更新 OpenClaw</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900">正在更新 Agent</DialogTitle>
             <DialogDescription className="sr-only">更新进度</DialogDescription>
           </DialogHeader>
           <div className="mt-1 space-y-2.5 py-1 pb-3">
@@ -2760,10 +2760,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
-              迁移 OpenClaw 至当前实例
+              迁移 Agent 至当前实例
             </DialogTitle>
             <DialogDescription className="text-xs text-gray-500">
-              将源端 OpenClaw 的配置、通道状态、会话历史导入到「{clawData?.name}」
+              将源端 Agent 的配置、通道状态、会话历史导入到「{clawData?.name}」
             </DialogDescription>
           </DialogHeader>
 
@@ -2774,9 +2774,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <AlertTriangle className="w-3.5 h-3.5" /> 注意事项
               </p>
               <ul className="text-xs text-amber-700 space-y-1 list-disc pl-4 leading-relaxed">
-                <li>源端 OpenClaw 的配置、通道登录状态、会话历史将完整导入到当前实例</li>
+                <li>源端 Agent 的配置、通道登录状态、会话历史将完整导入到当前实例</li>
                 <li>源端仅做读取打包，不影响源端正常运行</li>
-                <li>导入将覆盖当前实例的 ~/.openclaw/ 目录，导入前自动备份，失败自动回滚</li>
+                <li>导入将覆盖当前实例的 ~/.agent/ 目录，导入前自动备份，失败自动回滚</li>
                 <li>COS 临时数据保留 24 小时后自动清理</li>
               </ul>
             </div>
@@ -2790,10 +2790,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 }`}>
                   {migrationStep !== "export" && migrationStep !== "waitUpload" ? <CheckCircle2 className="w-3 h-3" /> : "1"}
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900">导出源端 OpenClaw 配置</h3>
+                <h3 className="text-sm font-semibold text-gray-900">导出源端 Agent 配置</h3>
               </div>
               <p className="text-xs text-gray-500 ml-7">
-                请复制下方命令，在源 OpenClaw 终端或 IM 机器人对话框中执行。
+                请复制下方命令，在源 Agent 终端或 IM 机器人对话框中执行。
               </p>
               <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <button
@@ -2849,7 +2849,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       <AlertTriangle className="w-3.5 h-3.5" /> 重要提醒
                     </p>
                     <p className="text-xs text-red-600 mt-1 leading-relaxed">
-                      执行导入将<strong>覆盖</strong>当前实例「{clawData?.name}」的全部 OpenClaw 配置（~/.openclaw/ 目录）。
+                      执行导入将<strong>覆盖</strong>当前实例「{clawData?.name}」的全部 Agent 配置（~/.agent/ 目录）。
                       导入前会自动备份，失败时自动回滚。
                     </p>
                   </div>
@@ -2858,7 +2858,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-4 py-2 transition-colors text-white bg-blue-600 hover:bg-blue-700"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
-                    导入并重启 OpenClaw
+                    导入并重启 Agent
                   </button>
                 </div>
               )}
@@ -2886,7 +2886,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <h3 className="text-sm font-semibold text-green-700">迁移成功</h3>
                 </div>
                 <div className="ml-7 rounded-lg bg-green-50 border border-green-200 p-3 space-y-1.5">
-                  <p className="text-xs text-green-700">OpenClaw 配置数据已成功导入，Gateway 已重启。</p>
+                  <p className="text-xs text-green-700">Agent 配置数据已成功导入，Gateway 已重启。</p>
                   <p className="text-xs text-green-600">COS 临时数据已清理。</p>
                 </div>
                 <div className="ml-7">
@@ -3070,7 +3070,7 @@ function ActionCardView({
               <span className="text-green-500">✓</span>
               <span className="text-gray-800">执行完成</span>
             </span>
-            <span className="text-xs text-gray-400">请前往 OpenClaw 对话确认问题是否已解决</span>
+            <span className="text-xs text-gray-400">请前往 Agent 对话确认问题是否已解决</span>
           </div>
           {card.resultText && <p className="text-xs text-gray-600 mt-1">{card.resultText}</p>}
         </div>
@@ -3200,7 +3200,7 @@ function TypingBubble() {
 // ─── 历史记录持久化（localStorage）────────────────────────────────────────────
 // 注意：不再使用任何硬编码假数据，所有历史记录来自真实会话
 
-const HISTORY_STORAGE_KEY = "doctor_history_openclaw_1";
+const HISTORY_STORAGE_KEY = "doctor_history_agent_1";
 
 function loadHistory(): HistoryRecord[] {
   try {
@@ -3277,11 +3277,11 @@ const REPAIR_QUEUE: Array<{
 ];
 
 // AI 系统提示词（修改八）
-const SYSTEM_PROMPT = `你是龙虾医生（Lobster Doctor），ClawPro 企业版 OpenClaw 平台内置的 AI 运维助手。
+const SYSTEM_PROMPT = `你是龙虾医生（Lobster Doctor），ClawPro 企业版 Agent 平台内置的 AI 运维助手。
 
 你的核心能力：
 1. 自动检测标准项目（网络连通性、模型接口、IM 通道、技能插件运行状态）
-2. 根据用户描述，针对性分析和解决任意 OpenClaw 运行问题
+2. 根据用户描述，针对性分析和解决任意 Agent 运行问题
 3. 执行具体操作（开放端口、重启服务、修改配置、回滚快照等），执行前必须展示操作确认卡片
 4. 给出建议和指导，即使当前无法直接解决，也能说明方向
 
@@ -3291,7 +3291,7 @@ const SYSTEM_PROMPT = `你是龙虾医生（Lobster Doctor），ClawPro 企业�
 - 需要执行操作时，先说明要做什么，等用户确认后再执行
 - 用中文回复，不超过 200 字
 
-当前上下文：用户正在使用 ClawPro 用户端，对其 OpenClaw 实例进行诊断和修复。`;
+当前上下文：用户正在使用 ClawPro 用户端，对其 Agent 实例进行诊断和修复。`;
 
 // ─── 点赞/点踩图标组件 ─────────────────────────────────────────────────────────
 function ThumbUpIcon({ filled }: { filled?: boolean }) {
@@ -3438,7 +3438,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { kind: "assistant", parts: [{ type: "text", text: "您好！我是龙虾医生 🦞\n我将对您的 OpenClaw 实例进行全面检测" }] },
+        { kind: "assistant", parts: [{ type: "text", text: "您好！我是龙虾医生 🦞\n我将对您的 Agent 实例进行全面检测" }] },
       ]);
     }, 800);
 
@@ -3686,7 +3686,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
     setCardStatus((prev) => ({ ...prev, rollback_snapshot: "running" }));
     setTimeout(() => {
       setCardStatus((prev) => ({ ...prev, rollback_snapshot: "done" }));
-      setCardResults((prev) => ({ ...prev, rollback_snapshot: "配置已回滚至诊断前快照，OpenClaw 已重启。" }));
+      setCardResults((prev) => ({ ...prev, rollback_snapshot: "配置已回滚至诊断前快照，Agent 已重启。" }));
       triggerSessionEnd();
     }, 2000);
   };
@@ -3816,7 +3816,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         return { role: "assistant" as const, content: text };
       });
 
-    const systemPrompt = `你是龙虾医生，一个专业的 OpenClaw 运维助手。你的职责是帮助用户诊断并修复 OpenClaw 运行问题。
+    const systemPrompt = `你是龙虾医生，一个专业的 Agent 运维助手。你的职责是帮助用户诊断并修复 Agent 运行问题。
 
 【重要规则，必须严格遵守】
 1. 用简洁、友好的中文回复，不超过 150 字
@@ -4073,7 +4073,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
             <ul className="space-y-2">
               <li className="flex items-start gap-2 text-sm text-gray-600">
                 <span className="mt-0.5 text-gray-400 flex-shrink-0">·</span>
-                <span>创建一只临时龙虾，对您的 OpenClaw 进行检测和修复</span>
+                <span>创建一只临时龙虾，对您的 Agent 进行检测和修复</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-gray-600">
                 <span className="mt-0.5 text-gray-400 flex-shrink-0">·</span>
@@ -4107,7 +4107,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
 
       {/* 副标题 + 按钮行 */}
       <div className="px-6 pt-3 pb-4">
-        <p className="text-sm text-gray-500 mb-3">AI 智能诊断，帮助您发现并修复 OpenClaw 运行问题</p>
+        <p className="text-sm text-gray-500 mb-3">AI 智能诊断，帮助您发现并修复 Agent 运行问题</p>
         <div className="flex items-center gap-2">
           {/* 开始/再次诊断：只在 idle/ended 状态显示（active 时按鈕已移到对话区底部） */}
           {viewMode !== "history_detail" && (diagPhase === "idle" || diagPhase === "ended") && (
@@ -4155,7 +4155,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         <div className="px-6 pb-8">
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-6 gap-1.5">
             <p className="text-sm font-medium text-gray-600">龙虾医生待命中</p>
-            <p className="text-xs text-gray-400">点击「开始诊断」后，将为您开启一只龙虾医生，通过它对当前 OpenClaw 进行全面检测和对话式修复，龙虾医生初始化约需 1-2 分钟。</p>
+            <p className="text-xs text-gray-400">点击「开始诊断」后，将为您开启一只龙虾医生，通过它对当前 Agent 进行全面检测和对话式修复，龙虾医生初始化约需 1-2 分钟。</p>
           </div>
         </div>
       )}

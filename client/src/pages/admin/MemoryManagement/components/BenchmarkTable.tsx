@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * PersonaMem 评测结果表格
  * 
- * 展示 OpenClaw 原生 vs TDAI-Memory 的性能对比
+ * 展示 Agent 原生 vs TDAI-Memory 的性能对比
  */
 export const BenchmarkTable: React.FC = () => {
   const benchmarkData = [
@@ -43,7 +43,7 @@ export const BenchmarkTable: React.FC = () => {
               评测项
             </th>
             <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#F0FDF4] text-[#16A34A]">
-              OpenClaw 原生
+              Agent 原生
             </th>
             <th className="px-[18px] py-[14px] text-center text-[13.5px] font-semibold bg-[#FAF5FF] text-[#7C3AED]">
               TDAI-Memory

@@ -1,9 +1,9 @@
 /**
- * MyOpenClaw - 我的 OpenClaw 页面
+ * MyAgent - 我的 Agent 页面
  * Design: 「流动蓝图」Fluid Blueprint
  * - 快速上手引导（始终显示，可手动关闭）
- * - OpenClaw 卡片列表（支持 8 种状态）
- * - 创建 OpenClaw 弹窗
+ * - Agent 卡片列表（支持 8 种状态）
+ * - 创建 Agent 弹窗
  * - 通知 Bell 图标和面板
  * - 操作确认弹窗（重启、重装、删除）
  * - 自动轮询状态转换
@@ -53,17 +53,17 @@ import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
 import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
 
-const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
+const DISABLED_TIP = "您的 Agent 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // 8 种状态配置
-type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 
-interface OpenClawItem {
+interface AgentItem {
   id: string;
   instanceId: string;
   name: string;
-  status: OpenClawStatus;
+  status: AgentStatus;
   createdAt: string;
   model: string;
   modelVersion: string;
@@ -81,7 +81,7 @@ interface Notification {
   timestamp: string;
 }
 
-const STATUS_CONFIG: Record<OpenClawStatus, {
+const STATUS_CONFIG: Record<AgentStatus, {
   label: string;
   dotColor?: string;
   bgColor: string;
@@ -164,7 +164,7 @@ const STATUS_CONFIG: Record<OpenClawStatus, {
 };
 
 // 状态点组件
-const StatusDot = ({ status }: { status: OpenClawStatus }) => {
+const StatusDot = ({ status }: { status: AgentStatus }) => {
   const cfg = STATUS_CONFIG[status];
   
   if (status === "loading") {
@@ -206,7 +206,7 @@ const StatusDot = ({ status }: { status: OpenClawStatus }) => {
   );
 };
 
-const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
+const StatusBadge = ({ status }: { status: AgentStatus }) => {
   const cfg = STATUS_CONFIG[status];
   const tooltipText = cfg.tooltipText;
 
@@ -236,11 +236,11 @@ const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
   return badge;
 };
 
-export default function MyOpenClaw() {
+export default function MyAgent() {
   const [, navigate] = useLocation();
-  const [claws, setClawsRaw] = useState<OpenClawItem[]>(() => loadClawList() as OpenClawItem[]);
+  const [claws, setClawsRaw] = useState<AgentItem[]>(() => loadClawList() as AgentItem[]);
   // 包装 setClaws，每次更新同步到 store
-  const setClaws = (v: OpenClawItem[] | ((prev: OpenClawItem[]) => OpenClawItem[])) => {
+  const setClaws = (v: AgentItem[] | ((prev: AgentItem[]) => AgentItem[])) => {
     setClawsRaw((prev) => {
       const next = typeof v === "function" ? v(prev) : v;
       saveClawList(next);
@@ -281,7 +281,7 @@ export default function MyOpenClaw() {
   const [hasUnread, setHasUnread] = useState(false);
 
   // 确认弹窗
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: OpenClawStatus; memoryStatus?: 'none' | 'free' | 'pro' } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string; status: AgentStatus; memoryStatus?: 'none' | 'free' | 'pro' } | null>(null);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
@@ -366,11 +366,11 @@ export default function MyOpenClaw() {
 
   const handleCreate = () => {
     if (!newName.trim()) {
-      toast.error("请输入 OpenClaw 名称");
+      toast.error("请输入 Agent 名称");
       return;
     }
     const ts = Date.now();
-    const newClaw: OpenClawItem = {
+    const newClaw: AgentItem = {
       id: `oc-${ts}`,
       instanceId: `ins-${ts.toString(36).slice(-8)}`,
       name: newName.trim(),
@@ -406,20 +406,20 @@ export default function MyOpenClaw() {
   };
 
   const handleRestart = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus } : c));
     setRestartConfirm(null);
     toast.success(`「${name}」正在重启...`);
   };
 
   const handleReinstall = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus, op: "reinstall" } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus, op: "reinstall" } : c));
     setReinstallConfirm(null);
     setReinstallConfirmInput("");
     toast.success(`「${name}」正在重新安装...`);
   };
 
   const handleRetry = (id: string, name: string) => {
-    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
+    setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as AgentStatus } : c));
     toast.success(`「${name}」正在重试...`);
   };
 
@@ -488,7 +488,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">浏览器对话</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与OpenClaw对话（其他Agent暂不支持）</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与Agent对话（其他Agent暂不支持）</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />
@@ -496,7 +496,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">+</div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">连接聊天软件<span className="text-[10px] font-normal text-gray-400 ml-1">可选</span></p>
-                      <p className="text-xs text-gray-400 mt-0.5">在「详细配置」中开启通道，还可以通过企微/微信/飞书等与 OpenClaw 对话</p>
+                      <p className="text-xs text-gray-400 mt-0.5">在「详细配置」中开启通道，还可以通过企微/微信/飞书等与 Agent 对话</p>
                     </div>
                   </div>
                 </div>
@@ -590,7 +590,7 @@ export default function MyOpenClaw() {
                     ) : (
                       <div className="grid grid-cols-3 gap-4">
               {[...claws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
-                const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
+                const cfg = STATUS_CONFIG[claw.status as AgentStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
                 const isLoadFail = claw.status === "loadFail";
@@ -613,7 +613,7 @@ export default function MyOpenClaw() {
                         boxShadow: "none"
                       }}
                     >
-                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "Agent"}
                     </span>
                     {/* Card Header */}
                     <div className="p-5 pt-8">
@@ -661,12 +661,12 @@ export default function MyOpenClaw() {
                               {claw.status === "running" ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 Agent"}
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
+                                  {isNonOpenclaw ? "重新安装 Agent" : "重新安装 Agent"}
                                 </DropdownMenuItem>
                               )}
 
@@ -863,7 +863,7 @@ export default function MyOpenClaw() {
               <DialogTitle className="text-base font-bold text-gray-900">确认重启</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-gray-600 leading-relaxed">
-              重启后该 OpenClaw「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
+              重启后该 Agent「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
             </p>
             <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={() => setRestartConfirm(null)}>取消</Button>
@@ -921,12 +921,12 @@ export default function MyOpenClaw() {
                 ? `此操作将移除「${deleteConfirm?.name}」该创建失败的记录，底层资源将由系统自动回收。`
                 : `此操作不可撤销。「${deleteConfirm?.name}」实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复。`}
             </p>
-            {/* 记忆数据清理提示 - 仅当该 OpenClaw 开启了记忆功能时显示 */}
+            {/* 记忆数据清理提示 - 仅当该 Agent 开启了记忆功能时显示 */}
             {deleteConfirm?.status !== "createFail" && deleteConfirm?.memoryStatus && deleteConfirm.memoryStatus !== 'none' && (
               <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-700">
-                  该 OpenClaw 已开启 Memory {deleteConfirm.memoryStatus === 'pro' ? 'Pro' : 'Free'}，相关记忆数据也将被一并清理。
+                  该 Agent 已开启 Memory {deleteConfirm.memoryStatus === 'pro' ? 'Pro' : 'Free'}，相关记忆数据也将被一并清理。
                 </p>
               </div>
             )}
@@ -966,7 +966,7 @@ export default function MyOpenClaw() {
             <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
               <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-600 leading-relaxed">
-                移除角色不会删除已有的技能配置，OpenClaw 将回退为「通用助手」。
+                移除角色不会删除已有的技能配置，Agent 将回退为「通用助手」。
               </p>
             </div>
             <DialogFooter className="gap-2 pt-2">
@@ -1085,14 +1085,14 @@ export default function MyOpenClaw() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="openclaw">OpenClaw</SelectItem>
+                    <SelectItem value="openclaw">Agent</SelectItem>
                     <SelectItem value="hermes">Hermes</SelectItem>
                     <SelectItem value="lightclawace">LightclawACE</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Role Selection - Collapsible Panel (仅 OpenClaw 类型显示) */}
+              {/* Role Selection - Collapsible Panel (仅 Agent 类型显示) */}
               {agentType === "openclaw" && (
               <div className="border border-gray-100 rounded-xl overflow-hidden">
                 <button

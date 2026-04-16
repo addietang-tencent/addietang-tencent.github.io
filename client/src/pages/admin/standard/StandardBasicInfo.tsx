@@ -77,7 +77,7 @@ const PRODUCT_UPDATES = [
     date: "2026-03-10",
     type: "feature" as const,
     title: "模型配置支持设置默认模型",
-    summary: "管理员可在模型列表中指定一个默认模型，新建 OpenClaw 实例时自动预填。",
+    summary: "管理员可在模型列表中指定一个默认模型，新建 Agent 实例时自动预填。",
   },
   {
     version: "v2.2.1",
@@ -112,7 +112,7 @@ const PRODUCT_UPDATES = [
     date: "2025-12-20",
     type: "feature" as const,
     title: "通道配置支持自定义通道接入",
-    summary: "新增自定义通道类型，支持企业自有 IM 系统通过 Webhook 方式接入 OpenClaw。",
+    summary: "新增自定义通道类型，支持企业自有 IM 系统通过 Webhook 方式接入 Agent。",
   },
 ];
 
@@ -331,7 +331,7 @@ export default function StandardBasicInfo() {
   const [, navigate] = useLocation();
 
   // ── 步骤 1：平台名称与品牌 ──
-  const [siteName, setSiteName] = useState("A公司企业版OpenClaw");
+  const [siteName, setSiteName] = useState("A公司企业版Agent");
   const [logo, setLogo] = useState<File | null>(null);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -375,7 +375,7 @@ export default function StandardBasicInfo() {
     setSyncing(true);
     setTimeout(() => {
       setSyncing(false);
-      setSiteName("A公司企业版OpenClaw");
+      setSiteName("A公司企业版Agent");
       toast.success("企业信息已同步成功");
     }, 1500);
   };
@@ -415,7 +415,7 @@ export default function StandardBasicInfo() {
                   id="siteName"
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
-                  placeholder="例如：A公司企业版OpenClaw"
+                  placeholder="例如：A公司企业版Agent"
                   className="bg-gray-50 border-gray-200 text-sm"
                 />
               </div>
@@ -494,11 +494,11 @@ export default function StandardBasicInfo() {
             step={2}
             done={MOCK_STEP_STATUS[2]}
             title="配置用户默认配额"
-            description="设置新用户创建时自动应用的 OpenClaw 数量上限和每日 Tokens 上限，有效控制企业成本"
+            description="设置新用户创建时自动应用的 Agent 数量上限和每日 Tokens 上限，有效控制企业成本"
           >
             <div className="space-y-4">
               <InlineQuotaField
-                label="单用户 OpenClaw 数量上限"
+                label="单用户 Agent 数量上限"
                 hint=""
                 value={clawLimit}
                 type="integer"
@@ -633,7 +633,7 @@ export default function StandardBasicInfo() {
             step={5}
             done={MOCK_STEP_STATUS[5]}
             title="配置至少一个模型"
-            description="为用户端配置至少一个可用的 AI 模型，用户在创建 OpenClaw 时将从已配置的模型中选择"
+            description="为用户端配置至少一个可用的 AI 模型，用户在创建 Agent 时将从已配置的模型中选择"
           >
             <Button
               size="sm"
@@ -651,7 +651,7 @@ export default function StandardBasicInfo() {
             step={6}
             done={MOCK_STEP_STATUS[6]}
             title="配置至少一个通道"
-            description="通道决定用户可以通过哪些聊天软件（企业微信、飞书、钉钉等）与 OpenClaw 对话，至少配置一个"
+            description="通道决定用户可以通过哪些聊天软件（企业微信、飞书、钉钉等）与 Agent 对话，至少配置一个"
           >
             <Button
               size="sm"
@@ -669,7 +669,7 @@ export default function StandardBasicInfo() {
             step={7}
             done={MOCK_STEP_STATUS[7]}
             title="配置安全组"
-            description="为 OpenClaw 云设备配置安全组规则，确保访问安全"
+            description="为 Agent 云设备配置安全组规则，确保访问安全"
           >
             <Button
               size="sm"

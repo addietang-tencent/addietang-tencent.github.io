@@ -776,7 +776,7 @@ function PublishConfirmDialog({ open, packageName, isActive, onConfirm, onCancel
         </DialogHeader>
         <div className="my-2">
           <p className="text-sm text-gray-600">
-            本次修改将<strong className="text-gray-800">应用于新创建的 OpenClaw</strong>，已创建的 OpenClaw 保持原有初始配置不受影响。
+            本次修改将<strong className="text-gray-800">应用于新创建的 Agent</strong>，已创建的 Agent 保持原有初始配置不受影响。
           </p>
         </div>
         <DialogFooter className="flex gap-2">

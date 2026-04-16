@@ -1,7 +1,7 @@
 /**
  * customChannelStore.ts
  * 自定义通道共享状态存储
- * 用于管控端（ChannelConfig）和用户端（OpenClawDetail）之间的数据共享
+ * 用于管控端（ChannelConfig）和用户端（AgentDetail）之间的数据共享
  * 使用 localStorage 持久化，通过 window 事件广播变更
  */
 

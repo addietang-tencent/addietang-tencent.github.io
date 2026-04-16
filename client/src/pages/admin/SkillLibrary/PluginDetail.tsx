@@ -181,7 +181,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
     return { processedFiles: currentFiles, strippedPrefix: '' };
   }, [currentFiles]);
 
-  // 默认选中 openclaw.plugin.json
+  // 默认选中 agent.plugin.json
   useEffect(() => {
     if (processedFiles.length > 0) {
       const pluginJson = processedFiles.find(f => f.name.endsWith('openclaw.plugin.json'));

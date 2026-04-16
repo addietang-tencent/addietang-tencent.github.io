@@ -27,13 +27,13 @@ const TABS = [
   {
     id: "preset",
     label: "初始技能包",
-    description: "配置每个实例自动预装的技能集合，支持从公共技能库和企业技能库中挑选，当前仅 OpenClaw 支持，其他 Agent 暂不支持预装。",
+    description: "配置每个实例自动预装的技能集合，支持从公共技能库和企业技能库中挑选，当前仅 Agent 支持，其他 Agent 暂不支持预装。",
     comingSoon: false,
   },
   {
     id: "roles",
     label: "角色设定",
-    description: "创建和管理角色预设，用户在创建实例时可选择管理员配置好的角色，快速获得对应技能组合。当前仅 OpenClaw 支持，其他 Agent 暂不支持设置。",
+    description: "创建和管理角色预设，用户在创建实例时可选择管理员配置好的角色，快速获得对应技能组合。当前仅 Agent 支持，其他 Agent 暂不支持设置。",
     comingSoon: false,
   },
   {
@@ -50,7 +50,7 @@ const PRESET_CARDS = [
     id: "pick",
     title: "从多来源挑选技能",
     description:
-      "从多个公共技能库以及企业私有技能库中自由挑选技能，组合成每个 OpenClaw 开箱即用的初始技能集合",
+      "从多个公共技能库以及企业私有技能库中自由挑选技能，组合成每个 Agent 开箱即用的初始技能集合",
     icon: PackagePlus,
     color: "#007AFF",
   },
@@ -58,7 +58,7 @@ const PRESET_CARDS = [
     id: "manage",
     title: "灵活管理技能增删",
     description:
-      "随时对初始技能包进行技能的添加和移除，灵活调整每个 OpenClaw 的预装技能组合，适应企业需求变化",
+      "随时对初始技能包进行技能的添加和移除，灵活调整每个 Agent 的预装技能组合，适应企业需求变化",
     icon: RefreshCw,
     color: "#34C759",
   },
@@ -78,7 +78,7 @@ const PUBLIC_CARDS = [
     id: "speed",
     title: "海量技能自由选配",
     description:
-      "汇聚数万个开箱即用的 Skill，涉及文件处理、代码执行、数据分析等多个领域，按需挑选组合，打造专属于企业的定制化 OpenClaw 数字助理",
+      "汇聚数万个开箱即用的 Skill，涉及文件处理、代码执行、数据分析等多个领域，按需挑选组合，打造专属于企业的定制化 Agent 数字助理",
     icon: Zap,
     color: "#FF9500",
   },
@@ -151,7 +151,7 @@ function ComingSoonCards({
 
 // ── 技能安装来源 Tab 内容（保持原有功能） ─────────────────
 function SkillSourceTab() {
-  const [skillhubUrl, setSkillhubUrl] = useState("https://clawhub.openclaw.com");
+  const [skillhubUrl, setSkillhubUrl] = useState("https://clawhub.agent.com");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(skillhubUrl);
   const [errorMessage, setErrorMessage] = useState("");

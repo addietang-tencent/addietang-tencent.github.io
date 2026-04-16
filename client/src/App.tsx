@@ -13,8 +13,8 @@ import SsoLoginDemo from "./pages/SsoLoginDemo";
 import LandingPage from "./pages/LandingPage";
 
 // Tenant
-import MyOpenClaw from "./pages/tenant/MyOpenClaw";
-import OpenClawDetail from "./pages/tenant/OpenClawDetail";
+import MyAgent from "./pages/tenant/MyOpenClaw";
+import AgentDetail from "./pages/tenant/OpenClawDetail";
 import ModelQuota from "./pages/tenant/ModelQuota";
 import HelpDocs from "./pages/tenant/HelpDocs";
 import ResetPassword from "./pages/tenant/ResetPassword";
@@ -30,7 +30,7 @@ import SkillConfig from "./pages/admin/SkillConfig";
 import ImageManagement from "./pages/admin/ImageManagement";
 import SecurityGroupManagement from "./pages/admin/SecurityGroupManagement";
 import CloudDevManagement from "./pages/admin/CloudDevManagement";
-import OpenClawMonitor from "./pages/admin/OpenClawMonitor";
+import AgentMonitor from "./pages/admin/OpenClawMonitor";
 import AgentMigration from "./pages/admin/AgentMigration";
 import TokensMonitor from "./pages/admin/TokensMonitor";
 import AuditLog from "./pages/admin/AuditLog";
@@ -56,8 +56,8 @@ function Router() {
       <Route path="/demo/sso-login" component={SsoLoginDemo} />
 
       {/* Tenant Routes */}
-      <Route path="/my-openclaw" component={MyOpenClaw} />
-      <Route path="/openclaw/:id" component={OpenClawDetail} />
+      <Route path="/my-openclaw" component={MyAgent} />
+      <Route path="/openclaw/:id" component={AgentDetail} />
       <Route path="/model-quota" component={ModelQuota} />
       <Route path="/help-docs" component={HelpDocs} />
       <Route path="/reset-password" component={ResetPassword} />
@@ -72,7 +72,7 @@ function Router() {
       <Route path="/admin/image-management" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
       <Route path="/admin/cloud-dev" component={() => <AdminLayout><CloudDevManagement /></AdminLayout>} />
-      <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><OpenClawMonitor /></AdminLayout>} />
+      <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><AgentMonitor /></AdminLayout>} />
       <Route path="/admin/agent-migration" component={() => <AdminLayout><AgentMigration /></AdminLayout>} />
       <Route path="/admin/tokens-monitor" component={() => <AdminLayout><TokensMonitor /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />

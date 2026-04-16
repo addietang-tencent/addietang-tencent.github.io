@@ -161,8 +161,8 @@ function AccessModeIndicator({ mode, onSave }: { mode: "public" | "private"; onS
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs max-w-[320px] leading-relaxed">
-          <p className="mb-1.5"><span className="font-medium">公网访问：</span>用户通过公网直接访问 OpenClaw 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，推荐选择。</p>
-          <p><span className="font-medium">私网访问：</span>用户通过同一私有网络访问 OpenClaw 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
+          <p className="mb-1.5"><span className="font-medium">公网访问：</span>用户通过公网直接访问 Agent 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，推荐选择。</p>
+          <p><span className="font-medium">私网访问：</span>用户通过同一私有网络访问 Agent 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
         </TooltipContent>
       </Tooltip>
     </div>
@@ -610,7 +610,7 @@ export default function PlatformPolicy() {
             icon={<Terminal className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户进入 Agent 终端"
-            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端（当前此开关仅对openclaw云服务器生效）。"
+            description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端（当前此开关仅对agent生效）。"
             checked={allowTerminal}
             onToggle={handleToggleTerminal}
           />

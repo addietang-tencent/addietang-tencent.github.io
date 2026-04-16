@@ -526,7 +526,7 @@ export default function FileManagement() {
                       AI 智能体私有网盘空间 需要单独开启 Agent Storage 服务
                     </h3>
                     <p className="text-sm text-gray-600">
-                      开启后，为您赠送每个 OpenClaw 实例
+                      开启后，为您赠送每个 Agent 实例
                       <span className="mx-1 font-semibold text-blue-600">3个月 50GB</span>
                       免费额度，到期后可以通过购买资源包进行续租
                     </p>
@@ -732,7 +732,7 @@ export default function FileManagement() {
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <div className="bg-purple-600 p-1 rounded-md text-white"><Bot className="w-4 h-4" /></div>
-              <span>共计 <span className="font-bold text-gray-900">{filteredPersonalInstancesCount}</span> 个 OpenClaw 实例</span>
+              <span>共计 <span className="font-bold text-gray-900">{filteredPersonalInstancesCount}</span> 个 Agent 实例</span>
             </div>
           </div>
           <Table>
@@ -886,7 +886,7 @@ export default function FileManagement() {
             {/* 说明内容 */}
             <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
               <p className="text-sm text-gray-700 leading-relaxed">
-                为您赠送 <span className="font-semibold text-blue-600">3个月</span> 每个 OpenClaw 实例 <span className="font-semibold text-blue-600">50GB</span> 的存储空间，到期后可以购买资源包进行续租。点击确定后才会进入最终页面
+                为您赠送 <span className="font-semibold text-blue-600">3个月</span> 每个 Agent 实例 <span className="font-semibold text-blue-600">50GB</span> 的存储空间，到期后可以购买资源包进行续租。点击确定后才会进入最终页面
               </p>
             </div>
 
@@ -1202,7 +1202,7 @@ export default function FileManagement() {
           <div className="p-8 space-y-6">
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                将 <span className="font-bold text-blue-600">{selectedFiles.size}</span> 个文件转移给 OpenClaw 实例
+                将 <span className="font-bold text-blue-600">{selectedFiles.size}</span> 个文件转移给 Agent 实例
               </p>
               <div className="p-4 bg-blue-50/30 rounded-xl border border-blue-100">
                 <p className="text-xs text-gray-500 mb-2">选中的文件:</p>
@@ -1218,9 +1218,9 @@ export default function FileManagement() {
             </div>
             
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-900 block">选择转移目标 OpenClaw 实例</label>
+              <label className="text-sm font-bold text-gray-900 block">选择转移目标 Agent 实例</label>
               <div className="space-y-2">
-                {['Noah (noah@acompany.com)', 'Mia (mia@acompany.com)', 'Leo (leo@acompany.com)', '其他 OpenClaw 实例'].map((member) => (
+                {['Noah (noah@acompany.com)', 'Mia (mia@acompany.com)', 'Leo (leo@acompany.com)', '其他 Agent 实例'].map((member) => (
                   <Button
                     key={member}
                     variant="outline"

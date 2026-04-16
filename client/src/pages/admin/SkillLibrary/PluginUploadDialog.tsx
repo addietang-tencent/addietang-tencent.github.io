@@ -1,6 +1,6 @@
 /**
  * PluginUploadDialog - 发布插件弹窗
- * 只支持上传 ZIP，校验 openclaw.plugin.json
+ * 只支持上传 ZIP，校验 agent.plugin.json
  */
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -92,7 +92,7 @@ const parseZipFile = async (file: File) => {
       return a.name.localeCompare(b.name);
     });
 
-    // 解析 openclaw.plugin.json 内容
+    // 解析 agent.plugin.json 内容
     let pluginJsonParsed: { name?: string; description?: string } | undefined;
     if (pluginJsonFound) {
       const pluginJsonFile = files.find(f => f.name.endsWith('openclaw.plugin.json'));
@@ -172,9 +172,9 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
           if (parseResult.error) {
             updated[idx] = { name: file.name, size: file.size, status: 'error', error: parseResult.error };
           } else if (!parseResult.pluginJsonFound && !parseResult.packageJsonFound) {
-            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 openclaw.plugin.json 和 package.json 文件，请修改后重试', files: parseResult.files };
+            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 agent.plugin.json 和 package.json 文件，请修改后重试', files: parseResult.files };
           } else if (!parseResult.pluginJsonFound) {
-            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 openclaw.plugin.json 文件，请修改后重试', files: parseResult.files };
+            updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 agent.plugin.json 文件，请修改后重试', files: parseResult.files };
           } else if (!parseResult.packageJsonFound) {
             updated[idx] = { name: file.name, size: file.size, status: 'error', error: '不存在 package.json 文件，请修改后重试', files: parseResult.files };
           } else {
@@ -261,7 +261,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                   <PopoverContent className="w-[420px] p-4" align="center" side="bottom">
                     <p className="text-sm font-semibold text-gray-900 mb-3">上传要求</p>
                     <ol className="text-sm text-gray-600 space-y-2 list-decimal pl-5">
-                      <li className="leading-relaxed"><span className="font-medium">必需文件：</span>插件ZIP包根目录必须包含 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">openclaw.plugin.json</code> 和 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">package.json</code> 文件，系统据此识别插件。</li>
+                      <li className="leading-relaxed"><span className="font-medium">必需文件：</span>插件ZIP包根目录必须包含 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">agent.plugin.json</code> 和 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">package.json</code> 文件，系统据此识别插件。</li>
                       <li className="leading-relaxed"><span className="font-medium">命名建议：</span>为便于管理，建议压缩包（或内部文件夹）的名称，与下方您将填写的"唯一标识"保持一致。</li>
                     </ol>
                   </PopoverContent>
@@ -341,7 +341,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                         {(file.pluginJsonFound || file.packageJsonFound) && (
                           <div className="mt-3 pt-3 border-t border-gray-200 space-y-1">
                             {file.pluginJsonFound && (
-                              <p className="text-xs font-semibold text-green-600">openclaw.plugin.json 校验通过</p>
+                              <p className="text-xs font-semibold text-green-600">agent.plugin.json 校验通过</p>
                             )}
                             {file.packageJsonFound && (
                               <p className="text-xs font-semibold text-green-600">package.json 校验通过</p>

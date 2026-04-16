@@ -69,7 +69,7 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "OpenClaw 配置",
+    label: "Agent 配置",
     items: [
       { label: "模型配置", path: "/admin/model-config", icon: Brain },
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
@@ -90,7 +90,7 @@ const NAV_GROUPS = [
   {
     label: "运营监控",
     items: [
-      { label: "OpenClaw 列表", path: "/admin/openclaw-monitor", icon: Activity },
+      { label: "Agent 列表", path: "/admin/openclaw-monitor", icon: Activity },
       { label: "Tokens 监控", path: "/admin/tokens-monitor", icon: BarChart3 },
       { label: "运维观测", path: "/admin/ops-observation", icon: Gauge },
     ],
@@ -143,7 +143,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
-                    <p className="text-xs text-gray-400">OpenClaw Enterprise</p>
+                    <p className="text-xs text-gray-400">Agent Enterprise</p>
                   </div>
                 </div>
               </div>

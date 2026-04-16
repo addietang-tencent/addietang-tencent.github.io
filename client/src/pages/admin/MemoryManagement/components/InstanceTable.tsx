@@ -943,7 +943,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>目前仅 OpenClaw 类型的 Agent 支持 Memory 功能</p>
+                      <p>目前仅 Agent 类型的 Agent 支持 Memory 功能</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -1183,7 +1183,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         </table>
       </div>
 
-      {/* 底部：翻页 - 与 OpenClaw 列表保持一致 */}
+      {/* 底部：翻页 - 与 Agent 列表保持一致 */}
       {!loading && (
         <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
           <span className="text-xs text-gray-400">

@@ -854,7 +854,7 @@ export default function OpenClawMonitor() {
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建人</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent类型</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '9%' : '10%' }}>Agent 版本</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
               </tr>
@@ -1188,7 +1188,7 @@ export default function OpenClawMonitor() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent 版本</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前状态</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">操作</th>

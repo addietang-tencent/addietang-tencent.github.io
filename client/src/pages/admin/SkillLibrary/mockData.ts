@@ -70,6 +70,31 @@ export const DEFAULT_CATEGORIES: Category[] = [
 
 export const MOCK_SKILLS: Skill[] = [
   {
+    id: 'skill-0',
+    slug: 'knowledge-qa',
+    name: '知识库问答',
+    description: '基于企业知识库进行智能问答，快速检索内部文档、规范和流程信息。支持多轮对话、上下文理解，是全员通用的知识检索工具。',
+    version: '2.0.0',
+    categories: ['6', '1'],
+    scope: 'public',
+    groupIds: [],
+    uploadTime: new Date('2025-03-22'),
+    content: '# 知识库问答\n\n基于企业知识库进行智能问答的 Skill...',
+    versions: ['2.0.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024, content: '# 知识库问答\n\n基于企业知识库进行智能问答的 Skill...' },
+      { name: 'README.md', size: 512, content: '# Knowledge QA\n\n## Features\n\n- 企业知识库智能检索\n- 多轮对话上下文理解\n- 支持文档、规范、流程' },
+    ],
+    versionHistory: [
+      { version: '2.0.0', date: '2025-03-22', changeLog: '1、新增多轮对话支持\n2、优化检索精度', files: [
+        { name: 'SKILL.md', size: 1024, content: '# 知识库问答\n\n基于企业知识库进行智能问答的 Skill...' },
+      ]},
+      { version: '1.0.0', date: '2025-02-10', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# 知识库问答 v1.0\n\n基础知识库问答功能。' },
+      ]},
+    ],
+  },
+  {
     id: 'skill-1',
     slug: 'doc-summarizer',
     name: '文档总结助手',

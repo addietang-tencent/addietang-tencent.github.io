@@ -450,6 +450,12 @@ export interface RoleSkill {
   name: string;
   version: string;
   source: "公共" | "企业";
+  /** 最新可用版本（来自技能库） */
+  latestVersion?: string;
+  /** 更新说明 */
+  updateNote?: string;
+  /** 更新前的原版本（仅在刷新后显示） */
+  previousVersion?: string;
 }
 
 export interface Role {
@@ -472,9 +478,9 @@ export const MOCK_ROLES: Role[] = [
     description: "结构化分析，输出高质量行业洞察",
     soul: "具备麦肯锡级别分析能力，擅长 PEST/波特五力/SWOT 等框架，输出结构化行业洞察报告",
     skills: [
-      { name: "Data Analysis", version: "v2.0", source: "公共" },
-      { name: "Data Visualization", version: "v1.5", source: "公共" },
-      { name: "SWOT Analyzer", version: "v1.0", source: "公共" },
+      { name: "data-analyst", version: "v1.8.0", source: "公共" },
+      { name: "sql-expert", version: "v1.6.0", source: "公共" },
+      { name: "web-search-pro", version: "v3.1.0", source: "公共" },
     ],
     visible: true,
     scope: "public",
@@ -486,8 +492,8 @@ export const MOCK_ROLES: Role[] = [
     description: "精通全栈开发，擅长网站、小程序和应用部署",
     soul: "面向交付闭环的全栈工程师，遵循 CloudBase 原生最佳实践，擅长从原型到部署的完整链路",
     skills: [
-      { name: "cloudbase", version: "v1.0", source: "企业" },
-      { name: "playwright-cli", version: "v0.2", source: "公共" },
+      { name: "github", version: "v2.0.0", source: "公共" },
+      { name: "code-reviewer", version: "v1.3.0", source: "公共" },
     ],
     visible: true,
     scope: "private",
@@ -499,11 +505,11 @@ export const MOCK_ROLES: Role[] = [
     description: "美感与功能平衡，用设计解决问题",
     soul: "专业设计师伙伴，遵循信息架构 > 交互逻辑 > 视觉表现的优先级，注重用户体验闭环",
     skills: [
-      { name: "ui-ux-pro-max", version: "v1.0", source: "公共" },
-      { name: "Impeccable", version: "v1.2", source: "公共" },
-      { name: "taste-skill", version: "v1.0", source: "公共" },
-      { name: "Vercel web design", version: "v1.0", source: "公共" },
-      { name: "playwright-cli", version: "v0.2", source: "公共" },
+      { name: "self-improving-agent", version: "v1.0.0", source: "公共" },
+      { name: "docker-ops", version: "v1.1.0", source: "公共" },
+      { name: "email-writer", version: "v2.2.0", source: "公共" },
+      { name: "k8s-manager", version: "v1.5.0", source: "公共" },
+      { name: "api-tester", version: "v1.5.0", source: "公共" },
     ],
     visible: true,
     scope: "private",
@@ -515,11 +521,11 @@ export const MOCK_ROLES: Role[] = [
     description: "覆盖项目全生命周期，从立项到复盘",
     soul: "项目全生命周期管理，支持启动/会议/周报/风险/复盘全流程，确保项目高质量交付",
     skills: [
-      { name: "pm-project-kickoff", version: "v1.0", source: "企业" },
-      { name: "pm-meeting-minutes", version: "v1.0", source: "企业" },
-      { name: "pm-weekly-report", version: "v1.0", source: "企业" },
-      { name: "pm-risk-assessment", version: "v1.0", source: "企业" },
-      { name: "pm-retrospective", version: "v1.0", source: "企业" },
+      { name: "文档总结助手", version: "v0.9.0", source: "企业" },
+      { name: "智能翻译工具", version: "v1.0.0", source: "企业" },
+      { name: "API 自动化测试", version: "v2.0.0", source: "企业" },
+      { name: "代码质量扫描", version: "v1.0.0", source: "企业" },
+      { name: "知识库问答", version: "v1.0.0", source: "企业" },
     ],
     visible: true,
     scope: "private",
@@ -531,10 +537,10 @@ export const MOCK_ROLES: Role[] = [
     description: "高效办公，熟练处理文档、表格、演示、会议",
     soul: "高效办公 AI 助手，熟练处理 Word/PDF/PPT/Excel/会议记录，提升日常办公效率",
     skills: [
-      { name: "office-documents", version: "v1.0", source: "企业" },
-      { name: "tencent-docs", version: "v1.0", source: "企业" },
-      { name: "tencent-meeting-skill", version: "v1.0", source: "企业" },
-      { name: "baoyu-infographic", version: "v1.0", source: "公共" },
+      { name: "ppt-generator", version: "v1.0.0", source: "公共" },
+      { name: "security-scanner", version: "v2.0.1", source: "公共" },
+      { name: "email-writer", version: "v2.1.0", source: "公共" },
+      { name: "web-search-pro", version: "v3.2.1", source: "公共" },
     ],
     visible: false,
     scope: "public",
@@ -546,11 +552,11 @@ export const MOCK_ROLES: Role[] = [
     description: "优秀的图文内容创作者，具备极高审美",
     soul: "优秀的图文内容创作者，审美极高，擅长搜索+写作+配图+润色+发布全链路内容生产",
     skills: [
-      { name: "self-improving-agent", version: "v1.0", source: "公共" },
-      { name: "humanizer", version: "v1.0", source: "公共" },
-      { name: "agent-reach", version: "v1.0", source: "公共" },
-      { name: "ima-note", version: "v1.0", source: "企业" },
-      { name: "baoyu-infographic", version: "v1.0", source: "公共" },
+      { name: "self-improving-agent", version: "v1.0.0", source: "公共" },
+      { name: "github", version: "v2.1.0", source: "公共" },
+      { name: "data-analyst", version: "v2.0.0", source: "公共" },
+      { name: "git-helper", version: "v1.2.0", source: "公共" },
+      { name: "code-formatter", version: "v2.5.0", source: "公共" },
     ],
     visible: true,
     scope: "private",

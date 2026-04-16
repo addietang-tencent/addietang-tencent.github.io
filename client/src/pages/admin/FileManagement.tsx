@@ -110,6 +110,9 @@ const StatCard = ({ title, value, icon: Icon, colorClass, bgColorClass, valueCol
 export default function FileManagement() {
   const [isSmhEnabled, setIsSmhEnabled] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isBatchEnableSmhDialogOpen, setIsBatchEnableSmhDialogOpen] = useState(false);
+  const [isAutoBindSmhDialogOpen, setIsAutoBindSmhDialogOpen] = useState(false);
+  const [isAutoBindEnabled, setIsAutoBindEnabled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isQuotaDialogOpen, setIsQuotaDialogOpen] = useState(false);
   const [isRecycleBinOpen, setIsRecycleBinOpen] = useState(false);
@@ -440,13 +443,22 @@ export default function FileManagement() {
     setIsConfirmDialogOpen(false);
   };
 
+  const handleConfirmBatchEnableSmh = () => {
+    setIsBatchEnableSmhDialogOpen(false);
+  };
+
+  const handleConfirmAutoBindSmh = () => {
+    setIsAutoBindEnabled(true);
+    setIsAutoBindSmhDialogOpen(false);
+  };
+
   return (
     <div className="page-enter space-y-8 w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">网盘管理</h1>
-          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持</p>
+          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持（已支持 OpenClaw Agent，其他 agent 类型敬请期待）</p>
         </div>
       </div>
 
@@ -594,6 +606,32 @@ export default function FileManagement() {
             </Card>
           </div>
         </>
+      )}
+
+      {/* Batch Enable & Auto Bind Buttons - Only show when SMH is enabled */}
+      {isSmhEnabled && (
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="h-9 px-4 text-sm font-medium border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 rounded-lg gap-2"
+            onClick={() => setIsBatchEnableSmhDialogOpen(true)}
+          >
+            <Zap className="w-4 h-4" />
+            批量启用网盘服务
+          </Button>
+          <Button
+            variant="outline"
+            className={`h-9 px-4 text-sm font-medium rounded-lg gap-2 ${
+              isAutoBindEnabled
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                : "border-gray-200 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+            }`}
+            onClick={() => !isAutoBindEnabled && setIsAutoBindSmhDialogOpen(true)}
+          >
+            <Share2 className="w-4 h-4" />
+            {isAutoBindEnabled ? "自动绑定网盘已开启" : "开启自动绑定网盘"}
+          </Button>
+        </div>
       )}
 
       {/* Stats Cards - Only show when SMH is enabled */}
@@ -1256,6 +1294,66 @@ export default function FileManagement() {
               确认转移
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Batch Enable SMH Service */}
+      <Dialog open={isBatchEnableSmhDialogOpen} onOpenChange={setIsBatchEnableSmhDialogOpen}>
+        <DialogContent className="sm:max-w-[520px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-6 border-b border-gray-100">
+            <DialogTitle className="text-lg font-bold text-gray-900">批量启用网盘服务</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                将为当前所有用户的 Agent 实例批量开通网盘服务，每个实例赠送 <span className="font-semibold text-blue-600">3个月 50GB</span> 免费额度。
+              </p>
+            </div>
+            <div className="flex items-start gap-2 px-1">
+              <span className="mt-0.5 text-amber-500 text-sm">⚠️</span>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                已支持 OpenClaw Agent，其他 agent 类型敬请期待
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3 p-6 bg-gray-50/30 border-t border-gray-100">
+            <Button variant="outline" onClick={() => setIsBatchEnableSmhDialogOpen(false)} className="h-10 px-6 text-sm font-medium">
+              取消
+            </Button>
+            <Button onClick={handleConfirmBatchEnableSmh} className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium">
+              确认批量开通
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Auto Bind SMH Service */}
+      <Dialog open={isAutoBindSmhDialogOpen} onOpenChange={setIsAutoBindSmhDialogOpen}>
+        <DialogContent className="sm:max-w-[520px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-6 border-b border-gray-100">
+            <DialogTitle className="text-lg font-bold text-gray-900">开启自动绑定网盘</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                开启后，用户在用户端新建 Agent 实例时，系统将自动为其开通网盘服务并绑定存储空间。
+              </p>
+            </div>
+            <div className="flex items-start gap-2 px-1">
+              <span className="mt-0.5 text-amber-500 text-sm">⚠️</span>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                已支持 OpenClaw Agent，其他 agent 类型敬请期待
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3 p-6 bg-gray-50/30 border-t border-gray-100">
+            <Button variant="outline" onClick={() => setIsAutoBindSmhDialogOpen(false)} className="h-10 px-6 text-sm font-medium">
+              取消
+            </Button>
+            <Button onClick={handleConfirmAutoBindSmh} className="h-10 px-6 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium">
+              确认开启
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

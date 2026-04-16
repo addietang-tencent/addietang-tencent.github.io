@@ -138,6 +138,12 @@ interface BrowserScenarioStep {
 type BrowserStartupStepKey = "imageCheck" | "componentCheck" | "policyCheck";
 type BrowserStartupStepStatus = "waiting" | "running" | "success" | "failed";
 type BrowserStartupFlowStatus = "idle" | "running" | "success" | "failed";
+type CloudBrowserRefreshPhase = "awaiting_transition" | "unstable" | "stable_refresh_pending" | "stable_refreshing";
+
+interface CloudBrowserRefreshTracker {
+  clawId: string;
+  phase: CloudBrowserRefreshPhase;
+}
 
 interface BrowserStartupModalState {
   visible: boolean;
@@ -161,7 +167,7 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
 }> = {
   imageCheck: {
     title: "检查镜像",
-    successText: "当前实例镜像满足云端浏览器启动条件。",
+    successText: "当前云服务器镜像满足云端浏览器启动条件。",
     failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
     runningText: "正在检查实例镜像…",
   },
@@ -206,6 +212,8 @@ const MOCK_CLAW_NAME_CREATING = "创建中示例";
 const MOCK_CLAW_NAME_RUNNING = "运行中示例";
 const MOCK_CLAW_NAME_LONG_SUCCESS = "这是一个名称非常非常长的智能助手用来测试超长文本截断效果";
 const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["componentCheck", "policyCheck"];
+const CLOUD_BROWSER_REINSTALL_AUTO_REFRESH_INTERVAL = 1600;
+const CLOUD_BROWSER_REINSTALL_TRANSITION_TIMEOUT = 30000;
 
 const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
   if (steps.length === 0) return undefined;
@@ -311,6 +319,11 @@ const getAdminAllowCloudBrowserEnabled = () => {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem("admin_allow_cloud_browser") === "true";
 };
+
+const createSyntheticRefreshStatusEvent = () => ({
+  preventDefault() {},
+  stopPropagation() {},
+}) as React.MouseEvent<HTMLButtonElement>;
 
 const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartupStepKey) => {
   if (claw.browserStartupFailStep === step) {
@@ -588,6 +601,7 @@ export default function ChatView({
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
   const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
   const [cloudBrowserEntryPosition, setCloudBrowserEntryPosition] = useState<{ top: number; left: number } | null>(null);
+  const [cloudBrowserRefreshTracker, setCloudBrowserRefreshTracker] = useState<CloudBrowserRefreshTracker | null>(null);
 
   const prevClawsCountRef = useRef(effectiveClaws.length);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -598,6 +612,7 @@ export default function ChatView({
   const browserTaskTimersRef = useRef<Record<string, number[]>>({});
   const browserPanelLoadTimersRef = useRef<Record<string, number[]>>({});
   const browserStartupTimersRef = useRef<number[]>([]);
+  const cloudBrowserStableRefreshSeenRef = useRef(false);
   const tenantHeaderRef = useRef<HTMLElement | null>(null);
   const tenantMainRef = useRef<HTMLElement | null>(null);
   const tenantHeaderHideTimerRef = useRef<number | null>(null);
@@ -761,6 +776,93 @@ export default function ChatView({
       clearBrowserStartupTimers();
     };
   }, [clearBrowserStartupTimers]);
+
+  const requestClawStatusRefresh = useCallback((claw: OpenClawItem) => {
+    onRefreshStatus(createSyntheticRefreshStatusEvent(), claw.id, claw.name);
+  }, [onRefreshStatus]);
+
+  useEffect(() => {
+    if (!cloudBrowserRefreshTracker) {
+      cloudBrowserStableRefreshSeenRef.current = false;
+      return;
+    }
+
+    const trackedClaw = effectiveClaws.find((claw) => claw.id === cloudBrowserRefreshTracker.clawId) ?? null;
+    if (!trackedClaw) {
+      cloudBrowserStableRefreshSeenRef.current = false;
+      setCloudBrowserRefreshTracker(null);
+      return;
+    }
+
+    const isTrackedClawRefreshing = refreshingIds.has(trackedClaw.id);
+
+    if (cloudBrowserRefreshTracker.phase === "awaiting_transition") {
+      if (trackedClaw.status !== "running") {
+        setCloudBrowserRefreshTracker({ clawId: trackedClaw.id, phase: "unstable" });
+        return;
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        setCloudBrowserRefreshTracker((prev) => (
+          prev?.clawId === trackedClaw.id && prev.phase === "awaiting_transition"
+            ? null
+            : prev
+        ));
+      }, CLOUD_BROWSER_REINSTALL_TRANSITION_TIMEOUT);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (cloudBrowserRefreshTracker.phase === "unstable") {
+      if (trackedClaw.status === "running") {
+        cloudBrowserStableRefreshSeenRef.current = false;
+        setCloudBrowserRefreshTracker({ clawId: trackedClaw.id, phase: "stable_refresh_pending" });
+        return;
+      }
+
+      if (isTrackedClawRefreshing) {
+        return;
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        requestClawStatusRefresh(trackedClaw);
+      }, 1600);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (cloudBrowserRefreshTracker.phase === "stable_refresh_pending") {
+      if (isTrackedClawRefreshing) {
+        return;
+      }
+
+      requestClawStatusRefresh(trackedClaw);
+      setCloudBrowserRefreshTracker({ clawId: trackedClaw.id, phase: "stable_refreshing" });
+      return;
+    }
+
+    if (isTrackedClawRefreshing) {
+      cloudBrowserStableRefreshSeenRef.current = true;
+      return;
+    }
+
+    if (cloudBrowserStableRefreshSeenRef.current) {
+      cloudBrowserStableRefreshSeenRef.current = false;
+      setCloudBrowserRefreshTracker(null);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      cloudBrowserStableRefreshSeenRef.current = false;
+      setCloudBrowserRefreshTracker((prev) => (
+        prev?.clawId === trackedClaw.id && prev.phase === "stable_refreshing"
+          ? null
+          : prev
+      ));
+    }, CLOUD_BROWSER_REINSTALL_AUTO_REFRESH_INTERVAL);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [cloudBrowserRefreshTracker, effectiveClaws, refreshingIds, requestClawStatusRefresh]);
 
   const startBrowserPanelLoading = useCallback((clawId: string) => {
     clearBrowserPanelLoadTimers(clawId);
@@ -936,15 +1038,25 @@ export default function ChatView({
   const isRunning = selectedClaw?.status === "running";
   const isBrowserPanelLoading = currentBrowserState?.panelStatus === "loading";
   const isBrowserTaskRunning = currentBrowserState?.taskState === "running";
-  const isBrowserManualOperating = !!currentBrowserState?.isManualOperating && !isBrowserTaskRunning && !isBrowserPanelLoading;
-  const isBrowserReadonly = !currentBrowserState || isBrowserPanelLoading || isBrowserTaskRunning || !currentBrowserState.isManualOperating;
+  const isBrowserOperationLocked = !currentBrowserState || isBrowserPanelLoading || isBrowserTaskRunning;
+  const isBrowserManualOperating = !!currentBrowserState?.isManualOperating && !isBrowserOperationLocked;
+  const isBrowserReadonly = isBrowserOperationLocked || !currentBrowserState?.isManualOperating;
   const isBrowserToolbarBusy = isBrowserPanelLoading || isBrowserTaskRunning;
+  const isBrowserOperationButtonDisabled = isBrowserOperationLocked;
   const browserOperationButtonLabel = isBrowserTaskRunning ? "进入操作" : isBrowserManualOperating ? "退出操作" : "进入操作";
   const browserStartupTargetClaw = browserStartupModal.targetClawId ? effectiveClaws.find((claw) => claw.id === browserStartupModal.targetClawId) ?? null : null;
   const isCloudBrowserImageSupported = isCloudBrowserSupportedImage(selectedClaw);
   const canShowCloudBrowserEntry = workspaceMode === "chat" && isRunning && isCloudBrowserImageSupported;
-  const isCloudBrowserEntryDisabled = canShowCloudBrowserEntry && !isCloudBrowserPolicyEnabled;
-  const cloudBrowserEntryTooltip = isCloudBrowserEntryDisabled ? "管理员未开启功能" : "云端浏览器";
+  const isSelectedClawReinstallRefreshing = !!selectedClawId
+    && cloudBrowserRefreshTracker?.clawId === selectedClawId
+    && cloudBrowserRefreshTracker.phase !== "awaiting_transition";
+  const shouldShowCloudBrowserEntry = workspaceMode === "chat" && (canShowCloudBrowserEntry || isSelectedClawReinstallRefreshing);
+  const isCloudBrowserEntryDisabled = shouldShowCloudBrowserEntry && (isSelectedClawReinstallRefreshing || !canShowCloudBrowserEntry || !isCloudBrowserPolicyEnabled);
+  const cloudBrowserEntryTooltip = isSelectedClawReinstallRefreshing
+    ? "系统重装中，请稍后"
+    : canShowCloudBrowserEntry && !isCloudBrowserPolicyEnabled
+      ? "管理员未开启功能"
+      : "云端浏览器";
   const chatPaneStyle = workspaceMode === "chat_with_browser"
     ? {
         width: `${leftPaneWidth}px`,
@@ -952,6 +1064,25 @@ export default function ChatView({
         maxWidth: `${CHAT_PANE_MAX_WIDTH}px`,
       }
     : undefined;
+
+  useEffect(() => {
+    if (!selectedClawId || !currentBrowserState?.isManualOperating) return;
+    if (currentBrowserState.mode !== "chat" && currentBrowserState.taskState !== "running") return;
+
+    updateBrowserState(selectedClawId, (prev) => {
+      if (!prev.isManualOperating) return prev;
+      if (prev.mode !== "chat" && prev.taskState !== "running") return prev;
+
+      return {
+        ...prev,
+        isManualOperating: false,
+        liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+        statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
+        lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已收起云端浏览器",
+        lastSyncedAt: formatSyncTime(),
+      };
+    });
+  }, [currentBrowserState?.isManualOperating, currentBrowserState?.mode, currentBrowserState?.taskState, selectedClawId, updateBrowserState]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -989,7 +1120,7 @@ export default function ChatView({
       window.removeEventListener("resize", updateCloudBrowserEntryPosition);
       window.removeEventListener("scroll", updateCloudBrowserEntryPosition, true);
     };
-  }, [canShowCloudBrowserEntry, isFullscreen]);
+  }, [isFullscreen, shouldShowCloudBrowserEntry]);
 
   const closeBrowserStartupModal = useCallback(() => {
     clearBrowserStartupTimers();
@@ -1353,6 +1484,15 @@ export default function ChatView({
     queueAssistantReply(selectedClawId, command, responseMap[command] || "未知指令，请输入 /commands 查看全部指令。", false);
   };
 
+  const handleTrackedClawReinstallConfirm = useCallback((claw: { id: string; name: string }) => {
+    if (claw.id === selectedClawId) {
+      cloudBrowserStableRefreshSeenRef.current = false;
+      setCloudBrowserRefreshTracker({ clawId: claw.id, phase: "awaiting_transition" });
+    }
+
+    onReinstallConfirm(claw);
+  }, [onReinstallConfirm, selectedClawId]);
+
   const setWorkspaceModeForSelectedClaw = (nextMode: WorkspaceMode) => {
     if (!selectedClawId) return;
     updateBrowserState(selectedClawId, (prev) => ({ ...prev, mode: nextMode }));
@@ -1360,6 +1500,7 @@ export default function ChatView({
 
   const handleOpenBrowser = () => {
     if (!selectedClawId || !selectedClaw) return;
+    if (isSelectedClawReinstallRefreshing) return;
     if (selectedClaw.status !== "running") return;
     if (!isCloudBrowserSupportedImage(selectedClaw)) return;
     if (!isCloudBrowserPolicyEnabled) return;
@@ -1387,10 +1528,18 @@ export default function ChatView({
   };
 
   const handleToggleManualOperation = () => {
-    if (!selectedClawId || !currentBrowserState) return;
-    if (currentBrowserState.taskState === "running" || currentBrowserState.panelStatus === "loading") return;
+    if (!selectedClawId) return;
 
     updateBrowserState(selectedClawId, (prev) => {
+      if (prev.taskState === "running" || prev.panelStatus === "loading") {
+        return prev.isManualOperating
+          ? {
+              ...prev,
+              isManualOperating: false,
+            }
+          : prev;
+      }
+
       const nextManualOperating = !prev.isManualOperating;
       return {
         ...prev,
@@ -1476,7 +1625,7 @@ export default function ChatView({
         </div>
       )}
 
-      {canShowCloudBrowserEntry && (isFullscreen || cloudBrowserEntryPosition) && (
+      {shouldShowCloudBrowserEntry && (isFullscreen || cloudBrowserEntryPosition) && (
         <div
           className={isFullscreen ? `fixed right-4 ${workspaceTopClass} z-50` : "fixed z-20"}
           style={
@@ -1494,6 +1643,7 @@ export default function ChatView({
                 onClick={isCloudBrowserEntryDisabled ? undefined : handleOpenBrowser}
                 aria-label={cloudBrowserEntryTooltip}
                 aria-disabled={isCloudBrowserEntryDisabled}
+                data-disabled={isCloudBrowserEntryDisabled ? "true" : "false"}
                 className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-white/95 backdrop-blur-sm transition-all duration-150 ${
                   isCloudBrowserEntryDisabled
                     ? "cursor-not-allowed border-gray-200 text-gray-300"
@@ -1528,52 +1678,7 @@ export default function ChatView({
       {showFullListSidebar && (
         <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
           <div className="px-3 h-10 flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 text-xs text-gray-800 hover:text-gray-900 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 w-full border border-gray-200 bg-gray-50">
-                  <span className="font-medium truncate flex-1 text-left">OpenClaw</span>
-                  <ChevronDown className="w-3 h-3 ml-auto flex-shrink-0" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-44">
-                <DropdownMenuItem
-                  className="text-xs cursor-pointer"
-                  onClick={() => {}}
-                >
-                  OpenClaw
-                </DropdownMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <DropdownMenuItem
-                        className="text-xs text-gray-300 cursor-not-allowed focus:bg-transparent focus:text-gray-300"
-                        disabled
-                      >
-                        Hermes
-                      </DropdownMenuItem>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">
-                    暂不支持对话视图
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <DropdownMenuItem
-                        className="text-xs text-gray-300 cursor-not-allowed focus:bg-transparent focus:text-gray-300"
-                        disabled
-                      >
-                        LightclawACE
-                      </DropdownMenuItem>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">
-                    暂不支持对话视图
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <span className="text-xs font-medium text-gray-700">选择 Agent</span>
           </div>
           <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
             {effectiveClaws.length === 0 ? (
@@ -1596,10 +1701,11 @@ export default function ChatView({
                   const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
 
                   return (
+                    <Tooltip key={claw.id}>
+                      <TooltipTrigger asChild>
                     <div
-                      key={claw.id}
-                      className={`mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-xl ${
-                        isNonOpenclaw ? "cursor-default" : "cursor-pointer"
+                      className={`relative mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-xl ${
+                        isNonOpenclaw ? "cursor-default opacity-50" : "cursor-pointer"
                       } ${
                         isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
                       }`}
@@ -1610,7 +1716,14 @@ export default function ChatView({
                       }
                       onClick={() => { if (!isNonOpenclaw) handleSelectClaw(claw.id); }}
                     >
-                      <div className="flex items-center gap-1.5 min-w-0">
+                      {/* Agent Type Tag - 超出卡片右上角 */}
+                      <span
+                        className="absolute -top-2 -right-1 z-10 text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                        style={{ background: "linear-gradient(135deg, #60B0FF, #9B8FFF)", boxShadow: "0 1px 4px rgba(0,122,255,0.2)", color: "white" }}
+                      >
+                        {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                      </span>
+                      <div className="flex items-center gap-1.5 min-w-0 pr-8">
                         <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>
                         <StatusBadgeSmall status={claw.status} />
                       </div>
@@ -1699,7 +1812,7 @@ export default function ChatView({
                               </DropdownMenuItem>
                             )}
                             {claw.status === "running" ? (
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onReinstallConfirm({ id: claw.id, name: claw.name }); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleTrackedClawReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                 <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
                                 {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
                               </DropdownMenuItem>
@@ -1753,6 +1866,13 @@ export default function ChatView({
                         </DropdownMenu>
                       </div>
                     </div>
+                    </TooltipTrigger>
+                    {isNonOpenclaw && (
+                      <TooltipContent side="right" className="text-xs">
+                        暂不支持对话视图
+                      </TooltipContent>
+                    )}
+                    </Tooltip>
                   );
                 })}
                     </div>
@@ -1991,9 +2111,9 @@ export default function ChatView({
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={handleToggleManualOperation}
-                disabled={isBrowserToolbarBusy}
+                disabled={isBrowserOperationButtonDisabled}
                 className={`h-8 rounded-lg px-3 text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                  isBrowserToolbarBusy
+                  isBrowserOperationButtonDisabled
                     ? "bg-gray-100 text-gray-300 cursor-not-allowed"
                     : isBrowserManualOperating
                       ? "bg-blue-50 text-blue-600 hover:bg-blue-100"

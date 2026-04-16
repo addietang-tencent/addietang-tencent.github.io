@@ -2497,6 +2497,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <DialogDescription className="sr-only">更新确认</DialogDescription>
           </DialogHeader>
           <div className="text-sm text-gray-700 leading-relaxed space-y-2 py-1">
+            <p>Agent版本将会升级至管理员指定生效镜像所对应的版本，且不支持跨Agent类型升级。</p>
             <p>更新版本预计需要 5～10 分钟不等，请您耐心等待。更新期间 OpenClaw 网关服务暂停，面板不可操作。</p>
             <p>更新版本后模型（Models）、通道（Channels）、技能（Skills）和记忆均不会丢失。</p>
           </div>

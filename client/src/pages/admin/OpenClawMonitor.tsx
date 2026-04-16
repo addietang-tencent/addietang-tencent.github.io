@@ -36,7 +36,7 @@ import {
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp
+  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -67,6 +67,7 @@ interface Claw {
   pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
+  tags?: { key: string; value: string }[];
 }
 
 const STATUS_CONFIG: Record<ClawStatus, {
@@ -89,18 +90,18 @@ const STATUS_CONFIG: Record<ClawStatus, {
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
 
 const MOCK_CLAWS: Claw[] = [
-  { id: "1",  instanceId: "ins-g83c6wvc", name: "Alice的助手",      creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "1",  instanceId: "ins-g71c6vud", name: "Alice的技术助手", tags: [{ key: "所属产品", value: "gpulab" }, { key: "env", value: "production" }],    creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "3",  instanceId: "ins-j14e8yvf", name: "Carol的研究助手",   creator: "carol@acompany.com",  createTime: "2026-01-05 10:33:47", status: "shutdown",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手",    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
+  { id: "4",  instanceId: "ins-k25f9zwg", name: "Dave的代码助手", tags: [{ key: "test", value: "test2" }],    creator: "dave@acompany.com",   createTime: "2026-01-20 16:48:09", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.1.5", dingtalk: "2.7.2", feishu: "1.4.8", wecom: "2.0.9", qq: "1.0.1" } },
   { id: "5",  instanceId: "ins-l36g0axh", name: "Eve的写作助手",     creator: "eve@acompany.com",    createTime: "2026-02-10 08:21:55", status: "createFail", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
   { id: "6",  instanceId: "ins-m47h1byi", name: "Frank的数据助手",   creator: "frank@acompany.com",  createTime: "2026-02-18 11:07:30", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "7",  instanceId: "ins-n58i2czj", name: "Grace的翻译助手",   creator: "grace@acompany.com",  createTime: "2026-02-25 15:44:18", status: "creating",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手",   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "8",  instanceId: "ins-o69j3dak", name: "Henry的销售助手", tags: [{ key: "所属产品", value: "gpulab" }, { key: "team", value: "sales" }, { key: "env", value: "staging" }],   creator: "henry@acompany.com",  createTime: "2026-03-01 09:58:03", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "9",  instanceId: "ins-p70k4ebl", name: "Ivy的客服助手",     creator: "ivy@acompany.com",    createTime: "2026-03-05 13:26:41", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "10", instanceId: "ins-q81l5fcm", name: "Jack的会议助手",    creator: "jack@acompany.com",   createTime: "2026-03-08 17:02:15", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.0", dingtalk: "2.8.0", feishu: "1.5.2", wecom: "2.1.3", qq: "1.0.2" } },
   { id: "11", instanceId: "ins-r92m6gdn", name: "Karen的报告助手",   creator: "karen@acompany.com",  createTime: "2026-03-09 10:15:50", status: "loadFail",   version: "2026.3.28", agentType: "LightclawACE", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
-  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手", tags: [{ key: "tencentcloud:autoscaling", value: "asg-1f7z0pa9" }],     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",        creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "maintaining", version: "2026.3.28", agentType: "Hermes",      pluginVersions: DEFAULT_PLUGIN_VERSIONS },
   { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",    version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: DEFAULT_PLUGIN_VERSIONS },
   { id: "15", instanceId: "ins-v36q0krh", name: "Olivia的运营助手",  creator: "olivia@acompany.com",  createTime: "2026-03-14 09:00:00", status: "running",     version: "2026.4.2",  agentType: "LightclawACE", pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
@@ -276,6 +277,19 @@ export default function AgentMonitor() {
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
+
+  // 配置默认标签
+  interface TencentTag { key: string; value: string; }
+  const DEMO_TENCENT_TAGS: TencentTag[] = [
+    { key: '所属产品', value: 'gpulab' },
+    { key: 'test', value: 'test2' },
+    { key: '环境', value: 'production' },
+    { key: '负责人', value: 'alice' },
+    { key: '业务线', value: 'AI' },
+  ];
+  const [showTagConfigDialog, setShowTagConfigDialog] = useState(false);
+  const [selectedTagKeys, setSelectedTagKeys] = useState<Set<string>>(new Set());
+  const [pendingTagKeys, setPendingTagKeys] = useState<Set<string>>(new Set());
 
   // 版本列筛选
 
@@ -763,6 +777,14 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
               )}
             </Tooltip>
+            {/* 配置默认标签按鈕 */}
+            <button
+              onClick={() => { setPendingTagKeys(new Set(selectedTagKeys)); setShowTagConfigDialog(true); }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+            >
+              <Tag className="w-3.5 h-3.5" />
+              配置默认标签
+            </button>
             {/* 智能体迁移按鈕 */}
             <Link href="/admin/agent-migration">
               <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
@@ -856,13 +878,14 @@ export default function AgentMonitor() {
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent类型</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '9%' : '10%' }}>Agent 版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '6%' : '7%' }}>标签</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={hasOneid ? 11 : 10} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 12 : 11} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 Agent
                   </td>
                 </tr>
@@ -927,6 +950,34 @@ export default function AgentMonitor() {
                       {/* Agent 版本 */}
                       <td className="px-4 py-4">
                         <span className="text-xs font-mono text-gray-500">{claw.version}</span>
+                      </td>
+                      {/* 标签 */}
+                      <td className="px-4 py-4">
+                        {claw.tags && claw.tags.length > 0 ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button className="inline-flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
+                              <div className="grid grid-cols-2 bg-gray-50 border-b border-gray-100 px-3 py-2">
+                                <span className="text-xs font-semibold text-gray-600">标签键</span>
+                                <span className="text-xs font-semibold text-gray-600">标签値</span>
+                              </div>
+                              <div className="divide-y divide-gray-100">
+                                {claw.tags.map((tag, i) => (
+                                  <div key={i} className="grid grid-cols-2 px-3 py-2">
+                                    <span className="text-xs text-gray-600 truncate pr-2">{tag.key}</span>
+                                    <span className="text-xs text-gray-500 truncate">{tag.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                        )}
                       </td>
                       {/* 操作 */}
                       <td className="px-4 py-4">
@@ -1245,6 +1296,103 @@ export default function AgentMonitor() {
         </DialogContent>
       </Dialog>
 
+
+      {/* 配置默认标签弹窗 */}
+      <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) setShowTagConfigDialog(false); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-blue-500" />
+              配置默认标签
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* 提示语 */}
+          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-gray-600">
+            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
+            <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
+              <li>
+                当前仅支持使用
+                <a
+                  href="https://console.cloud.tencent.com/tag/taglist"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5"
+                  onClick={(e) => e.stopPropagation()}
+                >腾讯云控制台</a>
+                已创建的标签。
+              </li>
+              <li>
+                将在用户端新建实例时自动配置勾选的标签（仅限新建实例，已创建实例暂不支持绑定标签）。
+              </li>
+            </ol>
+          </div>
+
+          {/* 标签列表 */}
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {/* 表头 */}
+            <div className="grid grid-cols-[auto_1fr_1fr] bg-gray-50 border-b border-gray-200">
+              <div className="px-3 py-2.5"></div>
+              <div className="px-4 py-2.5 text-xs font-semibold text-gray-600">标签键</div>
+              <div className="px-4 py-2.5 text-xs font-semibold text-gray-600">标签値</div>
+            </div>
+            {/* 标签行 */}
+            <div className="divide-y divide-gray-100">
+              {DEMO_TENCENT_TAGS.map((tag) => (
+                <div
+                  key={tag.key}
+                  className={`grid grid-cols-[auto_1fr_1fr] items-center cursor-pointer hover:bg-blue-50/50 transition-colors ${
+                    pendingTagKeys.has(tag.key) ? 'bg-blue-50' : ''
+                  }`}
+                  onClick={() => {
+                    setPendingTagKeys(prev => {
+                      const next = new Set(prev);
+                      if (next.has(tag.key)) next.delete(tag.key); else next.add(tag.key);
+                      return next;
+                    });
+                  }}
+                >
+                  <div className="px-3 py-3">
+                    <Checkbox
+                      checked={pendingTagKeys.has(tag.key)}
+                      onCheckedChange={(v) => {
+                        setPendingTagKeys(prev => {
+                          const next = new Set(prev);
+                          if (v) next.add(tag.key); else next.delete(tag.key);
+                          return next;
+                        });
+                      }}
+                      className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <div className="px-4 py-3 text-sm text-gray-700">{tag.key}</div>
+                  <div className="px-4 py-3 text-sm text-gray-500">{tag.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowTagConfigDialog(false)}>取消</Button>
+            <Button
+              onClick={() => {
+                setSelectedTagKeys(new Set(pendingTagKeys));
+                setShowTagConfigDialog(false);
+                toast.success(
+                  pendingTagKeys.size > 0
+                    ? `已配置 ${pendingTagKeys.size} 个默认标签，新建实例将自动打 tag`
+                    : '已清空默认标签配置'
+                );
+              }}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              className="text-white"
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Agent 详情抽屉 */}
       {showDetailDrawer && selectedClaw && (

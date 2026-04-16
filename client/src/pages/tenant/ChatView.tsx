@@ -1719,7 +1719,7 @@ export default function ChatView({
                       {/* Agent Type Tag - 超出卡片右上角 */}
                       <span
                         className="absolute -top-2 -right-1 z-10 text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
-                        style={{ background: "linear-gradient(135deg, #60B0FF, #9B8FFF)", boxShadow: "0 1px 4px rgba(0,122,255,0.2)", color: "white" }}
+                        style={{ background: "#E5E7EB", color: "#4B5563", boxShadow: "none" }}
                       >
                         {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
                       </span>

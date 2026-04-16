@@ -613,7 +613,7 @@ export default function MyAgent() {
                         boxShadow: "none"
                       }}
                     >
-                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "Agent"}
+                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
                     </span>
                     {/* Card Header */}
                     <div className="p-5 pt-8">

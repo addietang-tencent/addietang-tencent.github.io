@@ -52,7 +52,7 @@ const FEATURE_POINTS = [
   {
     icon: Users,
     title: "多成员协同",
-    desc: "支持企业内多名成员各自创建和管理专属 OpenClaw，统一在企业账号体系下管理，互不干扰。",
+    desc: "支持企业内多名成员各自创建和管理专属 Agent，统一在企业账号体系下管理，互不干扰。",
     gradient: "from-purple-500 to-pink-600",
   },
   {
@@ -70,13 +70,13 @@ const FEATURE_POINTS = [
   {
     icon: Zap,
     title: "一键配置，小白也能快速上手",
-    desc: "极简的创建流程，只需输入名称即可创建 OpenClaw，再按步骤配置通道，几分钟内即可拥有专属 AI 助理。",
+    desc: "极简的创建流程，只需输入名称即可创建 Agent，再按步骤配置通道，几分钟内即可拥有专属 AI 助理。",
     gradient: "from-yellow-500 to-orange-600",
   },
   {
     icon: Clock,
     title: "实时监控与审计",
-    desc: "全面的运营监控面板，实时掌握 OpenClaw 运行状态和 Tokens 消耗情况，操作记录全程可追溯。",
+    desc: "全面的运营监控面板，实时掌握 Agent 运行状态和 Tokens 消耗情况，操作记录全程可追溯。",
     gradient: "from-red-500 to-rose-600",
   },
 ];
@@ -229,7 +229,7 @@ export default function LandingPage() {
             <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-purple-600 bg-purple-50 mb-4">
               功能与特色
             </span>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">企业版 OpenClaw 的功能与特色</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">ClawPro平台的功能与特色</h2>
             <p className="text-gray-500 max-w-2xl mx-auto">
               专为企业场景设计，提供完善的管控能力和极致的使用体验
             </p>

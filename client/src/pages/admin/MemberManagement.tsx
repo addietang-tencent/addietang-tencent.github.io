@@ -26,9 +26,11 @@ import {
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
   Loader2, X, FileText, ExternalLink, RefreshCw, Users, Check,
-  FolderOpen, UserMinus, FolderPlus, ChevronUp,
+  FolderOpen, UserMinus, FolderPlus, ChevronUp, Link2,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImportDialog";
 
 const PAGE_SIZE = 10;
 
@@ -1166,6 +1168,14 @@ export default function MemberManagement() {
   const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // OneID 同步结果弹窗：展示因名下有未清理 OpenClaw 而无法删除的用户
+  const [syncResultDialog, setSyncResultDialog] = useState<{
+    open: boolean;
+    failedUsers: { id: string; clawCount: number; vpcName?: string }[];
+    deletedCount: number;
+    addedCount: number;
+  } | null>(null);
+
   // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
   const sortedMembers = [...members].sort((a, b) => {
     if (a.role === "admin" && b.role !== "admin") return -1;
@@ -1181,6 +1191,15 @@ export default function MemberManagement() {
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
+  const [showAuthSourceDialog, setShowAuthSourceDialog] = useState(false);
+  // 数据源弹窗的初始步骤和初始数据源ID（编辑/更换时使用）
+  const [authSourceInitialStep, setAuthSourceInitialStep] = useState<1 | 2 | undefined>(undefined);
+  const [authSourceInitialId, setAuthSourceInitialId] = useState<string | null>(null);
+  const [authSourceInitialFormValues, setAuthSourceInitialFormValues] = useState<Record<string, string> | null>(null);
+  // 已配置的数据源列表
+  const [configuredAuthSources, setConfiguredAuthSources] = useState<ConfiguredAuthSource[]>([]);
+  // 数据源删除二次确认弹窗
+  const [deleteAuthSourceConfirm, setDeleteAuthSourceConfirm] = useState<{ open: boolean; source: ConfiguredAuthSource } | null>(null);
   // 批量导入弹窗状态
   const [batchImportStep, setBatchImportStep] = useState<"upload" | "importing" | "done">("upload");
   const [batchImportFile, setBatchImportFile] = useState<File | null>(null);
@@ -1345,10 +1364,49 @@ export default function MemberManagement() {
   // 手动同步（OneID 模式）
   const handleSync = useCallback(() => {
     setIsSyncing(true);
-    // 模拟同步过程
+    // 模拟同步过程：假设 OneID 侧删除了 jack@acompany.com 和 iris@acompany.com
     setTimeout(() => {
+      const oneidDeletedUserIds = ["jack@acompany.com", "iris@acompany.com"];
+      // 模拟新增用户数量
+      const addedCount = 0;
+
+      // 检查每个被删除用户名下的 OpenClaw 数量
+      const failedUsers: { id: string; clawCount: number; vpcName?: string }[] = [];
+      let deletedCount = 0;
+      // 模拟私有网络绑定情况
+      const vpcBindings: Record<string, string> = {
+        "iris@acompany.com": "openclaw/iris",
+      };
+
+      setMembers((prev) => {
+        const updated = prev.map((m) => {
+          if (!oneidDeletedUserIds.includes(m.id)) return m;
+          const hasVpc = !!vpcBindings[m.id];
+          if (m.clawCount > 0 || hasVpc) {
+            // 有未清理的 OpenClaw 或有私有网络绑定，不能删除，改为禁用
+            failedUsers.push({ id: m.id, clawCount: m.clawCount, vpcName: vpcBindings[m.id] });
+            return { ...m, status: "disabled" };
+          } else {
+            // 无 OpenClaw，直接删除
+            deletedCount++;
+            return { ...m, _deleted: true };
+          }
+        });
+        // 过滤掉直接删除的用户
+        return updated.filter((m) => !(m as any)._deleted);
+      });
+
       setIsSyncing(false);
-      toast.success("同步完成，用户数据已更新");
+
+      if (failedUsers.length > 0) {
+        // 有无法删除的用户，弹窗提醒
+        setSyncResultDialog({ open: true, failedUsers, deletedCount, addedCount });
+      } else {
+        const parts: string[] = [];
+        if (addedCount > 0) parts.push(`新增 ${addedCount} 个`);
+        if (deletedCount > 0) parts.push(`删除 ${deletedCount} 个`);
+        toast.success(`同步完成${parts.length > 0 ? `，${parts.join("，")}用户` : ""}`);
+      }
     }, 2000);
   }, []);
 
@@ -1510,22 +1568,88 @@ export default function MemberManagement() {
               )}
             </p>
           </div>
-          {/* OneID 模式：右上角手动同步按钮 */}
-          {hasOneid && (
-            <Button
-              variant="outline"
-              className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-              onClick={handleSync}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />同步中...</>
-              ) : (
-                <><RefreshCw className="w-4 h-4 mr-2" />手动同步</>
-              )}
-            </Button>
-          )}
         </div>
+
+        {/* 我的数据源（OneID 模式下不展示） */}
+        {!hasOneid && configuredAuthSources.length > 0 && (
+          <div className="mb-5">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">我的数据源</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {configuredAuthSources.map((source) => (
+                <div
+                  key={source.id}
+                  className="bg-white rounded-xl border border-gray-100 p-4 transition-all hover:shadow-md"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.02)" }}
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img
+                        src={source.iconUrl}
+                        alt={source.name}
+                        className="w-7 h-7 object-contain"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{source.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{source.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                    <div className="flex items-center gap-3">
+                      <button
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        onClick={() => {
+                          setAuthSourceInitialStep(2);
+                          setAuthSourceInitialId(source.id);
+                          setAuthSourceInitialFormValues(source.formValues || null);
+                          setShowAuthSourceDialog(true);
+                        }}
+                      >
+                        <Pencil className="w-3 h-3" />
+                        编辑
+                      </button>
+                      <button
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        onClick={() => {
+                          setAuthSourceInitialStep(1);
+                          setAuthSourceInitialId(null);
+                          setAuthSourceInitialFormValues(null);
+                          setShowAuthSourceDialog(true);
+                        }}
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        更换
+                      </button>
+                      <button
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 transition-colors"
+                        onClick={() => {
+                          setDeleteAuthSourceConfirm({ open: true, source });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        删除
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs ${source.enabled ? "text-blue-600" : "text-gray-400"}`}>
+                        {source.enabled ? "已启用" : "已禁用"}
+                      </span>
+                      <Switch
+                        checked={source.enabled}
+                        onCheckedChange={(checked) => {
+                          setConfiguredAuthSources(configuredAuthSources.map((s) =>
+                            s.id === source.id ? { ...s, enabled: checked } : s
+                          ));
+                          toast.success(checked ? `已启用数据源：${source.name}` : `已禁用数据源：${source.name}`);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Search + Filter + Actions Row */}
         <div className="flex items-center justify-between mb-4">
@@ -1600,6 +1724,22 @@ export default function MemberManagement() {
               </Button>
             )}
           </div>
+
+          {/* OneID 模式：手动同步按钮 */}
+          {hasOneid && (
+            <Button
+              variant="outline"
+              className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />同步中...</>
+              ) : (
+                <><RefreshCw className="w-4 h-4 mr-2" />手动同步</>
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Table - 全部视图 */}
@@ -1660,6 +1800,12 @@ export default function MemberManagement() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setShowAddDialog(true)}><Plus className="w-4 h-4 mr-2" />单个添加</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setShowBatchDialog(true)}><Upload className="w-4 h-4 mr-2" />批量导入</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setAuthSourceInitialStep(undefined);
+                        setAuthSourceInitialId(null);
+                        setAuthSourceInitialFormValues(null);
+                        setShowAuthSourceDialog(true);
+                      }}><Link2 className="w-4 h-4 mr-2" />数据源导入</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -2432,6 +2578,114 @@ export default function MemberManagement() {
         password={credentialDialog.password}
       />
 
+      {/* OneID 同步结果弹窗：展示无法直接删除的用户 */}
+      <Dialog
+        open={!!syncResultDialog?.open}
+        onOpenChange={(open) => { if (!open) setSyncResultDialog(null); }}
+      >
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900">同步结果</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-5">
+            {/* 同步概要 */}
+            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+              <p className="text-sm text-blue-600 leading-relaxed">
+                本次同步
+                {[
+                  (syncResultDialog?.addedCount ?? 0) > 0 ? <>新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</> : null,
+                  (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <>禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</> : null,
+                  (syncResultDialog?.deletedCount ?? 0) > 0 ? <>删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</> : null,
+                ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
+                  if (i === 0) return [item];
+                  return [...acc, "，", item];
+                }, [])}
+                。
+                {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {
+                  const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
+                  const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
+                  const parts: React.ReactNode[] = [];
+                  if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 OpenClaw 无法直接删除</React.Fragment>);
+                  if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
+                  return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
+                })()}
+              </p>
+            </div>
+
+            {/* 无法删除的用户列表 */}
+            {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
+              <div className="rounded-2xl border border-gray-100 overflow-hidden"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+              >
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-50 bg-gray-50/50">
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
+                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 OpenClaw</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {syncResultDialog?.failedUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-medium text-gray-900">{user.id}</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {user.vpcName ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
+                              <span className="text-xs text-red-600">(有关联云资源)</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="badge-stopped">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                            禁用
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* 警告提示：与删除弹窗红色框风格一致 */}
+            <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
+              <p className="font-semibold">无法删除用户</p>
+              <p>
+                删除用户需要该用户名下没有任何 OpenClaw。可让用户自行删除，或由管理员在 OpenClaw 监控页手动删除。
+              </p>
+              {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
+                <p>
+                  删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
+                  <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
+                  {" "}解除后，再刷新检查。
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setSyncResultDialog(null)}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white btn-primary-glow"
+            >
+              知道了
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Check Dialog - 第一步：资源情况说明 */}
       <Dialog
         open={!!deleteCheckDialog?.open}
@@ -2965,6 +3219,85 @@ export default function MemberManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Auth Source Import Dialog（OneID 模式下不渲染） */}
+      {!hasOneid && (
+        <AuthSourceImportDialog
+          open={showAuthSourceDialog}
+          onOpenChange={(o) => {
+            setShowAuthSourceDialog(o);
+            if (!o) {
+              // 关闭弹窗时重置初始参数
+              setAuthSourceInitialStep(undefined);
+              setAuthSourceInitialId(null);
+              setAuthSourceInitialFormValues(null);
+            }
+          }}
+          initialStep={authSourceInitialStep}
+          initialSourceId={authSourceInitialId}
+          initialFormValues={authSourceInitialFormValues}
+          onComplete={(source) => {
+            // 避免重复添加同一数据源
+            setConfiguredAuthSources((prev) => {
+              const exists = prev.find((s) => s.id === source.id);
+              if (exists) {
+                return prev.map((s) => s.id === source.id ? source : s);
+              }
+              return [...prev, source];
+            });
+          }}
+        />
+      )}
+
+      {/* Auth Source Delete Confirm Dialog（OneID 模式下不渲染） */}
+      {!hasOneid && (
+        <Dialog
+          open={!!deleteAuthSourceConfirm?.open}
+          onOpenChange={(open) => { if (!open) setDeleteAuthSourceConfirm(null); }}
+        >
+        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>删除数据源</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            {deleteAuthSourceConfirm?.source && (
+              <div className="flex items-center gap-3 rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <img
+                    src={deleteAuthSourceConfirm.source.iconUrl}
+                    alt={deleteAuthSourceConfirm.source.name}
+                    className="w-5 h-5 object-contain"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">{deleteAuthSourceConfirm.source.name}</p>
+                  <p className="text-xs text-gray-500">{deleteAuthSourceConfirm.source.description}</p>
+                </div>
+              </div>
+            )}
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-1.5">
+              <p className="font-medium">确定要删除该数据源吗？</p>
+              <p className="text-xs text-red-500 leading-relaxed">删除后，通过该数据源同步的用户数据将不再自动更新，已同步的用户不受影响。</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteAuthSourceConfirm(null)}>取消</Button>
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => {
+                if (deleteAuthSourceConfirm?.source) {
+                  setConfiguredAuthSources(configuredAuthSources.filter((s) => s.id !== deleteAuthSourceConfirm.source.id));
+                  toast.success(`已删除数据源：${deleteAuthSourceConfirm.source.name}`);
+                }
+                setDeleteAuthSourceConfirm(null);
+              }}
+            >
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      )}
     </>
   );
 }

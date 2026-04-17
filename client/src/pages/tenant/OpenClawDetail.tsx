@@ -552,6 +552,28 @@ echo "✅ 导出完成，数据已上传到 COS"`;
   const webUIUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af...";
   const webUIToken = "8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
 
+  // ── Hermes 专属开启面板弹窗状态 ──
+  const [showHermesPanelDialog, setShowHermesPanelDialog] = useState(false);
+  const [hermesPanelStep, setHermesPanelStep] = useState<0 | 1 | 2>(0); // 0=等待中, 1=加载中, 2=完成
+  const hermesPanelUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
+
+  const runHermesPanelFlow = () => {
+    setHermesPanelStep(0);
+    setShowHermesPanelDialog(true);
+    // 1.5秒后进入加载中
+    setTimeout(() => {
+      setHermesPanelStep(1);
+      // 再3秒后完成，自动跳转
+      setTimeout(() => {
+        setHermesPanelStep(2);
+        setTimeout(() => {
+          setShowHermesPanelDialog(false);
+          window.open(hermesPanelUrl, "_blank");
+        }, 500);
+      }, 3000);
+    }, 1500);
+  };
+
   const runWebUIFlow = (isFail: boolean) => {
     setWebUIStep(0);
     setWebUIFailedStep("none");
@@ -577,6 +599,11 @@ echo "✅ 导出完成，数据已上传到 COS"`;
   const handleOpenWebUI = () => {
     if (!allowPanelAccess) {
       toast.error("管理员未开启访问权限");
+      return;
+    }
+    // Hermes 类型使用专属弹窗，加载完自动跳转
+    if ((claw as any).agentType === "hermes") {
+      runHermesPanelFlow();
       return;
     }
     const newCount = webUIOpenCount + 1;
@@ -1279,6 +1306,21 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
                   更新中
                 </button>
+              ) : (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      disabled
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white border border-gray-200 rounded-lg px-3 py-1.5 cursor-not-allowed opacity-50 leading-none"
+                    >
+                      <ArrowUpCircle className="w-3.5 h-3.5" />
+                      一键更新
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    当前仅 OpenClaw 支持
+                  </TooltipContent>
+                </Tooltip>
               ) : (
                 <button
                   onClick={() => {
@@ -1954,6 +1996,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
+            (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
+              </div>
+            ) : (
             <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <MemoryPreview 
                 memoryStatus={memoryStatus}
@@ -1967,6 +2017,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 }}
               />
             </div>
+            )
           )}
 
           {/* 文件空间 tab */}
@@ -2354,6 +2405,65 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         </DialogContent>
       </Dialog>
 
+      {/* ===== Hermes 开启面板 等待弹窗 ===== */}
+      <Dialog open={showHermesPanelDialog} onOpenChange={(open) => {
+        if (!open) setShowHermesPanelDialog(false);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启 Agent 面板</DialogTitle>
+            <DialogDescription className="sr-only">开启 Agent 面板</DialogDescription>
+            <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Hermes Agent 面板是官方提供的浏览器操作界面，加载完成后将自动跳转，请稍候等待。</span>
+            </div>
+          </DialogHeader>
+          <div className="mt-3 space-y-2.5 py-1 pb-3">
+            {/* 步骤1：连接服务 */}
+            <div className="flex items-center gap-3">
+              {hermesPanelStep >= 1 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              )}
+              <span className={`text-xs ${hermesPanelStep >= 1 ? "text-gray-600" : "text-blue-600 font-medium"}`}>
+                {hermesPanelStep >= 1 ? "连接服务：连接成功" : "连接服务：正在连接 Hermes Agent 服务，预计1~2秒..."}
+              </span>
+            </div>
+            {/* 步骤2：加载面板 */}
+            <div className="flex items-center gap-3">
+              {hermesPanelStep >= 2 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : hermesPanelStep === 1 ? (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
+              )}
+              <span className={`text-xs ${
+                hermesPanelStep >= 2 ? "text-gray-600" :
+                hermesPanelStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
+              }`}>
+                {hermesPanelStep >= 2
+                  ? "加载面板：加载完成，正在跳转..."
+                  : hermesPanelStep === 1
+                  ? "加载面板：正在加载 Hermes Agent 面板，预计3~5秒..."
+                  : "加载面板：等待连接完成"}
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-center pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHermesPanelDialog(false)}
+              className="text-gray-600 px-6"
+            >
+              取消
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ===== Agent 面板 进度弹窗 ===== */}
       <Dialog open={showWebUIProgressDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIProgressDialog(false);
@@ -2364,7 +2474,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <DialogDescription className="sr-only">开启Agent面板</DialogDescription>
             <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>OpenClaw 面板（WebUI）是 OpenClaw 官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
+              <span>Agent 面板（WebUI）是官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
             </div>
             <p className="text-sm text-gray-500 mt-3">开启Agent面板将会依次执行以下操作，确定后将自动执行：</p>
           </DialogHeader>
@@ -2463,10 +2573,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               </button>
             </div>
             <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">网关令牌</span>
+              <span className="text-xs text-gray-500 shrink-0 w-16">密码</span>
               <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
               <button
-                onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
+                onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制密码"); }}
                 className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
               >
                 <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2477,7 +2587,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           {/* 提示文字 */}
           <p className="text-xs text-gray-500 mt-1">
-            用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。
+            用浏览器打开 WebSocket URL，如面板需要填入密码，则将密码复制并粘贴过去，即可进入面板。
           </p>
           <div className="flex justify-center pt-1">
             <Button

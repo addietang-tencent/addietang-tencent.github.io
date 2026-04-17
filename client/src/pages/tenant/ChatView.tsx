@@ -1699,13 +1699,15 @@ export default function ChatView({
                   const isSelected = claw.id === selectedClawId;
                   const isConfigEnabled = claw.status === "running";
                   const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
+                  const isHermes = claw.agentType === "hermes";
+                  const isDisabledForChat = isHermes; // 只有 Hermes 置灰，LightclawACE 支持对话
 
                   return (
                     <Tooltip key={claw.id}>
                       <TooltipTrigger asChild>
                     <div
                       className={`relative mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-xl ${
-                        isNonOpenclaw ? "cursor-default opacity-50" : "cursor-pointer"
+                        isDisabledForChat ? "cursor-default opacity-50" : "cursor-pointer"
                       } ${
                         isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
                       }`}
@@ -1714,7 +1716,7 @@ export default function ChatView({
                           ? { boxShadow: "0 2px 8px rgba(0,122,255,0.1)", border: "1px solid rgba(0,122,255,0.25)" }
                           : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
                       }
-                      onClick={() => { if (!isNonOpenclaw) handleSelectClaw(claw.id); }}
+                      onClick={() => { if (!isDisabledForChat) handleSelectClaw(claw.id); }}
                     >
                       {/* Agent Type Tag - 右上角融合卡片内 */}
                       <span
@@ -1746,31 +1748,6 @@ export default function ChatView({
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
                       <div className="flex items-center justify-between mt-2">
-                        {isNonOpenclaw ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
-                                isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
-                              }`}
-                              disabled={!isConfigEnabled}
-                              onClick={(e) => { e.stopPropagation(); if (isConfigEnabled) window.open(`/terminal/${claw.id}`, "_blank"); }}
-                            >
-                              <Terminal className="w-3 h-3" />
-                              进入终端
-                            </button>
-                            <span className="text-gray-200">|</span>
-                            <button
-                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
-                                isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
-                              }`}
-                              disabled={!isConfigEnabled}
-                              onClick={(e) => { e.stopPropagation(); }}
-                            >
-                              <Monitor className="w-3 h-3" />
-                              开启面板
-                            </button>
-                          </div>
-                        ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
@@ -1793,7 +1770,6 @@ export default function ChatView({
                             </TooltipContent>
                           )}
                         </Tooltip>
-                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
@@ -1873,9 +1849,9 @@ export default function ChatView({
                       </div>
                     </div>
                     </TooltipTrigger>
-                    {isNonOpenclaw && (
+                    {isHermes && (
                       <TooltipContent side="right" className="text-xs">
-                        暂不支持对话视图
+                        Hermes 暂不支持对话视图
                       </TooltipContent>
                     )}
                     </Tooltip>

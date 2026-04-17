@@ -137,6 +137,15 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const scrollPositionRef = useRef<{ x: number; y: number; tableScrollLeft?: number } | null>(null);
   // 表格水平滚动容器 ref
   const tableScrollRef = useRef<HTMLDivElement>(null);
+  // 名称列右侧投影：仅在横向滚动 > 0 时显示
+  const [isTableScrolled, setIsTableScrolled] = useState(false);
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [viewMode]);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -826,16 +835,22 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
           <div className="overflow-x-auto" ref={tableScrollRef}>
             <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10 relative"
                     style={{ width: '180px', minWidth: '180px' }}
                   >
                     名称/Slug
+                    {isTableScrolled && (
+                      <>
+                        <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                      </>
+                    )}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
@@ -844,9 +859,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-10"
-                    style={{ width: '220px', minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-20 relative"
+                    style={{ width: '220px', minWidth: '220px' }}
                   >
+                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                    <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                     操作
                   </th>
                 </tr>
@@ -898,9 +915,15 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     >
                       {/* 名称 / Slug — 固定左侧 */}
                       <td
-                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors"
+                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors relative"
                         style={{ minWidth: '180px', maxWidth: '260px' }}
                       >
+                        {isTableScrolled && (
+                          <>
+                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                          </>
+                        )}
                         <OverflowTooltip content={skill.name}>
                           <div className="font-medium text-gray-900 truncate max-w-[220px]">{skill.name}</div>
                         </OverflowTooltip>
@@ -1031,10 +1054,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       </td>
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
                       <td
-                        className="px-4 py-3 bg-white sticky right-0 z-10 group-hover:bg-gray-50 transition-colors"
-                        style={{ minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                        className="px-4 py-3 bg-white sticky right-0 z-20 group-hover:bg-gray-50 transition-colors relative"
+                        style={{ minWidth: '220px' }}
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-1">
                           {/* 下发按钮 */}
                           <Button

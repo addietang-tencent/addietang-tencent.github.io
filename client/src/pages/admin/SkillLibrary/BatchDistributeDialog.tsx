@@ -293,8 +293,11 @@ export default function BatchDistributeDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? `(v${skillVersion})` : ''}</span> 下发到选中的 Agent 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败、待更新的实例。
+          <DialogDescription asChild>
+            <div className="text-sm text-muted-foreground">
+              <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
+              <p className="mt-1">筛选限制：仅限智能体类型为 <span className="font-medium text-gray-700">OpenClaw</span> 且状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}或 <span className="font-medium text-gray-700">下发失败</span></>}。</p>
+            </div>
           </DialogDescription>
         </DialogHeader>
 

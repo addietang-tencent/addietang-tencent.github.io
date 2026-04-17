@@ -848,12 +848,29 @@ function getLatestVersion(skill: PackageSkillItem): string | null {
   }
 }
 
+/** 公共技能 mock 更新说明 */
+const PUBLIC_SKILL_CHANGELOGS: Record<string, Record<string, string>> = {
+  'pub-1': { '1.0.0': '首次发布' },
+  'pub-2': { '2.1.0': '1、新增 gh api 高级查询功能\n2、修复 PR 合并冲突检测问题', '2.0.0': '重构核心模块，支持多仓库管理', '1.5.0': '新增 CI/CD 流水线触发功能' },
+  'pub-3': { '3.2.1': '1、优化多源聚合排序算法\n2、新增内容摘要提取\n3、修复特定编码下的解析异常', '3.1.0': '新增搜索结果缓存机制' },
+  'pub-4': { '1.4.0': '1、新增 TypeScript 深度检查\n2、优化安全漏洞扫描规则\n3、支持自定义审查规则模板', '1.3.0': '新增 Python 类型提示检查' },
+  'pub-7': { '1.2.0': '1、新增容器健康检查增强\n2、优化镜像层缓存策略', '1.0.0': '首次发布' },
+  'pub-8': { '2.3.0': '1、新增多语言模板库（日/韩/法）\n2、优化语气分析准确率\n3、新增邮件签名管理', '2.1.0': '新增回复建议功能' },
+  'pub-9': { '1.6.0': '1、新增多集群统一管理面板\n2、优化 Pod 调试日志实时流\n3、支持 HPA 自动伸缩配置', '1.5.0': '新增 Helm Chart 管理' },
+  'pub-10': { '1.1.0': '1、新增图表自动生成\n2、优化主题模板引擎', '1.0.0': '首次发布' },
+};
+
 /** 获取企业技能的更新说明（changeLog） */
 function getChangeLog(skill: PackageSkillItem, targetVersion: string): string {
   if (skill.source === 'enterprise') {
     const ent = MOCK_SKILLS.find(s => s.id === skill.skillId);
     const vh = ent?.versionHistory?.find(v => v.version === targetVersion);
     return vh?.changeLog || '-';
+  }
+  // 公共技能也返回 mock 更新说明
+  const pubLogs = PUBLIC_SKILL_CHANGELOGS[skill.skillId];
+  if (pubLogs && pubLogs[targetVersion]) {
+    return pubLogs[targetVersion];
   }
   return '-';
 }
@@ -883,6 +900,15 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
   const updatableSkills = skills.filter(s => hasUpdate(s));
   const totalPages = Math.max(1, Math.ceil(updatableSkills.length / pageSize));
   const pagedSkills = updatableSkills.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // 打开弹窗时默认全选当前页
+  useEffect(() => {
+    if (open) {
+      const firstPageSkills = updatableSkills.slice(0, pageSize);
+      setSelectedIds(new Set(firstPageSkills.map(s => s.skillId)));
+      setCurrentPage(1);
+    }
+  }, [open]);
 
   // 当前页全选
   const currentPageIds = pagedSkills.map(s => s.skillId);
@@ -999,7 +1025,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                         {skill.source === 'public' ? '公共' : '企业'}
                       </Badge>
                       {/* 新版本 */}
-                      <span className="font-mono text-xs text-green-600 font-medium">v{latest}</span>
+                      <span className="font-mono text-xs text-gray-600 font-medium">v{latest}</span>
                       {/* 原版本 */}
                       <span className="font-mono text-xs text-gray-400">v{skill.version}</span>
                       {/* 更新说明 */}
@@ -1026,7 +1052,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
               <div className="flex items-center gap-1.5">
                 <span>共 {updatableSkills.length} 条，每页</span>
                 <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-16 h-7 text-xs">
+                  <SelectTrigger className="w-[70px] h-7 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1037,7 +1063,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                 </Select>
                 <span>条</span>
                 {selectedIds.size > 0 && (
-                  <span className="text-blue-600 ml-1.5">
+                  <span className="text-gray-500 ml-1.5">
                     已选 {selectedIds.size} 条记录
                   </span>
                 )}

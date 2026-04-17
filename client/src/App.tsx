@@ -98,8 +98,8 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <UserRoleProvider>
           <TooltipProvider>
-            <Toaster position="top-right" />
             <Router />
+            <Toaster position="top-right" closeButton />
           </TooltipProvider>
         </UserRoleProvider>
       </ThemeProvider>

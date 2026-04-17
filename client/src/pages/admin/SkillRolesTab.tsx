@@ -1764,7 +1764,7 @@ export default function SkillRolesTab() {
                       ? '选择应用范围'
                       : allScopeKeys.every(k => selectedScopes.has(k))
                         ? '全部应用范围'
-                        : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                        : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -1775,7 +1775,7 @@ export default function SkillRolesTab() {
                     ? '选择应用范围'
                     : allScopeKeys.every(k => selectedScopes.has(k))
                       ? '全部应用范围'
-                      : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                      : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                 </p>
               </TooltipContent>
             </Tooltip>

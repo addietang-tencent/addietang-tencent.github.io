@@ -160,6 +160,10 @@ interface MemoryPreviewProps {
   memoryStatus?: MemoryStatus;
   // 是否在原子记忆中显示置信度列（默认 true）
   showConfidence?: boolean;
+  // Pro 版额度是否可用
+  proQuotaAvailable?: boolean;
+  // Memory 状态变更回调
+  onStatusChange?: (newStatus: MemoryStatus) => Promise<void>;
 }
 
 // 记忆类型标签组件
@@ -183,6 +187,8 @@ type NavItem = 'persona' | 'scenes' | 'records' | 'conversations';
 export function MemoryPreview({ 
   memoryStatus = 'none',
   showConfidence = true,
+  proQuotaAvailable: _proQuotaAvailable = true,
+  onStatusChange: _onStatusChange,
 }: MemoryPreviewProps) {
   const [activeNav, setActiveNav] = useState<NavItem>('persona');
   const [recordFilter, setRecordFilter] = useState<'all' | 'fact' | 'preference' | 'event'>('all');

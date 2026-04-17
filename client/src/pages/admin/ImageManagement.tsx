@@ -590,7 +590,6 @@ export default function ImageManagement() {
                           </TooltipTrigger>
                           <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行制作和维护，腾讯云不负责版本更新和维护</TooltipContent>
                         </Tooltip>
-                        </Button>
                       </div>
                     )}
                   </div>

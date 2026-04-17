@@ -217,7 +217,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       matchesScope = true;
     } else {
       const hasPublic = selectedScopes.has('public');
-      const groupScopes = [...selectedScopes].filter(s => s !== 'public');
+      const groupScopes = Array.from(selectedScopes).filter(s => s !== 'public');
       // 满足任一选中条件即匹配
       const matchPublic = hasPublic && (skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0);
       const matchGroup = groupScopes.length > 0 && skill.scope === 'private' && skill.groupIds?.some(gid => selectedScopes.has(gid));
@@ -452,7 +452,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       ? '选择应用范围'
                       : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
                         ? '全部应用范围'
-                        : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                        : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -463,7 +463,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     ? '选择应用范围'
                     : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
                       ? '全部应用范围'
-                      : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                      : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                 </p>
               </TooltipContent>
             </Tooltip>

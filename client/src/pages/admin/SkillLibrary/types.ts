@@ -106,3 +106,6 @@ export interface BucketInfo {
   region: string;
   storageGB: number;
 }
+
+/** OpenClawInstance 是 AgentInstance 的别名，供 mockData.ts 使用 */
+export type OpenClawInstance = AgentInstance;

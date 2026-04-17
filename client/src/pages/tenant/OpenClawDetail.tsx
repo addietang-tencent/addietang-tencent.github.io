@@ -48,7 +48,7 @@ import {
   Copy, Terminal, Database, Clock, Shield,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
-import { findClawById, onClawListChange } from "@/lib/openclawStore";
+import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 
@@ -292,8 +292,8 @@ export default function AgentDetail() {
   const clawId = params?.id;
 
   // 优先从共享 store 读取（包含动态创建的 claw 及 roleName），fallback 到 mock 数据
-  const [clawData, setClawData] = useState(() =>
-    (clawId ? findClawById(clawId) : undefined) ?? MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]
+  const [clawData, setClawData] = useState<AgentItem>(() =>
+    (clawId ? findClawById(clawId) : undefined) ?? (MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]) as unknown as AgentItem
   );
   useEffect(() => {
     const unsub = onClawListChange(() => {
@@ -435,7 +435,7 @@ export default function AgentDetail() {
 
   // ── Memory 状态 ──
   // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
-  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none'>('pro');
+  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('pro');
   // Pro 版配额是否可用（从管控端获取）
   const [proQuotaAvailable] = useState(true);
 

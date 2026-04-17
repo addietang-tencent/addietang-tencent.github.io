@@ -500,3 +500,16 @@
   accent-color: #3b82f6;
   cursor: default;
 }
+
+
+
+/* Fix: ensure sonner toast section appears above Radix UI Dialog overlays */
+section[aria-label="Notifications alt+T"] {
+  position: fixed !important;
+  z-index: 99999 !important;
+  inset: 0;
+  pointer-events: none;
+}
+section[aria-label="Notifications alt+T"] > ol {
+  pointer-events: auto;
+}

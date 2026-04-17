@@ -344,7 +344,7 @@ export default function ChannelConfig() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
         <p className="text-sm text-gray-500 mt-1">
-          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。当前仅 OpenClaw 支持，其他 Agent 暂不支持。
+          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。
         </p>
       </div>
 

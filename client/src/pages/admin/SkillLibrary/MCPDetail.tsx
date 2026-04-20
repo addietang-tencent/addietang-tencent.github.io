@@ -1,9 +1,14 @@
-'use client';
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+/**
+ * MCPDetail - MCP 服务详情页
+ * 展示基本信息 + 两个 Tab（文件列表 / 下发记录）
+ * 文件列表 Tab 内三栏布局：版本列表 | 文件列表 | 内容展示
+ * 样式参考 PluginDetail
+ */
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Trash2, Info, Loader } from 'lucide-react';
+import { ArrowLeft, Trash2, Search, Eye, Code, FileText, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
@@ -22,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
-import { type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
+import { type MCPService, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
 import { MOCK_OPENCLAW_INSTANCES } from './mockData';
 import {
   getDistributionRecords,
@@ -31,109 +36,80 @@ import {
   createDistributionRecordId,
   type CachedDistributionRecord,
 } from './distributionCache';
-import { type Plugin } from './PluginUploadDialog';
 
-// 懒加载 react-syntax-highlighter
+// 懒加载语法高亮
 const SyntaxHighlighter = lazy(() =>
   import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any }))
 );
 const loadedLanguages = new Set<string>();
-const registerLanguage = async (lang: string) => {
-  if (loadedLanguages.has(lang)) return;
-  loadedLanguages.add(lang);
+const registerJsonLanguage = async () => {
+  if (loadedLanguages.has('json')) return;
+  loadedLanguages.add('json');
   try {
     const mod = await import('react-syntax-highlighter');
     const Light = mod.Light as any;
-    const langModules: Record<string, () => Promise<any>> = {
-      xml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/xml'),
-      json: () => import('react-syntax-highlighter/dist/esm/languages/hljs/json'),
-      yaml: () => import('react-syntax-highlighter/dist/esm/languages/hljs/yaml'),
-      python: () => import('react-syntax-highlighter/dist/esm/languages/hljs/python'),
-      javascript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/javascript'),
-      typescript: () => import('react-syntax-highlighter/dist/esm/languages/hljs/typescript'),
-      bash: () => import('react-syntax-highlighter/dist/esm/languages/hljs/bash'),
-      css: () => import('react-syntax-highlighter/dist/esm/languages/hljs/css'),
-      ini: () => import('react-syntax-highlighter/dist/esm/languages/hljs/ini'),
-      markdown: () => import('react-syntax-highlighter/dist/esm/languages/hljs/markdown'),
-    };
-    const loader = langModules[lang];
-    if (loader) {
-      const langMod = await loader();
-      Light.registerLanguage(lang, langMod.default);
-    }
+    const jsonMod = await import('react-syntax-highlighter/dist/esm/languages/hljs/json');
+    Light.registerLanguage('json', jsonMod.default);
+  } catch { /* 静默降级 */ }
+};
+const registerMarkdownLanguage = async () => {
+  if (loadedLanguages.has('markdown')) return;
+  loadedLanguages.add('markdown');
+  try {
+    const mod = await import('react-syntax-highlighter');
+    const Light = mod.Light as any;
+    const mdMod = await import('react-syntax-highlighter/dist/esm/languages/hljs/markdown');
+    Light.registerLanguage('markdown', mdMod.default);
   } catch { /* 静默降级 */ }
 };
 
 const hljsStyle: Record<string, React.CSSProperties> = {
   'hljs': { display: 'block', overflowX: 'auto', padding: '1em', background: '#ffffff', color: '#383a42' },
   'hljs-comment': { color: '#a0a1a7', fontStyle: 'italic' },
-  'hljs-quote': { color: '#a0a1a7', fontStyle: 'italic' },
   'hljs-keyword': { color: '#a626a4' },
-  'hljs-selector-tag': { color: '#a626a4' },
-  'hljs-addition': { color: '#50a14f' },
   'hljs-number': { color: '#986801' },
   'hljs-string': { color: '#50a14f' },
-  'hljs-meta': { color: '#4078f2' },
-  'hljs-literal': { color: '#0184bb' },
-  'hljs-doctag': { color: '#a626a4' },
-  'hljs-regexp': { color: '#50a14f' },
   'hljs-attr': { color: '#986801' },
-  'hljs-attribute': { color: '#50a14f' },
-  'hljs-builtin-name': { color: '#e45649' },
+  'hljs-literal': { color: '#0184bb' },
   'hljs-name': { color: '#e45649' },
-  'hljs-section': { color: '#e45649' },
-  'hljs-tag': { color: '#e45649' },
-  'hljs-variable': { color: '#e45649' },
-  'hljs-template-variable': { color: '#e45649' },
-  'hljs-selector-id': { color: '#e45649' },
   'hljs-title': { color: '#4078f2' },
   'hljs-type': { color: '#4078f2' },
-  'hljs-symbol': { color: '#4078f2' },
+  'hljs-punctuation': { color: '#383a42' },
+  'hljs-section': { color: '#e45649' },
   'hljs-bullet': { color: '#4078f2' },
   'hljs-link': { color: '#4078f2' },
-  'hljs-deletion': { color: '#e45649' },
   'hljs-emphasis': { fontStyle: 'italic' },
   'hljs-strong': { fontWeight: 'bold' },
 };
 
-interface PluginDetailProps {
-  plugin: Plugin;
-  onBack: () => void;
-  onPluginDelete?: (pluginId: string) => void;
+/** MCP 固定的三个文件 */
+interface MCPFile {
+  name: string;
+  label: string;
+  language: 'markdown' | 'json';
 }
 
-const VIEWABLE_EXTENSIONS = ['.md', '.mdx', '.xml', '.json', '.txt', '.yaml', '.yml', '.toml', '.ini', '.cfg', '.conf', '.sh', '.bat', '.py', '.js', '.ts', '.css', '.html', '.htm', '.svg', '.env', '.gitignore', '.dockerfile'];
+const MCP_FILES: MCPFile[] = [
+  { name: '使用说明.md', label: '使用说明.md', language: 'markdown' },
+  { name: '工具说明.md', label: '工具说明.md', language: 'markdown' },
+  { name: '服务配置.json', label: '服务配置.json', language: 'json' },
+];
 
-const isViewableFile = (name: string) => {
-  const lower = name.toLowerCase();
-  if (!lower.includes('.') && !lower.includes('/')) return true;
-  return VIEWABLE_EXTENSIONS.some(ext => lower.endsWith(ext));
-};
+interface MCPDetailProps {
+  mcp: MCPService;
+  onBack: () => void;
+  onMCPDelete?: (mcpId: string) => void;
+}
 
-const isMarkdownFile = (name: string) => {
-  const lower = name.toLowerCase();
-  return lower.endsWith('.md') || lower.endsWith('.mdx');
-};
-
-const getFileLanguage = (name: string): string => {
-  const ext = name.split('.').pop()?.toLowerCase() || '';
-  const langMap: Record<string, string> = {
-    json: 'json', xml: 'xml', yaml: 'yaml', yml: 'yaml',
-    toml: 'toml', py: 'python', js: 'javascript', ts: 'typescript',
-    css: 'css', html: 'html', htm: 'html', sh: 'bash', bat: 'batch',
-    svg: 'xml', ini: 'ini', cfg: 'ini', conf: 'ini',
-  };
-  return langMap[ext] || 'text';
-};
-
-export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginDetailProps) {
+export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('files');
-  const [selectedVersion, setSelectedVersion] = useState<string>(plugin.versions?.[0] || plugin.version);
-  const [expandedFile, setExpandedFile] = useState<string | null>(null);
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
-  const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('source');
+  const [selectedVersion, setSelectedVersion] = useState<string>(
+    mcp.versions?.[mcp.versions.length - 1] || mcp.version
+  );
+  const [selectedFile, setSelectedFile] = useState<string>('使用说明.md');
+  const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
 
   // 下发记录
   const [distributionRecords, setDistributionRecords] = useState<CachedDistributionRecord[]>([]);
@@ -143,8 +119,8 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
   const [detailSearchQuery, setDetailSearchQuery] = useState('');
 
   const refreshRecords = useCallback(() => {
-    setDistributionRecords(getDistributionRecords(plugin.id));
-  }, [plugin.id]);
+    setDistributionRecords(getDistributionRecords(mcp.name));
+  }, [mcp.name]);
 
   useEffect(() => {
     refreshRecords();
@@ -155,162 +131,43 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
 
   const hasInProgress = distributionRecords.some(r => r.status === 'distributing');
 
-  // 文件列表处理
-  const currentFiles = useMemo(() => plugin.files || [], [plugin.files]);
-
-  // 剥离唯一顶层文件夹
-  const { processedFiles, strippedPrefix } = useMemo(() => {
-    if (currentFiles.length === 0) return { processedFiles: currentFiles, strippedPrefix: '' };
-    const topDirs = new Set<string>();
-    let topFileCount = 0;
-    for (const f of currentFiles) {
-      const parts = f.name.split('/');
-      if (parts.length > 1) {
-        topDirs.add(parts[0]);
-      } else {
-        topFileCount++;
-      }
-    }
-    if (topDirs.size === 1 && topFileCount === 0) {
-      const prefix = [...topDirs][0] + '/';
-      return {
-        processedFiles: currentFiles.map(f => ({ ...f, name: f.name.slice(prefix.length) })),
-        strippedPrefix: prefix,
-      };
-    }
-    return { processedFiles: currentFiles, strippedPrefix: '' };
-  }, [currentFiles]);
-
-  // 默认选中 agent.plugin.json
+  // 注册语法高亮语言
   useEffect(() => {
-    if (processedFiles.length > 0) {
-      const pluginJson = processedFiles.find(f => f.name.endsWith('openclaw.plugin.json'));
-      if (pluginJson) {
-        setExpandedFile(pluginJson.name);
-        setFileViewMode('source');
-      } else {
-        const first = processedFiles.find(f => !f.name.endsWith('/') && isViewableFile(f.name));
-        if (first) {
-          setExpandedFile(first.name);
-          setFileViewMode(isMarkdownFile(first.name) ? 'preview' : 'source');
-        }
-      }
-    }
-  }, [processedFiles]);
+    registerJsonLanguage();
+    registerMarkdownLanguage();
+  }, []);
 
-  // 初始化展开顶层文件夹
-  useEffect(() => {
-    if (processedFiles.length) {
-      const dirs = new Set<string>();
-      for (const file of processedFiles) {
-        const parts = file.name.split('/');
-        if (parts.length > 1) {
-          dirs.add(parts[0]);
-        }
-      }
-      setExpandedDirs(dirs);
-    }
-  }, [processedFiles]);
+  // 版本列表（从新到旧）
+  const versions = [...(mcp.versions || [mcp.version])].reverse();
 
-  const toggleDir = (dirName: string) => {
-    setExpandedDirs(prev => {
-      const next = new Set(prev);
-      if (next.has(dirName)) next.delete(dirName);
-      else next.add(dirName);
-      return next;
-    });
-  };
-
-  const renderFileTree = (files: Array<{ name: string; size: number; content?: string }>) => {
-    const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name));
-    const renderedDirs = new Set<string>();
-    const result: React.ReactNode[] = [];
-
-    for (const file of sorted) {
-      const parts = file.name.split('/');
-      const isDir = file.name.endsWith('/');
-      const isNested = parts.length > 1 && !isDir;
-      const canView = !isDir && isViewableFile(file.name);
-
-      if (isNested) {
-        for (let i = 1; i < parts.length; i++) {
-          const dirPath = parts.slice(0, i).join('/');
-          if (!renderedDirs.has(dirPath)) {
-            renderedDirs.add(dirPath);
-            const depth = i - 1;
-            const isExpanded = expandedDirs.has(dirPath);
-            let ancestorsExpanded = true;
-            for (let j = 1; j < i; j++) {
-              if (!expandedDirs.has(parts.slice(0, j).join('/'))) {
-                ancestorsExpanded = false;
-                break;
-              }
-            }
-            if (!ancestorsExpanded) continue;
-            result.push(
-              <button
-                key={`dir-${dirPath}`}
-                onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
-                style={{ paddingLeft: `${8 + depth * 16}px` }}
-              >
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
-                <span className="truncate font-medium">{parts[i - 1]}</span>
-                {isExpanded
-                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
-                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
-                }
-              </button>
-            );
-          }
-        }
-        let allParentsExpanded = true;
-        for (let i = 1; i < parts.length; i++) {
-          if (!expandedDirs.has(parts.slice(0, i).join('/'))) {
-            allParentsExpanded = false;
-            break;
-          }
-        }
-        if (!allParentsExpanded) continue;
-      }
-
-      if (isDir) continue;
-
-      const depth = parts.length - 1;
-      result.push(
-        <button
-          key={file.name}
-          onClick={() => {
-            if (canView) {
-              setExpandedFile(expandedFile === file.name ? null : file.name);
-              setFileViewMode(isMarkdownFile(file.name) ? 'preview' : 'source');
-            }
-          }}
-          disabled={!canView}
-          className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
-            expandedFile === file.name
-              ? 'bg-blue-50 text-blue-700'
-              : canView
-              ? 'hover:bg-gray-50 text-gray-600 cursor-pointer'
-              : 'text-gray-500 cursor-not-allowed opacity-60'
-          }`}
-          style={{ paddingLeft: `${8 + depth * 16}px` }}
-        >
-          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-          <span className="truncate">{parts[parts.length - 1]}</span>
-        </button>
-      );
-    }
-    return result;
-  };
-
+  // 获取文件内容
   const getFileContent = (fileName: string): string => {
-    const originalName = strippedPrefix ? strippedPrefix + fileName : fileName;
-    const file = currentFiles.find(f => f.name === originalName);
-    if (file?.content) return file.content;
-    const file2 = currentFiles.find(f => f.name === fileName);
-    if (file2?.content) return file2.content;
-    return '';
+    switch (fileName) {
+      case '使用说明.md':
+        return mcp.usageDoc?.trim() || '';
+      case '工具说明.md':
+        return mcp.toolDoc?.trim() || '';
+      case '服务配置.json': {
+        try {
+          return JSON.stringify(JSON.parse(mcp.configJson), null, 4);
+        } catch {
+          return mcp.configJson;
+        }
+      }
+      default:
+        return '';
+    }
+  };
+
+  // 获取文件对应的语法高亮语言
+  const getFileLanguage = (fileName: string): string => {
+    const file = MCP_FILES.find(f => f.name === fileName);
+    return file?.language || 'text';
+  };
+
+  // 判断是否为 Markdown 文件
+  const isMarkdownFile = (fileName: string): boolean => {
+    return fileName.endsWith('.md') || fileName.endsWith('.mdx');
   };
 
   // 下发逻辑
@@ -318,7 +175,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
     const recordId = createDistributionRecordId();
     const newRecord: CachedDistributionRecord = {
       id: recordId,
-      skillId: plugin.id,
+      skillId: mcp.name,
       timestamp: new Date().toISOString(),
       totalCount: selectedInstanceIds.length,
       successCount: 0,
@@ -369,11 +226,9 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
     }, 800);
   };
 
-  const handlePluginDelete = () => {
-    if (onPluginDelete) {
-      onPluginDelete(plugin.id);
-    }
-    toast.success(`插件「${plugin.name}」已删除`);
+  const handleMCPDelete = () => {
+    if (onMCPDelete) onMCPDelete(mcp.name);
+    toast.success(`MCP「${mcp.displayName || mcp.name}」已删除`);
     setDeleteDialogOpen(false);
     onBack();
   };
@@ -390,6 +245,118 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       })
     : [];
 
+  // 渲染右侧内容区
+  const renderFileContent = () => {
+    if (!selectedFile) {
+      return (
+        <div className="flex items-center justify-center h-full text-gray-500">
+          <p className="text-sm">选择一个文件查看内容</p>
+        </div>
+      );
+    }
+
+    const content = getFileContent(selectedFile);
+    const isMd = isMarkdownFile(selectedFile);
+
+    if (!content) {
+      return (
+        <>
+          <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+            <p className="text-xs font-medium text-gray-900">{selectedFile}</p>
+            {isMd && renderViewModeSwitch()}
+          </div>
+          <div className="flex items-center justify-center h-full text-gray-400">
+            <p className="text-sm">暂无内容</p>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+          <p className="text-xs font-medium text-gray-900">{selectedFile}</p>
+          {isMd && renderViewModeSwitch()}
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {isMd && fileViewMode === 'preview' ? (
+            renderPreviewView(content, selectedFile)
+          ) : (
+            renderSourceView(content, getFileLanguage(selectedFile))
+          )}
+        </div>
+      </>
+    );
+  };
+
+  // 源码模式
+  const renderSourceView = (content: string, lang: string) => {
+    return (
+      <Suspense fallback={
+        <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
+          {content}
+        </pre>
+      }>
+        <SyntaxHighlighter
+          language={lang}
+          style={hljsStyle}
+          showLineNumbers
+          lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+          customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0, overflowX: 'auto' }}
+          wrapLongLines={false}
+        >
+          {content}
+        </SyntaxHighlighter>
+      </Suspense>
+    );
+  };
+
+  // 预览模式
+  const renderPreviewView = (content: string, fileName: string) => {
+    if (isMarkdownFile(fileName)) {
+      return (
+        <div className="p-4">
+          <MDXRenderer content={content} />
+        </div>
+      );
+    }
+    // JSON 等非 Markdown 文件，预览模式也使用 MDXRenderer 渲染代码块
+    const lang = getFileLanguage(fileName);
+    return (
+      <div className="p-4">
+        <MDXRenderer content={`\`\`\`${lang}\n${content}\n\`\`\``} />
+      </div>
+    );
+  };
+
+  // 预览/源码 切换按钮
+  const renderViewModeSwitch = () => (
+    <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
+      <button
+        onClick={() => setFileViewMode('preview')}
+        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+          fileViewMode === 'preview'
+            ? 'bg-white text-gray-900 shadow-sm font-medium'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <Eye className="w-3 h-3" />
+        预览
+      </button>
+      <button
+        onClick={() => setFileViewMode('source')}
+        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+          fileViewMode === 'source'
+            ? 'bg-white text-gray-900 shadow-sm font-medium'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+      >
+        <Code className="w-3 h-3" />
+        源码
+      </button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* 返回按钮 */}
@@ -405,11 +372,19 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{plugin.name}</h1>
-            <p className="text-sm text-gray-500 mb-3">slug: {plugin.slug}</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{mcp.displayName || mcp.name}</h1>
+            <p className="text-sm text-gray-500 mb-3">
+              <span className="font-mono text-gray-400">{mcp.name}</span>
+            </p>
             <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                {mcp.transportType === 'stdio' ? '本地命令' : '远程服务'}
+              </span>
               <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                v{plugin.version}
+                v{mcp.version}
+              </span>
+              <span className="text-xs text-gray-400">
+                创建于 {mcp.createdAt.toLocaleDateString('zh-CN')}
               </span>
             </div>
           </div>
@@ -421,11 +396,11 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                     variant="outline"
                     onClick={() => setDeleteDialogOpen(true)}
                     disabled={hasInProgress}
-                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1.5" />
-                      删除
-                    </Button>
+                    className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1.5" />
+                    删除
+                  </Button>
                 </span>
               </TooltipTrigger>
               {hasInProgress && (
@@ -434,8 +409,8 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
             </Tooltip>
           </div>
         </div>
-        {plugin.description && (
-          <p className="text-sm text-gray-600 mt-3">{plugin.description}</p>
+        {mcp.description && (
+          <p className="text-sm text-gray-600 mt-3">{mcp.description}</p>
         )}
       </div>
 
@@ -457,18 +432,22 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
             </TabsTrigger>
           </TabsList>
 
-          {/* 文件列表 Tab */}
+          {/* 文件列表 Tab — 三栏布局 */}
           <TabsContent value="files" className="mt-4 p-0">
             <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
-              {/* 左列：版本号选择 */}
+              {/* 左列：版本列表 */}
               <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
                   <p className="text-xs font-medium text-gray-900">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  {plugin.versions?.map((ver: string, idx: number) => {
+                  {versions.map((ver: string, idx: number) => {
                     const isLatest = idx === 0;
                     const isSelected = selectedVersion === ver;
+                    // 模拟版本日期（从最新往前推，每个版本间隔 15 天）
+                    const baseDate = mcp.updatedAt || mcp.createdAt;
+                    const versionDate = new Date(baseDate);
+                    versionDate.setDate(versionDate.getDate() - idx * 15);
                     return (
                       <button
                         key={ver}
@@ -487,6 +466,11 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                             </span>
                           )}
                         </div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-[10px] text-gray-400">
+                            {versionDate.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
@@ -496,93 +480,36 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               {/* 中列：文件列表 */}
               <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-gray-900">{selectedVersion || plugin.version}</p>
+                  <p className="text-xs font-medium text-gray-900">{selectedVersion || mcp.version}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  {renderFileTree(processedFiles)}
+                  {MCP_FILES.map((file) => {
+                    const isActive = selectedFile === file.name;
+                    return (
+                      <button
+                        key={file.name}
+                        onClick={() => {
+                          setSelectedFile(file.name);
+                          setFileViewMode(isMarkdownFile(file.name) ? 'preview' : 'source');
+                        }}
+                        className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
+                          isActive
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'hover:bg-gray-50 text-gray-600 cursor-pointer'
+                        }`}
+                        style={{ paddingLeft: '8px' }}
+                      >
+                        <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{file.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* 右列：文件详情 */}
+              {/* 右列：内容展示 */}
               <div className="flex-1 flex flex-col bg-white">
-                {expandedFile ? (
-                  <>
-                    <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-                      <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
-                      {isMarkdownFile(expandedFile) && (
-                        <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
-                          <button
-                            onClick={() => setFileViewMode('preview')}
-                            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                              fileViewMode === 'preview'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            <Eye className="w-3 h-3" />
-                            预览
-                          </button>
-                          <button
-                            onClick={() => setFileViewMode('source')}
-                            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                              fileViewMode === 'source'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            <Code className="w-3 h-3" />
-                            源码
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                      {(() => {
-                        const content = getFileContent(expandedFile);
-                        if (!content) {
-                          return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                              <p className="text-sm">文件内容暂无</p>
-                            </div>
-                          );
-                        }
-                        // 非 md 文件直接显示源码，不提供预览模式
-                        if (!isMarkdownFile(expandedFile) || fileViewMode === 'source') {
-                          const lang = getFileLanguage(expandedFile);
-                          registerLanguage(lang);
-                          return (
-                            <Suspense fallback={
-                              <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
-                                {content}
-                              </pre>
-                            }>
-                              <SyntaxHighlighter
-                                language={lang}
-                                style={hljsStyle}
-                                showLineNumbers
-                                lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
-                                customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0, overflowX: 'auto' }}
-                                wrapLongLines={false}
-                              >
-                                {content}
-                              </SyntaxHighlighter>
-                            </Suspense>
-                          );
-                        }
-                        // md 文件预览模式
-                        return (
-                          <div className="p-4">
-                            <MDXRenderer content={content} />
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    <p className="text-sm">选择一个文件查看内容</p>
-                  </div>
-                )}
+                {renderFileContent()}
               </div>
             </div>
           </TabsContent>
@@ -617,7 +544,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">
-                                #{idx + 1} · v{plugin.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
+                                #{idx + 1} · {new Date(record.timestamp).toLocaleString('zh-CN')}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -670,30 +597,40 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       <BatchDistributeDialog
         open={distributeDialogOpen}
         onOpenChange={setDistributeDialogOpen}
-        skillName={plugin.name}
-        skillVersion={plugin.version}
+        skillName={mcp.displayName || mcp.name}
         onDistributionStart={handleDistributionStart}
-        title="批量下发插件"
+        title="批量下发 MCP 配置"
         showScopeFilter={false}
         instances={MOCK_OPENCLAW_INSTANCES}
+        hideCreatorAndGroup
+        singleStatusFilter
+        descriptionNode={
+          <>
+            将 <span className="font-semibold">「{mcp.displayName || mcp.name}」</span> 部署至所选实例。
+            <br />
+            筛选限制：仅限智能体类型为 <span className="font-medium">OpenClaw</span> 且状态为{' '}
+            <span className="font-medium">运行中</span> 的实例；同时，该实例的下发状态须为{' '}
+            <span className="font-medium">未下发</span> 或 <span className="font-medium">下发失败</span>。
+          </>
+        }
       />
 
       {/* 删除确认对话框 */}
       <DeleteSkillDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        skillName={plugin.name}
-        onConfirm={handlePluginDelete}
+        skillName={mcp.displayName || mcp.name}
+        onConfirm={handleMCPDelete}
       />
 
       {/* 下发详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl max-h-96">
+        <DialogContent className="!max-w-[700px] max-h-[80vh] flex flex-col w-[700px]">
           <DialogHeader>
             <DialogTitle>下发详情</DialogTitle>
           </DialogHeader>
           {activeDistribution && (
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-hidden flex flex-col">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -701,7 +638,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
                     onChange={(e) => setDetailSearchQuery(e.target.value)}
-                    className="pl-10 h-9"
+                    className="pl-10 h-9 focus-visible:ring-0 focus-visible:border-blue-400"
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
@@ -721,7 +658,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700 min-w-[140px]">实例ID</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
                       <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
                     </tr>
@@ -736,17 +673,20 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                     ) : (
                       filteredInstances.map((instance) => (
                         <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">{instance.name}</td>
-                          <td className="px-4 py-2 text-gray-600 font-mono whitespace-nowrap">{instance.id}</td>
-                          <td className="px-4 py-2">
-                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                          <td className="px-4 py-2.5 text-gray-900">{instance.name}</td>
+                          <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{instance.id}</td>
+                          <td className="px-4 py-2.5">
+                            <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
                               DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-500">
-                            {(instance as any).failReason || '-'}
+                          <td className="px-4 py-2.5 text-xs text-gray-500 max-w-[200px]">
+                            {(instance as any).failReason
+                              ? <span>{(instance as any).failReason}</span>
+                              : <span className="text-gray-300">-</span>
+                            }
                           </td>
                         </tr>
                       ))

@@ -9,6 +9,7 @@ import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import SkillDetail from "./SkillLibrary/SkillDetail";
 import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
 import PluginListTab from "./SkillLibrary/PluginListTab";
+import MCPListTab from "./SkillLibrary/MCPListTab";
 
 const TABS = [
   {
@@ -29,7 +30,7 @@ const TABS = [
   {
     id: "mcp",
     label: "企业MCP库",
-    description: "管理和分发企业内部 MCP（Model Context Protocol）服务，为 Agent 提供统一的上下文协议接入能力。",
+    description: "统一管理 MCP 服务配置，支持远程服务和本地命令两种连接方式，按需下发到智能体实例。",
   },
 ];
 
@@ -112,20 +113,7 @@ export default function AgentToolLibrary() {
       )}
 
       {activeTab === "mcp" && (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
-            <svg className="w-7 h-7 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="3" width="20" height="14" rx="2" />
-              <path d="M8 21h8" />
-              <path d="M12 17v4" />
-              <path d="M7 8h.01" />
-              <path d="M11 8h6" />
-              <path d="M7 12h.01" />
-              <path d="M11 12h6" />
-            </svg>
-          </div>
-          <p className="text-sm text-gray-400">暂无 MCP 服务，敬请期待</p>
-        </div>
+        <MCPListTab />
       )}
     </div>
   );

@@ -180,7 +180,7 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
   policyCheck: {
     title: "校验组件状态及访问策略",
     successText: "组件状态与访问策略校验通过，可继续启动。",
-    failureText: "组件状态或安全组规则异常，请检查安全组端口5900、6080、9222是否在入站规则放通，如确认放通则请重试。",
+    failureText: "当前浏览器连接不可用，请检查访问策略后重试。",
     runningText: "正在校验组件状态及访问策略…",
   },
 };
@@ -210,7 +210,10 @@ const createInitialBrowserStartupState = (): BrowserStartupModalState => ({
 const UNSUPPORTED_BROWSER_OS_NAME = "centos7.9_x86_64";
 const MOCK_CLAW_NAME_CREATING = "创建中示例";
 const MOCK_CLAW_NAME_RUNNING = "运行中示例";
+const MOCK_CLAW_NAME_LOADING = "加载中示例";
 const MOCK_CLAW_NAME_LONG_SUCCESS = "这是一个名称非常非常长的智能助手用来测试超长文本截断效果";
+// 记录每个 mock 实例触发“启动云端浏览器”流程的次数，用于实现“首次失败、重试成功”等分流效果
+const mockBrowserStartupAttemptCount = new Map<string, number>();
 const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["componentCheck", "policyCheck"];
 const CLOUD_BROWSER_REINSTALL_AUTO_REFRESH_INTERVAL = 1600;
 const CLOUD_BROWSER_REINSTALL_TRANSITION_TIMEOUT = 30000;
@@ -222,9 +225,31 @@ const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
 
 const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
   if (claw.name === MOCK_CLAW_NAME_CREATING) {
+    // 分流测试：ready=true && accessible=false → 连接异常弹窗
     return {
       ...claw,
-      os_name: UNSUPPORTED_BROWSER_OS_NAME,
+      status: "running",
+      os_name: "ubuntu24.04x86_64_openclaw",
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: false,
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
+    };
+  }
+
+  if (claw.name === MOCK_CLAW_NAME_LOADING) {
+    // 分流测试：ready=true && accessible=true → 直接进入云端浏览器
+    return {
+      ...claw,
+      status: "running",
+      os_name: "ubuntu24.04x86_64_openclaw",
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupMockMode: "always_success",
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
     };
   }
 
@@ -244,14 +269,17 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
   }
 
   if (claw.name === MOCK_CLAW_NAME_LONG_SUCCESS) {
+    // 分流测试：ready=false → 完整检测 / 准备弹窗
+    // 注意：不要设置 browserStartupMockMode="always_success"，否则 resolveBrowserStartupAttemptClaw
+    // 会把 browserSecurityGroupReady 强制覆盖回 true，导致弹窗瞬间全部通过而看不到“准备/检测”过程。
+    // 具体“首次失败、重试成功”的分流，放在 resolveBrowserStartupAttemptClaw 里根据 attempt 计数处理。
     return {
       ...claw,
       status: "running",
       os_name: "ubuntu24.04x86_64_openclaw",
-      browserSecurityGroupReady: true,
+      browserSecurityGroupReady: false,
       browserComponentInstallReady: true,
       browserLaunchReady: true,
-      browserStartupMockMode: "always_success",
       browserStartupFailStep: undefined,
       browserStartupFailReason: undefined,
     };
@@ -262,6 +290,33 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
 
 const resolveBrowserStartupAttemptClaw = (claw: OpenClawItem): OpenClawItem => {
   const mockClaw = applyDemoBrowserMockFields(claw);
+
+  // 超长名称示例：首次检测失败（policyCheck），第二次及以后重试成功
+  if (mockClaw.name === MOCK_CLAW_NAME_LONG_SUCCESS) {
+    const prevAttempt = mockBrowserStartupAttemptCount.get(mockClaw.name) ?? 0;
+    const currentAttempt = prevAttempt + 1;
+    mockBrowserStartupAttemptCount.set(mockClaw.name, currentAttempt);
+
+    if (currentAttempt === 1) {
+      return {
+        ...mockClaw,
+        browserSecurityGroupReady: false,
+        browserComponentInstallReady: true,
+        browserLaunchReady: true,
+        browserStartupFailStep: "policyCheck",
+        browserStartupFailReason: BROWSER_STARTUP_STEP_META.policyCheck.failureText,
+      };
+    }
+
+    return {
+      ...mockClaw,
+      browserSecurityGroupReady: true,
+      browserComponentInstallReady: true,
+      browserLaunchReady: true,
+      browserStartupFailStep: undefined,
+      browserStartupFailReason: undefined,
+    };
+  }
 
   if (mockClaw.browserStartupMockMode === "always_success") {
     return {
@@ -324,6 +379,24 @@ const createSyntheticRefreshStatusEvent = () => ({
   preventDefault() {},
   stopPropagation() {},
 }) as React.MouseEvent<HTMLButtonElement>;
+
+// 前端模拟：云端浏览器环境是否已准备就绪（browser-vnc-check）
+// 仅作为入口分流依据：镜像 / 组件 / 安全组全部就绪时视为 ready。
+const browserVncCheck = (claw: OpenClawItem | null | undefined): { ready: boolean } => {
+  if (!claw) return { ready: false };
+  if (!isCloudBrowserSupportedImage(claw)) return { ready: false };
+  if (claw.browserComponentInstallReady === false) return { ready: false };
+  if (!hasCloudBrowserSecurityRule(claw)) return { ready: false };
+  return { ready: true };
+};
+
+// 前端模拟：云端浏览器连接是否可用（browser-vnc-access）
+// 仅用于 ready=true 之后判断连接可达性。
+const browserVncAccess = (claw: OpenClawItem | null | undefined): { accessible: boolean } => {
+  if (!claw) return { accessible: false };
+  if (claw.browserLaunchReady === false) return { accessible: false };
+  return { accessible: true };
+};
 
 const getBrowserStartupFailureReason = (claw: OpenClawItem, step: BrowserStartupStepKey) => {
   if (claw.browserStartupFailStep === step) {
@@ -599,6 +672,7 @@ export default function ChatView({
   const [leftPaneWidth, setLeftPaneWidth] = useState(CHAT_PANE_DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
+  const [browserVncAccessErrorModal, setBrowserVncAccessErrorModal] = useState<{ visible: boolean; targetClawId: string | null }>({ visible: false, targetClawId: null });
   const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
   const [cloudBrowserEntryPosition, setCloudBrowserEntryPosition] = useState<{ top: number; left: number } | null>(null);
   const [cloudBrowserRefreshTracker, setCloudBrowserRefreshTracker] = useState<CloudBrowserRefreshTracker | null>(null);
@@ -1505,7 +1579,23 @@ export default function ChatView({
     if (!isCloudBrowserSupportedImage(selectedClaw)) return;
     if (!isCloudBrowserPolicyEnabled) return;
 
-    startBrowserStartupFlow(selectedClaw);
+    // 点击入口后按实际检测结果分流：
+    // 1. browser-vnc-check.ready=false → 完整检测 / 准备弹窗
+    // 2. ready=true && browser-vnc-access.accessible=true → 直接进入云端浏览器
+    // 3. ready=true && accessible=false → 轻量“连接异常”弹窗
+    const { ready } = browserVncCheck(selectedClaw);
+    if (!ready) {
+      startBrowserStartupFlow(selectedClaw);
+      return;
+    }
+
+    const { accessible } = browserVncAccess(selectedClaw);
+    if (accessible) {
+      enterBrowserWorkspace(selectedClawId);
+      return;
+    }
+
+    setBrowserVncAccessErrorModal({ visible: true, targetClawId: selectedClawId });
   };
 
   const handleToggleBrowserFullscreen = () => {
@@ -2183,7 +2273,7 @@ export default function ChatView({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader className="space-y-0 text-left">
             <DialogTitle className="text-base font-semibold text-gray-900">启动云端浏览器</DialogTitle>
           </DialogHeader>
@@ -2199,26 +2289,77 @@ export default function ChatView({
             </p>
 
             <div className="space-y-2.5 py-1">
-              {BROWSER_STARTUP_VISIBLE_STEP_ORDER.map((stepKey) => {
-                const status = browserStartupModal.steps[stepKey];
-                const meta = BROWSER_STARTUP_STEP_META[stepKey];
-                const helperText = status === "failed" && browserStartupModal.failedStep === stepKey
-                  ? browserStartupModal.failureReason
-                  : status === "success"
-                    ? meta.successText
-                    : status === "running"
-                      ? meta.runningText
-                      : "等待执行";
+              {(() => {
+                // 展示层最小改动：将内部 3 个原子步骤合并成 2 个用户可见步骤
+                //  - 第 1 个可见步骤：合并 imageCheck + componentCheck，命名为“检查云服务器环境及运行组件”
+                //  - 第 2 个可见步骤：policyCheck，命名为“检查浏览器连接状态”
+                // 底层检测流程/时序/随机失败/分流逻辑完全不变。
+                type VisibleStepDef = {
+                  key: string;
+                  title: string;
+                  innerKeys: BrowserStartupStepKey[];
+                  runningText: string;
+                  successText: string;
+                  defaultFailureText: string;
+                };
+                const visibleSteps: VisibleStepDef[] = [
+                  {
+                    key: "envAndComponent",
+                    title: "检查云服务器环境及运行组件",
+                    innerKeys: ["imageCheck", "componentCheck"],
+                    runningText: "正在检查云服务器环境及运行组件…",
+                    successText: "云服务器环境及运行组件已就绪。",
+                    defaultFailureText: "云服务器环境或运行组件检查失败，请重试。",
+                  },
+                  {
+                    key: "browserConnection",
+                    title: "检查浏览器连接状态",
+                    innerKeys: ["policyCheck"],
+                    runningText: "正在检查浏览器连接状态…",
+                    successText: "浏览器连接状态正常，可继续启动。",
+                    defaultFailureText: "当前浏览器连接不可用，请检查访问策略后重试。",
+                  },
+                ];
 
-                return (
-                  <BrowserStartupStepItem
-                    key={stepKey}
-                    title={meta.title}
-                    status={status}
-                    helperText={helperText}
-                  />
-                );
-              })}
+                return visibleSteps.map((vs) => {
+                  const innerStatuses = vs.innerKeys.map((k) => browserStartupModal.steps[k]);
+                  const failedInnerKey = vs.innerKeys.find(
+                    (k) => browserStartupModal.steps[k] === "failed" && browserStartupModal.failedStep === k,
+                  );
+
+                  let aggStatus: BrowserStartupStepStatus;
+                  if (failedInnerKey || innerStatuses.some((s) => s === "failed")) {
+                    aggStatus = "failed";
+                  } else if (innerStatuses.some((s) => s === "running")) {
+                    aggStatus = "running";
+                  } else if (innerStatuses.every((s) => s === "success")) {
+                    aggStatus = "success";
+                  } else {
+                    aggStatus = "waiting";
+                  }
+
+                  let helperText: string;
+                  if (aggStatus === "failed") {
+                    // 优先展示后端/流程传回的 failureReason（如 message），否则兜底文案
+                    helperText = browserStartupModal.failureReason || vs.defaultFailureText;
+                  } else if (aggStatus === "success") {
+                    helperText = vs.successText;
+                  } else if (aggStatus === "running") {
+                    helperText = vs.runningText;
+                  } else {
+                    helperText = "等待执行";
+                  }
+
+                  return (
+                    <BrowserStartupStepItem
+                      key={vs.key}
+                      title={vs.title}
+                      status={aggStatus}
+                      helperText={helperText}
+                    />
+                  );
+                });
+              })()}
             </div>
           </div>
 
@@ -2295,6 +2436,31 @@ export default function ChatView({
             >
               确认
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={browserVncAccessErrorModal.visible}
+        onOpenChange={(open: boolean) => {
+          if (!open) {
+            setBrowserVncAccessErrorModal({ visible: false, targetClawId: null });
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>云端浏览器连接异常</AlertDialogTitle>
+            <AlertDialogDescription>
+              当前云端浏览器连接不可用，请稍后重试。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setBrowserVncAccessErrorModal({ visible: false, targetClawId: null })}
+            >
+              我知道了
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

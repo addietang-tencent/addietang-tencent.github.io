@@ -1265,8 +1265,23 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {/* 第二行：角色胶囊标签 + 实例 ID */}
+              {/* 第二行：类型 tag + 角色胶囊标签 + 实例 ID */}
               <div className="flex items-center gap-2 mt-0.5">
+                {/* Agent 类型 tag */}
+                <span
+                  className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap flex-shrink-0"
+                  style={{
+                    background: "#F3F4F6",
+                    color: "#9CA3AF",
+                    borderRadius: "0.375rem",
+                  }}
+                >
+                  {(claw as any).agentType === "hermes"
+                    ? "Hermes Agent"
+                    : (claw as any).agentType === "lightclawace"
+                    ? "LightClaw ACE"
+                    : "OpenClaw"}
+                </span>
                 {claw.roleName && (
                   <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>

@@ -44,6 +44,12 @@ interface BatchDistributeDialogProps {
   instances: AgentInstance[];
   /** 分组列表（外部传入，showScopeFilter=true 时必传） */
   groups?: Group[];
+  /** MCP 场景：隐藏实例列表中的创建人、分组信息 */
+  hideCreatorAndGroup?: boolean;
+  /** MCP 场景：下发状态筛选改为单选下拉（只有 未下发 / 下发失败），去掉待更新和多选逻辑 */
+  singleStatusFilter?: boolean;
+  /** MCP 场景：自定义描述 ReactNode，覆盖默认描述 */
+  descriptionNode?: React.ReactNode;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
@@ -66,6 +72,9 @@ export default function BatchDistributeDialog({
   showScopeFilter = true,
   instances,
   groups = [],
+  hideCreatorAndGroup = false,
+  singleStatusFilter = false,
+  descriptionNode,
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -100,8 +109,8 @@ export default function BatchDistributeDialog({
   // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
   useEffect(() => {
     if (open) {
-      // 默认只选中 "未下发" 和 "下发失败"，不含 "待更新"
-      setStatusFilters(['not_distributed', 'failed']);
+      // MCP 场景默认「全部下发状态」（空数组），Skill 场景默认选中「未下发」+「下发失败」
+      setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
       setSearchQuery('');
       setCurrentPage(1);
       setPageSize(20);
@@ -259,7 +268,7 @@ export default function BatchDistributeDialog({
     
     setSelectedInstances([]);
     setSearchQuery('');
-    setStatusFilters(['not_distributed', 'failed']);
+    setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
     setScopeFilters([]);
     setCurrentPage(1);
     setPageSize(20);
@@ -295,8 +304,12 @@ export default function BatchDistributeDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription asChild>
             <div className="text-sm text-muted-foreground">
-              <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
-              <p className="mt-1">筛选限制：仅限智能体类型为 <span className="font-medium text-gray-700">OpenClaw</span> 且状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}或 <span className="font-medium text-gray-700">下发失败</span></>}。</p>
+              {descriptionNode || (
+                <>
+                  <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
+                  <p className="mt-1">筛选限制：仅限智能体类型为 <span className="font-medium text-gray-700">OpenClaw</span> 且状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}或 <span className="font-medium text-gray-700">下发失败</span></>}。</p>
+                </>
+              )}
             </div>
           </DialogDescription>
         </DialogHeader>
@@ -483,6 +496,35 @@ export default function BatchDistributeDialog({
             })()}
           </div>
           )}
+          {singleStatusFilter ? (
+            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」 ── */
+            <Select
+              value={
+                statusFilters.length === 0
+                  ? '__all__'
+                  : statusFilters.length === 1
+                    ? statusFilters[0]
+                    : '__all__'
+              }
+              onValueChange={(value) => {
+                if (value === '__all__') {
+                  setStatusFilters([]);
+                } else {
+                  setStatusFilters([value as FilterOption]);
+                }
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-36 h-9">
+                <SelectValue placeholder="全部下发状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">全部下发状态</SelectItem>
+                <SelectItem value="not_distributed">未下发</SelectItem>
+                <SelectItem value="failed">下发失败</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
           <div className="relative" ref={filterDropdownRef}>
             <Tooltip delayDuration={1000} open={filterDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
@@ -567,6 +609,7 @@ export default function BatchDistributeDialog({
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* 实例列表 */}
@@ -606,6 +649,7 @@ export default function BatchDistributeDialog({
                     <span className="text-sm font-medium text-gray-900 truncate">{instance.name}</span>
                     <span className="text-xs text-gray-400 font-mono flex-shrink-0">{instance.id}</span>
                   </div>
+                  {!hideCreatorAndGroup && (
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-xs text-gray-500">创建人：{instance.createdBy}</span>
                     {(() => {
@@ -629,6 +673,7 @@ export default function BatchDistributeDialog({
                       );
                     })()}
                   </div>
+                  )}
                 </div>
                 <div className="flex-shrink-0 self-center">
                   {getStatusDisplay(instance)}

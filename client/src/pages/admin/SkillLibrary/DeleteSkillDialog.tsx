@@ -61,7 +61,7 @@ export default function DeleteSkillDialog({
               ) : (
                 <>
                   <p className="text-sm text-gray-600">
-                    确定要删除 Skill「{skillName}」吗？
+                    确定要删除 MCP「{skillName}」吗？
                   </p>
                   <p className="text-sm text-gray-500">此操作不可撤销。</p>
                 </>

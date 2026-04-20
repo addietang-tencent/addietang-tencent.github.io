@@ -180,7 +180,7 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
   policyCheck: {
     title: "校验组件状态及访问策略",
     successText: "组件状态与访问策略校验通过，可继续启动。",
-    failureText: "当前浏览器连接不可用，请检查访问策略后重试。",
+    failureText: "安全组入方向规则未放通 6080 端口，请联系管理员处理后重试。",
     runningText: "正在校验组件状态及访问策略…",
   },
 };
@@ -2317,7 +2317,7 @@ export default function ChatView({
                     innerKeys: ["policyCheck"],
                     runningText: "正在检查浏览器连接状态…",
                     successText: "浏览器连接状态正常，可继续启动。",
-                    defaultFailureText: "当前浏览器连接不可用，请检查访问策略后重试。",
+                    defaultFailureText: "安全组入方向规则未放通 6080 端口，请联系管理员处理后重试。",
                   },
                 ];
 

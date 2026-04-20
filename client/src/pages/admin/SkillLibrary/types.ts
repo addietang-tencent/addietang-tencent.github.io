@@ -46,6 +46,8 @@ export interface Skill {
   lastDistributionSuccessCount?: number;
   /** 版本历史记录 */
   versionHistory?: SkillVersionRecord[];
+  /** 安全检测信息 */
+  securityInfo?: SkillSecurityInfo;
 }
 
 export interface Category {
@@ -157,4 +159,44 @@ export interface MCPService {
   toolDoc?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ========== 安全检测相关 ==========
+
+/** 安全检测状态 */
+export type SecurityStatus = 'not_scanned' | 'scanning' | 'safe' | 'suspicious' | 'malicious';
+
+/** 安全检测状态显示映射 */
+export const SECURITY_STATUS_MAP: Record<SecurityStatus, { label: string; color: string; bgColor: string }> = {
+  not_scanned: { label: '未检测', color: 'text-gray-400', bgColor: 'bg-gray-50' },
+  scanning:    { label: '安全检测中', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+  safe:        { label: '安全', color: 'text-green-600', bgColor: 'bg-green-50' },
+  suspicious:  { label: '可疑', color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
+  malicious:   { label: '恶意', color: 'text-red-600', bgColor: 'bg-red-50' },
+};
+
+/** 单引擎安全检测维度结果 */
+export type SecurityDimensionStatus = 'safe' | 'suspicious' | 'malicious';
+
+/** 安全检测维度 */
+export interface SecurityDimension {
+  name: string;
+  status: SecurityDimensionStatus;
+  detail: string;
+}
+
+/** 单引擎检测结果 */
+export interface EngineSecurityResult {
+  engineName: string;
+  status: SecurityDimensionStatus;
+  reportUrl: string;
+  score?: number;
+  dimensions: SecurityDimension[];
+}
+
+/** 技能安全检测信息 */
+export interface SkillSecurityInfo {
+  overallStatus: SecurityStatus;
+  contentHash?: string;
+  engines: EngineSecurityResult[];
 }

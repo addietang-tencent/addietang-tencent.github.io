@@ -599,16 +599,16 @@ export default function MyOpenClaw() {
                   >
                     {/* Agent Type Tag - 左上角融合卡片内 */}
                     <span
-                      className="absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap"
+                      className={`absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap ${isGrayAvatar ? "opacity-40" : ""}`}
                       style={{
-                        background: "#F3F4F6",
-                        color: "#9CA3AF",
-                        borderTopLeftRadius: "0.75rem",
+                        background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))",
+                        color: "rgba(0,122,255,0.5)",
+                        borderTopLeftRadius: "1rem",
                         borderBottomRightRadius: "0.75rem",
                         boxShadow: "none"
                       }}
                     >
-                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                      {claw.agentType === "hermes" ? "Hermes Agent" : claw.agentType === "lightclawace" ? "Lightclaw ACE" : "OpenClaw"}
                     </span>
                     {/* Card Header */}
                     <div className="p-5 pt-8">
@@ -1053,7 +1053,7 @@ export default function MyOpenClaw() {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-gray-400">
-                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes" : "LightclawACE"}
+                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes Agent" : "Lightclaw ACE"}
                     </span>
                     {typeExpanded ? (
                       <ChevronUp className="w-3.5 h-3.5 text-gray-300" />
@@ -1064,7 +1064,7 @@ export default function MyOpenClaw() {
                 </button>
                 {typeExpanded && (
                   <div className="flex flex-wrap gap-2 pt-2 pb-1">
-                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes"], ["lightclawace", "LightclawACE"]] as const).map(([value, label]) => {
+                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const).map(([value, label]) => {
                       const isSelected = agentType === value;
                       return (
                         <button

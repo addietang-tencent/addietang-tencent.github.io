@@ -1729,7 +1729,7 @@ export default function ChatView({
                           boxShadow: "none"
                         }}
                       >
-                        {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                        {claw.agentType === "hermes" ? "Hermes Agent" : claw.agentType === "lightclawace" ? "Lightclaw ACE" : "OpenClaw"}
                       </span>
                       <div className="flex items-center gap-1.5 min-w-0 mt-3">
                         <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>

@@ -1,8 +1,8 @@
 /**
  * AgentToolLibrary - 管控端 Agent 工具库页面
  * Design: 「流动蓝图」Fluid Blueprint
- * 三个 Tab：公共技能库、企业技能库、企业插件库
- * 将原 SkillConfig 中的公共技能库和企业技能库迁移至此，并新增企业插件库
+ * 四个 Tab：公共技能库、企业技能库、企业插件库、企业MCP库
+ * 将原 SkillConfig 中的公共技能库和企业技能库迁移至此，并新增企业插件库和企业MCP库
  */
 import { useState } from "react";
 import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
@@ -25,6 +25,11 @@ const TABS = [
     id: "plugins",
     label: "企业插件库",
     description: "上传和管理企业自定义插件，按需下发到 Agent 云服务器，扩展 Agent 能力边界。",
+  },
+  {
+    id: "mcp",
+    label: "企业MCP库",
+    description: "管理和分发企业内部 MCP（Model Context Protocol）服务，为 Agent 提供统一的上下文协议接入能力。",
   },
 ];
 
@@ -104,6 +109,23 @@ export default function AgentToolLibrary() {
 
       {activeTab === "plugins" && (
         <PluginListTab />
+      )}
+
+      {activeTab === "mcp" && (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+            <svg className="w-7 h-7 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <path d="M8 21h8" />
+              <path d="M12 17v4" />
+              <path d="M7 8h.01" />
+              <path d="M11 8h6" />
+              <path d="M7 12h.01" />
+              <path d="M11 12h6" />
+            </svg>
+          </div>
+          <p className="text-sm text-gray-400">暂无 MCP 服务，敬请期待</p>
+        </div>
       )}
     </div>
   );

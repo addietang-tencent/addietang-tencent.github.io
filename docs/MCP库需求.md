@@ -58,6 +58,7 @@
 
 - 功能说明：将选中的 MCP 服务配置下发到指定的智能体实例
 - 支持从列表页和详情页两个入口发起下发
+- 下发MCP到 ~/.openclaw/openclaw.json 文件中
 
 **批量下发弹窗**（复用 BatchDistributeDialog 组件，MCP 专属配置）：
 
@@ -76,6 +77,34 @@
 - 下发状态为 **未下发** 或 **下发失败**
 
 用户勾选目标实例后，点击「确认下发」执行部署。下发过程中显示进度条动画，完成后显示 toast 提示。
+
+#### 1.3.3 下发流程
+
+MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json` 文件：
+
+```
+开始下发
+  │
+  ├─ 检查实例是否存在 openclaw.json 文件
+  │    │
+  │    ├─ 不存在 → 新建 openclaw.json 文件（写入完整 JSON 配置）→ 完成 ✅
+  │    │
+  │    └─ 存在 → 继续
+  │         │
+  │         ├─ 检查 JSON 格式是否正确
+  │         │    │
+  │         │    ├─ 不正确 → 报错 ❌（提示：openclaw.json 格式异常，请手动检查）
+  │         │    │
+  │         │    └─ 正确 → 继续
+  │         │         │
+  │         │         ├─ 检查 JSON 中是否存在 mcp.servers.{服务ID}
+  │         │         │    │
+  │         │         │    ├─ 不存在 → 新建 mcp.servers.{服务ID} 节点，写入配置 → 完成 ✅
+  │         │         │    │
+  │         │         │    └─ 存在 → 覆盖 mcp.servers.{服务ID} 内容 → 完成 ✅
+```
+
+> 注意：写入 openclaw.json 时统一使用 **2 空格**缩进。
 
 ---
 
@@ -255,36 +284,36 @@ Markdown 编辑/预览切换使用圆角分段控件（编辑 / 预览），预�
 
 ## 远程服务（Streamable HTTP / SSE）
 {
-    "mcp": {
-        "servers": {
-            "your-server-name": {
-                "transportType": "streamable-http",
-                "url": "MCP服务的URL",
-                "headers": {
-                    "Authorization": "<your-token>"
-                },
-                "timeout": 60
-            }
-        }
+  "mcp": {
+    "servers": {
+      "your-server-name": {
+        "transportType": "streamable-http",
+        "url": "MCP服务的URL",
+        "headers": {
+          "Authorization": "<your-token>"
+        },
+        "timeout": 60
+      }
     }
+  }
 }
 
 ## 本地命令（STDIO）
 {
-    "mcp": {
-        "servers": {
-            "your-server-name": {
-                "transportType": "stdio",
-                "command": "python3",
-                "args": ["/opt/mcp/your-server.py"],
-                "env": {
-                    "PYTHONUNBUFFERED": "1"
-                },
-                "cwd": "/path/to/your/workdir",
-                "timeout": 60
-            }
-        }
+  "mcp": {
+    "servers": {
+      "your-server-name": {
+        "transportType": "stdio",
+        "command": "python3",
+        "args": ["/opt/mcp/your-server.py"],
+        "env": {
+          "PYTHONUNBUFFERED": "1"
+        },
+        "cwd": "/path/to/your/workdir",
+        "timeout": 60
+      }
     }
+  }
 }
 ```
 

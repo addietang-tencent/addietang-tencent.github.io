@@ -149,7 +149,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
         return mcp.toolDoc?.trim() || '';
       case '服务配置.json': {
         try {
-          return JSON.stringify(JSON.parse(mcp.configJson), null, 4);
+          return JSON.stringify(JSON.parse(mcp.configJson), null, 2);
         } catch {
           return mcp.configJson;
         }

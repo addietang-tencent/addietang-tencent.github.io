@@ -129,7 +129,7 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
     `"transportType": "sse",`,
     `"url": "MCP服务的URL",`,
     `"headers": {`,
-    `    "Authorization": "<your-token>"`,
+    `  "Authorization": "<your-token>"`,
     `},`,
     `"timeout": 60`,
   ].join('\n'),
@@ -137,7 +137,7 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
     `"transportType": "streamable-http",`,
     `"url": "MCP服务的URL",`,
     `"headers": {`,
-    `    "Authorization": "<your-token>"`,
+    `  "Authorization": "<your-token>"`,
     `},`,
     `"timeout": 60`,
   ].join('\n'),
@@ -146,7 +146,7 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
     `"command": "python3",`,
     `"args": ["/opt/mcp/your-server.py"],`,
     `"env": {`,
-    `    "PYTHONUNBUFFERED": "1"`,
+    `  "PYTHONUNBUFFERED": "1"`,
     `},`,
     `"cwd": "/path/to/your/workdir",`,
     `"timeout": 60`,
@@ -169,13 +169,13 @@ function trimCommonIndent(text: string): string {
 
 /** 将用户编辑的 server 内部内容组装成完整 JSON 字符串 */
 function assembleFullJson(serverName: string, serverValueContent: string): string {
-  // 给用户输入的每一行加上 16 个空格的缩进（第四层在完整 JSON 中的位置）
+  // 给用户输入的每一行加上 8 个空格的缩进（第四层在完整 JSON 中的位置，每层 2 空格）
   const indentedLines = serverValueContent
     .split('\n')
-    .map(line => (line.trim() ? `                ${line}` : ''))
+    .map(line => (line.trim() ? `        ${line}` : ''))
     .join('\n');
   const escapedName = JSON.stringify(serverName);
-  return `{\n    "mcp": {\n        "servers": {\n            ${escapedName}: {\n${indentedLines}\n            }\n        }\n    }\n}`;
+  return `{\n  "mcp": {\n    "servers": {\n      ${escapedName}: {\n${indentedLines}\n      }\n    }\n  }\n}`;
 }
 
 /** 从完整 JSON 中提取指定 server 的内部内容（不含 key 和外层花括号） */
@@ -184,10 +184,10 @@ function extractServerValue(fullJson: string, serverName: string): string {
     const parsed = JSON.parse(fullJson);
     const server = parsed?.mcp?.servers?.[serverName];
     if (!server || typeof server !== 'object') return '';
-    const inner = JSON.stringify(server, null, 4);
+    const inner = JSON.stringify(server, null, 2);
     const lines = inner.split('\n');
     if (lines.length <= 2) return '';
-    return lines.slice(1, -1).map(l => l.replace(/^    /, '')).join('\n');
+    return lines.slice(1, -1).map(l => l.replace(/^  /, '')).join('\n');
   } catch {
     return '';
   }
@@ -624,12 +624,12 @@ export default function MCPAddDialog({
 
                 {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
                 <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
-                  {/* 固定前缀行（不可编辑）— 4 层深度 */}
+                  {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
                   <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
-                    <div>{'    "mcp": {'}</div>
-                    <div>{'        "servers": {'}</div>
-                    <div>{'            '}<span className="text-gray-500">{`"${displayServerName}"`}</span>{': {'}</div>
+                    <div>{'  "mcp": {'}</div>
+                    <div>{'    "servers": {'}</div>
+                    <div>{'      '}<span className="text-gray-500">{`"${displayServerName}"`}</span>{': {'}</div>
                   </div>
                   {/* 可编辑区域（第四层内容） */}
                   <div className="relative">
@@ -657,14 +657,14 @@ export default function MCPAddDialog({
                       placeholder={connectionCategory ? '已填入模板，可直接修改配置字段' : '请先选择连接方式'}
                       className="border-0 rounded-none font-mono text-xs min-h-[120px] focus-visible:ring-0 focus-visible:ring-offset-0 resize-y leading-relaxed"
                       rows={6}
-                      style={{ paddingLeft: 'calc(0.75rem + 16ch)', fontSize: '12px' }}
+                      style={{ paddingLeft: 'calc(0.75rem + 8ch)', fontSize: '12px' }}
                     />
                   </div>
                   {/* 固定后缀行（不可编辑） */}
                   <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
-                    <div>{'            }'}</div>
-                    <div>{'        }'}</div>
+                    <div>{'      }'}</div>
                     <div>{'    }'}</div>
+                    <div>{'  }'}</div>
                     <div>{'}'}</div>
                   </div>
                 </div>

@@ -130,7 +130,7 @@ const MOCK_MCPS: MCPService[] = [
 // ── 缓存相关 ────────────────────────────────────────────
 const MCP_CACHE_KEY = 'mcphub_enterprise_mcps_cache';
 const MCP_CACHE_VERSION_KEY = 'mcphub_enterprise_mcps_cache_version';
-const MCP_CACHE_VERSION = '7';
+const MCP_CACHE_VERSION = '8';
 
 const loadCachedMCPs = (): MCPService[] => {
   try {

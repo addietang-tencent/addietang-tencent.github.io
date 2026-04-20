@@ -13,10 +13,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, Sparkles, FileText, Download, Search as SearchIcon, Check } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, Sparkles, FileText, Download, Search as SearchIcon, Check, ShieldCheck } from 'lucide-react';
 import JSZip from 'jszip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 import { type Skill, type SkillScope } from './types';
 import { DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import { isValidSemver, compareSemver, downloadSampleSkillZip } from './downloadUtils';
@@ -127,6 +128,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const [enableSecurityScan, setEnableSecurityScan] = useState(true);
 
   // 初始化 - 回显已有文件和当前 Skill 信息
   useEffect(() => {
@@ -141,6 +143,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         groupIds: [...(skill.groupIds || [])],
       });
       setGroupSearchQuery('');
+      setEnableSecurityScan(true);
       // 回显已有文件
       if (skill.files && skill.files.length > 0) {
         setUploadedFiles([{
@@ -358,6 +361,9 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         ...(skill.versionHistory || []),
       ],
       uploadTime: new Date(),
+      securityInfo: enableSecurityScan
+        ? { overallStatus: 'scanning', engines: [] }
+        : skill.securityInfo,
     };
 
     onConfirm(updatedSkill, formData.changeLog);
@@ -375,6 +381,12 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         </DialogHeader>
 
         <div className="space-y-5">
+          {/* 更新提示 */}
+          <div className="text-xs text-gray-900 leading-relaxed space-y-0.5">
+            <p>仅更新企业技能库中的技能版本。</p>
+            <p>已下发至 agent 实例的技能不会同步升级，需手动重新下发。</p>
+          </div>
+
           {/* 文件替换 */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">文件（可选替换）</Label>
@@ -734,11 +746,27 @@ description: this is a skill creator.
             />
           </div>
 
-          {/* 更新提示 */}
-          <div className="text-xs text-gray-400 leading-relaxed space-y-0.5">
-            <p>提示：仅更新企业技能库中的技能版本。</p>
-            <p>已下发至 agent 实例的技能不会同步升级，需手动重新下发。</p>
+          {/* 安全检测 */}
+          <div className="border-t border-gray-100 pt-4">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="update-security-scan"
+                checked={enableSecurityScan}
+                onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <label htmlFor="update-security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                  提交安全检测
+                </label>
+                <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                  开启后将由科恩实验室、云鼎实验室对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
+                </p>
+              </div>
+            </div>
           </div>
+
         </div>
 
         <DialogFooter>

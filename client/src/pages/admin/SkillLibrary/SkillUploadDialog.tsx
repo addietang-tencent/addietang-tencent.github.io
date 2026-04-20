@@ -5,9 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check, ShieldCheck } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 import JSZip from 'jszip';
 import { Skill, type SkillScope } from './types';
 import { DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
@@ -174,6 +175,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
         groupIds: [],
       });
       setGroupSearchQuery('');
+      setEnableSecurityScan(true);
     }
     onOpenChange(newOpen);
   };
@@ -188,6 +190,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
     groupIds: [] as string[],
   });
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const [enableSecurityScan, setEnableSecurityScan] = useState(true);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -443,6 +446,9 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
       content: successFile?.skillmdContent || `# ${formData.name}\n\n${formData.description}`,
       versions: [formData.version],
       files: successFile?.files || [],
+      securityInfo: enableSecurityScan
+        ? { overallStatus: 'scanning', engines: [] }
+        : { overallStatus: 'not_scanned', engines: [] },
     };
 
     onConfirm(newSkill);
@@ -908,6 +914,28 @@ description: this is a skill creator.
                       </PopoverContent>
                     </Popover>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* 安全检测 */}
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="security-scan"
+                  checked={enableSecurityScan}
+                  onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
+                  disabled={!hasSuccessfulUpload}
+                  className="mt-0.5"
+                />
+                <div className="flex-1">
+                  <label htmlFor="security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
+                    <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                    提交安全检测
+                  </label>
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    开启后将由科恩实验室、云鼎实验室对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
+                  </p>
                 </div>
               </div>
             </div>

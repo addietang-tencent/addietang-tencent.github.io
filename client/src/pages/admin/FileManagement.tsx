@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Bot,
@@ -24,7 +26,13 @@ import {
   ChevronRight,
   AlertTriangle,
   Info,
-  ChevronLeft
+  ChevronLeft,
+  Link,
+  UserCheck,
+  ShoppingCart,
+  Trash2,
+  RotateCcw,
+  ArrowRightLeft
 } from "lucide-react";
 
 // Updated Mock Data for Enterprise Spaces
@@ -35,7 +43,7 @@ const ENTERPRISE_SPACES = [
 
 // Mock Data for Personal Spaces (Flat Structure)
 const PERSONAL_SPACES_DATA = [
-  { id: "user-ins-1", instanceId: "ins-u25p9jqg", instanceName: "Noah的分析助手", creator: "noah@acompany.com", avatar: "N", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-1", instanceId: "ins-u25p9jqg", instanceName: "Noah的分析助手", creator: "noah@acompany.com", avatar: "N", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false, wasEnabled: true, deletedDaysAgo: 20 }, // 永久删除状态（超过15天）
   { id: "user-ins-2", instanceId: "ins-u25p9jqg", instanceName: "Noah的分析助手", creator: "alice@acompany.com", avatar: "A", type: "个人", used: "3GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-3", instanceId: "ins-v88x2kww", instanceName: "Noah的测试沙盒", creator: "noah@acompany.com", avatar: "N", type: "个人", used: "2GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-4", instanceId: "ins-t14o8ipf", instanceName: "Mia的新助手", creator: "mia@acompany.com", avatar: "M", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
@@ -53,6 +61,15 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-16", instanceId: "ins-x88r0xuu", instanceName: "Mike的产品分析", creator: "mike@acompany.com", avatar: "M", type: "个人", used: "13GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-17", instanceId: "ins-y99s1yvv", instanceName: "Kate的客服助手", creator: "kate@acompany.com", avatar: "K", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-18", instanceId: "ins-z00t2zww", instanceName: "Ryan的技术文档", creator: "ryan@acompany.com", avatar: "R", type: "个人", used: "10GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+];
+
+// 活跃实例数据（用于转接时选择）
+const ACTIVE_INSTANCES = [
+  { id: "ins-active-1", name: "项目协作助手", creator: "admin@acompany.com", avatar: "P" },
+  { id: "ins-active-2", name: "数据分析平台", creator: "admin@acompany.com", avatar: "D" },
+  { id: "ins-active-3", name: "研发工具集", creator: "admin@acompany.com", avatar: "R" },
+  { id: "ins-active-4", name: "客户服务中心", creator: "admin@acompany.com", avatar: "C" },
+  { id: "ins-active-5", name: "营销助手Pro", creator: "admin@acompany.com", avatar: "M" },
 ];
 
 const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
@@ -83,12 +100,24 @@ export default function FileManagement() {
   // 追踪曾经启用过的实例（用于显示"可恢复"状态）
   const [instancesEverEnabled, setInstancesEverEnabled] = useState<Record<string, boolean>>(
     PERSONAL_SPACES_DATA.reduce((acc, item) => {
-      acc[item.id] = item.enabled; // 初始状态与当前启用状态相同
+      // @ts-ignore - 使用 wasEnabled 字段初始化
+      acc[item.id] = item.wasEnabled !== undefined ? item.wasEnabled : item.enabled;
       return acc;
     }, {} as Record<string, boolean>)
   );
   // 追踪实例的关闭时间（用于计算剩余天数）
-  const [instancesDisabledTime, setInstancesDisabledTime] = useState<Record<string, Date>>({});
+  const [instancesDisabledTime, setInstancesDisabledTime] = useState<Record<string, Date>>(
+    PERSONAL_SPACES_DATA.reduce((acc, item) => {
+      // @ts-ignore - 如果有 deletedDaysAgo 字段，计算关闭时间
+      if (item.deletedDaysAgo !== undefined) {
+        const disabledDate = new Date();
+        // @ts-ignore
+        disabledDate.setDate(disabledDate.getDate() - item.deletedDaysAgo);
+        acc[item.id] = disabledDate;
+      }
+      return acc;
+    }, {} as Record<string, Date>)
+  );
   const [selectedInstances, setSelectedInstances] = useState<Set<string>>(new Set());
   const [disableDialogOpen, setDisableDialogOpen] = useState(false);
   const [instanceToDisable, setInstanceToDisable] = useState<{ id: string; name: string } | null>(null);
@@ -101,6 +130,24 @@ export default function FileManagement() {
   const [pendingAllowUserSelfEnableValue, setPendingAllowUserSelfEnableValue] = useState<boolean | null>(null);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
   const [instanceToRecover, setInstanceToRecover] = useState<{ id: string; name: string } | null>(null);
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [instanceToPurchase, setInstanceToPurchase] = useState<{ id: string; name: string } | null>(null);
+  const [selectedCapacity, setSelectedCapacity] = useState<string>("50GB");
+  const [selectedDuration, setSelectedDuration] = useState<string>("3");
+  const [renewDialogOpen, setRenewDialogOpen] = useState(false);
+  const [instanceToRenew, setInstanceToRenew] = useState<{ id: string; name: string } | null>(null);
+  const [renewDuration, setRenewDuration] = useState<string>("3");
+  const [expandDialogOpen, setExpandDialogOpen] = useState(false);
+  const [instanceToExpand, setInstanceToExpand] = useState<{ id: string; name: string } | null>(null);
+  const [expandCapacity, setExpandCapacity] = useState<string>("100GB");
+  const [recyclebinOpen, setRecyclebinOpen] = useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [instanceToTransfer, setInstanceToTransfer] = useState<{ id: string; name: string } | null>(null);
+  const [transferTargetInstance, setTransferTargetInstance] = useState<string>("");
+  const [transferCapacity, setTransferCapacity] = useState<string>("50GB");
+  const [transferDuration, setTransferDuration] = useState<string>("3");
+  const [recoverCapacity, setRecoverCapacity] = useState<string>("50GB");
+  const [recoverDuration, setRecoverDuration] = useState<string>("3");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -110,6 +157,14 @@ export default function FileManagement() {
       setInstanceToDisable({ id: instanceId, name: instanceName });
       setDisableDialogOpen(true);
     } else {
+      // 检查是否已永久删除
+      if (wasEverEnabled && isPermanentlyDeleted(instanceId)) {
+        // 已永久删除，打开购买对话框
+        setInstanceToPurchase({ id: instanceId, name: instanceName });
+        setPurchaseDialogOpen(true);
+        return;
+      }
+      
       // 如果当前是关闭状态，判断是恢复还是首次启用
       if (wasEverEnabled) {
         // 曾经启用过，弹出恢复对话框
@@ -191,29 +246,6 @@ export default function FileManagement() {
     setInstanceToEnable(null);
   };
 
-  const handleConfirmRecover = () => {
-    if (instanceToRecover) {
-      setInstancesEnabled(prev => ({
-        ...prev,
-        [instanceToRecover.id]: true
-      }));
-      // 清除关闭时间记录
-      setInstancesDisabledTime(prev => {
-        const newTimes = { ...prev };
-        delete newTimes[instanceToRecover.id];
-        return newTimes;
-      });
-      // wasEverEnabled 保持 true，不需要再次设置
-    }
-    setRecoverDialogOpen(false);
-    setInstanceToRecover(null);
-  };
-
-  const handleCancelRecover = () => {
-    setRecoverDialogOpen(false);
-    setInstanceToRecover(null);
-  };
-
   const handleAutoBindToggle = (checked: boolean) => {
     setPendingAutoBindValue(checked);
     setAutoBindToggleDialogOpen(true);
@@ -250,6 +282,151 @@ export default function FileManagement() {
     setPendingAllowUserSelfEnableValue(null);
   };
 
+  const handleConfirmPurchase = () => {
+    if (instanceToPurchase) {
+      // 启用实例
+      setInstancesEnabled(prev => ({
+        ...prev,
+        [instanceToPurchase.id]: true
+      }));
+      setInstancesEverEnabled(prev => ({
+        ...prev,
+        [instanceToPurchase.id]: true
+      }));
+      // 清除关闭时间记录
+      setInstancesDisabledTime(prev => {
+        const newTimes = { ...prev };
+        delete newTimes[instanceToPurchase.id];
+        return newTimes;
+      });
+    }
+    setPurchaseDialogOpen(false);
+    setInstanceToPurchase(null);
+    // 重置选择
+    setSelectedCapacity("50GB");
+    setSelectedDuration("3");
+  };
+
+  const handleCancelPurchase = () => {
+    setPurchaseDialogOpen(false);
+    setInstanceToPurchase(null);
+    // 重置选择
+    setSelectedCapacity("50GB");
+    setSelectedDuration("3");
+  };
+
+  // 计算购买价格
+  const calculatePrice = () => {
+    const capacityPrices: Record<string, number> = {
+      "50GB": 2,
+      "100GB": 4,
+      "500GB": 8
+    };
+    const basePrice = capacityPrices[selectedCapacity] || 0;
+    const duration = parseInt(selectedDuration);
+    return basePrice * duration;
+  };
+
+  // 处理续费
+  const handleRenew = (instanceId: string, instanceName: string) => {
+    setInstanceToRenew({ id: instanceId, name: instanceName });
+    setRenewDialogOpen(true);
+  };
+
+  const handleConfirmRenew = () => {
+    if (instanceToRenew) {
+      // TODO: 实现续费逻辑
+      console.log('确认续费', instanceToRenew.id, '时长', renewDuration);
+    }
+    setRenewDialogOpen(false);
+    setInstanceToRenew(null);
+    setRenewDuration("3");
+  };
+
+  const handleCancelRenew = () => {
+    setRenewDialogOpen(false);
+    setInstanceToRenew(null);
+    setRenewDuration("3");
+  };
+
+  // 计算续费价格
+  const calculateRenewPrice = () => {
+    const basePrice = 2; // 假设当前容量为50GB，单价2元/月
+    const duration = parseInt(renewDuration);
+    return basePrice * duration;
+  };
+
+  // 计算转接价格
+  const calculateTransferPrice = () => {
+    const capacityPrices: Record<string, number> = {
+      "50GB": 2,
+      "100GB": 4,
+      "500GB": 8
+    };
+    const basePrice = capacityPrices[transferCapacity] || 2;
+    const duration = parseInt(transferDuration);
+    return basePrice * duration;
+  };
+
+  // 计算恢复价格
+  const calculateRecoverPrice = () => {
+    const capacityPrices: Record<string, number> = {
+      "50GB": 2,
+      "100GB": 4,
+      "500GB": 8
+    };
+    const basePrice = capacityPrices[recoverCapacity] || 2;
+    const duration = parseInt(recoverDuration);
+    return basePrice * duration;
+  };
+
+  // 处理扩容
+  const handleExpand = (instanceId: string, instanceName: string) => {
+    setInstanceToExpand({ id: instanceId, name: instanceName });
+    setExpandDialogOpen(true);
+  };
+
+  const handleConfirmExpand = () => {
+    if (instanceToExpand) {
+      // TODO: 实现扩容逻辑
+      console.log('确认扩容', instanceToExpand.id, '容量', expandCapacity);
+    }
+    setExpandDialogOpen(false);
+    setInstanceToExpand(null);
+    setExpandCapacity("50GB");
+  };
+
+  const handleCancelExpand = () => {
+    setExpandDialogOpen(false);
+    setInstanceToExpand(null);
+    setExpandCapacity("100GB");
+  };
+
+  // 生成扩容容量选项（以50GB为步长，最多显示6个档位）
+  const generateExpandCapacityOptions = () => {
+    const options = [];
+    for (let i = 1; i <= 10; i++) {
+      const capacity = i * 50;
+      options.push({
+        value: `${capacity}GB`,
+        label: `${capacity}GB`,
+        price: `¥${i * 2}`
+      });
+    }
+    return options;
+  };
+
+  // 计算扩容价格（一次性费用，不涉及时长）
+  // 规则：每50GB = ¥2
+  const calculateExpandPrice = () => {
+    const match = expandCapacity.match(/^(\d+)GB$/);
+    if (match) {
+      const capacity = parseInt(match[1]);
+      return (capacity / 50) * 2;
+    }
+    return 0;
+  };
+
   // 计算可恢复的剩余天数
   const getRemainingDays = (instanceId: string): number => {
     const disabledTime = instancesDisabledTime[instanceId];
@@ -263,15 +440,131 @@ export default function FileManagement() {
     return Math.max(0, remainingDays); // 确保不返回负数
   };
 
-  // 计算未启用的实例数量
-  const disabledInstancesCount = React.useMemo(() => {
-    return PERSONAL_SPACES_DATA.filter(item => !instancesEnabled[item.id]).length;
-  }, [instancesEnabled]);
+  // 获取回收站中的实例（已关闭的实例）
+  const getRecyclebinInstances = () => {
+    return PERSONAL_SPACES_DATA.filter(item => {
+      const isDisabled = !instancesEnabled[item.id];
+      const wasEnabled = instancesEverEnabled[item.id];
+      return isDisabled && wasEnabled;
+    }).map(item => ({
+      ...item,
+      remainingDays: getRemainingDays(item.id),
+      isPermanentlyDeleted: isPermanentlyDeleted(item.id)
+    }));
+  };
 
-  // 获取所有未启用的实例ID
+  // 从回收站永久删除实例
+  const handlePermanentDelete = (instanceId: string) => {
+    // 这里可以调用后端API永久删除数据
+    console.log('永久删除实例:', instanceId);
+    // 从instancesEverEnabled中移除，表示彻底删除
+    setInstancesEverEnabled(prev => {
+      const newEnabled = { ...prev };
+      delete newEnabled[instanceId];
+      return newEnabled;
+    });
+  };
+
+  // 打开转接弹窗
+  const handleOpenTransferDialog = (instanceId: string, instanceName: string) => {
+    setInstanceToTransfer({ id: instanceId, name: instanceName });
+    setTransferTargetInstance("");
+    setTransferCapacity("50GB");
+    setTransferDuration("3");
+    setTransferDialogOpen(true);
+  };
+
+  // 确认转接
+  const handleConfirmTransfer = () => {
+    if (instanceToTransfer && transferTargetInstance) {
+      // TODO: 调用后端API进行转接
+      console.log('转接实例', instanceToTransfer.id, '至', transferTargetInstance, '容量', transferCapacity, '时长', transferDuration);
+      // 转接成功后从回收站移除
+      setInstancesEverEnabled(prev => {
+        const newEnabled = { ...prev };
+        delete newEnabled[instanceToTransfer.id];
+        return newEnabled;
+      });
+    }
+    setTransferDialogOpen(false);
+    setInstanceToTransfer(null);
+    setTransferTargetInstance("");
+    setTransferCapacity("50GB");
+    setTransferDuration("3");
+  };
+
+  // 取消转接
+  const handleCancelTransfer = () => {
+    setTransferDialogOpen(false);
+    setInstanceToTransfer(null);
+    setTransferTargetInstance("");
+    setTransferCapacity("50GB");
+    setTransferDuration("3");
+  };
+
+  // 从回收站恢复实例
+  const handleRestoreFromRecyclebin = (instanceId: string, instanceName: string) => {
+    // 打开恢复对话框（类似续费）
+    setInstanceToRecover({ id: instanceId, name: instanceName });
+    setRecoverCapacity("50GB");
+    setRecoverDuration("3");
+    setRecoverDialogOpen(true);
+  };
+
+  // 确认恢复
+  const handleConfirmRecover = () => {
+    if (instanceToRecover) {
+      console.log('恢复实例', instanceToRecover.id, '容量', recoverCapacity, '时长', recoverDuration);
+      setInstancesEnabled(prev => ({
+        ...prev,
+        [instanceToRecover.id]: true
+      }));
+      // 清除关闭时间记录
+      setInstancesDisabledTime(prev => {
+        const newTimes = { ...prev };
+        delete newTimes[instanceToRecover.id];
+        return newTimes;
+      });
+    }
+    setRecoverDialogOpen(false);
+    setInstanceToRecover(null);
+    setRecoverCapacity("50GB");
+    setRecoverDuration("3");
+  };
+
+  // 取消恢复
+  const handleCancelRecover = () => {
+    setRecoverDialogOpen(false);
+    setInstanceToRecover(null);
+    setRecoverCapacity("50GB");
+    setRecoverDuration("3");
+  };
+
+  // 检查实例是否已永久删除（超过15天）
+  const isPermanentlyDeleted = (instanceId: string): boolean => {
+    const disabledTime = instancesDisabledTime[instanceId];
+    if (!disabledTime) return false;
+    
+    const now = new Date();
+    const diffTime = now.getTime() - disabledTime.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays >= 15; // 超过或等于15天则永久删除
+  };
+
+  // 计算未启用的实例数量（排除永久删除的）
+  const disabledInstancesCount = React.useMemo(() => {
+    return PERSONAL_SPACES_DATA.filter(item => 
+      !instancesEnabled[item.id] && !isPermanentlyDeleted(item.id)
+    ).length;
+  }, [instancesEnabled, instancesDisabledTime]);
+
+  // 获取所有未启用的实例ID（排除永久删除的）
   const allDisabledInstanceIds = React.useMemo(() => {
-    return PERSONAL_SPACES_DATA.filter(item => !instancesEnabled[item.id]).map(item => item.id);
-  }, [instancesEnabled]);
+    return PERSONAL_SPACES_DATA.filter(item => 
+      !instancesEnabled[item.id] && !isPermanentlyDeleted(item.id)
+    ).map(item => item.id);
+  }, [instancesEnabled, instancesDisabledTime]);
 
   // 处理全选/取消全选
   const handleSelectAll = (checked: boolean) => {
@@ -452,11 +745,60 @@ export default function FileManagement() {
           </p>
         </div>
 
+        {/* 网盘配置卡片 */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* 新增实例是否自动绑定网盘 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
+                  <Link className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-gray-900">新增实例是否自动绑定网盘</span>
+                  <span className="text-xs text-gray-500 mt-1">开启后,新创建的 AI 智能体实例将自动分配网盘空间</span>
+                </div>
+              </div>
+              <Switch 
+                checked={autoBindNewInstance}
+                onCheckedChange={handleAutoBindToggle}
+                className="shrink-0"
+              />
+            </div>
+          </div>
+
+          {/* 允许用户自行开启网盘 */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5"
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
+                  <UserCheck className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-sm font-semibold text-gray-900">允许用户自行开启网盘</span>
+                  <span className="text-xs text-gray-500 mt-1">开启后,用户可在自己的实例中自主开启网盘服务</span>
+                </div>
+              </div>
+              <Switch 
+                checked={allowUserSelfEnable}
+                onCheckedChange={handleAllowUserSelfEnableToggle}
+                className="shrink-0"
+              />
+            </div>
+          </div>
+        </div>
+
         <div
           className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
         >
-          {/* Search Bar and Auto Bind Configuration */}
+          {/* Search Bar and Batch Enable */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
             <div className="flex items-center gap-3">
               <Button
@@ -483,35 +825,22 @@ export default function FileManagement() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
+              <Button
+                variant="outline"
+                className="h-9 px-4 gap-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                onClick={() => setRecyclebinOpen(true)}
+              >
+                <Trash2 className="w-4 h-4" />
+                回收站
+                {getRecyclebinInstances().length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-xs font-medium">
+                    {getRecyclebinInstances().length}
+                  </span>
+                )}
+              </Button>
             </div>
-            <div className="flex items-center gap-6">
-              {/* Auto Bind Configuration */}
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-700">新增实例是否自动绑定网盘</span>
-                  <span className="text-xs text-gray-500">开启后,新创建的 AI 智能体实例将自动分配网盘空间</span>
-                </div>
-                <Switch 
-                  checked={autoBindNewInstance}
-                  onCheckedChange={handleAutoBindToggle}
-                />
-              </div>
-              <div className="h-8 w-px bg-gray-200"></div>
-              {/* Allow User Self Enable Configuration */}
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-700">允许用户自行开启网盘</span>
-                  <span className="text-xs text-gray-500">开启后,用户可在自己的实例中自主开启网盘服务</span>
-                </div>
-                <Switch 
-                  checked={allowUserSelfEnable}
-                  onCheckedChange={handleAllowUserSelfEnableToggle}
-                />
-              </div>
-              <div className="h-8 w-px bg-gray-200"></div>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>共计 <span className="font-semibold text-gray-900 tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
-              </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span>共计 <span className="font-semibold text-gray-900 tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
             </div>
           </div>
 
@@ -531,30 +860,33 @@ export default function FileManagement() {
                     <span className={disabledInstancesCount === 0 ? "text-gray-400" : ""}>全选</span>
                   </div>
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[23%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">
                   OpenClaw 实例
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
                   创建人
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">
                   类型
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
                   已用/存储容量
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">
                   有效期
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[9%]">
                   启用网盘
+                </th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[14%]">
+                  操作
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginatedPersonalSpaces.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={8} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-12 h-12 text-gray-300" />
                       <p className="text-sm text-gray-500">未找到匹配的记录</p>
@@ -567,6 +899,7 @@ export default function FileManagement() {
                   const isEnabled = instancesEnabled[item.id];
                   const wasEverEnabled = instancesEverEnabled[item.id];
                   const isSelected = selectedInstances.has(item.id);
+                  const isDeleted = wasEverEnabled && isPermanentlyDeleted(item.id);
                   return (
                     <tr 
                       key={item.id} 
@@ -576,8 +909,8 @@ export default function FileManagement() {
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
-                          disabled={isEnabled}
-                          className={isEnabled ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
+                          disabled={isEnabled || isDeleted}
+                          className={(isEnabled || isDeleted) ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
@@ -609,24 +942,43 @@ export default function FileManagement() {
                             </span>
                           </span>
                         ) : wasEverEnabled ? (
-                          <span className="tabular-nums flex items-center gap-1">
-                            <span>
-                              {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                              <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
-                                可恢复
-                              </span>
-                            </span>
+                          isPermanentlyDeleted(item.id) ? (
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
+                                  <span className="tabular-nums flex items-center gap-1 cursor-help">
+                                    <span className="text-gray-400">-</span>
+                                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-600">
+                                      已删除
+                                    </span>
+                                    <Info className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                  </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
+                                  <p className="text-xs max-w-[200px]">当前实例的网盘免费资源已用光，后续会提供新购，敬请期待！</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          </span>
+                          ) : (
+                            <span className="tabular-nums flex items-center gap-1">
+                              <span>
+                                {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                                <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                                  可恢复
+                                </span>
+                              </span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </span>
+                          )
                         ) : (
                           <span className="text-gray-400">未启用</span>
                         )}
@@ -635,10 +987,59 @@ export default function FileManagement() {
                         {isEnabled ? item.expiry : <span className="text-gray-400">-</span>}
                       </td>
                       <td className="px-6 py-4">
-                        <Switch 
-                          checked={isEnabled}
-                          onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
-                        />
+                        {wasEverEnabled && isPermanentlyDeleted(item.id) ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className="inline-block cursor-pointer"
+                                  onClick={() => {
+                                    setInstanceToPurchase({ id: item.id, name: item.instanceName });
+                                    setPurchaseDialogOpen(true);
+                                  }}
+                                >
+                                  <Switch 
+                                    checked={false}
+                                    disabled={false}
+                                    className="opacity-70 hover:opacity-100 transition-opacity"
+                                    onCheckedChange={() => {
+                                      setInstanceToPurchase({ id: item.id, name: item.instanceName });
+                                      setPurchaseDialogOpen(true);
+                                    }}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs max-w-[200px]">点击购买网盘容量</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <Switch 
+                            checked={isEnabled}
+                            onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
+                          />
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                            onClick={() => handleRenew(item.id, item.instanceName)}
+                          >
+                            续费
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-3 text-xs hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 transition-colors"
+                            onClick={() => handleExpand(item.id, item.instanceName)}
+                          >
+                            扩容
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -786,29 +1187,90 @@ export default function FileManagement() {
 
       {/* Recover Confirmation Dialog */}
       <Dialog open={recoverDialogOpen} onOpenChange={setRecoverDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-blue-600" />
               恢复网盘服务
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-700">
-              您确定要为 <span className="font-bold text-gray-900">"{instanceToRecover?.name}"</span> 恢复网盘服务吗?
-            </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
-                <p className="font-semibold">恢复后：</p>
-                <div className="space-y-0.5 ml-1">
-                  <p>• 该实例将重新获得网盘访问权限</p>
-                  <p>• 之前的数据将被恢复</p>
+          <div className="space-y-5 py-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-blue-600 leading-relaxed">
+                为 <span className="font-semibold">"{instanceToRecover?.name}"</span> 恢复网盘服务
+              </p>
+            </div>
+
+            {/* 选择容量 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择容量</Label>
+              <RadioGroup value={recoverCapacity} onValueChange={setRecoverCapacity}>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: "50GB", label: "50GB", price: "¥2/月" },
+                    { value: "100GB", label: "100GB", price: "¥4/月" },
+                    { value: "500GB", label: "500GB", price: "¥8/月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`recover-capacity-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`recover-capacity-${item.value}`}
+                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
+                      >
+                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
+                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 选择时长 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择时长</Label>
+              <RadioGroup value={recoverDuration} onValueChange={setRecoverDuration}>
+                <div className="space-y-2">
+                  {[
+                    { value: "1", label: "1个月" },
+                    { value: "3", label: "3个月" },
+                    { value: "6", label: "6个月" },
+                    { value: "12", label: "12个月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`recover-duration-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`recover-duration-${item.value}`}
+                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
+                      >
+                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 价格汇总 */}
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">恢复费用：</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-blue-600 tabular-nums">¥{calculateRecoverPrice()}</span>
                 </div>
               </div>
+              <p className="text-xs text-gray-600 mt-2">
+                恢复 {recoverCapacity} 容量，有效期 {recoverDuration} 个月
+              </p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRecover}>取消</Button>
-            <Button onClick={handleConfirmRecover} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <Button 
+              onClick={handleConfirmRecover} 
+              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
+              className="gap-2"
+            >
               确认恢复
             </Button>
           </DialogFooter>
@@ -900,6 +1362,479 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelAllowUserSelfEnableToggle}>取消</Button>
             <Button onClick={handleConfirmAllowUserSelfEnableToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认{pendingAllowUserSelfEnableValue ? "允许" : "禁止"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Purchase Storage Dialog */}
+      <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-purple-600" />
+              购买网盘容量
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-blue-600 leading-relaxed">
+                为 <span className="font-semibold">"{instanceToPurchase?.name}"</span> 购买网盘容量
+              </p>
+            </div>
+
+            {/* 选择存储容量 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择存储容量</Label>
+              <RadioGroup value={selectedCapacity} onValueChange={setSelectedCapacity}>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: "50GB", label: "50GB", price: "¥2/月" },
+                    { value: "100GB", label: "100GB", price: "¥4/月" },
+                    { value: "500GB", label: "500GB", price: "¥8/月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={item.value} className="peer sr-only" />
+                      <Label
+                        htmlFor={item.value}
+                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
+                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 选择购买时长 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择购买时长</Label>
+              <RadioGroup value={selectedDuration} onValueChange={setSelectedDuration}>
+                <div className="space-y-2">
+                  {[
+                    { value: "1", label: "1个月" },
+                    { value: "3", label: "3个月" },
+                    { value: "6", label: "6个月" },
+                    { value: "12", label: "12个月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`duration-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`duration-${item.value}`}
+                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 价格汇总 */}
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">合计金额：</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculatePrice()}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                购买后立即生效，有效期 {selectedDuration} 个月
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelPurchase}>取消</Button>
+            <Button 
+              onClick={handleConfirmPurchase} 
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="gap-2"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              确认购买
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Renew Storage Dialog */}
+      <Dialog open={renewDialogOpen} onOpenChange={setRenewDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-blue-600" />
+              续费网盘
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-blue-600 leading-relaxed">
+                为 <span className="font-semibold">"{instanceToRenew?.name}"</span> 续费网盘服务
+              </p>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-gray-700 space-y-1">
+                <p className="font-semibold">当前配置：</p>
+                <p>• 存储容量：50GB</p>
+                <p>• 到期时间：2026-06-30</p>
+              </div>
+            </div>
+
+            {/* 选择续费时长 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择续费时长</Label>
+              <RadioGroup value={renewDuration} onValueChange={setRenewDuration}>
+                <div className="space-y-2">
+                  {[
+                    { value: "1", label: "1个月" },
+                    { value: "3", label: "3个月" },
+                    { value: "6", label: "6个月" },
+                    { value: "12", label: "12个月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`renew-duration-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`renew-duration-${item.value}`}
+                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
+                      >
+                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 价格汇总 */}
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">续费金额：</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-blue-600 tabular-nums">¥{calculateRenewPrice()}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                续费后有效期延长 {renewDuration} 个月
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelRenew}>取消</Button>
+            <Button 
+              onClick={handleConfirmRenew} 
+              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
+              className="gap-2"
+            >
+              确认续费
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Expand Storage Dialog */}
+      <Dialog open={expandDialogOpen} onOpenChange={setExpandDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-purple-600" />
+              扩容网盘
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-purple-600 leading-relaxed">
+                为 <span className="font-semibold">"{instanceToExpand?.name}"</span> 扩容网盘空间
+              </p>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+              <div className="text-xs text-gray-700 space-y-1">
+                <p className="font-semibold">当前配置：</p>
+                <p>• 存储容量：50GB</p>
+                <p>• 到期时间：2026-06-30</p>
+              </div>
+            </div>
+
+            {/* 选择扩容容量 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择扩容容量</Label>
+              <RadioGroup value={expandCapacity} onValueChange={setExpandCapacity}>
+                <div className="grid grid-cols-3 gap-3 max-h-[240px] overflow-y-auto pr-2">
+                  {generateExpandCapacityOptions().map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`expand-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`expand-${item.value}`}
+                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
+                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 价格汇总 */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">扩容费用：</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateExpandPrice()}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                扩容 {expandCapacity}，立即生效，不延长有效期
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelExpand}>取消</Button>
+            <Button 
+              onClick={handleConfirmExpand} 
+              style={{ background: "linear-gradient(135deg, #A855F7, #EC4899)" }}
+              className="gap-2"
+            >
+              确认扩容
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recycle Bin Dialog */}
+      <Dialog open={recyclebinOpen} onOpenChange={setRecyclebinOpen}>
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-gray-600" />
+              回收站
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-4">
+            {getRecyclebinInstances().length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <Trash2 className="w-16 h-16 mb-4 opacity-30" />
+                <p className="text-sm">回收站为空</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {getRecyclebinInstances().map((instance) => (
+                  <div
+                    key={instance.id}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                          {instance.avatar}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-gray-900 truncate">
+                              {instance.instanceName}
+                            </h4>
+                            <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
+                              {instance.remainingDays}天后永久删除
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span>创建人: {instance.creator}</span>
+                            <span>容量: {instance.used}/{instance.quota}</span>
+                            <span>实例ID: {instance.instanceId}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-3 gap-1.5 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400"
+                                onClick={() => handleOpenTransferDialog(instance.id, instance.instanceName)}
+                              >
+                                <ArrowRightLeft className="w-3.5 h-3.5" />
+                                转接
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>转接至其他用户</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-3 gap-1.5 border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
+                                onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                恢复
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>恢复此网盘空间</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-3 gap-1.5 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                                onClick={() => {
+                                  if (confirm(`确定要永久删除"${instance.instanceName}"的网盘空间吗？此操作不可恢复！`)) {
+                                    handlePermanentDelete(instance.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                永久删除
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>永久删除此网盘空间（不可恢复）</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRecyclebinOpen(false)}>关闭</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transfer Dialog */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <ArrowRightLeft className="w-5 h-5 text-purple-600" />
+              转接网盘空间
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-4">
+            <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
+              <p className="text-xs text-purple-600 leading-relaxed">
+                将 <span className="font-semibold">"{instanceToTransfer?.name}"</span> 的网盘空间转接到新的实例
+              </p>
+            </div>
+
+            {/* 选择目标实例 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择目标实例</Label>
+              <RadioGroup value={transferTargetInstance} onValueChange={setTransferTargetInstance}>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                  {ACTIVE_INSTANCES.map((instance) => (
+                    <div key={instance.id} className="flex items-center">
+                      <RadioGroupItem value={instance.id} id={`transfer-instance-${instance.id}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`transfer-instance-${instance.id}`}
+                        className="flex flex-1 items-center gap-3 rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                          {instance.avatar}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{instance.name}</p>
+                          <p className="text-xs text-gray-500 truncate">创建人: {instance.creator}</p>
+                        </div>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 选择容量 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择容量</Label>
+              <RadioGroup value={transferCapacity} onValueChange={setTransferCapacity}>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: "50GB", label: "50GB", price: "¥2/月" },
+                    { value: "100GB", label: "100GB", price: "¥4/月" },
+                    { value: "500GB", label: "500GB", price: "¥8/月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`transfer-capacity-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`transfer-capacity-${item.value}`}
+                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
+                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 选择时长 */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择时长</Label>
+              <RadioGroup value={transferDuration} onValueChange={setTransferDuration}>
+                <div className="space-y-2">
+                  {[
+                    { value: "1", label: "1个月" },
+                    { value: "3", label: "3个月" },
+                    { value: "6", label: "6个月" },
+                    { value: "12", label: "12个月" }
+                  ].map((item) => (
+                    <div key={item.value} className="flex items-center">
+                      <RadioGroupItem value={item.value} id={`transfer-duration-${item.value}`} className="peer sr-only" />
+                      <Label
+                        htmlFor={`transfer-duration-${item.value}`}
+                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                      >
+                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* 价格汇总 */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">转接费用：</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateTransferPrice()}</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                转接 {transferCapacity} 容量，有效期 {transferDuration} 个月
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelTransfer}>取消</Button>
+            <Button 
+              onClick={handleConfirmTransfer}
+              disabled={!transferTargetInstance}
+              style={{ background: "linear-gradient(135deg, #A855F7, #EC4899)" }}
+              className="gap-2"
+            >
+              确认转接
             </Button>
           </DialogFooter>
         </DialogContent>

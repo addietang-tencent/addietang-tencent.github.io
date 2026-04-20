@@ -1359,7 +1359,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             {([
               { id: "basic", label: "基础配置" },
               { id: "memory", label: "记忆管理" },
-              { id: "files", label: "文件空间" },
+              { id: "files", label: "网盘管理" },
               { id: "doctor", label: "龙虾医院" },
             ] as { id: string; label: string }[]).map((tab) => (
               <button
@@ -1969,7 +1969,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </div>
           )}
 
-          {/* 文件空间 tab */}
+          {/* 网盘管理 tab */}
           {activeDetailTab === "files" && (
             <FileSpace
               clawName={clawName}

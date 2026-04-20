@@ -1271,8 +1271,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <span
                   className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap flex-shrink-0"
                   style={{
-                    background: "#F3F4F6",
-                    color: "#9CA3AF",
+                    background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))",
+                    color: "rgba(0,122,255,0.5)",
                     borderRadius: "0.375rem",
                   }}
                 >
@@ -2573,36 +2573,85 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
             访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
           </div>
-          {/* 链接和 Token */}
-          <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
-            <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
-              <button
-                onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
-                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
+          {/* 链接和 Token - 根据 agentType 区分字段文案 */}
+          {(claw as any).agentType === "lightclawace" ? (
+            /* LightclawACE：面板链接 + 密码（初始密码提示） */
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <div className="flex items-center gap-1 shrink-0 w-auto">
+                  <span className="text-xs text-gray-500 shrink-0">初始密码</span>
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="16" x2="12" y2="12"/>
+                          <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-[200px] text-center">
+                        若已在面板内修改了密码，请使用新密码登录
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0 ml-1">{webUIToken}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制密码"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">密码</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
-              <button
-                onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制密码"); }}
-                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
+          ) : (
+            /* OpenClaw： WebSocket URL + 网关令牌（保持原样） */
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">网关令牌</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-          {/* 提示文字 */}
+          )}
+          {/* 提示文字 - 根据类型区分 */}
           <p className="text-xs text-gray-500 mt-1">
-            用浏览器打开 WebSocket URL，如面板需要填入密码，则将密码复制并粘贴过去，即可进入面板。
+            {(claw as any).agentType === "lightclawace"
+              ? "用浏览器打开面板链接，如面板需要填入密码，则将密码复制并粘贴过去，即可进入面板。"
+              : "用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。"}
           </p>
           <div className="flex justify-center pt-1">
             <Button

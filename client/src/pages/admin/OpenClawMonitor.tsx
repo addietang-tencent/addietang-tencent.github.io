@@ -13,6 +13,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -972,27 +977,37 @@ export default function AgentMonitor() {
                       {/* 标签 */}
                       <td className="px-4 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                          <HoverCard openDelay={100} closeDelay={150}>
+                            <HoverCardTrigger asChild>
                               <button className="inline-flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                               </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
+                            </HoverCardTrigger>
+                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
                               <div className="grid grid-cols-2 bg-gray-50 border-b border-gray-100 px-3 py-2">
                                 <span className="text-xs font-semibold text-gray-600">标签键</span>
                                 <span className="text-xs font-semibold text-gray-600">标签値</span>
                               </div>
                               <div className="divide-y divide-gray-100">
                                 {claw.tags.map((tag, i) => (
-                                  <div key={i} className="grid grid-cols-2 px-3 py-2">
-                                    <span className="text-xs text-gray-600 truncate pr-2">{tag.key}</span>
-                                    <span className="text-xs text-gray-500 truncate">{tag.value}</span>
+                                  <div key={i} className="grid grid-cols-2 px-3 py-2 gap-1">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-xs text-gray-600 truncate block max-w-full cursor-default">{tag.key}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left"><span>{tag.key}</span></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-xs text-gray-500 truncate block max-w-full cursor-default">{tag.value}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="right"><span>{tag.value}</span></TooltipContent>
+                                    </Tooltip>
                                   </div>
                                 ))}
                               </div>
-                            </TooltipContent>
-                          </Tooltip>
+                            </HoverCardContent>
+                          </HoverCard>
                         ) : (
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                         )}
@@ -1338,18 +1353,24 @@ export default function AgentMonitor() {
           {pendingTags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {pendingTags.map((tag) => (
-                <span
-                  key={tag.key + ':' + tag.value}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 font-medium"
-                >
-                  {tag.key}：{tag.value}
-                  <button
-                    className="ml-0.5 text-blue-400 hover:text-blue-600 transition-colors"
-                    onClick={() => setPendingTags(prev => prev.filter(t => !(t.key === tag.key && t.value === tag.value)))}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                <Tooltip key={tag.key + ':' + tag.value}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 font-medium max-w-[200px]"
+                    >
+                      <span className="truncate">{tag.key}：{tag.value}</span>
+                      <button
+                        className="ml-0.5 text-blue-400 hover:text-blue-600 transition-colors flex-shrink-0"
+                        onClick={() => setPendingTags(prev => prev.filter(t => !(t.key === tag.key && t.value === tag.value)))}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span>{tag.key}：{tag.value}</span>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
           )}
@@ -1359,17 +1380,26 @@ export default function AgentMonitor() {
             <div className="text-sm font-medium text-gray-700">添加标签</div>
             <div className="flex items-center gap-2">
               {/* 标签键下拉 */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <Popover open={keyDropdownOpen} onOpenChange={setKeyDropdownOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      className="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors"
-                      onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
-                    >
-                      <span className={addingKey ? 'text-gray-800' : 'text-gray-400'}>{addingKey || '选择标签键'}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </button>
-                  </PopoverTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                          onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
+                        >
+                          <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-gray-800' : 'text-gray-400'}`}>{addingKey || '选择标签键'}</span>
+                          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-1" />
+                        </button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    {addingKey && (
+                      <TooltipContent side="top">
+                        <span>{addingKey}</span>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
                   <PopoverContent className="w-72 p-0" align="start" side="bottom">
                     {/* 搜索框 */}
                     <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
@@ -1410,18 +1440,27 @@ export default function AgentMonitor() {
               <span className="text-gray-400 text-sm flex-shrink-0">:</span>
 
               {/* 标签値下拉（必须先选键） */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 {addingKey ? (
                   <Popover open={valueDropdownOpen} onOpenChange={setValueDropdownOpen}>
-                    <PopoverTrigger asChild>
-                      <button
-                        className="w-full flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors"
-                        onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
-                      >
-                        <span className={addingValue ? 'text-gray-800' : 'text-gray-400'}>{addingValue || '选择标签値'}</span>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      </button>
-                    </PopoverTrigger>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                            onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
+                          >
+                            <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-gray-800' : 'text-gray-400'}`}>{addingValue || '选择标签値'}</span>
+                            <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-1" />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      {addingValue && (
+                        <TooltipContent side="top">
+                          <span>{addingValue}</span>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
                     <PopoverContent className="w-48 p-0" align="start" side="bottom">
                       <div className="max-h-44 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
                         {(DEMO_TAG_KEY_VALUES[addingKey] || []).map(v => (
@@ -1439,7 +1478,7 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <div className="w-full px-3 py-2 text-sm border border-gray-100 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed">
+                  <div className="w-full px-3 py-2 text-sm border border-gray-100 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed truncate">
                     请先选择标签键
                   </div>
                 )}

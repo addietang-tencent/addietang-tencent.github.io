@@ -429,11 +429,11 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
-  { id: 'oc-7', name: 'OpenClaw-预发布环境', createdBy: 'admin', status: 'running', createdAt: '2026-04-05T11:00:00Z', distributionStatus: 'success', distributedVersion: '0.8.0', groupIds: ['grp-1', 'grp-2'] },
-  { id: 'oc-6', name: 'OpenClaw-回归测试', createdBy: 'dev-team', status: 'running', createdAt: '2026-04-01T09:30:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2', 'grp-3'] },
-  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-3'] },
-  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['grp-2'], failReason: '命令下发失败' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2'] },
-  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-2'] },
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0', groupIds: ['grp-1', 'grp-2', 'grp-3'] },
+  { id: 'oc-7', name: 'OpenClaw-预发布环境', createdBy: 'admin', status: 'running', createdAt: '2026-04-05T11:00:00Z', distributionStatus: 'success', distributedVersion: '0.8.0', groupIds: ['grp-1', 'grp-2'], agentType: 'OpenClaw', agentVersion: '2026.3.28' },
+  { id: 'oc-6', name: 'OpenClaw-回归测试', createdBy: 'dev-team', status: 'running', createdAt: '2026-04-01T09:30:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.4.10' },
+  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.3.28' },
+  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['grp-2'], failReason: '命令下发失败', agentType: 'OpenClaw', agentVersion: '2026.3.15' },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2'], agentType: 'OpenClaw', agentVersion: '2026.3.8' },
+  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-2'], agentType: 'OpenClaw', agentVersion: '2026.4.1' },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0', groupIds: ['grp-1', 'grp-2', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.3.20' },
 ];

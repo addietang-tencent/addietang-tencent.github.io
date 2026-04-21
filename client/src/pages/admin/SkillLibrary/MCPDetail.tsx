@@ -604,6 +604,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
         instances={MOCK_OPENCLAW_INSTANCES}
         hideCreatorAndGroup
         singleStatusFilter
+        showVersionFilter
+        showConfirmDialog
         descriptionNode={
           <>
             将 <span className="font-semibold">「{mcp.displayName || mcp.name}」</span> 部署至所选实例。
@@ -611,6 +613,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
             筛选限制：仅限智能体类型为 <span className="font-medium">OpenClaw</span> 且状态为{' '}
             <span className="font-medium">运行中</span> 的实例；同时，该实例的下发状态须为{' '}
             <span className="font-medium">未下发</span> 或 <span className="font-medium">下发失败</span>。
+            <br />
+            默认只下发至 <span className="font-medium">26.3.28 版本后</span>的实例（旧版本不支持 MCP 服务）。
           </>
         }
       />

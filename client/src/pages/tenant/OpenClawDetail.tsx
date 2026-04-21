@@ -435,9 +435,28 @@ export default function AgentDetail() {
 
   // ── Memory 状态 ──
   // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
-  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('pro');
+  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('free');
   // Pro 版配额是否可用（从管控端获取）
   const [proQuotaAvailable] = useState(true);
+  // 记忆数据是否正在加载中（首次进入时可能较慢）
+  const [memoryLoading, setMemoryLoading] = useState(false);
+  // 标记是否已加载过记忆数据
+  const [memoryDataLoaded, setMemoryDataLoaded] = useState(false);
+
+  // 当用户切换到记忆管理 tab 时，首次需要加载数据（Free 版首次可能较慢）
+  useEffect(() => {
+    if (activeDetailTab === "memory" && !memoryDataLoaded && (memoryStatus === 'free' || memoryStatus === 'pro')) {
+      // 首次进入记忆管理，显示加载状态
+      setMemoryLoading(true);
+      // 模拟后端加载延迟（Free 版用户首次加载较慢，3-5秒）
+      const loadTime = memoryStatus === 'free' ? 4000 : 1500;
+      const timer = setTimeout(() => {
+        setMemoryLoading(false);
+        setMemoryDataLoaded(true);
+      }, loadTime);
+      return () => clearTimeout(timer);
+    }
+  }, [activeDetailTab, memoryDataLoaded, memoryStatus]);
 
   // ── 智能体迁移状态 ──
   const [migrationOpen, setMigrationOpen] = useState(false);
@@ -2024,6 +2043,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 memoryStatus={memoryStatus}
                 proQuotaAvailable={proQuotaAvailable}
                 showConfidence={false}
+                isLoading={memoryLoading}
                 onStatusChange={async (newStatus) => {
                   // TODO: 调用后端接口切换 Memory 状态
                   // await api.changeMemoryStatus(clawId, newStatus);

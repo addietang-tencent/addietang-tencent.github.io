@@ -77,6 +77,9 @@ export const INSTANCE_STATUS_MAP: Record<InstanceStatus, { label: string; color:
   error:    { label: '异常', color: 'text-red-700 bg-red-50' },
 };
 
+/** Agent 类型 */
+export type AgentType = 'OpenClaw' | 'Other';
+
 export interface AgentInstance {
   id: string;
   name: string;
@@ -90,6 +93,10 @@ export interface AgentInstance {
   groupIds: string[];
   /** 下发失败原因（仅 distributionStatus 为 failed 时有值） */
   failReason?: string;
+  /** Agent 类型 */
+  agentType?: AgentType;
+  /** Agent 版本号 */
+  agentVersion?: string;
 }
 
 export interface DistributionRecord {

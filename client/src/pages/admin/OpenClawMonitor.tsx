@@ -94,6 +94,13 @@ const STATUS_CONFIG: Record<ClawStatus, {
 
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
 
+// Agent 类型显示名称映射
+const AGENT_TYPE_DISPLAY: Record<string, string> = {
+  'OpenClaw':    'OpenClaw',
+  'Hermes':      'Hermes Agent',
+  'LightclawACE': 'LightClaw ACE',
+};
+
 const MOCK_CLAWS: Claw[] = [
   { id: "1",  instanceId: "ins-g71c6vud", name: "Alice的技术助手", tags: [{ key: "所属产品", value: "gpulab" }, { key: "env", value: "production" }],    creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
@@ -282,6 +289,9 @@ export default function AgentMonitor() {
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
+  // 批量升级失败结果弹窗
+  const [showUpgradeResultDialog, setShowUpgradeResultDialog] = useState(false);
+  const [upgradeFailedAgents, setUpgradeFailedAgents] = useState<{ name: string; instanceId: string; agentType: string; reason: string }[]>([]);
 
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
@@ -337,12 +347,55 @@ export default function AgentMonitor() {
     });
   };
 
+  // agentType 映射：Claw 中的 agentType → ImageManagement 中的 agentType
+  const CLAW_TO_IMAGE_AGENT_TYPE: Record<string, string> = {
+    'OpenClaw':    'OpenClaw',
+    'Hermes':      'HermesAgent',
+    'LightclawACE': 'LightClawACE',
+  };
   const confirmBatchUpgrade = () => {
     const ids = Array.from(selectedIds);
-    setClaws(prev => prev.map(c => ids.includes(c.id) ? { ...c, status: "upgrading" as ClawStatus } : c));
-    setSelectedIds(new Set());
+    const selectedClaws = claws.filter(c => ids.includes(c.id));
+    // 读取镜像管理中的生效镜像（若 localStorage 为空，使用默认公共镜像，全部生效）
+    let images: { agentType: string; active: boolean }[] = [];
+    try {
+      const raw = localStorage.getItem('admin_images');
+      if (raw) {
+        images = JSON.parse(raw);
+      } else {
+        // 默认公共镜像全部生效
+        images = [
+          { agentType: 'OpenClaw',    active: true },
+          { agentType: 'HermesAgent', active: true },
+          { agentType: 'LightClawACE', active: true },
+        ];
+      }
+    } catch { /* ignore */ }
+    // 统计每种 agentType 是否有生效镜像
+    const activeImageTypes = new Set(images.filter(i => i.active).map(i => i.agentType));
+    // 分组：可升级 vs 无法升级
+    const failed: { name: string; instanceId: string; agentType: string; reason: string }[] = [];
+    const upgradableIds: string[] = [];
+    for (const c of selectedClaws) {
+      const imageAgentType = CLAW_TO_IMAGE_AGENT_TYPE[c.agentType] ?? c.agentType;
+      if (!activeImageTypes.has(imageAgentType)) {
+        failed.push({ name: c.name, instanceId: c.instanceId, agentType: c.agentType, reason: `当前没有生效的 ${c.agentType} 镜像，以下 agent 无法升级` });
+      } else {
+        upgradableIds.push(c.id);
+      }
+    }
     setShowBatchUpgradeDialog(false);
-    toast.success(`已开始升级 ${ids.length} 个实例`);
+    if (failed.length > 0) {
+      setUpgradeFailedAgents(failed);
+      setShowUpgradeResultDialog(true);
+    }
+    if (upgradableIds.length > 0) {
+      setClaws(prev => prev.map(c => upgradableIds.includes(c.id) ? { ...c, status: 'upgrading' as ClawStatus } : c));
+      setSelectedIds(new Set());
+      toast.success(`已开始升级 ${upgradableIds.length} 个实例`);
+    } else if (failed.length === 0) {
+      setSelectedIds(new Set());
+    }
   };
 
   // 详情抽屉
@@ -501,7 +554,7 @@ export default function AgentMonitor() {
     : selectedCount > 20
     ? '批量更新数量不可大丠20'
     : hasNonAgent
-    ? '仅Agent支持更新'
+    ? '仅OpenClaw支持更新'
     : hasNonRunning
     ? '仅运行中的实例支持更新'
     : '';
@@ -968,7 +1021,7 @@ export default function AgentMonitor() {
                       <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
                       <td className="px-4 py-4">
-                        <span className="text-xs font-medium text-gray-500">{claw.agentType}</span>
+                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
                       </td>
                       {/* Agent 版本 */}
                       <td className="px-4 py-4">
@@ -1295,7 +1348,7 @@ export default function AgentMonitor() {
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className="text-xs font-medium text-gray-500">{c.agentType}</span>
+                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
                       </td>
                       <td className="px-4 py-2.5">
                         <span className="font-mono text-xs text-gray-500">{c.version}</span>
@@ -1329,6 +1382,59 @@ export default function AgentMonitor() {
         </DialogContent>
       </Dialog>
 
+
+      {/* 批量升级失败结果弹窗 */}
+      <Dialog open={showUpgradeResultDialog} onOpenChange={setShowUpgradeResultDialog}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900">下发失败提醒</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
+            <p>当前没有生效的 OpenClaw 镜像，以下 agent 无法升级。</p>
+            <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
+          </div>
+          <p className="text-sm text-gray-600">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
+          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-xl">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
+                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">下发失败原因</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {upgradeFailedAgents.map((a, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50/50">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white" style={{ fontSize: '10px' }}>C</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{a.name}</div>
+                          <div className="text-xs text-gray-400 font-mono">{a.instanceId}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[a.agentType] ?? a.agentType}</span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs text-red-600">当前没有生效的 {AGENT_TYPE_DISPLAY[a.agentType] ?? a.agentType} 镜像</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button onClick={() => setShowUpgradeResultDialog(false)} className="bg-blue-500 hover:bg-blue-600 text-white">
+              我知道了
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 配置默认标签弹窗 */}
       <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); setValueDropdownOpen(false); } }}>

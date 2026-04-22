@@ -7,6 +7,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,12 +26,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ChevronDown, Check } from 'lucide-react';
+import { Search, ChevronDown, Check, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope, type AgentInstance, type Group } from './types';
 
 /** 筛选选项类型 —— 多选 */
 type FilterOption = 'not_distributed' | 'failed' | 'pending_update';
+
+/** 版本筛选选项 */
+type VersionFilterOption = 'all' | 'gte_0328' | 'lt_0328';
+
+/** 版本筛选选项配置 */
+const VERSION_FILTER_OPTIONS: { key: VersionFilterOption; label: string }[] = [
+  { key: 'all', label: '全部' },
+  { key: 'gte_0328', label: '26.3.28版本后（含28）' },
+  { key: 'lt_0328', label: '26.3.28版本前' },
+];
+
+/** 版本号比较基准：2026.3.28 */
+const VERSION_THRESHOLD = '2026.3.28';
+
+/** 解析版本号为可比较的数值数组 */
+function parseVersion(v: string): number[] {
+  return v.split('.').map(Number);
+}
+
+/** 比较两个版本号，返回 -1/0/1 */
+function compareVersion(a: string, b: string): number {
+  const pa = parseVersion(a);
+  const pb = parseVersion(b);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0;
+    const nb = pb[i] || 0;
+    if (na < nb) return -1;
+    if (na > nb) return 1;
+  }
+  return 0;
+}
 
 interface BatchDistributeDialogProps {
   open: boolean;
@@ -44,6 +84,16 @@ interface BatchDistributeDialogProps {
   instances: AgentInstance[];
   /** 分组列表（外部传入，showScopeFilter=true 时必传） */
   groups?: Group[];
+  /** MCP 场景：隐藏实例列表中的创建人、分组信息 */
+  hideCreatorAndGroup?: boolean;
+  /** MCP 场景：下发状态筛选改为单选下拉（只有 未下发 / 下发失败），去掉待更新和多选逻辑 */
+  singleStatusFilter?: boolean;
+  /** MCP 场景：自定义描述 ReactNode，覆盖默认描述 */
+  descriptionNode?: React.ReactNode;
+  /** MCP 场景：显示版本筛选下拉，默认 false */
+  showVersionFilter?: boolean;
+  /** MCP 场景：下发前需要二次确认弹窗，默认 false */
+  showConfirmDialog?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
@@ -66,6 +116,11 @@ export default function BatchDistributeDialog({
   showScopeFilter = true,
   instances,
   groups = [],
+  hideCreatorAndGroup = false,
+  singleStatusFilter = false,
+  descriptionNode,
+  showVersionFilter = false,
+  showConfirmDialog = false,
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -82,6 +137,11 @@ export default function BatchDistributeDialog({
   const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState('');
   const scopeDropdownRef = useRef<HTMLDivElement>(null);
+  /** 版本筛选 */
+  const [versionFilter, setVersionFilter] = useState<VersionFilterOption>('gte_0328');
+  /** 二次确认弹窗 */
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmInput, setConfirmInput] = useState('');
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -100,14 +160,17 @@ export default function BatchDistributeDialog({
   // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
   useEffect(() => {
     if (open) {
-      // 默认只选中 "未下发" 和 "下发失败"，不含 "待更新"
-      setStatusFilters(['not_distributed', 'failed']);
+      // MCP 场景默认「全部下发状态」（空数组），Skill 场景默认选中「未下发」+「下发失败」
+      setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
       setSearchQuery('');
       setCurrentPage(1);
       setPageSize(20);
       setFilterDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
+      setVersionFilter('gte_0328');
+      setConfirmDialogOpen(false);
+      setConfirmInput('');
       // 根据 Skill 应用范围设置默认筛选
       if (showScopeFilter) {
         if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
@@ -222,6 +285,16 @@ export default function BatchDistributeDialog({
 
       return matchesSearch && matchesStatus && matchesScope;
     })
+    // 版本筛选（仅 MCP 场景启用）
+    .filter(instance => {
+      if (!showVersionFilter || versionFilter === 'all') return true;
+      const ver = instance.agentVersion;
+      if (!ver) return versionFilter === 'lt_0328'; // 无版本信息视为旧版
+      const cmp = compareVersion(ver, VERSION_THRESHOLD);
+      if (versionFilter === 'gte_0328') return cmp >= 0;
+      if (versionFilter === 'lt_0328') return cmp < 0;
+      return true;
+    })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // 分页计算
@@ -251,6 +324,16 @@ export default function BatchDistributeDialog({
   };
 
   const handleDistribute = () => {
+    if (showConfirmDialog) {
+      // 打开二次确认弹窗
+      setConfirmInput('');
+      setConfirmDialogOpen(true);
+      return;
+    }
+    doDistribute();
+  };
+
+  const doDistribute = () => {
     const selectedInstancesData = instances.filter(i => selectedInstances.includes(i.id));
     
     if (onDistributionStart) {
@@ -259,11 +342,18 @@ export default function BatchDistributeDialog({
     
     setSelectedInstances([]);
     setSearchQuery('');
-    setStatusFilters(['not_distributed', 'failed']);
+    setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
     setScopeFilters([]);
     setCurrentPage(1);
     setPageSize(20);
+    setConfirmDialogOpen(false);
+    setConfirmInput('');
     onOpenChange(false);
+  };
+
+  const handleConfirmDistribute = () => {
+    if (confirmInput !== '确认下发') return;
+    doDistribute();
   };
 
   const getStatusDisplay = (instance: AgentInstance) => {
@@ -289,16 +379,24 @@ export default function BatchDistributeDialog({
   const isIndeterminate = selectedInFilterCount > 0 && selectedInFilterCount < allIds.length;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? `(v${skillVersion})` : ''}</span> 下发到选中的 Agent 云服务器，仅支持状态为运行中，并且下发状态为未下发、下发失败、待更新的实例。
+          <DialogDescription asChild>
+            <div className="text-sm text-muted-foreground">
+              {descriptionNode || (
+                <>
+                  <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
+                  <p className="mt-1">筛选限制：仅限智能体类型为 <span className="font-medium text-gray-700">OpenClaw</span> 且状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}或 <span className="font-medium text-gray-700">下发失败</span></>}。</p>
+                </>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 
-        {/* 搜索框 + 应用范围筛选 + 状态下拉 */}
+        {/* 搜索框 + 应用范围筛选 + 版本筛选 + 状态下拉 */}
         <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -309,6 +407,25 @@ export default function BatchDistributeDialog({
               className="pl-10"
             />
           </div>
+          {/* 版本筛选 — MCP 场景 */}
+          {showVersionFilter && (
+            <Select
+              value={versionFilter}
+              onValueChange={(value) => {
+                setVersionFilter(value as VersionFilterOption);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-24 h-9">
+                <span>版本</span>
+              </SelectTrigger>
+              <SelectContent>
+                {VERSION_FILTER_OPTIONS.map(opt => (
+                  <SelectItem key={opt.key} value={opt.key}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {/* 分组筛选 — 扁平多选列表 */}
           {showScopeFilter && (
           <div className="relative" ref={scopeDropdownRef}>
@@ -480,6 +597,35 @@ export default function BatchDistributeDialog({
             })()}
           </div>
           )}
+          {singleStatusFilter ? (
+            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」 ── */
+            <Select
+              value={
+                statusFilters.length === 0
+                  ? '__all__'
+                  : statusFilters.length === 1
+                    ? statusFilters[0]
+                    : '__all__'
+              }
+              onValueChange={(value) => {
+                if (value === '__all__') {
+                  setStatusFilters([]);
+                } else {
+                  setStatusFilters([value as FilterOption]);
+                }
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-36 h-9">
+                <SelectValue placeholder="全部下发状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">全部下发状态</SelectItem>
+                <SelectItem value="not_distributed">未下发</SelectItem>
+                <SelectItem value="failed">下发失败</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
           <div className="relative" ref={filterDropdownRef}>
             <Tooltip delayDuration={1000} open={filterDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
@@ -564,6 +710,7 @@ export default function BatchDistributeDialog({
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* 实例列表 */}
@@ -603,6 +750,13 @@ export default function BatchDistributeDialog({
                     <span className="text-sm font-medium text-gray-900 truncate">{instance.name}</span>
                     <span className="text-xs text-gray-400 font-mono flex-shrink-0">{instance.id}</span>
                   </div>
+                  {/* Agent 类型和版本信息 — MCP 场景显示 */}
+                  {showVersionFilter && instance.agentType && (
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {instance.agentType}{instance.agentVersion ? `(${instance.agentVersion})` : ''}
+                    </div>
+                  )}
+                  {!hideCreatorAndGroup && (
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="text-xs text-gray-500">创建人：{instance.createdBy}</span>
                     {(() => {
@@ -626,6 +780,7 @@ export default function BatchDistributeDialog({
                       );
                     })()}
                   </div>
+                  )}
                 </div>
                 <div className="flex-shrink-0 self-center">
                   {getStatusDisplay(instance)}
@@ -689,5 +844,54 @@ export default function BatchDistributeDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* 二次确认弹窗 */}
+    <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+      <AlertDialogContent className="sm:max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-amber-500" />
+            风险提示
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-4">
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
+                <p className="text-sm text-amber-700 leading-relaxed">
+                  配置 MCP 会修改 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">~/.openclaw/openclaw.json</code> 文件中的 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">mcp.servers</code> 相关配置，修改后需重启 gateway 生效，将会导致实例短暂不可用，可能影响正在运行的任务。
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 mb-2">请输入<span className="font-semibold text-gray-900">「确认下发」</span>后开始执行。</p>
+                <Input
+                  value={confirmInput}
+                  onChange={(e) => setConfirmInput(e.target.value)}
+                  placeholder="确认下发"
+                  className="mt-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && confirmInput === '确认下发') {
+                      handleConfirmDistribute();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => { setConfirmDialogOpen(false); setConfirmInput(''); }}>
+            取消
+          </AlertDialogCancel>
+          <Button
+            onClick={handleConfirmDistribute}
+            disabled={confirmInput !== '确认下发'}
+            className="text-white"
+            style={{ background: confirmInput === '确认下发' ? 'linear-gradient(135deg, #007AFF, #5856D6)' : undefined }}
+          >
+            确认下发
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

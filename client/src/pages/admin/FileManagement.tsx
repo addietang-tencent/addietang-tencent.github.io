@@ -31,8 +31,7 @@ import {
   UserCheck,
   ShoppingCart,
   Trash2,
-  RotateCcw,
-  ArrowRightLeft
+  RotateCcw
 } from "lucide-react";
 
 // Updated Mock Data for Enterprise Spaces
@@ -41,16 +40,13 @@ const ENTERPRISE_SPACES = [
   { id: "ent-002", name: "初始技能包", type: "公共", used: "8GB", quota: "50GB", expiry: "永久有效" },
 ];
 
-// Mock Data for Personal Spaces (Flat Structure)
+// Mock Data for Personal Spaces (Flat Structure) - 已去重
 const PERSONAL_SPACES_DATA = [
   { id: "user-ins-1", instanceId: "ins-u25p9jqg", instanceName: "Noah的分析助手", creator: "noah@acompany.com", avatar: "N", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false, wasEnabled: true, deletedDaysAgo: 20 }, // 永久删除状态（超过15天）
-  { id: "user-ins-2", instanceId: "ins-u25p9jqg", instanceName: "Noah的分析助手", creator: "alice@acompany.com", avatar: "A", type: "个人", used: "3GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-3", instanceId: "ins-v88x2kww", instanceName: "Noah的测试沙盒", creator: "noah@acompany.com", avatar: "N", type: "个人", used: "2GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-4", instanceId: "ins-t14o8ipf", instanceName: "Mia的新助手", creator: "mia@acompany.com", avatar: "M", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
-  { id: "user-ins-5", instanceId: "ins-t14o8ipf", instanceName: "Mia的新助手", creator: "bob@acompany.com", avatar: "B", type: "个人", used: "8GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-6", instanceId: "ins-s03n7heo", instanceName: "Leo的项目助手", creator: "leo@acompany.com", avatar: "L", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-7", instanceId: "ins-x11m9zzz", instanceName: "Leo的文档库", creator: "leo@acompany.com", avatar: "L", type: "个人", used: "15GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
-  { id: "user-ins-8", instanceId: "ins-x11m9zzz", instanceName: "Leo的文档库", creator: "carol@acompany.com", avatar: "C", type: "个人", used: "12GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-9", instanceId: "ins-p99k3mnn", instanceName: "Emma的数据分析", creator: "emma@acompany.com", avatar: "E", type: "个人", used: "7GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-10", instanceId: "ins-q22l4roo", instanceName: "David的代码助手", creator: "david@acompany.com", avatar: "D", type: "个人", used: "9GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-11", instanceId: "ins-r33m5spp", instanceName: "Sarah的研究工具", creator: "sarah@acompany.com", avatar: "S", type: "个人", used: "4GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
@@ -61,15 +57,6 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-16", instanceId: "ins-x88r0xuu", instanceName: "Mike的产品分析", creator: "mike@acompany.com", avatar: "M", type: "个人", used: "13GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-17", instanceId: "ins-y99s1yvv", instanceName: "Kate的客服助手", creator: "kate@acompany.com", avatar: "K", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-18", instanceId: "ins-z00t2zww", instanceName: "Ryan的技术文档", creator: "ryan@acompany.com", avatar: "R", type: "个人", used: "10GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
-];
-
-// 活跃实例数据（用于转接时选择）
-const ACTIVE_INSTANCES = [
-  { id: "ins-active-1", name: "项目协作助手", creator: "admin@acompany.com", avatar: "P" },
-  { id: "ins-active-2", name: "数据分析平台", creator: "admin@acompany.com", avatar: "D" },
-  { id: "ins-active-3", name: "研发工具集", creator: "admin@acompany.com", avatar: "R" },
-  { id: "ins-active-4", name: "客户服务中心", creator: "admin@acompany.com", avatar: "C" },
-  { id: "ins-active-5", name: "营销助手Pro", creator: "admin@acompany.com", avatar: "M" },
 ];
 
 const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
@@ -123,13 +110,11 @@ export default function FileManagement() {
   const [instanceToDisable, setInstanceToDisable] = useState<{ id: string; name: string } | null>(null);
   const [batchEnableDialogOpen, setBatchEnableDialogOpen] = useState(false);
   const [singleEnableDialogOpen, setSingleEnableDialogOpen] = useState(false);
-  const [recoverDialogOpen, setRecoverDialogOpen] = useState(false);
   const [autoBindToggleDialogOpen, setAutoBindToggleDialogOpen] = useState(false);
   const [allowUserSelfEnableDialogOpen, setAllowUserSelfEnableDialogOpen] = useState(false);
   const [pendingAutoBindValue, setPendingAutoBindValue] = useState<boolean | null>(null);
   const [pendingAllowUserSelfEnableValue, setPendingAllowUserSelfEnableValue] = useState<boolean | null>(null);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
-  const [instanceToRecover, setInstanceToRecover] = useState<{ id: string; name: string } | null>(null);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [instanceToPurchase, setInstanceToPurchase] = useState<{ id: string; name: string } | null>(null);
   const [selectedCapacity, setSelectedCapacity] = useState<string>("50GB");
@@ -141,13 +126,15 @@ export default function FileManagement() {
   const [instanceToExpand, setInstanceToExpand] = useState<{ id: string; name: string } | null>(null);
   const [expandCapacity, setExpandCapacity] = useState<string>("100GB");
   const [recyclebinOpen, setRecyclebinOpen] = useState(false);
+  const [enableChoiceDialogOpen, setEnableChoiceDialogOpen] = useState(false);
+  const [instanceToEnableChoice, setInstanceToEnableChoice] = useState<{ id: string; name: string } | null>(null);
+  const [recyclebinRecoverDialogOpen, setRecyclebinRecoverDialogOpen] = useState(false);
+  const [instanceToRecoverFromRecyclebin, setInstanceToRecoverFromRecyclebin] = useState<{ id: string; name: string } | null>(null);
+  const [recyclebinDeleteDialogOpen, setRecyclebinDeleteDialogOpen] = useState(false);
+  const [instanceToDeletePermanently, setInstanceToDeletePermanently] = useState<{ id: string; name: string } | null>(null);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
-  const [instanceToTransfer, setInstanceToTransfer] = useState<{ id: string; name: string } | null>(null);
-  const [transferTargetInstance, setTransferTargetInstance] = useState<string>("");
-  const [transferCapacity, setTransferCapacity] = useState<string>("50GB");
-  const [transferDuration, setTransferDuration] = useState<string>("3");
-  const [recoverCapacity, setRecoverCapacity] = useState<string>("50GB");
-  const [recoverDuration, setRecoverDuration] = useState<string>("3");
+  const [instanceToTransfer, setInstanceToTransfer] = useState<{ id: string; name: string; instanceId: string } | null>(null);
+  const [selectedTargetInstance, setSelectedTargetInstance] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -157,21 +144,16 @@ export default function FileManagement() {
       setInstanceToDisable({ id: instanceId, name: instanceName });
       setDisableDialogOpen(true);
     } else {
-      // 检查是否已永久删除
-      if (wasEverEnabled && isPermanentlyDeleted(instanceId)) {
-        // 已永久删除，打开购买对话框
-        setInstanceToPurchase({ id: instanceId, name: instanceName });
-        setPurchaseDialogOpen(true);
-        return;
-      }
+      // 如果当前是关闭状态
+      // 检查回收站中是否有该实例自己的网盘（15天内可恢复）
+      const hasOwnRecyclableSpace = wasEverEnabled && !isPermanentlyDeleted(instanceId);
       
-      // 如果当前是关闭状态，判断是恢复还是首次启用
-      if (wasEverEnabled) {
-        // 曾经启用过，弹出恢复对话框
-        setInstanceToRecover({ id: instanceId, name: instanceName });
-        setRecoverDialogOpen(true);
+      if (hasOwnRecyclableSpace) {
+        // 回收站中有该实例自己的网盘，弹出选择弹窗（新启用 vs 恢复之前的）
+        setInstanceToEnableChoice({ id: instanceId, name: instanceName });
+        setEnableChoiceDialogOpen(true);
       } else {
-        // 首次启用，弹出开启确认对话框
+        // 回收站中没有该实例自己的网盘，直接弹出首次启用确认对话框（不再检查其他实例）
         setInstanceToEnable({ id: instanceId, name: instanceName });
         setSingleEnableDialogOpen(true);
       }
@@ -244,6 +226,37 @@ export default function FileManagement() {
   const handleCancelSingleEnable = () => {
     setSingleEnableDialogOpen(false);
     setInstanceToEnable(null);
+  };
+
+  // 选择新启用
+  const handleChooseNewEnable = () => {
+    if (instanceToEnableChoice) {
+      setInstanceToEnable({ id: instanceToEnableChoice.id, name: instanceToEnableChoice.name });
+      setEnableChoiceDialogOpen(false);
+      setInstanceToEnableChoice(null);
+      setSingleEnableDialogOpen(true);
+    }
+  };
+
+  // 选择恢复已有
+  const handleChooseRecoverExisting = () => {
+    if (!instanceToEnableChoice) {
+      setEnableChoiceDialogOpen(false);
+      setInstanceToEnableChoice(null);
+      return;
+    }
+    
+    // 直接恢复该实例自己的网盘（因为只有该实例自己有网盘时才会显示选择弹窗）
+    handleDirectRecover(instanceToEnableChoice.id);
+    
+    setEnableChoiceDialogOpen(false);
+    setInstanceToEnableChoice(null);
+  };
+
+  // 取消选择
+  const handleCancelEnableChoice = () => {
+    setEnableChoiceDialogOpen(false);
+    setInstanceToEnableChoice(null);
   };
 
   const handleAutoBindToggle = (checked: boolean) => {
@@ -356,30 +369,6 @@ export default function FileManagement() {
     return basePrice * duration;
   };
 
-  // 计算转接价格
-  const calculateTransferPrice = () => {
-    const capacityPrices: Record<string, number> = {
-      "50GB": 2,
-      "100GB": 4,
-      "500GB": 8
-    };
-    const basePrice = capacityPrices[transferCapacity] || 2;
-    const duration = parseInt(transferDuration);
-    return basePrice * duration;
-  };
-
-  // 计算恢复价格
-  const calculateRecoverPrice = () => {
-    const capacityPrices: Record<string, number> = {
-      "50GB": 2,
-      "100GB": 4,
-      "500GB": 8
-    };
-    const basePrice = capacityPrices[recoverCapacity] || 2;
-    const duration = parseInt(recoverDuration);
-    return basePrice * duration;
-  };
-
   // 处理扩容
   const handleExpand = (instanceId: string, instanceName: string) => {
     setInstanceToExpand({ id: instanceId, name: instanceName });
@@ -465,80 +454,121 @@ export default function FileManagement() {
     });
   };
 
-  // 打开转接弹窗
-  const handleOpenTransferDialog = (instanceId: string, instanceName: string) => {
-    setInstanceToTransfer({ id: instanceId, name: instanceName });
-    setTransferTargetInstance("");
-    setTransferCapacity("50GB");
-    setTransferDuration("3");
+  // 确认永久删除
+  const handleConfirmPermanentDelete = () => {
+    if (instanceToDeletePermanently) {
+      handlePermanentDelete(instanceToDeletePermanently.id);
+    }
+    setRecyclebinDeleteDialogOpen(false);
+    setInstanceToDeletePermanently(null);
+  };
+
+  // 取消永久删除
+  const handleCancelPermanentDelete = () => {
+    setRecyclebinDeleteDialogOpen(false);
+    setInstanceToDeletePermanently(null);
+  };
+
+  // 直接恢复实例（免费）
+  const handleDirectRecover = (instanceId: string) => {
+    console.log('直接恢复实例:', instanceId);
+    setInstancesEnabled(prev => ({
+      ...prev,
+      [instanceId]: true
+    }));
+    // 清除关闭时间记录
+    setInstancesDisabledTime(prev => {
+      const newTimes = { ...prev };
+      delete newTimes[instanceId];
+      return newTimes;
+    });
+  };
+
+  // 从回收站恢复实例
+  const handleRestoreFromRecyclebin = (instanceId: string, instanceName: string) => {
+    // 打开恢复确认弹窗
+    setInstanceToRecoverFromRecyclebin({ id: instanceId, name: instanceName });
+    setRecyclebinRecoverDialogOpen(true);
+  };
+
+  // 确认从回收站恢复
+  const handleConfirmRecyclebinRecover = () => {
+    if (instanceToRecoverFromRecyclebin) {
+      handleDirectRecover(instanceToRecoverFromRecyclebin.id);
+    }
+    setRecyclebinRecoverDialogOpen(false);
+    setInstanceToRecoverFromRecyclebin(null);
+  };
+
+  // 取消从回收站恢复
+  const handleCancelRecyclebinRecover = () => {
+    setRecyclebinRecoverDialogOpen(false);
+    setInstanceToRecoverFromRecyclebin(null);
+  };
+
+  // 打开转接对话框
+  const handleOpenTransfer = (instanceId: string, instanceName: string, instanceIdString: string) => {
+    setInstanceToTransfer({ id: instanceId, name: instanceName, instanceId: instanceIdString });
+    setSelectedTargetInstance("");
     setTransferDialogOpen(true);
   };
 
   // 确认转接
   const handleConfirmTransfer = () => {
-    if (instanceToTransfer && transferTargetInstance) {
-      // TODO: 调用后端API进行转接
-      console.log('转接实例', instanceToTransfer.id, '至', transferTargetInstance, '容量', transferCapacity, '时长', transferDuration);
-      // 转接成功后从回收站移除
-      setInstancesEverEnabled(prev => {
-        const newEnabled = { ...prev };
-        delete newEnabled[instanceToTransfer.id];
-        return newEnabled;
-      });
+    if (!instanceToTransfer || !selectedTargetInstance) {
+      return;
     }
+    
+    // 执行转接逻辑
+    console.log('转接网盘:', instanceToTransfer.id, '目标实例:', selectedTargetInstance);
+    
+    // 1. 将原实例的网盘标记为永久删除
+    setInstancesEverEnabled(prev => {
+      const newEnabled = { ...prev };
+      delete newEnabled[instanceToTransfer.id];
+      return newEnabled;
+    });
+    
+    // 2. 将目标实例启用并标记为曾经启用过
+    setInstancesEnabled(prev => ({
+      ...prev,
+      [selectedTargetInstance]: true
+    }));
+    setInstancesEverEnabled(prev => ({
+      ...prev,
+      [selectedTargetInstance]: true
+    }));
+    
+    // 3. 清除目标实例的关闭时间（如果有）
+    setInstancesDisabledTime(prev => {
+      const newTimes = { ...prev };
+      delete newTimes[selectedTargetInstance];
+      return newTimes;
+    });
+    
+    // 关闭对话框
     setTransferDialogOpen(false);
     setInstanceToTransfer(null);
-    setTransferTargetInstance("");
-    setTransferCapacity("50GB");
-    setTransferDuration("3");
+    setSelectedTargetInstance("");
   };
 
   // 取消转接
   const handleCancelTransfer = () => {
     setTransferDialogOpen(false);
     setInstanceToTransfer(null);
-    setTransferTargetInstance("");
-    setTransferCapacity("50GB");
-    setTransferDuration("3");
+    setSelectedTargetInstance("");
   };
 
-  // 从回收站恢复实例
-  const handleRestoreFromRecyclebin = (instanceId: string, instanceName: string) => {
-    // 打开恢复对话框（类似续费）
-    setInstanceToRecover({ id: instanceId, name: instanceName });
-    setRecoverCapacity("50GB");
-    setRecoverDuration("3");
-    setRecoverDialogOpen(true);
+  // 获取可转接的目标实例列表（排除当前实例）
+  const getAvailableTargetInstances = () => {
+    if (!instanceToTransfer) return [];
+    return PERSONAL_SPACES_DATA.filter(item => 
+      item.id !== instanceToTransfer.id && // 排除当前实例
+      !instancesEnabled[item.id] && // 只显示未启用的实例
+      !instancesEverEnabled[item.id] // 排除曾经启用过的实例
+    );
   };
 
-  // 确认恢复
-  const handleConfirmRecover = () => {
-    if (instanceToRecover) {
-      console.log('恢复实例', instanceToRecover.id, '容量', recoverCapacity, '时长', recoverDuration);
-      setInstancesEnabled(prev => ({
-        ...prev,
-        [instanceToRecover.id]: true
-      }));
-      // 清除关闭时间记录
-      setInstancesDisabledTime(prev => {
-        const newTimes = { ...prev };
-        delete newTimes[instanceToRecover.id];
-        return newTimes;
-      });
-    }
-    setRecoverDialogOpen(false);
-    setInstanceToRecover(null);
-    setRecoverCapacity("50GB");
-    setRecoverDuration("3");
-  };
-
-  // 取消恢复
-  const handleCancelRecover = () => {
-    setRecoverDialogOpen(false);
-    setInstanceToRecover(null);
-    setRecoverCapacity("50GB");
-    setRecoverDuration("3");
-  };
 
   // 检查实例是否已永久删除（超过15天）
   const isPermanentlyDeleted = (instanceId: string): boolean => {
@@ -878,15 +908,12 @@ export default function FileManagement() {
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[9%]">
                   启用网盘
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[14%]">
-                  操作
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginatedPersonalSpaces.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-12 h-12 text-gray-300" />
                       <p className="text-sm text-gray-500">未找到匹配的记录</p>
@@ -941,44 +968,25 @@ export default function FileManagement() {
                               免费
                             </span>
                           </span>
-                        ) : wasEverEnabled ? (
-                          isPermanentlyDeleted(item.id) ? (
+                        ) : wasEverEnabled && !isPermanentlyDeleted(item.id) ? (
+                          <span className="tabular-nums flex items-center gap-1">
+                            <span>
+                              {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                              <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                                可恢复
+                              </span>
+                            </span>
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="tabular-nums flex items-center gap-1 cursor-help">
-                                    <span className="text-gray-400">-</span>
-                                    <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 text-red-600">
-                                      已删除
-                                    </span>
-                                    <Info className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                                  </span>
+                                  <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs max-w-[200px]">当前实例的网盘免费资源已用光，后续会提供新购，敬请期待！</p>
+                                  <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          ) : (
-                            <span className="tabular-nums flex items-center gap-1">
-                              <span>
-                                {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                                <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
-                                  可恢复
-                                </span>
-                              </span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </span>
-                          )
+                          </span>
                         ) : (
                           <span className="text-gray-400">未启用</span>
                         )}
@@ -987,59 +995,10 @@ export default function FileManagement() {
                         {isEnabled ? item.expiry : <span className="text-gray-400">-</span>}
                       </td>
                       <td className="px-6 py-4">
-                        {wasEverEnabled && isPermanentlyDeleted(item.id) ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div 
-                                  className="inline-block cursor-pointer"
-                                  onClick={() => {
-                                    setInstanceToPurchase({ id: item.id, name: item.instanceName });
-                                    setPurchaseDialogOpen(true);
-                                  }}
-                                >
-                                  <Switch 
-                                    checked={false}
-                                    disabled={false}
-                                    className="opacity-70 hover:opacity-100 transition-opacity"
-                                    onCheckedChange={() => {
-                                      setInstanceToPurchase({ id: item.id, name: item.instanceName });
-                                      setPurchaseDialogOpen(true);
-                                    }}
-                                  />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs max-w-[200px]">点击购买网盘容量</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : (
-                          <Switch 
-                            checked={isEnabled}
-                            onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
-                          />
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-3 text-xs hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
-                            onClick={() => handleRenew(item.id, item.instanceName)}
-                          >
-                            续费
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 px-3 text-xs hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600 transition-colors"
-                            onClick={() => handleExpand(item.id, item.instanceName)}
-                          >
-                            扩容
-                          </Button>
-                        </div>
+                        <Switch 
+                          checked={isEnabled}
+                          onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
+                        />
                       </td>
                     </tr>
                   );
@@ -1153,6 +1112,65 @@ export default function FileManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* Enable Choice Dialog - 选择新启用或恢复已有 */}
+      <Dialog open={enableChoiceDialogOpen} onOpenChange={setEnableChoiceDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">
+              选择启用方式
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-gray-700">
+              检测到回收站中有该实例之前的网盘空间（15天内可恢复），您可以选择：
+            </p>
+            
+            <div className="space-y-3">
+              {/* 新启用网盘 */}
+              <button
+                onClick={handleChooseNewEnable}
+                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-blue-400 bg-white p-5 text-left transition-all duration-200 hover:shadow-lg"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">新启用网盘</h3>
+                    <p className="text-sm text-gray-600">
+                      为该实例创建新的网盘空间
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* 恢复已有网盘 */}
+              <button
+                onClick={handleChooseRecoverExisting}
+                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-green-400 bg-white p-5 text-left transition-all duration-200 hover:shadow-lg"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                    <RotateCcw className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-gray-900 mb-1">恢复已有网盘</h3>
+                    <p className="text-sm text-gray-600">
+                      恢复该实例之前的网盘空间，保留原有文件和数据
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEnableChoice}>取消</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Single Enable Confirmation Dialog */}
       <Dialog open={singleEnableDialogOpen} onOpenChange={setSingleEnableDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -1180,98 +1198,6 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
             <Button onClick={handleConfirmSingleEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认启用
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Recover Confirmation Dialog */}
-      <Dialog open={recoverDialogOpen} onOpenChange={setRecoverDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900 flex items-center gap-2">
-              <RotateCcw className="w-5 h-5 text-blue-600" />
-              恢复网盘服务
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-              <p className="text-xs text-blue-600 leading-relaxed">
-                为 <span className="font-semibold">"{instanceToRecover?.name}"</span> 恢复网盘服务
-              </p>
-            </div>
-
-            {/* 选择容量 */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择容量</Label>
-              <RadioGroup value={recoverCapacity} onValueChange={setRecoverCapacity}>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: "50GB", label: "50GB", price: "¥2/月" },
-                    { value: "100GB", label: "100GB", price: "¥4/月" },
-                    { value: "500GB", label: "500GB", price: "¥8/月" }
-                  ].map((item) => (
-                    <div key={item.value} className="flex items-center">
-                      <RadioGroupItem value={item.value} id={`recover-capacity-${item.value}`} className="peer sr-only" />
-                      <Label
-                        htmlFor={`recover-capacity-${item.value}`}
-                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
-                      >
-                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
-                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* 选择时长 */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择时长</Label>
-              <RadioGroup value={recoverDuration} onValueChange={setRecoverDuration}>
-                <div className="space-y-2">
-                  {[
-                    { value: "1", label: "1个月" },
-                    { value: "3", label: "3个月" },
-                    { value: "6", label: "6个月" },
-                    { value: "12", label: "12个月" }
-                  ].map((item) => (
-                    <div key={item.value} className="flex items-center">
-                      <RadioGroupItem value={item.value} id={`recover-duration-${item.value}`} className="peer sr-only" />
-                      <Label
-                        htmlFor={`recover-duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
-                      >
-                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">恢复费用：</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-blue-600 tabular-nums">¥{calculateRecoverPrice()}</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 mt-2">
-                恢复 {recoverCapacity} 容量，有效期 {recoverDuration} 个月
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelRecover}>取消</Button>
-            <Button 
-              onClick={handleConfirmRecover} 
-              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
-              className="gap-2"
-            >
-              确认恢复
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1656,24 +1582,6 @@ export default function FileManagement() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-8 px-3 gap-1.5 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400"
-                                onClick={() => handleOpenTransferDialog(instance.id, instance.instanceName)}
-                              >
-                                <ArrowRightLeft className="w-3.5 h-3.5" />
-                                转接
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>转接至其他用户</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
                                 className="h-8 px-3 gap-1.5 border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                                 onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
                               >
@@ -1692,11 +1600,28 @@ export default function FileManagement() {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="h-8 px-3 gap-1.5 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400"
+                                onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
+                              >
+                                <Link className="w-3.5 h-3.5" />
+                                转接
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>将此网盘转接给其他实例</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 className="h-8 px-3 gap-1.5 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                                 onClick={() => {
-                                  if (confirm(`确定要永久删除"${instance.instanceName}"的网盘空间吗？此操作不可恢复！`)) {
-                                    handlePermanentDelete(instance.id);
-                                  }
+                                  setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
+                                  setRecyclebinDeleteDialogOpen(true);
                                 }}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1721,124 +1646,175 @@ export default function FileManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Transfer Dialog */}
-      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Recyclebin Recover Confirmation Dialog */}
+      <Dialog open={recyclebinRecoverDialogOpen} onOpenChange={setRecyclebinRecoverDialogOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-gray-900 flex items-center gap-2">
-              <ArrowRightLeft className="w-5 h-5 text-purple-600" />
+              <RotateCcw className="w-5 h-5 text-blue-600" />
+              恢复网盘空间
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                确定要恢复 <span className="font-semibold text-blue-600">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
+              </p>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="flex items-start gap-2 text-xs text-gray-600">
+                <Info className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p>• 恢复后将继续使用之前的网盘空间</p>
+                  <p>• 原有文件和数据将保持不变</p>
+                  <p>• 恢复操作完全免费</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelRecyclebinRecover}>取消</Button>
+            <Button 
+              onClick={handleConfirmRecyclebinRecover}
+              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              确认恢复
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recyclebin Permanent Delete Confirmation Dialog */}
+      <Dialog open={recyclebinDeleteDialogOpen} onOpenChange={setRecyclebinDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              永久删除网盘空间
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                确定要永久删除 <span className="font-semibold text-red-600">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
+              </p>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="flex items-start gap-2 text-xs text-gray-600">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-red-600">⚠️ 此操作不可恢复！</p>
+                  <p>• 网盘中所有文件和数据将被永久删除</p>
+                  <p>• 删除后无法恢复任何内容</p>
+                  <p>• 请谨慎操作</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelPermanentDelete}>取消</Button>
+            <Button 
+              onClick={handleConfirmPermanentDelete}
+              style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)" }}
+              className="gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              永久删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transfer Dialog - 转接网盘 */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900 flex items-center gap-2">
+              <Link className="w-5 h-5 text-purple-600" />
               转接网盘空间
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
-              <p className="text-xs text-purple-600 leading-relaxed">
-                将 <span className="font-semibold">"{instanceToTransfer?.name}"</span> 的网盘空间转接到新的实例
+          <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                将 <span className="font-semibold text-purple-600">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
+              </p>
+              <p className="text-xs text-gray-600 mt-2">
+                实例ID: <span className="font-mono text-purple-600">{instanceToTransfer?.instanceId}</span>
               </p>
             </div>
 
-            {/* 选择目标实例 */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择目标实例</Label>
-              <RadioGroup value={transferTargetInstance} onValueChange={setTransferTargetInstance}>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                  {ACTIVE_INSTANCES.map((instance) => (
-                    <div key={instance.id} className="flex items-center">
-                      <RadioGroupItem value={instance.id} id={`transfer-instance-${instance.id}`} className="peer sr-only" />
-                      <Label
-                        htmlFor={`transfer-instance-${instance.id}`}
-                        className="flex flex-1 items-center gap-3 rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs shrink-0">
-                          {instance.avatar}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{instance.name}</p>
-                          <p className="text-xs text-gray-500 truncate">创建人: {instance.creator}</p>
-                        </div>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* 选择容量 */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择容量</Label>
-              <RadioGroup value={transferCapacity} onValueChange={setTransferCapacity}>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: "50GB", label: "50GB", price: "¥2/月" },
-                    { value: "100GB", label: "100GB", price: "¥4/月" },
-                    { value: "500GB", label: "500GB", price: "¥8/月" }
-                  ].map((item) => (
-                    <div key={item.value} className="flex items-center">
-                      <RadioGroupItem value={item.value} id={`transfer-capacity-${item.value}`} className="peer sr-only" />
-                      <Label
-                        htmlFor={`transfer-capacity-${item.value}`}
-                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
-                      >
-                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
-                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* 选择时长 */}
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择时长</Label>
-              <RadioGroup value={transferDuration} onValueChange={setTransferDuration}>
-                <div className="space-y-2">
-                  {[
-                    { value: "1", label: "1个月" },
-                    { value: "3", label: "3个月" },
-                    { value: "6", label: "6个月" },
-                    { value: "12", label: "12个月" }
-                  ].map((item) => (
-                    <div key={item.value} className="flex items-center">
-                      <RadioGroupItem value={item.value} id={`transfer-duration-${item.value}`} className="peer sr-only" />
-                      <Label
-                        htmlFor={`transfer-duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
-                      >
-                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">转接费用：</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateTransferPrice()}</span>
+            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+              <div className="flex items-start gap-2 text-xs text-blue-600">
+                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p>• 转接后，网盘空间将绑定到新实例</p>
+                  <p>• 原实例将无法再访问此网盘</p>
+                  <p>• 网盘中的文件和数据将完整保留</p>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
-                转接 {transferCapacity} 容量，有效期 {transferDuration} 个月
-              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-900">选择目标实例</Label>
+              {getAvailableTargetInstances().length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+                  <Bot className="w-12 h-12 mb-3 opacity-30" />
+                  <p className="text-sm">暂无可转接的目标实例</p>
+                  <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
+                </div>
+              ) : (
+                <RadioGroup value={selectedTargetInstance} onValueChange={setSelectedTargetInstance}>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                    {getAvailableTargetInstances().map((item) => (
+                      <div key={item.id} className="flex items-center">
+                        <RadioGroupItem value={item.id} id={`transfer-${item.id}`} className="peer sr-only" />
+                        <Label
+                          htmlFor={`transfer-${item.id}`}
+                          className="flex flex-1 items-center gap-3 rounded-lg border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                            {item.avatar}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-semibold text-gray-900 truncate">
+                                {item.instanceName}
+                              </h4>
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                                未启用
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span>创建人: {item.creator}</span>
+                              <span className="font-mono text-blue-500">{item.instanceId}</span>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelTransfer}>取消</Button>
             <Button 
               onClick={handleConfirmTransfer}
-              disabled={!transferTargetInstance}
-              style={{ background: "linear-gradient(135deg, #A855F7, #EC4899)" }}
-              className="gap-2"
+              disabled={!selectedTargetInstance}
+              style={selectedTargetInstance ? { background: "linear-gradient(135deg, #A855F7, #EC4899)" } : {}}
+              className={`gap-2 ${!selectedTargetInstance ? "opacity-50 cursor-not-allowed" : ""}`}
             >
+              <Link className="w-4 h-4" />
               确认转接
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

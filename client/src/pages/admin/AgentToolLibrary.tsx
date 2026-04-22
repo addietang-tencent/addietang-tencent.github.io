@@ -1,14 +1,15 @@
 /**
  * AgentToolLibrary - 管控端 Agent 工具库页面
  * Design: 「流动蓝图」Fluid Blueprint
- * 三个 Tab：公共技能库、企业技能库、企业插件库
- * 将原 SkillConfig 中的公共技能库和企业技能库迁移至此，并新增企业插件库
+ * 四个 Tab：公共技能库、企业技能库、企业插件库、企业MCP库
+ * 将原 SkillConfig 中的公共技能库和企业技能库迁移至此，并新增企业插件库和企业MCP库
  */
 import { useState } from "react";
 import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import SkillDetail from "./SkillLibrary/SkillDetail";
 import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
 import PluginListTab from "./SkillLibrary/PluginListTab";
+import MCPListTab from "./SkillLibrary/MCPListTab";
 
 const TABS = [
   {
@@ -25,6 +26,11 @@ const TABS = [
     id: "plugins",
     label: "企业插件库",
     description: "上传和管理企业自定义插件，按需下发到 Agent 云服务器，扩展 Agent 能力边界。",
+  },
+  {
+    id: "mcp",
+    label: "企业MCP库",
+    description: "统一管理 MCP 服务配置，支持远程服务和本地命令两种连接方式，按需下发到智能体实例。",
   },
 ];
 
@@ -104,6 +110,10 @@ export default function AgentToolLibrary() {
 
       {activeTab === "plugins" && (
         <PluginListTab />
+      )}
+
+      {activeTab === "mcp" && (
+        <MCPListTab />
       )}
     </div>
   );

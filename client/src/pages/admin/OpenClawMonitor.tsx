@@ -13,6 +13,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -280,16 +285,34 @@ export default function AgentMonitor() {
 
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
-  const DEMO_TENCENT_TAGS: TencentTag[] = [
-    { key: '所属产品', value: 'gpulab' },
-    { key: 'test', value: 'test2' },
-    { key: '环境', value: 'production' },
-    { key: '负责人', value: 'alice' },
-    { key: '业务线', value: 'AI' },
-  ];
+  // 标签键 -> 可选值列表（模拟腾讯云标签库）
+  const DEMO_TAG_KEY_VALUES: Record<string, string[]> = {
+    'qcs:tag:thpc:node:creator':      ['alice', 'bob', 'charlie'],
+    'qcs:tag:thpc:node:clusterId':    ['cluster-001', 'cluster-002'],
+    'qcs:tag:thpc:node:nodeId':       ['node-a1', 'node-b2', 'node-c3'],
+    'qcs:tag:thpc:workspace:creator': ['alice', 'dave'],
+    'kaijian':                        ['kaijian', 'test'],
+    'acs:tag:createdby':              ['system', 'user'],
+    'tke_managed_by':                 ['tke', 'manual'],
+    'niumengtao':                     ['体验', '正式', '测试'],
+    '所属产品':                        ['gpulab', 'openclaw', 'tke'],
+    'env':                            ['production', 'staging', 'dev'],
+    '负责人':                          ['alice', 'bob', 'charlie'],
+    '业务线':                          ['AI', 'Platform', 'Infra'],
+  };
+  const DEMO_TAG_KEYS = Object.keys(DEMO_TAG_KEY_VALUES);
   const [showTagConfigDialog, setShowTagConfigDialog] = useState(false);
-  const [selectedTagKeys, setSelectedTagKeys] = useState<Set<string>>(new Set());
-  const [pendingTagKeys, setPendingTagKeys] = useState<Set<string>>(new Set());
+  // 已确认的标签列表（key-value 对）
+  const [selectedTags, setSelectedTags] = useState<TencentTag[]>([]);
+  // 弹窗内临时状态
+  const [pendingTags, setPendingTags] = useState<TencentTag[]>([]);
+  // 添加标签行的临时选择
+  const [addingKey, setAddingKey] = useState('');
+  const [addingValue, setAddingValue] = useState('');
+  const [keySearchText, setKeySearchText] = useState('');
+  const [keyDropdownOpen, setKeyDropdownOpen] = useState(false);
+  const [valueDropdownOpen, setValueDropdownOpen] = useState(false);
+
 
   // 版本列筛选
 
@@ -779,7 +802,7 @@ export default function AgentMonitor() {
             </Tooltip>
             {/* 配置默认标签按鈕 */}
             <button
-              onClick={() => { setPendingTagKeys(new Set(selectedTagKeys)); setShowTagConfigDialog(true); }}
+              onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
             >
               <Tag className="w-3.5 h-3.5" />
@@ -954,27 +977,37 @@ export default function AgentMonitor() {
                       {/* 标签 */}
                       <td className="px-4 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                          <HoverCard openDelay={100} closeDelay={150}>
+                            <HoverCardTrigger asChild>
                               <button className="inline-flex items-center text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                               </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
+                            </HoverCardTrigger>
+                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
                               <div className="grid grid-cols-2 bg-gray-50 border-b border-gray-100 px-3 py-2">
                                 <span className="text-xs font-semibold text-gray-600">标签键</span>
                                 <span className="text-xs font-semibold text-gray-600">标签値</span>
                               </div>
                               <div className="divide-y divide-gray-100">
                                 {claw.tags.map((tag, i) => (
-                                  <div key={i} className="grid grid-cols-2 px-3 py-2">
-                                    <span className="text-xs text-gray-600 truncate pr-2">{tag.key}</span>
-                                    <span className="text-xs text-gray-500 truncate">{tag.value}</span>
+                                  <div key={i} className="grid grid-cols-2 px-3 py-2 gap-1">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-xs text-gray-600 truncate block max-w-full cursor-default">{tag.key}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="left"><span>{tag.key}</span></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-xs text-gray-500 truncate block max-w-full cursor-default">{tag.value}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="right"><span>{tag.value}</span></TooltipContent>
+                                    </Tooltip>
                                   </div>
                                 ))}
                               </div>
-                            </TooltipContent>
-                          </Tooltip>
+                            </HoverCardContent>
+                          </HoverCard>
                         ) : (
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                         )}
@@ -1298,7 +1331,7 @@ export default function AgentMonitor() {
 
 
       {/* 配置默认标签弹窗 */}
-      <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) setShowTagConfigDialog(false); }}>
+      <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); setValueDropdownOpen(false); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1311,77 +1344,183 @@ export default function AgentMonitor() {
           <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-gray-600">
             <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
             <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
-              <li>
-                当前仅支持使用
-                <a
-                  href="https://console.cloud.tencent.com/tag/taglist"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5"
-                  onClick={(e) => e.stopPropagation()}
-                >腾讯云控制台</a>
-                已创建的标签。
-              </li>
-              <li>
-                将在用户端新建实例时自动配置勾选的标签（仅限新建实例，已创建实例暂不支持绑定标签）。
-              </li>
+              <li>当前仅支持使用<a href="https://console.cloud.tencent.com/tag/taglist" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5" onClick={(e) => e.stopPropagation()}>腾讯云控制台</a>已创建的标签。</li>
+              <li>将在用户端新建实例时自动配置勾选的标签（仅限新建实例，已创建实例暂不支持绑定标签）。</li>
             </ol>
           </div>
 
-          {/* 标签列表 */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            {/* 表头 */}
-            <div className="grid grid-cols-[auto_1fr_1fr] bg-gray-50 border-b border-gray-200">
-              <div className="px-3 py-2.5"></div>
-              <div className="px-4 py-2.5 text-xs font-semibold text-gray-600">标签键</div>
-              <div className="px-4 py-2.5 text-xs font-semibold text-gray-600">标签値</div>
-            </div>
-            {/* 标签行 */}
-            <div className="divide-y divide-gray-100">
-              {DEMO_TENCENT_TAGS.map((tag) => (
-                <div
-                  key={tag.key}
-                  className={`grid grid-cols-[auto_1fr_1fr] items-center cursor-pointer hover:bg-blue-50/50 transition-colors ${
-                    pendingTagKeys.has(tag.key) ? 'bg-blue-50' : ''
-                  }`}
-                  onClick={() => {
-                    setPendingTagKeys(prev => {
-                      const next = new Set(prev);
-                      if (next.has(tag.key)) next.delete(tag.key); else next.add(tag.key);
-                      return next;
-                    });
-                  }}
-                >
-                  <div className="px-3 py-3">
-                    <Checkbox
-                      checked={pendingTagKeys.has(tag.key)}
-                      onCheckedChange={(v) => {
-                        setPendingTagKeys(prev => {
-                          const next = new Set(prev);
-                          if (v) next.add(tag.key); else next.delete(tag.key);
-                          return next;
-                        });
-                      }}
-                      className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="px-4 py-3 text-sm text-gray-700">{tag.key}</div>
-                  <div className="px-4 py-3 text-sm text-gray-500">{tag.value}</div>
-                </div>
+          {/* 已选标签 Tag 列表 */}
+          {pendingTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {pendingTags.map((tag) => (
+                <Tooltip key={tag.key + ':' + tag.value}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 font-medium max-w-[200px]"
+                    >
+                      <span className="truncate">{tag.key}：{tag.value}</span>
+                      <button
+                        className="ml-0.5 text-blue-400 hover:text-blue-600 transition-colors flex-shrink-0"
+                        onClick={() => setPendingTags(prev => prev.filter(t => !(t.key === tag.key && t.value === tag.value)))}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <span>{tag.key}：{tag.value}</span>
+                  </TooltipContent>
+                </Tooltip>
               ))}
+            </div>
+          )}
+
+          {/* 添加标签区域 */}
+          <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+            <div className="text-sm font-medium text-gray-700">添加标签</div>
+            <div className="flex items-center gap-2">
+              {/* 标签键下拉 */}
+              <div className="relative flex-1 min-w-0">
+                <Popover open={keyDropdownOpen} onOpenChange={setKeyDropdownOpen}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                          onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
+                        >
+                          <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-gray-800' : 'text-gray-400'}`}>{addingKey || '选择标签键'}</span>
+                          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-1" />
+                        </button>
+                      </PopoverTrigger>
+                    </TooltipTrigger>
+                    {addingKey && (
+                      <TooltipContent side="top">
+                        <span>{addingKey}</span>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                  <PopoverContent className="w-72 p-0" align="start" side="bottom">
+                    {/* 搜索框 */}
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+                      <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <input
+                        autoFocus
+                        className="flex-1 text-sm outline-none placeholder:text-gray-400"
+                        placeholder="搜索标签键..."
+                        value={keySearchText}
+                        onChange={(e) => setKeySearchText(e.target.value)}
+                      />
+                    </div>
+                    {/* 标签键列表 */}
+                    <div className="max-h-52 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                      {DEMO_TAG_KEYS
+                        .filter(k => k.toLowerCase().includes(keySearchText.toLowerCase()))
+                        .map(k => (
+                          <button
+                            key={k}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                              addingKey === k ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'
+                            }`}
+                            onClick={() => { setAddingKey(k); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); }}
+                          >
+                            {k}
+                          </button>
+                        ))
+                      }
+                      {DEMO_TAG_KEYS.filter(k => k.toLowerCase().includes(keySearchText.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-3 text-sm text-gray-400 text-center">无匹配结果</div>
+                      )}
+                    </div>
+                    <div className="px-3 py-1.5 border-t border-gray-100 text-xs text-gray-400">共 {DEMO_TAG_KEYS.length} 条</div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <span className="text-gray-400 text-sm flex-shrink-0">:</span>
+
+              {/* 标签値下拉（必须先选键） */}
+              <div className="relative flex-1 min-w-0">
+                {addingKey ? (
+                  <Popover open={valueDropdownOpen} onOpenChange={setValueDropdownOpen}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <button
+                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                            onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
+                          >
+                            <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-gray-800' : 'text-gray-400'}`}>{addingValue || '选择标签値'}</span>
+                            <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-1" />
+                          </button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      {addingValue && (
+                        <TooltipContent side="top">
+                          <span>{addingValue}</span>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                    <PopoverContent className="w-48 p-0" align="start" side="bottom">
+                      <div className="max-h-44 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                        {(DEMO_TAG_KEY_VALUES[addingKey] || []).map(v => (
+                          <button
+                            key={v}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                              addingValue === v ? 'text-blue-600 font-medium bg-blue-50/50' : 'text-gray-700'
+                            }`}
+                            onClick={() => { setAddingValue(v); setValueDropdownOpen(false); }}
+                          >
+                            {v}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <div className="w-full px-3 py-2 text-sm border border-gray-100 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed truncate">
+                    请先选择标签键
+                  </div>
+                )}
+              </div>
+
+              {/* 添加按鈕 */}
+              <button
+                disabled={!addingKey || !addingValue}
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                onClick={() => {
+                  if (!addingKey || !addingValue) return;
+                  // 检查标签键是否已存在
+                  if (pendingTags.some(t => t.key === addingKey)) {
+                    toast.success('该标签键已存在，请删除原有标签后再添加');
+                    return;
+                  }
+                  setPendingTags(prev => [...prev, { key: addingKey, value: addingValue }]);
+                  setAddingKey('');
+                  setAddingValue('');
+                }}
+              >
+                <X className="w-4 h-4 rotate-45" />
+              </button>
             </div>
           </div>
 
+
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowTagConfigDialog(false)}>取消</Button>
+            <Button variant="outline" onClick={() => { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); }}>取消</Button>
             <Button
               onClick={() => {
-                setSelectedTagKeys(new Set(pendingTagKeys));
+                // 如果已选了键和值但未点击+，toast 提示
+                if (addingKey && addingValue) {
+                  toast.success('请点击「+」添加后再确认');
+                  return;
+                }
+                setSelectedTags([...pendingTags]);
                 setShowTagConfigDialog(false);
+                setAddingKey(''); setAddingValue(''); setKeySearchText('');
                 toast.success(
-                  pendingTagKeys.size > 0
-                    ? `已配置 ${pendingTagKeys.size} 个默认标签，新建实例将自动打 tag`
+                  pendingTags.length > 0
+                    ? `已配置 ${pendingTags.length} 个默认标签，新建实例将自动打 tag`
                     : '已清空默认标签配置'
                 );
               }}

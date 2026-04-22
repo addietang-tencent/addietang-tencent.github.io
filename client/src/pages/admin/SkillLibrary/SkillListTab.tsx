@@ -3,8 +3,18 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2 } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +30,7 @@ import EditCategoriesDialog from './EditCategoriesDialog';
 import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
-import { Skill, type SkillScope } from './types';
+import { Skill, type SkillScope, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
 import {
   getSkillDistributionSummary,
   addDistributionRecord,
@@ -35,7 +45,7 @@ import { downloadSkillAsZip } from './downloadUtils';
 const SKILLS_CACHE_KEY = 'skillhub_enterprise_skills_cache';
 const SKILLS_CACHE_VERSION_KEY = 'skillhub_enterprise_skills_cache_version';
 // 当 MOCK 数据结构变更时递增此版本号，强制刷新缓存
-const SKILLS_CACHE_VERSION = '5';
+const SKILLS_CACHE_VERSION = '8';
 
 // 从 localStorage 加载缓存的 skills
 const loadCachedSkills = (): Skill[] => {
@@ -126,6 +136,9 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
   const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
+  // 安全检测确认弹窗
+  const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
+  const [securityScanSkillId, setSecurityScanSkillId] = useState<string | null>(null);
   // 应用范围筛选：含 'public'=全部用户, 含 'grp-xxx'=特定分组（多选）
   // 空 Set = 未选任何范围（按钮显示"选择应用范围"）；全选时包含 public + 所有 groupId
   const allScopeKeys = useMemo(() => ['public', ...MOCK_GROUPS.map(g => g.id)], []);
@@ -137,6 +150,15 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   const scrollPositionRef = useRef<{ x: number; y: number; tableScrollLeft?: number } | null>(null);
   // 表格水平滚动容器 ref
   const tableScrollRef = useRef<HTMLDivElement>(null);
+  // 名称列右侧投影：仅在横向滚动 > 0 时显示
+  const [isTableScrolled, setIsTableScrolled] = useState(false);
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [viewMode]);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -144,6 +166,84 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   // skills 变化时同步到 localStorage
   useEffect(() => {
     saveCachedSkills(skills);
+  }, [skills]);
+
+  // 追踪已启动检测计时器的 skill ID，避免重复
+  const scanTimersRef = useRef<Set<string>>(new Set());
+
+  // 对所有处于 scanning 状态的 skill，mock 10s 后自动随机完成检测（实际提示为预计 5 分钟）
+  useEffect(() => {
+    const scanningSkills = skills.filter(
+      s => s.securityInfo?.overallStatus === 'scanning' && !scanTimersRef.current.has(s.id)
+    );
+    if (scanningSkills.length === 0) return;
+
+    const timers = scanningSkills.map(s => {
+      scanTimersRef.current.add(s.id);
+      return setTimeout(() => {
+        const rand = Math.random();
+        let result: SecurityStatus;
+        if (rand < 0.5) result = 'safe';
+        else if (rand < 0.8) result = 'suspicious';
+        else result = 'malicious';
+
+        const safeDims = [
+          { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+          { name: '命令执行风险', status: 'safe' as const, detail: '未检测到危险的系统命令调用或子进程执行操作' },
+          { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+          { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+          { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+          { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+          { name: '可疑编码/混淆', status: 'safe' as const, detail: '未发现可疑的代码编码混淆或加密逃逸技术' },
+          { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+        ];
+        const suspiciousDims = [
+          { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+          { name: '命令执行风险', status: 'suspicious' as const, detail: '检测到潜在的系统命令调用，存在一定风险' },
+          { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+          { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+          { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+          { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+          { name: '可疑编码/混淆', status: 'suspicious' as const, detail: '发现部分代码使用了 Base64 编码包裹，需人工确认' },
+          { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+        ];
+        const maliciousDims = [
+          { name: '供应链风险', status: 'malicious' as const, detail: '发现恶意第三方依赖注入，存在供应链污染' },
+          { name: '命令执行风险', status: 'malicious' as const, detail: '检测到危险的系统命令调用，执行反弹 shell' },
+          { name: '网络请求与数据外传', status: 'malicious' as const, detail: '发现向外部 C2 服务器发送敏感数据' },
+          { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+          { name: 'Prompt 注入风险', status: 'suspicious' as const, detail: '发现可能篡改 AI Agent 行为的指令片段' },
+          { name: '远程脚本下载执行', status: 'malicious' as const, detail: '检测到从远程服务器下载并执行恶意脚本' },
+          { name: '可疑编码/混淆', status: 'malicious' as const, detail: '发现大量代码使用多层编码混淆，隐藏恶意逻辑' },
+          { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+        ];
+
+        const dims = result === 'safe' ? safeDims : result === 'suspicious' ? suspiciousDims : maliciousDims;
+        const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
+        const engine2Status = result as 'safe' | 'suspicious' | 'malicious';
+
+        setSkills(prev => prev.map(sk =>
+          sk.id === s.id && sk.securityInfo?.overallStatus === 'scanning'
+            ? {
+                ...sk,
+                securityInfo: {
+                  overallStatus: result,
+                  contentHash: Math.random().toString(36).slice(2, 18),
+                  engines: [
+                    { engineName: '科恩实验室', status: 'safe' as const, reportUrl: '#', score: 92, dimensions: safeDims },
+                    { engineName: '云鼎实验室', status: engine2Status, reportUrl: '#', score: score2, dimensions: dims },
+                  ],
+                },
+              }
+            : sk
+        ));
+        scanTimersRef.current.delete(s.id);
+        const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
+        toast.info(`「${s.name}」安全检测完成：${resultLabel}`);
+      }, 10000);
+    });
+
+    return () => timers.forEach(t => clearTimeout(t));
   }, [skills]);
 
   // 点击外部关闭应用范围下拉
@@ -208,7 +308,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       matchesScope = true;
     } else {
       const hasPublic = selectedScopes.has('public');
-      const groupScopes = [...selectedScopes].filter(s => s !== 'public');
+      const groupScopes = Array.from(selectedScopes).filter(s => s !== 'public');
       // 满足任一选中条件即匹配
       const matchPublic = hasPublic && (skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0);
       const matchGroup = groupScopes.length > 0 && skill.scope === 'private' && skill.groupIds?.some(gid => selectedScopes.has(gid));
@@ -237,6 +337,85 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       saveCachedSkills(updated);
       return updated;
     });
+  };
+
+  // 安全检测提交确认
+  const handleSecurityScanConfirm = () => {
+    if (!securityScanSkillId) return;
+    setSkills(prev => prev.map(s =>
+      s.id === securityScanSkillId
+        ? { ...s, securityInfo: { overallStatus: 'scanning' as SecurityStatus, engines: [] } }
+        : s
+    ));
+    toast.success('已提交安全检测，预计 5 分钟后完成');
+    setSecurityScanDialogOpen(false);
+    setSecurityScanSkillId(null);
+    // 模拟：10秒后随机变为安全/可疑/恶意（mock 模拟，实际预计 5 分钟）
+    const targetId = securityScanSkillId;
+    setTimeout(() => {
+      const rand = Math.random();
+      let result: SecurityStatus;
+      if (rand < 0.5) result = 'safe';
+      else if (rand < 0.8) result = 'suspicious';
+      else result = 'malicious';
+
+      const safeDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'safe' as const, detail: '未检测到危险的系统命令调用或子进程执行操作' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'safe' as const, detail: '未发现可疑的代码编码混淆或加密逃逸技术' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+
+      const suspiciousDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'suspicious' as const, detail: '检测到潜在的系统命令调用，存在一定风险' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'suspicious' as const, detail: '发现部分代码使用了 Base64 编码包裹，需人工确认' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+
+      const maliciousDims = [
+        { name: '供应链风险', status: 'malicious' as const, detail: '发现恶意第三方依赖注入，存在供应链污染' },
+        { name: '命令执行风险', status: 'malicious' as const, detail: '检测到危险的系统命令调用，执行反弹 shell' },
+        { name: '网络请求与数据外传', status: 'malicious' as const, detail: '发现向外部 C2 服务器发送敏感数据' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'suspicious' as const, detail: '发现可能篡改 AI Agent 行为的指令片段' },
+        { name: '远程脚本下载执行', status: 'malicious' as const, detail: '检测到从远程服务器下载并执行恶意脚本' },
+        { name: '可疑编码/混淆', status: 'malicious' as const, detail: '发现大量代码使用多层编码混淆，隐藏恶意逻辑' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+
+      const dims = result === 'safe' ? safeDims : result === 'suspicious' ? suspiciousDims : maliciousDims;
+      const score1 = result === 'safe' ? 92 : result === 'suspicious' ? 90 : 88;
+      const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
+      const engine1Status = 'safe' as const;
+      const engine2Status = result as 'safe' | 'suspicious' | 'malicious';
+
+      setSkills(prev => prev.map(s =>
+        s.id === targetId && s.securityInfo?.overallStatus === 'scanning'
+          ? {
+              ...s,
+              securityInfo: {
+                overallStatus: result,
+                contentHash: Math.random().toString(36).slice(2, 18),
+                engines: [
+                  { engineName: '科恩实验室', status: engine1Status, reportUrl: '#', score: score1, dimensions: safeDims },
+                  { engineName: '云鼎实验室', status: engine2Status, reportUrl: '#', score: score2, dimensions: dims },
+                ],
+              },
+            }
+          : s
+      ));
+      const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
+      toast.info(`安全检测完成：${resultLabel}`);
+    }, 10000);
   };
 
   const handleViewDetail = (skillId: string) => {
@@ -443,7 +622,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       ? '选择应用范围'
                       : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
                         ? '全部应用范围'
-                        : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                        : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -454,7 +633,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     ? '选择应用范围'
                     : selectedScopes.size === allScopeKeys.length && allScopeKeys.every(k => selectedScopes.has(k))
                       ? '全部应用范围'
-                      : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                      : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -672,10 +851,65 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 onClick={() => handleViewDetail(skill.id)}
                 className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
               >
-                {/* 名称 + 版本 */}
+                {/* 名称 + 安全检测图标 + 版本 */}
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900 flex-1">{skill.name}</h3>
-                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate">{skill.name}</h3>
+                    {/* 安全检测小图标 */}
+                    {(() => {
+                      const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                      if (secStatus === 'not_scanned') {
+                        return (
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <span className="text-xs">未检测</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      if (secStatus === 'scanning') {
+                        return (
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <span className="text-xs">安全检测中</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      const statusInfo = SECURITY_STATUS_MAP[secStatus];
+                      const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                      return (
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="inline-flex flex-shrink-0 cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDefaultTabForDetail('overview');
+                                setSelectedSkillId(skill.id);
+                              }}
+                            >
+                              <IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">
+                            <span className="text-xs">安全检测：{statusInfo.label}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })()}
+                  </div>
+                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full flex-shrink-0">
                     v{skill.version}
                   </span>
                 </div>
@@ -826,16 +1060,22 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
           <div className="overflow-x-auto" ref={tableScrollRef}>
             <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10 relative"
                     style={{ width: '180px', minWidth: '180px' }}
                   >
                     名称/Slug
+                    {isTableScrolled && (
+                      <>
+                        <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                      </>
+                    )}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
@@ -844,9 +1084,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-10"
-                    style={{ width: '220px', minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-20 relative"
+                    style={{ width: '220px', minWidth: '220px' }}
                   >
+                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                    <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                     操作
                   </th>
                 </tr>
@@ -898,12 +1140,73 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                     >
                       {/* 名称 / Slug — 固定左侧 */}
                       <td
-                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors"
+                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors relative"
                         style={{ minWidth: '180px', maxWidth: '260px' }}
                       >
-                        <OverflowTooltip content={skill.name}>
-                          <div className="font-medium text-gray-900 truncate max-w-[220px]">{skill.name}</div>
-                        </OverflowTooltip>
+                        {isTableScrolled && (
+                          <>
+                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                          </>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <OverflowTooltip content={skill.name}>
+                            <div className="font-medium text-gray-900 truncate max-w-[200px]">{skill.name}</div>
+                          </OverflowTooltip>
+                          {/* 安全检测小图标：所有状态都显示 */}
+                          {(() => {
+                            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                            if (secStatus === 'not_scanned') {
+                              return (
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                      <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <span className="text-xs">未检测</span>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            }
+                            if (secStatus === 'scanning') {
+                              return (
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                      <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    <span className="text-xs">安全检测中</span>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            }
+                            const statusInfo = SECURITY_STATUS_MAP[secStatus];
+                            const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                            return (
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className="inline-flex flex-shrink-0 cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDefaultTabForDetail('overview');
+                                      setSelectedSkillId(skill.id);
+                                    }}
+                                  >
+                                    <IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  <span className="text-xs">安全检测：{statusInfo.label}</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
+                        </div>
                         <OverflowTooltip content={skill.slug}>
                           <div className="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[220px]">{skill.slug}</div>
                         </OverflowTooltip>
@@ -1031,10 +1334,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                       </td>
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
                       <td
-                        className="px-4 py-3 bg-white sticky right-0 z-10 group-hover:bg-gray-50 transition-colors"
-                        style={{ minWidth: '220px', boxShadow: '-4px 0 8px -4px rgba(0,0,0,0.06)' }}
+                        className="px-4 py-3 bg-white sticky right-0 z-20 group-hover:bg-gray-50 transition-colors relative"
+                        style={{ minWidth: '220px' }}
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-1">
                           {/* 下发按钮 */}
                           <Button
@@ -1058,7 +1363,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                             <Pencil className="w-3 h-3 mr-1" />
                             更新
                           </Button>
-                          {/* 更多下拉：下载 / 删除 */}
+                          {/* 更多下拉：安全检测 / 下载 / 删除 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="outline" size="sm" className="h-7 w-7 p-0">
@@ -1066,6 +1371,18 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {/* 安全检测（仅未检测时显示） */}
+                              {(skill.securityInfo?.overallStatus === 'not_scanned' || !skill.securityInfo) && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSecurityScanSkillId(skill.id);
+                                    setSecurityScanDialogOpen(true);
+                                  }}
+                                >
+                                  <ScanSearch className="w-4 h-4 mr-2" />
+                                  安全检测
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem
                                 onClick={() => handleDownload(skill)}
                                 disabled={downloadingSkillId === skill.id}
@@ -1195,6 +1512,28 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           }
         }}
       />
+
+      {/* 安全检测确认弹窗 */}
+      <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
+        <AlertDialogContent className="sm:max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>提交安全检测</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认对技能「{securityScanSkillId ? skills.find(s => s.id === securityScanSkillId)?.name : ''}」提交安全检测？检测将由科恩实验室、云鼎实验室进行，通常几分钟内完成。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setSecurityScanDialogOpen(false); setSecurityScanSkillId(null); }}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSecurityScanConfirm}
+              className="text-white"
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+            >
+              提交检测
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );

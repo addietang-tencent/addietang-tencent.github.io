@@ -375,7 +375,7 @@ export default function MyOpenClaw() {
       modelVersion: "",
       channels: [],
       skills: [],
-      roleName: agentType === "openclaw" ? (selectedRole?.name ?? "通用助手") : undefined,
+      roleName: selectedRole?.name ?? "通用助手",
       memoryStatus: 'none', // 记忆状态
     };
     setClaws([newClaw, ...claws]);
@@ -482,7 +482,7 @@ export default function MyOpenClaw() {
                     <div className="w-7 h-7 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">浏览器对话</p>
-                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与OpenClaw对话（其他Agent暂不支持）</p>
+                      <p className="text-xs text-gray-500 mt-0.5">配置完成，即可在下方对话视图直接与 Agent 对话</p>
                     </div>
                   </div>
                   <div className="w-6 h-px bg-gray-200 mt-3.5 flex-shrink-0" />
@@ -593,22 +593,22 @@ export default function MyOpenClaw() {
 
                 return (
                   <div key={claw.id}
-                    className={`bg-white rounded-2xl border border-gray-100 transition-all duration-200 group relative ${!isDisabled && !isNonOpenclaw ? "hover:-translate-y-0.5 cursor-pointer" : isNonOpenclaw && !isDisabled ? "hover:-translate-y-0.5" : "cursor-default"}`}
+                    className={`bg-white rounded-2xl border border-gray-100 transition-all duration-200 group relative ${!isDisabled ? "hover:-translate-y-0.5 cursor-pointer" : "cursor-default"}`}
                     style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-                    onClick={() => { if (!isDisabled && !isNonOpenclaw) navigate(`/openclaw/${claw.id}`); }}
+                    onClick={() => { if (!isDisabled) navigate(`/openclaw/${claw.id}`); }}
                   >
                     {/* Agent Type Tag - 左上角融合卡片内 */}
                     <span
-                      className="absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap"
+                      className={`absolute top-0 left-0 z-10 text-[10px] font-semibold px-3 py-1 whitespace-nowrap ${isGrayAvatar ? "opacity-40" : ""}`}
                       style={{
-                        background: "#F3F4F6",
-                        color: "#9CA3AF",
-                        borderTopLeftRadius: "0.75rem",
+                        background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))",
+                        color: "rgba(0,122,255,0.5)",
+                        borderTopLeftRadius: "1rem",
                         borderBottomRightRadius: "0.75rem",
                         boxShadow: "none"
                       }}
                     >
-                      {claw.agentType === "hermes" ? "Hermes" : claw.agentType === "lightclawace" ? "LightclawACE" : "OpenClaw"}
+                      {claw.agentType === "hermes" ? "Hermes Agent" : claw.agentType === "lightclawace" ? "Lightclaw ACE" : "OpenClaw"}
                     </span>
                     {/* Card Header */}
                     <div className="p-5 pt-8">
@@ -730,31 +730,7 @@ export default function MyOpenClaw() {
 
                     {/* Card Actions */}
                     <div className="px-5 pb-4 border-t border-gray-50 pt-3">
-                      {isNonOpenclaw ? (
-                        /* Hermes / LightclawACE 类型：进入终端 + 开启面板 */
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}
-                            variant="outline"
-                            size="sm"
-                            className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
-                            disabled={isDisabled}
-                          >
-                            <Terminal className="w-3.5 h-3.5 mr-1.5" />
-                            进入终端
-                          </Button>
-                          <Button
-                            onClick={(e) => { e.stopPropagation(); if (!isDisabled) window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
-                            variant="outline"
-                            size="sm"
-                            className={`flex-1 text-xs ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
-                            disabled={isDisabled}
-                          >
-                            <Monitor className="w-3.5 h-3.5 mr-1.5" />
-                            开启面板
-                          </Button>
-                        </div>
-                      ) : isLoadFail ? (
+                      {isLoadFail ? (
                         <Button
                           onClick={(e) => { e.stopPropagation(); handleRetry(claw.id, claw.name); }}
                           variant="outline"
@@ -961,7 +937,7 @@ export default function MyOpenClaw() {
             <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
               <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-600 leading-relaxed">
-                移除角色不会删除已有的技能配置，OpenClaw 将回退为「通用助手」。
+                移除角色不会删除已有的技能配置，Agent 将回退为「通用助手」。
               </p>
             </div>
             <DialogFooter className="gap-2 pt-2">
@@ -1077,7 +1053,7 @@ export default function MyOpenClaw() {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-gray-400">
-                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes" : "LightclawACE"}
+                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes Agent" : "Lightclaw ACE"}
                     </span>
                     {typeExpanded ? (
                       <ChevronUp className="w-3.5 h-3.5 text-gray-300" />
@@ -1088,7 +1064,7 @@ export default function MyOpenClaw() {
                 </button>
                 {typeExpanded && (
                   <div className="flex flex-wrap gap-2 pt-2 pb-1">
-                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes"], ["lightclawace", "LightclawACE"]] as const).map(([value, label]) => {
+                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const).map(([value, label]) => {
                       const isSelected = agentType === value;
                       return (
                         <button
@@ -1115,8 +1091,8 @@ export default function MyOpenClaw() {
                 )}
               </div>
 
-              {/* Role Selection - Collapsible Row (仅 OpenClaw 类型显示) */}
-              {agentType === "openclaw" && (
+              {/* Role Selection - Collapsible Row (所有类型均显示) */}
+              {(
               <div>
                 <button
                   type="button"

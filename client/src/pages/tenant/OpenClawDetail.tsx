@@ -48,7 +48,7 @@ import {
   Copy, Terminal, Database, Clock, Shield,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
-import { findClawById, onClawListChange } from "@/lib/openclawStore";
+import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 
@@ -292,8 +292,8 @@ export default function AgentDetail() {
   const clawId = params?.id;
 
   // 优先从共享 store 读取（包含动态创建的 claw 及 roleName），fallback 到 mock 数据
-  const [clawData, setClawData] = useState(() =>
-    (clawId ? findClawById(clawId) : undefined) ?? MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]
+  const [clawData, setClawData] = useState<AgentItem>(() =>
+    (clawId ? findClawById(clawId) : undefined) ?? (MOCK_OPENCLAW_LIST.find((c) => c.id === clawId) ?? MOCK_OPENCLAW_LIST[0]) as unknown as AgentItem
   );
   useEffect(() => {
     const unsub = onClawListChange(() => {
@@ -435,9 +435,28 @@ export default function AgentDetail() {
 
   // ── Memory 状态 ──
   // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
-  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none'>('pro');
+  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('free');
   // Pro 版配额是否可用（从管控端获取）
   const [proQuotaAvailable] = useState(true);
+  // 记忆数据是否正在加载中（首次进入时可能较慢）
+  const [memoryLoading, setMemoryLoading] = useState(false);
+  // 标记是否已加载过记忆数据
+  const [memoryDataLoaded, setMemoryDataLoaded] = useState(false);
+
+  // 当用户切换到记忆管理 tab 时，首次需要加载数据（Free 版首次可能较慢）
+  useEffect(() => {
+    if (activeDetailTab === "memory" && !memoryDataLoaded && (memoryStatus === 'free' || memoryStatus === 'pro')) {
+      // 首次进入记忆管理，显示加载状态
+      setMemoryLoading(true);
+      // 模拟后端加载延迟（Free 版用户首次加载较慢，3-5秒）
+      const loadTime = memoryStatus === 'free' ? 4000 : 1500;
+      const timer = setTimeout(() => {
+        setMemoryLoading(false);
+        setMemoryDataLoaded(true);
+      }, loadTime);
+      return () => clearTimeout(timer);
+    }
+  }, [activeDetailTab, memoryDataLoaded, memoryStatus]);
 
   // ── 智能体迁移状态 ──
   const [migrationOpen, setMigrationOpen] = useState(false);
@@ -552,6 +571,28 @@ echo "✅ 导出完成，数据已上传到 COS"`;
   const webUIUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af...";
   const webUIToken = "8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
 
+  // ── Hermes 专属开启面板弹窗状态 ──
+  const [showHermesPanelDialog, setShowHermesPanelDialog] = useState(false);
+  const [hermesPanelStep, setHermesPanelStep] = useState<0 | 1 | 2>(0); // 0=等待中, 1=加载中, 2=完成
+  const hermesPanelUrl = "http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb";
+
+  const runHermesPanelFlow = () => {
+    setHermesPanelStep(0);
+    setShowHermesPanelDialog(true);
+    // 1.5秒后进入加载中
+    setTimeout(() => {
+      setHermesPanelStep(1);
+      // 再3秒后完成，自动跳转
+      setTimeout(() => {
+        setHermesPanelStep(2);
+        setTimeout(() => {
+          setShowHermesPanelDialog(false);
+          window.open(hermesPanelUrl, "_blank");
+        }, 500);
+      }, 3000);
+    }, 1500);
+  };
+
   const runWebUIFlow = (isFail: boolean) => {
     setWebUIStep(0);
     setWebUIFailedStep("none");
@@ -577,6 +618,11 @@ echo "✅ 导出完成，数据已上传到 COS"`;
   const handleOpenWebUI = () => {
     if (!allowPanelAccess) {
       toast.error("管理员未开启访问权限");
+      return;
+    }
+    // Hermes 类型使用专属弹窗，加载完自动跳转
+    if ((claw as any).agentType === "hermes") {
+      runHermesPanelFlow();
       return;
     }
     const newCount = webUIOpenCount + 1;
@@ -1238,8 +1284,23 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {/* 第二行：角色胶囊标签 + 实例 ID */}
+              {/* 第二行：类型 tag + 角色胶囊标签 + 实例 ID */}
               <div className="flex items-center gap-2 mt-0.5">
+                {/* Agent 类型 tag */}
+                <span
+                  className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap flex-shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))",
+                    color: "rgba(0,122,255,0.5)",
+                    borderRadius: "0.375rem",
+                  }}
+                >
+                  {(claw as any).agentType === "hermes"
+                    ? "Hermes Agent"
+                    : (claw as any).agentType === "lightclawace"
+                    ? "LightClaw ACE"
+                    : "OpenClaw"}
+                </span>
                 {claw.roleName && (
                   <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
@@ -1279,6 +1340,21 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
                   更新中
                 </button>
+              ) : (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      disabled
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white border border-gray-200 rounded-lg px-3 py-1.5 cursor-not-allowed opacity-50 leading-none"
+                    >
+                      <ArrowUpCircle className="w-3.5 h-3.5" />
+                      一键更新
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    当前仅 OpenClaw 支持
+                  </TooltipContent>
+                </Tooltip>
               ) : (
                 <button
                   onClick={() => {
@@ -1954,11 +2030,20 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
+            (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
+              </div>
+            ) : (
             <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <MemoryPreview 
                 memoryStatus={memoryStatus}
                 proQuotaAvailable={proQuotaAvailable}
                 showConfidence={false}
+                isLoading={memoryLoading}
                 onStatusChange={async (newStatus) => {
                   // TODO: 调用后端接口切换 Memory 状态
                   // await api.changeMemoryStatus(clawId, newStatus);
@@ -1967,6 +2052,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 }}
               />
             </div>
+            )
           )}
 
           {/* 网盘管理 tab */}
@@ -2354,6 +2440,65 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         </DialogContent>
       </Dialog>
 
+      {/* ===== Hermes 开启面板 等待弹窗 ===== */}
+      <Dialog open={showHermesPanelDialog} onOpenChange={(open) => {
+        if (!open) setShowHermesPanelDialog(false);
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-gray-900">开启 Agent 面板</DialogTitle>
+            <DialogDescription className="sr-only">开启 Agent 面板</DialogDescription>
+            <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Hermes Agent 面板是官方提供的浏览器操作界面，加载完成后将自动跳转，请稍候等待。</span>
+            </div>
+          </DialogHeader>
+          <div className="mt-3 space-y-2.5 py-1 pb-3">
+            {/* 步骤1：连接服务 */}
+            <div className="flex items-center gap-3">
+              {hermesPanelStep >= 1 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              )}
+              <span className={`text-xs ${hermesPanelStep >= 1 ? "text-gray-600" : "text-blue-600 font-medium"}`}>
+                {hermesPanelStep >= 1 ? "连接服务：连接成功" : "连接服务：正在连接 Hermes Agent 服务，预计1~2秒..."}
+              </span>
+            </div>
+            {/* 步骤2：加载面板 */}
+            <div className="flex items-center gap-3">
+              {hermesPanelStep >= 2 ? (
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+              ) : hermesPanelStep === 1 ? (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded-full border-2 border-gray-200 shrink-0" />
+              )}
+              <span className={`text-xs ${
+                hermesPanelStep >= 2 ? "text-gray-600" :
+                hermesPanelStep === 1 ? "text-blue-600 font-medium" : "text-gray-400"
+              }`}>
+                {hermesPanelStep >= 2
+                  ? "加载面板：加载完成，正在跳转..."
+                  : hermesPanelStep === 1
+                  ? "加载面板：正在加载 Hermes Agent 面板，预计3~5秒..."
+                  : "加载面板：等待连接完成"}
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-center pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowHermesPanelDialog(false)}
+              className="text-gray-600 px-6"
+            >
+              取消
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ===== Agent 面板 进度弹窗 ===== */}
       <Dialog open={showWebUIProgressDialog} onOpenChange={(open) => {
         if (!open) setShowWebUIProgressDialog(false);
@@ -2364,7 +2509,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <DialogDescription className="sr-only">开启Agent面板</DialogDescription>
             <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span>OpenClaw 面板（WebUI）是 OpenClaw 官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
+              <span>Agent 面板（WebUI）是官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
             </div>
             <p className="text-sm text-gray-500 mt-3">开启Agent面板将会依次执行以下操作，确定后将自动执行：</p>
           </DialogHeader>
@@ -2448,36 +2593,85 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
             访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
           </div>
-          {/* 链接和 Token */}
-          <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
-            <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
-              <button
-                onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
-                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
+          {/* 链接和 Token - 根据 agentType 区分字段文案 */}
+          {(claw as any).agentType === "lightclawace" ? (
+            /* LightclawACE：面板链接 + 密码（初始密码提示） */
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <div className="flex items-center gap-1 shrink-0 w-auto">
+                  <span className="text-xs text-gray-500 shrink-0">初始密码</span>
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="16" x2="12" y2="12"/>
+                          <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-[200px] text-center">
+                        若已在面板内修改了密码，请使用新密码登录
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0 ml-1">{webUIToken}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制密码"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 w-full min-w-0">
-              <span className="text-xs text-gray-500 shrink-0 w-16">网关令牌</span>
-              <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
-              <button
-                onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
-                className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
-              >
-                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
+          ) : (
+            /* OpenClaw： WebSocket URL + 网关令牌（保持原样） */
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIUrl); toast.success("已复制链接"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-2 w-full min-w-0">
+                <span className="text-xs text-gray-500 shrink-0 w-16">网关令牌</span>
+                <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIToken}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(webUIToken); toast.success("已复制Token"); }}
+                  className="shrink-0 p-1 hover:bg-gray-200 rounded transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-          {/* 提示文字 */}
+          )}
+          {/* 提示文字 - 根据类型区分 */}
           <p className="text-xs text-gray-500 mt-1">
-            用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。
+            {(claw as any).agentType === "lightclawace"
+              ? "用浏览器打开面板链接，如面板需要填入密码，则将密码复制并粘贴过去，即可进入面板。"
+              : "用浏览器打开 WebSocket URL，如面板需要填入网关令牌，则将网关令牌复制并粘贴过去，即可进入面板。"}
           </p>
           <div className="flex justify-center pt-1">
             <Button

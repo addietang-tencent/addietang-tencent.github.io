@@ -539,7 +539,7 @@ export default function ModelConfig() {
                 <span className="font-semibold">用户可见：</span>开启后，该模型会展示在用户端的模型选项列表中。
               </p>
               <p className="text-xs text-blue-600 leading-relaxed">
-                <span className="font-semibold">默认配置：</span>用户在创建新实例（仅限 OpenClaw，其他 Agent 暂不支持）时，该模型将被自动预添加，用户无需手动配置。
+                <span className="font-semibold">默认配置：</span>用户在创建新实例时，该模型将被自动预添加，用户无需手动配置。
               </p>
             </div>
           </div>

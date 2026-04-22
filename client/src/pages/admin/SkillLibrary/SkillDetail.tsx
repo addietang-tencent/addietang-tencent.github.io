@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch } from 'lucide-react';
 import { toast } from 'sonner';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
@@ -24,8 +24,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
+import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
 import {
   getDistributionRecords,
   addDistributionRecord,
@@ -125,6 +135,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
+  const [securityExpanded, setSecurityExpanded] = useState(false);
+  const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
   const skillsArray = skills || MOCK_SKILLS;
 
   // 从缓存读取下发记录
@@ -506,6 +518,23 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     }
   };
 
+  // 提交安全检测（只更新状态为 scanning，由父组件 SkillListTab 的 useEffect 统一管理自动完成）
+  const handleSecurityScan = () => {
+    if (!skill) return;
+    setSecurityScanDialogOpen(false);
+    toast.success('已提交安全检测，预计 5 分钟后完成');
+
+    // 立即变为 scanning，通过 onSkillUpdate 同步给父组件
+    const updatedSkill: Skill = {
+      ...skill,
+      securityInfo: {
+        overallStatus: 'scanning',
+        engines: [],
+      },
+    };
+    if (onSkillUpdate) onSkillUpdate(updatedSkill);
+  };
+
   // 更新 Skill 回调
   const handleSkillUpdate = (updatedSkill: Skill) => {
     if (onSkillUpdate) {
@@ -573,6 +602,42 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                 v{skill.version}
               </span>
+              {/* 安全检测状态徽章 */}
+              {(() => {
+                const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                const statusInfo = SECURITY_STATUS_MAP[secStatus];
+                if (secStatus === 'not_scanned') {
+                  return (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
+                        未检测
+                      </span>
+                      <button
+                        onClick={() => setSecurityScanDialogOpen(true)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                      >
+                        <ScanSearch className="w-3 h-3" />
+                        检测
+                      </button>
+                    </span>
+                  );
+                }
+                if (secStatus === 'scanning') {
+                  return (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                      <Loader className="w-3 h-3 animate-spin" />
+                      安全检测中
+                    </span>
+                  );
+                }
+                const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                return (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
+                    <IconComp className="w-3.5 h-3.5" />
+                    {secStatus === 'safe' ? '通过安全检测' : secStatus === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
+                  </span>
+                );
+              })()}
               <div className="flex gap-1 flex-wrap">
                 {skill.categories.map((catId: string) => (
                   <span
@@ -657,6 +722,86 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         )}
       </div>
 
+      {/* 安全检测报告卡片 */}
+      {skill.securityInfo && skill.securityInfo.overallStatus !== 'not_scanned' && skill.securityInfo.overallStatus !== 'scanning' && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
+          <button
+            onClick={() => setSecurityExpanded(!securityExpanded)}
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              {skill.securityInfo.overallStatus === 'safe' ? (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                  <ShieldCheck className="w-4.5 h-4.5 text-white" />
+                </div>
+              ) : skill.securityInfo.overallStatus === 'suspicious' ? (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+                  <ShieldAlert className="w-4.5 h-4.5 text-white" />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+                  <ShieldX className="w-4.5 h-4.5 text-white" />
+                </div>
+              )}
+              <span className="text-sm font-semibold text-gray-900">安全检测</span>
+              {(() => {
+                const s = skill.securityInfo.overallStatus;
+                const info = SECURITY_STATUS_MAP[s];
+                return (
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${info.bgColor} ${info.color}`}>
+                    {info.label === '安全' ? '安全，无风险' : info.label}
+                  </span>
+                );
+              })()}
+            </div>
+            {securityExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+          </button>
+
+          {securityExpanded && (
+            <div className="border-t border-gray-100 px-6 py-5 space-y-5">
+              {/* 分引擎检测结果 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {skill.securityInfo.engines.map((engine) => (
+                  <div
+                    key={engine.engineName}
+                    className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-gray-700">{engine.engineName}</span>
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${
+                        engine.status === 'safe' ? 'text-green-600' :
+                        engine.status === 'suspicious' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          engine.status === 'safe' ? 'bg-green-500' :
+                          engine.status === 'suspicious' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`} />
+                        {engine.status === 'safe' ? '安全，无风险' :
+                         engine.status === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
+                      </span>
+                    </div>
+                    <a
+                      href={engine.reportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      查看报告
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              {/* 免责声明 */}
+              <p className="text-[11px] text-gray-400 leading-relaxed">
+                安全检测结果由第三方机构出具，仅供参考，不构成平台对 Skill 绝对安全的承诺。网络安全具有动态性，请您自行做好安全防护和风险管控。
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Tab 页面 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -716,6 +861,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         versionDate.setDate(versionDate.getDate() - idx * 14);
                         return `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
                       })();
+                      // 安全检测图标：仅最新版本显示当前 skill 的安全状态
+                      const secStatus = isLatest ? (skill.securityInfo?.overallStatus || 'not_scanned') : null;
                       return (
                         <Tooltip key={ver} delayDuration={1000}>
                             <TooltipTrigger asChild>
@@ -728,6 +875,46 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                                 }`}
                               >
                                 <div className="flex items-center gap-1.5">
+                                  {/* 安全检测状态图标 */}
+                                  {secStatus && (() => {
+                                    if (secStatus === 'not_scanned') {
+                                      return (
+                                        <Tooltip delayDuration={300}>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex flex-shrink-0">
+                                              <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
+                                        </Tooltip>
+                                      );
+                                    }
+                                    if (secStatus === 'scanning') {
+                                      return (
+                                        <Tooltip delayDuration={300}>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex flex-shrink-0">
+                                              <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
+                                        </Tooltip>
+                                      );
+                                    }
+                                    const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                                    const iconColor = secStatus === 'safe' ? 'text-green-500' : secStatus === 'suspicious' ? 'text-yellow-500' : 'text-red-500';
+                                    const statusLabel = secStatus === 'safe' ? '安全' : secStatus === 'suspicious' ? '可疑' : '恶意';
+                                    return (
+                                      <Tooltip delayDuration={300}>
+                                        <TooltipTrigger asChild>
+                                          <span className="inline-flex flex-shrink-0">
+                                            <IconComp className={`w-3.5 h-3.5 ${iconColor}`} />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top"><span className="text-xs">安全检测：{statusLabel}</span></TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })()}
                                   <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
                                     {ver}
                                   </span>
@@ -1074,6 +1261,28 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 安全检测确认弹窗 */}
+      <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
+        <AlertDialogContent className="sm:max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>提交安全检测</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认对技能「{skill.name}」提交安全检测？检测将由科恩实验室、云鼎实验室进行，通常几分钟内完成。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSecurityScan}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              className="text-white border-0"
+            >
+              确认检测
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -14,8 +14,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { MessageSquare, Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle } from "lucide-react";
+import { MessageSquare, Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle, Pencil } from "lucide-react";
 import {
   type CustomChannel,
   type CredentialField,
@@ -161,6 +165,61 @@ function emptyForm(): FormState {
   };
 }
 
+// ─── 子组件：应用范围指示器（与平台策略页 ScopeIndicator 一致） ──────────────────
+
+function ChannelScopeIndicator() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="text-gray-400">应用范围</span>
+      <span className="badge-loading whitespace-nowrap">全部用户</span>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className="text-gray-300 hover:text-blue-500 transition-colors"
+            title="编辑应用范围"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+            <div className="flex gap-1.5">
+              <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-blue-200 bg-blue-50 text-blue-600">
+                全部用户
+              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-gray-200 bg-white text-gray-300 cursor-not-allowed">
+                    按分组
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                  按分组设置通道 — 即将开放
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs px-3"
+              onClick={() => { setOpen(false); toast.success("应用范围已更新"); }}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 // ─── 主组件 ──────────────────────────────────────────────────────────────────────
 
 export default function ChannelConfig() {
@@ -285,7 +344,7 @@ export default function ChannelConfig() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
         <p className="text-sm text-gray-500 mt-1">
-          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。当前仅 OpenClaw 支持，其他 Agent 暂不支持。
+          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。
         </p>
       </div>
 
@@ -313,17 +372,21 @@ export default function ChannelConfig() {
                   <p className="text-sm font-medium text-gray-900">{ch.name}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-gray-400">用户可见</span>
-                <Switch
-                  checked={builtinVisibility[ch.id] || false}
-                  onCheckedChange={(v) => {
-                    const updated = { ...builtinVisibility, [ch.id]: v };
-                    setBuiltinVisibility(updated);
-                    saveBuiltinChannelVisibility(updated);
-                    toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
-                  }}
-                />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400">用户可见</span>
+                  <Switch
+                    checked={builtinVisibility[ch.id] || false}
+                    onCheckedChange={(v) => {
+                      const updated = { ...builtinVisibility, [ch.id]: v };
+                      setBuiltinVisibility(updated);
+                      saveBuiltinChannelVisibility(updated);
+                      toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
+                    }}
+                  />
+                </div>
+                <div className="w-px h-4 bg-gray-200" />
+                <ChannelScopeIndicator />
               </div>
             </div>
           ))}
@@ -410,6 +473,9 @@ export default function ChannelConfig() {
                       checked={ch.visible}
                       onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
                     />
+                    <div className="w-px h-4 bg-gray-200" />
+                    <ChannelScopeIndicator />
+                    <div className="w-px h-4 bg-gray-200" />
                     {/* ⑦ 修改7：去掉编辑按钮，只保留删除 */}
                     <button
                       className="text-gray-400 hover:text-red-500 transition-colors"

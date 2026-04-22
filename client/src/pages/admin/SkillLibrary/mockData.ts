@@ -1,4 +1,4 @@
-import { Skill, Category, OpenClawInstance, type SkillVersionRecord, Group } from './types';
+import { Skill, Category, OpenClawInstance, type SkillVersionRecord, Group, type SkillSecurityInfo } from './types';
 import { MOCK_GROUPS_INIT } from '../MemberManagement';
 
 // ========== 分组数据：直接使用【用户管理】-【分组】的数据 ==========
@@ -68,6 +68,89 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: '10', name: '其他', description: '其他分类' },
 ];
 
+// ========== 安全检测 Mock 数据 ==========
+
+const SECURITY_DIMENSIONS_SAFE: SkillSecurityInfo['engines'][0]['dimensions'] = [
+  { name: '供应链风险', status: 'safe', detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+  { name: '命令执行风险', status: 'safe', detail: '未检测到危险的系统命令调用或子进程执行操作' },
+  { name: '网络请求与数据外传', status: 'safe', detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+  { name: '文件操作与敏感路径访问', status: 'safe', detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+  { name: 'Prompt 注入风险', status: 'safe', detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+  { name: '远程脚本下载执行', status: 'safe', detail: '未检测到从远程服务器下载并执行脚本的行为' },
+  { name: '可疑编码/混淆', status: 'safe', detail: '未发现可疑的代码编码混淆或加密逃逸技术' },
+  { name: '其他安全风险', status: 'safe', detail: '未检测到其他类别的异常安全风险行为' },
+];
+
+const SECURITY_DIMENSIONS_SUSPICIOUS: SkillSecurityInfo['engines'][0]['dimensions'] = [
+  { name: '供应链风险', status: 'safe', detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+  { name: '命令执行风险', status: 'suspicious', detail: '检测到潜在的系统命令调用，存在一定风险' },
+  { name: '网络请求与数据外传', status: 'safe', detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+  { name: '文件操作与敏感路径访问', status: 'safe', detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+  { name: 'Prompt 注入风险', status: 'safe', detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+  { name: '远程脚本下载执行', status: 'safe', detail: '未检测到从远程服务器下载并执行脚本的行为' },
+  { name: '可疑编码/混淆', status: 'suspicious', detail: '发现部分代码使用了 Base64 编码包裹，需人工确认' },
+  { name: '其他安全风险', status: 'safe', detail: '未检测到其他类别的异常安全风险行为' },
+];
+
+/** 安全 — 双引擎均安全 */
+const MOCK_SECURITY_SAFE: SkillSecurityInfo = {
+  overallStatus: 'safe',
+  contentHash: '1fabf1a131f59232ee64a06c4b7042ce',
+  engines: [
+    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=1fabf1a131f59232ee64a06c4b7042ce', score: 95, dimensions: SECURITY_DIMENSIONS_SAFE },
+    { engineName: '云鼎实验室', status: 'safe', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/128985_1ad90f60367e241ba5522dbd8f2f63ca.html', score: 85, dimensions: SECURITY_DIMENSIONS_SAFE },
+  ],
+};
+
+/** 可疑 — 科恩安全、云鼎可疑 */
+const MOCK_SECURITY_SUSPICIOUS: SkillSecurityInfo = {
+  overallStatus: 'suspicious',
+  contentHash: 'a8b2c3d4e5f6789012345abcdef67890',
+  engines: [
+    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=a8b2c3d4e5f6789012345abcdef67890', score: 90, dimensions: SECURITY_DIMENSIONS_SAFE },
+    { engineName: '云鼎实验室', status: 'suspicious', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/129001_a8b2c3d4e5f6789012345abcdef67890.html', score: 55, dimensions: SECURITY_DIMENSIONS_SUSPICIOUS },
+  ],
+};
+
+/** 检测中 */
+const MOCK_SECURITY_SCANNING: SkillSecurityInfo = {
+  overallStatus: 'scanning',
+  engines: [],
+};
+
+/** 恶意 — 科恩安全、云鼎恶意 */
+const MOCK_SECURITY_MALICIOUS: SkillSecurityInfo = {
+  overallStatus: 'malicious',
+  contentHash: 'deadbeef1234567890abcdef12345678',
+  engines: [
+    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=deadbeef1234567890abcdef12345678', score: 88, dimensions: SECURITY_DIMENSIONS_SAFE },
+    { engineName: '云鼎实验室', status: 'malicious', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/129100_deadbeef1234567890abcdef12345678.html', score: 15, dimensions: [
+      { name: '供应链风险', status: 'malicious', detail: '发现恶意第三方依赖注入，存在供应链污染' },
+      { name: '命令执行风险', status: 'malicious', detail: '检测到危险的系统命令调用，执行 rm -rf 和反弹 shell' },
+      { name: '网络请求与数据外传', status: 'malicious', detail: '发现向外部 C2 服务器发送敏感数据' },
+      { name: '文件操作与敏感路径访问', status: 'safe', detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+      { name: 'Prompt 注入风险', status: 'suspicious', detail: '发现可能篡改 AI Agent 行为的指令片段' },
+      { name: '远程脚本下载执行', status: 'malicious', detail: '检测到从远程服务器下载并执行恶意脚本' },
+      { name: '可疑编码/混淆', status: 'malicious', detail: '发现大量代码使用多层编码混淆，隐藏恶意逻辑' },
+      { name: '其他安全风险', status: 'safe', detail: '未检测到其他类别的异常安全风险行为' },
+    ]},
+  ],
+};
+
+/** 未检测 */
+const MOCK_SECURITY_NOT_SCANNED: SkillSecurityInfo = {
+  overallStatus: 'not_scanned',
+  engines: [],
+};
+
+// skill-0: 安全 ✅
+// skill-1: 可疑 ⚠️
+// skill-2: 恶意 ❌
+// skill-3: 安全检测中 🔄（10s后随机完成）
+// skill-4: 未检测
+// skill-5: 安全 ✅
+// skill-6: 未检测
+// skill-7: 可疑 ⚠️
 export const MOCK_SKILLS: Skill[] = [
   {
     id: 'skill-0',
@@ -79,6 +162,7 @@ export const MOCK_SKILLS: Skill[] = [
     scope: 'public',
     groupIds: [],
     uploadTime: new Date('2025-03-22'),
+    securityInfo: MOCK_SECURITY_SAFE,
     content: '# 知识库问答\n\n基于企业知识库进行智能问答的 Skill...',
     versions: ['2.0.0', '1.0.0'],
     files: [
@@ -104,6 +188,7 @@ export const MOCK_SKILLS: Skill[] = [
     scope: 'private',
     groupIds: ['grp-4'],
     uploadTime: new Date('2025-03-20'),
+    securityInfo: MOCK_SECURITY_SUSPICIOUS,
     content: '# 文档总结助手\n\n这是一个用于快速总结长文档的 Skill...',
     versions: ['1.0.0', '0.9.0'],
     files: [
@@ -133,6 +218,7 @@ export const MOCK_SKILLS: Skill[] = [
     scope: 'private',
     groupIds: ['grp-2'],
     uploadTime: new Date('2025-03-18'),
+    securityInfo: MOCK_SECURITY_MALICIOUS,
     content: '# 代码审查工具\n\n这是一个用于代码审查的 Skill...',
     versions: ['2.1.0', '2.0.0', '1.0.0'],
     files: [
@@ -166,6 +252,7 @@ export const MOCK_SKILLS: Skill[] = [
     scope: 'private',
     groupIds: ['grp-1', 'grp-2'],
     uploadTime: new Date('2025-03-15'),
+    securityInfo: MOCK_SECURITY_SCANNING,
     content: '# 日志分析器\n\n这是一个用于日志分析的 Skill...',
     versions: ['1.5.2', '1.5.0', '1.0.0'],
     files: [
@@ -199,6 +286,7 @@ export const MOCK_SKILLS: Skill[] = [
     scope: 'private',
     groupIds: ['grp-4'],
     uploadTime: new Date('2025-03-20'),
+    securityInfo: MOCK_SECURITY_NOT_SCANNED,
     content: `---
 name: github
 description: "Interact with GitHub using the \`gh\` CLI. Use \`gh issue\`, \`gh pr\`, \`gh run\`, and \`gh api\` for issues, PRs, CI runs, and advanced queries."
@@ -261,6 +349,7 @@ The \`gh api\` command is useful for accessing data not available through other 
     scope: 'public',
     groupIds: [],
     uploadTime: new Date('2025-03-25'),
+    securityInfo: MOCK_SECURITY_SAFE,
     content: '# SQL 查询优化助手\n\n这是一个用于 SQL 查询优化的 Skill...',
     versions: ['1.2.0', '1.1.0', '1.0.0'],
     files: [
@@ -289,6 +378,7 @@ The \`gh api\` command is useful for accessing data not available through other 
     scope: 'private',
     groupIds: ['grp-2'],
     uploadTime: new Date('2025-04-01'),
+    securityInfo: MOCK_SECURITY_NOT_SCANNED,
     content: '# K8s 故障排查助手\n\n这是一个用于 Kubernetes 故障排查的 Skill...',
     versions: ['2.0.0', '1.5.0', '1.0.0'],
     files: [
@@ -317,6 +407,7 @@ The \`gh api\` command is useful for accessing data not available through other 
     scope: 'public',
     groupIds: [],
     uploadTime: new Date('2025-03-28'),
+    securityInfo: MOCK_SECURITY_SUSPICIOUS,
     content: '# 会议纪要生成器\n\n这是一个用于会议纪要生成的 Skill...',
     versions: ['1.3.0', '1.2.0', '1.0.0'],
     files: [
@@ -338,11 +429,11 @@ The \`gh api\` command is useful for accessing data not available through other 
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [
-  { id: 'oc-7', name: 'OpenClaw-预发布环境', createdBy: 'admin', status: 'running', createdAt: '2026-04-05T11:00:00Z', distributionStatus: 'success', distributedVersion: '0.8.0', groupIds: ['grp-1', 'grp-2'] },
-  { id: 'oc-6', name: 'OpenClaw-回归测试', createdBy: 'dev-team', status: 'running', createdAt: '2026-04-01T09:30:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2', 'grp-3'] },
-  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-3'] },
-  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['grp-2'], failReason: '命令下发失败' },
-  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2'] },
-  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-2'] },
-  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0', groupIds: ['grp-1', 'grp-2', 'grp-3'] },
+  { id: 'oc-7', name: 'OpenClaw-预发布环境', createdBy: 'admin', status: 'running', createdAt: '2026-04-05T11:00:00Z', distributionStatus: 'success', distributedVersion: '0.8.0', groupIds: ['grp-1', 'grp-2'], agentType: 'OpenClaw', agentVersion: '2026.3.28' },
+  { id: 'oc-6', name: 'OpenClaw-回归测试', createdBy: 'dev-team', status: 'running', createdAt: '2026-04-01T09:30:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.4.10' },
+  { id: 'oc-5', name: 'OpenClaw-灾备中心', createdBy: 'admin', status: 'running', createdAt: '2026-03-28T10:00:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.3.28' },
+  { id: 'oc-4', name: 'OpenClaw-备用实例', createdBy: 'ops', status: 'running', createdAt: '2026-03-20T14:30:00Z', distributionStatus: 'failed', groupIds: ['grp-2'], failReason: '命令下发失败', agentType: 'OpenClaw', agentVersion: '2026.3.15' },
+  { id: 'oc-3', name: 'OpenClaw-开发环境', createdBy: 'developer', status: 'stopped', createdAt: '2026-03-15T09:00:00Z', distributionStatus: 'success', distributedVersion: '1.0.0', groupIds: ['grp-2'], agentType: 'OpenClaw', agentVersion: '2026.3.8' },
+  { id: 'oc-2', name: 'OpenClaw-测试环境', createdBy: 'dev-team', status: 'running', createdAt: '2026-03-10T16:45:00Z', distributionStatus: 'not_distributed', groupIds: ['grp-1', 'grp-2'], agentType: 'OpenClaw', agentVersion: '2026.4.1' },
+  { id: 'oc-1', name: 'OpenClaw-生产环境', createdBy: 'admin', status: 'running', createdAt: '2026-02-01T08:00:00Z', distributionStatus: 'success', distributedVersion: '0.9.0', groupIds: ['grp-1', 'grp-2', 'grp-3'], agentType: 'OpenClaw', agentVersion: '2026.3.20' },
 ];

@@ -1224,12 +1224,17 @@ function RoleEditModal({
       toast.error(`角色名称不超过 ${NAME_MAX_LEN} 个字`);
       return;
     }
+    // 保存时清除 previousVersion，使得再次编辑时不再显示"(原vX.X.X)"
+    const cleanedSkills = skills.map(s => {
+      const { previousVersion, ...rest } = s;
+      return rest;
+    });
     onSave({
       id: role?.id ?? `role-${Date.now()}`,
       name: name.trim(),
       description: description.trim(),
       soul: soul.trim(),
-      skills,
+      skills: cleanedSkills,
       visible,
       scope,
       groupIds: scope === 'public' ? [] : groupIds,
@@ -1759,7 +1764,7 @@ export default function SkillRolesTab() {
                       ? '选择应用范围'
                       : allScopeKeys.every(k => selectedScopes.has(k))
                         ? '全部应用范围'
-                        : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                        : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -1770,7 +1775,7 @@ export default function SkillRolesTab() {
                     ? '选择应用范围'
                     : allScopeKeys.every(k => selectedScopes.has(k))
                       ? '全部应用范围'
-                      : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
+                      : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                 </p>
               </TooltipContent>
             </Tooltip>

@@ -13,7 +13,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--error-bg": "#ffffff",
           "--error-text": "#09090b",
           "--error-border": "#e4e4e7",
-          zIndex: 9999,
+          zIndex: 99999,
         } as React.CSSProperties
       }
       {...props}

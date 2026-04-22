@@ -160,6 +160,12 @@ interface MemoryPreviewProps {
   memoryStatus?: MemoryStatus;
   // 是否在原子记忆中显示置信度列（默认 true）
   showConfidence?: boolean;
+  // Pro 版额度是否可用
+  proQuotaAvailable?: boolean;
+  // Memory 状态变更回调
+  onStatusChange?: (newStatus: MemoryStatus) => Promise<void>;
+  // 是否正在加载数据（首次进入时加载）
+  isLoading?: boolean;
 }
 
 // 记忆类型标签组件
@@ -183,6 +189,9 @@ type NavItem = 'persona' | 'scenes' | 'records' | 'conversations';
 export function MemoryPreview({ 
   memoryStatus = 'none',
   showConfidence = true,
+  proQuotaAvailable: _proQuotaAvailable = true,
+  onStatusChange: _onStatusChange,
+  isLoading = false,
 }: MemoryPreviewProps) {
   const [activeNav, setActiveNav] = useState<NavItem>('persona');
   const [recordFilter, setRecordFilter] = useState<'all' | 'fact' | 'preference' | 'event'>('all');
@@ -750,6 +759,17 @@ export function MemoryPreview({
   );
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // 数据面板加载状态 - 简单的 loading 占位
+  // ══════════════════════════════════════════════════════════════════════════════
+  const DataLoadingPlaceholder = () => (
+    <div className="flex-1 flex flex-col items-center justify-center p-8">
+      <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+      <p className="text-sm text-gray-500">正在加载记忆数据，请稍候...</p>
+      <p className="text-xs text-gray-400 mt-1">首次加载可能需要一些时间</p>
+    </div>
+  );
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // 升级中状态 - 简单的加载提示
   // ══════════════════════════════════════════════════════════════════════════════
   if (memoryStatus === 'upgrading') {
@@ -909,11 +929,15 @@ export function MemoryPreview({
           </div>
         </div>
 
-        {/* 记忆数据预览 */}
-        <div className="flex items-start flex-1 min-h-0">
-          <ProNavigation />
-          <ProContent />
-        </div>
+        {/* 记忆数据预览 - 加载中或已加载 */}
+        {isLoading ? (
+          <DataLoadingPlaceholder />
+        ) : (
+          <div className="flex items-start flex-1 min-h-0">
+            <ProNavigation />
+            <ProContent />
+          </div>
+        )}
       </div>
     );
   }

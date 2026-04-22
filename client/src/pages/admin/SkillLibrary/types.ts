@@ -46,6 +46,8 @@ export interface Skill {
   lastDistributionSuccessCount?: number;
   /** 版本历史记录 */
   versionHistory?: SkillVersionRecord[];
+  /** 安全检测信息 */
+  securityInfo?: SkillSecurityInfo;
 }
 
 export interface Category {
@@ -75,6 +77,9 @@ export const INSTANCE_STATUS_MAP: Record<InstanceStatus, { label: string; color:
   error:    { label: '异常', color: 'text-red-700 bg-red-50' },
 };
 
+/** Agent 类型 */
+export type AgentType = 'OpenClaw' | 'Other';
+
 export interface AgentInstance {
   id: string;
   name: string;
@@ -88,6 +93,10 @@ export interface AgentInstance {
   groupIds: string[];
   /** 下发失败原因（仅 distributionStatus 为 failed 时有值） */
   failReason?: string;
+  /** Agent 类型 */
+  agentType?: AgentType;
+  /** Agent 版本号 */
+  agentVersion?: string;
 }
 
 export interface DistributionRecord {
@@ -105,4 +114,96 @@ export interface BucketInfo {
   name: string;
   region: string;
   storageGB: number;
+}
+
+/** OpenClawInstance 是 AgentInstance 的别名，供 mockData.ts 使用 */
+export type OpenClawInstance = AgentInstance;
+
+// ── MCP 服务相关类型 ──────────────────────────────────────
+
+/** MCP 底层传输协议 */
+export type MCPTransportType = 'sse' | 'streamable-http' | 'stdio';
+
+/** MCP 连接类别（用户可见的分类） */
+export type MCPConnectionCategory = 'remote' | 'local';
+
+/** 连接类别显示映射 */
+export const MCP_CONNECTION_CATEGORY_MAP: Record<MCPConnectionCategory, { label: string; description: string }> = {
+  remote: { label: '远程服务', description: '通过 HTTP 协议连接远程 MCP 服务' },
+  local:  { label: '本地命令', description: '通过标准输入/输出 (STDIO) 启动本地进程' },
+};
+
+/** 远程服务的协议子选项 */
+export const MCP_REMOTE_PROTOCOL_MAP: Record<'streamable-http' | 'sse', { label: string; tag?: string }> = {
+  'streamable-http': { label: 'Streamable HTTP', tag: '推荐' },
+  'sse':             { label: 'SSE', tag: '兼容旧版' },
+};
+
+/** MCP 连接方式显示映射（保留用于列表展示等场景） */
+export const MCP_TRANSPORT_MAP: Record<MCPTransportType, { label: string; description: string }> = {
+  'sse':              { label: 'SSE',              description: '远程服务（兼容旧版 MCP 2024-11-05）' },
+  'streamable-http':  { label: 'Streamable HTTP',  description: '远程服务（推荐，MCP 2025-06-18）' },
+  'stdio':            { label: 'STDIO',            description: '本地命令，通过标准输入输出通信' },
+};
+
+/** MCP 服务配置 */
+export interface MCPService {
+  /** 服务标识（唯一 key），对应 JSON 中 mcp.servers.{name}，创建后不可修改 */
+  name: string;
+  /** 显示别名（可选，可修改），用于列表和详情页展示 */
+  displayName?: string;
+  description: string;
+  /** 版本号 */
+  version: string;
+  /** 版本历史列表（从旧到新排列） */
+  versions?: string[];
+  transportType: MCPTransportType;
+  /** JSON 格式的服务配置 */
+  configJson: string;
+  /** 使用说明 (Markdown) */
+  usageDoc?: string;
+  /** 工具说明 (Markdown) */
+  toolDoc?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ========== 安全检测相关 ==========
+
+/** 安全检测状态 */
+export type SecurityStatus = 'not_scanned' | 'scanning' | 'safe' | 'suspicious' | 'malicious';
+
+/** 安全检测状态显示映射 */
+export const SECURITY_STATUS_MAP: Record<SecurityStatus, { label: string; color: string; bgColor: string }> = {
+  not_scanned: { label: '未检测', color: 'text-gray-400', bgColor: 'bg-gray-50' },
+  scanning:    { label: '安全检测中', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+  safe:        { label: '安全', color: 'text-green-600', bgColor: 'bg-green-50' },
+  suspicious:  { label: '可疑', color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
+  malicious:   { label: '恶意', color: 'text-red-600', bgColor: 'bg-red-50' },
+};
+
+/** 单引擎安全检测维度结果 */
+export type SecurityDimensionStatus = 'safe' | 'suspicious' | 'malicious';
+
+/** 安全检测维度 */
+export interface SecurityDimension {
+  name: string;
+  status: SecurityDimensionStatus;
+  detail: string;
+}
+
+/** 单引擎检测结果 */
+export interface EngineSecurityResult {
+  engineName: string;
+  status: SecurityDimensionStatus;
+  reportUrl: string;
+  score?: number;
+  dimensions: SecurityDimension[];
+}
+
+/** 技能安全检测信息 */
+export interface SkillSecurityInfo {
+  overallStatus: SecurityStatus;
+  contentHash?: string;
+  engines: EngineSecurityResult[];
 }

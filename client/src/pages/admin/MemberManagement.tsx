@@ -164,9 +164,9 @@ export interface MemberGroup {
 
 export const MOCK_GROUPS_INIT: MemberGroup[] = [
   { id: "grp-1", name: "产品组", memberIds: ["carol@acompany.com", "david@acompany.com", "eve@acompany.com", "alice@acompany.com"], createdAt: "2025-06-01" },
-  { id: "grp-2", name: "研发组", memberIds: ["alice@acompany.com", "bob@acompany.com", "frank@acompany.com", "grace@acompany.com", "kate@acompany.com"], createdAt: "2025-06-05" },
-  { id: "grp-3", name: "设计组", memberIds: ["iris@acompany.com", "jack@acompany.com", "frank@acompany.com"], createdAt: "2025-07-10" },
-  { id: "grp-4", name: "产品运营与市场推广团队", memberIds: ["alice@acompany.com", "kate@acompany.com"], createdAt: "2025-08-15" },
+  { id: "grp-2", name: "研发组", memberIds: ["bob@acompany.com", "frank@acompany.com", "grace@acompany.com", "kate@acompany.com"], createdAt: "2025-06-05" },
+  { id: "grp-3", name: "设计组", memberIds: ["iris@acompany.com", "jack@acompany.com"], createdAt: "2025-07-10" },
+  { id: "grp-4", name: "产品运营与市场推广团队", memberIds: ["leo@acompany.com", "nina@acompany.com"], createdAt: "2025-08-15" },
 ];
 
 // ─── 分组关联配置 mock 数据 ──────────────────────────────────────────────────
@@ -338,9 +338,7 @@ function AddMemberFormFields({
   );
 
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId)
-      ? values.groupIds.filter((id) => id !== gId)
-      : [...values.groupIds, gId];
+    const next = values.groupIds.includes(gId) ? [] : [gId];
     onChange({ ...values, groupIds: next });
   };
 
@@ -405,11 +403,9 @@ function AddMemberFormFields({
                 </div>
                 <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
-                        {values.groupIds.includes(g.id) && <Check className="w-3 h-3 text-white" />}
-                      </div>
+                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <span className="truncate">{g.name}</span>
+                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
                     </button>
                   ))}
                   {filteredGroups.length === 0 && groupSearchStr.trim() && (
@@ -419,17 +415,14 @@ function AddMemberFormFields({
                     <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>
                   )}
                 </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    {values.groupIds.length > 0 ? (
-                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
-                    ) : (
-                      <span className="text-[11px] text-gray-400"> </span>
-                    )}
-                    {values.groupIds.length > 0 && (
-                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
-                    )}
-                  </div>
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
+                  {values.groupIds.length > 0 && (
+                    <>
+                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
+                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                    </>
+                  )}
+                  <div className="flex-1" />
                   <button
                     className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
@@ -549,7 +542,7 @@ function EditMemberFormFields({
 
   const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(groupSearchStr.toLowerCase()));
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId) ? values.groupIds.filter((id) => id !== gId) : [...values.groupIds, gId];
+    const next = values.groupIds.includes(gId) ? [] : [gId];
     onChange({ ...values, groupIds: next });
   };
 
@@ -608,27 +601,22 @@ function EditMemberFormFields({
                 </div>
                 <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
-                        {values.groupIds.includes(g.id) && <Check className="w-3 h-3 text-white" />}
-                      </div>
+                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <span className="truncate">{g.name}</span>
+                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
                     </button>
                   ))}
                   {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
                   {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
                 </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    {values.groupIds.length > 0 ? (
-                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
-                    ) : (
-                      <span className="text-[11px] text-gray-400"> </span>
-                    )}
-                    {values.groupIds.length > 0 && (
-                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
-                    )}
-                  </div>
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
+                  {values.groupIds.length > 0 && (
+                    <>
+                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
+                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                    </>
+                  )}
+                  <div className="flex-1" />
                   <button
                     className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
@@ -741,7 +729,7 @@ function OneidEditMemberFormFields({
 
   const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(groupSearchStr.toLowerCase()));
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId) ? values.groupIds.filter((id) => id !== gId) : [...values.groupIds, gId];
+    const next = values.groupIds.includes(gId) ? [] : [gId];
     onChange({ ...values, groupIds: next });
   };
 
@@ -807,27 +795,22 @@ function OneidEditMemberFormFields({
                 </div>
                 <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
                   {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${values.groupIds.includes(g.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
-                        {values.groupIds.includes(g.id) && <Check className="w-3 h-3 text-white" />}
-                      </div>
+                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
                       <span className="truncate">{g.name}</span>
+                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
                     </button>
                   ))}
                   {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
                   {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
                 </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1 flex-1 min-w-0">
-                    {values.groupIds.length > 0 ? (
-                      <span className="text-xs text-gray-400">已选 {values.groupIds.length} 个分组</span>
-                    ) : (
-                      <span className="text-[11px] text-gray-400"> </span>
-                    )}
-                    {values.groupIds.length > 0 && (
-                      <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => onChange({ ...values, groupIds: [] })}>清除筛选</button>
-                    )}
-                  </div>
+                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
+                  {values.groupIds.length > 0 && (
+                    <>
+                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
+                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                    </>
+                  )}
+                  <div className="flex-1" />
                   <button
                     className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
                     onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
@@ -1475,15 +1458,15 @@ export default function MemberManagement() {
     setSelectedGroupId(newGroup.id);
     // 如果添加用户弹窗打开，自动选中新分组并重新打开 Popover
     if (showAddDialog) {
-      setNewMember((prev) => ({ ...prev, groupIds: [...prev.groupIds, newGroup.id] }));
+      setNewMember((prev) => ({ ...prev, groupIds: [newGroup.id] }));
       setTimeout(() => setGroupPopoverReopenKey((k) => k + 1), 150);
     }
     // 如果编辑用户弹窗打开，自动选中新分组并重新打开 Popover
     if (editMemberId) {
       if (hasOneid) {
-        setOneidEditForm((prev) => ({ ...prev, groupIds: [...prev.groupIds, newGroup.id] }));
+        setOneidEditForm((prev) => ({ ...prev, groupIds: [newGroup.id] }));
       } else {
-        setEditForm((prev) => ({ ...prev, groupIds: [...prev.groupIds, newGroup.id] }));
+        setEditForm((prev) => ({ ...prev, groupIds: [newGroup.id] }));
       }
       setTimeout(() => setGroupPopoverReopenKey((k) => k + 1), 150);
     }
@@ -1892,26 +1875,16 @@ export default function MemberManagement() {
                       <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                     )}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>
+                  <td className="px-4 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-1 max-w-[140px]">
                     {groupNames.length === 0 ? (
                       <span className="text-sm text-gray-300">—</span>
-                    ) : groupNames.length === 1 ? (
+                    ) : (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="badge-shutdown max-w-[130px] truncate inline-block align-middle cursor-default">{groupNames[0]}</span>
                         </TooltipTrigger>
                         <TooltipContent>{groupNames[0]}</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex items-center gap-1 cursor-default">
-                            <span className="badge-shutdown max-w-[100px] truncate inline-block align-middle">{groupNames[0]}</span>
-                            <span className="badge-shutdown whitespace-nowrap">+{groupNames.length - 1}</span>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>{groupNames.join(", ")}</TooltipContent>
                       </Tooltip>
                     )}
                     </div>
@@ -2215,6 +2188,7 @@ export default function MemberManagement() {
                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户归属</th>
                           )}
                           <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
+                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
                           {selectedGroupId !== "__ungrouped__" && (
                             <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
                           )}
@@ -2238,6 +2212,13 @@ export default function MemberManagement() {
                               <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
                                 {member.role === "admin" ? "管理员" : "用户"}
                               </Badge>
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              {member.status === "active" ? (
+                                <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
+                              ) : (
+                                <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
+                              )}
                             </td>
                             {selectedGroupId !== "__ungrouped__" && (
                               <td className="px-4 py-4 text-center">
@@ -3113,6 +3094,11 @@ export default function MemberManagement() {
           <DialogHeader>
             <DialogTitle>添加用户到「{groups.find((g) => g.id === selectedGroupId)?.name || ""}」</DialogTitle>
           </DialogHeader>
+          {/* 单分组规则提示 */}
+          <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg">
+            <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <span className="text-xs text-blue-600">一个用户仅支持加入一个分组，可按分组设置不同的配置与权限</span>
+          </div>
           <div className="py-2 space-y-3">
             <div className="flex items-center gap-2">
               {hasOneid && (
@@ -3153,19 +3139,21 @@ export default function MemberManagement() {
                 }
                 if (searchFiltered.length === 0) return <p className="text-xs text-gray-400 text-center py-6">没有可添加的用户</p>;
                 return searchFiltered.map((m) => {
-                  const isAlreadyInGroup = currentGroup?.memberIds.includes(m.id) ?? false;
+                  const isInCurrentGroup = currentGroup?.memberIds.includes(m.id) ?? false;
+                  const otherGroup = groups.find((g) => g.id !== selectedGroupId && g.memberIds.includes(m.id));
+                  const isInOtherGroup = !!otherGroup;
+                  const isDisabled = isInCurrentGroup || isInOtherGroup;
                   const memberGroupNames = groups.filter((g) => g.memberIds.includes(m.id)).map((g) => g.name);
-                  const groupDisplay = memberGroupNames.length === 0 ? "未分组"
-                    : memberGroupNames.length <= 2 ? memberGroupNames.join(", ")
-                    : `${memberGroupNames.slice(0, 2).join(", ")} +${memberGroupNames.length - 2}`;
+                  const groupDisplay = memberGroupNames.length === 0 ? "未分组" : memberGroupNames[0];
+                  const tooltipText = isInCurrentGroup ? "该用户已在当前分组" : isInOtherGroup ? "该用户已在其他分组" : "";
                   const row = (
-                    <label key={m.id} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isAlreadyInGroup ? "opacity-50 cursor-not-allowed bg-gray-100" : "bg-white hover:bg-gray-50 cursor-pointer"}`}>
+                    <label key={m.id} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-100" : "bg-white hover:bg-gray-50 cursor-pointer"}`}>
                       <input
                         type="checkbox"
-                        checked={isAlreadyInGroup || addToGroupSelected.includes(m.id)}
-                        disabled={isAlreadyInGroup}
+                        checked={isInCurrentGroup || addToGroupSelected.includes(m.id)}
+                        disabled={isDisabled}
                         onChange={() => {
-                          if (isAlreadyInGroup) return;
+                          if (isDisabled) return;
                           setAddToGroupSelected((prev) =>
                             prev.includes(m.id) ? prev.filter((id) => id !== m.id) : [...prev, m.id]
                           );
@@ -3177,28 +3165,24 @@ export default function MemberManagement() {
                         {hasOneid && MOCK_MEMBER_DEPARTMENTS[m.id] && (
                           <span className="text-xs text-gray-400 block truncate">{MOCK_MEMBER_DEPARTMENTS[m.id]}</span>
                         )}
-                        {groupDisplay && (
-                          memberGroupNames.length > 2 ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="text-xs text-gray-400 block truncate cursor-default">{groupDisplay}</span>
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-[300px]">{memberGroupNames.join(", ")}</TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <span className="text-xs text-gray-400 block truncate">{groupDisplay}</span>
-                          )
+                        <span className="text-xs text-gray-400 block truncate">{groupDisplay}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge variant="outline" className={m.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50 text-xs" : "border-gray-200 text-gray-500 text-xs"}>
+                          {m.role === "admin" ? "管理员" : "用户"}
+                        </Badge>
+                        {m.status === "active" ? (
+                          <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
+                        ) : (
+                          <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                         )}
                       </div>
-                      <Badge variant="outline" className={m.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50 text-xs shrink-0" : "border-gray-200 text-gray-500 text-xs shrink-0"}>
-                        {m.role === "admin" ? "管理员" : "用户"}
-                      </Badge>
                     </label>
                   );
-                  return isAlreadyInGroup ? (
+                  return isDisabled ? (
                     <Tooltip key={m.id}>
                       <TooltipTrigger asChild>{row}</TooltipTrigger>
-                      <TooltipContent>已在该分组</TooltipContent>
+                      <TooltipContent>{tooltipText}</TooltipContent>
                     </Tooltip>
                   ) : row;
                 });

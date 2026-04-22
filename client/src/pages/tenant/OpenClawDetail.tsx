@@ -458,14 +458,32 @@ export default function AgentDetail() {
     }
   }, [activeDetailTab, memoryDataLoaded, memoryStatus]);
 
-  // ── 智能体迁移状态 ──
+  // ── Agent 迁移状态 ──
   const [migrationOpen, setMigrationOpen] = useState(false);
   const [migrationStep, setMigrationStep] = useState<"export" | "waitUpload" | "import" | "importing" | "success" | "failed">("export");
   const [migrationCosUrl, setMigrationCosUrl] = useState("");
-  const [migrationProgress, setMigrationProgress] = useState(0);
   const [migrationUploaded, setMigrationUploaded] = useState(false);
   const [migrationChecking, setMigrationChecking] = useState(false);
   const [migrationError, setMigrationError] = useState("");
+  const [migrationCommandReady, setMigrationCommandReady] = useState(false);
+
+  // 导入步骤流转（替代进度条）
+  type ImportStepStatus = "pending" | "running" | "done" | "failed";
+  type ImportStepItem = { label: string; status: ImportStepStatus; error?: string };
+  const [importSteps, setImportSteps] = useState<ImportStepItem[]>([
+    { label: "下载数据包", status: "pending" },
+    { label: "备份当前配置", status: "pending" },
+    { label: "解压并覆盖", status: "pending" },
+    { label: "重启 Gateway", status: "pending" },
+    { label: "验证生效", status: "pending" },
+  ]);
+
+  // 导入后验证结果
+  type VerifyItem = { label: string; cmd: string; passed: boolean; detail?: string };
+  const [verifyResults, setVerifyResults] = useState<VerifyItem[]>([]);
+
+  const [migrationCheckFailed, setMigrationCheckFailed] = useState(false);
+  const [migrationCheckCount, setMigrationCheckCount] = useState(0);
 
   const migrationBatchId = `${clawData?.instanceId || "unknown"}-${Date.now()}`;
   const migrationCosBucket = "clawpro-migrate-1302061491";
@@ -474,7 +492,7 @@ export default function AgentDetail() {
 
   const migrationExportCommand = `# 在源端 Agent 终端执行以下命令
 agent gateway stop
-tar -czf /tmp/openclaw-export.tgz -C /root .agent
+tar -czf /tmp/openclaw-export.tgz -C $HOME .agent
 curl -X PUT --upload-file /tmp/openclaw-export.tgz \\
   "${migrationPresignedUrl}"
 rm -f /tmp/openclaw-export.tgz
@@ -483,45 +501,125 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
   const handleCheckUpload = () => {
     setMigrationChecking(true);
+    setMigrationCheckFailed(false);
+    setMigrationCheckCount((c) => c + 1);
     setTimeout(() => {
-      setMigrationUploaded(true);
+      // 模拟：第一次检测有概率检测不到（用户可能还没上传完）
+      const detected = migrationCheckCount >= 1 || Math.random() < 0.6;
       setMigrationChecking(false);
-      setMigrationStep("import");
-      toast.success("检测到已上传的数据包");
+      if (detected) {
+        setMigrationUploaded(true);
+        setMigrationCheckFailed(false);
+        setMigrationStep("import");
+        toast.success("检测到已上传的数据包");
+      } else {
+        setMigrationCheckFailed(true);
+        toast.error("未检测到数据包");
+      }
     }, 1500);
   };
 
   const handleStartMigration = () => {
     setMigrationStep("importing");
-    setMigrationProgress(0);
-    let p = 0;
-    const iv = setInterval(() => {
-      p += Math.random() * 15 + 5;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(iv);
-        setTimeout(() => {
-          if (Math.random() < 0.9) {
-            setMigrationStep("success");
-            toast.success("迁移成功！Agent 已重启");
-          } else {
+    const steps: ImportStepItem[] = [
+      { label: "下载数据包", status: "pending" },
+      { label: "备份当前配置", status: "pending" },
+      { label: "解压并覆盖", status: "pending" },
+      { label: "重启 Gateway", status: "pending" },
+      { label: "验证生效", status: "pending" },
+    ];
+    setImportSteps(steps);
+    setVerifyResults([]);
+
+    const delays = [1200, 1000, 1500, 2000, 1800];
+    let current = 0;
+
+    const failStep = (idx: number, reason: string) => {
+      setImportSteps((prev) => prev.map((s, i) => i === idx ? { ...s, status: "failed", error: reason } : s));
+      setMigrationStep("failed");
+      setMigrationError(reason + "，已自动回滚");
+    };
+
+    const runStep = () => {
+      if (current >= steps.length) return;
+      setImportSteps((prev) => prev.map((s, i) => i === current ? { ...s, status: "running" } : s));
+
+      setTimeout(() => {
+        const stepIdx = current;
+        // 模拟：后端接口返回失败（如解压格式异常）
+        const fail = stepIdx === 2 && Math.random() < 0.08;
+
+        if (fail) {
+          failStep(stepIdx, "解压失败：数据包格式异常");
+          return;
+        }
+
+        setImportSteps((prev) => prev.map((s, i) => i === stepIdx ? { ...s, status: "done" } : s));
+        current++;
+
+        if (current < steps.length) {
+          runStep();
+        } else {
+          const results: VerifyItem[] = [
+            { label: "Agent 进程状态", cmd: "agent gateway status", passed: true, detail: "running" },
+            { label: "配置完整性", cmd: "agent doctor check", passed: true, detail: "所有检查项通过" },
+            { label: "通道连通性", cmd: "agent gateway ping", passed: Math.random() < 0.85, detail: Math.random() < 0.85 ? "ping 成功" : "IM 通道需重新登录" },
+          ];
+          setVerifyResults(results);
+
+          const allPassed = results.every((r) => r.passed);
+          const criticalFailed = !results[0].passed;
+
+          if (criticalFailed) {
             setMigrationStep("failed");
-            setMigrationError("Gateway 重启超时，请手动检查");
+            setMigrationError("Agent 进程未启动，已触发自动回滚");
+          } else {
+            setMigrationStep("success");
+            toast.success(allPassed ? "迁移成功，已验证生效" : "迁移完成，部分项需手动处理");
           }
-        }, 500);
-      }
-      setMigrationProgress(Math.min(p, 100));
-    }, 800);
+        }
+      }, delays[current]);
+    };
+
+    runStep();
   };
 
   const resetMigration = () => {
     setMigrationStep("export");
     setMigrationCosUrl("");
-    setMigrationProgress(0);
     setMigrationUploaded(false);
     setMigrationChecking(false);
+    setMigrationCheckFailed(false);
+    setMigrationCheckCount(0);
     setMigrationError("");
+    setMigrationCommandReady(false);
+    setImportSteps([
+      { label: "下载数据包", status: "pending" },
+      { label: "备份当前配置", status: "pending" },
+      { label: "解压并覆盖", status: "pending" },
+      { label: "重启 Gateway", status: "pending" },
+      { label: "验证生效", status: "pending" },
+    ]);
+    setVerifyResults([]);
+    setTimeout(() => setMigrationCommandReady(true), 1800);
   };
+
+  // 导入失败后重试：不回到导出步骤，直接重新执行导入
+  const retryImport = () => {
+    setMigrationError("");
+    setVerifyResults([]);
+    handleStartMigration();
+  };
+
+  // 弹窗内容变化时自动滚到底部
+  const migrationDialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (migrationOpen && migrationDialogRef.current) {
+      setTimeout(() => {
+        migrationDialogRef.current?.scrollTo({ top: migrationDialogRef.current.scrollHeight, behavior: "smooth" });
+      }, 100);
+    }
+  }, [migrationStep, migrationChecking, migrationCheckFailed, migrationUploaded, migrationCommandReady, migrationOpen, importSteps]);
 
   const [showUpdateProgressDialog, setShowUpdateProgressDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -1417,11 +1515,11 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </Tooltip>
             {activeDetailTab === "basic" && (
               <button
-                onClick={() => { setMigrationOpen(true); resetMigration(); }}
+                onClick={() => { setMigrationOpen(true); setMigrationStep("export"); setMigrationCosUrl(""); setMigrationUploaded(false); setMigrationChecking(false); setMigrationCheckFailed(false); setMigrationCheckCount(0); setMigrationError(""); setMigrationCommandReady(false); setVerifyResults([]); setImportSteps([{ label: "下载数据包", status: "pending" }, { label: "备份当前配置", status: "pending" }, { label: "解压并覆盖", status: "pending" }, { label: "重启 Gateway", status: "pending" }, { label: "验证生效", status: "pending" }]); setTimeout(() => setMigrationCommandReady(true), 1800); }}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
-                智能体迁移
+                Agent 迁移
               </button>
             )}
           </div>
@@ -2951,9 +3049,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         </DialogContent>
       </Dialog>
 
-      {/* ==================== 智能体迁移弹窗 ==================== */}
+      {/* ==================== Agent 迁移弹窗 ==================== */}
       <Dialog open={migrationOpen} onOpenChange={setMigrationOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent ref={migrationDialogRef} className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
               迁移 Agent 至当前实例
@@ -2970,10 +3068,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <AlertTriangle className="w-3.5 h-3.5" /> 注意事项
               </p>
               <ul className="text-xs text-amber-700 space-y-1 list-disc pl-4 leading-relaxed">
-                <li>源端 Agent 的配置、通道登录状态、会话历史将完整导入到当前实例</li>
-                <li>源端仅做读取打包，不影响源端正常运行</li>
+                <li><strong className="text-red-600">源端 Agent 类型必须与当前实例的 Agent 类型一致</strong>（如当前为 {(claw as any).agentType === "hermes" ? "Hermes Agent" : (claw as any).agentType === "lightclawace" ? "LightClaw ACE" : "OpenClaw"}，则源端也须为同类型），否则配置文件将无法兼容，导致迁移失败</li>
+                <li>源端 Agent 的配置、通道登录状态、会话历史将完整导入到当前实例，源端仅做读取打包，不影响源端正常运行</li>
                 <li>导入将覆盖当前实例的 ~/.agent/ 目录，导入前自动备份，失败自动回滚</li>
-                <li>COS 临时数据保留 24 小时后自动清理</li>
               </ul>
             </div>
 
@@ -2991,6 +3088,13 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               <p className="text-xs text-gray-500 ml-7">
                 请复制下方命令，在源 Agent 终端或 IM 机器人对话框中执行。
               </p>
+              {!migrationCommandReady ? (
+                <div className="ml-7 bg-gray-50 border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  <p className="text-xs text-gray-500">正在生成迁移命令...</p>
+                  <p className="text-xs text-gray-400">正在获取临时上传凭证和 COS 预签名链接</p>
+                </div>
+              ) : (
               <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <button
                   onClick={() => { navigator.clipboard.writeText(migrationExportCommand); toast.success("命令已复制"); }}
@@ -3001,6 +3105,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </button>
                 <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-all leading-relaxed pr-8">{migrationExportCommand}</pre>
               </div>
+              )}
               <div className="ml-7 text-xs text-gray-400 space-y-0.5">
                 <p className="flex items-center gap-1"><Clock className="w-3 h-3" /> 上传链接有效期 1 小时，超时请刷新页面重新获取</p>
               </div>
@@ -3024,12 +3129,25 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <p className="text-xs text-gray-500">执行完导出命令后，点击检测上传状态：</p>
                   <button
                     onClick={handleCheckUpload}
-                    disabled={migrationChecking}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-gray-600 bg-white border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                    disabled={migrationChecking || !migrationCommandReady}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-white border-blue-500 disabled:opacity-50"
+                    style={{ background: "#007AFF" }}
                   >
                     {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                    {migrationChecking ? "检测中..." : "检测上传状态"}
+                    {migrationChecking ? "检测中..." : migrationCheckFailed ? "重新检测" : "检测上传状态"}
                   </button>
+                  {migrationCheckFailed && (
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 space-y-1">
+                      <p className="text-xs text-red-700 font-medium flex items-center gap-1">
+                        <XCircle className="w-3.5 h-3.5" /> 未检测到数据包
+                      </p>
+                      <ul className="text-xs text-red-600 list-disc pl-4 space-y-0.5 leading-relaxed">
+                        <li>请确认已在源端执行完导出命令，且命令输出包含 "✅ 导出完成"</li>
+                        <li>检查源端网络是否正常，curl 上传是否报错</li>
+                        <li>上传链接有效期 1 小时，超时请关闭弹窗重新打开获取新链接</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -3060,14 +3178,34 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               )}
 
               {migrationStep === "importing" && (
-                <div className="ml-7 space-y-2">
-                  <p className="text-xs text-blue-600 flex items-center gap-1.5">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> 正在导入...
+                <div className="ml-7 space-y-3">
+                  <p className="text-xs text-blue-600 flex items-center gap-1.5 font-medium">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> 正在执行导入...
                   </p>
-                  <Progress value={migrationProgress} className="h-1.5" />
-                  <p className="text-xs text-gray-400">
-                    下载数据包 → 备份当前配置 → 解压覆盖 → 重启 Gateway
-                  </p>
+                  <div className="space-y-1.5">
+                    {importSteps.map((step, i) => (
+                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${
+                        step.status === "done" ? "bg-green-50" :
+                        step.status === "running" ? "bg-blue-50" :
+                        step.status === "failed" ? "bg-red-50" : "bg-gray-50"
+                      }`}>
+                        {step.status === "done" && <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />}
+                        {step.status === "running" && <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin flex-shrink-0" />}
+                        {step.status === "failed" && <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
+                        {step.status === "pending" && <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 flex-shrink-0" />}
+                        <span className={
+                          step.status === "done" ? "text-green-700" :
+                          step.status === "running" ? "text-blue-700 font-medium" :
+                          step.status === "failed" ? "text-red-700" : "text-gray-400"
+                        }>
+                          {step.label}
+                        </span>
+                        {step.status === "done" && <span className="text-green-500 ml-auto">✓</span>}
+                        {step.status === "running" && <span className="text-blue-400 ml-auto">进行中...</span>}
+                        {step.status === "failed" && step.error && <span className="text-red-500 ml-auto">{step.error}</span>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -3079,12 +3217,34 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center">
                     <CheckCircle2 className="w-3 h-3" />
                   </div>
-                  <h3 className="text-sm font-semibold text-green-700">迁移成功</h3>
+                  <h3 className="text-sm font-semibold text-green-700">
+                    {verifyResults.every((r) => r.passed) ? "迁移成功，已验证生效" : "迁移完成，部分项需处理"}
+                  </h3>
                 </div>
-                <div className="ml-7 rounded-lg bg-green-50 border border-green-200 p-3 space-y-1.5">
-                  <p className="text-xs text-green-700">Agent 配置数据已成功导入，Gateway 已重启。</p>
-                  <p className="text-xs text-green-600">COS 临时数据已清理。</p>
-                </div>
+                {/* 验证结果 */}
+                {verifyResults.length > 0 && (
+                  <div className="ml-7 space-y-1.5">
+                    <p className="text-xs text-gray-500 font-medium">导入后验证：</p>
+                    {verifyResults.map((v, i) => (
+                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${v.passed ? "bg-green-50" : "bg-amber-50"}`}>
+                        {v.passed
+                          ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                          : <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
+                        <span className={v.passed ? "text-green-700" : "text-amber-700"}>{v.label}</span>
+                        <code className="text-gray-400 font-mono ml-1">{v.cmd}</code>
+                        <span className={`ml-auto ${v.passed ? "text-green-500" : "text-amber-600"}`}>{v.detail}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!verifyResults.every((r) => r.passed) && verifyResults.some((r) => !r.passed) && (
+                  <div className="ml-7 rounded-lg bg-amber-50 border border-amber-200 p-2.5">
+                    <p className="text-xs text-amber-700">
+                      <AlertTriangle className="w-3 h-3 inline mr-1" />
+                      部分验证项未通过，Agent 核心功能已正常运行，未通过项可能需要手动处理（如重新登录 IM 通道）。
+                    </p>
+                  </div>
+                )}
                 <div className="ml-7">
                   <button onClick={() => setMigrationOpen(false)}
                     className="text-xs font-medium text-blue-600 hover:underline">
@@ -3102,14 +3262,32 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </div>
                   <h3 className="text-sm font-semibold text-red-700">迁移失败</h3>
                 </div>
+                {/* 显示步骤流转状态，方便定位失败在哪步 */}
+                <div className="ml-7 space-y-1.5">
+                  {importSteps.map((step, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${
+                      step.status === "done" ? "bg-green-50" :
+                      step.status === "failed" ? "bg-red-50" : "bg-gray-50"
+                    }`}>
+                      {step.status === "done" && <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />}
+                      {step.status === "failed" && <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}
+                      {step.status === "pending" && <div className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 flex-shrink-0" />}
+                      <span className={
+                        step.status === "done" ? "text-green-700" :
+                        step.status === "failed" ? "text-red-700 font-medium" : "text-gray-400"
+                      }>{step.label}</span>
+                      {step.status === "failed" && step.error && <span className="text-red-500 ml-auto text-xs">{step.error}</span>}
+                    </div>
+                  ))}
+                </div>
                 <div className="ml-7 rounded-lg bg-red-50 border border-red-200 p-3 space-y-1.5">
                   <p className="text-xs text-red-700">{migrationError}</p>
                   <p className="text-xs text-red-600">已自动回滚至导入前状态，当前实例配置未受影响。</p>
                 </div>
                 <div className="ml-7 flex gap-2">
-                  <button onClick={resetMigration}
+                  <button onClick={retryImport}
                     className="text-xs font-medium text-blue-600 hover:underline">
-                    重试
+                    重新导入
                   </button>
                   <button onClick={() => setMigrationOpen(false)}
                     className="text-xs font-medium text-gray-500 hover:underline">

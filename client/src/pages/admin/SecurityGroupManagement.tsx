@@ -1557,8 +1557,15 @@ export default function SecurityGroupManagement() {
               ))
             ) : (
               <tr>
-                <td colSpan={readonly ? 5 : 6} className="px-6 py-10 text-center text-sm text-gray-400">
-                  暂无{type === "outbound" ? "出站规则" : "入站规则"}
+                <td colSpan={readonly ? 5 : 6} className="px-6 py-8">
+                  {type === "outbound" ? (
+                    <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 max-w-lg mx-auto">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <p className="text-sm text-amber-800 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-gray-400">暂无入站规则</p>
+                  )}
                 </td>
               </tr>
             )}
@@ -2059,9 +2066,18 @@ export default function SecurityGroupManagement() {
                     }}
                   />
                 ) : (
-                  <div className="px-6 py-12 flex flex-col items-center justify-center border-t border-gray-50">
-                    <Shield className="w-10 h-10 text-gray-200 mb-3" />
-                    <p className="text-sm text-gray-400">暂无规则</p>
+                  <div className="px-6 py-10 flex flex-col items-center justify-center border-t border-gray-50">
+                    {securityTab === "outbound" ? (
+                      <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 max-w-lg w-full">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                        <p className="text-sm text-amber-800 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Shield className="w-10 h-10 text-gray-200 mb-3" />
+                        <p className="text-sm text-gray-400">暂无入站规则</p>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

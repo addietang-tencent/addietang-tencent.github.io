@@ -378,17 +378,76 @@ const INITIAL_DEFAULT_SECURITY_GROUP_ID = "sg-current001";
 const NETWORK_TEMPLATE_WARNING_KEY: CommonRuleOptionKey = "block-inter-vpc";
 const ENABLE_SECURITY_GROUP_EMPTY_STATE_DEMO = true;
 
+// 默认安全组的本地快照 key：供平台策略页等其他管理员页面只读消费（单向同步）。
+const DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY = "admin_default_security_group_snapshot";
+
 function findSecurityGroupById(securityGroupId: string) {
   return MOCK_SECURITY_GROUPS.find((sg) => sg.id === securityGroupId) ?? null;
 }
 
-function getInitialDefaultSecurityGroup() {
+function getInitialDefaultSecurityGroup(): SecurityGroup | null {
+  // 优先读取本地快照：让「网络管理」与「平台策略」等页面共享同一份默认安全组状态，
+  // 避免组件 re-mount 后（例如在侧边栏切换管理页）把之前的切换/补规则动作丢失。
+  const snapshotRaw = typeof window !== "undefined"
+    ? window.localStorage.getItem(DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY)
+    : null;
+  if (snapshotRaw) {
+    try {
+      const snapshot = JSON.parse(snapshotRaw) as {
+        id?: string;
+        name?: string;
+        inboundRules?: Rule[];
+      };
+      if (snapshot && snapshot.id && Array.isArray(snapshot.inboundRules)) {
+        // 快照只持久化 id/name/inboundRules，其它字段从 MOCK 中补齐（outboundRules 等）。
+        const template = findSecurityGroupById(snapshot.id);
+        if (template) {
+          return {
+            ...template,
+            name: snapshot.name ?? template.name,
+            inboundRules: snapshot.inboundRules,
+            inboundCount: snapshot.inboundRules.length,
+          };
+        }
+        // 新建/已被删除的安全组也能用：仅用快照内字段构造，outbound 留空。
+        return {
+          id: snapshot.id,
+          name: snapshot.name ?? snapshot.id,
+          remark: "",
+          inboundCount: snapshot.inboundRules.length,
+          outboundCount: 0,
+          inboundRules: snapshot.inboundRules,
+          outboundRules: [],
+        };
+      }
+    } catch {
+      // JSON 解析失败则 fallback 到 demo / 默认逻辑
+    }
+  }
+
   // 仅将“未配置默认安全组”的演示开关收口在初始化阶段，避免主流程持续混入 demo 判断。
   if (ENABLE_SECURITY_GROUP_EMPTY_STATE_DEMO) {
     return null;
   }
 
   return findSecurityGroupById(INITIAL_DEFAULT_SECURITY_GROUP_ID);
+}
+
+// 写入默认安全组快照：currentSg 为 null 时清除 key。
+function writeDefaultSecurityGroupSnapshot(
+  currentSg: SecurityGroup | null,
+  inboundRules: Rule[],
+) {
+  if (!currentSg) {
+    localStorage.removeItem(DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY);
+    return;
+  }
+  const snapshot = {
+    id: currentSg.id,
+    name: currentSg.name,
+    inboundRules,
+  };
+  localStorage.setItem(DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY, JSON.stringify(snapshot));
 }
 
 function isSameRuleContent(rule: Omit<Rule, "id">, expectedRule: Omit<Rule, "id">) {
@@ -1333,6 +1392,11 @@ export default function SecurityGroupManagement() {
   const [sgDialogSelected, setSgDialogSelected] = useState<SecurityGroup | null>(null); // 弹窗内选中的候选
   const [sgDialogTab, setSgDialogTab] = useState<"outbound" | "inbound">("outbound");
   const [isSgDialogPanelAccessStaged, setIsSgDialogPanelAccessStaged] = useState(false);
+
+  // 将「当前默认安全组 + 入方向规则」同步到本地快照，供平台策略页等管理员页面只读消费。
+  useEffect(() => {
+    writeDefaultSecurityGroupSnapshot(currentSg, inboundRules);
+  }, [currentSg, inboundRules]);
 
   // 新建安全组状态
   const [showCreateSgDialog, setShowCreateSgDialog] = useState(false);

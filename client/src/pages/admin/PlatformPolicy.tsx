@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, AlertTriangle, Info, MessageSquare } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, Info, MessageSquare } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,57 @@ import {
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
 type TokenLimit = number | "unlimited"; // -1 或 "unlimited" 表示无限制
+
+// 网络管理页默认安全组的本地快照（用于平台策略读/补规则）
+type SnapshotInboundRule = {
+  id: string;
+  source: string;
+  protocol: string;
+  port: string;
+  policy: string;
+  remark?: string;
+};
+
+type DefaultSecurityGroupSnapshot = {
+  id?: string;
+  name?: string;
+  inboundRules: SnapshotInboundRule[];
+};
+
+// 端口/协议覆盖判断：判断某条规则的端口字段是否覆盖指定目标端口
+// 支持："ALL" / "80,443,6080" / "6000-7000" / "6080"
+function doesPortCoverTarget(port: string, target: number): boolean {
+  const trimmed = (port || "").trim();
+  if (!trimmed) return false;
+  if (trimmed.toUpperCase() === "ALL") return true;
+  if (trimmed.includes(",")) {
+    return trimmed.split(",").some((p) => doesPortCoverTarget(p, target));
+  }
+  if (trimmed.includes("-")) {
+    const [s, e] = trimmed.split("-").map((x) => Number(x.trim()));
+    if (Number.isFinite(s) && Number.isFinite(e)) {
+      return s <= target && target <= e;
+    }
+    return false;
+  }
+  return Number(trimmed) === target;
+}
+
+// 判断一条入方向规则是否放通了目标端口（源 0.0.0.0/0、策略允许、TCP/ALL）
+function isInboundRuleCoverPort(rule: SnapshotInboundRule, target: number): boolean {
+  if (!rule) return false;
+  if (rule.source !== "0.0.0.0/0") return false;
+  if (rule.policy !== "允许") return false;
+  const proto = (rule.protocol || "").toUpperCase();
+  if (proto !== "TCP" && proto !== "ALL") return false;
+  return doesPortCoverTarget(rule.port, target);
+}
+
+// 云端浏览器所需 6080 放通
+const CLOUD_BROWSER_REQUIRED_PORT = 6080;
+function isCloudBrowserInboundRule(rule: SnapshotInboundRule): boolean {
+  return isInboundRuleCoverPort(rule, CLOUD_BROWSER_REQUIRED_PORT);
+}
 
 // ─── 子组件：应用范围指示器（带 Popover 编辑） ─────────────────────────────────
 
@@ -341,12 +392,14 @@ interface ToggleCardProps {
   description: string;
   checked: boolean;
   loading?: boolean;
+  /** 加载中提示文案，默认「配置中，请勿关闭」。标题较长的卡片可传更短的文案避免标题被挤换行。 */
+  loadingLabel?: string;
   onToggle: (v: boolean) => void;
   afterScope?: React.ReactNode;
   extraContent?: React.ReactNode;
 }
 
-function ToggleCard({ icon, iconBg, title, description, checked, loading, onToggle, afterScope, extraContent }: ToggleCardProps) {
+function ToggleCard({ icon, iconBg, title, description, checked, loading, loadingLabel, onToggle, afterScope, extraContent }: ToggleCardProps) {
   return (
     <div
       className="bg-white rounded-2xl border border-gray-100 p-4"
@@ -362,7 +415,7 @@ function ToggleCard({ icon, iconBg, title, description, checked, loading, onTogg
           {loading && (
             <div className="flex items-center gap-1.5">
               <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
-              <span className="text-xs text-blue-500 font-medium">配置中，请勿关闭</span>
+              <span className="text-xs text-blue-500 font-medium whitespace-nowrap">{loadingLabel ?? "配置中，请勿关闭"}</span>
             </div>
           )}
           <Switch
@@ -434,12 +487,20 @@ export default function PlatformPolicy() {
     return localStorage.getItem("admin_panel_port");
   });
   const [panelAccessLoading, setPanelAccessLoading] = useState(false);
+  // 本次自动追加的 面板端口 放通规则 id（用于在卡片内展示"已自动添加"提示）
+  const [panelSgRuleId, setPanelSgRuleId] = useState<string | null>(() => {
+    return localStorage.getItem("admin_panel_sg_rule_id");
+  });
 
   // ── 云端浏览器开关状态 ──
   const [allowCloudBrowser, setAllowCloudBrowser] = useState(() => {
     return localStorage.getItem("admin_allow_cloud_browser") === "true";
   });
-  const [showCloudBrowserEnableDialog, setShowCloudBrowserEnableDialog] = useState(false);
+  // 本次自动追加的 6080 放通规则 id（用于在卡片内展示"已自动添加"提示）
+  const [cloudBrowserSgRuleId, setCloudBrowserSgRuleId] = useState<string | null>(() => {
+    return localStorage.getItem("admin_cloud_browser_sg_rule_id");
+  });
+  const [cloudBrowserLoading, setCloudBrowserLoading] = useState(false);
 
   // ── 对话视图开关状态 ──
   const [allowChatView, setAllowChatView] = useState(() => {
@@ -496,9 +557,55 @@ export default function PlatformPolicy() {
 
   const handleTogglePanelAccess = (v: boolean) => {
     if (v) {
+      // 前置校验：没有默认安全组时阻止开启（与「允许用户访问 Agent 云端浏览器」一致）
+      const snapshotRaw = localStorage.getItem("admin_default_security_group_snapshot");
+      let snapshot: DefaultSecurityGroupSnapshot | null = null;
+      if (snapshotRaw) {
+        try {
+          snapshot = JSON.parse(snapshotRaw) as DefaultSecurityGroupSnapshot;
+        } catch {
+          snapshot = null;
+        }
+      }
+      if (!snapshot || !Array.isArray(snapshot.inboundRules)) {
+        toast.error("请先前往网络管理配置 ClawPro 的安全组，再开启该功能");
+        return;
+      }
+
       setPanelAccessLoading(true);
       setTimeout(() => {
         const randomPort = String(Math.floor(Math.random() * 1000) + 9000);
+        const portNum = Number(randomPort);
+
+        // 若快照内已有覆盖该端口的放通规则，则不重复添加；否则追加一条并记录 id
+        const hasCovered = snapshot!.inboundRules.some((r) =>
+          isInboundRuleCoverPort(r, portNum),
+        );
+        if (!hasCovered) {
+          const newRule: SnapshotInboundRule = {
+            id: `panel-${Date.now()}`,
+            source: "0.0.0.0/0",
+            protocol: "TCP",
+            port: randomPort,
+            policy: "允许",
+            remark: "Agent 面板访问",
+          };
+          const nextSnapshot: DefaultSecurityGroupSnapshot = {
+            ...snapshot!,
+            inboundRules: [...snapshot!.inboundRules, newRule],
+          };
+          localStorage.setItem(
+            "admin_default_security_group_snapshot",
+            JSON.stringify(nextSnapshot),
+          );
+          localStorage.setItem("admin_panel_sg_rule_id", newRule.id);
+          setPanelSgRuleId(newRule.id);
+        } else {
+          // 已有覆盖规则：清除"自动添加"标记
+          localStorage.removeItem("admin_panel_sg_rule_id");
+          setPanelSgRuleId(null);
+        }
+
         setAllowPanelAccess(true);
         setPanelPort(randomPort);
         localStorage.setItem("admin_allow_panel_access", "true");
@@ -511,6 +618,9 @@ export default function PlatformPolicy() {
       setPanelPort(null);
       localStorage.setItem("admin_allow_panel_access", "false");
       localStorage.removeItem("admin_panel_port");
+      // 关闭时清掉"自动添加"标记（规则保留在安全组中，与云端浏览器行为一致）
+      localStorage.removeItem("admin_panel_sg_rule_id");
+      setPanelSgRuleId(null);
       toast.success("已禁止用户端访问 Agent 面板");
     }
   };
@@ -522,21 +632,65 @@ export default function PlatformPolicy() {
   };
 
   const handleToggleCloudBrowser = (v: boolean) => {
-    if (v) {
-      setShowCloudBrowserEnableDialog(true);
+    if (!v) {
+      setAllowCloudBrowser(false);
+      localStorage.setItem("admin_allow_cloud_browser", "false");
+      toast.success("已关闭 Agent 云端浏览器");
       return;
     }
 
-    setAllowCloudBrowser(false);
-    localStorage.setItem("admin_allow_cloud_browser", "false");
-    toast.success("已关闭 Agent 云端浏览器");
-  };
+    // 读取默认安全组快照（由网络管理页同步写入的镜像；未配置时为 null）
+    const snapshotRaw = localStorage.getItem("admin_default_security_group_snapshot");
+    let snapshot: DefaultSecurityGroupSnapshot | null = null;
+    if (snapshotRaw) {
+      try {
+        snapshot = JSON.parse(snapshotRaw) as DefaultSecurityGroupSnapshot;
+      } catch {
+        snapshot = null;
+      }
+    }
 
-  const handleConfirmEnableCloudBrowser = () => {
-    setAllowCloudBrowser(true);
-    localStorage.setItem("admin_allow_cloud_browser", "true");
-    setShowCloudBrowserEnableDialog(false);
-    toast.success("已开启 Agent 云端浏览器");
+    // 无安全组：阻止开启（快速失败，不进入 loading）
+    if (!snapshot || !Array.isArray(snapshot.inboundRules)) {
+      toast.error("请先前往网络管理配置 ClawPro 的安全组，再开启该功能");
+      return;
+    }
+
+    // 进入等待态：模拟后端下发规则/生效过程，与「允许用户访问 Agent 面板」保持一致
+    setCloudBrowserLoading(true);
+    setTimeout(() => {
+      const hasCovered = snapshot!.inboundRules.some(isCloudBrowserInboundRule);
+      if (!hasCovered) {
+        // 自动追加一条 6080 放通规则
+        const newRule: SnapshotInboundRule = {
+          id: `cb-${Date.now()}`,
+          source: "0.0.0.0/0",
+          protocol: "TCP",
+          port: "6080",
+          policy: "允许",
+          remark: "云端浏览器访问",
+        };
+        const nextSnapshot: DefaultSecurityGroupSnapshot = {
+          ...snapshot!,
+          inboundRules: [...snapshot!.inboundRules, newRule],
+        };
+        localStorage.setItem(
+          "admin_default_security_group_snapshot",
+          JSON.stringify(nextSnapshot),
+        );
+        localStorage.setItem("admin_cloud_browser_sg_rule_id", newRule.id);
+        setCloudBrowserSgRuleId(newRule.id);
+      } else {
+        // 已有覆盖规则：清除"自动添加"标记，避免误展示提示条
+        localStorage.removeItem("admin_cloud_browser_sg_rule_id");
+        setCloudBrowserSgRuleId(null);
+      }
+
+      setAllowCloudBrowser(true);
+      localStorage.setItem("admin_allow_cloud_browser", "true");
+      setCloudBrowserLoading(false);
+      toast.success("已开启 Agent 云端浏览器");
+    }, 3000);
   };
 
   const handleToggleLobsterDoctor = (v: boolean) => {
@@ -635,14 +789,17 @@ export default function PlatformPolicy() {
               allowPanelAccess && panelPort ? (
                 <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
                   <span className="text-xs text-blue-700 leading-relaxed">
-                    已为您分配随机端口 {panelPort}，如果开启后用户端仍无法访问面板，请在网络管理的
+                    {panelSgRuleId
+                      ? `已为您分配随机端口 ${panelPort} 并自动为默认安全组添加该端口放通规则，`
+                      : `已为您分配随机端口 ${panelPort}，`}
+                    如用户端仍无法访问面板，请在网络管理的
                     <button
                       onClick={() => navigate("/admin/security-group")}
                       className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5"
                     >
                       安全组规则
                     </button>
-                    处检查是否已放通该端口
+                    处检查是否生效
                   </span>
                 </div>
               ) : null
@@ -665,63 +822,57 @@ export default function PlatformPolicy() {
               title="允许用户访问 Agent 云端浏览器"
               description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
               checked={allowCloudBrowser}
+              loading={cloudBrowserLoading}
+              loadingLabel="配置中"
               onToggle={handleToggleCloudBrowser}
+              extraContent={
+                allowCloudBrowser && cloudBrowserSgRuleId ? (
+                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
+                    <span className="text-xs text-blue-700 leading-relaxed">
+                      已自动为当前安全组添加 6080 端口放通规则，如用户端仍无法访问云端浏览器，请在网络管理的
+                      <button
+                        onClick={() => navigate("/admin/security-group")}
+                        className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5"
+                      >
+                        安全组规则
+                      </button>
+                      处检查是否生效
+                    </span>
+                  </div>
+                ) : null
+              }
             />
           </div>
-          <ToggleCard
-            icon={<Stethoscope className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-green-500 to-green-600"
-            title="允许用户使用龙虾医生"
-            description="开启后，所有用户在用户端可免费使用「龙虾医生」 AI 诊断功能，自动检测并对话式修复 Agent 运行问题。"
-            checked={allowLobsterDoctor}
-            onToggle={handleToggleLobsterDoctor}
-            extraContent={
-              allowLobsterDoctor ? (
-                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
-                    <button
-                      onClick={() => setShowLobsterDoctorDialog(true)}
-                      className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity"
-                      title="查看详情"
-                    >
-                      <HelpCircle className="w-3.5 h-3.5" />
-                    </button>
-                  </p>
-                </div>
-              ) : null
-            }
-          />
+          <div className="self-start">
+            <ToggleCard
+              icon={<Stethoscope className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户使用龙虾医生"
+              description="开启后，所有用户在用户端可免费使用「龙虾医生」 AI 诊断功能，自动检测并对话式修复 Agent 运行问题。"
+              checked={allowLobsterDoctor}
+              onToggle={handleToggleLobsterDoctor}
+              extraContent={
+                allowLobsterDoctor ? (
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                    <p className="text-xs text-blue-700 leading-relaxed">
+                      龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
+                      <button
+                        onClick={() => setShowLobsterDoctorDialog(true)}
+                        className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity"
+                        title="查看详情"
+                      >
+                        <HelpCircle className="w-3.5 h-3.5" />
+                      </button>
+                    </p>
+                  </div>
+                ) : null
+              }
+            />
+          </div>
         </div>
       </section>
 
-      {/* 云端浏览器开启确认弹窗 */}
-      <Dialog open={showCloudBrowserEnableDialog} onOpenChange={setShowCloudBrowserEnableDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader className="space-y-2">
-            <DialogTitle>请配置安全组</DialogTitle>
-          </DialogHeader>
-          <div className="flex items-start gap-2.5 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1 space-y-2.5">
-              <p className="text-xs text-amber-700 leading-relaxed">
-                开启后，用户将可以在会话中访问“云端浏览器”入口。请先在安全组入站规则中手动放通
-                <strong className="font-semibold text-amber-800"> 5900、6080、9222 </strong>
-                端口。
-              </p>
-              <p className="text-xs text-amber-700 leading-relaxed">若未完成放通，用户将无法正常访问云端浏览器。</p>
-            </div>
-          </div>
-          <DialogFooter className="mt-2 gap-2 sm:justify-end">
-            <Button variant="outline" onClick={() => setShowCloudBrowserEnableDialog(false)}>
-              取消
-            </Button>
-            <Button onClick={handleConfirmEnableCloudBrowser} className="bg-blue-600 hover:bg-blue-700 text-white">
-              确定
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 云端浏览器开启确认弹窗已移除：改为依据默认安全组快照自动补规则或 toast 阻止开启 */}
 
       {/* 龙虾医生详情弹窗 */}
       <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>

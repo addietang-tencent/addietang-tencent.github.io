@@ -1480,7 +1480,7 @@ export default function SecurityGroupManagement() {
     setPublicConfig((prev) => ({
       ...prev,
       billingMode: mode,
-      bandwidth: Math.min(prev.bandwidth, mode === "monthly" ? 2000 : 200),
+      bandwidth: Math.min(prev.bandwidth, mode === "monthly" ? 10 : 200),
     }));
     setIsPublicDirty(true);
   };
@@ -2624,7 +2624,7 @@ export default function SecurityGroupManagement() {
                     <div className="flex-1">
                       <Slider
                         min={1}
-                        max={publicConfig.billingMode === "monthly" ? 2000 : 200}
+                        max={publicConfig.billingMode === "monthly" ? 10 : 200}
                         step={1}
                         value={[publicConfig.bandwidth]}
                         onValueChange={([val]) => { setPublicConfig((prev) => ({ ...prev, bandwidth: val })); setIsPublicDirty(true); }}
@@ -2632,7 +2632,7 @@ export default function SecurityGroupManagement() {
                       />
                       <div className="flex justify-between mt-1">
                         <span className="text-xs text-gray-400">1 Mbps</span>
-                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "2000" : "200"} Mbps</span>
+                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "10" : "200"} Mbps</span>
                       </div>
                     </div>
                     {/* 输入框 */}
@@ -2640,11 +2640,11 @@ export default function SecurityGroupManagement() {
                       <input
                         type="number"
                         min={1}
-                        max={publicConfig.billingMode === "monthly" ? 2000 : 200}
+                        max={publicConfig.billingMode === "monthly" ? 10 : 200}
                         value={publicConfig.bandwidth}
                         onChange={(e) => {
                           const val = parseInt(e.target.value, 10);
-                          const maxBw = publicConfig.billingMode === "monthly" ? 2000 : 200;
+                          const maxBw = publicConfig.billingMode === "monthly" ? 10 : 200;
                           if (!isNaN(val)) {
                             setPublicConfig((prev) => ({
                               ...prev,

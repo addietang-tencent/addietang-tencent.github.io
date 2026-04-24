@@ -75,11 +75,20 @@ const AVAILABLE_ZONES = ["广州五区", "广州六区", "广州七区"];
 // 系统自动分配的 VPC（模拟后端返回的实际生效资源）
 const AUTO_ASSIGNED_VPC = { id: "vpc-jp7fjg13", name: "clawpro/default-vpc", cidr: "10.0.0.0/16" };
 
+// 子网实体类型（对齐后端接口：remaining_ip / total_ip 字段已转为驼峰）
+type SubnetEntity = {
+  id: string;
+  name: string;
+  cidr: string;
+  totalIp: number;
+  remainingIp: number;
+};
+
 // 系统自动分配的子网（按可用区，模拟后端返回的实际生效资源）
-const AUTO_ASSIGNED_SUBNETS: Record<string, { id: string; name: string; cidr: string }> = {
-  "广州五区": { id: "subnet-gz5-001", name: "clawpro/ap-guangzhou-5", cidr: "10.0.1.0/24" },
-  "广州六区": { id: "subnet-gz6-001", name: "clawpro/ap-guangzhou-6", cidr: "10.0.2.0/24" },
-  "广州七区": { id: "subnet-gz7-001", name: "clawpro/ap-guangzhou-7", cidr: "10.0.3.0/24" },
+const AUTO_ASSIGNED_SUBNETS: Record<string, SubnetEntity> = {
+  "广州五区": { id: "subnet-gz5-001", name: "clawpro/ap-guangzhou-5", cidr: "10.0.1.0/24", totalIp: 254, remainingIp: 220 },
+  "广州六区": { id: "subnet-gz6-001", name: "clawpro/ap-guangzhou-6", cidr: "10.0.2.0/24", totalIp: 254, remainingIp: 180 },
+  "广州七区": { id: "subnet-gz7-001", name: "clawpro/ap-guangzhou-7", cidr: "10.0.3.0/24", totalIp: 254, remainingIp: 240 },
 };
 
 // Mock VPC 列表
@@ -91,20 +100,22 @@ const MOCK_VPCS = [
 ];
 
 // Mock 子网列表（按 VPC ID 过滤）
-const MOCK_SUBNETS: Record<string, { id: string; name: string; cidr: string }[]> = {
+const MOCK_SUBNETS: Record<string, SubnetEntity[]> = {
   "vpc-jp7fjg13": [
-    { id: "subnet-f7t69gji", name: "lb_auto_test_subnet", cidr: "10.1.0.0/24" },
-    { id: "subnet-h8u80hkj", name: "lb_auto_test_subnet_2", cidr: "10.1.1.0/24" },
+    { id: "subnet-nvupa1uw", name: "clawpro/ap-nanjing-1", cidr: "10.0.0.0/19", totalIp: 1022, remainingIp: 854 },
+    { id: "subnet-f7t69gji", name: "lb_auto_test_subnet", cidr: "10.1.0.0/24", totalIp: 254, remainingIp: 180 },
+    { id: "subnet-h8u80hkj", name: "lb_auto_test_subnet_2", cidr: "10.1.1.0/24", totalIp: 254, remainingIp: 52 },
+    { id: "subnet-p9q0r1st", name: "clawpro/ap-nanjing-3", cidr: "10.0.64.0/20", totalIp: 510, remainingIp: 500 },
   ],
   "vpc-9lyx5t8h": [
-    { id: "subnet-gaclgbzu", name: "带外管理", cidr: "192.168.20.0/24" },
+    { id: "subnet-gaclgbzu", name: "带外管理", cidr: "192.168.20.0/24", totalIp: 254, remainingIp: 200 },
   ],
   "vpc-ri7mmw6n": [
-    { id: "subnet-mn3op5qr", name: "部署子网A", cidr: "192.168.1.0/24" },
-    { id: "subnet-st6uv7wx", name: "部署子网B", cidr: "192.168.2.0/24" },
+    { id: "subnet-mn3op5qr", name: "部署子网A", cidr: "192.168.1.0/24", totalIp: 254, remainingIp: 120 },
+    { id: "subnet-st6uv7wx", name: "部署子网B", cidr: "192.168.2.0/24", totalIp: 254, remainingIp: 8 },
   ],
   "vpc-ab3cd4ef": [
-    { id: "subnet-yz9ab1cd", name: "企业内网子网", cidr: "172.16.1.0/24" },
+    { id: "subnet-yz9ab1cd", name: "企业内网子网", cidr: "172.16.1.0/24", totalIp: 254, remainingIp: 90 },
   ],
 };
 
@@ -579,8 +590,17 @@ function buildSecurityGroupWithPanelAccessRules(securityGroup: SecurityGroup, pa
 
 type NetworkConfig = {
   vpcId: string;
-  zoneSubnets: Record<string, string>;
+  // 每个可用区可配置一个或多个子网槽位；值可为：
+  //   - "auto"：自动分配 VPC 下的占位
+  //   - "none"：不分配（独占，不能与具体子网并存）
+  //   - "__pending__"：用户点击"+ 添加子网"后新增但尚未选择具体子网的占位（待选态）
+  //   - 具体 subnet-id
+  // 不变式：同一可用区 slots 内不会出现重复的具体 subnet-id；至少保留 1 个 slot
+  zoneSubnets: Record<string, string[]>;
 };
+
+// 子网 Slot 的"待选中"哨兵值：新增 Slot 时使用，保存前必须由用户选定具体子网
+const SUBNET_PENDING = "__pending__";
 
 // ─── Tab 定义 ──────────────────────────────────────────────
 
@@ -1423,16 +1443,16 @@ export default function SecurityGroupManagement() {
   const handleVpcChange = (val: string) => {
     // val: "auto" 表示自动分配，其他为具体 vpc id
     setConfig((prev) => {
-      const updatedZoneSubnets: Record<string, string> = {};
+      const updatedZoneSubnets: Record<string, string[]> = {};
       if (val === "auto") {
-        // 切换回自动分配：所有可用区子网全部重置为「自动分配」，并禁用交互
+        // 切换回自动分配：每个可用区 1 个自动分配槽位，且不可添加
         AVAILABLE_ZONES.forEach((zone) => {
-          updatedZoneSubnets[zone] = "auto";
+          updatedZoneSubnets[zone] = ["auto"];
         });
       } else {
-        // 切换到具体 VPC：所有可用区子网全部重置为「不分配」
+        // 切换到具体 VPC：每个可用区初始 1 个"不分配"槽位
         AVAILABLE_ZONES.forEach((zone) => {
-          updatedZoneSubnets[zone] = "none";
+          updatedZoneSubnets[zone] = ["none"];
         });
       }
       return { ...prev, vpcId: val, zoneSubnets: updatedZoneSubnets };
@@ -1440,12 +1460,77 @@ export default function SecurityGroupManagement() {
     setIsDirty(true);
   };
 
-  const handleSubnetChange = (zone: string, val: string) => {
-    // val: "auto" / "none" / 具体 subnet id
-    setConfig((prev) => ({
-      ...prev,
-      zoneSubnets: { ...prev.zoneSubnets, [zone]: val },
-    }));
+  // 修改指定可用区、指定槽位的子网选择
+  // 语义规则：
+  //   - "不分配"（none）是可用区级别的状态，不能与具体子网共存
+  //   - 若把某 Slot 改为具体子网，则清除该可用区内其它 "none" Slot（避免并存）
+  //   - 若把某 Slot 改回 "none"，则把整个可用区重置为单行 ["none"]（因为 none 必须独占）
+  const handleSubnetChange = (zone: string, index: number, val: string) => {
+    setConfig((prev) => {
+      const slots = prev.zoneSubnets[zone] ?? ["none"];
+      // 回退到"不分配"：整个可用区折叠为 ["none"]
+      if (val === "none") {
+        return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: ["none"] } };
+      }
+      // 选为 "auto" / 具体子网：替换目标 Slot，并清掉可能残留的 "none"
+      const nextSlots = slots.slice();
+      nextSlots[index] = val;
+      const cleaned = nextSlots.filter((v, i) => !(v === "none" && i !== index));
+      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: cleaned } };
+    });
+    setIsDirty(true);
+  };
+
+  // 追加一个新子网 Slot：
+  //   - 若当前是初始状态 ["none"]，则把它直接替换为一个 pending 占位（避免 none 与具体子网并存）
+  //   - 否则追加一个 pending 占位
+  //   - 新 Slot 必须由用户主动通过下拉选择具体子网，不做任何预选
+  //   - 若当前 VPC 下所有子网都已被占用，则拒绝追加（不变更 state）
+  const handleAddSubnet = (zone: string) => {
+    let openedSlotKey: string | null = null;
+    setConfig((prev) => {
+      const slots = prev.zoneSubnets[zone] ?? [];
+      const effectiveVpcId =
+        prev.vpcId && prev.vpcId !== "auto" ? prev.vpcId : AUTO_ASSIGNED_VPC.id;
+      const zoneSubnetList = MOCK_SUBNETS[effectiveVpcId] ?? [];
+      const used = new Set(slots.filter((v) => v !== "none" && v !== "auto" && v !== SUBNET_PENDING));
+      // 若所有具体子网都已被占用（或 VPC 根本没有子网），禁止再追加
+      if (used.size >= zoneSubnetList.length) return prev;
+      // 若已有 pending slot，说明上一次添加还没完成选择，不重复添加
+      if (slots.includes(SUBNET_PENDING)) return prev;
+      // 若当前只有一个 "none"，直接替换；否则追加
+      const isInitialNone = slots.length === 1 && slots[0] === "none";
+      const nextSlots = isInitialNone ? [SUBNET_PENDING] : [...slots, SUBNET_PENDING];
+      // 记录 pending slot 的位置（zone#index），用于紧接着自动打开其下拉
+      openedSlotKey = `${zone}#${nextSlots.length - 1}`;
+      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: nextSlots } };
+    });
+    // 自动打开新增 pending slot 的下拉，引导用户立即选择
+    // 使用双重 rAF：第一帧确保 React 完成 DOM 更新，第二帧确保浏览器完成布局计算，
+    // 避免 Radix Popover 在 trigger 尚未挂载时调用 getBoundingClientRect 导致报错
+    if (openedSlotKey) {
+      const key = openedSlotKey;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setSubnetOpen((prev) => ({ ...prev, [key]: true }));
+        });
+      });
+    }
+    setIsDirty(true);
+  };
+
+  // 删除指定可用区的指定槽位；若只剩 1 个槽位，则将其重置为"不分配"
+  const handleRemoveSubnet = (zone: string, index: number) => {
+    setConfig((prev) => {
+      const slots = prev.zoneSubnets[zone] ?? [];
+      let nextSlots: string[];
+      if (slots.length <= 1) {
+        nextSlots = ["none"];
+      } else {
+        nextSlots = slots.filter((_, i) => i !== index);
+      }
+      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: nextSlots } };
+    });
     setIsDirty(true);
   };
 
@@ -1471,9 +1556,10 @@ export default function SecurityGroupManagement() {
     setIsDirty(false);
   };
 
-  const hasAtLeastOneSubnet = Object.values(config.zoneSubnets).some(
-    (v) => v !== undefined && v !== "none"
-  );
+  // 校验：是否至少存在一个有效（具体）子网（排除 "none" / "auto" / pending）
+  const hasAtLeastOneSubnet = Object.values(config.zoneSubnets)
+    .flat()
+    .some((v) => v !== undefined && v !== "none" && v !== "auto" && v !== SUBNET_PENDING);
 
   // ── 公网配置处理函数 ──
   const handleBillingModeChange = (mode: "monthly" | "traffic") => {
@@ -2196,15 +2282,33 @@ export default function SecurityGroupManagement() {
                   <Button
                     size="sm"
                     onClick={() => {
-                      // 校验是否至少有一个可用区选择了子网
-                      // 自动分配(""/undefined)和具体子网 ID 都算有效，只有 "none" 才算未选
+                      // 校验 0：不允许存在尚未完成选择的 pending slot
+                      for (const z of AVAILABLE_ZONES) {
+                        const slots = config.zoneSubnets[z] ?? [];
+                        if (slots.includes(SUBNET_PENDING)) {
+                          toast.error(`${z} 存在尚未选择的子网，请先完成选择或删除该行`);
+                          return;
+                        }
+                      }
+                      // 校验 1：至少有一个 Slot 非 "none"
                       const allNone = AVAILABLE_ZONES.every((z) => {
-                        const v = config.zoneSubnets[z];
-                        return v === "none";
+                        const slots = config.zoneSubnets[z] ?? [];
+                        return slots.every((v) => v === "none");
                       });
                       if (allNone) {
                         toast.error("请至少选择一个子网");
                         return;
+                      }
+                      // 校验 2：同一可用区内不允许重复具体子网 id
+                      for (const z of AVAILABLE_ZONES) {
+                        const slots = (config.zoneSubnets[z] ?? []).filter(
+                          (v) => v !== "none" && v !== "auto"
+                        );
+                        const unique = new Set(slots);
+                        if (unique.size !== slots.length) {
+                          toast.error(`${z} 存在重复选择的子网，请修改后再保存`);
+                          return;
+                        }
                       }
                       setShowVpcSaveDialog(true);
                     }}
@@ -2330,139 +2434,249 @@ export default function SecurityGroupManagement() {
                 <span />
               </div>
 
-              {/* 每个可用区一行 */}
-              {AVAILABLE_ZONES.map((zone, idx) => {
+              {/* 每个可用区一个分组：左列为可用区名 + 刷新按钮，右列为多个子网 Slot + 添加按钮 */}
+              {AVAILABLE_ZONES.map((zone, zIdx) => {
                 const isRefreshing = refreshingZone === zone;
-                const subnetVal = config.zoneSubnets[zone] ?? "auto";
                 // 当前生效的 VPC ID：自动分配时用系统分配的 VPC
                 const effectiveVpcId = (config.vpcId && config.vpcId !== "auto") ? config.vpcId : AUTO_ASSIGNED_VPC.id;
-                const zoneSubnets = MOCK_SUBNETS[effectiveVpcId] ?? [];
-                // VPC 是否为自动分配（子网禁用状态依赖此变量）
+                const zoneSubnetList = MOCK_SUBNETS[effectiveVpcId] ?? [];
+                // VPC 是否为自动分配（此时子网行只读展示）
                 const isAutoVpc = !config.vpcId || config.vpcId === "auto";
+                const slots = config.zoneSubnets[zone] ?? (isAutoVpc ? ["auto"] : ["none"]);
+
+                // 已被该可用区其它 Slot 选中的具体 subnet id 集合（用于下拉置灰）
+                // 注意：pending slot 不算"已选"，不参与占用
+                const usedSubnetIds = new Set(
+                  slots.filter((v) => v !== "none" && v !== "auto" && v !== SUBNET_PENDING)
+                );
+                // 该可用区是否已存在具体子网（用于控制"+ 添加子网"按钮的出现时机）
+                // 未分配（仅 ["none"]）时隐藏该入口；用户通过下拉首次选定具体子网后，再显露"追加子网"的能力
+                const hasAnyConcrete = usedSubnetIds.size > 0;
+                // 是否存在尚未选择的 pending slot：存在时禁止再追加（强制用户先完成当前选择）
+                const hasPendingSlot = slots.includes(SUBNET_PENDING);
+                // 可添加更多 Slot 的条件：
+                //   - 非自动 VPC
+                //   - 仍有未被占用的具体子网
+                //   - 当前没有处于 pending 的 slot
+                const canAddMore =
+                  !isAutoVpc && usedSubnetIds.size < zoneSubnetList.length && !hasPendingSlot;
 
                 return (
                   <div
                     key={zone}
-                    className={`grid grid-cols-[100px_1fr_40px] gap-4 items-center px-6 py-3.5 ${
-                      idx < AVAILABLE_ZONES.length - 1 ? "border-b border-gray-50" : ""
+                    className={`grid grid-cols-[100px_1fr_40px] gap-4 items-start px-6 py-3.5 ${
+                      zIdx < AVAILABLE_ZONES.length - 1 ? "border-b border-gray-50" : ""
                     }`}
                   >
-                    {/* 左：可用区 */}
-                    <span className="text-sm text-gray-700">{zone}</span>
+                    {/* 左：可用区（顶部对齐，多行时仍显示在首行） */}
+                    <span className="text-sm text-gray-700 pt-2">{zone}</span>
 
-                    {/* 中： Combobox（支持关键字搜索） */}
-                    {(() => {
-                      const currentSubnet = zoneSubnets.find(s => s.id === subnetVal);
-                      const subnetDisplayLabel =
-                        subnetVal === "auto" ? "自动分配"
-                        : subnetVal === "none" ? "不分配"
-                        : currentSubnet ? `${currentSubnet.id} | ${currentSubnet.name} | ${currentSubnet.cidr}`
-                        : subnetVal;
-                      const isSpecialVal = subnetVal === "auto" || subnetVal === "none";
-                      const sq = subnetSearch[zone] ?? "";
-                      const filteredSubnets = sq
-                        ? zoneSubnets.filter(s =>
-                            `${s.id} ${s.name} ${s.cidr}`.toLowerCase().includes(sq.toLowerCase())
-                          )
-                        : zoneSubnets;
-                      return (
-                        <Popover
-                          open={isAutoVpc ? false : !!subnetOpen[zone]}
-                          onOpenChange={(o) => {
-                            if (isAutoVpc) return;
-                            setSubnetOpen(prev => ({ ...prev, [zone]: o }));
-                            if (!o) setSubnetSearch(prev => ({ ...prev, [zone]: "" }));
-                          }}
-                        >
-                          <PopoverTrigger asChild>
-                            <button
-                              disabled={isAutoVpc}
-                              className={`h-9 w-full flex items-center justify-between px-3 rounded-md border bg-white text-sm transition-colors ${
-                                isAutoVpc
-                                  ? "border-gray-100 bg-gray-50 text-[oklch(0.707_0.022_261.325)] opacity-60 cursor-not-allowed"
-                                  : `border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                                      isSpecialVal ? "text-[oklch(0.707_0.022_261.325)]" : "text-[oklch(0.446_0.03_256.802)]"
-                                    }`
-                              }`}
+                    {/* 中：多个子网 Slot + 添加子网按钮 */}
+                    <div className="flex flex-col gap-2">
+                      {slots.map((subnetVal, sIdx) => {
+                        const slotKey = `${zone}#${sIdx}`;
+                        const currentSubnet = zoneSubnetList.find((s) => s.id === subnetVal);
+                        const isPending = subnetVal === SUBNET_PENDING;
+                        const subnetDisplayLabel =
+                          subnetVal === "auto"
+                            ? "自动分配"
+                            : subnetVal === "none"
+                            ? "不分配"
+                            : isPending
+                            ? "请选择子网"
+                            : currentSubnet
+                            ? `${currentSubnet.id} | ${currentSubnet.name} | ${currentSubnet.cidr}`
+                            : subnetVal;
+                        const isSpecialVal = subnetVal === "auto" || subnetVal === "none" || isPending;
+                        const sq = subnetSearch[slotKey] ?? "";
+                        const filteredSubnets = sq
+                          ? zoneSubnetList.filter((s) =>
+                              `${s.id} ${s.name} ${s.cidr}`.toLowerCase().includes(sq.toLowerCase())
+                            )
+                          : zoneSubnetList;
+                        // 当前 Slot 右侧的剩余/总 IP（仅具体子网时展示）
+                        const currentRemainingLow =
+                          currentSubnet && currentSubnet.remainingIp / currentSubnet.totalIp < 0.1;
+
+                        return (
+                          <div key={slotKey} className="flex items-center gap-2">
+                            <Popover
+                              open={isAutoVpc ? false : !!subnetOpen[slotKey]}
+                              onOpenChange={(o) => {
+                                if (isAutoVpc) return;
+                                setSubnetOpen((prev) => ({ ...prev, [slotKey]: o }));
+                                if (!o) setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                              }}
                             >
-                              <span className="truncate">{subnetDisplayLabel}</span>
-                              <ChevronDown className="w-4 h-4 shrink-0 text-gray-400 ml-2" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="p-0 shadow-lg border border-gray-200 rounded-lg overflow-hidden"
-                            style={{ width: "var(--radix-popover-trigger-width)" }}
-                            align="start"
-                            sideOffset={4}
-                          >
-                            <Command shouldFilter={false}>
-                              <CommandInput
-                                placeholder="搜索子网…"
-                                value={sq}
-                                onValueChange={(v) => setSubnetSearch(prev => ({ ...prev, [zone]: v }))}
-                                className="text-sm"
-                              />
-                              <CommandList className="max-h-52 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                                <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的子网</CommandEmpty>
-                                <CommandGroup>
-                                  {/* 不分配：始终显示在最顶部（无搜索关键字时） */}
-                                  {!sq && (
-                                    <CommandItem
-                                      value="none"
-                                      onSelect={() => {
-                                        handleSubnetChange(zone, "none");
-                                        setSubnetOpen(prev => ({ ...prev, [zone]: false }));
-                                        setSubnetSearch(prev => ({ ...prev, [zone]: "" }));
-                                      }}
-                                      className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
+                              <PopoverTrigger asChild>
+                                <button
+                                  disabled={isAutoVpc}
+                                  className={`h-9 flex-1 min-w-0 flex items-center gap-2 px-3 rounded-md border bg-white text-sm transition-colors ${
+                                    isAutoVpc
+                                      ? "border-gray-100 bg-gray-50 text-[oklch(0.707_0.022_261.325)] opacity-60 cursor-not-allowed"
+                                      : `border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                                          isSpecialVal ? "text-[oklch(0.707_0.022_261.325)]" : "text-[oklch(0.446_0.03_256.802)]"
+                                        }`
+                                  }`}
+                                >
+                                  <span className="truncate flex-1 text-left">{subnetDisplayLabel}</span>
+                                  {/* 右侧剩余IP标签（仅具体子网显示） */}
+                                  {currentSubnet && (
+                                    <span
+                                      className={`shrink-0 text-xs tabular-nums whitespace-nowrap ${
+                                        currentRemainingLow ? "text-orange-500" : "text-gray-400"
+                                      }`}
                                     >
-                                      <span className="flex-1">不分配</span>
-                                      {subnetVal === "none" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                    </CommandItem>
+                                      剩余IP {currentSubnet.remainingIp}/{currentSubnet.totalIp}
+                                    </span>
                                   )}
-                                  {/* 自动分配：仅 VPC 为自动分配且无搜索关键字时显示 */}
-                                  {isAutoVpc && !sq && (
-                                    <CommandItem
-                                      value="auto"
-                                      onSelect={() => {
-                                        handleSubnetChange(zone, "auto");
-                                        setSubnetOpen(prev => ({ ...prev, [zone]: false }));
-                                        setSubnetSearch(prev => ({ ...prev, [zone]: "" }));
-                                      }}
-                                      className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
-                                    >
-                                      <span className="flex-1">自动分配</span>
-                                      {subnetVal === "auto" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                    </CommandItem>
-                                  )}
-                                  {filteredSubnets.map((subnet) => (
-                                    <CommandItem
-                                      key={subnet.id}
-                                      value={subnet.id}
-                                      onSelect={() => {
-                                        handleSubnetChange(zone, subnet.id);
-                                        setSubnetOpen(prev => ({ ...prev, [zone]: false }));
-                                        setSubnetSearch(prev => ({ ...prev, [zone]: "" }));
-                                      }}
-                                      className="text-[oklch(0.446_0.03_256.802)] cursor-pointer"
-                                    >
-                                      <span className="flex-1">{subnet.id} | {subnet.name} | {subnet.cidr}</span>
-                                      {subnetVal === subnet.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                      );
-                    })()}
+                                  <ChevronDown className="w-4 h-4 shrink-0 text-gray-400" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="p-0 shadow-lg border border-gray-200 rounded-lg overflow-hidden"
+                                style={{ width: "var(--radix-popover-trigger-width)" }}
+                                align="start"
+                                sideOffset={4}
+                              >
+                                <Command shouldFilter={false}>
+                                  <CommandInput
+                                    placeholder="搜索子网…"
+                                    value={sq}
+                                    onValueChange={(v) => setSubnetSearch((prev) => ({ ...prev, [slotKey]: v }))}
+                                    className="text-sm"
+                                  />
+                                  <CommandList className="max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+                                    <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的子网</CommandEmpty>
+                                    <CommandGroup>
+                                      {/* 不分配：仅在第一个子网（sIdx === 0）的下拉中显示，
+                                         用户可以通过选择"不分配"将整个可用区重置为初始态 */}
+                                      {!sq && sIdx === 0 && (
+                                        <CommandItem
+                                          value="none"
+                                          onSelect={() => {
+                                            handleSubnetChange(zone, sIdx, "none");
+                                            setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
+                                            setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                                          }}
+                                          className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
+                                        >
+                                          <span className="flex-1">不分配</span>
+                                          {subnetVal === "none" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                                        </CommandItem>
+                                      )}
+                                      {/* 自动分配：仅 VPC 为自动分配且无搜索关键字时显示（当前场景下此下拉已禁用） */}
+                                      {isAutoVpc && !sq && (
+                                        <CommandItem
+                                          value="auto"
+                                          onSelect={() => {
+                                            handleSubnetChange(zone, sIdx, "auto");
+                                            setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
+                                            setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                                          }}
+                                          className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
+                                        >
+                                          <span className="flex-1">自动分配</span>
+                                          {subnetVal === "auto" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                                        </CommandItem>
+                                      )}
+                                      {filteredSubnets.map((subnet) => {
+                                        // 同可用区内已被其它 Slot 选择的子网，置灰不可选（但当前 Slot 自身除外）
+                                        const isTakenByOther =
+                                          usedSubnetIds.has(subnet.id) && subnet.id !== subnetVal;
+                                        const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                        return (
+                                          <CommandItem
+                                            key={subnet.id}
+                                            value={subnet.id}
+                                            disabled={isTakenByOther}
+                                            onSelect={() => {
+                                              if (isTakenByOther) return;
+                                              handleSubnetChange(zone, sIdx, subnet.id);
+                                              setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
+                                              setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                                            }}
+                                            className={`cursor-pointer ${
+                                              isTakenByOther
+                                                ? "opacity-40 cursor-not-allowed"
+                                                : "text-[oklch(0.446_0.03_256.802)]"
+                                            }`}
+                                          >
+                                            <span className="flex-1 truncate">
+                                              {subnet.id} | {subnet.name} | {subnet.cidr}
+                                            </span>
+                                            {/* 剩余IP：标签 + 数值 */}
+                                            <span
+                                              className={`shrink-0 text-xs tabular-nums ml-2 whitespace-nowrap ${
+                                                remainingLow ? "text-orange-500" : "text-gray-400"
+                                              }`}
+                                            >
+                                              剩余IP {subnet.remainingIp}/{subnet.totalIp}
+                                            </span>
+                                            {subnetVal === subnet.id && (
+                                              <Check className="w-4 h-4 text-blue-500 shrink-0 ml-2" />
+                                            )}
+                                          </CommandItem>
+                                        );
+                                      })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
 
-                    {/* 刷新按鈕 */}
+                            {/* 删除按钮：
+                               - 自动 VPC → 不显示
+                               - 已是 "不分配" 初始态（仅 1 行且值为 none）→ 禁用（无需再删）
+                               - 仅剩 1 行具体子网 → 删除后回退"不分配"
+                               - 多行 → 正常删除当前行（第二行及以上被移除，第一行被移除则后续行前移） */}
+                            {!isAutoVpc && (
+                              <button
+                                onClick={() => handleRemoveSubnet(zone, sIdx)}
+                                disabled={slots.length === 1 && subnetVal === "none"}
+                                className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={
+                                  slots.length === 1 && subnetVal === "none"
+                                    ? "当前已是不分配状态"
+                                    : slots.length === 1
+                                    ? "删除后该可用区将变为不分配"
+                                    : "删除此子网"
+                                }
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* + 添加子网按钮：
+                         - 自动分配 VPC 下永远不显示（子网行只读）
+                         - 未分配（仅 ["none"]）时也隐藏：用户需要先通过下拉选中一个具体子网，才会出现"追加"入口
+                         - 已分配至少一个具体子网时显示；若所有子网都已被占用，按钮保留但置为禁用态 */}
+                      {!isAutoVpc && hasAnyConcrete && (
+                        <button
+                          type="button"
+                          onClick={() => canAddMore && handleAddSubnet(zone)}
+                          disabled={!canAddMore}
+                          className={`h-9 w-1/5 self-start flex items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors ${
+                            canAddMore
+                              ? "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30"
+                              : "border-gray-100 text-gray-300 cursor-not-allowed"
+                          }`}
+                          title={canAddMore ? "添加子网" : "该 VPC 下已无可添加子网"}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span className="truncate">添加子网</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 右：刷新按钮（按可用区刷新当前 VPC 下的子网列表） */}
                     <button
                       onClick={() => handleRefreshZone(zone)}
                       disabled={isAutoVpc}
-                      className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${
+                      className={`w-8 h-8 mt-0.5 flex items-center justify-center rounded-lg border transition-colors ${
                         isAutoVpc
                           ? "border-gray-100 text-gray-300 opacity-60 cursor-not-allowed"
                           : "border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300"

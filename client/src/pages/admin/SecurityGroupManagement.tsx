@@ -2,7 +2,8 @@
  * SecurityGroupManagement - 管控端网络管理页
  * 采用 Tab 结构：私有网络和子网、安全组、公网、更多功能
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1431,6 +1432,32 @@ export default function SecurityGroupManagement() {
   const [publicConfig, setPublicConfig] = useState(INITIAL_PUBLIC_CONFIG);
   const [savedPublicConfig, setSavedPublicConfig] = useState(INITIAL_PUBLIC_CONFIG);
   const [isPublicDirty, setIsPublicDirty] = useState(false);
+  const [showBandwidthTip, setShowBandwidthTip] = useState(true);
+  const bandwidthInputRef = useRef<HTMLInputElement>(null);
+  const [tipPos, setTipPos] = useState<{ top: number; left: number } | null>(null);
+
+  // 计算气泡位置 - 基于输入框在视口中的位置，使用 fixed 定位避免被 overflow:hidden 裁剪
+  useEffect(() => {
+    if (!showBandwidthTip || publicConfig.billingMode !== "monthly" || activeTab !== "public") {
+      setTipPos(null);
+      return;
+    }
+    const update = () => {
+      const el = bandwidthInputRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setTipPos({ top: rect.top - 8, left: rect.left + rect.width / 2 });
+    };
+    // 用 rAF 确保 DOM 已渲染（Tab 切换后输入框才挂载）
+    const raf = requestAnimationFrame(update);
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [showBandwidthTip, publicConfig.billingMode, activeTab]);
 
   // 编辑规则状态
   const [editingRule, setEditingRule] = useState<{ id: string; type: "inbound" | "outbound" } | null>(null);
@@ -1566,9 +1593,10 @@ export default function SecurityGroupManagement() {
     setPublicConfig((prev) => ({
       ...prev,
       billingMode: mode,
-      bandwidth: Math.min(prev.bandwidth, mode === "monthly" ? 10 : 200),
+      bandwidth: Math.min(prev.bandwidth, mode === "monthly" ? 20 : 200),
     }));
     setIsPublicDirty(true);
+    if (mode === "monthly") setShowBandwidthTip(true);
   };
 
   const handlePublicSave = () => {
@@ -2726,12 +2754,12 @@ export default function SecurityGroupManagement() {
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
               <span className="text-sm font-semibold text-gray-800">公网配置</span>
               {isPublicDirty && (
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handlePublicDiscard}>取消</Button>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePublicSave}>保存</Button>
+                  <Button variant="outline" size="sm" onClick={handlePublicDiscard} className="h-7 px-3 text-xs text-gray-500">取消</Button>
+                  <Button size="sm" className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePublicSave}>保存</Button>
                 </div>
               )}
             </div>
@@ -2787,9 +2815,9 @@ export default function SecurityGroupManagement() {
                         <TooltipTrigger asChild>
                           <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
                         </TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-sm text-xs leading-relaxed space-y-2">
-                          <p><span className="font-semibold">包月带宽：</span>包月的固定带宽是指定公网出方向的带宽的大小，选择单台服务器最大带宽値。固定带宽，流量单价相对于按使用流量的计费方式所使用的费用低，适合网络带宽使用稳定的用户。</p>
-                          <p><span className="font-semibold">按流量计费：</span>使用流量是指服务器使用过程中产生的流量大小，网络费用仅取决于云服务器的出流量。为了防止突然爆发的流量产生较高的费用，可选择设置一个带宽上限，带宽上限对于网络单价完全无影响。</p>
+                        <TooltipContent side="right" className="!max-w-none w-96 text-xs leading-relaxed space-y-2">
+                          <p><span className="font-semibold">包月带宽：</span>包月的固定带宽是指定公网出方向的带宽的大小，选择单台服务器最大带宽値。按固定带宽值计费，费用与实际使用流量无关。适合流量消耗大、带宽利用率较高的业务场景。</p>
+                          <p><span className="font-semibold">按流量计费（推荐）：</span>使用流量是指服务器使用过程中产生的流量大小，网络费用仅取决于云服务器的出流量。适合流量波动大、带宽利用率不高的业务场景，在 Agent 使用场景中较为推荐。</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -2838,7 +2866,7 @@ export default function SecurityGroupManagement() {
                     <div className="flex-1">
                       <Slider
                         min={1}
-                        max={publicConfig.billingMode === "monthly" ? 10 : 200}
+                        max={publicConfig.billingMode === "monthly" ? 20 : 200}
                         step={1}
                         value={[publicConfig.bandwidth]}
                         onValueChange={([val]) => { setPublicConfig((prev) => ({ ...prev, bandwidth: val })); setIsPublicDirty(true); }}
@@ -2846,19 +2874,37 @@ export default function SecurityGroupManagement() {
                       />
                       <div className="flex justify-between mt-1">
                         <span className="text-xs text-gray-400">1 Mbps</span>
-                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "10" : "200"} Mbps</span>
+                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "20" : "200"} Mbps</span>
                       </div>
                     </div>
                     {/* 输入框 */}
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="relative flex items-center gap-1.5 shrink-0">
+                      {/* 包月带宽常驻气泡提示 - 使用 Portal 避免被卡片 overflow 裁剪 */}
+                      {publicConfig.billingMode === "monthly" && showBandwidthTip && tipPos && createPortal(
+                        <div
+                          className="fixed w-72 px-3 py-2.5 bg-foreground text-background text-xs rounded-md shadow-lg"
+                          style={{ zIndex: 9999, top: tipPos.top, left: tipPos.left, transform: "translate(-50%, -100%)", lineHeight: 1.8 }}
+                        >
+                          <button
+                            onClick={() => setShowBandwidthTip(false)}
+                            className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center bg-foreground text-background hover:opacity-80 rounded-full shadow transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <p style={{ textAlign: "justify" }}>包月带宽费用固定，不随实际使用量变化。Agent 日常使用通常所需带宽不超过 20Mbps，建议将包月带宽上限控制在 20Mbps 以内，以避免产生过高的费用支出。如对带宽上限有更高需求，建议选择「按流量计费」模式。</p>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-foreground" />
+                        </div>,
+                        document.body
+                      )}
                       <input
+                        ref={bandwidthInputRef}
                         type="number"
                         min={1}
-                        max={publicConfig.billingMode === "monthly" ? 10 : 200}
+                        max={publicConfig.billingMode === "monthly" ? 20 : 200}
                         value={publicConfig.bandwidth}
                         onChange={(e) => {
                           const val = parseInt(e.target.value, 10);
-                          const maxBw = publicConfig.billingMode === "monthly" ? 10 : 200;
+                          const maxBw = publicConfig.billingMode === "monthly" ? 20 : 200;
                           if (!isNaN(val)) {
                             setPublicConfig((prev) => ({
                               ...prev,

@@ -45,7 +45,7 @@ import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
   ChevronRight, ChevronDown, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
-  Copy, Terminal, Database, Clock, Shield,
+  Copy, Terminal, Database, Clock, Shield, Lock,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
@@ -323,6 +323,29 @@ export default function AgentDetail() {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "admin_allow_lobster_doctor") {
         setLobsterDoctorEnabled(e.newValue === "true");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // 读取管控端「允许用户配置模型」开关状态（默认开启）
+  const [userConfigModelEnabled, setUserConfigModelEnabled] = useState(() => {
+    const v = localStorage.getItem("admin_allow_user_config_model");
+    return v !== null ? v === "true" : true;
+  });
+  // 读取管控端「允许用户配置通道」开关状态（默认开启）
+  const [userConfigChannelEnabled, setUserConfigChannelEnabled] = useState(() => {
+    const v = localStorage.getItem("admin_allow_user_config_channel");
+    return v !== null ? v === "true" : true;
+  });
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "admin_allow_user_config_model") {
+        setUserConfigModelEnabled(e.newValue !== null ? e.newValue === "true" : true);
+      }
+      if (e.key === "admin_allow_user_config_channel") {
+        setUserConfigChannelEnabled(e.newValue !== null ? e.newValue === "true" : true);
       }
     };
     window.addEventListener("storage", handleStorage);
@@ -1558,7 +1581,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1567,6 +1590,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <h2 className="font-semibold text-gray-900">模型 (Models)</h2>
               </div>
             </div>
+
+            {/* 管控端关闭「允许用户配置模型」时的锁定蒙版 */}
+            {!userConfigModelEnabled && (
+              <div className="absolute inset-0 top-[61px] z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 rounded-b-2xl">
+                <Lock className="w-8 h-8 text-gray-300" />
+                <p className="text-xs text-gray-400 text-center leading-relaxed px-6">模型已由管理员统一配置，无需手动调整</p>
+              </div>
+            )}
 
             {/* Scrollable content area */}
             <div className="overflow-y-auto flex-1">
@@ -1854,7 +1885,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1863,6 +1894,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <h2 className="font-semibold text-gray-900">通道 (Channels)</h2>
               </div>
             </div>
+
+            {/* 管控端关闭「允许用户配置通道」时的锁定蒙版 */}
+            {!userConfigChannelEnabled && (
+              <div className="absolute inset-0 top-[61px] z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 rounded-b-2xl">
+                <Lock className="w-8 h-8 text-gray-300" />
+                <p className="text-xs text-gray-400 text-center leading-relaxed px-6">通道已由管理员统一配置，无需手动调整</p>
+              </div>
+            )}
 
             {/* Upper: config inputs - fixed */}
             <div className="p-5 space-y-3 flex-shrink-0">

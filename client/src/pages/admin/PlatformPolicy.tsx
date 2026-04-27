@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, Info, MessageSquare } from "lucide-react";
+import { Zap, Pencil, Check, X, Terminal, Monitor, Loader2, Cpu, Stethoscope, HelpCircle, Cloud, Info, MessageSquare, Brain, Cable, BarChart3, MessagesSquare } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -471,6 +471,14 @@ export default function PlatformPolicy() {
   });
 
   // ── 功能权限开关状态 ──
+  const [allowUserConfigModel, setAllowUserConfigModel] = useState(() => {
+    const v = localStorage.getItem("admin_allow_user_config_model");
+    return v !== null ? v === "true" : true; // 默认开启
+  });
+  const [allowUserConfigChannel, setAllowUserConfigChannel] = useState(() => {
+    const v = localStorage.getItem("admin_allow_user_config_channel");
+    return v !== null ? v === "true" : true; // 默认开启
+  });
   const [allowCustomModel, setAllowCustomModel] = useState(() => {
     return localStorage.getItem("admin_allow_custom_model") === "true";
   });
@@ -514,6 +522,12 @@ export default function PlatformPolicy() {
   });
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
+  // ── 模型额度页面可见性开关状态 ──
+  const [allowModelQuota, setAllowModelQuota] = useState(() => {
+    const v = localStorage.getItem("admin_allow_model_quota");
+    return v !== null ? v === "true" : true; // 默认开启
+  });
+
   // ── 保存处理 ──
   const handleSaveClawLimit = (v: TokenLimit | number) => {
     const n = Number(v);
@@ -541,6 +555,24 @@ export default function PlatformPolicy() {
       localStorage.setItem("globalLimit", String(v));
       window.dispatchEvent(new StorageEvent("storage", { key: "globalLimitMode", newValue: "custom", storageArea: localStorage }));
     }
+  };
+
+  const handleToggleUserConfigModel = (v: boolean) => {
+    setAllowUserConfigModel(v);
+    localStorage.setItem("admin_allow_user_config_model", String(v));
+    toast.success(v ? "已允许用户配置模型" : "已禁止用户配置模型");
+  };
+
+  const handleToggleUserConfigChannel = (v: boolean) => {
+    setAllowUserConfigChannel(v);
+    localStorage.setItem("admin_allow_user_config_channel", String(v));
+    toast.success(v ? "已允许用户配置通道" : "已禁止用户配置通道");
+  };
+
+  const handleToggleModelQuota = (v: boolean) => {
+    setAllowModelQuota(v);
+    localStorage.setItem("admin_allow_model_quota", String(v));
+    toast.success(v ? "已允许用户查看模型额度" : "已隐藏模型额度页面");
   };
 
   const handleToggleCustomModel = (v: boolean) => {
@@ -752,14 +784,36 @@ export default function PlatformPolicy() {
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ToggleCard
-            icon={<Cpu className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-green-500 to-green-600"
-            title="允许用户添加自定义模型"
-            description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内"
-            checked={allowCustomModel}
-            onToggle={handleToggleCustomModel}
-          />
+          <div className="self-start">
+            <ToggleCard
+              icon={<Brain className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户配置模型"
+              description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）"
+              checked={allowUserConfigModel}
+              onToggle={handleToggleUserConfigModel}
+            />
+          </div>
+          <div className="self-start">
+            <ToggleCard
+              icon={<MessageSquare className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户配置通道"
+              description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）"
+              checked={allowUserConfigChannel}
+              onToggle={handleToggleUserConfigChannel}
+            />
+          </div>
+          <div className="self-start">
+            <ToggleCard
+              icon={<Cpu className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户添加自定义模型"
+              description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）"
+              checked={allowCustomModel}
+              onToggle={handleToggleCustomModel}
+            />
+          </div>
           <ToggleCard
             icon={<Terminal className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
@@ -807,7 +861,7 @@ export default function PlatformPolicy() {
             />
           <div className="self-start">
             <ToggleCard
-              icon={<MessageSquare className="w-4 h-4 text-white" />}
+              icon={<MessagesSquare className="w-4 h-4 text-white" />}
               iconBg="bg-gradient-to-br from-green-500 to-green-600"
               title="允许用户使用对话视图"
               description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）"
@@ -867,6 +921,16 @@ export default function PlatformPolicy() {
                   </div>
                 ) : null
               }
+            />
+          </div>
+          <div className="self-start">
+            <ToggleCard
+              icon={<BarChart3 className="w-4 h-4 text-white" />}
+              iconBg="bg-gradient-to-br from-green-500 to-green-600"
+              title="允许用户查看模型额度"
+              description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况"
+              checked={allowModelQuota}
+              onToggle={handleToggleModelQuota}
             />
           </div>
         </div>

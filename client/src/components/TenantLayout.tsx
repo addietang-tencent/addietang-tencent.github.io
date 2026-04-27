@@ -399,6 +399,27 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   const [location] = useLocation();
   const { isAdmin, toggleRole } = useUserRole();
 
+  // 读取管控端「允许用户查看模型额度」开关状态（默认开启）
+  const [modelQuotaEnabled, setModelQuotaEnabled] = useState(() => {
+    const v = localStorage.getItem("admin_allow_model_quota");
+    return v !== null ? v === "true" : true;
+  });
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "admin_allow_model_quota") {
+        setModelQuotaEnabled(e.newValue !== null ? e.newValue === "true" : true);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // 根据开关过滤导航项
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.path === "/model-quota" && !modelQuotaEnabled) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Navigation */}
@@ -419,7 +440,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
           {/* Navigation */}
           <nav className="flex items-center gap-1">
-            {NAV_ITEMS.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = !item.newTab && location.startsWith(item.path);
               const btnClass = `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive

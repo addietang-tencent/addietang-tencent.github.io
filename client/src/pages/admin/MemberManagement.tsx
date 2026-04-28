@@ -31,6 +31,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImportDialog";
+// ─── 新：分组视图（多层级 + 节点健康度 + 覆盖状态 + 就地决策，v2.0） ────
+import NewGroupView from "./MemberManagement/GroupView";
+import { MOCK_USERS as MM_MOCK_USERS, MOCK_USER_OVERRIDES as MM_MOCK_OVERRIDES } from "./MemberManagement/mock";
+import type { UserOverrideInfo as MMUserOverrideInfo } from "./MemberManagement/types";
 
 const PAGE_SIZE = 10;
 
@@ -1224,6 +1228,28 @@ export default function MemberManagement() {
 
   // ─── 分组相关状态 ─────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"all" | "group">("all");
+
+  // 新：部门视图的裁决 state（mock 级持久化）
+  const [mmOverrides, setMmOverrides] = useState<Record<string, MMUserOverrideInfo>>(
+    () => ({ ...MM_MOCK_OVERRIDES })
+  );
+  const handleMmResolveConflict = useCallback(
+    (userId: string, winnerResourceId: string) => {
+      setMmOverrides((prev) => {
+        const cur = prev[userId];
+        if (!cur) return prev;
+        return {
+          ...prev,
+          [userId]: {
+            ...cur,
+            winnerResourceId,
+            isResolved: true,
+          },
+        };
+      });
+    },
+    []
+  );
   const [groups, setGroups] = useState<MemberGroup[]>(MOCK_GROUPS_INIT);
   const [selectedGroupId, setSelectedGroupId] = useState<string>(MOCK_GROUPS_INIT.length > 0 ? MOCK_GROUPS_INIT[0].id : "__ungrouped__");
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
@@ -1336,7 +1362,7 @@ export default function MemberManagement() {
     setGroups(groups.map((g) => {
       const without = g.memberIds.filter((id) => id !== targetId);
       if (newGroupIds.includes(g.id)) {
-        return { ...g, memberIds: [...new Set([...without, targetId])] };
+        return { ...g, memberIds: Array.from(new Set([...without, targetId])) };
       }
       return { ...g, memberIds: without };
     }));
@@ -1500,7 +1526,7 @@ export default function MemberManagement() {
     if (addToGroupSelected.length === 0) return;
     setGroups(groups.map((g) => {
       if (g.id !== selectedGroupId) return g;
-      const newIds = [...new Set([...g.memberIds, ...addToGroupSelected])];
+      const newIds = Array.from(new Set([...g.memberIds, ...addToGroupSelected]));
       return { ...g, memberIds: newIds };
     }));
     setShowAddToGroupDialog(false);
@@ -2036,251 +2062,17 @@ export default function MemberManagement() {
         </div>
         )}
 
-        {/* 分组视图 */}
+        {/* 分组视图（v2.0：多层级树 + 健康圆点 + 配置总览 + 导入组织架构） */}
         {viewMode === "group" && (
-          <div className="flex gap-4">
-            {/* 左侧分组列表 */}
-            <div
-              className="w-[280px] shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden self-start"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            >
-              {/* 顶部：新建分组 + 搜索 */}
-              <div className="p-3 flex items-center gap-2">
-                <button
-                  className="shrink-0 flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
-                  onClick={() => { setShowCreateGroupDialog(true); setNewGroupName(""); }}
-                >
-                  <FolderPlus className="w-3.5 h-3.5" />
-                  新建
-                </button>
-                <div className="relative flex-1">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                  <input
-                    className="w-full h-8 pl-7 pr-2 text-xs border border-gray-200 rounded-lg outline-none focus:border-blue-300 bg-white placeholder:text-gray-400"
-                    placeholder="搜索分组..."
-                    value={groupListSearch}
-                    onChange={(e) => setGroupListSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-              {/* 分组列表 */}
-              <div className="max-h-[400px] overflow-y-auto">
-                {/* 已有分组 */}
-                {groups
-                  .filter((g) => g.name.toLowerCase().includes(groupListSearch.toLowerCase()))
-                  .map((group) => (
-                  <div key={group.id} className={`flex items-center gap-1 px-4 py-2.5 transition-colors ${selectedGroupId === group.id ? "bg-blue-50" : "hover:bg-gray-50"}`}>
-                    {editingGroupId === group.id ? (
-                      <div className="flex-1 flex items-center gap-1 min-w-0">
-                        <input
-                          className="flex-1 min-w-0 h-6 px-2 text-sm border border-blue-300 rounded outline-none bg-white"
-                          value={editingGroupName}
-                          onChange={(e) => setEditingGroupName(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameGroup(group.id); if (e.key === "Escape") setEditingGroupId(null); }}
-                          autoFocus
-                        />
-                        <button
-                          className="w-5 h-5 flex items-center justify-center rounded text-green-600 hover:bg-green-50 transition-colors shrink-0"
-                          title="保存"
-                          onMouseDown={(e) => { e.preventDefault(); handleRenameGroup(group.id); }}
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 transition-colors shrink-0"
-                          title="取消"
-                          onMouseDown={(e) => { e.preventDefault(); setEditingGroupId(null); }}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === group.id ? "text-blue-600 font-medium" : "text-gray-700"}`}
-                        onClick={() => { setSelectedGroupId(group.id); setGroupPage(1); }}
-                      >
-                        <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
-                        <span className="truncate">{group.name}</span>
-                        <span className="text-xs text-gray-400 shrink-0">({group.memberIds.length})</span>
-                      </button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors shrink-0 ${selectedGroupId === group.id ? "text-blue-500 hover:bg-blue-100" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}>
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="text-xs text-gray-600 focus:text-gray-600 focus:bg-gray-50" onClick={() => { setEditingGroupId(group.id); setEditingGroupName(group.name); }}>
-                          <Pencil className="w-3.5 h-3.5 mr-2" />重命名
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => setDeleteGroupDialog({ open: true, groupId: group.id, groupName: group.name, memberCount: group.memberIds.length, configRefreshing: false })}>
-                          <Trash2 className="w-3.5 h-3.5 mr-2" />删除分组
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))}
-                {/* 暂无分组提示 */}
-                {groups.filter((g) => g.name.toLowerCase().includes(groupListSearch.toLowerCase())).length === 0 && (
-                  <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-gray-400">暂无分组</p>
-                  </div>
-                )}
-                {/* 未分组（放在最下面） */}
-                <div className={`flex items-center gap-1 px-4 py-2.5 transition-colors border-t border-gray-100 ${selectedGroupId === "__ungrouped__" ? "bg-blue-50" : "hover:bg-gray-50"}`}>
-                <button
-                  className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === "__ungrouped__" ? "text-blue-600 font-medium" : "text-gray-700"}`}
-                  onClick={() => { setSelectedGroupId("__ungrouped__"); setGroupPage(1); }}
-                >
-                  <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
-                  <span className="truncate">未分组</span>
-                  <span className="text-xs text-gray-400 shrink-0">({(() => { const allGroupedIds = new Set(groups.flatMap((g) => g.memberIds)); return sortedMembers.filter((m) => !allGroupedIds.has(m.id)).length; })()})</span>
-                </button>
-                <div className="w-6 h-6 shrink-0" />
-                </div>
-              </div>
-            </div>
-
-            {/* 右侧用户列表 */}
-            <div className="flex-1 min-w-0">
-              <div
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-              >
-                {/* 卡片 header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 min-h-[56px]">
-                  <h2 className="font-semibold text-gray-900">
-                    {selectedGroupId === "__ungrouped__" ? "未分组" : groups.find((g) => g.id === selectedGroupId)?.name || ""}
-                  </h2>
-                  {selectedGroupId !== "__ungrouped__" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-sm border-gray-200 text-gray-700 hover:bg-gray-50"
-                      onClick={() => { setShowAddToGroupDialog(true); setAddToGroupSearch(""); setAddToGroupSelected([]); }}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />添加用户到分组
-                    </Button>
-                  )}
-                </div>
-
-                {groupFiltered.length === 0 ? (
-                  <div className="py-16 flex flex-col items-center gap-3">
-                    <Users className="w-12 h-12 text-gray-200" />
-                    <p className="text-sm text-gray-400">
-                      {selectedGroupId === "__ungrouped__" ? "所有用户均已分组" : "该分组暂无用户"}
-                    </p>
-                    {selectedGroupId !== "__ungrouped__" && (
-                      <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={() => { setShowAddToGroupDialog(true); setAddToGroupSearch(""); setAddToGroupSelected([]); }}>
-                        <Plus className="w-3.5 h-3.5 mr-1" />添加用户到分组
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-100 bg-gray-50/50">
-                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户 ID</th>
-                          {hasOneid && (
-                            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户归属</th>
-                          )}
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                          {selectedGroupId !== "__ungrouped__" && (
-                            <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {groupPaginated.map((member) => (
-                          <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap"><span className="text-sm font-medium text-gray-900">{member.id}</span></td>
-                            {hasOneid && (
-                              <td className="px-4 py-4">
-                                <div className="flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                                  <span className="text-sm text-gray-600 truncate max-w-[140px]" title={MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}>
-                                    {MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}
-                                  </span>
-                                </div>
-                              </td>
-                            )}
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
-                                {member.role === "admin" ? "管理员" : "用户"}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              {member.status === "active" ? (
-                                <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
-                              ) : (
-                                <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
-                              )}
-                            </td>
-                            {selectedGroupId !== "__ungrouped__" && (
-                              <td className="px-4 py-4 text-center">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 h-7 w-7 p-0" onClick={() => setRemoveFromGroupDialog({ open: true, groupId: selectedGroupId, groupName: groups.find((g) => g.id === selectedGroupId)?.name || "", memberId: member.id })}>
-                                      <UserMinus className="w-3.5 h-3.5" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>从分组中移除</TooltipContent>
-                                </Tooltip>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    </div>
-                    {/* 翻页 */}
-                    <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">共 {groupFiltered.length} 名用户，第 {groupCurrentPage} / {groupTotalPages} 页</span>
-                      {groupTotalPages > 1 && (
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={groupCurrentPage === 1} onClick={() => setGroupPage(groupCurrentPage - 1)}>
-                            <ChevronLeft className="w-4 h-4" />
-                          </Button>
-                          {(() => {
-                            const pages: (number | string)[] = [];
-                            if (groupTotalPages <= 7) {
-                              for (let i = 1; i <= groupTotalPages; i++) pages.push(i);
-                            } else {
-                              pages.push(1);
-                              if (groupCurrentPage > 3) pages.push("...");
-                              for (let i = Math.max(2, groupCurrentPage - 1); i <= Math.min(groupTotalPages - 1, groupCurrentPage + 1); i++) pages.push(i);
-                              if (groupCurrentPage < groupTotalPages - 2) pages.push("...");
-                              pages.push(groupTotalPages);
-                            }
-                            return pages.map((p, idx) =>
-                              typeof p === "string" ? (
-                                <span key={`gellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
-                              ) : (
-                                <button
-                                  key={p}
-                                  className={`h-7 w-7 rounded-md text-xs font-medium transition-colors ${p === groupCurrentPage ? "text-white" : "text-gray-500 hover:bg-gray-100"}`}
-                                  style={p === groupCurrentPage ? { background: "#007AFF" } : undefined}
-                                  onClick={() => setGroupPage(p as number)}
-                                >{p}</button>
-                              )
-                            );
-                          })()}
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={groupCurrentPage === groupTotalPages} onClick={() => setGroupPage(groupCurrentPage + 1)}>
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <NewGroupView
+            hasOneid={hasOneid}
+            users={MM_MOCK_USERS}
+            overrides={mmOverrides}
+            onResolveConflict={handleMmResolveConflict}
+          />
         )}
+
+        {/* 旧分组视图已由 NewGroupView 替代 */}
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>

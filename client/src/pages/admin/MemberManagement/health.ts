@@ -1,0 +1,183 @@
+/**
+ * 分组树 & 节点健康度（PRD v2.0）
+ *
+ * 分组健康度规则（§3.3.4.2）：
+ *   节点 healthy ⇔ 对每个核心维度（模型 / 通道 / 安全组），
+ *   以下之一成立：
+ *     1) 该节点自身 scope 被某资源直接指向；
+ *     2) 该节点任一祖先 scope 被某资源直接指向（继承）；
+ *     3) 存在 scope.type === "all" 的该维度资源（全部用户档 + 平台默认）。
+ *   以上任一未满足即 missing 对应项。
+ *
+ * 节点级独立判定：不因子孙状态影响自身（子节点红不让父节点红）。
+ */
+import type {
+  NodeHealth,
+  ResourceItem,
+  Scope,
+  UserGroup,
+  UserOrg,
+} from "./types";
+import { MOCK_RESOURCES } from "./mock";
+
+// ─── 分组树 ──────────────────────────────────────────────
+export interface GroupTreeNode extends UserGroup {
+  children: GroupTreeNode[];
+  /** 从根到本节点的名称路径 */
+  path: string;
+  pathIds: string[];
+  depth: number;
+}
+
+/** 扁平 parentId 列表 → 树（按同源分桶） */
+export function buildGroupTree(groups: UserGroup[]): GroupTreeNode[] {
+  const map = new Map<string, GroupTreeNode>();
+  groups.forEach((g) =>
+    map.set(g.id, {
+      ...g,
+      children: [],
+      path: g.name,
+      pathIds: [g.id],
+      depth: 0,
+    })
+  );
+  const roots: GroupTreeNode[] = [];
+  groups.forEach((g) => {
+    const node = map.get(g.id)!;
+    if (g.parentId && map.has(g.parentId)) {
+      const parent = map.get(g.parentId)!;
+      parent.children.push(node);
+      node.path = `${parent.path} / ${g.name}`;
+      node.pathIds = [...parent.pathIds, g.id];
+      node.depth = parent.depth + 1;
+    } else {
+      roots.push(node);
+    }
+  });
+  return roots;
+}
+
+/** 在树中找节点 */
+export function findGroupNode(
+  roots: GroupTreeNode[],
+  id: string
+): GroupTreeNode | null {
+  for (const r of roots) {
+    if (r.id === id) return r;
+    const hit = findGroupNode(r.children, id);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** 扁平化（前序遍历） */
+export function flattenGroupTree(roots: GroupTreeNode[]): GroupTreeNode[] {
+  const out: GroupTreeNode[] = [];
+  const walk = (ns: GroupTreeNode[]) => {
+    ns.forEach((n) => {
+      out.push(n);
+      if (n.children.length) walk(n.children);
+    });
+  };
+  walk(roots);
+  return out;
+}
+
+// ─── Scope 判定 ──────────────────────────────────────────
+function scopeContainsGroup(scope: Scope, groupId: string): boolean {
+  return scope.type === "filtered" && scope.groupIds.includes(groupId);
+}
+
+function scopeIsAll(scope: Scope): boolean {
+  return scope.type === "all";
+}
+
+// ─── 获取节点的祖先 id 链（不含自身） ─────────────────────
+function getAncestorIds(
+  groupId: string,
+  groups: UserGroup[]
+): string[] {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const ids: string[] = [];
+  let cur = map.get(groupId);
+  while (cur && cur.parentId) {
+    ids.push(cur.parentId);
+    cur = map.get(cur.parentId);
+  }
+  return ids;
+}
+
+// ─── 节点级健康度（考虑继承 + 全部用户档 + 平台默认） ────
+export function getGroupHealth(
+  groupId: string,
+  groups: UserGroup[],
+  resources: ResourceItem[] = MOCK_RESOURCES
+): NodeHealth {
+  const ancestors = getAncestorIds(groupId, groups);
+  const has = (kind: "model" | "channel" | "securityGroup") =>
+    resources.some(
+      (r) =>
+        r.kind === kind &&
+        (scopeIsAll(r.scope) ||
+          scopeContainsGroup(r.scope, groupId) ||
+          ancestors.some((a) => scopeContainsGroup(r.scope, a)))
+    );
+
+  const missing: NodeHealth["missing"] = [];
+  if (!has("model")) missing.push("model");
+  if (!has("channel")) missing.push("channel");
+  if (!has("securityGroup")) missing.push("securityGroup");
+  return { healthy: missing.length === 0, missing };
+}
+
+export const MISSING_LABEL: Record<
+  NonNullable<NodeHealth["missing"][number]>,
+  string
+> = {
+  model: "可见模型",
+  channel: "可见通道",
+  securityGroup: "安全组",
+};
+
+// ─── 用户查询 ────────────────────────────────────────────
+/** 归属到某分组的直接用户 */
+export function getUsersOfGroup(
+  groupId: string,
+  users: UserOrg[]
+): UserOrg[] {
+  return users.filter((u) => u.groupIds.includes(groupId));
+}
+
+/** 归属到某分组（含子孙）的用户（聚合，去重） */
+export function getUsersOfGroupDeep(
+  groupId: string,
+  groups: UserGroup[],
+  users: UserOrg[]
+): UserOrg[] {
+  const tree = buildGroupTree(groups);
+  const node = findGroupNode(tree, groupId);
+  if (!node) return [];
+  const ids = new Set<string>();
+  const walk = (n: GroupTreeNode) => {
+    ids.add(n.id);
+    n.children.forEach(walk);
+  };
+  walk(node);
+  return users.filter((u) => u.groupIds.some((gid) => ids.has(gid)));
+}
+
+// ─── 节点下挂的资源（供「配置 Tab」使用） ─────────────────
+export function getResourcesOfGroup(
+  groupId: string,
+  resources: ResourceItem[] = MOCK_RESOURCES
+): ResourceItem[] {
+  return resources.filter((r) => scopeContainsGroup(r.scope, groupId));
+}
+
+// ─── 全局存在多归属用户的判定（用于常驻 Alert） ───────────
+/** 只计算"去重后 >= 2"的归属组数。
+ *  注意：OneID 模式下即便只在一个部门也算 1，不会触发；
+ *  但兼任部门、加入多个用户组等场景会触发。 */
+export function countMultiGroupUsers(users: UserOrg[]): number {
+  return users.filter((u) => u.groupIds.length >= 2).length;
+}

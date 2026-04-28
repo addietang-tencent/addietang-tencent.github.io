@@ -158,8 +158,8 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
           <div className="grid grid-cols-2 gap-2.5 mt-4">
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Sparkles className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">上下文卸载，Token 节省 50%+</span>
-              <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
+              <span className="text-sm text-gray-600">短期记忆压缩，Token 节省 50%+</span>
+              <span className="px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">New</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 // Pro 版独有能力
 const PRO_FEATURES = [
-  { icon: Zap, title: '上下文卸载', color: '#F59E0B', tag: '即将上线' },
+  { icon: Zap, title: '短期记忆压缩', color: '#F59E0B', tag: '即将上线' },
   { icon: Search, title: '混合双路检索', color: '#2563EB' },
   { icon: ShieldCheck, title: '企业级安全保障', color: '#14B8A6' },
   { icon: LayoutGrid, title: '全局资源管控', color: '#7C3AED' },

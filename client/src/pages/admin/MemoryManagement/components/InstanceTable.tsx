@@ -8,7 +8,6 @@ import {
   Filter,
   Bot,
   X,
-  Info,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -23,7 +22,7 @@ const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
-// 骨架屏行组件 - 4列（复选框、名称/ID、创建人、记忆管理）
+// 骨架屏行组件 - 5列（复选框、名称/ID、创建人、Agent 类型、记忆管理）
 const SkeletonRow: React.FC = () => (
   <tr>
     <td className="w-12 px-4 py-4"><Skeleton className="w-4 h-4 rounded" /></td>
@@ -37,12 +36,27 @@ const SkeletonRow: React.FC = () => (
       </div>
     </td>
     <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+    <td className="px-4 py-4"><Skeleton className="h-4 w-20" /></td>
     <td className="px-6 py-4"><Skeleton className="h-8 w-48 rounded-full" /></td>
   </tr>
 );
 
 // Memory 版本类型
 export type MemoryVersion = 'none' | 'free' | 'pro';
+
+// Agent 类型显示名称映射
+// 与管控端 Agent 列表（OpenClawMonitor）保持一致：
+//   - OpenClaw / openclaw → "OpenClaw"
+//   - Hermes / hermes     → "Hermes Agent"
+// 兼容大小写两种写法（OcInstance 上的 agentType 历史上用小写，OpenClawMonitor 用大写）。
+// 短期记忆服务暂不支持 LightClaw ACE 类型，因此这里不纳入映射；
+// 列表数据源也不会下发该类型的实例。
+const AGENT_TYPE_DISPLAY: Record<string, string> = {
+  openclaw: 'OpenClaw',
+  OpenClaw: 'OpenClaw',
+  hermes: 'Hermes Agent',
+  Hermes: 'Hermes Agent',
+};
 
 // Memory 状态类型
 // idle: 空闲（未开启）
@@ -66,6 +80,10 @@ interface TriStateSwitchProps {
   isError?: boolean;
   isProDisabled?: boolean;
   proDisabledReason?: string;
+  // 锁定态：不可交互，但滑块保留在当前档位、不渲染内部 loading。
+  // 用于"插件升级中"这类与记忆档位解耦的异步任务：升级过程档位不变，
+  // 只需禁用切换即可，不能让滑块看起来在转圈（会误导用户以为档位在变）。
+  isLocked?: boolean;
   onChange: (newValue: 'none' | 'free' | 'pro') => void;
 }
 
@@ -75,6 +93,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
   isError = false,
   isProDisabled = false,
   proDisabledReason,
+  isLocked = false,
   onChange,
 }) => {
   const options: { key: 'none' | 'free' | 'pro'; label: string }[] = [
@@ -107,6 +126,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
 
   const handleClick = (key: 'none' | 'free' | 'pro') => {
     if (isTransitioning) return;
+    if (isLocked) return;
     if (key === value) return;
     // Pro 禁用时不可切换到 Pro
     if (key === 'pro' && isProDisabled) return;
@@ -116,7 +136,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
   };
 
   return (
-    <div className="relative inline-flex items-center h-8 bg-gray-100 rounded-full p-0.5 w-[200px]">
+    <div className={`relative inline-flex items-center h-8 bg-gray-100 rounded-full p-0.5 w-[200px] ${isLocked ? 'opacity-60' : ''}`}>
       {/* 滑块 */}
       <div
         className={`absolute h-7 w-[calc(33.33%-2px)] rounded-full transition-all duration-200 ${getSliderPosition()} ${getSliderBg()}`}
@@ -131,7 +151,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
       {/* 选项 */}
       {options.map((opt) => {
         const isActive = value === opt.key;
-        const isDisabled = isTransitioning || 
+        const isDisabled = isTransitioning || isLocked ||
           (opt.key === 'pro' && isProDisabled) || 
           (value === 'pro' && opt.key === 'free'); // Pro 不能降级到 Free
         
@@ -187,6 +207,15 @@ export interface OcInstance {
   enabledAt: string;
   creator?: string;
   errorMessage?: string; // 异常状态时的错误信息
+  // Agent 类型：用于在开通 Pro 弹窗中判断是否提示"短期记忆压缩暂不对该类型生效"，
+  // 同时在列表中显示对应展示文案（见 AGENT_TYPE_DISPLAY）。
+  // 当前仅 OpenClaw / Hermes 支持记忆服务，LightClaw ACE 等其它类型不应进入本列表。
+  // 未设置时默认视作 openclaw。
+  agentType?: 'openclaw' | 'hermes' | string;
+  // 记忆插件是否正在异步升级中。与 memoryStatus 解耦：
+  // 升级过程不改变 Free / Pro 版本档位，仅在"记忆管理"列叠加一个 loading，
+  // 并在升级完成前禁用该实例的一切操作（切换版本、勾选批量等）。
+  isPluginUpgrading?: boolean;
 }
 
 // 辅助函数：从 memoryStatus 解析出 version 和 state
@@ -225,6 +254,8 @@ interface InstanceTableProps {
   onBatchEnableFree?: (instances: OcInstance[]) => void | Promise<void>;
   onBatchEnablePro?: (instances: OcInstance[]) => void | Promise<void>;
   onBatchDisable?: (instances: OcInstance[]) => void | Promise<void>;
+  // 列表工具栏右侧（搜索框左侧）可插入的自定义操作区，用于承载"一键升级记忆插件"等全局入口
+  toolbarRight?: React.ReactNode;
 }
 
 export const InstanceTable: React.FC<InstanceTableProps> = ({
@@ -239,6 +270,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   onBatchEnableFree,
   onBatchEnablePro,
   onBatchDisable,
+  toolbarRight,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -311,11 +343,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   // 批量选择逻辑
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      // 选中当前页所有可操作的实例（排除过渡态）
+      // 选中当前页所有可操作的实例（排除过渡态 / 插件升级中）
       const selectableIds = paginatedList
         .filter(oc => {
           const { state } = parseMemoryStatus(oc.memoryStatus);
-          return state !== 'enabling' && state !== 'closing';
+          return state !== 'enabling' && state !== 'closing' && !oc.isPluginUpgrading;
         })
         .map(oc => oc.id);
       setSelectedIds(new Set(selectableIds));
@@ -332,7 +364,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
     const allSelectableIds = filteredList
       .filter(oc => {
         const { state } = parseMemoryStatus(oc.memoryStatus);
-        return state !== 'enabling' && state !== 'closing';
+        return state !== 'enabling' && state !== 'closing' && !oc.isPluginUpgrading;
       })
       .map(oc => oc.id);
     setSelectedIds(new Set(allSelectableIds));
@@ -362,7 +394,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   // 判断当前页是否全选
   const selectableInPage = paginatedList.filter(oc => {
     const { state } = parseMemoryStatus(oc.memoryStatus);
-    return state !== 'enabling' && state !== 'closing';
+    return state !== 'enabling' && state !== 'closing' && !oc.isPluginUpgrading;
   });
   const isAllSelected = selectableInPage.length > 0 && selectableInPage.every(oc => selectedIds.has(oc.id));
   const isPartialSelected = selectableInPage.some(oc => selectedIds.has(oc.id)) && !isAllSelected;
@@ -370,7 +402,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   // Gmail 风格：计算全部可选择的实例数（跨页）
   const allSelectableInstances = filteredList.filter(oc => {
     const { state } = parseMemoryStatus(oc.memoryStatus);
-    return state !== 'enabling' && state !== 'closing';
+    return state !== 'enabling' && state !== 'closing' && !oc.isPluginUpgrading;
   });
   const totalSelectableCount = allSelectableInstances.length;
   
@@ -418,6 +450,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
     // 打开批量关闭确认弹窗
     setDialogType('batch-disable');
   };
+
+  // 批量升级记忆插件：已迁移到顶部"一键升级"全局入口，此处不再保留行内/工具栏入口。
 
   // 打开确认弹窗
   const openDialog = (type: DialogType, instance: OcInstance) => {
@@ -624,7 +658,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           confirmDisabled: confirmText !== '关闭',
         };
       }
-      
+
       // 单实例操作
       if (!targetInstance) return null;
       
@@ -650,7 +684,10 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             confirmClass: 'bg-blue-500 hover:bg-blue-600',
             confirmDisabled: false,
           };
-        case 'enable-pro':
+        case 'enable-pro': {
+          // 短期记忆压缩暂仅对 OpenClaw 类型生效；非该类型需追加"暂不支持"提示，但仍允许开通 Pro
+          const agentType = targetInstance.agentType ?? 'openclaw';
+          const isOpenClawAgent = agentType === 'openclaw';
           return {
             title: '开启 Memory Pro',
             content: (
@@ -666,6 +703,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                 <p className="text-gray-500 text-sm leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
+
                 <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <p className="text-amber-700 text-sm">开启 Pro 版后不支持回退到 Free 版</p>
                 </div>
@@ -675,6 +713,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             confirmClass: 'bg-blue-500 hover:bg-blue-600',
             confirmDisabled: false,
           };
+        }
         case 'disable': {
           return {
             title: '关闭 Memory 服务',
@@ -889,6 +928,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           </div>
         </div>
         <div className="flex flex-wrap gap-3 items-center">
+          {/* 自定义工具栏右侧（位于搜索框左侧）：承载一键升级记忆插件等全局入口 */}
+          {toolbarRight}
           {/* 搜索框 - 符合设计规范 */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -935,24 +976,18 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   }}
                 />
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 tracking-wide w-1/3">
-                <div className="flex items-center gap-1.5">
-                  <span>Agent 名称/ID</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>目前仅 Agent 类型的 Agent 支持 Memory 功能</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 tracking-wide" style={{ width: '30%' }}>
+                <span>Agent 名称/ID</span>
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-1/3">
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '25%' }}>
                 创建人
               </th>
+              {/* Agent 类型 —— 与管控端 Agent 列表保持一致：纯灰色文本，不使用 Badge / 颜色，避免视觉权重抢戏 */}
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: '13%' }}>
+                Agent 类型
+              </th>
               {/* 记忆管理 - 带筛选 */}
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-1/3">
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '32%' }}>
                 <div className="flex items-center gap-2 relative z-40">
                   记忆管理
                   <button
@@ -1042,7 +1077,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           {(showSelectAllBanner || isSelectAll) && (
             <tbody>
               <tr>
-                <td colSpan={4} className="px-0 py-0">
+                <td colSpan={5} className="px-0 py-0">
                   <div className="bg-blue-50 border-b border-blue-100 px-6 py-2.5 text-center text-sm">
                     {isSelectAll ? (
                       <span className="text-blue-700">
@@ -1081,7 +1116,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </>
             ) : paginatedList.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
                   暂无符合条件的实例
                 </td>
               </tr>
@@ -1090,7 +1125,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                 const { version, state } = parseMemoryStatus(oc.memoryStatus);
                 
                 // 判断是否处于过渡态（开启中/关闭中）
-                const isTransitioning = state === 'enabling' || state === 'closing';
+                const isMemoryTransitioning = state === 'enabling' || state === 'closing';
+                // 插件升级中（异步任务）——不改变记忆版本，但需要禁用所有行内操作
+                const isPluginUpgrading = !!oc.isPluginUpgrading;
+                // 对外统一视为"过渡态"，复用现有 UI 禁用逻辑
+                const isTransitioning = isMemoryTransitioning || isPluginUpgrading;
                 // 判断是否异常
                 const isError = state === 'error';
                 
@@ -1164,16 +1203,31 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {oc.creator || '—'}
                     </td>
+                    {/* Agent 类型 —— 复用 AGENT_TYPE_DISPLAY 映射，未配置或未知值时回退展示原值 */}
+                    <td className="px-4 py-4">
+                      <span className="text-xs font-medium text-gray-500">
+                        {AGENT_TYPE_DISPLAY[oc.agentType ?? 'openclaw'] ?? (oc.agentType ?? 'OpenClaw')}
+                      </span>
+                    </td>
                     {/* 记忆管理 - 三态 Switch */}
                     <td className="px-6 py-4">
-                      <TriStateSwitch
-                        value={getSwitchValue()}
-                        isTransitioning={isTransitioning}
-                        isError={isError}
-                        isProDisabled={isProDisabled}
-                        proDisabledReason={proDisabledReason || undefined}
-                        onChange={handleSwitchChange}
-                      />
+                      <div className="flex items-center gap-3">
+                        <TriStateSwitch
+                          value={getSwitchValue()}
+                          isTransitioning={isMemoryTransitioning}
+                          isError={isError}
+                          isProDisabled={isProDisabled}
+                          proDisabledReason={proDisabledReason || undefined}
+                          isLocked={isPluginUpgrading}
+                          onChange={handleSwitchChange}
+                        />
+                        {isPluginUpgrading && (
+                          <span className="inline-flex items-center gap-1 text-xs text-blue-600">
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            插件升级中
+                          </span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

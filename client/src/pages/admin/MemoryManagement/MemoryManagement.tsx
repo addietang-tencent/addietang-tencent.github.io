@@ -5,20 +5,20 @@ import { InstanceTable, OcInstance, MemoryStatus } from './components/InstanceTa
 import { ProActivationDialog } from './components/ProActivationDialog';
 import { ProCloseDialog } from './components/ProCloseDialog';
 import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
-import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, RotateCcw, Bot, Info, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { OneClickUpgradeDialog } from './components/OneClickUpgradeDialog';
+import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, Bot, Info, ChevronDown, ChevronUp, ArrowUpCircle } from 'lucide-react';
 
 // 配置常量
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
 
 // Pro 服务状态类型
-type ProServiceStatus = 'inactive' | 'activating' | 'active' | 'error';
+type ProServiceStatus = 'inactive' | 'activating' | 'active';
 
 export const MemoryManagement: React.FC = () => {
   // ========== Pro 服务状态 ==========
   const [proServiceStatus, setProServiceStatus] = useState<ProServiceStatus>('inactive');
   const [purchasedSpaces, setPurchasedSpaces] = useState<number>(0);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   // 新实例默认记忆版本：三选一（关闭 | Free | Pro）
   const [defaultMemoryVersion, setDefaultMemoryVersion] = useState<DefaultMemoryVersionType>('none');
@@ -26,6 +26,8 @@ export const MemoryManagement: React.FC = () => {
   // ========== 弹窗状态 ==========
   const [activationDialogOpen, setActivationDialogOpen] = useState(false);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
+  // 一键升级弹窗
+  const [oneClickUpgradeDialogOpen, setOneClickUpgradeDialogOpen] = useState(false);
   // 版本对比折叠状态，默认收起
   const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
   
@@ -33,27 +35,40 @@ export const MemoryManagement: React.FC = () => {
   const instanceTableRef = useRef<HTMLDivElement>(null);
 
   // ========== Mock 实例数据 ==========
-  const [instances, setInstances] = useState<OcInstance[]>([
-    { id: 'oc-000', name: '智能问答助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
-    { id: 'oc-001', name: '客服助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
-    { id: 'oc-002', name: '营销策划师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
-    { id: 'oc-003', name: '数据分析师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
-    { id: 'oc-004', name: '代码助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
-    { id: 'oc-005', name: '文档编写助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
-    { id: 'oc-006', name: '培训教练', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
-    { id: 'oc-007', name: '产品经理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
-    { id: 'oc-008', name: '人力资源顾问', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
-    { id: 'oc-009', name: '财务分析助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
-    { id: 'oc-010', name: '运维监控助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
-    { id: 'oc-011', name: '法务合规助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhengshi@tencent.com' },
-    { id: 'oc-012', name: '设计灵感助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
-    { id: 'oc-013', name: '项目管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
-    { id: 'oc-014', name: '内容审核助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
-    { id: 'oc-015', name: '翻译助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
-    { id: 'oc-016', name: '测试工程助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
-    { id: 'oc-017', name: '安全审计助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
-    { id: 'oc-018', name: '知识库管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
-  ]);
+  // 给 19 个 mock 实例按固定模式分配 agentType，保证 OC 占多数、Hermes 适中、LightClaw ACE 少量，
+  // 便于在记忆空间列表中验证「Agent 类型」列的展示效果。
+  // 真实接入后，agentType 由后端返回，这段映射可移除。
+  const [instances, setInstances] = useState<OcInstance[]>(() => {
+    const baseList: OcInstance[] = [
+      { id: 'oc-000', name: '智能问答助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+      { id: 'oc-001', name: '客服助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+      { id: 'oc-002', name: '营销策划师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+      { id: 'oc-003', name: '数据分析师', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+      { id: 'oc-004', name: '代码助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+      { id: 'oc-005', name: '文档编写助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+      { id: 'oc-006', name: '培训教练', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+      { id: 'oc-007', name: '产品经理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+      { id: 'oc-008', name: '人力资源顾问', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
+      { id: 'oc-009', name: '财务分析助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
+      { id: 'oc-010', name: '运维监控助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
+      { id: 'oc-011', name: '法务合规助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhengshi@tencent.com' },
+      { id: 'oc-012', name: '设计灵感助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhangsan@tencent.com' },
+      { id: 'oc-013', name: '项目管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'lisi@tencent.com' },
+      { id: 'oc-014', name: '内容审核助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wangwu@tencent.com' },
+      { id: 'oc-015', name: '翻译助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhaoliu@tencent.com' },
+      { id: 'oc-016', name: '测试工程助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
+      { id: 'oc-017', name: '安全审计助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
+      { id: 'oc-018', name: '知识库管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
+    ];
+    // 给 19 个 mock 实例按固定模式分配 agentType：每 3 个里第 2 个为 Hermes，其余为 OpenClaw，
+    // 便于在记忆空间列表中验证「Agent 类型」列的展示效果。
+    // 短期记忆服务暂不支持 LightClaw ACE 类型，列表中不应出现该类型实例。
+    // 真实接入后，agentType 由后端返回，这段映射可移除。
+    return baseList.map((inst, idx) => {
+      const agentType: 'openclaw' | 'hermes' = idx % 3 === 1 ? 'hermes' : 'openclaw';
+      return { ...inst, agentType };
+    });
+  });
 
   const [loading, setLoading] = useState(false);
 
@@ -65,6 +80,15 @@ export const MemoryManagement: React.FC = () => {
     noneCount: instances.filter(i => i.memoryStatus === 'none').length,
   };
 
+  // 一键升级候选集：当前已开启记忆服务（free / pro 稳态）且未处于插件升级中的实例。
+  // 控制台不预判版本新旧，点击"一键升级"后，由弹窗发起异步检测、由后端返回真正需要升级的清单。
+  // 关闭、开启中、关闭中、异常、插件升级中等中间态实例不在候选范围内。
+  const upgradeCandidates = instances.filter(
+    i => (i.memoryStatus === 'free' || i.memoryStatus === 'pro') && !i.isPluginUpgrading
+  );
+  // 是否有任一实例正在异步升级中：升级期间禁用"一键升级"入口，避免重复下发。
+  const hasUpgradingInstance = instances.some(i => i.isPluginUpgrading);
+
   // Pro 额度使用率
   const memoryAllocationPercent = purchasedSpaces > 0
     ? Math.round((stats.proCount / purchasedSpaces) * 100)
@@ -74,7 +98,6 @@ export const MemoryManagement: React.FC = () => {
   const isProInactive = proServiceStatus === 'inactive';
   const isProActivating = proServiceStatus === 'activating';
   const isProActive = proServiceStatus === 'active';
-  const isProError = proServiceStatus === 'error';
 
   // 开通 Pro 服务（固定 500 配额）
   const handleActivatePro = (config?: { autoEnableForNewInstances: boolean }) => {
@@ -96,18 +119,6 @@ export const MemoryManagement: React.FC = () => {
         setProServiceStatus('error');
         setErrorMessage('服务初始化失败，请重试');
       }
-    }, 2000);
-  };
-
-  // 重试开通
-  const handleRetry = () => {
-    setProServiceStatus('activating');
-    setErrorMessage('');
-    
-    setTimeout(() => {
-      setProServiceStatus('active');
-      setShowSuccessBanner(true);
-      toast.success('Memory Pro 服务开通成功！');
     }, 2000);
   };
 
@@ -138,7 +149,7 @@ export const MemoryManagement: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">记忆管理</h1>
         <p className="text-sm text-gray-500">
-          让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持。
+          让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持（已支持 OpenClaw、Hermes，其他 Agent 类型敬请期待）。
         </p>
       </div>
 
@@ -147,25 +158,6 @@ export const MemoryManagement: React.FC = () => {
         <div className="mb-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Loader2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0 animate-spin" />
           <p className="text-xs text-blue-600 leading-relaxed">Memory Pro 正在初始化中，预计需要几分钟...</p>
-        </div>
-      )}
-
-      {/* 状态提示条 - 错误 */}
-      {isProError && (
-        <div className="mb-6 flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-          <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-          <div className="flex-1 flex items-center justify-between">
-            <p className="text-xs text-red-600 leading-relaxed">{errorMessage || 'Memory Pro 初始化失败，请重试'}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-red-600 border-red-300 hover:bg-red-100 h-7 px-3"
-              onClick={handleRetry}
-            >
-              <RotateCcw className="w-3.5 h-3.5 mr-1" />
-              重试
-            </Button>
-          </div>
         </div>
       )}
 
@@ -279,38 +271,48 @@ export const MemoryManagement: React.FC = () => {
               }`}
               style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-50">
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-50 flex-shrink-0">
                     <Crown className="w-5 h-5 text-purple-500" />
                   </div>
-                  <span className="text-sm text-gray-500">Pro 版</span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-400 text-amber-900">
-                    免费体验中
-                  </span>
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm text-gray-500">Pro 版</span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-400 text-amber-900">
+                        免费体验中
+                      </span>
+                    </div>
+
+                  </div>
                 </div>
-                {isProInactive && (
-                  <button
-                    onClick={() => setActivationDialogOpen(true)}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
-                  >
-                    立即开通
-                  </button>
-                )}
-                {isProActive && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setCloseDialogOpen(true); }}
-                    className="text-xs text-gray-500 hover:text-red-600 font-medium hover:underline"
-                  >
-                    关闭服务
-                  </button>
-                )}
-                {isProActivating && (
-                  <span className="inline-flex items-center gap-1 text-xs text-blue-500">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    初始化中
-                  </span>
-                )}
+                <div className="flex items-center gap-3 shrink-0">
+                  {isProInactive && (
+                    <button
+                      onClick={() => setActivationDialogOpen(true)}
+                      className="whitespace-nowrap px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                    >
+                      立即开通
+                    </button>
+                  )}
+                  {isProActive && (
+                    // Pro 卡片右上角仅保留「关闭服务」入口；
+                    // 升级/开通能力的入口统一收口到 Banner 上的「一键开通」，
+                    // 避免在 Pro 卡片再放一个语义重复的「一键升级」造成认知割裂。
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setCloseDialogOpen(true); }}
+                      className="whitespace-nowrap text-xs text-gray-500 hover:text-red-600 font-medium hover:underline"
+                    >
+                      关闭服务
+                    </button>
+                  )}
+                  {isProActivating && (
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-blue-500">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      初始化中
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* 未开通状态 */}
@@ -359,19 +361,6 @@ export const MemoryManagement: React.FC = () => {
                 </div>
               )}
 
-              {/* 错误状态 */}
-              {isProError && (
-                <div className="mt-3">
-                  <div className="text-2xl font-bold text-red-400 mb-2">初始化失败</div>
-                  <button
-                    className="w-full py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1 transition-all"
-                    onClick={(e) => { e.stopPropagation(); handleRetry(); }}
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    重试
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -398,8 +387,50 @@ export const MemoryManagement: React.FC = () => {
             </div>
           )}
 
+          {/* 短期记忆压缩 Pro版 提示
+              —— 讲故事位：介绍新能力 + 使用前提；右侧配套「一键开通」按钮：
+                 · 已开通 Pro：可点击，触发与 Pro 卡片「一键升级」相同的升级弹窗，
+                   把记忆服务升级至最新版本，从而开通短期记忆压缩能力
+                 · 未开通 Pro：按钮置灰，hover 提示"请先开通 Pro" */}
+          <div className="mt-5 pt-5 border-t border-gray-100 flex items-start gap-2.5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl px-4 py-3 mb-4">
+            <span className="shrink-0 mt-0.5 inline-flex items-center px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold tracking-wide leading-none">
+              Pro版
+            </span>
+            <p className="flex-1 text-sm text-gray-700 leading-relaxed">
+              新增<span className="font-semibold text-gray-900">短期记忆压缩</span>功能，基于WideSearch等数据集测试，长任务可节省 <span className="font-semibold text-purple-600">45%</span> 的 Token 消耗并提高 <span className="font-semibold text-purple-600">20%</span> 完成率。<span className="font-medium text-gray-800">开通 Pro 并将记忆服务升级至最新版本后即可使用</span>
+              <br />
+              <span className="text-gray-500">（暂仅对 OpenClaw 类型 Agent 生效）</span>
+            </p>
+            {(() => {
+              const disabled = !isProActive || hasUpgradingInstance;
+              const title = !isProActive
+                ? '请先开通 Pro'
+                : hasUpgradingInstance
+                  ? '有实例正在升级中，请等待当前任务完成后再发起新的开通'
+                  : '将记忆服务升级至最新版本，OpenClaw 类型 Pro 实例升级后即可使用短期记忆压缩';
+              return (
+                <button
+                  onClick={() => {
+                    if (disabled) return;
+                    setOneClickUpgradeDialogOpen(true);
+                  }}
+                  disabled={disabled}
+                  title={title}
+                  className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap ${
+                    disabled
+                      ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
+                      : 'text-purple-700 bg-white border-purple-200 hover:bg-purple-50 hover:border-purple-300'
+                  }`}
+                >
+                  <ArrowUpCircle className="w-3.5 h-3.5" />
+                  一键开通
+                </button>
+              );
+            })()}
+          </div>
+
           {/* 新实例默认记忆版本 - 三选一控件 */}
-          <div className="mt-5 pt-5 border-t border-gray-100">
+          <div className="pt-0">
             <DefaultMemoryVersion
               value={defaultMemoryVersion}
               onChange={setDefaultMemoryVersion}
@@ -595,6 +626,38 @@ export const MemoryManagement: React.FC = () => {
         ocCount={stats.proCount}
         onGoToInstanceList={() => {
           instanceTableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+      />
+
+      {/* 一键升级弹窗 —— 打开后由弹窗内部异步检测需要升级的实例：
+            - 检测中：loading 态
+            - 有可升级：展示清单 + 影响说明，确认后异步下发任务、弹窗立即关闭
+            - 全部最新：友好提示，客户关闭即可
+          升级过程由列表行内「插件升级中」loading 体现，任务完成后实例自动回到稳态。*/}
+      <OneClickUpgradeDialog
+        open={oneClickUpgradeDialogOpen}
+        onOpenChange={setOneClickUpgradeDialogOpen}
+        candidateInstances={upgradeCandidates}
+        onConfirm={(targets) => {
+          // 异步下发升级任务：
+          // 1) 立即把所有 target 实例标记为「插件升级中」
+          // 2) 给出 toast 提示，用户可以离开页面
+          // 3) 每个实例独立随机延迟（3~6 秒）后回到稳态，模拟后端异步回调
+          if (targets.length === 0) return;
+          const targetIds = new Set(targets.map(t => t.id));
+          setInstances(prev => prev.map(i =>
+            targetIds.has(i.id) ? { ...i, isPluginUpgrading: true } : i
+          ));
+          toast.success(`已提交 ${targets.length} 个实例的记忆服务升级任务，正在后台异步执行`);
+
+          targets.forEach(t => {
+            const delay = 3000 + Math.floor(Math.random() * 3000);
+            setTimeout(() => {
+              setInstances(prev => prev.map(i =>
+                i.id === t.id ? { ...i, isPluginUpgrading: false } : i
+              ));
+            }, delay);
+          });
         }}
       />
     </div>

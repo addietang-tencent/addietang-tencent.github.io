@@ -458,7 +458,7 @@ export default function AgentDetail() {
 
   // ── Memory 状态 ──
   // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
-  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('free');
+  const [memoryStatus, setMemoryStatus] = useState<'pro' | 'free' | 'none' | 'upgrading'>('pro');
   // Pro 版配额是否可用（从管控端获取）
   const [proQuotaAvailable] = useState(true);
   // 记忆数据是否正在加载中（首次进入时可能较慢）

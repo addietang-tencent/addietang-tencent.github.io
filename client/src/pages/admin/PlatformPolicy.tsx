@@ -498,7 +498,10 @@ export default function PlatformPolicy() {
   const [allowCloudBrowser, setAllowCloudBrowser] = useState(() => {
     return localStorage.getItem("admin_allow_cloud_browser") === "true";
   });
-  const [cloudBrowserLoading, setCloudBrowserLoading] = useState(false);
+  // 本次自动追加的 6080 放通规则 id（用于在卡片内展示"已自动添加"提示）
+  const [cloudBrowserSgRuleId, setCloudBrowserSgRuleId] = useState<string | null>(() => {
+    return localStorage.getItem("admin_cloud_browser_sg_rule_id");
+  });
 
   // ── 对话视图开关状态 ──
   const [allowChatView, setAllowChatView] = useState(() => {
@@ -657,6 +660,9 @@ export default function PlatformPolicy() {
     if (!v) {
       setAllowCloudBrowser(false);
       localStorage.setItem("admin_allow_cloud_browser", "false");
+      // 关闭时清掉"自动添加"标记（规则保留在安全组中，与面板开关行为一致）
+      localStorage.removeItem("admin_cloud_browser_sg_rule_id");
+      setCloudBrowserSgRuleId(null);
       toast.success("已关闭 Agent 云端浏览器");
       return;
     }
@@ -672,20 +678,43 @@ export default function PlatformPolicy() {
       }
     }
 
-    // 无安全组：阻止开启（快速失败，不进入 loading）
+    // 无安全组：阻止开启
     if (!snapshot || !Array.isArray(snapshot.inboundRules)) {
       toast.error("请先前往网络管理配置 ClawPro 的安全组，再开启该功能");
       return;
     }
 
-    // 进入等待态：模拟后端下发规则/生效过程，与「允许用户访问 Agent 面板」保持一致
-    setCloudBrowserLoading(true);
-    setTimeout(() => {
-      setAllowCloudBrowser(true);
-      localStorage.setItem("admin_allow_cloud_browser", "true");
-      setCloudBrowserLoading(false);
-      toast.success("已开启 Agent 云端浏览器");
-    }, 3000);
+    // 判定默认安全组是否已放通 6080（source=0.0.0.0/0、policy=允许、protocol∈{TCP,ALL}、端口覆盖 6080）
+    const hasCovered = snapshot.inboundRules.some((r) => isInboundRuleCoverPort(r, 6080));
+    if (!hasCovered) {
+      // 自动追加一条 6080 放通规则
+      const newRule: SnapshotInboundRule = {
+        id: `cb-${Date.now()}`,
+        source: "0.0.0.0/0",
+        protocol: "TCP",
+        port: "6080",
+        policy: "允许",
+        remark: "云端浏览器访问",
+      };
+      const nextSnapshot: DefaultSecurityGroupSnapshot = {
+        ...snapshot,
+        inboundRules: [...snapshot.inboundRules, newRule],
+      };
+      localStorage.setItem(
+        "admin_default_security_group_snapshot",
+        JSON.stringify(nextSnapshot),
+      );
+      localStorage.setItem("admin_cloud_browser_sg_rule_id", newRule.id);
+      setCloudBrowserSgRuleId(newRule.id);
+    } else {
+      // 已有覆盖规则：清除"自动添加"标记（即使开关 ON 也不展示提示条）
+      localStorage.removeItem("admin_cloud_browser_sg_rule_id");
+      setCloudBrowserSgRuleId(null);
+    }
+
+    setAllowCloudBrowser(true);
+    localStorage.setItem("admin_allow_cloud_browser", "true");
+    toast.success("已开启 Agent 云端浏览器");
   };
 
   const handleToggleLobsterDoctor = (v: boolean) => {
@@ -839,9 +868,23 @@ export default function PlatformPolicy() {
               title="允许用户访问 Agent 云端浏览器"
               description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
               checked={allowCloudBrowser}
-              loading={cloudBrowserLoading}
-              loadingLabel="配置中"
               onToggle={handleToggleCloudBrowser}
+              extraContent={
+                allowCloudBrowser && cloudBrowserSgRuleId ? (
+                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
+                    <span className="text-xs text-blue-700 leading-relaxed">
+                      已为您当前的安全组添加该功能所需的 6080 端口放通规则，如用户端仍无法访问，请在网络管理的
+                      <button
+                        onClick={() => navigate("/admin/security-group")}
+                        className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5"
+                      >
+                        安全组规则
+                      </button>
+                      处检查是否生效
+                    </span>
+                  </div>
+                ) : null
+              }
             />
           </div>
           <div className="self-start">

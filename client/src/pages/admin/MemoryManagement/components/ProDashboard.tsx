@@ -11,13 +11,13 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Brain,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { ProCloseDialog } from './ProCloseDialog';
-import { ExpandDialog } from './ExpandDialog';
 import {
   Tooltip,
   TooltipContent,
@@ -641,17 +641,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         onGoToInstanceList={onGoToInstanceList}
       />
 
-      {/* 扩容弹窗 */}
-      <ExpandDialog
-        open={expandDialogOpen}
-        onOpenChange={setExpandDialogOpen}
-        currentSpaces={purchasedSpaces}
-        usedSpaces={proUsedCount}
-        onConfirm={(addSpaces, newTotalSpaces) => {
-          toast.success(`扩容成功！已追加 ${addSpaces} 个记忆空间，当前总量 ${newTotalSpaces} 个`);
-          onExpand?.(addSpaces, newTotalSpaces);
-        }}
-      />
+      {/* 扩容弹窗（ExpandDialog 已移除，此处保留占位） */}
       </div>
     </TooltipProvider>
   );

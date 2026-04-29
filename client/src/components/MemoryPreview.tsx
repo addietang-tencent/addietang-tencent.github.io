@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2, Clock } from "lucide-react";
+import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2, Clock, X } from "lucide-react";
 
 // Mock 数据 - Persona
 const mockPersona = `# 用户画像

@@ -11,7 +11,7 @@ import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, Bot, Info
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
 
 // Pro 服务状态类型
-type ProServiceStatus = 'inactive' | 'activating' | 'active';
+type ProServiceStatus = 'inactive' | 'activating' | 'active' | 'error';
 
 export const MemoryManagement: React.FC = () => {
   // ========== Pro 服务状态 ==========
@@ -104,7 +104,7 @@ export const MemoryManagement: React.FC = () => {
         }
       } else {
         setProServiceStatus('error');
-        setErrorMessage('服务初始化失败，请重试');
+        toast.error('服务初始化失败，请重试');
       }
     }, 2000);
   };

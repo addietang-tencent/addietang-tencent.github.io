@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, ShieldCheck, LayoutGrid } from 'lucide-react';
 
-const FEATURES = [
+const FEATURES: { icon: React.ElementType; title: string; desc: string; color: string; tag?: string }[] = [
   { icon: Search, title: '混合双路检索', desc: '融合"关键字 + 向量语义"双路召回，精准捕获深层关联，让 Agent 的回答更精准', color: '#2563EB' },
   { icon: ShieldCheck, title: '企业级安全保障', desc: '提供完善的数据备份与强加密机制，匹配企业级数据隐私与合规要求', color: '#14B8A6' },
   { icon: LayoutGrid, title: '全局资源管控', desc: '一站式可视化看板，统一管控所有实例的记忆资源，运维更省心', color: '#7C3AED' },

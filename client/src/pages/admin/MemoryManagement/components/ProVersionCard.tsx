@@ -4,7 +4,7 @@ import { ProActivationDialog } from './ProActivationDialog';
 import { Button } from '@/components/ui/button';
 
 // Pro 版独有能力
-const PRO_FEATURES = [
+const PRO_FEATURES: { icon: React.ElementType; title: string; color: string; tag?: string }[] = [
   { icon: Search, title: '混合双路检索', color: '#2563EB' },
   { icon: ShieldCheck, title: '企业级安全保障', color: '#14B8A6' },
   { icon: LayoutGrid, title: '全局资源管控', color: '#7C3AED' },
@@ -31,9 +31,10 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleActivationSuccess = (purchaseSpaces: number) => {
-    onActivated?.(purchaseSpaces);
+  const handleActivationSuccess = (config: { autoEnableForNewInstances: boolean }) => {
+    onActivated?.(FIXED_MEMORY_SPACES);
   };
+  const FIXED_MEMORY_SPACES = 500;
 
   const handleOpenClick = () => {
     setDialogOpen(true);

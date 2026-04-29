@@ -10,6 +10,7 @@ import {
   Search,
   Shield,
   LayoutGrid,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -256,7 +257,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
   const showExpanded = autoExpanded || radarHovered;
 
   // Pro 版核心优势数据
-  const proFeatures = [
+  const proFeatures: { icon: React.ElementType; color: string; bgColor: string; title: string; desc: string; tag?: string }[] = [
     {
       icon: Search,
       color: 'text-blue-600',

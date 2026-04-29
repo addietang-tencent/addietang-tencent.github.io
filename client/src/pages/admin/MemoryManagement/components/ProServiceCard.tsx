@@ -7,7 +7,6 @@ import {
   RotateCcw,
   X,
   Sparkles,
-  Zap,
   Search,
   Shield,
   LayoutGrid,
@@ -258,14 +257,6 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
 
   // Pro 版核心优势数据
   const proFeatures = [
-    {
-      icon: Zap,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
-      title: '短期记忆压缩',
-      desc: '打破多轮交互成本与效果瓶颈，针对长任务自动优化上下文，在 Token 消耗直降超 50% 的同时，实现精准去噪，复杂任务完成率提升超 23%',
-      tag: '即将上线',
-    },
     {
       icon: Search,
       color: 'text-blue-600',

@@ -72,12 +72,6 @@ function isInboundRuleCoverPort(rule: SnapshotInboundRule, target: number): bool
   return doesPortCoverTarget(rule.port, target);
 }
 
-// 云端浏览器所需 6080 放通
-const CLOUD_BROWSER_REQUIRED_PORT = 6080;
-function isCloudBrowserInboundRule(rule: SnapshotInboundRule): boolean {
-  return isInboundRuleCoverPort(rule, CLOUD_BROWSER_REQUIRED_PORT);
-}
-
 // ─── 子组件：应用范围指示器（带 Popover 编辑） ─────────────────────────────────
 
 function ScopeIndicator({ groupTooltip = "按分组设置不同配额 — 即将开放" }: { groupTooltip?: string }) {
@@ -504,10 +498,6 @@ export default function PlatformPolicy() {
   const [allowCloudBrowser, setAllowCloudBrowser] = useState(() => {
     return localStorage.getItem("admin_allow_cloud_browser") === "true";
   });
-  // 本次自动追加的 6080 放通规则 id（用于在卡片内展示"已自动添加"提示）
-  const [cloudBrowserSgRuleId, setCloudBrowserSgRuleId] = useState<string | null>(() => {
-    return localStorage.getItem("admin_cloud_browser_sg_rule_id");
-  });
   const [cloudBrowserLoading, setCloudBrowserLoading] = useState(false);
 
   // ── 对话视图开关状态 ──
@@ -691,33 +681,6 @@ export default function PlatformPolicy() {
     // 进入等待态：模拟后端下发规则/生效过程，与「允许用户访问 Agent 面板」保持一致
     setCloudBrowserLoading(true);
     setTimeout(() => {
-      const hasCovered = snapshot!.inboundRules.some(isCloudBrowserInboundRule);
-      if (!hasCovered) {
-        // 自动追加一条 6080 放通规则
-        const newRule: SnapshotInboundRule = {
-          id: `cb-${Date.now()}`,
-          source: "0.0.0.0/0",
-          protocol: "TCP",
-          port: "6080",
-          policy: "允许",
-          remark: "云端浏览器访问",
-        };
-        const nextSnapshot: DefaultSecurityGroupSnapshot = {
-          ...snapshot!,
-          inboundRules: [...snapshot!.inboundRules, newRule],
-        };
-        localStorage.setItem(
-          "admin_default_security_group_snapshot",
-          JSON.stringify(nextSnapshot),
-        );
-        localStorage.setItem("admin_cloud_browser_sg_rule_id", newRule.id);
-        setCloudBrowserSgRuleId(newRule.id);
-      } else {
-        // 已有覆盖规则：清除"自动添加"标记，避免误展示提示条
-        localStorage.removeItem("admin_cloud_browser_sg_rule_id");
-        setCloudBrowserSgRuleId(null);
-      }
-
       setAllowCloudBrowser(true);
       localStorage.setItem("admin_allow_cloud_browser", "true");
       setCloudBrowserLoading(false);
@@ -879,22 +842,6 @@ export default function PlatformPolicy() {
               loading={cloudBrowserLoading}
               loadingLabel="配置中"
               onToggle={handleToggleCloudBrowser}
-              extraContent={
-                allowCloudBrowser && cloudBrowserSgRuleId ? (
-                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
-                    <span className="text-xs text-blue-700 leading-relaxed">
-                      已自动为当前安全组添加 6080 端口放通规则，如用户端仍无法访问云端浏览器，请在网络管理的
-                      <button
-                        onClick={() => navigate("/admin/security-group")}
-                        className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5"
-                      >
-                        安全组规则
-                      </button>
-                      处检查是否生效
-                    </span>
-                  </div>
-                ) : null
-              }
             />
           </div>
           <div className="self-start">

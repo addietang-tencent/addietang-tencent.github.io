@@ -85,7 +85,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-2">
             <p className="font-semibold text-amber-800 text-sm">限时免费体验（至 2026.6.15）</p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              免费体验期内可使用全部 Pro 能力（<span className="font-medium">含短期记忆压缩</span>），体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。
+              免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。
             </p>
             <div className="pt-2 border-t border-amber-200/70 space-y-1">
               <p className="text-xs text-amber-700 leading-relaxed">
@@ -95,21 +95,6 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
                 开通服务需要 3-5 分钟准备资源，准备完成后即可使用。
               </p>
             </div>
-          </div>
-
-          {/* 能力说明区 —— 让管理员在开通前清楚知道 Pro 版包含什么 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 space-y-2">
-            <p className="font-semibold text-blue-800 text-sm">Pro 版包含以下核心能力：</p>
-            <ul className="space-y-1 text-xs leading-relaxed">
-              <li className="text-blue-400">
-                <span className="font-medium text-blue-700">长期记忆能力</span>
-                <span> · 基于向量数据库的语义检索，权限隔离，安全保障。</span>
-              </li>
-              <li className="text-blue-400">
-                <span className="font-medium text-blue-700">短期记忆压缩</span>
-                <span> · 有效节省长任务 Token 消耗，提高任务成功率；暂仅对 OpenClaw 类型 Agent 生效。</span>
-              </li>
-            </ul>
           </div>
 
           {/* 配置项 */}

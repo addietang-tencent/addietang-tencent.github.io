@@ -49,8 +49,7 @@ export type MemoryVersion = 'none' | 'free' | 'pro';
 //   - OpenClaw / openclaw → "OpenClaw"
 //   - Hermes / hermes     → "Hermes Agent"
 // 兼容大小写两种写法（OcInstance 上的 agentType 历史上用小写，OpenClawMonitor 用大写）。
-// 短期记忆服务暂不支持 LightClaw ACE 类型，因此这里不纳入映射；
-// 列表数据源也不会下发该类型的实例。
+// 当前仅 OpenClaw / Hermes 支持记忆服务，其它类型不纳入映射，列表数据源也不会下发。
 const AGENT_TYPE_DISPLAY: Record<string, string> = {
   openclaw: 'OpenClaw',
   OpenClaw: 'OpenClaw',
@@ -207,9 +206,8 @@ export interface OcInstance {
   enabledAt: string;
   creator?: string;
   errorMessage?: string; // 异常状态时的错误信息
-  // Agent 类型：用于在开通 Pro 弹窗中判断是否提示"短期记忆压缩暂不对该类型生效"，
-  // 同时在列表中显示对应展示文案（见 AGENT_TYPE_DISPLAY）。
-  // 当前仅 OpenClaw / Hermes 支持记忆服务，LightClaw ACE 等其它类型不应进入本列表。
+  // Agent 类型：用于在列表中显示对应展示文案（见 AGENT_TYPE_DISPLAY）。
+  // 当前仅 OpenClaw / Hermes 支持记忆服务，其它类型不应进入本列表。
   // 未设置时默认视作 openclaw。
   agentType?: 'openclaw' | 'hermes' | string;
   // 记忆插件是否正在异步升级中。与 memoryStatus 解耦：
@@ -685,9 +683,6 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             confirmDisabled: false,
           };
         case 'enable-pro': {
-          // 短期记忆压缩暂仅对 OpenClaw 类型生效；非该类型需追加"暂不支持"提示，但仍允许开通 Pro
-          const agentType = targetInstance.agentType ?? 'openclaw';
-          const isOpenClawAgent = agentType === 'openclaw';
           return {
             title: '开启 Memory Pro',
             content: (

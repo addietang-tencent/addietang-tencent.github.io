@@ -103,6 +103,15 @@ interface OpenClawItem {
   browserStartupFailReason?: string;
   browserStartupMockMode?: BrowserStartupMockMode;
   browserStartupRandomFailSteps?: BrowserStartupStepKey[];
+  // —— 云桌面升级相关能力状态（mock）——
+  // browserReady: 原云端浏览器是否可用
+  // desktopReady: 云桌面是否已就绪
+  // desktopInstalling: 云桌面是否正在升级
+  // desktopError: 云桌面升级失败信息（null / undefined 表示无错误）
+  browserReady?: boolean;
+  desktopReady?: boolean;
+  desktopInstalling?: boolean;
+  desktopError?: string | null;
 }
 
 interface ChatMessage {
@@ -167,19 +176,19 @@ const BROWSER_STARTUP_STEP_META: Record<BrowserStartupStepKey, {
 }> = {
   imageCheck: {
     title: "检查镜像",
-    successText: "当前云服务器镜像满足云端浏览器启动条件。",
-    failureText: "当前实例暂不支持云端浏览器，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
+    successText: "当前云服务器镜像满足云桌面启动条件。",
+    failureText: "当前实例暂不支持云桌面，仅支持 Ubuntu 24.04 镜像的 OpenClaw。",
     runningText: "正在检查实例镜像…",
   },
   componentCheck: {
-    title: "检查云端浏览器运行组件",
-    successText: "云端浏览器运行组件已就绪。",
-    failureText: "云端浏览器运行组件准备失败，请重试。",
-    runningText: "正在检查云端浏览器运行组件…",
+    title: "检查运行组件",
+    successText: "运行组件已就绪。",
+    failureText: "运行组件准备失败，请重试。",
+    runningText: "正在检查运行组件…",
   },
   policyCheck: {
     title: "校验组件状态及访问策略",
-    successText: "组件状态与访问策略校验通过，可继续启动。",
+    successText: "组件状态与访问策略校验通过，可继续进入。",
     failureText: "安全组入方向规则未放通 6080 端口，请联系管理员处理后重试。",
     runningText: "正在校验组件状态及访问策略…",
   },
@@ -214,6 +223,9 @@ const MOCK_CLAW_NAME_LOADING = "加载中示例";
 const MOCK_CLAW_NAME_LONG_SUCCESS = "这是一个名称非常非常长的智能助手用来测试超长文本截断效果";
 // 记录每个 mock 实例触发“启动云端浏览器”流程的次数，用于实现“首次失败、重试成功”等分流效果
 const mockBrowserStartupAttemptCount = new Map<string, number>();
+// 记录每个 mock 实例触发「云桌面升级」的次数，用于模拟首次失败、重试成功
+const mockDesktopUpgradeAttemptCount = new Map<string, number>();
+const DESKTOP_UPGRADE_DURATION = 2800;
 const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["componentCheck", "policyCheck"];
 const CLOUD_BROWSER_REINSTALL_AUTO_REFRESH_INTERVAL = 1600;
 const CLOUD_BROWSER_REINSTALL_TRANSITION_TIMEOUT = 30000;
@@ -240,6 +252,7 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
 
   if (claw.name === MOCK_CLAW_NAME_LOADING) {
     // 分流测试：ready=true && accessible=true → 直接进入云端浏览器
+    // 同时作为「云桌面升级」demo 分流：browserReady=true && desktopReady=false → 进入云端浏览器并展示顶部升级提示条
     return {
       ...claw,
       status: "running",
@@ -250,19 +263,24 @@ const applyDemoBrowserMockFields = (claw: OpenClawItem): OpenClawItem => {
       browserStartupMockMode: "always_success",
       browserStartupFailStep: undefined,
       browserStartupFailReason: undefined,
+      browserReady: true,
+      desktopReady: false,
+      desktopInstalling: false,
+      desktopError: null,
     };
   }
 
   if (claw.name === MOCK_CLAW_NAME_RUNNING) {
+    // 分流演示：启动检测第 1 个可见步骤（imageCheck + componentCheck）失败。
+    // 通过将 browserComponentInstallReady=false，让 browserVncCheck.ready=false，
+    // 从而点击小电脑后走 startBrowserStartupFlow，并在 componentCheck 这一步触发失败。
     return {
       ...claw,
       status: "running",
       os_name: "ubuntu24.04x86_64",
       browserSecurityGroupReady: true,
-      browserComponentInstallReady: true,
+      browserComponentInstallReady: false,
       browserLaunchReady: true,
-      browserStartupMockMode: "random_fail_sg_or_package",
-      browserStartupRandomFailSteps: BROWSER_RANDOM_FAIL_STEPS,
       browserStartupFailStep: undefined,
       browserStartupFailReason: undefined,
     };
@@ -476,7 +494,7 @@ const createDefaultBrowserState = (claw?: OpenClawItem, clawId?: string): Browse
   addressInput: CLOUD_BROWSER_HOME,
   activeQuery: "",
   lastSyncedAt: formatSyncTime(),
-  liveCaption: "浏览器处于查看态，可实时查看当前画面。",
+  liveCaption: "当前为查看态，可实时查看 AI 的云端操作画面。",
   lastUserAction: clawId ? `已打开 ${CLOUD_BROWSER_HOME}` : "已打开腾讯云首页",
   statusNote: "空闲",
   isManualOperating: false,
@@ -676,6 +694,22 @@ export default function ChatView({
   const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
   const [cloudBrowserEntryPosition, setCloudBrowserEntryPosition] = useState<{ top: number; left: number } | null>(null);
   const [cloudBrowserRefreshTracker, setCloudBrowserRefreshTracker] = useState<CloudBrowserRefreshTracker | null>(null);
+  // 主动刷新锁：按钮点击后短暂禁用按钮，防止重复触发；不触发全屏 loading 占位
+  const [manualRefreshLockedClawId, setManualRefreshLockedClawId] = useState<string | null>(null);
+  const manualRefreshLockTimerRef = useRef<number | null>(null);
+
+  // —— 云桌面升级（demo 专属的运行时状态覆盖层）——
+  // key: clawId。这里只覆盖 desktopReady / desktopInstalling / desktopError 三个字段，
+  // mock 层的 browserReady 仍由 applyDemoBrowserMockFields 提供。
+  type DesktopRuntimeState = {
+    desktopReady?: boolean;
+    desktopInstalling?: boolean;
+    desktopError?: string | null;
+  };
+  const [desktopRuntimeMap, setDesktopRuntimeMap] = useState<Record<string, DesktopRuntimeState>>({});
+  const [desktopUpgradePromptDismissed, setDesktopUpgradePromptDismissed] = useState<Set<string>>(new Set());
+  const [desktopUpgradeConfirmOpen, setDesktopUpgradeConfirmOpen] = useState(false);
+  const desktopUpgradeTimersRef = useRef<Record<string, number>>({});
 
   const prevClawsCountRef = useRef(effectiveClaws.length);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -976,7 +1010,7 @@ export default function ChatView({
         panelStatus: "ready",
         panelLoadProgress: 100,
         isManualOperating: false,
-        liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+        liveCaption: prev.taskState === "running" ? prev.liveCaption : "当前为查看态，可实时查看 AI 的云端操作画面。",
         statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
         lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已连接云端浏览器",
         lastSyncedAt: formatSyncTime(),
@@ -1108,6 +1142,35 @@ export default function ChatView({
   const currentMessages = selectedClawId ? chatMap[selectedClawId] ?? [] : [];
   const currentIsTyping = selectedClawId ? typingMap[selectedClawId] ?? false : false;
   const currentBrowserState = selectedClawId ? browserMap[selectedClawId] ?? getDefaultBrowserState(selectedClawId) : null;
+
+  // —— 当前实例的云桌面升级状态（视图层）——
+  const selectedDesktopRuntime: DesktopRuntimeState = selectedClawId ? desktopRuntimeMap[selectedClawId] ?? {} : {};
+  const selectedDesktopReady = selectedClaw
+    ? (selectedDesktopRuntime.desktopReady ?? selectedClaw.desktopReady ?? false)
+    : false;
+  const selectedDesktopInstalling = selectedClaw
+    ? (selectedDesktopRuntime.desktopInstalling ?? selectedClaw.desktopInstalling ?? false)
+    : false;
+  const selectedDesktopError = selectedClaw
+    ? (selectedDesktopRuntime.desktopError !== undefined
+        ? selectedDesktopRuntime.desktopError
+        : (selectedClaw.desktopError ?? null))
+    : null;
+  const selectedBrowserReady = selectedClaw
+    ? (selectedClaw.browserReady ?? false)
+    : false;
+  const isUpgradePromptDismissed = selectedClawId
+    ? desktopUpgradePromptDismissed.has(selectedClawId)
+    : false;
+  // 升级提示条是否展示（升级中/失败时不再响应"关闭"状态，保持强可见）
+  const showUpgradeIdlePrompt = selectedBrowserReady
+    && !selectedDesktopReady
+    && !selectedDesktopInstalling
+    && !selectedDesktopError
+    && !isUpgradePromptDismissed;
+  const showUpgradeInstallingPrompt = selectedBrowserReady && !selectedDesktopReady && selectedDesktopInstalling;
+  const showUpgradeErrorPrompt = selectedBrowserReady && !selectedDesktopReady && !!selectedDesktopError && !selectedDesktopInstalling;
+  const showUpgradePromptBar = showUpgradeIdlePrompt || showUpgradeInstallingPrompt || showUpgradeErrorPrompt;
   const workspaceMode: WorkspaceMode = currentBrowserState?.mode ?? "chat";
   const isRunning = selectedClaw?.status === "running";
   const isBrowserPanelLoading = currentBrowserState?.panelStatus === "loading";
@@ -1116,7 +1179,9 @@ export default function ChatView({
   const isBrowserManualOperating = !!currentBrowserState?.isManualOperating && !isBrowserOperationLocked;
   const isBrowserReadonly = isBrowserOperationLocked || !currentBrowserState?.isManualOperating;
   const isBrowserToolbarBusy = isBrowserPanelLoading || isBrowserTaskRunning;
-  const isBrowserOperationButtonDisabled = isBrowserOperationLocked;
+  // 主动刷新锁定：刷新按下后，工具条上所有按钮都进入禁用态，防止期间误操作
+  const isManualRefreshLocked = !!selectedClawId && manualRefreshLockedClawId === selectedClawId;
+  const isBrowserOperationButtonDisabled = isBrowserOperationLocked || isManualRefreshLocked;
   const browserOperationButtonLabel = isBrowserTaskRunning ? "进入操作" : isBrowserManualOperating ? "退出操作" : "进入操作";
   const browserStartupTargetClaw = browserStartupModal.targetClawId ? effectiveClaws.find((claw) => claw.id === browserStartupModal.targetClawId) ?? null : null;
   const isCloudBrowserImageSupported = isCloudBrowserSupportedImage(selectedClaw);
@@ -1130,7 +1195,7 @@ export default function ChatView({
     ? "系统重装中，请稍后"
     : canShowCloudBrowserEntry && !isCloudBrowserPolicyEnabled
       ? "管理员未开启功能"
-      : "云端浏览器";
+      : "云桌面";
   const chatPaneStyle = workspaceMode === "chat_with_browser"
     ? {
         width: `${leftPaneWidth}px`,
@@ -1150,7 +1215,7 @@ export default function ChatView({
       return {
         ...prev,
         isManualOperating: false,
-        liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+        liveCaption: prev.taskState === "running" ? prev.liveCaption : "当前为查看态，可实时查看 AI 的云端操作画面。",
         statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
         lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已收起云端浏览器",
         lastSyncedAt: formatSyncTime(),
@@ -1208,7 +1273,7 @@ export default function ChatView({
       panelStatus: "ready",
       panelLoadProgress: 100,
       isManualOperating: false,
-      liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+      liveCaption: prev.taskState === "running" ? prev.liveCaption : "当前为查看态，可实时查看 AI 的云端操作画面。",
       statusNote: prev.taskState === "running" ? prev.statusNote : "空闲",
       lastUserAction: prev.taskState === "running" ? prev.lastUserAction : "已连接云端浏览器",
       lastSyncedAt: formatSyncTime(),
@@ -1579,9 +1644,30 @@ export default function ChatView({
     if (!isCloudBrowserSupportedImage(selectedClaw)) return;
     if (!isCloudBrowserPolicyEnabled) return;
 
-    // 点击入口后按实际检测结果分流：
+    // 统一原则：无论是存量实例还是新实例、是否已升级为云桌面，
+    // 点击小电脑进入云端操作环境前，都必须先经过启动检测弹窗（可用性检查）。
+    //
+    // 分流规则：
+    //   A. desktopReady=true：强制走启动检测弹窗 → 通过后进入云桌面
+    //   B. desktopReady=false && browserReady=true（存量升级场景）：
+    //      强制走启动检测弹窗 → 通过后进入原云端浏览器 → 顶部展示升级提示条（由渲染层控制）
+    //   C. desktopReady=false && browserReady=false：沿用原启动/检测流程
+    //
+    // 关键约束：点击小电脑不会直接进入浏览器，也不会弹升级确认弹窗，也不会自动启动升级。
+    const runtime = desktopRuntimeMap[selectedClawId] ?? {};
+    const desktopReady = runtime.desktopReady ?? selectedClaw.desktopReady ?? false;
+    const browserReady = selectedClaw.browserReady ?? false;
+
+    // 场景 A / B：无论云桌面是否就绪、原云端浏览器是否可用，都强制走启动检测弹窗，
+    // 避免 fast-path 跳过可用性检查。
+    if (desktopReady || browserReady) {
+      startBrowserStartupFlow(selectedClaw);
+      return;
+    }
+
+    // 场景 C 走原有分流（未标记升级能力的实例）：
     // 1. browser-vnc-check.ready=false → 完整检测 / 准备弹窗
-    // 2. ready=true && browser-vnc-access.accessible=true → 直接进入云端浏览器
+    // 2. ready=true && browser-vnc-access.accessible=true → 直接进入
     // 3. ready=true && accessible=false → 轻量“连接异常”弹窗
     const { ready } = browserVncCheck(selectedClaw);
     if (!ready) {
@@ -1598,13 +1684,113 @@ export default function ChatView({
     setBrowserVncAccessErrorModal({ visible: true, targetClawId: selectedClawId });
   };
 
+  // —— 云桌面升级：派发/执行 ——
+  const runDesktopUpgradeTask = useCallback((clawId: string, clawName: string) => {
+    // 防并发：已有升级定时器则不重复派发
+    if (desktopUpgradeTimersRef.current[clawId]) return;
+
+    setDesktopRuntimeMap((prev) => ({
+      ...prev,
+      [clawId]: {
+        ...(prev[clawId] ?? {}),
+        desktopInstalling: true,
+        desktopError: null,
+      },
+    }));
+
+    const timer = window.setTimeout(() => {
+      delete desktopUpgradeTimersRef.current[clawId];
+
+      // mock：首次升级失败，重试成功
+      const prevAttempt = mockDesktopUpgradeAttemptCount.get(clawName) ?? 0;
+      const currentAttempt = prevAttempt + 1;
+      mockDesktopUpgradeAttemptCount.set(clawName, currentAttempt);
+      const shouldFailThisAttempt = currentAttempt === 1 && clawName === MOCK_CLAW_NAME_LOADING;
+
+      if (shouldFailThisAttempt) {
+        setDesktopRuntimeMap((prev) => ({
+          ...prev,
+          [clawId]: {
+            ...(prev[clawId] ?? {}),
+            desktopInstalling: false,
+            desktopReady: false,
+            desktopError: "网络超时，云桌面升级未成功",
+          },
+        }));
+        toast.error("云桌面升级失败，您可以稍后重试");
+        return;
+      }
+
+      // 升级成功
+      setDesktopRuntimeMap((prev) => ({
+        ...prev,
+        [clawId]: {
+          ...(prev[clawId] ?? {}),
+          desktopReady: true,
+          desktopInstalling: false,
+          desktopError: null,
+        },
+      }));
+      toast.success("云桌面升级成功");
+      // 升级成功后自动进入云桌面（复用现有浏览器工作区承载）
+      enterBrowserWorkspace(clawId);
+    }, DESKTOP_UPGRADE_DURATION);
+
+    desktopUpgradeTimersRef.current[clawId] = timer;
+  }, [enterBrowserWorkspace]);
+
+  const handleOpenDesktopUpgradeConfirm = useCallback(() => {
+    if (!selectedClawId) return;
+    const runtime = desktopRuntimeMap[selectedClawId] ?? {};
+    // 升级中不允许重复点击
+    if (runtime.desktopInstalling) return;
+    setDesktopUpgradeConfirmOpen(true);
+  }, [desktopRuntimeMap, selectedClawId]);
+
+  const handleConfirmDesktopUpgrade = useCallback(() => {
+    if (!selectedClawId || !selectedClaw) return;
+    setDesktopUpgradeConfirmOpen(false);
+    runDesktopUpgradeTask(selectedClawId, selectedClaw.name);
+  }, [runDesktopUpgradeTask, selectedClaw, selectedClawId]);
+
+  const handleRetryDesktopUpgrade = useCallback(() => {
+    if (!selectedClawId || !selectedClaw) return;
+    const runtime = desktopRuntimeMap[selectedClawId] ?? {};
+    if (runtime.desktopInstalling) return;
+    runDesktopUpgradeTask(selectedClawId, selectedClaw.name);
+  }, [desktopRuntimeMap, runDesktopUpgradeTask, selectedClaw, selectedClawId]);
+
+  const handleDismissUpgradePrompt = useCallback(() => {
+    if (!selectedClawId) return;
+    setDesktopUpgradePromptDismissed((prev) => {
+      if (prev.has(selectedClawId)) return prev;
+      const next = new Set(prev);
+      next.add(selectedClawId);
+      return next;
+    });
+  }, [selectedClawId]);
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      Object.values(desktopUpgradeTimersRef.current).forEach((t) => window.clearTimeout(t));
+      desktopUpgradeTimersRef.current = {};
+      if (manualRefreshLockTimerRef.current !== null) {
+        window.clearTimeout(manualRefreshLockTimerRef.current);
+        manualRefreshLockTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const handleToggleBrowserFullscreen = () => {
     if (!selectedClawId || isBrowserPanelLoading) return;
+    if (manualRefreshLockedClawId === selectedClawId) return;
     setWorkspaceModeForSelectedClaw(workspaceMode === "browser_fullscreen" ? "chat_with_browser" : "browser_fullscreen");
   };
 
   const handleCollapseBrowser = () => {
     if (!selectedClawId) return;
+    if (manualRefreshLockedClawId === selectedClawId) return;
     clearBrowserPanelLoadTimers(selectedClawId);
     updateBrowserState(selectedClawId, (prev) => ({
       ...prev,
@@ -1612,13 +1798,14 @@ export default function ChatView({
       panelStatus: "ready",
       panelLoadProgress: 100,
       isManualOperating: false,
-      liveCaption: prev.taskState === "running" ? prev.liveCaption : "浏览器处于查看态，可实时查看当前画面。",
+      liveCaption: prev.taskState === "running" ? prev.liveCaption : "当前为查看态，可实时查看 AI 的云端操作画面。",
       lastSyncedAt: formatSyncTime(),
     }));
   };
 
   const handleToggleManualOperation = () => {
     if (!selectedClawId) return;
+    if (manualRefreshLockedClawId === selectedClawId) return;
 
     updateBrowserState(selectedClawId, (prev) => {
       if (prev.taskState === "running" || prev.panelStatus === "loading") {
@@ -1635,8 +1822,8 @@ export default function ChatView({
         ...prev,
         isManualOperating: nextManualOperating,
         liveCaption: nextManualOperating
-          ? "已进入人工操作，可直接操作浏览器。"
-          : "浏览器已切回查看态，可实时查看当前画面。",
+          ? "已进入操作态，您可直接进入云端环境操作。"
+          : "当前为查看态，可实时查看 AI 的云端操作画面。",
         lastUserAction: nextManualOperating ? "已进入人工操作" : "已退出人工操作",
         lastSyncedAt: formatSyncTime(),
       };
@@ -1645,18 +1832,24 @@ export default function ChatView({
 
   const handleBrowserRefresh = () => {
     if (!selectedClawId || isBrowserPanelLoading) return;
+    if (manualRefreshLockedClawId === selectedClawId) return;
 
+    // 主动刷新：仅更新同步时间和最近操作记录，不触发全屏 loading 占位。
+    // 刷新按钮在锁定期间禁用，防止用户短时间内重复点击。
     updateBrowserState(selectedClawId, (prev) => ({
       ...prev,
-      panelStatus: "loading",
-      panelLoadProgress: 8,
-      isManualOperating: false,
-      liveCaption: "云端浏览器启动中，请稍候。",
-      statusNote: "启动中",
-      lastUserAction: "正在重新连接云端浏览器",
+      lastUserAction: "手动刷新云端画面",
       lastSyncedAt: formatSyncTime(),
     }));
-    startBrowserPanelLoading(selectedClawId);
+
+    setManualRefreshLockedClawId(selectedClawId);
+    if (manualRefreshLockTimerRef.current !== null) {
+      window.clearTimeout(manualRefreshLockTimerRef.current);
+    }
+    manualRefreshLockTimerRef.current = window.setTimeout(() => {
+      setManualRefreshLockedClawId(null);
+      manualRefreshLockTimerRef.current = null;
+    }, 1600);
   };
 
   const renderBrowserContent = () => {
@@ -1691,7 +1884,7 @@ export default function ChatView({
         className="flex min-h-[480px] w-full items-center justify-center rounded-[28px] border border-gray-200 bg-gray-100"
         style={{ boxShadow: "inset 0 1px 2px rgba(255,255,255,0.6)" }}
       >
-        <span className="text-lg font-medium tracking-[0.08em] text-gray-500">云端浏览器</span>
+        <span className="text-lg font-medium tracking-[0.08em] text-gray-500">云端操作画面</span>
       </div>
     );
   };
@@ -1744,7 +1937,7 @@ export default function ChatView({
                 <Monitor className="w-4 h-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" className="text-xs">
+            <TooltipContent side="right" align="start" className="text-xs">
               {cloudBrowserEntryTooltip}
             </TooltipContent>
           </Tooltip>
@@ -2178,7 +2371,7 @@ export default function ChatView({
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                 <Monitor className="w-4 h-4" />
               </div>
-              <span className="text-sm font-medium text-gray-900">云端浏览器</span>
+              <span className="text-sm font-medium text-gray-900">云桌面</span>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
@@ -2200,7 +2393,7 @@ export default function ChatView({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleBrowserRefresh}
-                    disabled={isBrowserPanelLoading}
+                    disabled={isBrowserPanelLoading || isManualRefreshLocked}
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -2213,14 +2406,14 @@ export default function ChatView({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleToggleBrowserFullscreen}
-                    disabled={isBrowserPanelLoading}
+                    disabled={isBrowserPanelLoading || isManualRefreshLocked}
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     {workspaceMode === "browser_fullscreen" ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
-                  {workspaceMode === "browser_fullscreen" ? "退出浏览器全屏" : "浏览器全屏"}
+                  {workspaceMode === "browser_fullscreen" ? "退出云桌面全屏" : "云桌面全屏"}
                 </TooltipContent>
               </Tooltip>
 
@@ -2228,15 +2421,79 @@ export default function ChatView({
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleCollapseBrowser}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    disabled={isManualRefreshLocked}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">收起浏览器</TooltipContent>
+                <TooltipContent side="bottom" className="text-xs">收起云桌面</TooltipContent>
               </Tooltip>
             </div>
           </div>
+
+          {/* —— 云桌面升级提示条（信息提示风格，不遮挡浏览器主体）—— */}
+          {showUpgradePromptBar && (
+            <div
+              className={`flex-shrink-0 border-b px-4 py-2 ${
+                showUpgradeErrorPrompt
+                  ? "border-amber-200 bg-amber-50"
+                  : "border-blue-100 bg-blue-50/70"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Info
+                  className={`w-4 h-4 shrink-0 ${
+                    showUpgradeErrorPrompt ? "text-amber-500" : "text-blue-500"
+                  }`}
+                />
+                <span
+                  className={`text-xs leading-5 min-w-0 ${
+                    showUpgradeErrorPrompt ? "text-amber-700" : "text-blue-700"
+                  }`}
+                >
+                  {showUpgradeInstallingPrompt
+                    ? "云桌面升级中，升级完成后将自动进入云桌面。"
+                    : showUpgradeErrorPrompt
+                      ? "云桌面暂未升级成功，您可以稍后重试。"
+                      : "可升级为云桌面。升级后将在保留浏览器能力的基础上，支持桌面级操作。"}
+                </span>
+
+                {showUpgradeInstallingPrompt ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 cursor-not-allowed ml-auto">
+                    <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
+                    升级中
+                  </span>
+                ) : showUpgradeErrorPrompt ? (
+                  <button
+                    type="button"
+                    onClick={handleRetryDesktopUpgrade}
+                    className="text-xs font-medium text-amber-700 underline decoration-dotted underline-offset-2 hover:decoration-solid transition-all"
+                  >
+                    重试升级
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleOpenDesktopUpgradeConfirm}
+                      className="text-xs font-medium text-blue-600 underline decoration-dotted underline-offset-2 hover:decoration-solid hover:text-blue-700 transition-all"
+                    >
+                      一键升级
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDismissUpgradePrompt}
+                      aria-label="关闭升级提示"
+                      className="ml-auto w-6 h-6 rounded-md flex items-center justify-center text-blue-400/70 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
 
           <div
@@ -2259,6 +2516,62 @@ export default function ChatView({
                 {renderBrowserContent()}
               </div>
             </div>
+
+            {/* —— 云桌面升级中遮罩（仅覆盖云端操作画面区域，阻止用户继续操作当前云端浏览器）—— */}
+            {showUpgradeInstallingPrompt && (
+              <div
+                className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[1.5px]"
+                role="status"
+                aria-live="polite"
+                aria-busy="true"
+                // 捕获所有交互事件，避免穿透到下层浏览器画面
+                onClickCapture={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onMouseDownCapture={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onWheelCapture={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <div className="inline-flex flex-col items-center gap-3 px-6 py-4">
+                  {/* 动态 spinner：纯 CSS 旋转圆环，无静态图标 */}
+                  <span
+                    aria-hidden="true"
+                    className="block h-6 w-6 rounded-full border-[2px] border-gray-200 border-t-blue-500"
+                    style={{ animation: "desktop-upgrade-spin 0.9s linear infinite" }}
+                  />
+
+                  {/* 唯一核心文案 */}
+                  <p className="text-[13px] leading-5 text-gray-700">
+                    正在升级为云桌面，完成后将自动进入，请稍候…
+                  </p>
+
+                  {/* 克制的非精确进度条 */}
+                  <div className="relative h-[3px] w-40 overflow-hidden rounded-full bg-gray-200/70">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-0 h-full w-1/3 rounded-full bg-blue-500/80"
+                      style={{ animation: "desktop-upgrade-indeterminate 1.4s ease-in-out infinite" }}
+                    />
+                  </div>
+                </div>
+
+                {/* CSS 动画（就地内联定义，不污染全局） */}
+                <style>{`
+                  @keyframes desktop-upgrade-indeterminate {
+                    0%   { transform: translateX(-120%); }
+                    100% { transform: translateX(360%); }
+                  }
+                  @keyframes desktop-upgrade-spin {
+                    to { transform: rotate(360deg); }
+                  }
+                `}</style>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2275,24 +2588,24 @@ export default function ChatView({
       >
         <DialogContent className="sm:max-w-xl">
           <DialogHeader className="space-y-0 text-left">
-            <DialogTitle className="text-base font-semibold text-gray-900">启动云端浏览器</DialogTitle>
+            <DialogTitle className="text-base font-semibold text-gray-900">启动云桌面</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
             <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-700">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
-              <span>您可通过云端浏览器直接在浏览器中查看任务执行过程，并在空闲时进入操作。</span>
+              <span>您可通过云桌面查看 AI 的云端操作过程，并在需要时进入操作。</span>
             </div>
 
             <p className="text-sm text-gray-500">
-              启动云端浏览器将会依次执行以下检查与准备操作，完成后即可进入：
+              启动前将会依次完成以下检查，检查通过后即可进入：
             </p>
 
             <div className="space-y-2.5 py-1">
               {(() => {
                 // 展示层最小改动：将内部 3 个原子步骤合并成 2 个用户可见步骤
                 //  - 第 1 个可见步骤：合并 imageCheck + componentCheck，命名为“检查云服务器环境及运行组件”
-                //  - 第 2 个可见步骤：policyCheck，命名为“检查浏览器连接状态”
+                //  - 第 2 个可见步骤：policyCheck，命名为“检查云端连接状态”
                 // 底层检测流程/时序/随机失败/分流逻辑完全不变。
                 type VisibleStepDef = {
                   key: string;
@@ -2313,11 +2626,11 @@ export default function ChatView({
                   },
                   {
                     key: "browserConnection",
-                    title: "检查浏览器连接状态",
+                    title: "检查云端连接状态",
                     innerKeys: ["policyCheck"],
-                    runningText: "正在检查浏览器连接状态…",
-                    successText: "浏览器连接状态正常，可继续启动。",
-                    defaultFailureText: "安全组入方向规则未放通 6080 端口，请联系管理员处理后重试。",
+                    runningText: "正在检查云端连接状态…",
+                    successText: "云端连接状态正常，可继续进入。",
+                    defaultFailureText: "当前云端连接不可用，请稍后重试。",
                   },
                 ];
 
@@ -2461,6 +2774,39 @@ export default function ChatView({
             >
               我知道了
             </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* —— 升级为云桌面：确认弹窗 —— */}
+      <AlertDialog
+        open={desktopUpgradeConfirmOpen}
+        onOpenChange={(open: boolean) => {
+          if (!open) setDesktopUpgradeConfirmOpen(false);
+        }}
+      >
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg leading-none font-semibold text-gray-900">
+              确认升级
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="pt-2 text-sm text-gray-700 leading-relaxed">
+                升级后可使用浏览器、桌面操作和文件处理能力。升级期间暂不可使用当前云端操作环境，请在合适时间操作。
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel onClick={() => setDesktopUpgradeConfirmOpen(false)}>
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDesktopUpgrade}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white btn-primary-glow"
+            >
+              确认
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

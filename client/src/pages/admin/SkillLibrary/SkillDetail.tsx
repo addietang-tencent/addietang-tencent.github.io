@@ -135,7 +135,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
-  const [securityExpanded, setSecurityExpanded] = useState(false);
+
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
   const skillsArray = skills || MOCK_SKILLS;
 
@@ -597,75 +597,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
-            <p className="text-sm text-gray-500 mb-3">slug: {skill.slug}</p>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                v{skill.version}
-              </span>
-              {/* 安全检测状态徽章 */}
-              {(() => {
-                const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                const statusInfo = SECURITY_STATUS_MAP[secStatus];
-                if (secStatus === 'not_scanned') {
-                  return (
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
-                        未检测
-                      </span>
-                      <button
-                        onClick={() => setSecurityScanDialogOpen(true)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
-                      >
-                        <ScanSearch className="w-3 h-3" />
-                        检测
-                      </button>
-                    </span>
-                  );
-                }
-                if (secStatus === 'scanning') {
-                  return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
-                      <Loader className="w-3 h-3 animate-spin" />
-                      安全检测中
-                    </span>
-                  );
-                }
-                const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                return (
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
-                    <IconComp className="w-3.5 h-3.5" />
-                    {secStatus === 'safe' ? '通过安全检测' : secStatus === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
-                  </span>
-                );
-              })()}
-              <div className="flex gap-1 flex-wrap">
-                {skill.categories.map((catId: string) => (
-                  <span
-                    key={catId}
-                    className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
-                  >
-                    {getCategoryName(catId)}
-                  </span>
-                ))}
-              </div>
-              {/* 应用范围 */}
-              <span className="text-sm text-gray-400 ml-2">|</span>
-              <span className="text-sm text-gray-500">应用范围：</span>
-              {skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0 ? (
-                <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
-                  全部用户
-                </span>
-              ) : (
-                skill.groupIds.map((gId: string) => (
-                  <span
-                    key={gId}
-                    className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
-                  >
-                    {MOCK_GROUPS.find(g => g.id === gId)?.name || gId}
-                  </span>
-                ))
-              )}
-            </div>
+            <p className="text-sm text-gray-500">slug: {skill.slug}</p>
           </div>
 
           {/* F-06 操作按钮 */}
@@ -717,90 +649,93 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               </Button>
           </div>
         </div>
+        {/* 标签行：版本、安全检测、分类、应用范围 — 独立行，可向右延伸 */}
+        <div className="flex items-center gap-2 mt-3">
+          <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full flex-shrink-0">
+            v{skill.version}
+          </span>
+          {/* 安全检测状态徽章 */}
+          {(() => {
+            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+            const statusInfo = SECURITY_STATUS_MAP[secStatus];
+            if (secStatus === 'not_scanned') {
+              return (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
+                    未检测
+                  </span>
+                  <button
+                    onClick={() => setSecurityScanDialogOpen(true)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                  >
+                    <ScanSearch className="w-3 h-3" />
+                    检测
+                  </button>
+                </span>
+              );
+            }
+            if (secStatus === 'scanning') {
+              return (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                  <Loader className="w-3 h-3 animate-spin" />
+                  安全检测中
+                </span>
+              );
+            }
+            const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+            const reportUrl = skill.securityInfo?.engines?.[0]?.reportUrl;
+            return (
+              <span className="inline-flex items-center gap-1.5">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
+                  <IconComp className="w-3.5 h-3.5" />
+                  {secStatus === 'safe' ? '通过安全检测' : secStatus === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
+                </span>
+                {reportUrl && (
+                  <a
+                    href={reportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    查看报告
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </span>
+            );
+          })()}
+          <div className="flex gap-1 flex-wrap">
+            {skill.categories.map((catId: string) => (
+              <span
+                key={catId}
+                className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+              >
+                {getCategoryName(catId)}
+              </span>
+            ))}
+          </div>
+          {/* 应用范围 */}
+          <span className="text-sm text-gray-400 ml-2">|</span>
+          <span className="text-sm text-gray-500 flex-shrink-0">应用范围：</span>
+          {skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0 ? (
+            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+              全部用户
+            </span>
+          ) : (
+            skill.groupIds.map((gId: string) => (
+              <span
+                key={gId}
+                className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full"
+              >
+                {MOCK_GROUPS.find(g => g.id === gId)?.name || gId}
+              </span>
+            ))
+          )}
+        </div>
         {skill.description && (
           <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
         )}
       </div>
-
-      {/* 安全检测报告卡片 */}
-      {skill.securityInfo && skill.securityInfo.overallStatus !== 'not_scanned' && skill.securityInfo.overallStatus !== 'scanning' && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
-          <button
-            onClick={() => setSecurityExpanded(!securityExpanded)}
-            className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              {skill.securityInfo.overallStatus === 'safe' ? (
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                  <ShieldCheck className="w-4.5 h-4.5 text-white" />
-                </div>
-              ) : skill.securityInfo.overallStatus === 'suspicious' ? (
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
-                  <ShieldAlert className="w-4.5 h-4.5 text-white" />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
-                  <ShieldX className="w-4.5 h-4.5 text-white" />
-                </div>
-              )}
-              <span className="text-sm font-semibold text-gray-900">安全检测</span>
-              {(() => {
-                const s = skill.securityInfo.overallStatus;
-                const info = SECURITY_STATUS_MAP[s];
-                return (
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${info.bgColor} ${info.color}`}>
-                    {info.label === '安全' ? '安全，无风险' : info.label}
-                  </span>
-                );
-              })()}
-            </div>
-            {securityExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-          </button>
-
-          {securityExpanded && (
-            <div className="border-t border-gray-100 px-6 py-5 space-y-5">
-              {/* 分引擎检测结果 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {skill.securityInfo.engines.map((engine) => (
-                  <div
-                    key={engine.engineName}
-                    className="flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700">{engine.engineName}</span>
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium ${
-                        engine.status === 'safe' ? 'text-green-600' :
-                        engine.status === 'suspicious' ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          engine.status === 'safe' ? 'bg-green-500' :
-                          engine.status === 'suspicious' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`} />
-                        {engine.status === 'safe' ? '安全，无风险' :
-                         engine.status === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
-                      </span>
-                    </div>
-                    <a
-                      href={engine.reportUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                      查看报告
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-
-              {/* 免责声明 */}
-              <p className="text-[11px] text-gray-400 leading-relaxed">
-                安全检测结果由第三方机构出具，仅供参考，不构成平台对 Skill 绝对安全的承诺。网络安全具有动态性，请您自行做好安全防护和风险管控。
-              </p>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Tab 页面 */}
       <div>
@@ -864,80 +799,81 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       // 安全检测图标：仅最新版本显示当前 skill 的安全状态
                       const secStatus = isLatest ? (skill.securityInfo?.overallStatus || 'not_scanned') : null;
                       return (
-                        <Tooltip key={ver} delayDuration={1000}>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => setSelectedVersion(ver)}
-                                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
-                                  isSelected
-                                    ? 'bg-blue-50'
-                                    : 'hover:bg-gray-50 cursor-pointer'
-                                }`}
-                              >
-                                <div className="flex items-center gap-1.5">
-                                  {/* 安全检测状态图标 */}
-                                  {secStatus && (() => {
-                                    if (secStatus === 'not_scanned') {
-                                      return (
-                                        <Tooltip delayDuration={300}>
-                                          <TooltipTrigger asChild>
-                                            <span className="inline-flex flex-shrink-0">
-                                              <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
-                                            </span>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
-                                        </Tooltip>
-                                      );
-                                    }
-                                    if (secStatus === 'scanning') {
-                                      return (
-                                        <Tooltip delayDuration={300}>
-                                          <TooltipTrigger asChild>
-                                            <span className="inline-flex flex-shrink-0">
-                                              <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                                            </span>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
-                                        </Tooltip>
-                                      );
-                                    }
-                                    const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                                    const iconColor = secStatus === 'safe' ? 'text-green-500' : secStatus === 'suspicious' ? 'text-yellow-500' : 'text-red-500';
-                                    const statusLabel = secStatus === 'safe' ? '安全' : secStatus === 'suspicious' ? '可疑' : '恶意';
-                                    return (
-                                      <Tooltip delayDuration={300}>
-                                        <TooltipTrigger asChild>
-                                          <span className="inline-flex flex-shrink-0">
-                                            <IconComp className={`w-3.5 h-3.5 ${iconColor}`} />
-                                          </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="top"><span className="text-xs">安全检测：{statusLabel}</span></TooltipContent>
-                                      </Tooltip>
-                                    );
-                                  })()}
-                                  <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
-                                    {ver}
-                                  </span>
-                                  {isLatest && (
-                                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
-                                      最新
+                        <button
+                          key={ver}
+                          onClick={() => setSelectedVersion(ver)}
+                          className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                            isSelected
+                              ? 'bg-blue-50'
+                              : 'hover:bg-gray-50 cursor-pointer'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            {/* 安全检测状态图标 */}
+                            {secStatus && (() => {
+                              if (secStatus === 'not_scanned') {
+                                return (
+                                  <Tooltip delayDuration={300}>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex flex-shrink-0">
+                                        <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
+                                  </Tooltip>
+                                );
+                              }
+                              if (secStatus === 'scanning') {
+                                return (
+                                  <Tooltip delayDuration={300}>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex flex-shrink-0">
+                                        <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
+                                  </Tooltip>
+                                );
+                              }
+                              const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                              const iconColor = secStatus === 'safe' ? 'text-green-500' : secStatus === 'suspicious' ? 'text-yellow-500' : 'text-red-500';
+                              const statusLabel = secStatus === 'safe' ? '安全' : secStatus === 'suspicious' ? '可疑' : '恶意';
+                              return (
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex flex-shrink-0">
+                                      <IconComp className={`w-3.5 h-3.5 ${iconColor}`} />
                                     </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <p className="text-[10px] text-gray-400">{dateStr}</p>
-                                  {/* ℹ️ 图标点击展示更新信息 */}
-                                  <span className="ml-auto cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                                    <Info className="w-3 h-3 text-gray-400 hover:text-gray-600" />
-                                  </span>
-                                </div>
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-[260px] p-3">
-                              <p className="font-medium mb-1.5">更新说明</p>
-                              <p className="whitespace-pre-line leading-relaxed">{versionRecord?.changeLog || '暂无更新说明'}</p>
-                            </TooltipContent>
-                          </Tooltip>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top"><span className="text-xs">安全检测：{statusLabel}</span></TooltipContent>
+                                </Tooltip>
+                              );
+                            })()}
+                            <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                              {ver}
+                            </span>
+                            {isLatest && (
+                              <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                                最新
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <p className="text-[10px] text-gray-400">{dateStr}</p>
+                            {/* ℹ️ 图标 hover 展示更新说明 */}
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="ml-auto cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                                  <Info className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="max-w-[260px] p-3 bg-white text-gray-900 border border-gray-200 shadow-lg text-xs">
+                                <p className="font-medium mb-1.5 text-gray-900 text-xs">更新说明</p>
+                                <p className="whitespace-pre-line leading-relaxed text-gray-700 text-xs">{versionRecord?.changeLog || '暂无更新说明'}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -1173,6 +1109,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           onOpenChange={setUpdateDialogOpen}
           skill={skill}
           onConfirm={(updatedSkill) => handleSkillUpdate(updatedSkill)}
+          defaultSecurityScan={localStorage.getItem('skill_default_security_scan') !== 'false'}
+          onDefaultSecurityScanChange={(value) => {
+            localStorage.setItem('skill_default_security_scan', String(value));
+          }}
         />
       )}
 
@@ -1266,9 +1206,17 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
       <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
         <AlertDialogContent className="sm:max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>提交安全检测</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              提交安全检测
+              <span className="relative group">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
+                </span>
+              </span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              确认对技能「{skill.name}」提交安全检测？检测将由科恩实验室、云鼎实验室进行，通常几分钟内完成。
+              确认对技能「{skill.name}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

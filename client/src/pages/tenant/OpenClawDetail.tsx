@@ -4703,7 +4703,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         destroying: "销毁中", ended: "已结束",
       } as const)[instanceStatus];
       const phaseLabel = ({
-        diagnosing: "检测中", summary_ready: "等待开始修复",
+        idle: "待诊断", diagnosing: "检测中", summary_ready: "等待开始修复",
         repairing: "修复中", done: "自由对话中",
       } as const)[diagPhase];
       setMessages((prev) => [

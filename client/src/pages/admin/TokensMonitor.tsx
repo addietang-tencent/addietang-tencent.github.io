@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, type DepartmentNode } from "@/lib/mockData";
+import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, MOCK_OPENCLAW_LIST, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // CLS 采集插件版本历史
@@ -159,6 +159,19 @@ function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; 
       </UITooltipContent>
     </UITooltip>
   );
+}
+
+// ─── CSV 导出工具 ────────────────────────────────────────────────────────────
+function makeCsvBlob(header: string, rows: string[]): Blob {
+  return new Blob(["\uFEFF" + header + "\n" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
+}
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── 翻页组件 ─────────────────────────────────────────────────────────────────
@@ -331,6 +344,7 @@ export default function TokensMonitor() {
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo, setDateTo] = useState(today);
   const [refreshing, setRefreshing] = useState(false);
+  const [instancePage, setInstancePage] = useState(1);
   const [memberPage, setMemberPage] = useState(1);
   const [modelPage, setModelPage] = useState(1);
   const [sessionPage, setSessionPage] = useState(1);
@@ -543,6 +557,7 @@ export default function TokensMonitor() {
 
   const handleFromChange = (v: string) => {
     setDateFrom(v);
+    setInstancePage(1);
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
@@ -550,6 +565,7 @@ export default function TokensMonitor() {
   };
   const handleToChange = (v: string) => {
     setDateTo(v);
+    setInstancePage(1);
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
@@ -600,6 +616,32 @@ export default function TokensMonitor() {
       });
     }
   }, [isSingleDay, effectiveFrom, effectiveTo, today]);
+
+  // 按实例汇总（随时间联动），按总 token 降序
+  // 普通模式用 MOCK_OPENCLAW_LIST，OneID 模式用 MOCK_CLAWS_WITH_DEPT
+  const instanceList = hasOneid ? MOCK_CLAWS_WITH_DEPT : MOCK_OPENCLAW_LIST;
+  const instanceStats = useMemo(() => {
+    // 用实例 id 作为 seed 生成稳定的 mock 消耗数据
+    return instanceList.map((inst, idx) => {
+      const rand = seedRand(idx * 777 + 42);
+      const days = daysBetween(effectiveFrom, effectiveTo) + 1;
+      const requests = Math.floor(rand() * 200 * days + 10);
+      const inputTokens = Math.floor(rand() * 30000 * days + 5000);
+      const outputTokens = Math.floor(rand() * 25000 * days + 3000);
+      return {
+        id: inst.id,
+        instanceId: inst.instanceId,
+        name: inst.name,
+        creator: (inst as any).creator ?? "",
+        department: (inst as any).department ?? "",
+        requests,
+        inputTokens,
+        outputTokens,
+        total: inputTokens + outputTokens,
+      };
+    }).sort((a, b) => b.requests - a.requests);
+  }, [instanceList, effectiveFrom, effectiveTo, hasOneid]);
+  const instancePaged = instanceStats.slice((instancePage - 1) * PAGE_SIZE, instancePage * PAGE_SIZE);
 
   // 按用户汇总（随时间联动），按总请求数降序
   const memberStats = useMemo(() => {
@@ -653,6 +695,48 @@ export default function TokensMonitor() {
     { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 agent 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
   ];
   const sessionPaged = sessionStats.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
+
+  // 导出函数
+  const runExport = (buildBlob: () => { blob: Blob; filename: string }) => {
+    const tid = toast.loading("正在导出Tokens消耗明细列表");
+    setTimeout(() => {
+      const { blob, filename } = buildBlob();
+      downloadBlob(blob, filename);
+      toast.dismiss(tid);
+    }, 500);
+  };
+
+  const handleExportInstance = () => runExport(() => {
+    const header = hasOneid
+      ? "实例名称,实例ID,用户ID,所属部门,总请求数,输入Tokens,输出Tokens,总Tokens"
+      : "实例名称,实例ID,用户ID,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = instanceStats.map((r) =>
+      hasOneid
+        ? `${r.name},${r.instanceId},${r.creator},${r.department},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`
+        : `${r.name},${r.instanceId},${r.creator},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`
+    );
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_instance_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportMember = () => runExport(() => {
+    const header = "用户ID,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = memberStats.map((r) => `${r.id},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_member_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportModel = () => runExport(() => {
+    const header = "模型名称,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = modelStats.map((r) => `${r.name},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_model_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportDept = () => runExport(() => {
+    const header = "部门名称,所属路径,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = deptStats.map((r) => `${r.departmentName},${r.path},${r.requests},${r.inputTokens},${r.outputTokens},${r.totalTokens}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_department_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportSession = () => runExport(() => {
+    const header = "会话ID,会话名称,渠道,模型,最后活动时间,轮次,Tokens,成本($),耗时";
+    const rows = sessionStats.map((r) => `${r.sessionId},"${r.sessionName}",${r.channel},${r.model},${r.lastActiveTime},${r.rounds},${r.tokens},${r.cost.toFixed(4)},${r.duration}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_session_${effectiveFrom}_${effectiveTo}.csv` };
+  });
 
   // 翻页切片
   const memberPaged = memberStats.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
@@ -820,9 +904,10 @@ export default function TokensMonitor() {
         </div>
 
         {/* Detail Tabs */}
-        <Tabs defaultValue="member">
-          <div className="flex items-center justify-between mb-4">
+        <Tabs defaultValue="instance">
+          <div className="flex items-center justify-between mb-2">
             <TabsList>
+              <TabsTrigger value="instance">按实例</TabsTrigger>
               <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
               {hasOneid && <TabsTrigger value="department" className="relative pr-3">
@@ -836,9 +921,87 @@ export default function TokensMonitor() {
             </TabsList>
           </div>
 
+          {/* 按实例 */}
+          <TabsContent value="instance">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总请求数降序排列</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportInstance}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
+                    {hasOneid && <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">所属部门</th>}
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {instancePaged.length === 0 ? (
+                    <tr><td colSpan={hasOneid ? 7 : 6} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : instancePaged.map((inst) => (
+                    <tr key={inst.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <UITooltip>
+                              <UITooltipTrigger asChild>
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{inst.name}</div>
+                              </UITooltipTrigger>
+                              <UITooltipContent side="top" className="text-xs max-w-xs break-all">{inst.name}</UITooltipContent>
+                            </UITooltip>
+                            <div className="text-xs font-mono text-blue-500">{inst.instanceId}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{inst.creator || "—"}</td>
+                      {hasOneid && <td className="px-6 py-4 text-sm text-gray-500">{inst.department || "—"}</td>}
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.requests)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.inputTokens)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.outputTokens)}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(inst.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination page={instancePage} total={instanceStats.length} onChange={setInstancePage} />
+            </div>
+          </TabsContent>
+
           {/* 按用户 */}
           <TabsContent value="member">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportMember}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">
@@ -871,7 +1034,20 @@ export default function TokensMonitor() {
 
           {/* 按模型 */}
           <TabsContent value="model">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportModel}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">
@@ -907,11 +1083,24 @@ export default function TokensMonitor() {
             <TabsContent value="department">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs text-gray-400">汇总各部门的 Token 消耗，按总 Token 降序排列</p>
-                <TokenDepartmentFilter
-                  departments={MOCK_DEPARTMENTS}
-                  value={deptFilter}
-                  onChange={(v) => { setDeptFilter(v); setDeptPage(1); }}
-                />
+                <div className="flex items-center gap-2">
+                  <TokenDepartmentFilter
+                    departments={MOCK_DEPARTMENTS}
+                    value={deptFilter}
+                    onChange={(v) => { setDeptFilter(v); setDeptPage(1); }}
+                  />
+                  <UITooltip>
+                    <UITooltipTrigger asChild>
+                      <button
+                        onClick={handleExportDept}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    </UITooltipTrigger>
+                    <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                  </UITooltip>
+                </div>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
@@ -1108,33 +1297,8 @@ export default function TokensMonitor() {
             )}
             {clsEnabled && (
               <>
-              {/* 提示语区域 - 参考私有网络和子网样式 */}
-              <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
-                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>查看所选时间范围内的模型 Token 使用情况。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>因此页面展示的总 Token 数不等于等额的实际计费成本。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</span>
-                  </li>
-                </ul>
-              </div>
-              {/* 顶部：关闭 CLS 按钮（右上角）+ Agent 搜索框（左下方）*/}
+
+              {/* 顶部：关闭 CLS 按钮（右上角）+ OpenClaw 搜索框（左下方）*/}
               <div className="flex items-start justify-between mb-6 gap-4">
                 {/* 左侧：Agent 名称筛选 */}
                 <div className="flex-1">
@@ -1165,6 +1329,17 @@ export default function TokensMonitor() {
               </div>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
+                <UITooltip>
+                  <UITooltipTrigger asChild>
+                    <button
+                      onClick={handleExportSession}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  </UITooltipTrigger>
+                  <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                </UITooltip>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>

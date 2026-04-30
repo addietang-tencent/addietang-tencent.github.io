@@ -92,23 +92,21 @@ const SECURITY_DIMENSIONS_SUSPICIOUS: SkillSecurityInfo['engines'][0]['dimension
   { name: '其他安全风险', status: 'safe', detail: '未检测到其他类别的异常安全风险行为' },
 ];
 
-/** 安全 — 双引擎均安全 */
+/** 安全 */
 const MOCK_SECURITY_SAFE: SkillSecurityInfo = {
   overallStatus: 'safe',
   contentHash: '1fabf1a131f59232ee64a06c4b7042ce',
   engines: [
-    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=1fabf1a131f59232ee64a06c4b7042ce', score: 95, dimensions: SECURITY_DIMENSIONS_SAFE },
-    { engineName: '云鼎实验室', status: 'safe', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/128985_1ad90f60367e241ba5522dbd8f2f63ca.html', score: 85, dimensions: SECURITY_DIMENSIONS_SAFE },
+    { engineName: '腾讯云 AI Agent 安全', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=1fabf1a131f59232ee64a06c4b7042ce', score: 95, dimensions: SECURITY_DIMENSIONS_SAFE },
   ],
 };
 
-/** 可疑 — 科恩安全、云鼎可疑 */
+/** 可疑 */
 const MOCK_SECURITY_SUSPICIOUS: SkillSecurityInfo = {
   overallStatus: 'suspicious',
   contentHash: 'a8b2c3d4e5f6789012345abcdef67890',
   engines: [
-    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=a8b2c3d4e5f6789012345abcdef67890', score: 90, dimensions: SECURITY_DIMENSIONS_SAFE },
-    { engineName: '云鼎实验室', status: 'suspicious', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/129001_a8b2c3d4e5f6789012345abcdef67890.html', score: 55, dimensions: SECURITY_DIMENSIONS_SUSPICIOUS },
+    { engineName: '腾讯云 AI Agent 安全', status: 'suspicious', reportUrl: 'https://tix.qq.com/search/skill?keyword=a8b2c3d4e5f6789012345abcdef67890', score: 55, dimensions: SECURITY_DIMENSIONS_SUSPICIOUS },
   ],
 };
 
@@ -118,13 +116,12 @@ const MOCK_SECURITY_SCANNING: SkillSecurityInfo = {
   engines: [],
 };
 
-/** 恶意 — 科恩安全、云鼎恶意 */
+/** 恶意 */
 const MOCK_SECURITY_MALICIOUS: SkillSecurityInfo = {
   overallStatus: 'malicious',
   contentHash: 'deadbeef1234567890abcdef12345678',
   engines: [
-    { engineName: '科恩实验室', status: 'safe', reportUrl: 'https://tix.qq.com/search/skill?keyword=deadbeef1234567890abcdef12345678', score: 88, dimensions: SECURITY_DIMENSIONS_SAFE },
-    { engineName: '云鼎实验室', status: 'malicious', reportUrl: 'https://static.cloudsec.tencent.com/html-reports/2026/04/15/129100_deadbeef1234567890abcdef12345678.html', score: 15, dimensions: [
+    { engineName: '腾讯云 AI Agent 安全', status: 'malicious', reportUrl: 'https://tix.qq.com/search/skill?keyword=deadbeef1234567890abcdef12345678', score: 15, dimensions: [
       { name: '供应链风险', status: 'malicious', detail: '发现恶意第三方依赖注入，存在供应链污染' },
       { name: '命令执行风险', status: 'malicious', detail: '检测到危险的系统命令调用，执行 rm -rf 和反弹 shell' },
       { name: '网络请求与数据外传', status: 'malicious', detail: '发现向外部 C2 服务器发送敏感数据' },

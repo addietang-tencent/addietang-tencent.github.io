@@ -2745,12 +2745,12 @@ export default function MemberManagement() {
                   <p className="text-sm text-blue-600 leading-relaxed">
                     本次同步
                     {[
-                      (syncResultDialog?.addedCount ?? 0) > 0 ? <>新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</> : null,
-                      (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <>禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</> : null,
-                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <>删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</> : null,
+                      (syncResultDialog?.addedCount ?? 0) > 0 ? <React.Fragment key="added">新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <React.Fragment key="failed">禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <React.Fragment key="deleted">删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</React.Fragment> : null,
                     ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
                       if (i === 0) return [item];
-                      return [...acc, "，", item];
+                      return [...acc, <React.Fragment key={`sep-${i}`}>，</React.Fragment>, item];
                     }, [])}
                     。
                     {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {

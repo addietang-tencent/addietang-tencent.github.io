@@ -15,6 +15,9 @@ export type Scope =
       type: "filtered";
       /** 作用到的分组 id 列表（分组本身已能表达"组织架构节点 + 用户组 + 自建分组"） */
       groupIds: string[];
+      /** 是否同时作为未分组用户的兜底配置。
+       *  true 表示不属于任何分组的用户将使用此配置作为保底。 */
+      isFallback?: boolean;
     };
 
 // ─── 分组来源 ─────────────────────────────────────────────
@@ -77,19 +80,18 @@ export interface ResourceItem {
 }
 
 // ─── 配置总览用的统一配置项 ─────────────────────────────
-/** 12 大配置项 */
+/** 11 大配置项 */
 export type ConfigCategory =
   | "model"
   | "channel"
-  | "securityGroup"
   | "skill"
   | "agentTool"
   | "memory"
   | "drive"
   | "image"
-  | "vpc"
-  | "publicNetwork"
+  | "network"
   | "cls"
+  | "aiAgentSecurity"
   | "platformPolicy";
 
 /** 配置条目的来源 */
@@ -138,6 +140,30 @@ export interface UserOverrideInfo {
   }>;
   winnerResourceId?: string;
   isResolved?: boolean;
+}
+
+// ─── 同步异常分组（组织架构被删除但仍有配置绑定） ────────────
+export interface AnomalousGroup {
+  /** 异常分组 id */
+  groupId: string;
+  /** 分组名称 */
+  groupName: string;
+  /** 分组总人数（同步前） */
+  memberCount: number;
+  /** 已应用的配置类别名称列表（如 ["模型", "通道", "Agent 工具"]） */
+  boundConfigs: string[];
+}
+
+/** 同步结果（分组异常 + 用户异常） */
+export interface SyncResult {
+  /** 异常分组列表（组织架构已被删除，但仍有配置绑定） */
+  anomalousGroups: AnomalousGroup[];
+  /** 异常用户列表（主部门失效等） */
+  anomalousUsers: Array<{
+    userId: string;
+    displayName: string;
+    reason: string;
+  }>;
 }
 
 // ─── 最终生效配置（用于详情 Popover / 抽屉） ──────────────

@@ -5,13 +5,15 @@
  *   - 添加子分组（GroupFormDialog mode="addChild"）
  *   - 删除分组确认（DeleteGroupDialog）
  */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronRight,
   ChevronDown,
-  FolderTree,
   Loader2,
   RefreshCw,
+  Search,
+  X,
+  ChevronsUpDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -25,11 +27,12 @@ import type { UserGroup } from "./types";
 import {
   buildGroupTree,
   type GroupTreeNode,
+  findGroupNode,
   getResourcesOfGroup,
 } from "./health";
 
-// ─── 树形选择器（单选，用于选择上级分组） ────────────────────
-function ParentTreeSelector({
+// ─── 下拉树形选择器（单选，用于选择上级分组） ────────────────────
+function ParentDropdownSelector({
   groups,
   value,
   onChange,
@@ -44,12 +47,16 @@ function ParentTreeSelector({
   excludeIds?: Set<string>;
 }) {
   const tree = useMemo(
-    () => buildGroupTree(groups.filter((g) => g.source === "manual")),
+    () => buildGroupTree(groups.filter((g) => g.source === "manual" || g.source === "oneid-group")),
     [groups]
   );
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [expanded, setExpanded] = useState<Set<string>>(() => {
-    // 默认展开所有
     const s = new Set<string>();
     const walk = (nodes: GroupTreeNode[]) => {
       nodes.forEach((n) => {
@@ -61,6 +68,26 @@ function ParentTreeSelector({
     return s;
   });
 
+  // 点击外部关闭下拉
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [dropdownOpen]);
+
+  // 打开时聚焦搜索框并清空搜索
+  useEffect(() => {
+    if (dropdownOpen) {
+      setSearchQuery("");
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    }
+  }, [dropdownOpen]);
+
   const toggle = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -69,24 +96,57 @@ function ParentTreeSelector({
       return next;
     });
 
+  // 获取选中分组的完整路径名称（如 "研发组/研发-前端"）
+  const selectedFullPath = useMemo(() => {
+    if (!value) return null;
+    const node = findGroupNode(tree, value);
+    if (!node) return null;
+    // node.path 格式 "A / B"，转为 "A/B"
+    return node.path.replace(/\s*\/\s*/g, "/");
+  }, [value, tree]);
+
+  // 搜索过滤：收集匹配节点 id 及其所有祖先 id
+  const matchedIds = useMemo(() => {
+    if (!searchQuery.trim()) return null; // null 表示不过滤
+    const q = searchQuery.trim().toLowerCase();
+    const matched = new Set<string>();
+    const walkCollect = (nodes: GroupTreeNode[]) => {
+      for (const n of nodes) {
+        if (excludeIds?.has(n.id)) continue;
+        if (n.name.toLowerCase().includes(q)) {
+          // 添加该节点及其所有祖先
+          for (const pid of n.pathIds) matched.add(pid);
+        }
+        walkCollect(n.children);
+      }
+    };
+    walkCollect(tree);
+    return matched;
+  }, [searchQuery, tree, excludeIds]);
+
   const renderNode = (node: GroupTreeNode): React.ReactNode => {
     if (excludeIds?.has(node.id)) return null;
+    // 如果正在搜索且该节点不在匹配集中，隐藏
+    if (matchedIds && !matchedIds.has(node.id)) return null;
+
     const isSelected = value === node.id;
-    const isExpanded = expanded.has(node.id);
+    const isExp = expanded.has(node.id);
     const hasChildren = node.children.length > 0;
+    // 搜索时强制展开所有匹配路径
+    const shouldShow = matchedIds ? true : isExp;
 
     return (
       <div key={node.id}>
         <div
           className={`flex items-center gap-1.5 h-8 px-2 rounded-md cursor-pointer text-sm transition-colors ${
             isSelected
-              ? "bg-blue-50 text-blue-700"
+              ? "bg-blue-50 text-blue-600"
               : "text-gray-700 hover:bg-gray-50"
-          } ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+          }`}
           style={{ paddingLeft: 8 + node.depth * 16 }}
           onClick={() => {
-            if (disabled) return;
             onChange(isSelected ? null : node.id);
+            if (!isSelected) setDropdownOpen(false);
           }}
         >
           {hasChildren ? (
@@ -98,7 +158,7 @@ function ParentTreeSelector({
               }}
               className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
             >
-              {isExpanded ? (
+              {(shouldShow) ? (
                 <ChevronDown className="w-3.5 h-3.5" />
               ) : (
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -107,45 +167,83 @@ function ParentTreeSelector({
           ) : (
             <span className="w-4 h-4 shrink-0" />
           )}
-          <FolderTree className="w-3.5 h-3.5 text-gray-400 shrink-0" />
           <span className="truncate flex-1">{node.name}</span>
-          {isSelected && (
-            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#007AFF" }} />
-          )}
         </div>
-        {hasChildren && isExpanded && node.children.map(renderNode)}
+        {hasChildren && shouldShow && node.children.map(renderNode)}
       </div>
     );
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg max-h-[180px] overflow-y-auto p-1.5">
-      {tree.length === 0 ? (
-        <div className="text-xs text-gray-400 text-center py-3">
-          暂无可选分组
-        </div>
-      ) : (
-        <>
-          {/* "无上级"选项 */}
-          <div
-            className={`flex items-center gap-1.5 h-8 px-2 rounded-md cursor-pointer text-sm transition-colors ${
-              value === null
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-500 hover:bg-gray-50"
-            } ${disabled ? "opacity-50 pointer-events-none" : ""}`}
-            onClick={() => {
-              if (!disabled) onChange(null);
-            }}
-          >
-            <span className="w-4 h-4 shrink-0" />
-            <span className="text-gray-400 text-xs">—</span>
-            <span className="truncate flex-1">无上级（一级分组）</span>
-            {value === null && (
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "#007AFF" }} />
+    <div className="relative" ref={containerRef}>
+      {/* 触发器 */}
+      <div
+        className={`w-full h-9 px-3 flex items-center gap-2 text-sm bg-white border rounded-lg cursor-pointer transition-colors ${dropdownOpen ? "border-blue-300 ring-2 ring-blue-50" : "border-gray-200"} ${disabled ? "opacity-50 pointer-events-none bg-gray-50" : ""}`}
+        onClick={() => !disabled && setDropdownOpen(!dropdownOpen)}
+      >
+        {selectedFullPath ? (
+          <span className="flex items-center gap-1 flex-1 min-w-0">
+            <span className="truncate text-gray-900">{selectedFullPath}</span>
+            {!disabled && (
+              <button
+                type="button"
+                className="w-4 h-4 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(null);
+                }}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </span>
+        ) : (
+          <span className="flex-1 text-gray-400">选填，不选则为一级分组</span>
+        )}
+        <ChevronsUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+      </div>
+
+      {/* 下拉面板 */}
+      {dropdownOpen && (
+        <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+          {/* 搜索框 */}
+          <div className="px-2 pt-2 pb-1.5 border-b border-gray-100">
+            <div className="flex items-center gap-1.5 h-8 px-2 bg-gray-50 border border-gray-200 rounded-md">
+              <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="搜索分组"
+                className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="w-3.5 h-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          </div>
+          {/* 树形列表 */}
+          <div className="max-h-[180px] overflow-y-auto p-1.5">
+            {tree.length === 0 ? (
+              <div className="text-xs text-gray-400 text-center py-3">
+                暂无可选分组
+              </div>
+            ) : matchedIds && matchedIds.size === 0 ? (
+              <div className="text-xs text-gray-400 text-center py-3">
+                未找到匹配分组
+              </div>
+            ) : (
+              tree.map(renderNode)
             )}
           </div>
-          {tree.map(renderNode)}
-        </>
+        </div>
       )}
     </div>
   );
@@ -173,6 +271,13 @@ export function GroupFormDialog({
 }: GroupFormDialogProps) {
   const [name, setName] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // 构建树用于路径查找
+  const tree = useMemo(
+    () => buildGroupTree(groups.filter((g) => g.source === "manual" || g.source === "oneid-group")),
+    [groups]
+  );
 
   // 初始化
   useEffect(() => {
@@ -193,11 +298,10 @@ export function GroupFormDialog({
   const excludeIds = useMemo(() => {
     if (mode !== "edit" || !target) return undefined;
     const s = new Set<string>();
-    const tree = buildGroupTree(groups.filter((g) => g.source === "manual"));
+    const t = buildGroupTree(groups.filter((g) => g.source === "manual"));
     const walk = (nodes: GroupTreeNode[]) => {
       for (const n of nodes) {
         if (n.id === target.id) {
-          // 排除自身及所有子孙
           const addAll = (node: GroupTreeNode) => {
             s.add(node.id);
             node.children.forEach(addAll);
@@ -208,9 +312,21 @@ export function GroupFormDialog({
         walk(n.children);
       }
     };
-    walk(tree);
+    walk(t);
     return s;
   }, [mode, target, groups]);
+
+  // 计算路径前缀：根据选中的上级分组，拼接 "A/B/" 格式
+  const pathPrefix = useMemo(() => {
+    if (!parentId) return "";
+    const node = findGroupNode(tree, parentId);
+    if (!node) return "";
+    // node.path 格式是 "A / B"，转为 "A/B/"
+    return node.path.replace(/\s*\/\s*/g, "/") + "/";
+  }, [parentId, tree]);
+
+  // 完整分组名称 = pathPrefix + name
+  const fullName = pathPrefix + name.trim();
 
   const isDuplicate = groups.some(
     (g) =>
@@ -250,48 +366,56 @@ export function GroupFormDialog({
         </DialogHeader>
 
         <div className="py-2 space-y-4">
-          {/* 分组名称 */}
-          <div>
-            <label className="text-sm font-medium text-gray-900 mb-1.5 block">
-              分组名称
-            </label>
-            <input
-              type="text"
-              placeholder="请输入分组名称"
-              className="w-full h-9 px-3 text-sm bg-white border border-gray-200 rounded-lg outline-none transition-colors focus:border-blue-300 focus:ring-2 focus:ring-blue-50 placeholder:text-gray-400"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoFocus
-            />
-            {isDuplicate && name.trim() && (
-              <p className="text-xs text-red-500 mt-1">分组名称已存在</p>
-            )}
-            <p className="text-xs text-gray-400 mt-1.5">
-              分组名称为唯一标识，不能与已有分组重名，创建后支持修改
-            </p>
-          </div>
-
-          {/* 上级分组 */}
+          {/* 上级分组（在前） */}
           <div>
             <label className="text-sm font-medium text-gray-900 mb-1.5 block">
               上级分组
-              <span className="text-xs text-gray-400 font-normal ml-1">
-                （选填，不选则为一级分组）
-              </span>
             </label>
             {parentLocked && lockedParentName ? (
               <div className="h-9 flex items-center px-3 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg">
-                <FolderTree className="w-3.5 h-3.5 text-gray-400 mr-2 shrink-0" />
                 {lockedParentName}
               </div>
             ) : (
-              <ParentTreeSelector
+              <ParentDropdownSelector
                 groups={groups}
                 value={parentId}
                 onChange={setParentId}
                 excludeIds={excludeIds}
               />
             )}
+          </div>
+
+          {/* 分组名称（在后） */}
+          <div>
+            <label className="text-sm font-medium text-gray-900 mb-1.5 block">
+              分组名称<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <div
+              className="w-full flex items-center h-9 bg-white border border-gray-200 rounded-lg transition-colors focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-50 cursor-text"
+              onClick={() => nameInputRef.current?.focus()}
+            >
+              {pathPrefix && (
+                <span className="pl-3 text-sm text-gray-600 whitespace-nowrap shrink-0 pointer-events-none select-none">
+                  {pathPrefix}
+                </span>
+              )}
+              <input
+                ref={nameInputRef}
+                type="text"
+                placeholder="请输入分组名称"
+                className="flex-1 h-full px-3 text-sm bg-transparent outline-none placeholder:text-gray-400"
+                style={{ paddingLeft: pathPrefix ? "0" : undefined }}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            {isDuplicate && name.trim() && (
+              <p className="text-xs text-red-500 mt-1">分组名称已存在</p>
+            )}
+            <p className="text-xs text-gray-400 mt-1.5">
+              分组名称为唯一标识，不能与已有分组重名，创建后支持修改
+            </p>
           </div>
         </div>
 

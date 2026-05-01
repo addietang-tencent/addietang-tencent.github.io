@@ -30,6 +30,8 @@ import type {
   EffectiveConfig,
   ConfigEntry,
   ConfigCategory,
+  AnomalousGroup,
+  SyncResult,
 } from "./types";
 
 // ─── 分组（多层级 + 多来源） ──────────────────────────────
@@ -37,7 +39,7 @@ export const MOCK_GROUPS: UserGroup[] = [
   // ── OneID 组织架构（只读） ──
   {
     id: "dept-root",
-    name: "全公司",
+    name: "A公司",
     parentId: null,
     source: "oneid-dept",
     readonly: true,
@@ -52,13 +54,20 @@ export const MOCK_GROUPS: UserGroup[] = [
   { id: "dept-product", name: "产品部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-product", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-pm", name: "产品策划", parentId: "dept-product", source: "oneid-dept", readonly: true, externalId: "dept-pm", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-design", name: "设计组", parentId: "dept-product", source: "oneid-dept", readonly: true, externalId: "dept-design", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
+  { id: "dept-operation", name: "运营组", parentId: "dept-product", source: "oneid-dept", readonly: true, externalId: "dept-operation", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
+  { id: "dept-operation-1", name: "运营一组", parentId: "dept-operation", source: "oneid-dept", readonly: true, externalId: "dept-operation-1", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
+  { id: "dept-operation-2", name: "运营二组", parentId: "dept-operation", source: "oneid-dept", readonly: true, externalId: "dept-operation-2", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-hr", name: "人力资源", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-hr", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-finance", name: "财务部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-finance", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
 
-  // ── OneID 用户组（只读，单层） ──
-  { id: "og-frontend", name: "前端研发同学", parentId: null, source: "oneid-group", readonly: true, externalId: "og-frontend", syncBatchId: "oneid-groups", createdAt: "2025-03-01" },
-  { id: "og-backend", name: "后端研发同学", parentId: null, source: "oneid-group", readonly: true, externalId: "og-backend", syncBatchId: "oneid-groups", createdAt: "2025-03-01" },
-  { id: "og-ai-core", name: "AI 核心团队", parentId: null, source: "oneid-group", readonly: true, externalId: "og-ai-core", syncBatchId: "oneid-groups", createdAt: "2025-03-01" },
+  // ── OneID 用户组（管理员自建，多层级） ──
+  { id: "og-frontend", name: "前端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
+  { id: "og-fe-web", name: "Web 端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
+  { id: "og-fe-mobile", name: "移动端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
+  { id: "og-backend", name: "后端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
+  { id: "og-be-java", name: "Java 方向", parentId: "og-backend", source: "oneid-group", readonly: false, createdAt: "2025-03-08" },
+  { id: "og-be-go", name: "Go 方向", parentId: "og-backend", source: "oneid-group", readonly: false, createdAt: "2025-03-08" },
+  { id: "og-ai-core", name: "AI 核心团队", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
 ];
 
 // ─── 普通模式的自建分组（mock，供 hasOneid=false 场景使用） ──
@@ -87,10 +96,10 @@ export const MOCK_USERS: UserOrg[] = [
   { userId: "bob@acompany.com", displayName: "bob", groupIds: ["dept-be", "og-backend"], primaryGroupId: "dept-be", primaryGroupValid: true },
   // carol AI 组，加入 AI 核心团队 + 后端研发同学
   { userId: "carol@acompany.com", displayName: "carol", groupIds: ["dept-ai", "og-ai-core", "og-backend"], primaryGroupId: "dept-ai", primaryGroupValid: true },
-  // david 产品策划
-  { userId: "david@acompany.com", displayName: "david", groupIds: ["dept-pm"], primaryGroupId: "dept-pm", primaryGroupValid: true },
-  // eve 设计组
-  { userId: "eve@acompany.com", displayName: "eve", groupIds: ["dept-design"], primaryGroupId: "dept-design", primaryGroupValid: true },
+  // david 产品策划 + 兼任运营一组
+  { userId: "david@acompany.com", displayName: "david", groupIds: ["dept-pm", "dept-operation-1"], primaryGroupId: "dept-pm", primaryGroupValid: true },
+  // eve 设计组 + 兼任运营一组
+  { userId: "eve@acompany.com", displayName: "eve", groupIds: ["dept-design", "dept-operation-1"], primaryGroupId: "dept-design", primaryGroupValid: true },
   // frank 前端组 + 兼任后端组，前端+后端用户组
   { userId: "frank@acompany.com", displayName: "frank", groupIds: ["dept-fe", "dept-be", "og-frontend", "og-backend"], primaryGroupId: "dept-fe", primaryGroupValid: true },
   // grace 后端组
@@ -99,18 +108,18 @@ export const MOCK_USERS: UserOrg[] = [
   { userId: "henry@acompany.com", displayName: "henry", groupIds: [], primaryGroupId: "dept-hr", primaryGroupValid: false },
   // iris AI 组 + 加入 AI 核心团队 & 前端研发同学（冲突候选：og-ai-core vpc-ai 和 og-frontend vpc-fe）
   { userId: "iris@acompany.com", displayName: "iris", groupIds: ["dept-ai", "og-ai-core", "og-frontend"], primaryGroupId: "dept-ai", primaryGroupValid: true },
-  // jack 财务部
-  { userId: "jack@acompany.com", displayName: "jack", groupIds: ["dept-finance"], primaryGroupId: "dept-finance", primaryGroupValid: true },
+  // jack 财务部 + 兼任运营二组
+  { userId: "jack@acompany.com", displayName: "jack", groupIds: ["dept-finance", "dept-operation-2"], primaryGroupId: "dept-finance", primaryGroupValid: true },
   // kate 前端组
   { userId: "kate@acompany.com", displayName: "kate", groupIds: ["dept-fe", "og-frontend"], primaryGroupId: "dept-fe", primaryGroupValid: true },
-  // leo 产品策划 + 兼任设计组
-  { userId: "leo@acompany.com", displayName: "leo", groupIds: ["dept-pm", "dept-design"], primaryGroupId: "dept-pm", primaryGroupValid: true },
+  // leo 产品策划 + 兼任设计组 + 运营一组
+  { userId: "leo@acompany.com", displayName: "leo", groupIds: ["dept-pm", "dept-design", "dept-operation-1"], primaryGroupId: "dept-pm", primaryGroupValid: true },
   // mike 后端组 → 无用户组
   { userId: "mike@acompany.com", displayName: "mike", groupIds: ["dept-be"], primaryGroupId: "dept-be", primaryGroupValid: true },
   // nina 设计组 + 兼任前端组
   { userId: "nina@acompany.com", displayName: "nina", groupIds: ["dept-design", "dept-fe", "og-frontend"], primaryGroupId: "dept-design", primaryGroupValid: true },
-  // oscar 财务部
-  { userId: "oscar@acompany.com", displayName: "oscar", groupIds: ["dept-finance"], primaryGroupId: "dept-finance", primaryGroupValid: true },
+  // oscar 财务部 + 兼任运营二组
+  { userId: "oscar@acompany.com", displayName: "oscar", groupIds: ["dept-finance", "dept-operation-2"], primaryGroupId: "dept-finance", primaryGroupValid: true },
 ];
 
 // ─── 普通模式专用用户集（hasOneid=false） ─────────────────
@@ -118,38 +127,38 @@ export const MOCK_USERS: UserOrg[] = [
 // primaryGroupId = null（普通模式没有主部门概念，列表列显示 "—"）
 export const MOCK_USERS_MANUAL: UserOrg[] = [
   // ── 产品组（mgrp-product）：3 人 ──
-  { userId: "m_anna@acompany.com", displayName: "Anna", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_bill@acompany.com", displayName: "Bill", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
-  { userId: "m_cara@acompany.com", displayName: "Cara", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "anna@acompany.com", displayName: "Anna", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "bill@acompany.com", displayName: "Bill", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
+  { userId: "cara@acompany.com", displayName: "Cara", groupIds: ["mgrp-product"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 
   // ── 研发组（mgrp-rd）直挂：2 人（技术总监 + 架构师） ──
-  { userId: "m_daniel@acompany.com", displayName: "Daniel (研发总监)", groupIds: ["mgrp-rd"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
-  { userId: "m_eric@acompany.com", displayName: "Eric (架构师)", groupIds: ["mgrp-rd"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "daniel@acompany.com", displayName: "Daniel (研发总监)", groupIds: ["mgrp-rd"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
+  { userId: "eric@acompany.com", displayName: "Eric (架构师)", groupIds: ["mgrp-rd"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 
   // ── 研发-前端（mgrp-rd-fe）：4 人 ──
-  { userId: "m_fiona@acompany.com", displayName: "Fiona", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_george@acompany.com", displayName: "George", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "disabled" },
-  { userId: "m_helen@acompany.com", displayName: "Helen", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_ivan@acompany.com", displayName: "Ivan", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "fiona@acompany.com", displayName: "Fiona", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "george@acompany.com", displayName: "George", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "disabled" },
+  { userId: "helen@acompany.com", displayName: "Helen", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "ivan@acompany.com", displayName: "Ivan", groupIds: ["mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 
   // ── 研发-后端（mgrp-rd-be）：3 人 ──
-  { userId: "m_jason@acompany.com", displayName: "Jason", groupIds: ["mgrp-rd-be"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_kelly@acompany.com", displayName: "Kelly", groupIds: ["mgrp-rd-be"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "jason@acompany.com", displayName: "Jason", groupIds: ["mgrp-rd-be"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "kelly@acompany.com", displayName: "Kelly", groupIds: ["mgrp-rd-be"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
   // lucas 兼任前端，演示多归属
-  { userId: "m_lucas@acompany.com", displayName: "Lucas", groupIds: ["mgrp-rd-be", "mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "lucas@acompany.com", displayName: "Lucas", groupIds: ["mgrp-rd-be", "mgrp-rd-fe"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 
   // ── 设计组（mgrp-design）：2 人 ──
-  { userId: "m_mia@acompany.com", displayName: "Mia", groupIds: ["mgrp-design"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_nick@acompany.com", displayName: "Nick", groupIds: ["mgrp-design"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "disabled" },
+  { userId: "mia@acompany.com", displayName: "Mia", groupIds: ["mgrp-design"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "nick@acompany.com", displayName: "Nick", groupIds: ["mgrp-design"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "disabled" },
 
   // ── 产品运营与市场推广团队（mgrp-ops）：3 人 ──
-  { userId: "m_olivia@acompany.com", displayName: "Olivia", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_paul@acompany.com", displayName: "Paul", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
-  { userId: "m_quinn@acompany.com", displayName: "Quinn", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "olivia@acompany.com", displayName: "Olivia", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "paul@acompany.com", displayName: "Paul", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "admin", status: "active" },
+  { userId: "quinn@acompany.com", displayName: "Quinn", groupIds: ["mgrp-ops"], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 
   // ── 未分组：2 人（不在任何自建分组） ──
-  { userId: "m_ryan@acompany.com", displayName: "Ryan", groupIds: [], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
-  { userId: "m_susan@acompany.com", displayName: "Susan", groupIds: [], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "ryan@acompany.com", displayName: "Ryan", groupIds: [], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
+  { userId: "susan@acompany.com", displayName: "Susan", groupIds: [], primaryGroupId: null, primaryGroupValid: true, role: "member", status: "active" },
 ];
 
 // ─── 资源池 ──────────────────────────────────────────────
@@ -395,7 +404,6 @@ export function getConfigEntries(
 ): ConfigEntry[] {
   const groupMap = new Map(groups.map((g) => [g.id, g]));
   const currentGroup = groupMap.get(groupId);
-  const currentName = currentGroup?.name ?? groupId;
 
   // 获取祖先链
   const ancestors: UserGroup[] = [];
@@ -406,6 +414,17 @@ export function getConfigEntries(
     ancestors.push(p);
     cur = p;
   }
+
+  // 根据分组 id 获取完整路径（如 "全公司/产品部"）
+  const getGroupFullPath = (gId: string): string => {
+    const chain: string[] = [];
+    let node = groupMap.get(gId);
+    while (node) {
+      chain.unshift(node.name);
+      node = node.parentId ? groupMap.get(node.parentId) : undefined;
+    }
+    return chain.join("/");
+  };
 
   const local = (groupName: string): ConfigEntry["source"] => ({ type: "local", groupName });
   const inherited = (groupName: string): ConfigEntry["source"] => ({ type: "inherited", groupName });
@@ -422,57 +441,77 @@ export function getConfigEntries(
   });
   // 根据分组层级添加
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
-    entries.push({ id: "m-tech", category: "model", label: "Claude Sonnet 4", source: groupId === "dept-tech" ? local("技术部") : inherited("技术部") });
+    entries.push({ id: "m-tech", category: "model", label: "Claude Sonnet 4", source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")) });
   }
   if (groupId === "dept-fe") {
-    entries.push({ id: "m-fe", category: "model", label: "GPT-4o", source: local("前端组") });
+    entries.push({ id: "m-fe", category: "model", label: "GPT-4o", source: local(getGroupFullPath("dept-fe")) });
   }
   if (["dept-ai", "og-ai-core"].includes(groupId)) {
-    entries.push({ id: "m-ai", category: "model", label: "DeepSeek V3", source: local(currentName) });
+    entries.push({ id: "m-ai", category: "model", label: "DeepSeek V3", source: local(getGroupFullPath(groupId)) });
   }
   if (["dept-product", "dept-pm", "dept-design"].includes(groupId)) {
-    entries.push({ id: "m-product", category: "model", label: "腾讯云 DeepSeek - DeepSeek V3 0324", source: groupId === "dept-product" ? local("产品部") : inherited("产品部") });
+    entries.push({ id: "m-product", category: "model", label: "腾讯云 DeepSeek - DeepSeek V3 0324", source: groupId === "dept-product" ? local(getGroupFullPath("dept-product")) : inherited(getGroupFullPath("dept-product")) });
+  }
+  // 运营组及其子分组：本地绑定的模型
+  if (["dept-operation", "dept-operation-1", "dept-operation-2"].includes(groupId)) {
+    entries.push({ id: "m-product", category: "model", label: "腾讯云 DeepSeek - DeepSeek V3 0324", source: inherited(getGroupFullPath("dept-product")) });
+    entries.push({ id: "m-operation", category: "model", label: "Gemini 2.5 Pro", source: groupId === "dept-operation" ? local(getGroupFullPath("dept-operation")) : inherited(getGroupFullPath("dept-operation")) });
+  }
+  // 运营一组：本地绑定的模型
+  if (groupId === "dept-operation-1") {
+    entries.push({ id: "m-operation-1", category: "model", label: "Claude Sonnet 4", source: local(getGroupFullPath("dept-operation-1")) });
+  }
+  // 运营二组：本地绑定的模型
+  if (groupId === "dept-operation-2") {
+    entries.push({ id: "m-operation-2", category: "model", label: "GPT-4o mini", source: local(getGroupFullPath("dept-operation-2")) });
   }
   // 普通模式
   if (["mgrp-rd", "mgrp-rd-fe", "mgrp-rd-be"].includes(groupId)) {
-    entries.push({ id: "m-rd", category: "model", label: "Claude Sonnet 4", source: groupId === "mgrp-rd" ? local("研发组") : inherited("研发组") });
+    entries.push({ id: "m-rd", category: "model", label: "Claude Sonnet 4", source: groupId === "mgrp-rd" ? local(getGroupFullPath("mgrp-rd")) : inherited(getGroupFullPath("mgrp-rd")) });
   }
 
   // ──── 2. 通道 ────
   entries.push({
-    id: "c-default",
+    id: "c-wechat",
     category: "channel",
-    label: "默认通道",
+    label: "微信",
     source: platformDefault,
   });
-  if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
-    entries.push({ id: "c-tech", category: "channel", label: "技术部专用通道", source: groupId === "dept-tech" ? local("技术部") : inherited("技术部") });
-  }
-  if (groupId === "dept-fe") {
-    entries.push({ id: "c-fe", category: "channel", label: "前端组专用通道", source: local("前端组") });
-  }
-  if (["dept-product", "dept-pm", "dept-design"].includes(groupId)) {
-    entries.push({ id: "c-product", category: "channel", label: "产品部通道", source: groupId === "dept-product" ? local("产品部") : inherited("产品部") });
-  }
-
-  // ──── 3. 安全组 ────
   entries.push({
-    id: "sg-default",
-    category: "securityGroup",
-    label: "sg-default-enterprise",
+    id: "c-wework",
+    category: "channel",
+    label: "企业微信",
+    source: platformDefault,
+  });
+  entries.push({
+    id: "c-feishu",
+    category: "channel",
+    label: "飞书",
     source: platformDefault,
   });
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
-    entries.push({ id: "sg-tech", category: "securityGroup", label: "sg-tech-internal", source: groupId === "dept-tech" ? local("技术部") : inherited("技术部") });
-  }
-  if (groupId === "dept-fe") {
-    entries.push({ id: "sg-fe", category: "securityGroup", label: "sg-frontend", source: local("前端组") });
+    entries.push({ id: "c-dingtalk", category: "channel", label: "钉钉", source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")) });
   }
   if (["dept-product", "dept-pm", "dept-design"].includes(groupId)) {
-    entries.push({ id: "sg-product", category: "securityGroup", label: "sg-product-internal", source: groupId === "dept-product" ? local("产品部") : inherited("产品部") });
+    entries.push({ id: "c-qq", category: "channel", label: "QQ", source: groupId === "dept-product" ? local(getGroupFullPath("dept-product")) : inherited(getGroupFullPath("dept-product")) });
+  }
+  // 运营组及其子分组：通道
+  if (["dept-operation", "dept-operation-1", "dept-operation-2"].includes(groupId)) {
+    // 继承自产品部的 QQ
+    entries.push({ id: "c-qq", category: "channel", label: "QQ", source: inherited(getGroupFullPath("dept-product")) });
+    // 运营专属通道：运营组本地绑定，子分组继承
+    entries.push({ id: "c-operation", category: "channel", label: "运营专属通道", source: groupId === "dept-operation" ? local(getGroupFullPath("dept-operation")) : inherited(getGroupFullPath("dept-operation")) });
+  }
+  // 运营一组：本地绑定的通道
+  if (groupId === "dept-operation-1") {
+    entries.push({ id: "c-operation-1", category: "channel", label: "运营一组内部通道", source: local(getGroupFullPath("dept-operation-1")) });
+  }
+  // 运营二组：本地绑定的通道
+  if (groupId === "dept-operation-2") {
+    entries.push({ id: "c-operation-2", category: "channel", label: "运营二组外部通道", source: local(getGroupFullPath("dept-operation-2")) });
   }
 
-  // ──── 4. 技能（初始技能包 + 角色） ────
+  // ──── 4. 技能（初始技能包 + 角色 + 技能安装来源（只有一条）） ────
   entries.push({
     id: "skill-pack-default",
     category: "skill",
@@ -487,20 +526,38 @@ export function getConfigEntries(
     subLabel: "角色",
     source: platformDefault,
   });
+  // 技能安装来源：只有一条，覆盖时替换
+  if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
+    entries.push({
+      id: "skill-source-tech",
+      category: "skill",
+      label: "https://git.techcorp.cn/skill-registry",
+      subLabel: "技能安装来源",
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
+    });
+  } else {
+    entries.push({
+      id: "skill-source-default",
+      category: "skill",
+      label: "默认",
+      subLabel: "技能安装来源",
+      source: platformDefault,
+    });
+  }
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
     entries.push({
       id: "skill-pack-tech",
       category: "skill",
       label: "开发者技能包",
       subLabel: "初始技能包",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
     });
     entries.push({
       id: "skill-role-tech",
       category: "skill",
       label: "代码助手",
       subLabel: "角色",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
     });
   }
   if (["dept-product", "dept-pm", "dept-design"].includes(groupId)) {
@@ -509,11 +566,11 @@ export function getConfigEntries(
       category: "skill",
       label: "产品经理助手",
       subLabel: "角色",
-      source: groupId === "dept-product" ? local("产品部") : inherited("产品部"),
+      source: groupId === "dept-product" ? local(getGroupFullPath("dept-product")) : inherited(getGroupFullPath("dept-product")),
     });
   }
 
-  // ──── 5. Agent 工具（企业技能 + 企业插件） ────
+  // ──── 5. Agent 工具（企业技能 + 企业插件 + 企业MCP） ────
   entries.push({
     id: "at-skill-default",
     category: "agentTool",
@@ -528,20 +585,34 @@ export function getConfigEntries(
     subLabel: "企业插件",
     source: platformDefault,
   });
+  entries.push({
+    id: "at-mcp-default",
+    category: "agentTool",
+    label: "文档解析服务",
+    subLabel: "企业MCP",
+    source: platformDefault,
+  });
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
     entries.push({
       id: "at-skill-tech",
       category: "agentTool",
       label: "代码审查",
       subLabel: "企业技能",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
     });
     entries.push({
       id: "at-plugin-tech",
       category: "agentTool",
       label: "GitLab CI/CD",
       subLabel: "企业插件",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
+    });
+    entries.push({
+      id: "at-mcp-tech",
+      category: "agentTool",
+      label: "代码仓库 MCP",
+      subLabel: "企业MCP",
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
     });
   }
   if (groupId === "dept-fe") {
@@ -550,33 +621,53 @@ export function getConfigEntries(
       category: "agentTool",
       label: "Figma 设计稿同步",
       subLabel: "企业插件",
-      source: local("前端组"),
+      source: local(getGroupFullPath("dept-fe")),
+    });
+  }
+  // 运营组：本地绑定的 Agent 工具
+  if (groupId === "dept-operation") {
+    entries.push({
+      id: "at-skill-operation",
+      category: "agentTool",
+      label: "内容审核",
+      subLabel: "企业技能",
+      source: local(getGroupFullPath("dept-operation")),
+    });
+    entries.push({
+      id: "at-mcp-operation",
+      category: "agentTool",
+      label: "数据分析 MCP",
+      subLabel: "企业MCP",
+      source: local(getGroupFullPath("dept-operation")),
     });
   }
 
-  // ──── 6. 记忆 ────
-  entries.push({
-    id: "mem-default",
-    category: "memory",
-    label: "开启 Free 版",
-    source: platformDefault,
-  });
+  // ──── 6. 记忆（永远只有一条） ────
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
     entries.push({
       id: "mem-tech",
       category: "memory",
       label: "开启 Pro 版",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
+    });
+  } else {
+    entries.push({
+      id: "mem-default",
+      category: "memory",
+      label: "开启 Free 版",
+      source: platformDefault,
     });
   }
 
-  // ──── 7. 网盘 ────
-  entries.push({
-    id: "drive-default",
-    category: "drive",
-    label: "开启",
-    source: platformDefault,
-  });
+  // ──── 7. 网盘（财务部未配置） ────
+  if (groupId !== "dept-finance") {
+    entries.push({
+      id: "drive-default",
+      category: "drive",
+      label: "开启",
+      source: platformDefault,
+    });
+  }
 
   // ──── 8. 镜像 ────
   entries.push({
@@ -590,7 +681,7 @@ export function getConfigEntries(
       id: "img-hermes",
       category: "image",
       label: "Hermes Agent",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
     });
   }
   if (["dept-ai", "og-ai-core"].includes(groupId)) {
@@ -598,62 +689,119 @@ export function getConfigEntries(
       id: "img-lighthouse",
       category: "image",
       label: "Lighthouse ACE",
-      source: local(currentName),
+      source: local(getGroupFullPath(groupId)),
     });
   }
 
-  // ──── 9. VPC ────
-  entries.push({
-    id: "vpc-default",
-    category: "vpc",
-    label: "vpc-default",
-    subLabel: "10.0.0.0/16",
-    source: platformDefault,
-    meta: { vpcId: "vpc-jp7fjg13", subnetCidr: "10.0.1.0/24" },
-  });
+  // ──── 9. 私有网络与子网（永远只有一条） ────
   if (["og-ai-core"].includes(groupId)) {
     entries.push({
       id: "vpc-ai",
-      category: "vpc",
-      label: "vpc-ai-core",
-      subLabel: "10.1.0.0/16",
-      source: local("AI 核心团队"),
-      meta: { vpcId: "vpc-ai-core", subnetCidr: "10.1.1.0/24" },
+      category: "network",
+      label: "",
+      subLabel: "私有网络与子网",
+      source: local(getGroupFullPath("og-ai-core")),
+      meta: {
+        vpcId: "vpc-ai8k2m3p",
+        vpcName: "clawpro/ai-vpc-core",
+        vpcCidr: "10.1.0.0/16",
+        subnets: [
+          { zone: "广州三区", subnetId: "subnet-ai7n4w2q", subnetCidr: "10.1.0.0/19" },
+          { zone: "广州四区", subnetId: "subnet-ai9p3x1k", subnetCidr: "10.1.32.0/19" },
+        ],
+      },
     });
-  }
-  if (["og-frontend"].includes(groupId)) {
+  } else if (["og-frontend"].includes(groupId)) {
     entries.push({
       id: "vpc-fe",
-      category: "vpc",
-      label: "vpc-fe-team",
-      subLabel: "10.2.0.0/16",
-      source: local("前端研发同学"),
-      meta: { vpcId: "vpc-fe-team", subnetCidr: "10.2.1.0/24" },
+      category: "network",
+      label: "",
+      subLabel: "私有网络与子网",
+      source: local(getGroupFullPath("og-frontend")),
+      meta: {
+        vpcId: "vpc-fe6j9r1s",
+        vpcName: "clawpro/fe-vpc-team",
+        vpcCidr: "10.2.0.0/16",
+        subnets: [
+          { zone: "广州四区", subnetId: "subnet-fe3x8d5v", subnetCidr: "10.2.0.0/19" },
+        ],
+      },
+    });
+  } else {
+    entries.push({
+      id: "vpc-default",
+      category: "network",
+      label: "",
+      subLabel: "私有网络与子网",
+      source: platformDefault,
+      meta: {
+        vpcId: "vpc-cwu34v7p",
+        vpcName: "clawpro/default-vpc-pk878am5",
+        vpcCidr: "10.0.0.0/16",
+        subnets: [
+          { zone: "广州六区", subnetId: "subnet-dssdbbpw", subnetCidr: "10.0.0.0/19" },
+          { zone: "广州三区", subnetId: "subnet-k8w2m4pq", subnetCidr: "10.0.32.0/19" },
+          { zone: "广州四区", subnetId: "subnet-r7n5v3xa", subnetCidr: "10.0.64.0/19" },
+        ],
+      },
     });
   }
 
-  // ──── 10. 公网 ────
-  entries.push({
-    id: "pub-default",
-    category: "publicNetwork",
-    label: "公网 IP 配置",
-    source: platformDefault,
-    meta: {
-      allocated: true,
-      billingMode: "按流量计费",
-      bandwidthCap: 100,
-    },
-  });
+  // ──── 9b. 安全组（永远只有一条） ────
+  if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
+    const sgLabel = groupId === "dept-fe" ? "前端安全组（sg-fe8k2m3p）" : "技术部安全组（sg-tech4n7w）";
+    entries.push({
+      id: groupId === "dept-fe" ? "sg-fe" : "sg-tech",
+      category: "network",
+      label: sgLabel,
+      subLabel: "安全组",
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) :
+              groupId === "dept-fe" ? local(getGroupFullPath("dept-fe")) :
+              inherited(getGroupFullPath("dept-tech")),
+    });
+  } else if (["dept-product", "dept-pm", "dept-design"].includes(groupId)) {
+    entries.push({
+      id: "sg-product",
+      category: "network",
+      label: "产品部安全组（sg-prod6j9r）",
+      subLabel: "安全组",
+      source: groupId === "dept-product" ? local(getGroupFullPath("dept-product")) : inherited(getGroupFullPath("dept-product")),
+    });
+  } else {
+    entries.push({
+      id: "sg-default",
+      category: "network",
+      label: "默认安全组（sg-dft1x5a8）",
+      subLabel: "安全组",
+      source: platformDefault,
+    });
+  }
+
+  // ──── 10. 公网（永远只有一条，三项子信息合在一起展示） ────
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
     entries.push({
       id: "pub-tech",
-      category: "publicNetwork",
-      label: "公网 IP 配置",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
+      category: "network",
+      label: "",
+      subLabel: "公网",
+      source: groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")),
       meta: {
         allocated: true,
         billingMode: "按带宽计费",
         bandwidthCap: 200,
+      },
+    });
+  } else {
+    entries.push({
+      id: "pub-default",
+      category: "network",
+      label: "",
+      subLabel: "公网",
+      source: platformDefault,
+      meta: {
+        allocated: true,
+        billingMode: "按流量计费",
+        bandwidthCap: 100,
       },
     });
   }
@@ -666,7 +814,15 @@ export function getConfigEntries(
     source: platformDefault,
   });
 
-  // ──── 12. 平台策略 ────
+  // ──── 12. AI Agent 安全 ────
+  entries.push({
+    id: "ai-security-default",
+    category: "aiAgentSecurity",
+    label: "开启",
+    source: platformDefault,
+  });
+
+  // ──── 13. 平台策略（用户配额 + 模型配额 + 功能权限开关） ────
   entries.push({
     id: "policy-claw-limit",
     category: "platformPolicy",
@@ -691,11 +847,33 @@ export function getConfigEntries(
     source: platformDefault,
     meta: { value: 1000000 },
   });
+  // 功能权限开关：顺序与平台策略页对齐
+  const isTechGroup = ["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId);
+  const techSource = isTechGroup
+    ? (groupId === "dept-tech" ? local(getGroupFullPath("dept-tech")) : inherited(getGroupFullPath("dept-tech")))
+    : null;
+
+  entries.push({
+    id: "policy-config-model",
+    category: "platformPolicy",
+    label: "允许用户配置模型",
+    subLabel: "功能权限开关",
+    source: platformDefault,
+    meta: { enabled: true },
+  });
+  entries.push({
+    id: "policy-config-channel",
+    category: "platformPolicy",
+    label: "允许用户配置通道",
+    subLabel: "功能权限开关",
+    source: platformDefault,
+    meta: { enabled: true },
+  });
   entries.push({
     id: "policy-custom-model",
     category: "platformPolicy",
     label: "允许用户添加自定义模型",
-    subLabel: "功能权限",
+    subLabel: "功能权限开关",
     source: platformDefault,
     meta: { enabled: false },
   });
@@ -703,23 +881,23 @@ export function getConfigEntries(
     id: "policy-terminal",
     category: "platformPolicy",
     label: "允许用户进入 Agent 终端",
-    subLabel: "功能权限",
-    source: platformDefault,
-    meta: { enabled: false },
+    subLabel: "功能权限开关",
+    source: techSource ?? platformDefault,
+    meta: { enabled: isTechGroup ? true : false },
   });
   entries.push({
     id: "policy-panel",
     category: "platformPolicy",
     label: "允许用户访问 Agent 面板",
-    subLabel: "功能权限",
-    source: platformDefault,
-    meta: { enabled: false },
+    subLabel: "功能权限开关",
+    source: techSource ?? platformDefault,
+    meta: { enabled: isTechGroup ? true : false },
   });
   entries.push({
     id: "policy-chat-view",
     category: "platformPolicy",
     label: "允许用户使用对话视图",
-    subLabel: "功能权限",
+    subLabel: "功能权限开关",
     source: platformDefault,
     meta: { enabled: true },
   });
@@ -727,7 +905,7 @@ export function getConfigEntries(
     id: "policy-cloud-browser",
     category: "platformPolicy",
     label: "允许用户访问 Agent 云端浏览器",
-    subLabel: "功能权限",
+    subLabel: "功能权限开关",
     source: platformDefault,
     meta: { enabled: false },
   });
@@ -735,29 +913,18 @@ export function getConfigEntries(
     id: "policy-lobster-doctor",
     category: "platformPolicy",
     label: "允许用户使用龙虾医生",
-    subLabel: "功能权限",
+    subLabel: "功能权限开关",
     source: platformDefault,
     meta: { enabled: false },
   });
-  // 技术部覆盖了部分平台策略
-  if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
-    entries.push({
-      id: "policy-terminal-tech",
-      category: "platformPolicy",
-      label: "允许用户进入 Agent 终端",
-      subLabel: "功能权限",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
-      meta: { enabled: true },
-    });
-    entries.push({
-      id: "policy-panel-tech",
-      category: "platformPolicy",
-      label: "允许用户访问 Agent 面板",
-      subLabel: "功能权限",
-      source: groupId === "dept-tech" ? local("技术部") : inherited("技术部"),
-      meta: { enabled: true },
-    });
-  }
+  entries.push({
+    id: "policy-model-quota",
+    category: "platformPolicy",
+    label: "允许用户查看模型额度",
+    subLabel: "功能权限开关",
+    source: platformDefault,
+    meta: { enabled: true },
+  });
 
   return entries;
 }
@@ -769,98 +936,130 @@ export const CONFIG_CATEGORY_META: Record<
 > = {
   model: {
     label: "模型",
-    icon: "Cpu",
+    icon: "Brain",
     color: "text-blue-600",
     bg: "bg-blue-50",
     path: "/admin/model-config",
-    description: "用户能使用哪些模型（加法型）",
+    description: "用户能使用哪些模型",
   },
   channel: {
     label: "通道",
-    icon: "Radio",
-    color: "text-green-600",
-    bg: "bg-green-50",
+    icon: "MessageSquare",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/channel-config",
-    description: "用户通过哪些通道访问模型（加法型）",
-  },
-  securityGroup: {
-    label: "安全组",
-    icon: "Shield",
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    path: "/admin/security-group",
-    description: "用户使用哪个网络安全组",
+    description: "用户通过哪些通道访问模型",
   },
   skill: {
     label: "技能",
-    icon: "Sparkles",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
+    icon: "Puzzle",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/skill-config",
-    description: "初始技能包与角色配置",
+    description: "初始技能包、角色与技能安装来源",
   },
   agentTool: {
     label: "Agent 工具",
     icon: "Wrench",
-    color: "text-cyan-600",
-    bg: "bg-cyan-50",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/agent-tool-library",
-    description: "企业技能与企业插件",
+    description: "企业技能、企业插件与企业 MCP",
   },
   memory: {
     label: "记忆",
-    icon: "Brain",
-    color: "text-orange-600",
-    bg: "bg-orange-50",
+    icon: "MemoryStick",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/memory-management",
     description: "记忆功能状态",
   },
   drive: {
     label: "网盘",
-    icon: "HardDrive",
-    color: "text-slate-600",
-    bg: "bg-slate-50",
+    icon: "FolderOpen",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/file-management",
     description: "网盘功能开关",
   },
   image: {
     label: "镜像",
-    icon: "Box",
-    color: "text-pink-600",
-    bg: "bg-pink-50",
+    icon: "HardDrive",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/image-management",
     description: "Agent 运行镜像",
   },
-  vpc: {
-    label: "VPC",
-    icon: "Network",
-    color: "text-indigo-600",
-    bg: "bg-indigo-50",
-    path: "/admin/security-group",
-    description: "私有网络和子网",
-  },
-  publicNetwork: {
-    label: "公网",
-    icon: "Globe",
-    color: "text-teal-600",
-    bg: "bg-teal-50",
-    path: "/admin/security-group",
-    description: "公网 IP 和带宽配置",
+  network: {
+    label: "网络",
+    icon: "ShieldCheck",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    path: "/admin/network-management",
+    description: "私有网络、安全组与公网配置",
   },
   cls: {
     label: "CLS 日志服务",
-    icon: "FileText",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
+    icon: "Gauge",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/ops-observation",
-    description: "日志采集与检索服务",
+    description: "用于运维观测与会话管理",
+  },
+  aiAgentSecurity: {
+    label: "AI Agent 安全",
+    icon: "Shield",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+    path: "/admin/security-management",
+    description: "AI Agent 安全防护开关",
   },
   platformPolicy: {
     label: "平台策略",
-    icon: "Settings",
-    color: "text-violet-600",
-    bg: "bg-violet-50",
+    icon: "Shield",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
     path: "/admin/platform-policy",
-    description: "配额限制与功能权限开关",
+    description: "用户配额、模型配额与功能权限开关",
   },
+};
+
+// ─── 同步异常 Mock ──────────────────────────────────────────
+/** 模拟：运营组 在腾讯统一身份管理平台被删除了，但在管控端仍有配置绑定 */
+export const MOCK_ANOMALOUS_GROUP: AnomalousGroup = {
+  groupId: "dept-operation",
+  groupName: "A公司/产品部/运营组",
+  memberCount: 5,
+  boundConfigs: ["模型", "通道", "Agent 工具"],
+};
+
+/** 模拟同步结果（刷新/手动同步后返回） */
+export const MOCK_SYNC_RESULT: SyncResult = {
+  anomalousGroups: [
+    {
+      groupId: "dept-operation",
+      groupName: "A公司/产品部/运营组",
+      memberCount: 5,
+      boundConfigs: ["模型", "通道", "Agent 工具"],
+    },
+    {
+      groupId: "dept-operation-1",
+      groupName: "A公司/产品部/运营组/运营一组",
+      memberCount: 3,
+      boundConfigs: ["模型", "通道"],
+    },
+    {
+      groupId: "dept-operation-2",
+      groupName: "A公司/产品部/运营组/运营二组",
+      memberCount: 2,
+      boundConfigs: ["模型", "通道"],
+    },
+  ],
+  anomalousUsers: [
+    {
+      userId: "henry@acompany.com",
+      displayName: "henry",
+      reason: "主部门「人力资源」在腾讯统一身份管理平台已失效",
+    },
+  ],
 };

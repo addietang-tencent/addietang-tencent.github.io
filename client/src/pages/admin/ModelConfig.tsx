@@ -2,7 +2,7 @@
  * ModelConfig - 管控端模型配置页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,9 +22,15 @@ import {
 import { toast } from "sonner";
 import {
   Plus, Trash2, Info, Brain, Pencil, AlertTriangle,
-  Search, Check, X,
+  Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
+import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+
+// 模型配置页不区分 OneID/普通模式，合并展示所有分组
+const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
 
 // 每个厂商对应的子版本列表
 const PROVIDER_VERSIONS: Record<string, string[]> = {};
@@ -59,29 +65,6 @@ interface ModelRow {
   visibilityGroupIds: string[]; // 按分组时选中的分组 id
 }
 
-// Mock 分组数据，与用户管理页一致
-interface MockGroup {
-  id: string;
-  name: string;
-}
-const MOCK_GROUPS: MockGroup[] = [
-  { id: "g1", name: "产品组" },
-  { id: "g2", name: "研发组" },
-  { id: "g3", name: "设计组" },
-  { id: "g4", name: "产品运营与市场推广团队" },
-  { id: "g5", name: "前端工程组" },
-  { id: "g6", name: "后端工程组" },
-  { id: "g7", name: "数据分析组" },
-  { id: "g8", name: "质量保障组" },
-  { id: "g9", name: "安全团队" },
-  { id: "g10", name: "基础架构组" },
-  { id: "g11", name: "DevOps 组" },
-  { id: "g12", name: "客户成功组" },
-  { id: "g13", name: "商务拓展组" },
-  { id: "g14", name: "内容运营组" },
-  { id: "g15", name: "AI 研究组" },
-];
-
 const MOCK_MODELS: ModelRow[] = [
   {
     id: "1", name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324",
@@ -95,7 +78,8 @@ const MOCK_MODELS: ModelRow[] = [
     modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, isDefault: false, isMultimodal: false, dailyLimit: 200000,
     provider: "tencent-hunyuan",
     versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
-    visibilityScope: "groups", visibilityGroupIds: ["g1", "g2", "g5", "g7", "g15"],
+    visibilityScope: "groups",
+    visibilityGroupIds: ["dept-tech", "dept-fe", "og-ai-core"],
   },
   {
     id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
@@ -109,7 +93,8 @@ const MOCK_MODELS: ModelRow[] = [
     modelUrl: "https://api.openai.com/v1", visible: true, isDefault: false, isMultimodal: true, dailyLimit: 300000,
     provider: CUSTOM_PROVIDER_VALUE,
     versions: [],
-    visibilityScope: "all", visibilityGroupIds: [],
+    visibilityScope: "groups",
+    visibilityGroupIds: ["dept-ai", "og-ai-core"],
   },
 ];
 
@@ -124,20 +109,102 @@ const DEFAULT_JSON = `{
   }
 }`;
 
-// 应用范围 Popover 编辑面板
+// ─── 分组路径工具函数 ─────────────────────────────────────
+/** 获取分组的完整路径（如 "全公司/技术部/前端组"） */
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.join("/");
+}
+
+/** 按 source 分桶的分类标题 */
+const SOURCE_LABELS: Record<GroupSource, string> = {
+  "oneid-dept": "部门",
+  "oneid-group": "自定义分组",
+  manual: "自定义分组",
+};
+
+// ─── 树形多选节点的选中状态 ─────────────────────────────
+type CheckState = "checked" | "unchecked" | "indeterminate";
+
+function getCheckState(
+  node: GroupTreeNode,
+  selectedIds: Set<string>
+): CheckState {
+  if (selectedIds.has(node.id)) return "checked";
+  if (node.children.length === 0) return "unchecked";
+  let hasChecked = false;
+  let hasUnchecked = false;
+  for (const c of node.children) {
+    const s = getCheckState(c, selectedIds);
+    if (s === "checked") hasChecked = true;
+    else if (s === "unchecked") hasUnchecked = true;
+    else { hasChecked = true; hasUnchecked = true; }
+    if (hasChecked && hasUnchecked) return "indeterminate";
+  }
+  if (hasChecked && !hasUnchecked) return "checked";
+  if (!hasChecked && hasUnchecked) return "unchecked";
+  return "indeterminate";
+}
+
+/** 获取子孙所有 id（含自身） */
+function getDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getDescendantIds(c)));
+  return ids;
+}
+
+// 应用范围 Popover 编辑面板（树形多选版）
 function ScopePopover({
   model,
   groups,
   onSave,
 }: {
   model: ModelRow;
-  groups: MockGroup[];
+  groups: UserGroup[];
   onSave: (id: string, scope: "all" | "groups", groupIds: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draftScope, setDraftScope] = useState<"all" | "groups">(model.visibilityScope);
   const [draftGroupIds, setDraftGroupIds] = useState<string[]>(model.visibilityGroupIds);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // 按 source 分桶构建树
+  const groupsBySource = useMemo(() => {
+    const buckets: Record<GroupSource, UserGroup[]> = {
+      "oneid-dept": [],
+      "oneid-group": [],
+      manual: [],
+    };
+    groups.forEach((g) => {
+      if (buckets[g.source]) buckets[g.source].push(g);
+    });
+    return buckets;
+  }, [groups]);
+
+  // 有效的 source 分桶（不区分模式，部门 + 自定义分组全部展示）
+  const activeSources = useMemo(() => {
+    const order: GroupSource[] = ["oneid-dept", "oneid-group", "manual"];
+    return order.filter((s) => groupsBySource[s].length > 0);
+  }, [groupsBySource]);
+
+  // 每个 source 的树
+  const treesMap = useMemo(() => {
+    const map: Record<string, GroupTreeNode[]> = {};
+    activeSources.forEach((s) => {
+      map[s] = buildGroupTree(groupsBySource[s]);
+    });
+    return map;
+  }, [activeSources, groupsBySource]);
+
+  // 是否有可展示的分组（activeSources 非空才有分组可选）
+  const hasGroups = activeSources.length > 0;
 
   // 每次打开时同步当前模型的状态
   const handleOpenChange = (v: boolean) => {
@@ -145,20 +212,46 @@ function ScopePopover({
       setDraftScope(model.visibilityScope);
       setDraftGroupIds([...model.visibilityGroupIds]);
       setSearchQuery("");
+      // 默认展开所有已选分组的祖先
+      const expandSet = new Set<string>();
+      const groupMap = new Map(groups.map((g) => [g.id, g]));
+      model.visibilityGroupIds.forEach((gid) => {
+        let cur = groupMap.get(gid);
+        while (cur && cur.parentId) {
+          expandSet.add(cur.parentId);
+          cur = groupMap.get(cur.parentId);
+        }
+      });
+      // 也展开根节点
+      activeSources.forEach((s) => {
+        treesMap[s]?.forEach((root) => expandSet.add(root.id));
+      });
+      setExpanded(expandSet);
     }
     setOpen(v);
   };
 
-  const filteredGroups = groups.filter((g) =>
-    g.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
-  const hasGroups = groups.length > 0;
-
-  const toggleGroup = (gid: string) => {
-    setDraftGroupIds((prev) =>
-      prev.includes(gid) ? prev.filter((id) => id !== gid) : [...prev, gid]
-    );
+  // 树节点 check/uncheck 逻辑
+  const toggleNode = (node: GroupTreeNode) => {
+    const ids = new Set(draftGroupIds);
+    const state = getCheckState(node, ids);
+    const descendants = getDescendantIds(node);
+    if (state === "checked") {
+      // 取消自身及所有子孙
+      descendants.forEach((d) => ids.delete(d));
+    } else {
+      // 选中自身及所有子孙
+      descendants.forEach((d) => ids.add(d));
+    }
+    setDraftGroupIds(Array.from(ids));
   };
 
   const handleClearSelection = () => {
@@ -166,24 +259,130 @@ function ScopePopover({
     setSearchQuery("");
   };
 
-  // 确认按钮是否可点击
-  const isConfirmDisabled = draftScope === "groups" && (draftGroupIds.length === 0 || !hasGroups);
+  // 确认按钮是否可点击：按分组时至少选了一个分组
+  const isConfirmDisabled = draftScope === "groups" && draftGroupIds.length === 0;
 
   const handleConfirm = () => {
     if (isConfirmDisabled) return;
-    onSave(model.id, draftScope, draftScope === "all" ? [] : draftGroupIds);
+    onSave(
+      model.id,
+      draftScope,
+      draftScope === "all" ? [] : draftGroupIds,
+    );
     setOpen(false);
     toast.success("应用范围已更新");
   };
 
-  // 解析已选分组名（按 groups 原始顺序排列，确保展示第一个是列表中最靠前的）
-  const selectedGroupNames = groups
-    .filter((g) => model.visibilityGroupIds.includes(g.id))
-    .map((g) => g.name);
+  // 搜索过滤：扁平匹配
+  const matchedGroupIds = useMemo(() => {
+    if (!searchQuery.trim()) return null; // null = 不过滤
+    const q = searchQuery.toLowerCase();
+    return new Set(
+      groups
+        .filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q))
+        .map((g) => g.id)
+    );
+  }, [searchQuery, groups]);
+
+  // 判断节点或其子孙是否匹配搜索
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedGroupIds) return true;
+    if (matchedGroupIds.has(node.id)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  // 渲染一个树节点
+  const renderTreeNode = (node: GroupTreeNode, depth: number) => {
+    if (!isNodeVisible(node)) return null;
+
+    const selectedSet = new Set(draftGroupIds);
+    const checkState = getCheckState(node, selectedSet);
+    const isExpanded = expanded.has(node.id);
+    const hasChildren = node.children.length > 0;
+
+    return (
+      <div key={node.id}>
+        <button
+          onClick={() => toggleNode(node)}
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          style={{ paddingLeft: 8 + depth * 16 }}
+        >
+          {/* 展开/折叠 */}
+          {hasChildren ? (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpand(node.id);
+              }}
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
+              )}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          {/* Checkbox 三态 */}
+          <span
+            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+              checkState === "checked"
+                ? "bg-blue-500 border-blue-500"
+                : checkState === "indeterminate"
+                  ? "bg-blue-500 border-blue-500"
+                  : "border-gray-300 bg-white"
+            }`}
+          >
+            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
+            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+        </button>
+        {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
+  };
+
+  // 已选分组完整路径标签（只展示最高层级节点，若父节点已选则不展示其子节点）
+  const selectedTags = useMemo(() => {
+    const selectedSet = new Set(draftGroupIds);
+    const groupMap = new Map(groups.map((g) => [g.id, g]));
+    // 过滤掉其祖先已在 selectedSet 中的节点
+    const topLevel = draftGroupIds.filter((gid) => {
+      let cur = groupMap.get(gid);
+      while (cur && cur.parentId) {
+        if (selectedSet.has(cur.parentId)) return false;
+        cur = groupMap.get(cur.parentId);
+      }
+      return true;
+    });
+    return topLevel.map((gid) => ({
+      id: gid,
+      path: getGroupPath(gid, groups),
+    }));
+  }, [draftGroupIds, groups]);
+
+  // 解析已选分组名（用于表格徽章展示）—— 只展示最高层级节点
+  const selectedGroupPaths = useMemo(() => {
+    const selectedSet = new Set(model.visibilityGroupIds);
+    const groupMap = new Map(groups.map((g) => [g.id, g]));
+    // 过滤掉其祖先已在 selectedSet 中的节点
+    const topLevel = model.visibilityGroupIds.filter((gid) => {
+      let cur = groupMap.get(gid);
+      while (cur && cur.parentId) {
+        if (selectedSet.has(cur.parentId)) return false;
+        cur = groupMap.get(cur.parentId);
+      }
+      return true;
+    });
+    return topLevel.map((gid) => getGroupPath(gid, groups));
+  }, [groups, model.visibilityGroupIds]);
 
   // 徽章区域
   const renderBadges = () => {
-    if (model.visibilityScope === "all" || selectedGroupNames.length === 0) {
+    if (model.visibilityScope === "all") {
       return (
         <span className="badge-loading whitespace-nowrap">
           全部用户
@@ -191,16 +390,24 @@ function ScopePopover({
       );
     }
 
-    // 按分组：灰色徽章 + Tooltip 展示完整名称
-    const firstName = selectedGroupNames[0];
-    const rest = selectedGroupNames.length - 1;
-    const tooltipText = selectedGroupNames.join("，");
+    if (selectedGroupPaths.length === 0) {
+      return (
+        <span className="badge-loading whitespace-nowrap">
+          全部用户
+        </span>
+      );
+    }
+
+    // 按分组：第一个分组完整路径 + +N
+    const firstName = selectedGroupPaths[0];
+    const rest = selectedGroupPaths.length - 1;
+    const tooltipText = selectedGroupPaths.join("\n");
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <span className="badge-shutdown max-w-[100px] truncate inline-block align-middle">
+            <span className="badge-shutdown max-w-[140px] truncate inline-block align-middle">
               {firstName}
             </span>
             {rest > 0 && (
@@ -210,7 +417,7 @@ function ScopePopover({
             )}
           </span>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+        <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
           {tooltipText}
         </TooltipContent>
       </Tooltip>
@@ -218,7 +425,7 @@ function ScopePopover({
   };
 
   return (
-    <div className="inline-flex items-end gap-1.5 min-h-[20px] max-w-[140px]">
+    <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[160px]">
       {renderBadges()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
@@ -229,8 +436,8 @@ function ScopePopover({
             <Pencil className="w-3 h-3" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-68 p-0" align="start" sideOffset={6}>
-          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
             {/* Radio 切换 */}
             <div className="flex gap-1.5">
               <button
@@ -275,68 +482,77 @@ function ScopePopover({
                   </div>
                 ) : (
                   <>
-                    {/* 搜索框 */}
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    {/* 合并搜索框 + 已选标签 */}
+                    <div
+                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
+                    >
+                      {selectedTags.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-md border border-blue-100 shrink-0 max-w-[200px]"
+                        >
+                          <span className="truncate">{tag.path}</span>
+                          <button
+                            onClick={() => {
+                              const findNode = (nodes: GroupTreeNode[]): GroupTreeNode | undefined => {
+                                for (const n of nodes) {
+                                  if (n.id === tag.id) return n;
+                                  const found = findNode(n.children);
+                                  if (found) return found;
+                                }
+                                return undefined;
+                              };
+                              let targetNode: GroupTreeNode | undefined;
+                              for (const s of activeSources) {
+                                targetNode = findNode(treesMap[s] || []);
+                                if (targetNode) break;
+                              }
+                              const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
+                              setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
+                            }}
+                            className="text-blue-400 hover:text-blue-600 shrink-0"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </span>
+                      ))}
                       <input
                         type="text"
-                        placeholder="搜索分组…"
+                        placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-gray-400"
                       />
-                      {searchQuery && (
+                      {/* 清除全部按钮：hover 时显示 */}
+                      {(selectedTags.length > 0 || searchQuery) && (
                         <button
-                          onClick={() => setSearchQuery("")}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          onClick={handleClearSelection}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="清除全部"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
 
-                    {/* 分组 checkbox 列表 */}
-                    <div className="max-h-[200px] overflow-y-auto space-y-0.5">
-                      {filteredGroups.length === 0 ? (
-                        <p className="text-[11px] text-gray-400 text-center py-3">无匹配分组</p>
-                      ) : (
-                        filteredGroups.map((group) => {
-                          const checked = draftGroupIds.includes(group.id);
-                          return (
-                            <button
-                              key={group.id}
-                              onClick={() => toggleGroup(group.id)}
-                              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                            >
-                              <span
-                                className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                                  checked
-                                    ? "bg-blue-500 border-blue-500"
-                                    : "border-gray-300 bg-white"
-                                }`}
-                              >
-                                {checked && <Check className="w-2.5 h-2.5 text-white" />}
-                              </span>
-                              <span className="text-xs text-gray-700 truncate">{group.name}</span>
-                            </button>
-                          );
-                        })
-                      )}
+                    {/* 分组树形列表（按 source 分区 + 小标题） */}
+                    <div className="max-h-[220px] overflow-y-auto">
+                      {activeSources.map((source) => {
+                        const trees = treesMap[source];
+                        if (!trees || trees.length === 0) return null;
+                        const anyVisible = trees.some(isNodeVisible);
+                        if (!anyVisible) return null;
+                        return (
+                          <div key={source} className="mb-1">
+                            <div className="px-2 py-1 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                              {SOURCE_LABELS[source]}
+                            </div>
+                            {trees.map((root) => renderTreeNode(root, 0))}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {/* 已选数量 + 清除筛选 */}
-                    <div className="flex items-center justify-between px-1">
-                      <p className="text-[11px] text-gray-400">
-                        已选 {draftGroupIds.length} 个分组
-                      </p>
-                      {draftGroupIds.length > 0 && (
-                        <button
-                          onClick={handleClearSelection}
-                          className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline"
-                        >
-                          清除筛选
-                        </button>
-                      )}
-                    </div>
+
                   </>
                 )}
               </div>
@@ -344,7 +560,7 @@ function ScopePopover({
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
               取消
             </Button>
@@ -649,7 +865,7 @@ export default function ModelConfig() {
                   <td className="px-4 py-4 align-middle">
                     <ScopePopover
                       model={model}
-                      groups={model.id === "4" ? [] : MOCK_GROUPS}
+                      groups={ALL_GROUPS}
                       onSave={(id, scope, groupIds) => {
                         setModels((prev) =>
                           prev.map((m) =>

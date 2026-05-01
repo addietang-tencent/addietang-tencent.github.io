@@ -1280,7 +1280,7 @@ function ConfigOverviewTab({
                         </div>
                       </div>
                       <div className="shrink-0">
-                        {cat === "platformPolicy" && <PolicyEntryValue entry={entry} />}
+                        {(cat as string) === "platformPolicy" && <PolicyEntryValue entry={entry} />}
                       </div>
                     </div>
                   ))

@@ -111,7 +111,8 @@ export interface ConfigEntry {
   /** 来源信息 */
   source: ConfigSource;
   /** 额外 key-value（公网带宽 / 平台策略的配额字段等） */
-  meta?: Record<string, string | number | boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta?: Record<string, any>;
 }
 
 // ─── 节点健康度 ───────────────────────────────────────────

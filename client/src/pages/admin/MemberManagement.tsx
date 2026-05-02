@@ -33,8 +33,8 @@ import { useAdminMode } from "@/contexts/AdminModeContext";
 import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImportDialog";
 // ─── 新：分组视图（多层级 + 节点健康度 + 覆盖状态 + 就地决策，v2.0） ────
 import NewGroupView from "./MemberManagement/GroupView";
-import { MOCK_USERS as MM_MOCK_USERS, MOCK_USER_OVERRIDES as MM_MOCK_OVERRIDES } from "./MemberManagement/mock";
-import type { UserOverrideInfo as MMUserOverrideInfo } from "./MemberManagement/types";
+import { MOCK_USERS as MM_MOCK_USERS, MOCK_USER_OVERRIDES as MM_MOCK_OVERRIDES, MOCK_SYNC_RESULT as MM_MOCK_SYNC_RESULT, MOCK_GROUPS as MM_MOCK_GROUPS, MOCK_MANUAL_GROUPS as MM_MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL as MM_MOCK_USERS_MANUAL, getPrimaryDeptPath as mmGetPrimaryDeptPath } from "./MemberManagement/mock";
+import type { UserOverrideInfo as MMUserOverrideInfo, UserOrg as MMUserOrg } from "./MemberManagement/types";
 
 const PAGE_SIZE = 10;
 
@@ -97,6 +97,138 @@ const MOCK_MEMBERS_BASE = [
   { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/oscar", hasVpcResources: false }, // 无 claw，资源已清空
 ];
 
+// ─── OneID 模式用户 → 用户信息快速查表（按 userId） ───────────────
+const MM_USERS_BY_ID = new Map<string, MMUserOrg>(MM_MOCK_USERS.map((u) => [u.userId, u]));
+
+/** 获取用户所有 oneid-dept 类型部门的完整路径（主部门排首位） */
+function getMmUserDeptPaths(userId: string): Array<{ path: string; isPrimary: boolean }> {
+  const user = MM_USERS_BY_ID.get(userId);
+  if (!user) return [];
+  const deptGroupIds = user.groupIds.filter((gid) => {
+    const g = MM_MOCK_GROUPS.find((g) => g.id === gid);
+    return g?.source === "oneid-dept";
+  });
+  if (deptGroupIds.length === 0) return [];
+  return deptGroupIds
+    .map((gid) => ({
+      path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS),
+      isPrimary: gid === user.primaryGroupId,
+    }))
+    .sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+}
+
+/** 获取用户的「分组」展示项（组织架构 + 自定义分组），用于全部视图的分组列 */
+function getMmUserGroupItems(userId: string): Array<{
+  id: string;
+  path: string;
+  kind: "oneid-dept" | "oneid-group";
+}> {
+  const user = MM_USERS_BY_ID.get(userId);
+  if (!user) return [];
+  const result: Array<{ id: string; path: string; kind: "oneid-dept" | "oneid-group" }> = [];
+  user.groupIds.forEach((gid) => {
+    const g = MM_MOCK_GROUPS.find((g) => g.id === gid);
+    if (!g) return;
+    if (g.source === "oneid-dept") {
+      result.push({ id: gid, path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS), kind: "oneid-dept" });
+    } else if (g.source === "oneid-group") {
+      result.push({ id: gid, path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS), kind: "oneid-group" });
+    }
+  });
+  return result;
+}
+
+// ─── 普通模式：MOCK_USERS_MANUAL 扩展为 member 兼容的数据结构 ─────────────
+// 补齐 Agent/VPC 相关字段，便于全部视图渲染
+const MM_MANUAL_MEMBER_EXTRAS: Record<string, { clawLimit: number; tokenLimit: number; clawCount: number; joinTime: string; vpcType: "auto" | "custom"; vpcName: string | null; hasVpcResources: boolean | null }> = {
+  // ── 产品组 ──
+  "anna@acompany.com":   { clawLimit: 3, tokenLimit: 50000,  clawCount: 2, joinTime: "2025-06-05", vpcType: "auto",   vpcName: "openclaw/anna",   hasVpcResources: true },
+  "bill@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-06-05", vpcType: "auto",   vpcName: "openclaw/bill",   hasVpcResources: true },
+  "cara@acompany.com":   { clawLimit: 3, tokenLimit: 50000,  clawCount: 0, joinTime: "2025-06-10", vpcType: "custom", vpcName: null,              hasVpcResources: null },
+  // ── 研发组 ──
+  "daniel@acompany.com": { clawLimit: 10, tokenLimit: 200000, clawCount: 4, joinTime: "2025-06-01", vpcType: "auto", vpcName: "openclaw/daniel", hasVpcResources: true },
+  "eric@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-06-01", vpcType: "auto",  vpcName: "openclaw/eric",   hasVpcResources: true },
+  // ── 研发-前端 ──
+  "fiona@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-15", vpcType: "auto",   vpcName: "openclaw/fiona",   hasVpcResources: true },
+  "george@acompany.com": { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-06-20", vpcType: "auto",   vpcName: "openclaw/george",  hasVpcResources: false },
+  "helen@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-07-01", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  "ivan@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-07-05", vpcType: "auto",   vpcName: "openclaw/ivan",    hasVpcResources: true },
+  // ── 研发-后端 ──
+  "jason@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 3, joinTime: "2025-07-10", vpcType: "auto",   vpcName: "openclaw/jason",   hasVpcResources: true },
+  "kelly@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-15", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  "lucas@acompany.com":  { clawLimit: 5, tokenLimit: 80000, clawCount: 2, joinTime: "2025-07-20", vpcType: "auto",   vpcName: "openclaw/lucas",   hasVpcResources: true },
+  // ── 设计组 ──
+  "mia@acompany.com":    { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-08-01", vpcType: "auto",   vpcName: "openclaw/mia",     hasVpcResources: true },
+  "nick@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-08-05", vpcType: "auto",   vpcName: "openclaw/nick",    hasVpcResources: false },
+  // ── 产品运营与市场推广团队 ──
+  "olivia@acompany.com": { clawLimit: 3, tokenLimit: 50000,  clawCount: 1, joinTime: "2025-09-01", vpcType: "auto",   vpcName: "openclaw/olivia", hasVpcResources: true },
+  "paul@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-09-05", vpcType: "auto",   vpcName: "openclaw/paul",   hasVpcResources: true },
+  "quinn@acompany.com":  { clawLimit: 3, tokenLimit: 50000,  clawCount: 0, joinTime: "2025-09-10", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  // ── 未分组 ──
+  "ryan@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-10-01", vpcType: "auto",   vpcName: "openclaw/ryan",    hasVpcResources: false },
+  "susan@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-10-05", vpcType: "auto",   vpcName: "openclaw/susan",   hasVpcResources: true },
+};
+
+/** 普通模式下：由 MOCK_USERS_MANUAL + 扩展字段组合得到的 members 基础数据（19 人） */
+const MOCK_MEMBERS_MANUAL_BASE = MM_MOCK_USERS_MANUAL.map((u) => {
+  const extras = MM_MANUAL_MEMBER_EXTRAS[u.userId] ?? {
+    clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-06-01", vpcType: "auto" as const, vpcName: `openclaw/${u.userId.split("@")[0]}`, hasVpcResources: false,
+  };
+  return {
+    id: u.userId,
+    role: u.role ?? "member",
+    status: u.status ?? "active",
+    ...extras,
+  };
+});
+
+// ─── OneID 模式：MOCK_USERS 扩展为 member 兼容的数据结构 ─────────────
+// 其中 alice~oscar 15 人复用 MOCK_MEMBERS_BASE 里已 mock 的 Agent/VPC 字段；
+// ceo / tim / peter 3 人是分组视图新增的高管，需要单独 mock Agent/VPC 字段
+const MM_ONEID_EXTRA_MEMBERS: Record<string, { clawLimit: number; tokenLimit: number; clawCount: number; joinTime: string; vpcType: "auto" | "custom"; vpcName: string | null; hasVpcResources: boolean | null }> = {
+  "ceo@acompany.com":   { clawLimit: 10, tokenLimit: 200000, clawCount: 0, joinTime: "2024-12-01", vpcType: "auto", vpcName: "openclaw/ceo",   hasVpcResources: false },
+  "tim@acompany.com":   { clawLimit: 5,  tokenLimit: 100000, clawCount: 2, joinTime: "2024-12-15", vpcType: "auto", vpcName: "openclaw/tim",   hasVpcResources: true },
+  "peter@acompany.com": { clawLimit: 5,  tokenLimit: 100000, clawCount: 1, joinTime: "2024-12-15", vpcType: "auto", vpcName: "openclaw/peter", hasVpcResources: true },
+};
+
+/** OneID 模式下：由 MOCK_USERS + 扩展字段组合得到的 members 基础数据（18 人） */
+const MOCK_MEMBERS_ONEID_BASE = MM_MOCK_USERS.map((u) => {
+  // 1) 优先用 MOCK_MEMBERS_BASE 里已 mock 好的字段（alice~oscar 15 人）
+  const baseMember = MOCK_MEMBERS_BASE.find((m) => m.id === u.userId);
+  if (baseMember) {
+    return baseMember;
+  }
+  // 2) 否则用 MM_ONEID_EXTRA_MEMBERS 里 ceo / tim / peter 的 mock
+  const extras = MM_ONEID_EXTRA_MEMBERS[u.userId] ?? {
+    clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-01-01", vpcType: "auto" as const, vpcName: `openclaw/${u.userId.split("@")[0]}`, hasVpcResources: false,
+  };
+  return {
+    id: u.userId,
+    role: (u.role ?? "member") as "admin" | "member",
+    status: (u.status ?? "active") as "active" | "disabled",
+    ...extras,
+  };
+}) as typeof MOCK_MEMBERS_BASE;
+
+/** 普通模式下：构造分组完整路径（如 "研发组 / 研发-前端"） */
+function getManualGroupPath(groupId: string): string {
+  const map = new Map(MM_MOCK_MANUAL_GROUPS.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.length > 0 ? chain.join(" / ") : "—";
+}
+
+/** 普通模式下：获取某用户的分组完整路径列表 */
+function getManualUserGroupPaths(userId: string): Array<{ id: string; path: string }> {
+  const user = MM_MOCK_USERS_MANUAL.find((u) => u.userId === userId);
+  if (!user) return [];
+  return user.groupIds.map((gid) => ({ id: gid, path: getManualGroupPath(gid) }));
+}
+
 // ─── Mock 部门数据（仅 OneID 模式使用） ─────────────────────────────────────────
 interface DepartmentNode {
   id: string;
@@ -108,51 +240,51 @@ interface DepartmentNode {
 const MOCK_DEPARTMENTS: DepartmentNode[] = [
   {
     id: "dept-root",
-    name: "全公司",
-    path: "全公司",
+    name: "A公司",
+    path: "A公司",
     children: [
       {
         id: "dept-tech",
         name: "技术部",
-        path: "全公司/技术部",
+        path: "A公司/技术部",
         children: [
-          { id: "dept-fe", name: "前端组", path: "全公司/技术部/前端组" },
-          { id: "dept-be", name: "后端组", path: "全公司/技术部/后端组" },
-          { id: "dept-ai", name: "AI 组", path: "全公司/技术部/AI 组" },
+          { id: "dept-fe", name: "前端组", path: "A公司/技术部/前端组" },
+          { id: "dept-be", name: "后端组", path: "A公司/技术部/后端组" },
+          { id: "dept-ai", name: "AI 组", path: "A公司/技术部/AI 组" },
         ],
       },
       {
         id: "dept-product",
         name: "产品部",
-        path: "全公司/产品部",
+        path: "A公司/产品部",
         children: [
-          { id: "dept-pm", name: "产品策划", path: "全公司/产品部/产品策划" },
-          { id: "dept-design", name: "设计组", path: "全公司/产品部/设计组" },
+          { id: "dept-pm", name: "产品策划", path: "A公司/产品部/产品策划" },
+          { id: "dept-design", name: "设计组", path: "A公司/产品部/设计组" },
         ],
       },
-      { id: "dept-hr", name: "人力资源", path: "全公司/人力资源" },
-      { id: "dept-finance", name: "财务部", path: "全公司/财务部" },
+      { id: "dept-hr", name: "人力资源", path: "A公司/人力资源" },
+      { id: "dept-finance", name: "财务部", path: "A公司/财务部" },
     ],
   },
 ];
 
 /** 用户归属 mock 映射 */
 const MOCK_MEMBER_DEPARTMENTS: Record<string, string> = {
-  "alice@acompany.com": "全公司/技术部/前端组",
-  "bob@acompany.com": "全公司/技术部/后端组",
-  "carol@acompany.com": "全公司/技术部/AI 组",
-  "david@acompany.com": "全公司/产品部/产品策划",
-  "eve@acompany.com": "全公司/产品部/设计组",
-  "frank@acompany.com": "全公司/技术部/前端组",
-  "grace@acompany.com": "全公司/技术部/后端组",
-  "henry@acompany.com": "全公司/人力资源",
-  "iris@acompany.com": "全公司/技术部/AI 组",
-  "jack@acompany.com": "全公司/财务部",
-  "kate@acompany.com": "全公司/技术部/前端组",
-  "leo@acompany.com": "全公司/产品部/产品策划",
-  "mike@acompany.com": "全公司/技术部/后端组",
-  "nina@acompany.com": "全公司/产品部/设计组",
-  "oscar@acompany.com": "全公司/财务部",
+  "alice@acompany.com": "A公司/技术部/前端组",
+  "bob@acompany.com": "A公司/技术部/后端组",
+  "carol@acompany.com": "A公司/技术部/AI 组",
+  "david@acompany.com": "A公司/产品部/产品策划",
+  "eve@acompany.com": "A公司/产品部/设计组",
+  "frank@acompany.com": "A公司/技术部/前端组",
+  "grace@acompany.com": "A公司/技术部/后端组",
+  "henry@acompany.com": "A公司/人力资源",
+  "iris@acompany.com": "A公司/技术部/AI 组",
+  "jack@acompany.com": "A公司/财务部",
+  "kate@acompany.com": "A公司/技术部/前端组",
+  "leo@acompany.com": "A公司/产品部/产品策划",
+  "mike@acompany.com": "A公司/技术部/后端组",
+  "nina@acompany.com": "A公司/产品部/设计组",
+  "oscar@acompany.com": "A公司/财务部",
 };
 
 const LAST_CLAW_LIMIT = 3;
@@ -1144,7 +1276,15 @@ export default function MemberManagement() {
   // 获取 hasOneid 状态
   const { hasOneid } = useAdminMode();
 
-  const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
+  const [members, setMembers] = useState<typeof MOCK_MEMBERS_BASE>(
+    hasOneid ? MOCK_MEMBERS_ONEID_BASE : (MOCK_MEMBERS_MANUAL_BASE as typeof MOCK_MEMBERS_BASE)
+  );
+  // 监听 hasOneid 切换，members 重置为对应模式的基础数据
+  useEffect(() => {
+    setMembers(
+      hasOneid ? MOCK_MEMBERS_ONEID_BASE : (MOCK_MEMBERS_MANUAL_BASE as typeof MOCK_MEMBERS_BASE)
+    );
+  }, [hasOneid]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
@@ -1154,13 +1294,19 @@ export default function MemberManagement() {
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "member">("all");
   const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
   const [isSyncing, setIsSyncing] = useState(false);
+  /** 组织架构是否已同步为分组（由 GroupView 回调通知） */
+  const [mmDeptSynced, setMmDeptSynced] = useState(false);
+  /** 手动同步时产生的异常分组数据，传递给 GroupView 显示红点 */
+  const [mmAnomalousGroups, setMmAnomalousGroups] = useState<{ groupId: string; groupName: string; memberCount: number; boundConfigs: string[] }[]>([]);
 
-  // OneID 同步结果弹窗：展示因名下有未清理 Agent 而无法删除的用户
+  // OneID 同步结果弹窗：展示因名下有未清理 Agent 而无法删除的用户 + 分组异常
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
     failedUsers: { id: string; clawCount: number; vpcName?: string }[];
     deletedCount: number;
     addedCount: number;
+    /** 分组异常：组织架构被删除但仍有配置绑定的分组 */
+    anomalousGroups?: { groupId: string; groupName: string; memberCount: number; boundConfigs: string[] }[];
   } | null>(null);
 
   // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
@@ -1408,8 +1554,29 @@ export default function MemberManagement() {
       setIsSyncing(false);
 
       if (failedUsers.length > 0) {
-        // 有无法删除的用户，弹窗提醒
-        setSyncResultDialog({ open: true, failedUsers, deletedCount, addedCount });
+        // 有无法删除的用户，弹窗提醒（已同步过组织架构时同时展示分组异常）
+        const groupAnomalies = mmDeptSynced ? MM_MOCK_SYNC_RESULT.anomalousGroups : [];
+        setSyncResultDialog({
+          open: true,
+          failedUsers,
+          deletedCount,
+          addedCount,
+          anomalousGroups: groupAnomalies,
+        });
+        // 同步异常分组数据到 GroupView 以显示红点
+        if (groupAnomalies.length > 0) {
+          setMmAnomalousGroups(groupAnomalies);
+          // 模拟：组织架构被删除后，用户从这些分组中被移除
+          const deletedGroupIds = new Set(["dept-operation", "dept-operation-1", "dept-operation-2"]);
+          MM_MOCK_USERS.forEach((u, idx) => {
+            if (u.groupIds.some((gid) => deletedGroupIds.has(gid))) {
+              MM_MOCK_USERS[idx] = {
+                ...u,
+                groupIds: u.groupIds.filter((gid) => !deletedGroupIds.has(gid)),
+              };
+            }
+          });
+        }
       } else {
         const parts: string[] = [];
         if (addedCount > 0) parts.push(`新增 ${addedCount} 个`);
@@ -1417,7 +1584,7 @@ export default function MemberManagement() {
         toast.success(`同步完成${parts.length > 0 ? `，${parts.join("，")}用户` : ""}`);
       }
     }, 2000);
-  }, []);
+  }, [mmDeptSynced]);
 
   const handleToggleStatus = (id: string) => {
     setMembers(members.map((m) =>
@@ -1835,19 +2002,24 @@ export default function MemberManagement() {
                   </div>
                 </th>
                 {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
-                      用户归属
-                      <Tooltip>
-                        <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
-                        <TooltipContent>用户在统一身份平台中的组织归属</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </th>
+                  <>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        部门
+                        <Tooltip>
+                          <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                          <TooltipContent>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
+                  </>
+                )}
+                {!hasOneid && (
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
                 )}
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
                     Agent 上限
@@ -1874,18 +2046,133 @@ export default function MemberManagement() {
               {paginated.map((member) => {
                 const memberGroups = groups.filter((g) => g.memberIds.includes(member.id));
                 const groupNames = memberGroups.map((g) => g.name);
+                // OneID 模式：从 MM_MOCK_USERS 获取部门 + 分组
+                const mmDeptPaths = hasOneid ? getMmUserDeptPaths(member.id) : [];
+                const mmGroupItems = hasOneid ? getMmUserGroupItems(member.id) : [];
+                // 普通模式：从 MM_MOCK_USERS_MANUAL 获取分组完整路径
+                const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-medium text-gray-900">{member.id}</span>
                   </td>
                   {hasOneid && (
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 truncate max-w-[140px]" title={MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}>
-                          {MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}
-                        </span>
+                    <>
+                      {/* 部门列 */}
+                      <td className="px-4 py-4">
+                        {mmDeptPaths.length === 0 ? (
+                          <span className="text-sm text-gray-300">—</span>
+                        ) : mmDeptPaths.length === 1 ? (
+                          <span
+                            className="text-sm text-gray-600 truncate block max-w-[200px]"
+                            title={mmDeptPaths[0].path}
+                          >
+                            {mmDeptPaths[0].path}
+                          </span>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
+                                <span className="text-sm text-gray-600 truncate">
+                                  {mmDeptPaths[0].path}
+                                </span>
+                                <span className="text-xs text-gray-400 tabular-nums shrink-0">
+                                  +{mmDeptPaths.length - 1}
+                                </span>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
+                              <div className="py-2">
+                                {mmDeptPaths.map((dp, idx) => (
+                                  <div key={idx} className="px-3 py-1.5 text-sm">
+                                    <span className="text-gray-200 mr-1">{idx + 1}.</span>
+                                    <span className="text-white">{dp.path}</span>
+                                    {dp.isPrimary && (
+                                      <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
+                                        主部门
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </td>
+                      {/* 分组列（OneID 模式：紧跟部门列） */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1 max-w-[160px]">
+                          {mmGroupItems.length === 0 ? (
+                            <span className="text-sm text-gray-300">—</span>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 cursor-default max-w-full">
+                                  <span className="badge-shutdown max-w-[120px] truncate inline-block align-middle">
+                                    {mmGroupItems[0].path}
+                                  </span>
+                                  {mmGroupItems.length > 1 && (
+                                    <span className="badge-shutdown whitespace-nowrap">
+                                      +{mmGroupItems.length - 1}
+                                    </span>
+                                  )}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                                <div className="py-2">
+                                  {mmGroupItems.map((gi, idx) => (
+                                    <div key={idx} className="px-3 py-1.5 text-sm flex items-center gap-2">
+                                      <span
+                                        className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                          gi.kind === "oneid-dept"
+                                            ? "text-blue-400 bg-blue-500/20"
+                                            : "text-purple-400 bg-purple-500/20"
+                                        }`}
+                                      >
+                                        {gi.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                      </span>
+                                      <span className="text-white">{gi.path}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </td>
+                    </>
+                  )}
+                  {!hasOneid && (
+                    /* 普通模式分组列：紧跟用户ID，完整路径 + hover tooltip */
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1 max-w-[200px]">
+                        {manualGroupPaths.length === 0 ? (
+                          <span className="text-sm text-gray-300">—</span>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 cursor-default max-w-full">
+                                <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle">
+                                  {manualGroupPaths[0].path}
+                                </span>
+                                {manualGroupPaths.length > 1 && (
+                                  <span className="badge-shutdown whitespace-nowrap">
+                                    +{manualGroupPaths.length - 1}
+                                  </span>
+                                )}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                              <div className="py-2">
+                                {manualGroupPaths.map((gp, idx) => (
+                                  <div key={idx} className="px-3 py-1.5 text-sm">
+                                    <span className="text-white">{gp.path}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                     </td>
                   )}
@@ -1900,20 +2187,6 @@ export default function MemberManagement() {
                     ) : (
                       <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                     )}
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1 max-w-[140px]">
-                    {groupNames.length === 0 ? (
-                      <span className="text-sm text-gray-300">—</span>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="badge-shutdown max-w-[130px] truncate inline-block align-middle cursor-default">{groupNames[0]}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>{groupNames[0]}</TooltipContent>
-                      </Tooltip>
-                    )}
-                    </div>
                   </td>
                   <td className="px-4 py-4">
                     <span className="text-sm text-gray-700">{member.clawLimit}</span>
@@ -2069,6 +2342,43 @@ export default function MemberManagement() {
             users={MM_MOCK_USERS}
             overrides={mmOverrides}
             onResolveConflict={handleMmResolveConflict}
+            onDeptSyncedChange={setMmDeptSynced}
+            externalAnomalousGroups={mmAnomalousGroups}
+            onShowSyncResult={(anomalousGroups) => {
+              // 模拟刷新同步：与手动同步保持一致，返回用户异常 + 分组异常
+              // 假设 OneID 侧删除了 jack 和 iris（与 handleSync 一致）
+              const oneidDeletedUserIds = ["jack@acompany.com", "iris@acompany.com"];
+              const vpcBindings: Record<string, string> = {
+                "iris@acompany.com": "openclaw/iris",
+              };
+              const failedUsers: { id: string; clawCount: number; vpcName?: string }[] = [];
+              let deletedCount = 0;
+              setMembers((prev) => {
+                const updated = prev.map((m) => {
+                  if (!oneidDeletedUserIds.includes(m.id)) return m;
+                  const hasVpc = !!vpcBindings[m.id];
+                  if (m.clawCount > 0 || hasVpc) {
+                    failedUsers.push({ id: m.id, clawCount: m.clawCount, vpcName: vpcBindings[m.id] });
+                    return { ...m, status: "disabled" as const };
+                  } else {
+                    deletedCount++;
+                    return { ...m, _deleted: true } as typeof m & { _deleted: true };
+                  }
+                });
+                return updated.filter((m) => !(m as { _deleted?: boolean })._deleted);
+              });
+              setSyncResultDialog({
+                open: true,
+                failedUsers,
+                deletedCount,
+                addedCount: 0,
+                anomalousGroups,
+              });
+              // 同步异常分组数据到 GroupView 以显示红点
+              if (anomalousGroups.length > 0) {
+                setMmAnomalousGroups(anomalousGroups);
+              }
+            }}
           />
         )}
 
@@ -2351,101 +2661,170 @@ export default function MemberManagement() {
         password={credentialDialog.password}
       />
 
-      {/* OneID 同步结果弹窗：展示无法直接删除的用户 */}
+      {/* OneID 同步结果弹窗：展示分组异常 + 用户异常 */}
       <Dialog
         open={!!syncResultDialog?.open}
         onOpenChange={(open) => { if (!open) setSyncResultDialog(null); }}
       >
-        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-gray-900">同步结果</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-5">
-            {/* 同步概要 */}
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-              <p className="text-sm text-blue-600 leading-relaxed">
-                本次同步
-                {[
-                  (syncResultDialog?.addedCount ?? 0) > 0 ? <>新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</> : null,
-                  (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <>禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</> : null,
-                  (syncResultDialog?.deletedCount ?? 0) > 0 ? <>删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</> : null,
-                ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
-                  if (i === 0) return [item];
-                  return [...acc, "，", item];
-                }, [])}
-                。
-                {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {
-                  const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
-                  const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
-                  const parts: React.ReactNode[] = [];
-                  if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 Agent 无法直接删除</React.Fragment>);
-                  if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
-                  return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
-                })()}
-              </p>
-            </div>
+          <div className="py-2 space-y-6">
 
-            {/* 无法删除的用户列表 */}
-            {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-              >
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {syncResultDialog?.failedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-medium text-gray-900">{user.id}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {user.vpcName ? (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
-                              <span className="text-xs text-red-600">(有关联云资源)</span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="badge-stopped">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                            禁用
-                          </span>
-                        </td>
+            {/* ═══ 分组异常区块（上方） ═══ */}
+            {(syncResultDialog?.anomalousGroups?.length ?? 0) > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">分组异常</h4>
+
+                {/* 分组异常提示 */}
+                <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
+                  <Info className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-600 leading-relaxed">
+                    以下分组对应的部门已在腾讯统一身份管理平台被删除，分组内用户已被移除。但由于分组仍有专属配置未解绑，需管理员将专属配置与分组解绑或删除后，分组才会被彻底删除。可前往{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSyncResultDialog(null);
+                        setViewMode("group");
+                      }}
+                      className="inline font-semibold text-red-700 underline underline-offset-2 hover:text-red-800"
+                    >
+                      用户管理-分组视图
+                    </button>
+                    {" "}查看异常分组与配置。
+                  </p>
+                </div>
+
+                {/* 分组异常表格 */}
+                <div className="rounded-2xl border border-gray-100 overflow-hidden"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                >
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-50 bg-gray-50/50">
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组总人数</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组专属配置</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {syncResultDialog?.anomalousGroups?.map((group) => (
+                        <tr key={group.groupId} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-gray-900">{group.groupName}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-sm tabular-nums text-gray-600">{group.memberCount}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-1.5">
+                              {group.boundConfigs.map((config) => (
+                                <span key={config} className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-md border border-red-100">
+                                  {config}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
-            {/* 警告提示：与删除弹窗红色框风格一致 */}
-            <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
-              <p className="font-semibold">无法删除用户</p>
-              <p>
-                删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
-              </p>
-              {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
-                <p>
-                  删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
-                  <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
-                  {" "}解除后，再刷新检查。
-                </p>
-              )}
-            </div>
+            {/* ═══ 用户异常区块（下方） ═══ */}
+            {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">用户异常</h4>
+
+                {/* 同步概要 */}
+                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-3">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-blue-600 leading-relaxed">
+                    本次同步
+                    {[
+                      (syncResultDialog?.addedCount ?? 0) > 0 ? <React.Fragment key="added">新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <React.Fragment key="failed">禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <React.Fragment key="deleted">删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</React.Fragment> : null,
+                    ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
+                      if (i === 0) return [item];
+                      return [...acc, <React.Fragment key={`sep-${i}`}>，</React.Fragment>, item];
+                    }, [])}
+                    。
+                    {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {
+                      const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
+                      const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
+                      const parts: React.ReactNode[] = [];
+                      if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 Agent 无法直接删除</React.Fragment>);
+                      if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
+                      return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
+                    })()}
+                  </p>
+                </div>
+
+                {/* 无法删除的用户列表 */}
+                <div className="rounded-2xl border border-gray-100 overflow-hidden"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                >
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-50 bg-gray-50/50">
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {syncResultDialog?.failedUsers.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-gray-900">{user.id}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {user.vpcName ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
+                                <span className="text-xs text-red-600">(有关联云资源)</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="badge-stopped">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                              禁用
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 警告提示：与删除弹窗红色框风格一致 */}
+                <div className="mt-3 rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
+                  <p className="font-semibold">无法删除用户</p>
+                  <p>
+                    删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
+                  </p>
+                  {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
+                    <p>
+                      删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
+                      <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
+                      {" "}解除后，再刷新检查。
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
           <DialogFooter>
             <Button

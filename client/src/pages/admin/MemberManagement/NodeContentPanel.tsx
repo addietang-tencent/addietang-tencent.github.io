@@ -8,7 +8,7 @@
  *     每条标注来源：本分组 / 继承自某分组 / 平台默认
  *   - 初始化校验仅模型/通道/安全组三项
  */
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,18 +36,17 @@ import {
   Plus,
   UserMinus,
   Info,
-  Cpu,
-  Radio,
-  Shield,
-  Sparkles,
-  Wrench,
   Brain,
+  MessageSquare,
+  Puzzle,
+  Wrench,
+  MemoryStick,
+  FolderOpen,
   HardDrive,
-  Box,
-  Network,
-  Globe,
-  FileText,
-  Settings,
+  ShieldCheck,
+  Gauge,
+  Shield,
+  ChevronDown,
 } from "lucide-react";
 import { Link } from "wouter";
 import type {
@@ -94,6 +93,10 @@ interface NodeContentPanelProps {
   onAddUsersToGroup?: (userIds: string[]) => void;
   /** 从分组中移除用户的回调 */
   onRemoveFromGroup?: (userId: string) => void;
+  /** 是否为异常分组（配置未解绑，需显示红点+告警条） */
+  isAnomalous?: boolean;
+  /** 异常分组绑定的配置名称（用于告警条展示） */
+  anomalousBoundConfigs?: string[];
 }
 
 // ─── 核心维度 meta（初始化检查卡用） ─────────────────────
@@ -115,27 +118,42 @@ const CORE_CHECK_META = {
   },
 } as const;
 
-// ─── 配置项图标映射 ──────────────────────────────────────
+// ─── 配置项图标映射（与导航栏 icon 一致） ──────────────────
 const CATEGORY_ICON: Record<ConfigCategory, React.ComponentType<{ className?: string }>> = {
-  model: Cpu,
-  channel: Radio,
-  securityGroup: Shield,
-  skill: Sparkles,
+  model: Brain,
+  channel: MessageSquare,
+  skill: Puzzle,
   agentTool: Wrench,
-  memory: Brain,
-  drive: HardDrive,
-  image: Box,
-  vpc: Network,
-  publicNetwork: Globe,
-  cls: FileText,
-  platformPolicy: Settings,
+  memory: MemoryStick,
+  drive: FolderOpen,
+  image: HardDrive,
+  network: ShieldCheck,
+  cls: Gauge,
+  aiAgentSecurity: Shield,
+  platformPolicy: Shield,
 };
 
 // 配置项展示顺序
 const CATEGORY_ORDER: ConfigCategory[] = [
-  "model", "channel", "securityGroup", "skill", "agentTool",
-  "memory", "drive", "image", "vpc", "publicNetwork", "cls", "platformPolicy",
+  "model", "channel", "skill", "agentTool", "memory",
+  "drive", "image", "network",
+  "cls", "aiAgentSecurity", "platformPolicy",
 ];
+
+// 配置项导航短名称
+const CATEGORY_NAV_LABEL: Record<ConfigCategory, string> = {
+  model: "模型",
+  channel: "通道",
+  skill: "技能",
+  agentTool: "工具",
+  memory: "记忆",
+  drive: "网盘",
+  image: "镜像",
+  network: "网络",
+  cls: "日志",
+  aiAgentSecurity: "安全",
+  platformPolicy: "策略",
+};
 
 // ─── 获取用户所有 oneid-dept 类型部门的完整路径 ────────────
 function getUserDeptPaths(
@@ -166,9 +184,17 @@ export default function NodeContentPanel({
   allUsers = [],
   onAddUsersToGroup,
   onRemoveFromGroup,
+  isAnomalous = false,
+  anomalousBoundConfigs = [],
 }: NodeContentPanelProps) {
-  const [tab, setTab] = useState<Tab>("members");
+  const [tab, setTab] = useState<Tab>(isAnomalous ? "config" : "members");
   const [page, setPage] = useState(1);
+
+  // 切换节点时根据是否异常重置默认 tab
+  useEffect(() => {
+    setTab(isAnomalous ? "config" : "members");
+    setPage(1);
+  }, [nodeId, isAnomalous]);
 
   // 添加用户到分组弹窗
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -183,7 +209,6 @@ export default function NodeContentPanel({
 
   React.useEffect(() => {
     setPage(1);
-    setTab("members");
   }, [nodeId]);
 
   const total = users.length;
@@ -199,7 +224,7 @@ export default function NodeContentPanel({
   // 节点来源文案
   const sourceLabel =
     nodeSource === "oneid-dept"
-      ? "OneID 组织架构节点"
+      ? "OneID 部门节点"
       : nodeSource === "oneid-group"
       ? "OneID 用户组"
       : "自建分组";
@@ -234,47 +259,27 @@ export default function NodeContentPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* 节点头：名称 + 人数 + 健康状态徽章 + 只读锁标记 + 来源标签 + 路径 */}
-      <div className="px-6 pt-5 pb-3 border-b border-gray-100">
-        <div className="flex items-center gap-3 mb-1 flex-wrap">
-          <h2 className="text-lg font-semibold text-gray-900">{nodeName}</h2>
-          <span className="text-sm text-gray-400 tabular-nums">
-            · {users.length} 人
-          </span>
-          <span
-            className={`inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 ${
-              health.healthy
-                ? "text-emerald-600 bg-emerald-50 border border-emerald-100"
-                : "text-amber-600 bg-amber-50 border border-amber-100"
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                health.healthy ? "bg-emerald-500" : "bg-amber-500"
-              }`}
-            />
-            {health.healthy ? "初始化已完成" : "初始化未完成"}
-          </span>
-          {nodeReadonly && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">
-              <Lock className="w-3 h-3" />
-              只读
+      {/* 节点头：名称 + 人数 + 分组名称路径 + 添加按钮 */}
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+        <div>
+          <div className="flex items-center gap-3 mb-1 flex-wrap">
+            <h2 className="text-lg font-semibold text-gray-900">{nodeName}</h2>
+            <span className="text-sm text-gray-400 tabular-nums">
+              · {users.length} 人
             </span>
-          )}
-          <span className="text-xs text-gray-400">{sourceLabel}</span>
-        </div>
-        <div className="text-xs text-gray-500">路径：{nodePath}</div>
-        {!health.healthy && (
-          <div className="mt-3 flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-relaxed">
-              本分组缺少：
-              <span className="font-medium">
-                {health.missing.map((m) => MISSING_LABEL[m]).join("、")}
-              </span>
-              。本节点下的用户将依赖上层/平台默认兜底，建议补全或在「配置总览」中快速前往对应页配置。
-            </p>
           </div>
+          <div className="text-xs text-gray-500">分组名称：{nodePath}</div>
+        </div>
+        {nodeId !== "__unassigned__" && (isManualMode || nodeSource !== "oneid-dept") && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 border-gray-200 shrink-0"
+            onClick={() => setShowAddDialog(true)}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            添加用户到分组
+          </Button>
         )}
       </div>
 
@@ -295,19 +300,22 @@ export default function NodeContentPanel({
           <button
             type="button"
             onClick={() => setTab("config")}
-            className={`h-7 px-3 rounded-md text-xs font-medium transition-all duration-200 ${
+            className={`relative h-7 px-3 rounded-md text-xs font-medium transition-all duration-200 ${
               tab === "config"
                 ? "font-semibold text-gray-900 bg-gray-100"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
             }`}
           >
             配置总览
+            {isAnomalous && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Tab 内容 */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className={`flex-1 overflow-y-auto px-6 pb-4 ${tab === "config" ? "pt-0" : "pt-4"}`}>
         {tab === "members" && (
           <>
             {/* 卡片 */}
@@ -317,22 +325,6 @@ export default function NodeContentPanel({
                 boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
               }}
             >
-              {/* 卡片 header：分组名 + 添加用户按钮（仅普通模式） */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                <h3 className="font-semibold text-gray-900">{nodeName}</h3>
-                {isManualMode && nodeId !== "__unassigned__" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5 border-gray-200"
-                    onClick={() => setShowAddDialog(true)}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    添加用户到分组
-                  </Button>
-                )}
-              </div>
-
               {/* 表格 */}
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -342,20 +334,20 @@ export default function NodeContentPanel({
                         用户 ID
                       </th>
                       {hasOneid && (
-                        <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
-                          组织架构
+                        <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                          部门
                         </th>
                       )}
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         分组
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         角色
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         状态
                       </th>
-                      {isManualMode && (
+                      {isManualMode && nodeId !== "__unassigned__" && (
                         <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                           操作
                         </th>
@@ -366,7 +358,10 @@ export default function NodeContentPanel({
                     {pagedUsers.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={hasOneid ? 5 : isManualMode ? 5 : 4}
+                          colSpan={
+                            (hasOneid ? 5 : 4) +
+                            (isManualMode && nodeId !== "__unassigned__" ? 1 : 0)
+                          }
                           className="px-6 py-12 text-center text-sm text-gray-400"
                         >
                           暂无用户
@@ -391,7 +386,7 @@ export default function NodeContentPanel({
                               </span>
                             </td>
 
-                            {/* 组织架构（仅 OneID 模式） */}
+                            {/* 部门（仅 OneID 模式） */}
                             {hasOneid && (
                               <td className="px-4 py-4">
                                 {deptPaths.length === 0 ? (
@@ -447,27 +442,16 @@ export default function NodeContentPanel({
                             {/* 分组 */}
                             <td className="px-4 py-4">
                               {(() => {
-                                // OneID 模式：显示组织架构 + 用户组；普通模式：只显示自建分组
+                                // OneID 模式：显示部门 + 用户组；普通模式：只显示自建分组
                                 const displayGroups = hasOneid
                                   ? userGroups.filter((g) => g.source === "oneid-dept" || g.source === "oneid-group")
                                   : manualGroups;
                                 if (displayGroups.length === 0)
                                   return <span className="text-sm text-gray-300">—</span>;
 
-                                // 来源样式映射
-                                const sourceStyle = (source: string) => {
-                                  if (source === "oneid-dept")
-                                    return "bg-blue-50 text-blue-700 border-blue-100";
-                                  if (source === "oneid-group")
-                                    return "bg-violet-50 text-violet-700 border-violet-100";
-                                  return "bg-gray-50 text-gray-700 border-gray-100";
-                                };
-
-                                // 获取显示名称：组织架构显示完整路径，用户组显示名称
+                                // 统一使用完整路径（OneID 模式：部门/用户组；普通模式：自建分组层级）
                                 const getDisplayName = (g: UserGroup) =>
-                                  g.source === "oneid-dept"
-                                    ? getPrimaryDeptPath(g.id, groups)
-                                    : g.name;
+                                  getPrimaryDeptPath(g.id, groups);
 
                                 const firstName = getDisplayName(displayGroups[0]);
 
@@ -475,48 +459,38 @@ export default function NodeContentPanel({
                                   <div className="flex items-center gap-1 max-w-[260px]">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <span
-                                          className={`text-xs rounded-full px-2 py-0.5 border truncate max-w-[200px] inline-block cursor-default ${sourceStyle(displayGroups[0].source)}`}
-                                        >
-                                          {firstName}
+                                        <span className="inline-flex items-center gap-1 cursor-default max-w-full">
+                                          <span className="badge-shutdown max-w-[200px] truncate inline-block align-middle">
+                                            {firstName}
+                                          </span>
+                                          {displayGroups.length > 1 && (
+                                            <span className="badge-shutdown whitespace-nowrap">
+                                              +{displayGroups.length - 1}
+                                            </span>
+                                          )}
                                         </span>
                                       </TooltipTrigger>
-                                      <TooltipContent>
-                                        {firstName}
-                                        {hasOneid && (
-                                          <span className="text-gray-300 ml-1">
-                                            ({displayGroups[0].source === "oneid-dept" ? "组织架构" : "用户组"})
-                                          </span>
-                                        )}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                    {displayGroups.length > 1 && (
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span className="text-xs text-gray-400 cursor-default shrink-0">
-                                            +{displayGroups.length - 1}
-                                          </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-[360px] p-0">
-                                          <div className="py-1.5">
-                                            {displayGroups.map((g, idx) => (
-                                              <div key={idx} className="px-3 py-1 flex items-center gap-2 text-sm">
+                                      <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                                        <div className="py-2">
+                                          {displayGroups.map((g, idx) => (
+                                            <div key={idx} className="px-3 py-1.5 text-sm flex items-center gap-2">
+                                              {hasOneid && (
                                                 <span
-                                                  className={`text-[10px] rounded-full px-1.5 py-0.5 border shrink-0 ${
+                                                  className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
                                                     g.source === "oneid-dept"
-                                                      ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
-                                                      : "bg-violet-500/20 text-violet-300 border-violet-500/30"
+                                                      ? "text-blue-400 bg-blue-500/20"
+                                                      : "text-purple-400 bg-purple-500/20"
                                                   }`}
                                                 >
-                                                  {g.source === "oneid-dept" ? "架构" : "用户组"}
+                                                  {g.source === "oneid-dept" ? "部门" : "自定义分组"}
                                                 </span>
-                                                <span className="text-white truncate">{getDisplayName(g)}</span>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    )}
+                                              )}
+                                              <span className="text-white">{getDisplayName(g)}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
                                   </div>
                                 );
                               })()}
@@ -537,7 +511,7 @@ export default function NodeContentPanel({
                             </td>
 
                             {/* 状态 */}
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-5 py-4 whitespace-nowrap">
                               {u.status === "active" ? (
                                 <span className="badge-running text-xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -551,9 +525,9 @@ export default function NodeContentPanel({
                               )}
                             </td>
 
-                            {/* 操作（仅普通模式） */}
-                            {isManualMode && (
-                              <td className="px-4 py-4">
+                            {/* 操作（仅普通模式且非未分组） */}
+                            {isManualMode && nodeId !== "__unassigned__" && (
+                              <td className="px-5 py-4">
                                 <div className="flex items-center justify-center">
                                   {nodeId !== "__unassigned__" && (
                                     <Tooltip>
@@ -647,6 +621,8 @@ export default function NodeContentPanel({
             nodeId={nodeId}
             groups={groups}
             health={health}
+            isAnomalous={isAnomalous}
+            anomalousBoundConfigs={anomalousBoundConfigs}
           />
         )}
       </div>
@@ -698,16 +674,32 @@ export default function NodeContentPanel({
                 addFilteredUsers.map((m) => {
                   const isInCurrentGroup = m.groupIds.includes(nodeId);
                   const isDisabled = isInCurrentGroup;
-                  const memberGroupNames = m.groupIds
-                    .map((gid) => groupName(gid))
-                    .filter(Boolean);
-                  const groupDisplay =
-                    memberGroupNames.length === 0
-                      ? "未分组"
-                      : memberGroupNames.slice(0, 2).join("、") +
-                        (memberGroupNames.length > 2
-                          ? ` +${memberGroupNames.length - 2}`
-                          : "");
+                  // 部门：用户所有 oneid-dept 分组的完整路径（主部门排首位）
+                  const deptPaths = hasOneid
+                    ? m.groupIds
+                        .filter((gid) => groupMap.get(gid)?.source === "oneid-dept")
+                        .map((gid) => ({
+                          path: getPrimaryDeptPath(gid, groups),
+                          isPrimary: gid === m.primaryGroupId,
+                        }))
+                        .sort((a, b) =>
+                          a.isPrimary ? -1 : b.isPrimary ? 1 : 0
+                        )
+                        .map((d) => d.path)
+                    : [];
+                  // 分组：
+                  //   OneID 模式：oneid-dept + oneid-group（完整路径）
+                  //   普通模式：manual（完整路径）
+                  const groupPaths = m.groupIds
+                    .filter((gid) => {
+                      const g = groupMap.get(gid);
+                      if (!g) return false;
+                      if (hasOneid) {
+                        return g.source === "oneid-dept" || g.source === "oneid-group";
+                      }
+                      return g.source === "manual";
+                    })
+                    .map((gid) => getPrimaryDeptPath(gid, groups));
                   const tooltipText = isInCurrentGroup
                     ? "该用户已在当前分组"
                     : "";
@@ -736,8 +728,13 @@ export default function NodeContentPanel({
                         <span className="text-sm text-gray-900 block truncate">
                           {m.userId}
                         </span>
-                        <span className="text-xs text-gray-400 block truncate">
-                          {groupDisplay}
+                        {hasOneid && (
+                          <span className="text-xs text-gray-400 block break-all">
+                            部门：{deptPaths.length > 0 ? deptPaths.join("、") : "—"}
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-400 block break-all">
+                          分组：{groupPaths.length > 0 ? groupPaths.join("、") : "—"}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -870,25 +867,29 @@ interface ConfigOverviewTabProps {
   nodeId: string;
   groups: UserGroup[];
   health: { healthy: boolean; missing: Array<"model" | "channel" | "securityGroup"> };
+  isAnomalous?: boolean;
+  anomalousBoundConfigs?: string[];
 }
 
 /** 来源标签 */
 function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
-  if (source.type === "platformDefault") {
+  if (source.type === "local") {
+    // 本分组 → 蓝色标签
     return (
       <span className="inline-flex items-center text-[10px] font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 shrink-0">
-        平台默认
-      </span>
-    );
-  }
-  if (source.type === "local") {
-    return (
-      <span className="inline-flex items-center text-[10px] font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 shrink-0">
         本分组
       </span>
     );
   }
-  // inherited
+  if (source.type === "platformDefault") {
+    // 全部用户 → 灰色标签
+    return (
+      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+        全部用户
+      </span>
+    );
+  }
+  // inherited → 灰色标签
   return (
     <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
       继承自 {source.groupName}
@@ -896,10 +897,20 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
   );
 }
 
-/** 公网配置项的特殊展示 */
-function PublicNetworkDetail({ meta }: { meta: Record<string, string | number | boolean> }) {
+/** 异常分组：本分组配置条目后的红色提示标签 */
+function LocalAnomalyHint() {
   return (
-    <div className="flex items-center gap-3 text-xs text-gray-500">
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 rounded px-1.5 py-0.5 shrink-0">
+      <span className="w-1 h-1 rounded-full bg-red-500" />
+      请前往对应配置页解绑或删除
+    </span>
+  );
+}
+
+/** 公网配置项的特殊展示（三项信息 + 来源标签跟在后面） */
+function PublicNetworkDetail({ meta, source }: { meta: Record<string, string | number | boolean>; source: ConfigEntry["source"] }) {
+  return (
+    <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
       <span>
         公网 IP：
         <span className={`font-medium ${meta.allocated ? "text-emerald-600" : "text-gray-400"}`}>
@@ -907,9 +918,10 @@ function PublicNetworkDetail({ meta }: { meta: Record<string, string | number | 
         </span>
       </span>
       <span className="text-gray-200">|</span>
-      <span>计费：<span className="font-medium text-gray-700">{String(meta.billingMode)}</span></span>
+      <span>计费模式：<span className="font-medium text-gray-700">{String(meta.billingMode)}</span></span>
       <span className="text-gray-200">|</span>
       <span>带宽上限：<span className="font-medium text-gray-700 tabular-nums">{String(meta.bandwidthCap)} Mbps</span></span>
+      <SourceBadge source={source} />
     </div>
   );
 }
@@ -929,7 +941,7 @@ function PolicyEntryValue({ entry }: { entry: ConfigEntry }) {
     const val = entry.meta.value as number;
     return (
       <span className="text-xs font-medium text-gray-700 tabular-nums">
-        {val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val}
+        {val}
       </span>
     );
   }
@@ -940,6 +952,8 @@ function ConfigOverviewTab({
   nodeId,
   groups,
   health,
+  isAnomalous = false,
+  anomalousBoundConfigs = [],
 }: ConfigOverviewTabProps) {
   // 获取当前节点的全部配置条目
   const configEntries = useMemo(() => getConfigEntries(nodeId, groups), [nodeId, groups]);
@@ -955,6 +969,78 @@ function ConfigOverviewTab({
     return map;
   }, [configEntries]);
 
+  // 异常分组：统计有「本分组」(local) 配置的类别集合，用于显示红点
+  const anomalousLocalCategories = useMemo(() => {
+    if (!isAnomalous) return new Set<ConfigCategory>();
+    const set = new Set<ConfigCategory>();
+    configEntries.forEach((e) => {
+      if (e.source.type === "local") {
+        set.add(e.category);
+      }
+    });
+    return set;
+  }, [configEntries, isAnomalous]);
+
+  // 折叠状态：默认全部展开
+  const [collapsed, setCollapsed] = useState<Set<ConfigCategory>>(new Set());
+  const toggleCollapse = (cat: ConfigCategory) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) {
+        next.delete(cat);
+      } else {
+        next.add(cat);
+      }
+      return next;
+    });
+  };
+
+  // ─── 锚点导航 ───
+  const sectionRefs = useRef<Map<ConfigCategory, HTMLDivElement>>(new Map());
+  const navRef = useRef<HTMLDivElement>(null);
+  const [activeCat, setActiveCat] = useState<ConfigCategory>(CATEGORY_ORDER[0]);
+
+  const setSectionRef = useCallback((cat: ConfigCategory, el: HTMLDivElement | null) => {
+    if (el) {
+      sectionRefs.current.set(cat, el);
+    } else {
+      sectionRefs.current.delete(cat);
+    }
+  }, []);
+
+  // 滚动监听：判断哪个 section 在视口中
+  useEffect(() => {
+    // 找到最近的可滚动祖先容器
+    const nav = navRef.current;
+    if (!nav) return;
+    const scrollContainer = nav.closest<HTMLElement>(".overflow-y-auto");
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const containerTop = scrollContainer.getBoundingClientRect().top;
+      let current: ConfigCategory = CATEGORY_ORDER[0];
+      for (const cat of CATEGORY_ORDER) {
+        const el = sectionRefs.current.get(cat);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top - containerTop <= 80) {
+            current = cat;
+          }
+        }
+      }
+      setActiveCat(current);
+    };
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToSection = (cat: ConfigCategory) => {
+    const el = sectionRefs.current.get(cat);
+    if (el) {
+      el.scrollIntoView({ behavior: "instant", block: "start" });
+    }
+  };
+
   // 三大核心检查卡
   const checks: Array<{
     key: "model" | "channel" | "securityGroup";
@@ -965,150 +1051,242 @@ function ConfigOverviewTab({
   }));
 
   return (
-    <div className="space-y-5">
-      {/* 初始化检查 */}
-      <div
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-        style={{
-          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
-        }}
-      >
-        <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-          <div>
-            <div className="text-sm font-semibold text-gray-900">初始化检查</div>
-            <div className="text-xs text-gray-500 mt-0.5">
-              可见模型 / 可见通道 / 安全组 三项核心配置是否就绪（含上层继承与平台默认兜底）
-            </div>
-          </div>
-          <span
-            className={`inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 ${
-              health.healthy
-                ? "text-emerald-600 bg-emerald-50 border border-emerald-100"
-                : "text-amber-600 bg-amber-50 border border-amber-100"
-            }`}
-          >
-            {health.healthy ? "全部就绪" : `缺 ${health.missing.length} 项`}
-          </span>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {checks.map((c) => {
-            const meta = CORE_CHECK_META[c.key];
+    <div className="relative">
+      {/* 锚点导航条 — 时间轴风格 */}
+      <div ref={navRef} className="sticky top-0 z-10 bg-white -mx-6 px-6 pt-3 pb-3 border-b border-gray-100">
+        <div className="flex items-center w-full">
+          {CATEGORY_ORDER.map((cat, idx) => {
+            const isActive = activeCat === cat;
+            const activeIdx = CATEGORY_ORDER.indexOf(activeCat);
+            const isPast = idx < activeIdx;
+            const isLast = idx === CATEGORY_ORDER.length - 1;
+            const catMeta = CONFIG_CATEGORY_META[cat];
+            const hasAnomaly = anomalousLocalCategories.has(cat);
             return (
-              <div
-                key={c.key}
-                className="flex items-center gap-3 px-6 py-3.5"
-              >
-                {c.status === "ok" ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900">
-                    {meta.label}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    {c.status === "ok"
-                      ? "已就绪（本节点 / 上层继承 / 平台默认 任一命中）"
-                      : meta.desc}
-                  </div>
-                </div>
-                {c.status === "missing" && (
-                  <Link href={meta.path}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs gap-1"
+              <React.Fragment key={cat}>
+                {/* 导航项：圆点 + 文字 */}
+                <button
+                  type="button"
+                  onClick={() => scrollToSection(cat)}
+                  className="flex flex-col items-center gap-1 shrink-0 group"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                      isActive
+                        ? "bg-blue-600 ring-4 ring-blue-50"
+                        : isPast
+                        ? "bg-blue-400"
+                        : "bg-gray-300 group-hover:bg-gray-400"
+                    }`}
+                  />
+                  <span className="relative inline-flex">
+                    <span
+                      className={`text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
+                        isActive
+                          ? "text-blue-600"
+                          : isPast
+                          ? "text-blue-500"
+                          : "text-gray-400 group-hover:text-gray-600"
+                      }`}
                     >
-                      前往配置
-                      <ExternalLink className="w-3 h-3" />
-                    </Button>
-                  </Link>
+                      {CATEGORY_NAV_LABEL[cat]}
+                    </span>
+                    {hasAnomaly && (
+                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+                    )}
+                  </span>
+                </button>
+                {/* 连接线 */}
+                {!isLast && (
+                  <div
+                    className={`flex-1 h-px mx-1 mt-[-14px] transition-colors duration-200 ${
+                      idx < activeIdx ? "bg-blue-300" : "bg-gray-200"
+                    }`}
+                  />
                 )}
-              </div>
+              </React.Fragment>
             );
           })}
         </div>
       </div>
 
-      {/* 按配置项聚合的配置列表 */}
-      <div className="space-y-3">
+      {/* 异常分组告警条 */}
+      {isAnomalous && (
+        <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mt-3">
+          <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-medium text-red-800">
+              该分组的专属配置未解绑
+            </div>
+            <div className="text-xs text-red-700 mt-0.5 leading-relaxed">
+              该分组对应的部门已在腾讯统一身份管理平台被删除。请前往对应配置页面将专属于「本分组」的配置与本分组解绑或删除，处理完成后分组将被自动清除。来自「全部用户」或「继承自上级分组」的配置项无需处理。
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3 pt-3">
         {CATEGORY_ORDER.map((cat) => {
-          const entries = byCategory.get(cat);
-          if (!entries || entries.length === 0) return null;
+          const entries = byCategory.get(cat) ?? [];
           const catMeta = CONFIG_CATEGORY_META[cat];
           const IconComp = CATEGORY_ICON[cat];
+          const hasAnomaly = anomalousLocalCategories.has(cat);
           return (
             <div
               key={cat}
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              ref={(el) => setSectionRef(cat, el)}
+              className="bg-white rounded-2xl border border-gray-100 overflow-hidden scroll-mt-[3.75rem]"
               style={{
                 boxShadow:
                   "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
               }}
             >
               {/* 配置项 header */}
-              <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-50">
+              <div
+                className="flex items-center justify-between px-6 py-3.5 border-b border-gray-50 cursor-pointer select-none hover:bg-gray-50/50 transition-colors"
+                onClick={() => toggleCollapse(cat)}
+              >
                 <div className="flex items-center gap-2.5">
                   <div className={`w-7 h-7 rounded-lg ${catMeta.bg} flex items-center justify-center`}>
                     <IconComp className={`w-3.5 h-3.5 ${catMeta.color}`} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="relative inline-flex text-sm font-semibold text-gray-900">
                         {catMeta.label}
+                        {hasAnomaly && (
+                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
+                        )}
                       </span>
-                      <span className="text-xs text-gray-400 tabular-nums">
-                        {entries.length} 条
-                      </span>
+                      {/* 仅模型、通道、镜像在标题旁显示数量；技能/Agent工具在子类别显示；其余不显示 */}
+                      {(cat === "model" || cat === "channel" || cat === "image") && (
+                        <span className="text-xs text-gray-400 tabular-nums">
+                          {entries.length} 个
+                        </span>
+                      )}
                     </div>
                     <div className="text-[11px] text-gray-400 mt-0.5">
                       {catMeta.description}
                     </div>
                   </div>
                 </div>
-                <Link
-                  href={catMeta.path}
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                >
-                  管理 <ExternalLink className="w-3 h-3" />
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={catMeta.path}
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  >
+                    管理 <ExternalLink className="w-3 h-3" />
+                  </Link>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                      collapsed.has(cat) ? "-rotate-90" : ""
+                    }`}
+                  />
+                </div>
               </div>
 
-              {/* 条目列表 */}
+              {/* 条目列表（可折叠） */}
+              {!collapsed.has(cat) && (
               <div className="divide-y divide-gray-50">
-                {entries.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between px-6 py-3 gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-900 truncate">
-                          {entry.label}
-                        </span>
-                        {entry.subLabel && (
-                          <span className="text-[10px] text-gray-400 bg-gray-50 rounded px-1.5 py-0.5 shrink-0">
-                            {entry.subLabel}
-                          </span>
-                        )}
-                        <SourceBadge source={entry.source} />
-                      </div>
-                      {/* 特殊展示 */}
-                      {cat === "publicNetwork" && entry.meta && (
-                        <div className="mt-1.5">
-                          <PublicNetworkDetail meta={entry.meta} />
-                        </div>
-                      )}
-                      {cat === "vpc" && entry.subLabel && (
-                        <div className="text-xs text-gray-400 mt-0.5 font-mono">
-                          CIDR: {entry.subLabel}
-                        </div>
-                      )}
-                    </div>
-                    <div className="shrink-0">
-                      {cat === "platformPolicy" && <PolicyEntryValue entry={entry} />}
-                    </div>
+                {entries.length === 0 ? (
+                  <div className="px-6 py-6 text-center">
+                    <span className="text-sm text-gray-400">暂未配置</span>
                   </div>
-                ))}
+                ) : (cat === "skill" || cat === "agentTool" || cat === "platformPolicy" || cat === "network") ? (
+                  (() => {
+                    // 按 subLabel 分组
+                    const grouped = new Map<string, ConfigEntry[]>();
+                    entries.forEach((e) => {
+                      const key = e.subLabel || "其他";
+                      const list = grouped.get(key) ?? [];
+                      list.push(e);
+                      grouped.set(key, list);
+                    });
+                    return Array.from(grouped.entries()).map(([groupLabel, groupEntries]) => (
+                      <div key={groupLabel}>
+                        {/* 大类标题 */}
+                        <div className="px-6 py-2 bg-gray-50/80 border-b border-gray-50 flex items-center gap-2">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            {groupLabel}
+                          </span>
+                          {/* 技能和Agent工具在子类别标题旁显示数量 */}
+                          {(cat === "skill" || cat === "agentTool") && (
+                            <span className="text-xs text-gray-400 tabular-nums">
+                              {groupEntries.length} 个
+                            </span>
+                          )}
+                        </div>
+                        {/* 大类下的条目 */}
+                        {groupEntries.map((entry) => (
+                          <div key={entry.id} className="px-6 py-3 border-b border-gray-50 last:border-b-0">
+                            {/* 公网特殊展示 */}
+                            {entry.subLabel === "公网" && entry.meta ? (
+                              <PublicNetworkDetail meta={entry.meta} source={entry.source} />
+                            ) : entry.subLabel === "私有网络与子网" && entry.meta ? (
+                              /* VPC + 子网结构化展示 */
+                              <div className="space-y-2">
+                                {/* 私有网络 */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs text-gray-500 shrink-0">私有网络：</span>
+                                  <span className="text-xs font-semibold text-gray-700">
+                                    {String(entry.meta.vpcId)} | {String(entry.meta.vpcName)} | {String(entry.meta.vpcCidr)}
+                                  </span>
+                                  <SourceBadge source={entry.source} />
+                                  {isAnomalous && entry.source.type === "local" && <LocalAnomalyHint />}
+                                </div>
+                                {/* 子网列表 */}
+                                {Array.isArray(entry.meta.subnets) && (entry.meta.subnets as Array<{ zone: string; subnetId: string; subnetCidr: string }>).map((subnet) => (
+                                  <div key={subnet.subnetId} className="flex items-center gap-2 flex-wrap pl-4">
+                                    <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{subnet.zone}</span>
+                                    <span className="text-xs font-semibold text-gray-700">
+                                      {subnet.subnetId} | {subnet.subnetCidr}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-medium text-gray-900 truncate">
+                                      {entry.label}
+                                    </span>
+                                    <SourceBadge source={entry.source} />
+                                    {isAnomalous && entry.source.type === "local" && <LocalAnomalyHint />}
+                                  </div>
+                                </div>
+                                <div className="shrink-0">
+                                  {cat === "platformPolicy" && <PolicyEntryValue entry={entry} />}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ));
+                  })()
+                ) : (
+                  entries.map((entry) => (
+                    <div key={entry.id} className="flex items-center justify-between px-6 py-3 gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-gray-900 truncate">
+                            {entry.label}
+                          </span>
+                          <SourceBadge source={entry.source} />
+                          {isAnomalous && entry.source.type === "local" && <LocalAnomalyHint />}
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        {(cat as string) === "platformPolicy" && <PolicyEntryValue entry={entry} />}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
+              )}
             </div>
           );
         })}

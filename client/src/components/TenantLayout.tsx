@@ -399,6 +399,21 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   const [location] = useLocation();
   const { isAdmin, toggleRole } = useUserRole();
 
+  // 读取多分组模式状态
+  const [groupMode, setGroupMode] = useState<"normal" | "multi-group">(() => {
+    return (localStorage.getItem("openclaw_group_mode") as "normal" | "multi-group") || "normal";
+  });
+  // 监听 localStorage 变化（从 MyOpenClaw 切换时同步）
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "openclaw_group_mode") {
+        setGroupMode((e.newValue as "normal" | "multi-group") || "normal");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => { window.removeEventListener("storage", handleStorage); };
+  }, []);
+
   // 读取管控端「允许用户查看模型额度」开关状态（默认开启）
   const [modelQuotaEnabled, setModelQuotaEnabled] = useState(() => {
     const v = localStorage.getItem("admin_allow_model_quota");
@@ -501,6 +516,26 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                     {isAdmin ? "管理员" : "普通成员"}
                   </span>
                 </div>
+                {/* 所在分组 - 仅多分组模式下显示 */}
+                {groupMode === "multi-group" && (
+                  <div className="px-3 py-2 border-b border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1.5">所在分组</p>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                        A公司 / 技术部 / 前端组
+                      </span>
+                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                        A公司 / 技术部 / AI 组
+                      </span>
+                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                        前端研发同学
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <DropdownMenuItem onClick={() => window.location.href = '/reset-password'}>
                   <KeyRound className="w-4 h-4 mr-2 text-gray-500" />
                   重置密码

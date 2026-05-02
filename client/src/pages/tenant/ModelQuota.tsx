@@ -27,9 +27,30 @@ import {
   Info,
   ChevronLeft,
   ChevronRight,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+// ─── 多分组相关 ──────────────────────────────────────────────────────────────
+type UserGroupMode = "normal" | "multi-group";
+
+interface SimpleGroup {
+  id: string;
+  name: string;
+  isPrimary: boolean;
+  allowViewQuota: boolean;
+}
+
+const MOCK_GROUPS: SimpleGroup[] = [
+  { id: "grp-fe", name: "A公司 / 技术部 / 前端组", isPrimary: true, allowViewQuota: true },
+  { id: "grp-ai", name: "A公司 / 技术部 / AI 组", isPrimary: false, allowViewQuota: true },
+  { id: "grp-custom", name: "前端研发同学", isPrimary: false, allowViewQuota: false },
+];
+
+const getDefaultGroup = (groups: SimpleGroup[]): SimpleGroup => {
+  return groups.find(g => g.isPrimary) || groups[0];
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type DateMode = "single" | "range";
@@ -59,13 +80,20 @@ interface DetailRow {
 // ─── Mock Data Generators ────────────────────────────────────────────────────
 const MODELS = ["腾讯云 DeepSeek（DeepSeek V3 0324）", "腾讯云混元（混元 TurboS Latest）", "自定义模型（Claude Opus 4.6）"];
 
-function generateSummary(dateStr: string): SummaryRow[] {
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function generateSummary(dateStr: string, groupId?: string): SummaryRow[] {
   const seed = dateStr.replace(/-/g, "").slice(-4);
   const n = parseInt(seed, 10);
+  const groupSeed = groupId ? hashStr(groupId) : 0;
   return MODELS.map((model, i) => {
-    const base = ((n * (i + 1) * 137) % 800) + 200;
-    const inputTokens = base * 120 + (n % 50) * 10;
-    const outputTokens = base * 80 + (n % 30) * 5;
+    const base = (((n + groupSeed) * (i + 1) * 137) % 800) + 200;
+    const inputTokens = base * 120 + ((n + groupSeed) % 50) * 10;
+    const outputTokens = base * 80 + ((n + groupSeed) % 30) * 5;
     return {
       model,
       requests: base,
@@ -76,16 +104,18 @@ function generateSummary(dateStr: string): SummaryRow[] {
   });
 }
 
-function generateDetails(dateStr: string): DetailRow[] {
+function generateDetails(dateStr: string, groupId?: string): DetailRow[] {
   const seed = parseInt(dateStr.replace(/-/g, "").slice(-4), 10);
+  const groupSeed = groupId ? hashStr(groupId) : 0;
+  const combinedSeed = seed + groupSeed;
   const rows: DetailRow[] = [];
   for (let i = 0; i < 28; i++) {
-    const hour = String(Math.floor((seed * (i + 1) * 7) % 24)).padStart(2, "0");
-    const min = String(Math.floor((seed * (i + 3) * 13) % 60)).padStart(2, "0");
-    const sec = String(Math.floor((seed * (i + 5) * 17) % 60)).padStart(2, "0");
+    const hour = String(Math.floor((combinedSeed * (i + 1) * 7) % 24)).padStart(2, "0");
+    const min = String(Math.floor((combinedSeed * (i + 3) * 13) % 60)).padStart(2, "0");
+    const sec = String(Math.floor((combinedSeed * (i + 5) * 17) % 60)).padStart(2, "0");
     const model = MODELS[i % MODELS.length];
-    const inputTokens = 800 + ((seed * (i + 1) * 31) % 3200);
-    const outputTokens = 400 + ((seed * (i + 2) * 19) % 1600);
+    const inputTokens = 800 + ((combinedSeed * (i + 1) * 31) % 3200);
+    const outputTokens = 400 + ((combinedSeed * (i + 2) * 19) % 1600);
     rows.push({
       time: `${dateStr} ${hour}:${min}:${sec}`,
       model,
@@ -98,7 +128,7 @@ function generateDetails(dateStr: string): DetailRow[] {
   return rows.sort((a, b) => b.time.localeCompare(a.time));
 }
 
-function aggregateRange(start: string, end: string): { summary: SummaryRow[]; details: DetailRow[] } {
+function aggregateRange(start: string, end: string, groupId?: string): { summary: SummaryRow[]; details: DetailRow[] } {
   const dates: string[] = [];
   const cur = new Date(start);
   const endDate = new Date(end);
@@ -106,7 +136,7 @@ function aggregateRange(start: string, end: string): { summary: SummaryRow[]; de
     dates.push(cur.toISOString().slice(0, 10));
     cur.setDate(cur.getDate() + 1);
   }
-  const allDetails: DetailRow[] = dates.flatMap(generateDetails);
+  const allDetails: DetailRow[] = dates.flatMap(d => generateDetails(d, groupId));
   const summaryMap: Record<string, SummaryRow> = {};
   for (const d of allDetails) {
     if (!summaryMap[d.model]) {
@@ -197,19 +227,27 @@ export default function ModelQuota() {
   const [summaryPage, setSummaryPage] = useState(1);
   const [detailPage, setDetailPage] = useState(1);
 
+  // 多分组模式
+  const [groupMode] = useState<UserGroupMode>(() => {
+    return (localStorage.getItem("openclaw_group_mode") as UserGroupMode) || "normal";
+  });
+  const [selectedGroup, setSelectedGroup] = useState<SimpleGroup>(() => getDefaultGroup(MOCK_GROUPS));
+  const [showGroupFilter, setShowGroupFilter] = useState(false);
+
   const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
   }, []);
 
   // Compute data based on current filter
   const { summary, details, overviewStats } = useMemo(() => {
+    const groupId = groupMode === "multi-group" ? selectedGroup.id : undefined;
     let s: SummaryRow[];
     let d: DetailRow[];
     if (dateMode === "single") {
-      s = generateSummary(singleDate);
-      d = generateDetails(singleDate);
+      s = generateSummary(singleDate, groupId);
+      d = generateDetails(singleDate, groupId);
     } else {
-      const agg = aggregateRange(dateRange.start, dateRange.end);
+      const agg = aggregateRange(dateRange.start, dateRange.end, groupId);
       s = agg.summary;
       d = agg.details;
     }
@@ -223,10 +261,13 @@ export default function ModelQuota() {
       overviewStats: { totalRequests, totalInput, totalOutput, totalTokens },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateMode, singleDate, dateRange, refreshKey]);
+  }, [dateMode, singleDate, dateRange, refreshKey, groupMode, selectedGroup]);
 
   // Today quota: always based on today's data (not affected by filter)
-  const todaySummary = useMemo(() => generateSummary(TODAY), []);
+  const todaySummary = useMemo(() => {
+    const groupId = groupMode === "multi-group" ? selectedGroup.id : undefined;
+    return generateSummary(TODAY, groupId);
+  }, [groupMode, selectedGroup]);
   const todayTotalTokens = todaySummary.reduce((acc, r) => acc + r.totalTokens, 0);
   const quotaPct = (todayTotalTokens / TODAY_QUOTA_TOTAL) * 100;
   const quotaPctStr = quotaPct.toFixed(1);
@@ -271,77 +312,123 @@ export default function ModelQuota() {
             </Tooltip>
           </div>
 
-          {/* Time Filter + Refresh */}
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
-            {/* Mode Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1 gap-1">
-              <button
-                onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
-                className={cn(
-                  "px-3 py-1.5 text-sm rounded-md transition-all",
-                  dateMode === "single"
-                    ? "bg-white text-gray-900 font-medium shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+          {/* Filter Bar */}
+          <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+            {/* Left: 分组筛选 */}
+            {groupMode === "multi-group" && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowGroupFilter(!showGroupFilter)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <Filter className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-gray-700">{selectedGroup.name}</span>
+                </button>
+                {showGroupFilter && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowGroupFilter(false)} />
+                    <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[200px]">
+                      {MOCK_GROUPS.map((group) => (
+                        <div key={group.id} className="relative group/item">
+                          <button
+                            disabled={!group.allowViewQuota}
+                            onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
+                            className={cn(
+                              "w-full text-left px-4 py-2.5 text-sm transition-colors",
+                              !group.allowViewQuota
+                                ? "text-gray-300 cursor-not-allowed"
+                                : selectedGroup.id === group.id
+                                  ? "bg-blue-50 text-blue-700 font-medium"
+                                  : "text-gray-700 hover:bg-gray-50"
+                            )}
+                          >
+                            {group.name}
+                          </button>
+                          {!group.allowViewQuota && (
+                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-lg whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
+                              该分组不允许查看模型额度
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
-              >
-                单日
-              </button>
-              <button
-                onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
-                className={cn(
-                  "px-3 py-1.5 text-sm rounded-md transition-all",
-                  dateMode === "range"
-                    ? "bg-white text-gray-900 font-medium shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                时间段
-              </button>
-            </div>
-
-            {/* Date Input(s) */}
-            {dateMode === "single" ? (
-              <input
-                type="date"
-                value={singleDate}
-                max={TODAY}
-                onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
-                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
-                style={{ colorScheme: 'light' }}
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={dateRange.start}
-                  max={dateRange.end}
-                  onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
-                <span className="text-gray-400 text-sm">至</span>
-                <input
-                  type="date"
-                  value={dateRange.end}
-                  min={dateRange.start}
-                  max={TODAY}
-                  onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
-                  style={{ colorScheme: 'light' }}
-                />
               </div>
             )}
 
-            {/* Refresh */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="flex items-center gap-1.5 text-gray-600 bg-white"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              刷新
-            </Button>
+            {/* Right: 日期模式 + 日期 + 刷新 */}
+            <div className="flex items-center gap-3 ml-auto flex-wrap">
+              {/* Mode Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+                <button
+                  onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
+                  className={cn(
+                    "px-3 py-1.5 text-sm rounded-md transition-all",
+                    dateMode === "single"
+                      ? "bg-white text-gray-900 font-medium shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  单日
+                </button>
+                <button
+                  onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
+                  className={cn(
+                    "px-3 py-1.5 text-sm rounded-md transition-all",
+                    dateMode === "range"
+                      ? "bg-white text-gray-900 font-medium shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  时间段
+                </button>
+              </div>
+
+              {/* Date Input(s) */}
+              {dateMode === "single" ? (
+                <input
+                  type="date"
+                  value={singleDate}
+                  max={TODAY}
+                  onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
+                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                  style={{ colorScheme: 'light' }}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    max={dateRange.end}
+                    onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
+                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                    style={{ colorScheme: 'light' }}
+                  />
+                  <span className="text-gray-400 text-sm">至</span>
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    min={dateRange.start}
+                    max={TODAY}
+                    onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
+                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                    style={{ colorScheme: 'light' }}
+                  />
+                </div>
+              )}
+
+              {/* Refresh */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                className="flex items-center gap-1.5 text-gray-600 bg-white"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                刷新
+              </Button>
+            </div>
           </div>
 
           {/* Overview Cards */}

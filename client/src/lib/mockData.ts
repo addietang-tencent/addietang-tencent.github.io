@@ -25,6 +25,8 @@ export const MOCK_OPENCLAW_LIST = [
   { id: "oc-011", instanceId: "ins-hermes02",     name: "Hermes 加载失败示例",                                      creator: "karen@acompany.com",  status: "loadFail",    agentType: "hermes",       createdAt: "2026-04-02 11:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
   { id: "oc-012", instanceId: "ins-lightclaw01",  name: "LightclawACE 示例",                                          creator: "leo@acompany.com",    status: "running",     agentType: "lightclawace", createdAt: "2026-04-03 09:30:00", model: "",               modelVersion: "",           channels: [], skills: [] },
   { id: "oc-013", instanceId: "ins-lightclaw02",  name: "LightclawACE 创建中示例",                                      creator: "alice@acompany.com",  status: "creating",    agentType: "lightclawace", createdAt: "2026-04-04 14:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-014", instanceId: "ins-grpdemo01",   name: "多分组示例-前端组",                                            creator: "alice@acompany.com",  status: "running",     agentType: "openclaw",     createdAt: "2026-04-05 10:00:00", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: [], skills: [], groupId: "grp-fe", groupName: "A公司 / 技术部 / 前端组" },
+  { id: "oc-015", instanceId: "ins-grpdemo02",   name: "多分组示例-前端研发",                                            creator: "alice@acompany.com",  status: "running",     agentType: "openclaw",     createdAt: "2026-04-05 11:00:00", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: [], skills: [], groupId: "grp-custom", groupName: "前端研发同学" },
 ];
 
 export const MOCK_MEMBERS = [

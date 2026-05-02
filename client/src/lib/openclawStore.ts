@@ -21,6 +21,8 @@ export interface AgentItem {
   op?: string;
   roleName?: string;
   memoryStatus?: 'none' | 'free' | 'pro';
+  groupId?: string;
+  groupName?: string;
 }
 
 /** 从 localStorage 读取列表，首次使用 MOCK 数据初始化 */

@@ -103,15 +103,12 @@ interface OpenClawItem {
   browserStartupFailReason?: string;
   browserStartupMockMode?: BrowserStartupMockMode;
   browserStartupRandomFailSteps?: BrowserStartupStepKey[];
-  // —— 云桌面升级相关能力状态（mock）——
-  // browserReady: 原云端浏览器是否可用
-  // desktopReady: 云桌面是否已就绪
-  // desktopInstalling: 云桌面是否正在升级
-  // desktopError: 云桌面升级失败信息（null / undefined 表示无错误）
   browserReady?: boolean;
   desktopReady?: boolean;
   desktopInstalling?: boolean;
   desktopError?: string | null;
+  groupId?: string;
+  groupName?: string;
 }
 
 interface ChatMessage {
@@ -655,6 +652,9 @@ interface ChatViewProps {
   onRefreshStatus: (e: React.MouseEvent, id: string, name: string) => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  // 多分组模式
+  groupMode?: "normal" | "multi-group";
+  getClawGroupPermissions?: (claw: OpenClawItem) => { allowTerminal: boolean; allowChatView: boolean; panelAccess: string } | null;
 }
 
 export default function ChatView({
@@ -669,6 +669,8 @@ export default function ChatView({
   onRefreshStatus,
   isFullscreen,
   onToggleFullscreen,
+  groupMode = "normal",
+  getClawGroupPermissions,
 }: ChatViewProps) {
   const [, navigate] = useLocation();
   const effectiveClaws = useMemo(() => claws.map(applyDemoBrowserMockFields), [claws]);
@@ -1983,7 +1985,10 @@ export default function ChatView({
                   const isConfigEnabled = claw.status === "running";
                   const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
                   const isHermes = claw.agentType === "hermes";
-                  const isDisabledForChat = isHermes; // 只有 Hermes 置灰，LightclawACE 支持对话
+                  // 多分组模式下检查 chatView 权限
+                  const groupPerms = getClawGroupPermissions?.(claw);
+                  const isGroupChatDisabled = groupMode === "multi-group" && groupPerms && !groupPerms.allowChatView;
+                  const isDisabledForChat = isHermes || !!isGroupChatDisabled;
 
                   return (
                     <Tooltip key={claw.id}>
@@ -2029,6 +2034,10 @@ export default function ChatView({
                         )}
                         <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
                       </div>
+                      {/* 多分组模式下显示分组 - 灰色小字 */}
+                      {groupMode === "multi-group" && (
+                        <p className="text-xs text-gray-400 mt-0.5">分组：{claw.groupName || "A公司 / 技术部 / 前端组"}</p>
+                      )}
                       <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
                       <div className="flex items-center justify-between mt-2">
                         <Tooltip>
@@ -2087,8 +2096,14 @@ export default function ChatView({
                                 {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
                               </DropdownMenuItem>
                             )}
-                            {allowTerminal && (
-                              claw.status === "running" ? (
+                            {(() => {
+                              // 多分组模式下检查当前 claw 的分组终端权限
+                              const groupPerms = getClawGroupPermissions?.(claw);
+                              const canTerminal = groupMode === "multi-group" && groupPerms
+                                ? groupPerms.allowTerminal
+                                : allowTerminal;
+                              if (!canTerminal) return null;
+                              return claw.status === "running" ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}>
                                   <Terminal className="w-4 h-4 mr-2 text-gray-500" />
                                   进入终端
@@ -2098,8 +2113,8 @@ export default function ChatView({
                                   <Terminal className="w-4 h-4 mr-2 text-gray-400" />
                                   进入终端
                                 </DropdownMenuItem>
-                              )
-                            )}
+                              );
+                            })()}
                             {claw.roleName && claw.roleName !== "通用助手" && claw.status === "running" && (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRemoveRoleConfirm({ id: claw.id, name: claw.name, roleName: claw.roleName! }); }}>
                                 <UserMinus className="w-4 h-4 mr-2 text-gray-500" />
@@ -2135,6 +2150,11 @@ export default function ChatView({
                     {isHermes && (
                       <TooltipContent side="right" className="text-xs">
                         Hermes 暂不支持对话视图
+                      </TooltipContent>
+                    )}
+                    {!isHermes && isGroupChatDisabled && (
+                      <TooltipContent side="right" className="text-xs">
+                        该分组未开启对话视图权限
                       </TooltipContent>
                     )}
                     </Tooltip>

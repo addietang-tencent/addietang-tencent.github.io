@@ -39,7 +39,7 @@ import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, UserMinus,
-  LayoutGrid, MessageSquare, Monitor, Copy,
+  LayoutGrid, MessageSquare, Monitor, Copy, Users, Check, ArrowRight, ArrowLeft,
 } from "lucide-react";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
@@ -66,6 +66,8 @@ interface OpenClawItem {
   roleName?: string; // 角色名称
   memoryStatus?: 'none' | 'free' | 'pro'; // 记忆状态
   agentType?: "openclaw" | "hermes" | "lightclawace"; // Agent 类型
+  groupId?: string;   // 所属分组 ID（多分组模式）
+  groupName?: string; // 所属分组名称（多分组模式）
 }
 
 interface Notification {
@@ -73,6 +75,77 @@ interface Notification {
   message: string;
   timestamp: string;
 }
+
+// ==================== 多分组模式类型与Mock数据 ====================
+type UserGroupMode = "normal" | "multi-group";
+
+interface UserGroup {
+  id: string;
+  name: string;         // 分组全称
+  type: "department" | "custom"; // 部门 / 自定义分组
+  isPrimary: boolean;   // 是否主部门
+  depth: number;        // 层级深度
+  permissions: {
+    allowTerminal: boolean;
+    allowChatView: boolean;
+    agentTypes: ("openclaw" | "hermes" | "lightclawace")[];
+    roles: string[];    // 可用角色列表
+    panelAccess: "full" | "partial" | "limited"; // 详细配置面板访问级别
+  };
+}
+
+// Alice 所属的 3 个分组
+const MOCK_USER_GROUPS: UserGroup[] = [
+  {
+    id: "grp-fe",
+    name: "A公司 / 技术部 / 前端组",
+    type: "department",
+    isPrimary: true,
+    depth: 3,
+    permissions: {
+      allowTerminal: true,
+      allowChatView: true,
+      agentTypes: ["openclaw", "hermes", "lightclawace"],
+      roles: ["通用助手", "客服助手", "技术顾问", "运营助手", "数据分析师", "产品经理", "文案创作"],
+      panelAccess: "full",
+    },
+  },
+  {
+    id: "grp-ai",
+    name: "A公司 / 技术部 / AI 组",
+    type: "department",
+    isPrimary: false,
+    depth: 3,
+    permissions: {
+      allowTerminal: true,
+      allowChatView: true,
+      agentTypes: ["openclaw", "hermes", "lightclawace"],
+      roles: ["通用助手", "技术顾问", "数据分析师"],
+      panelAccess: "partial",
+    },
+  },
+  {
+    id: "grp-custom",
+    name: "前端研发同学",
+    type: "custom",
+    isPrimary: false,
+    depth: 1,
+    permissions: {
+      allowTerminal: false,
+      allowChatView: false,
+      agentTypes: ["openclaw"],
+      roles: ["通用助手", "客服助手"],
+      panelAccess: "limited",
+    },
+  },
+];
+
+// 获取默认选中的分组：优先选主部门，否则选层级最浅的
+const getDefaultGroup = (groups: UserGroup[]): UserGroup => {
+  const primary = groups.find(g => g.isPrimary);
+  if (primary) return primary;
+  return [...groups].sort((a, b) => a.depth - b.depth)[0];
+};
 
 const STATUS_CONFIG: Record<OpenClawStatus, {
   label: string;
@@ -245,6 +318,20 @@ export default function MyOpenClaw() {
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
 
+  // ===== 多分组模式 =====
+  const [groupMode, setGroupMode] = useState<UserGroupMode>(() => {
+    return (localStorage.getItem("openclaw_group_mode") as UserGroupMode) || "normal";
+  });
+  const handleGroupModeChange = (mode: UserGroupMode) => {
+    setGroupMode(mode);
+    localStorage.setItem("openclaw_group_mode", mode);
+    // 通知同页面其他组件
+    window.dispatchEvent(new StorageEvent("storage", { key: "openclaw_group_mode", newValue: mode }));
+  };
+  // 创建弹窗步骤（多分组模式下用）
+  const [createStep, setCreateStep] = useState<1 | 2>(1);
+  const [selectedGroup, setSelectedGroup] = useState<UserGroup>(() => getDefaultGroup(MOCK_USER_GROUPS));
+
   // 视图模式
   const [viewMode, setViewMode] = useState<"card" | "chat">(() => {
     return (localStorage.getItem("openclaw_view_mode") as "card" | "chat") || "chat";
@@ -376,13 +463,15 @@ export default function MyOpenClaw() {
       channels: [],
       skills: [],
       roleName: selectedRole?.name ?? "通用助手",
-      memoryStatus: 'none', // 记忆状态
+      memoryStatus: 'none',
+      ...(groupMode === "multi-group" ? { groupId: selectedGroup.id, groupName: selectedGroup.name } : {}),
     };
     setClaws([newClaw, ...claws]);
     setNewName("");
     setSelectedRole(null);
     setRoleExpanded(false);
     setShowCreate(false);
+    setCreateStep(1);
     toast.success(`「${newClaw.name}」创建中...`);
   };
 
@@ -505,8 +594,38 @@ export default function MyOpenClaw() {
               <p className="text-sm text-gray-500 mt-1">管理你的 AI 智能助理</p>
             </div>
             <div className="flex items-center gap-3">
+              {/* 模式切换 Segmented Control */}
+              <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                <button
+                  onClick={() => handleGroupModeChange("normal")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                    groupMode === "normal"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  普通用户
+                </button>
+                <button
+                  onClick={() => handleGroupModeChange("multi-group")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 flex items-center gap-1 ${
+                    groupMode === "multi-group"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  <Users className="w-3 h-3" />
+                  多分组用户
+                </button>
+              </div>
               <Button
-                onClick={() => setShowCreate(true)}
+                onClick={() => {
+                  if (groupMode === "multi-group") {
+                    setCreateStep(1);
+                    setSelectedGroup(getDefaultGroup(MOCK_USER_GROUPS));
+                  }
+                  setShowCreate(true);
+                }}
                 className="text-white btn-primary-glow"
                 style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
               >
@@ -567,6 +686,19 @@ export default function MyOpenClaw() {
                   onRefreshStatus={handleRefreshStatus}
                   isFullscreen={isFullscreen}
                   onToggleFullscreen={handleToggleFullscreen}
+                  groupMode={groupMode}
+                  getClawGroupPermissions={(claw) => {
+                    if (groupMode !== "multi-group") return null;
+                    // 没有 groupId 的 Agent 默认归属前端组（主部门）
+                    const groupId = claw.groupId || "grp-fe";
+                    const group = MOCK_USER_GROUPS.find(g => g.id === groupId);
+                    if (!group) return null;
+                    return {
+                      allowTerminal: group.permissions.allowTerminal,
+                      allowChatView: group.permissions.allowChatView,
+                      panelAccess: group.permissions.panelAccess,
+                    };
+                  }}
                 />
               ) : (() => {
                 const allClaws = claws;
@@ -666,21 +798,24 @@ export default function MyOpenClaw() {
                               )}
 
                               {/* Terminal */}
-                              {allowTerminal && (
-                                <>
-                                  {claw.status === "running" ? (
-                                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}>
-                                      <Terminal className="w-4 h-4 mr-2 text-gray-500" />
-                                      进入终端
-                                    </DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                      <Terminal className="w-4 h-4 mr-2 text-gray-400" />
-                                      进入终端
-                                    </DropdownMenuItem>
-                                  )}
-                                </>
-                              )}
+                              {(() => {
+                                const clawGroup = MOCK_USER_GROUPS.find(g => g.id === (claw.groupId || "grp-fe")) || null;
+                                const canTerminal = groupMode === "multi-group" && clawGroup
+                                  ? clawGroup.permissions.allowTerminal
+                                  : allowTerminal;
+                                if (!canTerminal) return null;
+                                return claw.status === "running" ? (
+                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/terminal/${claw.id}`, "_blank"); }}>
+                                    <Terminal className="w-4 h-4 mr-2 text-gray-500" />
+                                    进入终端
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                    <Terminal className="w-4 h-4 mr-2 text-gray-400" />
+                                    进入终端
+                                  </DropdownMenuItem>
+                                );
+                              })()}
 
                               {/* Remove Role */}
                               {claw.roleName && claw.roleName !== "通用助手" && claw.status === "running" ? (
@@ -716,7 +851,7 @@ export default function MyOpenClaw() {
                       <h3 className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
                         {claw.name}
                       </h3>
-                      <div className="flex items-center gap-2 mb-0.5">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         {claw.roleName && (
                           <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
                             style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
@@ -725,6 +860,12 @@ export default function MyOpenClaw() {
                         )}
                         <p className={`text-xs transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>{claw.instanceId}</p>
                       </div>
+                      {/* 多分组模式下的分组信息 - 灰色小字 */}
+                      {groupMode === "multi-group" && (
+                        <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>
+                          分组：{claw.groupName || "A公司 / 技术部 / 前端组"}
+                        </p>
+                      )}
                       <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>创建于 {claw.createdAt}</p>
                     </div>
 
@@ -1009,7 +1150,7 @@ export default function MyOpenClaw() {
         </Dialog>
 
         {/* Create Dialog */}
-        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setTypeExpanded(false); setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); } }}>
+        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setTypeExpanded(false); setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); setCreateStep(1); } }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -1018,9 +1159,67 @@ export default function MyOpenClaw() {
                   🦞
                 </div>
                 创建 Agent
+                {groupMode === "multi-group" && (
+                  <span className="text-xs text-gray-400 font-normal ml-1">
+                    步骤 {createStep}/2
+                  </span>
+                )}
               </DialogTitle>
+              {groupMode === "multi-group" && (
+                <p className="text-xs text-gray-500 mt-1 pl-9">
+                  {createStep === 1 ? "您属于多个分组，请先选择要使用的分组" : "填写 Agent 基本信息"}
+                </p>
+              )}
             </DialogHeader>
+
+            {/* ===== 多分组模式 Step 1: 选择分组 ===== */}
+            {groupMode === "multi-group" && createStep === 1 && (
+              <div className="py-4 space-y-3">
+                <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 mb-1">
+                  <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-blue-600 leading-relaxed">
+                    不同分组对应不同的 Agent 配置和权限，选择后将影响可用的 Agent 类型和角色身份。
+                  </p>
+                </div>
+                {MOCK_USER_GROUPS.map((group) => {
+                  const isSelected = selectedGroup.id === group.id;
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => setSelectedGroup(group)}
+                      className={`w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 ${
+                        isSelected
+                          ? "border-blue-400 bg-blue-50/50"
+                          : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-medium ${isSelected ? "text-gray-900" : "text-gray-700"}`}>
+                          {group.name}
+                        </span>
+                        {isSelected && (
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ===== Step 2 (多分组模式) 或 普通模式: 填写信息 ===== */}
+            {(groupMode === "normal" || (groupMode === "multi-group" && createStep === 2)) && (
             <div className="py-4 space-y-4">
+              {/* 多分组模式下显示已选分组提示 */}
+              {groupMode === "multi-group" && (
+                <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 rounded-lg px-3 py-2">
+                  <Users className="w-3.5 h-3.5 text-purple-500" />
+                  <span className="text-xs text-purple-700 font-medium">当前分组：{selectedGroup.name}</span>
+                </div>
+              )}
               {/* Name Input */}
               <div>
                 <Label htmlFor="claw-name" className="text-sm font-medium text-gray-700">
@@ -1064,7 +1263,9 @@ export default function MyOpenClaw() {
                 </button>
                 {typeExpanded && (
                   <div className="flex flex-wrap gap-2 pt-2 pb-1">
-                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const).map(([value, label]) => {
+                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const)
+                      .filter(([value]) => groupMode !== "multi-group" || selectedGroup.permissions.agentTypes.includes(value))
+                      .map(([value, label]) => {
                       const isSelected = agentType === value;
                       return (
                         <button
@@ -1091,7 +1292,7 @@ export default function MyOpenClaw() {
                 )}
               </div>
 
-              {/* Role Selection - Collapsible Row (所有类型均显示) */}
+              {/* Role Selection - Collapsible Row */}
               {(
               <div>
                 <button
@@ -1117,17 +1318,17 @@ export default function MyOpenClaw() {
 
                 {roleExpanded && (
                   <div className="pt-2 pb-1">
-                    {/* Fixed height container with scroll */}
                     <div className="overflow-y-auto" style={{ maxHeight: "220px" }}>
-                      {/* Role Tags */}
                       <div className="flex flex-wrap gap-2">
-                        {visibleRoles.map((role) => {
+                        {visibleRoles
+                          .filter((role) => groupMode !== "multi-group" || selectedGroup.permissions.roles.includes(role.name))
+                          .map((role) => {
                           const isSelected = selectedRole?.id === role.id;
                           return (
                             <button
                               key={role.id}
                               type="button"
-                              onClick={() => setSelectedRole(isSelected ? null : role)}
+                              onClick={() => { setSelectedRole(isSelected ? null : role); }}
                               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                                 isSelected
                                   ? "bg-gray-200 text-gray-700"
@@ -1151,12 +1352,11 @@ export default function MyOpenClaw() {
                         </button>
                       </div>
 
-                      {/* Role Detail - shown when a role is selected */}
+                      {/* Role Detail */}
                       {selectedRole && (
                         <div className="mt-3 rounded-lg overflow-hidden border border-blue-100"
                           style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.03), rgba(88,86,214,0.03))" }}>
                           <div className="px-3.5 py-3 space-y-3">
-                            {/* Skills */}
                             <div>
                               <p className="text-xs font-semibold text-blue-600 mb-2 flex items-center gap-1">
                                 <span className="w-1 h-1 rounded-full bg-blue-500 inline-block" />
@@ -1173,7 +1373,6 @@ export default function MyOpenClaw() {
                                 ))}
                               </div>
                             </div>
-                            {/* Soul */}
                             <div>
                               <p className="text-xs font-semibold text-blue-600 mb-1.5 flex items-center gap-1">
                                 <span className="w-1 h-1 rounded-full bg-blue-500 inline-block" />
@@ -1190,19 +1389,60 @@ export default function MyOpenClaw() {
                   </div>
                 )}
               </div>
-
               )}
-
             </div>
+            )}
+
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>取消</Button>
-              <Button
-                onClick={handleCreate}
-                className="text-white"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              >
-                创建
-              </Button>
+              {/* 多分组模式 Step 1: 下一步按钮 */}
+              {groupMode === "multi-group" && createStep === 1 && (
+                <>
+                  <Button variant="outline" onClick={() => setShowCreate(false)}>取消</Button>
+                  <Button
+                    onClick={() => {
+                      setCreateStep(2);
+                      // 重置 agent 类型为该分组允许的第一个
+                      if (!selectedGroup.permissions.agentTypes.includes(agentType)) {
+                        setAgentType(selectedGroup.permissions.agentTypes[0]);
+                      }
+                    }}
+                    className="text-white"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  >
+                    下一步
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </>
+              )}
+              {/* 多分组模式 Step 2: 返回 + 创建 */}
+              {groupMode === "multi-group" && createStep === 2 && (
+                <>
+                  <Button variant="outline" onClick={() => setCreateStep(1)}>
+                    <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                    上一步
+                  </Button>
+                  <Button
+                    onClick={handleCreate}
+                    className="text-white"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  >
+                    创建
+                  </Button>
+                </>
+              )}
+              {/* 普通模式: 取消 + 创建 */}
+              {groupMode === "normal" && (
+                <>
+                  <Button variant="outline" onClick={() => setShowCreate(false)}>取消</Button>
+                  <Button
+                    onClick={handleCreate}
+                    className="text-white"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  >
+                    创建
+                  </Button>
+                </>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

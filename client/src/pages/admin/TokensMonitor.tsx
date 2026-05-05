@@ -384,6 +384,10 @@ export default function TokensMonitor() {
     const value = localStorage.getItem("globalLimit");
     return value ? parseInt(value, 10) : 2000000;
   });
+  // 全局 Tokens 时间维度（每日/不限时）—— 与平台策略页同步
+  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "unlimited">(() =>
+    (localStorage.getItem("admin_global_token_time_dim") as "daily" | "unlimited") || "daily"
+  );
 
   // 监听 localStorage 变化
   useEffect(() => {
@@ -398,6 +402,8 @@ export default function TokensMonitor() {
           const value = localStorage.getItem("globalLimit");
           setGlobalLimit(value ? parseInt(value, 10) : 2000000);
         }
+      } else if (e.key === "admin_global_token_time_dim") {
+        setGlobalTokenTimeDim((e.newValue as "daily" | "unlimited") || "daily");
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -859,7 +865,7 @@ export default function TokensMonitor() {
                 <Zap className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="flex items-center gap-1">
-                <p className="text-xs text-gray-400">今日全局配额消耗</p>
+                <p className="text-xs text-gray-400">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "全局配额累计消耗"}</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <span className="cursor-default">
@@ -867,7 +873,11 @@ export default function TokensMonitor() {
                     </span>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    {IS_GLOBAL_UNLIMITED ? "全局配额已设置为无限制，无需关注消耗占比" : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"}
+                    {IS_GLOBAL_UNLIMITED
+                      ? "全局配额已设置为无限制，无需关注消耗占比"
+                      : globalTokenTimeDim === "daily"
+                        ? "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"
+                        : "此处统计所有用户使用所有公司配置模型的总 Tokens 占全局 Tokens 上限的累计占比，到达上限即暂停服务"}
                   </UITooltipContent>
                 </UITooltip>
               </div>

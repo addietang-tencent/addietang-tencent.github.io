@@ -24,12 +24,19 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Trash2, Info, RefreshCw, ExternalLink, Search, ChevronsUpDown, Star,
   ChevronDown, ChevronRight, Plus, Pencil, AlertTriangle, Layers,
+  Check, X, Minus,
 } from "lucide-react";
+import type { UserGroup } from "./MemberManagement/types";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 
 // ─── 内核（Kernel）定义 ───────────────────────────────────────────────────────
 type KernelValue = "openclaw" | "hermes" | "lightclawace" | "native";
@@ -91,6 +98,304 @@ function nameToValue(name: string): string {
   // 全是非法字符时，退化为时间戳保证唯一
   if (!slug) slug = `agent-${Date.now()}`;
   return slug;
+}
+
+// ─── 分组数据 & 应用范围工具 ─────────────────────────────────────────────────
+const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
+
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.join("/");
+}
+
+type CheckState = "checked" | "unchecked" | "indeterminate";
+
+function getCheckState(node: GroupTreeNode, selectedIds: Set<string>): CheckState {
+  if (selectedIds.has(node.id)) return "checked";
+  if (node.children.length === 0) return "unchecked";
+  let hasChecked = false;
+  let hasUnchecked = false;
+  for (const c of node.children) {
+    const s = getCheckState(c, selectedIds);
+    if (s === "checked") hasChecked = true;
+    else if (s === "unchecked") hasUnchecked = true;
+    else { hasChecked = true; hasUnchecked = true; }
+    if (hasChecked && hasUnchecked) return "indeterminate";
+  }
+  if (hasChecked && !hasUnchecked) return "checked";
+  if (!hasChecked && hasUnchecked) return "unchecked";
+  return "indeterminate";
+}
+
+function getDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getDescendantIds(c)));
+  return ids;
+}
+
+// ─── 应用范围 Popover（镜像管理专用，按 Agent 类型维度） ──────────────────────
+interface ImageScopeData {
+  visibilityScope: "all" | "groups";
+  visibilityGroupIds: string[];
+}
+
+function ImageScopePopover({
+  scopeData,
+  groups,
+  onSave,
+}: {
+  scopeData: ImageScopeData;
+  groups: UserGroup[];
+  onSave: (scope: "all" | "groups", groupIds: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftScope, setDraftScope] = useState<"all" | "groups">(scopeData.visibilityScope);
+  const [draftGroupIds, setDraftGroupIds] = useState<string[]>(scopeData.visibilityGroupIds);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  type DisplayBucket = "dept" | "custom";
+  const groupsByBucket = useMemo(() => {
+    const buckets: Record<DisplayBucket, UserGroup[]> = { dept: [], custom: [] };
+    groups.forEach((g) => { if (g.source === "oneid-dept") buckets.dept.push(g); else buckets.custom.push(g); });
+    return buckets;
+  }, [groups]);
+
+  const activeBuckets = useMemo(() => {
+    const order: DisplayBucket[] = ["dept", "custom"];
+    return order.filter((b) => groupsByBucket[b].length > 0);
+  }, [groupsByBucket]);
+
+  const BUCKET_LABELS: Record<DisplayBucket, string> = { dept: "部门", custom: "自定义分组" };
+
+  const treesMap = useMemo(() => {
+    const map: Record<string, GroupTreeNode[]> = {};
+    activeBuckets.forEach((b) => { map[b] = buildGroupTree(groupsByBucket[b]); });
+    return map;
+  }, [activeBuckets, groupsByBucket]);
+
+  const hasGroups = activeBuckets.length > 0;
+
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setDraftScope(scopeData.visibilityScope);
+      setDraftGroupIds([...scopeData.visibilityGroupIds]);
+      setSearchQuery("");
+      const expandSet = new Set<string>();
+      const groupMap = new Map(groups.map((g) => [g.id, g]));
+      scopeData.visibilityGroupIds.forEach((gid) => {
+        let cur = groupMap.get(gid);
+        while (cur && cur.parentId) { expandSet.add(cur.parentId); cur = groupMap.get(cur.parentId); }
+      });
+      activeBuckets.forEach((b) => { treesMap[b]?.forEach((root) => expandSet.add(root.id)); });
+      setExpanded(expandSet);
+    }
+    setOpen(v);
+  };
+
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+
+  const toggleNode = (node: GroupTreeNode) => {
+    const ids = new Set(draftGroupIds);
+    const state = getCheckState(node, ids);
+    const descendants = getDescendantIds(node);
+    if (state === "checked") { descendants.forEach((d) => ids.delete(d)); }
+    else { descendants.forEach((d) => ids.add(d)); }
+    setDraftGroupIds(Array.from(ids));
+  };
+
+  const handleClearSelection = () => { setDraftGroupIds([]); setSearchQuery(""); };
+
+  const isConfirmDisabled = draftScope === "groups" && draftGroupIds.length === 0;
+
+  const handleConfirm = () => {
+    if (isConfirmDisabled) return;
+    onSave(draftScope, draftScope === "all" ? [] : draftGroupIds);
+    setOpen(false);
+    toast.success("应用范围已更新");
+  };
+
+  const matchedGroupIds = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    return new Set(groups.filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q)).map((g) => g.id));
+  }, [searchQuery, groups]);
+
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedGroupIds) return true;
+    if (matchedGroupIds.has(node.id)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  const renderTreeNode = (node: GroupTreeNode, depth: number) => {
+    if (!isNodeVisible(node)) return null;
+    const selectedSet = new Set(draftGroupIds);
+    const checkState = getCheckState(node, selectedSet);
+    const isExpanded = expanded.has(node.id);
+    const hasChildren = node.children.length > 0;
+    return (
+      <div key={node.id}>
+        <button
+          onClick={() => toggleNode(node)}
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          style={{ paddingLeft: 8 + depth * 16 }}
+        >
+          {hasChildren ? (
+            <span onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }} className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer">
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </span>
+          ) : (<span className="w-4 h-4 shrink-0" />)}
+          <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${checkState === "checked" ? "bg-blue-500 border-blue-500" : checkState === "indeterminate" ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"}`}>
+            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
+            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+        </button>
+        {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
+  };
+
+  // 已选标签：子孙全选时自动合并为父分组
+  const selectedTags = useMemo(() => {
+    const selectedSet = new Set(draftGroupIds);
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") { result.push(node.id); }
+        else if (state === "indeterminate") { result.push(...collectEffective(node.children)); }
+      }
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => ({ id: gid, path: getGroupPath(gid, groups) }));
+  }, [draftGroupIds, groups, activeBuckets, treesMap]);
+
+  const selectedGroupPaths = useMemo(() => {
+    const selectedSet = new Set(scopeData.visibilityGroupIds);
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") { result.push(node.id); }
+        else if (state === "indeterminate") { result.push(...collectEffective(node.children)); }
+      }
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => getGroupPath(gid, groups));
+  }, [groups, scopeData.visibilityGroupIds, activeBuckets, treesMap]);
+
+  const renderBadges = () => {
+    if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
+      return <span className="badge-loading whitespace-nowrap">全部用户</span>;
+    }
+    const firstName = selectedGroupPaths[0];
+    const rest = selectedGroupPaths.length - 1;
+    const tooltipText = selectedGroupPaths.join("\n");
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 cursor-default">
+            <span className="badge-shutdown max-w-[140px] truncate inline-block align-middle">{firstName}</span>
+            {rest > 0 && <span className="badge-shutdown whitespace-nowrap">+{rest}</span>}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">{tooltipText}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  return (
+    <div className="inline-flex items-center gap-1.5 min-h-[20px]">
+      <span className="text-xs text-gray-500 whitespace-nowrap">应用范围</span>
+      {renderBadges()}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <button className="self-center text-gray-300 hover:text-blue-500 transition-colors" title="编辑应用范围">
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="end" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
+            <div className="flex gap-1.5">
+              <button onClick={() => setDraftScope("all")} className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${draftScope === "all" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>全部用户</button>
+              <button onClick={() => setDraftScope("groups")} className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${draftScope === "groups" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>按分组</button>
+            </div>
+            {draftScope === "groups" && (
+              <div className="space-y-1.5">
+                {!hasGroups ? (
+                  <div className="text-center py-5 px-2">
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      暂无分组，请前往
+                      <a href="/admin/members" className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5" onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}>用户管理</a>
+                      建立分组
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
+                      {selectedTags.map((tag) => (
+                        <span key={tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-md border border-blue-100 shrink-0 max-w-[200px]">
+                          <span className="truncate">{tag.path}</span>
+                          <button
+                            onClick={() => {
+                              const findNode = (nodes: GroupTreeNode[]): GroupTreeNode | undefined => { for (const n of nodes) { if (n.id === tag.id) return n; const found = findNode(n.children); if (found) return found; } return undefined; };
+                              let targetNode: GroupTreeNode | undefined;
+                              for (const b of activeBuckets) { targetNode = findNode(treesMap[b] || []); if (targetNode) break; }
+                              const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
+                              setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
+                            }}
+                            className="text-blue-400 hover:text-blue-600 shrink-0"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                      <input type="text" placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-gray-400" />
+                      {(selectedTags.length > 0 || searchQuery) && (
+                        <button onClick={handleClearSelection} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" title="清除全部">
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[220px] overflow-y-auto">
+                      {activeBuckets.map((bucket) => {
+                        const trees = treesMap[bucket];
+                        if (!trees || trees.length === 0) return null;
+                        const anyVisible = trees.some(isNodeVisible);
+                        if (!anyVisible) return null;
+                        return (
+                          <div key={bucket} className="mb-1">
+                            <div className="px-2 py-1 text-[10px] font-medium text-gray-400 uppercase tracking-wider">{BUCKET_LABELS[bucket]}</div>
+                            {trees.map((root) => renderTreeNode(root, 0))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
+            <Button size="sm" className="h-7 text-xs px-3" disabled={isConfirmDisabled} onClick={handleConfirm} style={isConfirmDisabled ? undefined : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>确认</Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 }
 
 // ─── 镜像状态枚举（与生产一致） ───────────────────────────────────────────────
@@ -193,6 +498,22 @@ export default function ImageManagement() {
   };
 
   const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(new Set());
+
+  // 每个 Agent 类型的应用范围
+  const [typeScopeMap, setTypeScopeMap] = useState<Record<string, ImageScopeData>>(() => {
+    try {
+      const raw = localStorage.getItem("admin_image_type_scope_v1");
+      if (raw) return JSON.parse(raw) as Record<string, ImageScopeData>;
+    } catch { /* ignore */ }
+    return {};
+  });
+  const getTypeScope = (typeValue: string): ImageScopeData =>
+    typeScopeMap[typeValue] ?? { visibilityScope: "all", visibilityGroupIds: [] };
+  const handleScopeChange = (typeValue: string, scope: "all" | "groups", groupIds: string[]) => {
+    const next = { ...typeScopeMap, [typeValue]: { visibilityScope: scope, visibilityGroupIds: groupIds } };
+    setTypeScopeMap(next);
+    localStorage.setItem("admin_image_type_scope_v1", JSON.stringify(next));
+  };
 
   // 所有 Agent 类型（官方 + 自定义）
   const allTypes: AgentType[] = useMemo(
@@ -736,9 +1057,8 @@ export default function ImageManagement() {
                         </TooltipContent>
                       </Tooltip>
                     )}
-                  </div>
 
-                  <div className="flex items-center gap-2">
+                    {/* 设为用户端首选按钮（移到左侧） */}
                     {!isDefault && (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -749,6 +1069,7 @@ export default function ImageManagement() {
                         <TooltipContent className="max-w-[220px] text-xs leading-relaxed">设为用户端优先选择的 Agent 类型</TooltipContent>
                       </Tooltip>
                     )}
+
                     {/* 自定义类型可移除 */}
                     {isCustom && (
                       <Tooltip>
@@ -764,6 +1085,15 @@ export default function ImageManagement() {
                         <TooltipContent>移除此 Agent 类型</TooltipContent>
                       </Tooltip>
                     )}
+                  </div>
+
+                  {/* 右侧：应用范围 */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <ImageScopePopover
+                      scopeData={getTypeScope(agentType)}
+                      groups={ALL_GROUPS}
+                      onSave={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
+                    />
                   </div>
                 </div>
 

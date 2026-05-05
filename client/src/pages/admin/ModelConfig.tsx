@@ -25,7 +25,7 @@ import {
   Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
-import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 
@@ -122,13 +122,6 @@ function getGroupPath(groupId: string, groups: UserGroup[]): string {
   return chain.join("/");
 }
 
-/** 按 source 分桶的分类标题 */
-const SOURCE_LABELS: Record<GroupSource, string> = {
-  "oneid-dept": "部门",
-  "oneid-group": "自定义分组",
-  manual: "自定义分组",
-};
-
 // ─── 树形多选节点的选中状态 ─────────────────────────────
 type CheckState = "checked" | "unchecked" | "indeterminate";
 
@@ -175,36 +168,33 @@ function ScopePopover({
   const [searchQuery, setSearchQuery] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // 按 source 分桶构建树
-  const groupsBySource = useMemo(() => {
-    const buckets: Record<GroupSource, UserGroup[]> = {
-      "oneid-dept": [],
-      "oneid-group": [],
-      manual: [],
-    };
+  // 按展示分区分桶构建树（oneid-group + manual 合并为 "custom"）
+  type DisplayBucket = "dept" | "custom";
+  const groupsByBucket = useMemo(() => {
+    const buckets: Record<DisplayBucket, UserGroup[]> = { dept: [], custom: [] };
     groups.forEach((g) => {
-      if (buckets[g.source]) buckets[g.source].push(g);
+      if (g.source === "oneid-dept") buckets.dept.push(g);
+      else buckets.custom.push(g);
     });
     return buckets;
   }, [groups]);
 
-  // 有效的 source 分桶（不区分模式，部门 + 自定义分组全部展示）
-  const activeSources = useMemo(() => {
-    const order: GroupSource[] = ["oneid-dept", "oneid-group", "manual"];
-    return order.filter((s) => groupsBySource[s].length > 0);
-  }, [groupsBySource]);
+  const activeBuckets = useMemo(() => {
+    const order: DisplayBucket[] = ["dept", "custom"];
+    return order.filter((b) => groupsByBucket[b].length > 0);
+  }, [groupsByBucket]);
 
-  // 每个 source 的树
+  const BUCKET_LABELS: Record<DisplayBucket, string> = { dept: "部门", custom: "自定义分组" };
+
+  // 每个分区的树
   const treesMap = useMemo(() => {
     const map: Record<string, GroupTreeNode[]> = {};
-    activeSources.forEach((s) => {
-      map[s] = buildGroupTree(groupsBySource[s]);
-    });
+    activeBuckets.forEach((b) => { map[b] = buildGroupTree(groupsByBucket[b]); });
     return map;
-  }, [activeSources, groupsBySource]);
+  }, [activeBuckets, groupsByBucket]);
 
-  // 是否有可展示的分组（activeSources 非空才有分组可选）
-  const hasGroups = activeSources.length > 0;
+  // 是否有可展示的分组
+  const hasGroups = activeBuckets.length > 0;
 
   // 每次打开时同步当前模型的状态
   const handleOpenChange = (v: boolean) => {
@@ -223,8 +213,8 @@ function ScopePopover({
         }
       });
       // 也展开根节点
-      activeSources.forEach((s) => {
-        treesMap[s]?.forEach((root) => expandSet.add(root.id));
+      activeBuckets.forEach((b) => {
+        treesMap[b]?.forEach((root) => expandSet.add(root.id));
       });
       setExpanded(expandSet);
     }
@@ -345,40 +335,46 @@ function ScopePopover({
     );
   };
 
-  // 已选分组完整路径标签（只展示最高层级节点，若父节点已选则不展示其子节点）
+  // 已选分组标签（子孙全选时自动合并为父分组）
   const selectedTags = useMemo(() => {
     const selectedSet = new Set(draftGroupIds);
-    const groupMap = new Map(groups.map((g) => [g.id, g]));
-    // 过滤掉其祖先已在 selectedSet 中的节点
-    const topLevel = draftGroupIds.filter((gid) => {
-      let cur = groupMap.get(gid);
-      while (cur && cur.parentId) {
-        if (selectedSet.has(cur.parentId)) return false;
-        cur = groupMap.get(cur.parentId);
+    // 利用树结构找到"有效最高节点"：如果一个节点的所有子孙都被选中，则该节点代表它们
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") {
+          result.push(node.id);
+        } else if (state === "indeterminate") {
+          result.push(...collectEffective(node.children));
+        }
       }
-      return true;
-    });
-    return topLevel.map((gid) => ({
-      id: gid,
-      path: getGroupPath(gid, groups),
-    }));
-  }, [draftGroupIds, groups]);
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => ({ id: gid, path: getGroupPath(gid, groups) }));
+  }, [draftGroupIds, groups, activeBuckets, treesMap]);
 
-  // 解析已选分组名（用于表格徽章展示）—— 只展示最高层级节点
+  // 解析已选分组名（用于表格徽章展示）
   const selectedGroupPaths = useMemo(() => {
     const selectedSet = new Set(model.visibilityGroupIds);
-    const groupMap = new Map(groups.map((g) => [g.id, g]));
-    // 过滤掉其祖先已在 selectedSet 中的节点
-    const topLevel = model.visibilityGroupIds.filter((gid) => {
-      let cur = groupMap.get(gid);
-      while (cur && cur.parentId) {
-        if (selectedSet.has(cur.parentId)) return false;
-        cur = groupMap.get(cur.parentId);
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") {
+          result.push(node.id);
+        } else if (state === "indeterminate") {
+          result.push(...collectEffective(node.children));
+        }
       }
-      return true;
-    });
-    return topLevel.map((gid) => getGroupPath(gid, groups));
-  }, [groups, model.visibilityGroupIds]);
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => getGroupPath(gid, groups));
+  }, [groups, model.visibilityGroupIds, activeBuckets, treesMap]);
 
   // 徽章区域
   const renderBadges = () => {
@@ -503,8 +499,8 @@ function ScopePopover({
                                 return undefined;
                               };
                               let targetNode: GroupTreeNode | undefined;
-                              for (const s of activeSources) {
-                                targetNode = findNode(treesMap[s] || []);
+                              for (const b of activeBuckets) {
+                                targetNode = findNode(treesMap[b] || []);
                                 if (targetNode) break;
                               }
                               const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
@@ -535,17 +531,17 @@ function ScopePopover({
                       )}
                     </div>
 
-                    {/* 分组树形列表（按 source 分区 + 小标题） */}
+                    {/* 分组树形列表（按分区 + 小标题） */}
                     <div className="max-h-[220px] overflow-y-auto">
-                      {activeSources.map((source) => {
-                        const trees = treesMap[source];
+                      {activeBuckets.map((bucket) => {
+                        const trees = treesMap[bucket];
                         if (!trees || trees.length === 0) return null;
                         const anyVisible = trees.some(isNodeVisible);
                         if (!anyVisible) return null;
                         return (
-                          <div key={source} className="mb-1">
+                          <div key={bucket} className="mb-1">
                             <div className="px-2 py-1 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-                              {SOURCE_LABELS[source]}
+                              {BUCKET_LABELS[bucket]}
                             </div>
                             {trees.map((root) => renderTreeNode(root, 0))}
                           </div>

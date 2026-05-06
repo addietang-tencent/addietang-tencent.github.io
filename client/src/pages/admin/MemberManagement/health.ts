@@ -12,13 +12,15 @@
  * 节点级独立判定：不因子孙状态影响自身（子节点红不让父节点红）。
  */
 import type {
+  InitHealth,
   NodeHealth,
   ResourceItem,
   Scope,
   UserGroup,
   UserOrg,
+  ConfigCategory,
 } from "./types";
-import { MOCK_RESOURCES } from "./mock";
+import { MOCK_RESOURCES, getConfigEntries } from "./mock";
 
 // ─── 分组树 ──────────────────────────────────────────────
 export interface GroupTreeNode extends UserGroup {
@@ -181,3 +183,60 @@ export function getResourcesOfGroup(
 export function countMultiGroupUsers(users: UserOrg[]): number {
   return users.filter((u) => u.groupIds.length >= 2).length;
 }
+
+// ─── 初始化健康度检查 ─────────────────────────────────────
+/**
+ * 初始化检查：模型 / 通道 / 镜像 / 网络（VPC+安全组）
+ * 根据配置总览条目判断：该分组的配置总览中有无对应维度的配置。
+ * 只要某个维度完全没有条目，则属于初始化未完成。
+ */
+export function getGroupInitHealth(
+  groupId: string,
+  groups: UserGroup[]
+): InitHealth {
+  const entries = getConfigEntries(groupId, groups);
+
+  const missing: InitHealth["missing"] = [];
+
+  // 模型：有 category === "model" 的条目即满足
+  const hasModel = entries.some((e) => e.category === "model");
+  if (!hasModel) missing.push("model");
+
+  // 通道：有 category === "channel" 的条目即满足
+  const hasChannel = entries.some((e) => e.category === "channel");
+  if (!hasChannel) missing.push("channel");
+
+  // 镜像：有 category === "image" 的条目即满足
+  const hasImage = entries.some((e) => e.category === "image");
+  if (!hasImage) missing.push("image");
+
+  // 网络（VPC+安全组）：category === "network" 中需同时包含 VPC 和安全组
+  const networkEntries = entries.filter((e) => e.category === "network");
+  const hasVpc = networkEntries.some((e) => e.subLabel === "私有网络与子网");
+  const hasSg = networkEntries.some((e) => e.subLabel === "安全组");
+  if (!hasVpc || !hasSg) missing.push("network");
+
+  return { initialized: missing.length === 0, missing };
+}
+
+/** 初始化缺失项的分类映射（用于 UI 显示） */
+export const INIT_MISSING_LABEL: Record<
+  InitHealth["missing"][number],
+  string
+> = {
+  model: "模型",
+  channel: "通道",
+  image: "镜像",
+  network: "网络",
+};
+
+/** 初始化缺失项到 ConfigCategory 的映射 */
+export const INIT_MISSING_TO_CATEGORY: Record<
+  InitHealth["missing"][number],
+  ConfigCategory
+> = {
+  model: "model",
+  channel: "channel",
+  image: "image",
+  network: "network",
+};

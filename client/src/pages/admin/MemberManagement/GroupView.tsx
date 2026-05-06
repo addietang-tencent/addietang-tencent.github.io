@@ -21,6 +21,7 @@ import {
   getUsersOfGroupDeep,
   buildGroupTree,
   findGroupNode,
+  getGroupInitHealth,
 } from "./health";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL, MOCK_SYNC_RESULT } from "./mock";
 
@@ -168,6 +169,35 @@ export default function GroupView({
 
     return ids;
   }, [anomalousGroups, groups, directAnomalousGroupIds]);
+
+  /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡） */
+  const directUninitializedGroupIds = useMemo(() => {
+    const ids = new Set<string>();
+    groups.forEach((g) => {
+      const initHealth = getGroupInitHealth(g.id, groups);
+      if (!initHealth.initialized) {
+        ids.add(g.id);
+      }
+    });
+    return ids;
+  }, [groups]);
+
+  /** 完整初始化未完成分组 id 集合（自身 + 父分组链冒泡） */
+  const uninitializedGroupIds = useMemo(() => {
+    if (directUninitializedGroupIds.size === 0) return new Set<string>();
+    const ids = new Set<string>(directUninitializedGroupIds);
+    const groupMap = new Map(groups.map((g) => [g.id, g]));
+
+    directUninitializedGroupIds.forEach((gId) => {
+      let cur = groupMap.get(gId);
+      while (cur && cur.parentId) {
+        ids.add(cur.parentId);
+        cur = groupMap.get(cur.parentId);
+      }
+    });
+
+    return ids;
+  }, [directUninitializedGroupIds, groups]);
 
   // OneID 切换时切换分组集合
   React.useEffect(() => {
@@ -570,6 +600,8 @@ export default function GroupView({
                 anomalousGroupIds={anomalousGroupIds}
                 directAnomalousGroupIds={directAnomalousGroupIds}
                 onRefreshSync={handleRefreshSync}
+                uninitializedGroupIds={uninitializedGroupIds}
+                directUninitializedGroupIds={directUninitializedGroupIds}
               />
             </div>
             {/* 收起按钮 —— 右边缘贴住分割线竖线 */}
@@ -660,6 +692,7 @@ export default function GroupView({
               onRemoveFromGroup={handleRemoveFromGroup}
               isAnomalous={anomalousGroups.some((ag) => ag.groupId === selectedGroup.id)}
               anomalousBoundConfigs={anomalousGroups.find((ag) => ag.groupId === selectedGroup.id)?.boundConfigs}
+              isUninitialized={directUninitializedGroupIds.has(selectedGroup.id)}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400 text-sm">

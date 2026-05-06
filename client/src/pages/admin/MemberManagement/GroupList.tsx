@@ -28,6 +28,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Filter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -78,6 +79,10 @@ interface GroupListProps {
   directAnomalousGroupIds?: Set<string>;
   /** 刷新同步回调（触发重新同步以检测异常） */
   onRefreshSync?: () => void;
+  /** 初始化未完成分组 id 集合（橙色点标记：包含自身 + 父分组冒泡） */
+  uninitializedGroupIds?: Set<string>;
+  /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡；用于 Tooltip 区分文案） */
+  directUninitializedGroupIds?: Set<string>;
 }
 
 // ─── 单行节点 ────────────────────────────────────────────
@@ -101,6 +106,12 @@ interface RowProps {
   anomalousGroupIds?: Set<string>;
   /** 直接异常分组 id 集合（自身+子分组，不含父分组冒泡） */
   directAnomalousGroupIds?: Set<string>;
+  /** 初始化未完成分组 id 集合（橙色点：包含自身+父分组冒泡） */
+  uninitializedGroupIds?: Set<string>;
+  /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡） */
+  directUninitializedGroupIds?: Set<string>;
+  /** 筛选函数：判断节点是否匹配当前筛选条件 */
+  filterFn?: (node: GroupTreeNode) => boolean;
 }
 
 function GroupRow(props: RowProps) {
@@ -120,6 +131,9 @@ function GroupRow(props: RowProps) {
     onDeleteGroup,
     anomalousGroupIds,
     directAnomalousGroupIds,
+    uninitializedGroupIds,
+    directUninitializedGroupIds,
+    filterFn,
   } = props;
 
   // 递归渲染子节点
@@ -136,6 +150,8 @@ function GroupRow(props: RowProps) {
   };
 
   if (!matchKeyword(node)) return null;
+  // 筛选条件过滤
+  if (filterFn && !filterFn(node)) return null;
 
   const isActive = selectedId === node.id;
   const isExpanded = expanded.has(node.id);
@@ -185,8 +201,11 @@ function GroupRow(props: RowProps) {
           </span>
         )}
 
-        {/* 异常红点标记 */}
-        {anomalousGroupIds?.has(node.id) && (
+        {/* 异常红点标记
+            方案D：父分组的冒泡红点仅在收起状态下显示，展开后隐藏（子分组自己标记了） */}
+        {anomalousGroupIds?.has(node.id) &&
+          // 如果是冒泡节点（非直接异常），仅在收起时显示
+          (directAnomalousGroupIds?.has(node.id) || !isExpanded) && (
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="relative shrink-0 ml-1">
@@ -196,7 +215,27 @@ function GroupRow(props: RowProps) {
             <TooltipContent side="right" className="text-xs max-w-[260px]">
               {directAnomalousGroupIds?.has(node.id)
                 ? "该分组对应的部门已在腾讯统一身份管理平台被删除，但仍有配置未解绑"
-                : "该部门下有分组已在腾讯统一身份管理平台被删除，但仍有配置未解绑"}
+                : "该部门下有分组已在腾讯统一身份管理平台被删除，但仍有配置未解绑，展开查看"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* 初始化未完成橙色点标记（不与异常红点同时显示）
+            方案D：父分组的冒泡标记仅在收起状态下显示，展开后隐藏（子分组自己标记了） */}
+        {!anomalousGroupIds?.has(node.id) &&
+          uninitializedGroupIds?.has(node.id) &&
+          // 如果是冒泡节点（非直接未初始化），仅在收起时显示
+          (directUninitializedGroupIds?.has(node.id) || !isExpanded) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="relative shrink-0 ml-1">
+                <span className="block w-2 h-2 rounded-full bg-amber-500" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs max-w-[260px]">
+              {directUninitializedGroupIds?.has(node.id)
+                ? "该分组未完成初始化配置"
+                : "该分组下有子分组未完成初始化配置，展开查看"}
             </TooltipContent>
           </Tooltip>
         )}
@@ -289,6 +328,9 @@ function BucketHeader({
   );
 }
 
+/** 筛选类型 */
+type FilterType = "all" | "uninitialized" | "anomalous";
+
 // ─── 主组件 ─────────────────────────────────────────────
 export default function GroupList({
   groups,
@@ -307,8 +349,12 @@ export default function GroupList({
   anomalousGroupIds,
   directAnomalousGroupIds,
   onRefreshSync,
+  uninitializedGroupIds,
+  directUninitializedGroupIds,
 }: GroupListProps) {
   const [keyword, setKeyword] = useState("");
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     // 默认展开所有顶层节点
     const s = new Set<string>();
@@ -341,6 +387,56 @@ export default function GroupList({
       manual: buildGroupTree(manualGroups),
     };
   }, [groups]);
+
+  // 筛选匹配：节点自身或其任意后代匹配当前 filter
+  const matchFilter = (n: GroupTreeNode): boolean => {
+    if (filter === "all") return true;
+    if (filter === "uninitialized") {
+      // 自身或后代有初始化未完成
+      if (directUninitializedGroupIds?.has(n.id)) return true;
+      return n.children.some(matchFilter);
+    }
+    if (filter === "anomalous") {
+      // 自身或后代异常
+      if (directAnomalousGroupIds?.has(n.id)) return true;
+      return n.children.some(matchFilter);
+    }
+    return true;
+  };
+
+  // 筛选切换时，自动展开所有包含匹配节点的祖先路径
+  React.useEffect(() => {
+    if (filter === "all") return;
+    // 收集所有需要展开的节点：如果一个节点的后代中有匹配项，则该节点需要展开
+    const needExpand = new Set<string>();
+    const collectExpandIds = (nodes: GroupTreeNode[]): boolean => {
+      let hasMatch = false;
+      for (const n of nodes) {
+        const childHasMatch = collectExpandIds(n.children);
+        const selfMatch =
+          filter === "uninitialized"
+            ? directUninitializedGroupIds?.has(n.id)
+            : directAnomalousGroupIds?.has(n.id);
+        if (selfMatch || childHasMatch) {
+          hasMatch = true;
+          // 如果子节点有匹配，则当前节点需要展开
+          if (childHasMatch) {
+            needExpand.add(n.id);
+          }
+        }
+      }
+      return hasMatch;
+    };
+    const allTrees = [...buckets.dept, ...buckets.og, ...buckets.manual];
+    collectExpandIds(allTrees);
+    if (needExpand.size > 0) {
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        needExpand.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  }, [filter]);
 
   // 计算未分组用户数：不属于当前已加载分组的用户
   const unassignedCount = useMemo(() => {
@@ -381,6 +477,44 @@ export default function GroupList({
               onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
+          {/* 筛选按钮 */}
+          <DropdownMenu open={filterOpen} onOpenChange={setFilterOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg border bg-white transition-colors shrink-0 ${
+                  filter !== "all"
+                    ? "border-blue-300 text-blue-600 bg-blue-50"
+                    : "border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                }`}
+                title="筛选"
+              >
+                <Filter className="w-3.5 h-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              <DropdownMenuItem
+                className={`text-xs gap-2 ${filter === "all" ? "font-medium text-blue-600" : ""}`}
+                onClick={() => setFilter("all")}
+              >
+                全部
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`text-xs gap-2 ${filter === "uninitialized" ? "font-medium text-blue-600" : ""}`}
+                onClick={() => setFilter("uninitialized")}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                初始化未完成
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className={`text-xs gap-2 ${filter === "anomalous" ? "font-medium text-blue-600" : ""}`}
+                onClick={() => setFilter("anomalous")}
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                异常
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {/* 刷新按钮 */}
           <button
             type="button"
@@ -435,6 +569,9 @@ export default function GroupList({
                     keyword={keyword}
                     anomalousGroupIds={anomalousGroupIds}
                     directAnomalousGroupIds={directAnomalousGroupIds}
+                    uninitializedGroupIds={uninitializedGroupIds}
+                    directUninitializedGroupIds={directUninitializedGroupIds}
+                    filterFn={matchFilter}
                   />
                 ))}
               </>
@@ -520,6 +657,9 @@ export default function GroupList({
                     onDeleteGroup={onDeleteGroup}
                     anomalousGroupIds={anomalousGroupIds}
                     directAnomalousGroupIds={directAnomalousGroupIds}
+                    uninitializedGroupIds={uninitializedGroupIds}
+                    directUninitializedGroupIds={directUninitializedGroupIds}
+                    filterFn={matchFilter}
                   />
                 ))
               ) : (
@@ -561,6 +701,9 @@ export default function GroupList({
                 onEditGroup={onEditGroup}
                 onDeleteGroup={onDeleteGroup}
                 anomalousGroupIds={anomalousGroupIds}
+                uninitializedGroupIds={uninitializedGroupIds}
+                directUninitializedGroupIds={directUninitializedGroupIds}
+                filterFn={matchFilter}
               />
             ))}
           </>
@@ -571,6 +714,21 @@ export default function GroupList({
             暂无分组，可新建自建分组
           </div>
         )}
+
+        {/* 筛选无结果占位符 */}
+        {filter !== "all" && groups.length > 0 && (() => {
+          const allTrees = [...buckets.dept, ...buckets.og, ...buckets.manual];
+          const hasAnyMatch = allTrees.some(matchFilter);
+          if (hasAnyMatch) return null;
+          return (
+            <div className="px-4 py-10 text-center">
+              <Filter className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+              <p className="text-xs text-gray-400">
+                暂无符合筛选条件的分组
+              </p>
+            </div>
+          );
+        })()}
       </div>
 
       {/* 底部固定：未分组 */}

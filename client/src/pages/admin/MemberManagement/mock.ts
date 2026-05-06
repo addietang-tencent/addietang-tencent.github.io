@@ -669,13 +669,15 @@ export function getConfigEntries(
     });
   }
 
-  // ──── 8. 镜像 ────
-  entries.push({
-    id: "img-openclaw",
-    category: "image",
-    label: "Openclaw",
-    source: platformDefault,
-  });
+  // ──── 8. 镜像（设计组和研发-前端未配置镜像，演示初始化未完成） ────
+  if (groupId !== "mgrp-design" && groupId !== "mgrp-rd-fe") {
+    entries.push({
+      id: "img-openclaw",
+      category: "image",
+      label: "Openclaw",
+      source: platformDefault,
+    });
+  }
   if (["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId)) {
     entries.push({
       id: "img-hermes",

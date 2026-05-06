@@ -59,7 +59,10 @@ import type {
 import { getPrimaryDeptPath, getConfigEntries, CONFIG_CATEGORY_META } from "./mock";
 import {
   getGroupHealth,
+  getGroupInitHealth,
   MISSING_LABEL,
+  INIT_MISSING_LABEL,
+  INIT_MISSING_TO_CATEGORY,
 } from "./health";
 
 const PAGE_SIZE = 10;
@@ -97,6 +100,8 @@ interface NodeContentPanelProps {
   isAnomalous?: boolean;
   /** 异常分组绑定的配置名称（用于告警条展示） */
   anomalousBoundConfigs?: string[];
+  /** 是否初始化未完成（缺少模型/通道/镜像/网络中的某项，需显示橙色点+黄色告警条） */
+  isUninitialized?: boolean;
 }
 
 // ─── 核心维度 meta（初始化检查卡用） ─────────────────────
@@ -186,6 +191,7 @@ export default function NodeContentPanel({
   onRemoveFromGroup,
   isAnomalous = false,
   anomalousBoundConfigs = [],
+  isUninitialized = false,
 }: NodeContentPanelProps) {
   const [tab, setTab] = useState<Tab>(isAnomalous ? "config" : "members");
   const [page, setPage] = useState(1);
@@ -309,6 +315,9 @@ export default function NodeContentPanel({
             配置总览
             {isAnomalous && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
+            )}
+            {!isAnomalous && isUninitialized && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
             )}
           </button>
         </div>
@@ -623,6 +632,7 @@ export default function NodeContentPanel({
             health={health}
             isAnomalous={isAnomalous}
             anomalousBoundConfigs={anomalousBoundConfigs}
+            isUninitialized={isUninitialized}
           />
         )}
       </div>
@@ -869,6 +879,8 @@ interface ConfigOverviewTabProps {
   health: { healthy: boolean; missing: Array<"model" | "channel" | "securityGroup"> };
   isAnomalous?: boolean;
   anomalousBoundConfigs?: string[];
+  /** 是否初始化未完成（缺少模型/通道/镜像/网络中的某项） */
+  isUninitialized?: boolean;
 }
 
 /** 来源标签 */
@@ -954,6 +966,7 @@ function ConfigOverviewTab({
   health,
   isAnomalous = false,
   anomalousBoundConfigs = [],
+  isUninitialized = false,
 }: ConfigOverviewTabProps) {
   // 获取当前节点的全部配置条目
   const configEntries = useMemo(() => getConfigEntries(nodeId, groups), [nodeId, groups]);
@@ -980,6 +993,17 @@ function ConfigOverviewTab({
     });
     return set;
   }, [configEntries, isAnomalous]);
+
+  // 初始化未完成：计算缺失的配置类别集合（用于导航栏+标题橙色点）
+  const uninitializedCategories = useMemo(() => {
+    if (!isUninitialized || isAnomalous) return new Set<ConfigCategory>();
+    const initHealth = getGroupInitHealth(nodeId, groups);
+    const set = new Set<ConfigCategory>();
+    initHealth.missing.forEach((m) => {
+      set.add(INIT_MISSING_TO_CATEGORY[m]);
+    });
+    return set;
+  }, [nodeId, groups, isUninitialized, isAnomalous]);
 
   // 折叠状态：默认全部展开
   const [collapsed, setCollapsed] = useState<Set<ConfigCategory>>(new Set());
@@ -1062,6 +1086,7 @@ function ConfigOverviewTab({
             const isLast = idx === CATEGORY_ORDER.length - 1;
             const catMeta = CONFIG_CATEGORY_META[cat];
             const hasAnomaly = anomalousLocalCategories.has(cat);
+            const hasUninitWarning = uninitializedCategories.has(cat);
             return (
               <React.Fragment key={cat}>
                 {/* 导航项：圆点 + 文字 */}
@@ -1094,6 +1119,9 @@ function ConfigOverviewTab({
                     {hasAnomaly && (
                       <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
                     )}
+                    {!hasAnomaly && hasUninitWarning && (
+                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    )}
                   </span>
                 </button>
                 {/* 连接线 */}
@@ -1125,12 +1153,28 @@ function ConfigOverviewTab({
         </div>
       )}
 
+      {/* 初始化未完成黄色告警条（优先级低于异常分组，不同时展示） */}
+      {!isAnomalous && isUninitialized && (
+        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mt-3">
+          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-medium text-amber-800">
+              该分组初始化配置未完成
+            </div>
+            <div className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+              当前分组缺少必要的初始化配置（{Array.from(uninitializedCategories).map((cat) => CATEGORY_NAV_LABEL[cat]).join("、")}），可能影响分组内用户在用户端的正常使用，请尽快完成配置。
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-3 pt-3">
         {CATEGORY_ORDER.map((cat) => {
           const entries = byCategory.get(cat) ?? [];
           const catMeta = CONFIG_CATEGORY_META[cat];
           const IconComp = CATEGORY_ICON[cat];
           const hasAnomaly = anomalousLocalCategories.has(cat);
+          const hasUninitWarning = uninitializedCategories.has(cat);
           return (
             <div
               key={cat}
@@ -1156,6 +1200,9 @@ function ConfigOverviewTab({
                         {catMeta.label}
                         {hasAnomaly && (
                           <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
+                        )}
+                        {!hasAnomaly && hasUninitWarning && (
+                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-amber-500" />
                         )}
                       </span>
                       {/* 仅模型、通道、镜像在标题旁显示数量；技能/Agent工具在子类别显示；其余不显示 */}

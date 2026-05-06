@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
+  ArrowRight, Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -40,6 +40,10 @@ interface Notification {
   timestamp: string;
   category: NotificationCategory;
   read: boolean;
+  /** 可选：点击"前往查看"跳转的目标路径（如 /admin/security-group） */
+  actionHref?: string;
+  /** 可选：跳转按钮文案，默认"前往查看" */
+  actionLabel?: string;
 }
 
 const NOTIFICATION_CATEGORY_CONFIG: Record<
@@ -146,7 +150,24 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 
 // ==================== 通知面板组件 ====================
 
-function NotificationPanel() {
+// [004] 独立化升级完成消息（仅对"兼具管理员身份"的用户端账号推送）
+//   - 展示条件：isAdmin=true × localStorage 未标记 ack
+//   - ack 触发：用户在管控端 /admin/security-group 完成一次"导入规则"链路后
+//     会写入 localStorage.admin_sg_migration_ack = "true"（见 SecurityGroupManagement.tsx）
+//   - 点击"前往查看"跳转管控端安全组页（管理员身份有权限进入）
+const MIGRATION_ACK_STORAGE_KEY = "admin_sg_migration_ack";
+const MIGRATION_NOTIFICATION: Notification = {
+  id: "sg-migration-done",
+  message:
+    "ClawPro 安全组独立化升级已完成，原规则与绑定 Agent 已迁移至 ClawPro-Default",
+  timestamp: "2026-05-05 15:00",
+  category: "notice",
+  read: false,
+  actionHref: "/admin/security-group",
+  actionLabel: "前往查看",
+};
+
+function NotificationPanel({ isAdmin }: { isAdmin: boolean }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | NotificationCategory>("all");
@@ -155,8 +176,19 @@ function NotificationPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setNotifications(MOCK_NOTIFICATIONS);
-  }, []);
+    // [004] 仅"兼具管理员身份"的用户端账号 × 未 ack 时追加独立化升级完成消息
+    //   普通员工看不到（不懂、点了会 403），管理员已 ack 也不再重复展示
+    const shouldAppendMigration =
+      isAdmin &&
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(MIGRATION_ACK_STORAGE_KEY) !== "true";
+    if (shouldAppendMigration) {
+      // 放在最新时间点（最顶部），管理员打开铃铛立刻能看到
+      setNotifications([MIGRATION_NOTIFICATION, ...MOCK_NOTIFICATIONS]);
+    } else {
+      setNotifications(MOCK_NOTIFICATIONS);
+    }
+  }, [isAdmin]);
 
   const hasUnread = notifications.some((n) => !n.read);
 
@@ -320,10 +352,13 @@ function NotificationPanel() {
                       onMouseLeave={() => setHoveredId(null)}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className={[
-                          "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
-                          notif.read ? "text-gray-400" : "text-gray-700",
-                        ].join(" ")}>
+                        <p
+                          className={[
+                            "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
+                            notif.read ? "text-gray-400" : "text-gray-700",
+                          ].join(" ")}
+                          title={notif.message}
+                        >
                           {notif.message}
                         </p>
                         <button
@@ -350,6 +385,23 @@ function NotificationPanel() {
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          {/* [004] 带跳转的通知：显示"前往查看"按钮（hover 时浮现），
+                              点击跳转 + 自动标已读 */}
+                          {notif.actionHref && hoveredId === notif.id && (
+                            <Link href={notif.actionHref}>
+                              <button
+                                onClick={() => {
+                                  handleMarkRead(notif.id);
+                                  setShowPanel(false);
+                                }}
+                                className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                                title="前往查看"
+                              >
+                                {notif.actionLabel || "前往查看"}
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                            </Link>
+                          )}
                           {/* 标为已读：hover 时浮现，已读后隐藏 */}
                           {!notif.read && hoveredId === notif.id && (
                             <button
@@ -480,7 +532,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
           {/* Right Side: Bell + Admin Button + User Menu */}
           <div className="flex items-center gap-2">
             {/* 消息中心 */}
-            <NotificationPanel />
+            <NotificationPanel isAdmin={isAdmin} />
 
             {/* 管理后台按钮：仅管理员可见 */}
             {isAdmin && (

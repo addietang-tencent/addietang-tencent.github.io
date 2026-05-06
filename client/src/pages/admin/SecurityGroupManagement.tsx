@@ -2472,7 +2472,7 @@ export default function SecurityGroupManagement() {
                       </div>
                     </div>
                     <button
-                      onClick={openSelectSecurityGroupDialog}
+                      onClick={() => openSelectSecurityGroupDialog()}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors shrink-0"
                     >
                       <Pencil className="w-3.5 h-3.5" />

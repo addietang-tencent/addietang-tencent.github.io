@@ -122,6 +122,13 @@ export type NodeHealth = {
   missing: Array<"model" | "channel" | "securityGroup">;
 };
 
+// ─── 节点初始化健康度 ─────────────────────────────────────
+/** 初始化检查：模型 / 通道 / 镜像 / 网络（VPC+安全组），缺任一即未完成初始化。 */
+export type InitHealth = {
+  initialized: boolean;
+  missing: Array<"model" | "channel" | "image" | "network">;
+};
+
 // ─── 覆盖状态 ─────────────────────────────────────────────
 export type OverrideStatus =
   | "local" // 按本节点

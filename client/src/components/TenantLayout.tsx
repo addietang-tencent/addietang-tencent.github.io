@@ -151,11 +151,9 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 // ==================== 通知面板组件 ====================
 
 // [004] 独立化升级完成消息（仅对"兼具管理员身份"的用户端账号推送）
-//   - 展示条件：isAdmin=true × localStorage 未标记 ack
-//   - ack 触发：用户在管控端 /admin/security-group 完成一次"导入规则"链路后
-//     会写入 localStorage.admin_sg_migration_ack = "true"（见 SecurityGroupManagement.tsx）
-//   - 点击"前往查看"跳转管控端安全组页（管理员身份有权限进入）
-const MIGRATION_ACK_STORAGE_KEY = "admin_sg_migration_ack";
+//   - 展示条件：isAdmin=true（普通员工看不到，不懂、点了会 403）
+//   - 交互行为：与其他铃铛通知一致——用户自行点 X 删除 / 点"已读"变灰 / 点"前往查看"跳管控端
+//     删除和已读均为当前 Session 内内存态，与管控端蓝条的 ack 状态解耦
 const MIGRATION_NOTIFICATION: Notification = {
   id: "sg-migration-done",
   message:
@@ -176,13 +174,10 @@ function NotificationPanel({ isAdmin }: { isAdmin: boolean }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // [004] 仅"兼具管理员身份"的用户端账号 × 未 ack 时追加独立化升级完成消息
-    //   普通员工看不到（不懂、点了会 403），管理员已 ack 也不再重复展示
-    const shouldAppendMigration =
-      isAdmin &&
-      typeof window !== "undefined" &&
-      window.localStorage.getItem(MIGRATION_ACK_STORAGE_KEY) !== "true";
-    if (shouldAppendMigration) {
+    // [004] 仅"兼具管理员身份"的用户端账号展示独立化升级完成消息
+    //   普通员工看不到（不懂、点了会 403）
+    //   删除/已读行为与其他通知一致：内存态，不持久化，刷新后恢复
+    if (isAdmin) {
       // 放在最新时间点（最顶部），管理员打开铃铛立刻能看到
       setNotifications([MIGRATION_NOTIFICATION, ...MOCK_NOTIFICATIONS]);
     } else {

@@ -137,7 +137,10 @@ type CloudSg = {
 };
 
 type SecurityGroup = {
-  id: string;
+  // [004] ClawPro 安全组对外不暴露 ID，name 作为企业内唯一标识 + 主键
+  //   - 跨企业唯一性由 identifier + name 联合保证（identifier 由登录态隐式提供）
+  //   - 前后端 API 全部以 name 作为参数（不再使用 sg.id）
+  //   - 创建后 name 不可修改（避免重命名传播代价）
   name: string;
   remark: string;
   inboundCount: number;
@@ -182,8 +185,7 @@ type MigrationStatus = {
 
 const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
   {
-    id: "sg-cur00001",
-    name: "clawpro-default",
+    name: "ClawPro-Default",
     remark: "Agent 默认安全组",
     inboundCount: 13,
     outboundCount: 2,
@@ -198,7 +200,6 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
     ],
   },
   {
-    id: "sg-web00002",
     name: "Web-Server-SG",
     remark: "Web 服务器安全组，开放 80/443",
     inboundCount: 5,
@@ -217,7 +218,6 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-web00002", cloudSgName: "Web-Server-SG", seq: 1 }],
   },
   {
-    id: "sg-strct003",
     name: "Strict-Isolation-SG",
     remark: "严格隔离，仅允许必要端口",
     inboundCount: 3,
@@ -233,7 +233,6 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-strct003", cloudSgName: "Strict-Isolation-SG", seq: 1 }],
   },
   {
-    id: "sg-devtst04",
     name: "Dev-Test-SG",
     remark: "开发测试环境，开放所有端口",
     inboundCount: 2,
@@ -251,7 +250,6 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
 
 const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
   {
-    id: "sg-offic005",
     name: "Office-Standard-SG",
     remark: "办公网标准安全组，适合常规员工办公实例",
     inboundCount: 4,
@@ -266,7 +264,6 @@ const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-offic005", cloudSgName: "Office-Standard-SG", seq: 1 }],
   },
   {
-    id: "sg-datap006",
     name: "Data-Processing-SG",
     remark: "数据处理节点专用，保留必要服务访问",
     inboundCount: 3,
@@ -280,7 +277,6 @@ const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-datap006", cloudSgName: "Data-Processing-SG", seq: 1 }],
   },
   {
-    id: "sg-bastn007",
     name: "Bastion-Only-SG",
     remark: "仅允许堡垒机来源访问的安全组",
     inboundCount: 2,
@@ -295,7 +291,6 @@ const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-bastn007", cloudSgName: "Bastion-Only-SG", seq: 1 }],
   },
   {
-    id: "sg-applc008",
     name: "Application-Cluster-SG",
     remark: "应用集群通用安全组，放通服务编排端口",
     inboundCount: 4,
@@ -310,7 +305,6 @@ const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-applc008", cloudSgName: "Application-Cluster-SG", seq: 1 }],
   },
   {
-    id: "sg-audit009",
     name: "Audit-Readonly-SG",
     remark: "审计查看实例，限制仅查询与日志上报",
     inboundCount: 3,
@@ -324,7 +318,6 @@ const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
     cloudSgs: [{ sgId: "sg-audit009", cloudSgName: "Audit-Readonly-SG", seq: 1 }],
   },
   {
-    id: "sg-trial010",
     name: "Trial-Sandbox-SG",
     remark: "试用沙箱环境，方便演示分页与搜索效果",
     inboundCount: 3,
@@ -366,7 +359,7 @@ type RuleTableBodyProps = {
   paginate?: boolean;
 };
 
-type CommonRuleOptionKey = "block-inter-vpc" | "allow-public" | "allow-ssh";
+type CommonRuleOptionKey = "allow-public" | "allow-ssh";
 
 type CommonRuleOption = {
   key: CommonRuleOptionKey;
@@ -380,24 +373,6 @@ type CommonRuleOption = {
 };
 
 const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
-  {
-    key: "block-inter-vpc",
-    label: "限制 Agent 互访",
-    description: "",
-    defaultChecked: true,
-    rules: {
-      inbound: [
-        {
-          source: "当前 VPC 的 CIDR",
-          protocol: "ALL",
-          port: "ALL",
-          policy: "拒绝",
-          remark: "限制 VPC 下 Agent 云服务器互访",
-        },
-      ],
-      outbound: [],
-    },
-  },
   {
     key: "allow-public",
     label: "允许公网访问",
@@ -450,8 +425,7 @@ const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
   },
 ];
 
-const INITIAL_DEFAULT_SECURITY_GROUP_ID = "sg-cur00001";
-const NETWORK_TEMPLATE_WARNING_KEY: CommonRuleOptionKey = "block-inter-vpc";
+const INITIAL_DEFAULT_SECURITY_GROUP_NAME = "ClawPro-Default";
 const ENABLE_SECURITY_GROUP_EMPTY_STATE_DEMO = true;
 
 // 默认安全组的本地快照 key：供平台策略页等其他管理员页面只读消费（单向同步）。
@@ -511,8 +485,8 @@ function generateRandomSgId(): string {
   return `sg-${suffix}`;
 }
 
-function findSecurityGroupById(securityGroupId: string) {
-  return MOCK_SECURITY_GROUPS.find((sg) => sg.id === securityGroupId) ?? null;
+function findSecurityGroupByName(securityGroupName: string) {
+  return MOCK_SECURITY_GROUPS.find((sg) => sg.name === securityGroupName) ?? null;
 }
 
 function getInitialDefaultSecurityGroup(): SecurityGroup | null {
@@ -524,15 +498,14 @@ function getInitialDefaultSecurityGroup(): SecurityGroup | null {
   if (snapshotRaw) {
     try {
       const snapshot = JSON.parse(snapshotRaw) as {
-        id?: string;
         name?: string;
         remark?: string;
         inboundRules?: Rule[];
         outboundRules?: Rule[];
         cloudSgs?: CloudSg[]; // [004] 持久化 ClawPro 安全组身份信息
       };
-      if (snapshot && snapshot.id && Array.isArray(snapshot.inboundRules)) {
-        const template = findSecurityGroupById(snapshot.id);
+      if (snapshot && snapshot.name && Array.isArray(snapshot.inboundRules)) {
+        const template = findSecurityGroupByName(snapshot.name);
         if (template) {
           return {
             ...template,
@@ -546,17 +519,16 @@ function getInitialDefaultSecurityGroup(): SecurityGroup | null {
             cloudSgs: snapshot.cloudSgs ?? template.cloudSgs,
           };
         }
-        // [004] 新建 / 自定义 ID 场景：用快照完整构造，cloudSgs 兜底单分片
+        // [004] 用户自定义 name 场景：用快照完整构造，cloudSgs 兜底单分片
         return {
-          id: snapshot.id,
-          name: snapshot.name ?? snapshot.id,
+          name: snapshot.name,
           remark: snapshot.remark ?? "",
           inboundCount: snapshot.inboundRules.length,
           outboundCount: (snapshot.outboundRules ?? []).length,
           inboundRules: snapshot.inboundRules,
           outboundRules: snapshot.outboundRules ?? [],
           cloudSgs: snapshot.cloudSgs ?? [
-            { sgId: snapshot.id, cloudSgName: snapshot.name ?? snapshot.id, seq: 1 },
+            { sgId: generateRandomSgId(), cloudSgName: snapshot.name, seq: 1 },
           ],
         };
       }
@@ -570,7 +542,7 @@ function getInitialDefaultSecurityGroup(): SecurityGroup | null {
   //       故：存量企业场景下强制返回默认主 MOCK SG（跳过"未配置"演示开关）
   const migrationStatus = getInitialMigrationStatus();
   if (migrationStatus.isLegacyMigrated) {
-    return findSecurityGroupById(INITIAL_DEFAULT_SECURITY_GROUP_ID);
+    return findSecurityGroupByName(INITIAL_DEFAULT_SECURITY_GROUP_NAME);
   }
 
   // 仅将“未配置默认安全组”的演示开关收口在初始化阶段，避免主流程持续混入 demo 判断。
@@ -579,7 +551,7 @@ function getInitialDefaultSecurityGroup(): SecurityGroup | null {
     return null;
   }
 
-  return findSecurityGroupById(INITIAL_DEFAULT_SECURITY_GROUP_ID);
+  return findSecurityGroupByName(INITIAL_DEFAULT_SECURITY_GROUP_NAME);
 }
 
 // 写入默认安全组快照：currentSg 为 null 时清除 key。
@@ -594,7 +566,6 @@ function writeDefaultSecurityGroupSnapshot(
     return;
   }
   const snapshot = {
-    id: currentSg.id,
     name: currentSg.name,
     remark: currentSg.remark,
     inboundRules,
@@ -791,6 +762,10 @@ type CreateSecurityGroupDialogProps = {
 
 type SelectExistingSecurityGroupDialogProps = {
   open: boolean;
+  /** [004] 弹窗模式：'create' = 空态首次建组（新用户），'replace' = 稳定态规则替换（存量用户）
+   *   两种模式只影响标题和顶部说明文案，业务逻辑相同
+   */
+  mode: "create" | "replace";
   searchKeyword: string;
   selectedSecurityGroup: SecurityGroup | null;
   previewTab: "outbound" | "inbound";
@@ -812,6 +787,20 @@ type SelectExistingSecurityGroupDialogProps = {
 
 const SECURITY_GROUP_DIALOG_PAGE_SIZE = 5;
 
+// [004] ClawPro 安全组 name 格式校验
+//   - 字符集：英文字母（大小写）+ 数字 + 短横线
+//   - 长度：3-32 字符
+//   - 首字符必须是字母；尾字符必须是字母或数字（不能以短横线结尾）
+//   - 创建后不可修改（避免重命名传播代价）
+const CLAWPRO_SG_NAME_REGEX = /^[A-Za-z][a-zA-Z0-9-]{1,30}[a-zA-Z0-9]$/;
+// 命名规则（非法态红色错误、提交 toast 复用此简短版本）
+const CLAWPRO_SG_NAME_RULE = "支持字母、数字、短横线，以字母开头，3–32 个字符";
+// 完整 hint（合法态灰字提示：规则 + 命名特点）
+const CLAWPRO_SG_NAME_HINT = `${CLAWPRO_SG_NAME_RULE}；创建后不可修改，对应的云端安全组由 ClawPro 自动创建并命名。`;
+function isValidClawproSgName(name: string): boolean {
+  return CLAWPRO_SG_NAME_REGEX.test(name);
+}
+
 function CreateSecurityGroupDialog({
   open,
   checkedOptions,
@@ -832,13 +821,17 @@ function CreateSecurityGroupDialog({
       (rule.source === "0.0.0.0/0" || rule.source === "::/0") && rule.policy === "允许"
     )
   );
+  // [004] name 格式校验：仅当用户输入了内容才显示校验错误（空值不报错，由 disabled 兜底）
+  const trimmedName = draft.name.trim();
+  const isNameValid = trimmedName.length === 0 || isValidClawproSgName(trimmedName);
+  const isCreateDisabled = trimmedName.length === 0 || !isValidClawproSgName(trimmedName);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold text-gray-900">
-            新建 ClawPro 安全组
+            自定义 ClawPro 安全组
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-5 py-2">
@@ -848,12 +841,18 @@ function CreateSecurityGroupDialog({
               placeholder="请输入 ClawPro 安全组名称"
               value={draft.name}
               onChange={(e) => onNameChange(e.target.value)}
-              className="h-9 text-sm"
+              className={`h-9 text-sm ${!isNameValid ? "border-red-400 focus-visible:ring-red-200" : ""}`}
             />
-            {/* [004] 引导文案 A：让用户感知"ClawPro 名称仅本地使用，云端会另起名" */}
-            <p className="text-xs text-gray-400 leading-relaxed mt-1.5">
-              此名称仅在 ClawPro 中使用。云端安全组将由 ClawPro 自动命名。
-            </p>
+            {/* [004] 格式校验提示：非法时红色错误（只讲规则），合法时灰色 hint（规则 + 特点） */}
+            {!isNameValid ? (
+              <p className="text-xs text-red-500 leading-relaxed mt-1.5">
+                名称格式不正确：{CLAWPRO_SG_NAME_RULE}。
+              </p>
+            ) : (
+              <p className="text-xs text-gray-400 leading-relaxed mt-1.5">
+                {CLAWPRO_SG_NAME_HINT}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -894,7 +893,7 @@ function CreateSecurityGroupDialog({
                           if (checked) {
                             if (option.key === "allow-public") {
                               onPreviewTabChange("outbound");
-                            } else if (option.key === "allow-ssh" || option.key === "block-inter-vpc") {
+                            } else if (option.key === "allow-ssh") {
                               onPreviewTabChange("inbound");
                             }
                           }
@@ -1007,7 +1006,11 @@ function CreateSecurityGroupDialog({
           <Button variant="outline" onClick={onCancel}>
             取消
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={onConfirm}>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={onConfirm}
+            disabled={isCreateDisabled}
+          >
             创建
           </Button>
         </DialogFooter>
@@ -1299,7 +1302,7 @@ export default function SecurityGroupManagement() {
   }, [migrationBusinessState, hasRunningTasks, hasFailedTasks]);
 
   const MigrationBanner = shouldShowMigrationBanner ? (
-    <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+    <div className="mb-3 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs leading-relaxed text-amber-800">
@@ -1568,6 +1571,10 @@ export default function SecurityGroupManagement() {
   // 安全组切换状态
   const [currentSg, setCurrentSg] = useState<SecurityGroup | null>(initialDefaultSecurityGroup);
   const [isSgDialogOpen, setIsSgDialogOpen] = useState(false);
+  // [004] 弹窗模式：'create' = 空态首次创建（新用户）、'replace' = 稳定态规则替换（存量）
+  //        - create 模式：标题 "新建 ClawPro 安全组 · 从已有规则导入"
+  //        - replace 模式：标题 "导入规则到 ClawPro 安全组"（保持现状，存量用户 0 感知）
+  const [sgDialogMode, setSgDialogMode] = useState<"create" | "replace">("replace");
   const [isConfirmSwitchDialogOpen, setIsConfirmSwitchDialogOpen] = useState(false);
   const [sgSearchKeyword, setSgSearchKeyword] = useState("");
   const [sgDialogCandidatePage, setSgDialogCandidatePage] = useState(1);
@@ -1780,13 +1787,13 @@ export default function SecurityGroupManagement() {
   //
   // 【稳定态】currentSg 已存在
   //   ✅ 只覆盖 rules（inboundRules/outboundRules + 对应计数）
-  //   ❌ 不改 currentSg.id / name / remark / cloudSgs（K2/K4/B15 联合约束）
+  //   ❌ 不改 currentSg.name / remark / cloudSgs（K2/K4/B15 联合约束）
   //
   // 【初始化】currentSg 为空（用户首次点"选择已有安全组"建立 ClawPro 安全组）
   //   ⚠️  不能直接 setCurrentSg(sourceSg)，否则 UI 会把腾讯云 sg 的名字 / id
   //       显示成 ClawPro 安全组的身份，违反 004 解耦心智。
   //   ✅ 构造一个新的 ClawPro 安全组：
-  //       - name: "clawpro-default"（ClawPro 默认名，不继承 sourceSg.name）
+  //       - name: "ClawPro-Default"（ClawPro 默认名，不继承 sourceSg.name）
   //       - remark: "Agent 默认安全组"（固定业务语义，选择 I 策略）
   //       - cloudSgs: 单分片，cloudSgName 用 K4 约定格式 clawpro-sg-{域名}-default-01
   //       - rules: 抄 sourceSg 的规则
@@ -1800,8 +1807,7 @@ export default function SecurityGroupManagement() {
       if (!prev) {
         const cloudSgId = generateRandomSgId();
         return {
-          id: "sg-clawpro-" + Date.now(), // ClawPro 内部 ID（不展示给用户）
-          name: "clawpro-default",
+          name: "ClawPro-Default",
           remark: "Agent 默认安全组",
           inboundCount: sourceSg.inboundCount,
           outboundCount: sourceSg.outboundCount,
@@ -1859,7 +1865,8 @@ export default function SecurityGroupManagement() {
     });
   };
 
-  const openSelectSecurityGroupDialog = () => {
+  const openSelectSecurityGroupDialog = (mode: "create" | "replace" = "replace") => {
+    setSgDialogMode(mode);
     setSgSearchKeyword("");
     setSgDialogCandidatePage(1);
     setSgDialogSelected(null);
@@ -2009,6 +2016,7 @@ export default function SecurityGroupManagement() {
 
   const renderSelectExistingSecurityGroupDialog = ({
     open,
+    mode,
     searchKeyword,
     selectedSecurityGroup,
     previewTab,
@@ -2050,7 +2058,9 @@ export default function SecurityGroupManagement() {
             <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
               <p className="text-xs leading-relaxed text-blue-600">
-                以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。
+                {mode === "create"
+                  ? "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到 ClawPro 安全组（默认名称为 ClawPro-Default），原云端安全组不受影响。"
+                  : "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。"}
               </p>
             </div>
             <div className="space-y-3">
@@ -2084,10 +2094,10 @@ export default function SecurityGroupManagement() {
                       <>
                         <div className="flex flex-col">
                           {candidateSecurityGroups.map((sg) => {
-                            const isSelected = selectedSecurityGroup?.id === sg.id;
+                            const isSelected = selectedSecurityGroup?.name === sg.name;
                             return (
                               <button
-                                key={sg.id}
+                                key={sg.name}
                                 onClick={() => onSelectSecurityGroup(sg)}
                                 className={`w-full text-left px-4 py-2.5 border-b border-gray-100 last:border-b-0 transition-colors ${
                                   isSelected
@@ -2108,7 +2118,7 @@ export default function SecurityGroupManagement() {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-800"}`}>{sg.name}</span>
-                                      <span className="text-xs text-gray-400 font-mono shrink-0 truncate max-w-[140px]">(id: {sg.id})</span>
+                                      <span className="text-xs text-gray-400 font-mono shrink-0 truncate max-w-[140px]">(id: {sg.cloudSgs[0]?.sgId ?? "—"})</span>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-0.5 truncate">{sg.remark || "—"}</p>
                                   </div>
@@ -2263,11 +2273,11 @@ export default function SecurityGroupManagement() {
   };
   const selectableSecurityGroups = MOCK_SECURITY_GROUP_DIALOG_CANDIDATES.filter(
     (sg) =>
-      sg.id !== currentSg?.id &&
+      sg.name !== currentSg?.name &&
       !isClawproManagedSg(sg) &&
       (sgSearchKeyword === "" ||
         sg.name.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
-        sg.id.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
+        (sg.cloudSgs[0]?.sgId ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
         (sg.remark ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()))
   );
   const selectableSecurityGroupTotalPages = Math.max(1, Math.ceil(selectableSecurityGroups.length / SECURITY_GROUP_DIALOG_PAGE_SIZE));
@@ -2283,7 +2293,6 @@ export default function SecurityGroupManagement() {
     }
   }, [sgDialogCandidatePage, selectableSecurityGroupTotalPages]);
 
-  const hasNetworkTemplateWarning = hasCommonRulePreviewRule(inboundRules, NETWORK_TEMPLATE_WARNING_KEY, "inbound");
   const activePanelAccessPort = panelPort || DEFAULT_PANEL_ACCESS_PORT;
   const panelAccessRequiredRules = allowPanelAccess ? buildPanelAccessRequiredRules(activePanelAccessPort) : [];
   const sgDialogMissingPanelAccessRules = Boolean(
@@ -2343,39 +2352,34 @@ export default function SecurityGroupManagement() {
           {/* [004] 安全组 Tab 顶部双提示框（参照 VPC/子网 Tab 布局风格）
               统一规则：两个框都仅在已配置 ClawPro 安全组后才显示
               - 黄色（⚠️）：操作风险提示
-              - 蓝色（ℹ️）：产品价值宣言 + 存量用户迁移告知 */}
+              - 蓝色（ℹ️）：产品价值宣言
+              布局：两 banner 同属"页面级告知区"，用内层 gap-3（12px）聚合为一组；
+                   告知区与下方配置卡片之间保持外层 gap-6（24px）喘息空间。 */}
           {currentSg && (
-            <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-              <div className="text-xs text-amber-800 leading-relaxed space-y-1.5">
-                <p>
-                  • 当前企业下<span className="font-semibold">所有 Agent 云服务器</span>共用同一个 ClawPro 安全组，修改规则将对所有 Agent 立即统一生效，请谨慎操作。
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* 蓝色说明框（仅已配置态显示；第 1 条所有用户都显示；第 2 条仅存量未 ack）
-              [004] 简化分类：用户二分为 ① 存量用户（isLegacyMigrated=true）② 其他用户 */}
-          {currentSg && (
-            <div className="relative flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-              <div className="flex-1 text-xs leading-relaxed text-blue-700 space-y-1.5">
-                {/* 第 1 条：所有用户都显示（ClawPro 核心价值宣言） */}
-                <p>
-                  • ClawPro 安全组与云端控制台的其他资源已独立，在此处的规则变更不会影响您云端上的其他安全组与其绑定的资源。
-                </p>
-                {/* 第 2 条：独立化升级告知（跨层级迁移：云端 → ClawPro）
-                    [004] 显示条件：存量用户 × 未 ack
-                         ack 触发方式：完成一次"导入规则"流程（B15 完整链路）后自动消失；
-                         不再提供 × 按钮手动关闭，也不随手动改单条规则 ack
-                    文案设计：仅讲"迁移"故事（纵向：云端老 SG → ClawPro 安全组），
-                            "边界"留给第 1 条（横向：ClawPro vs 云端通用真理），避免信息冗余 */}
-                {showMigrationBanner && (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <div className="text-xs text-amber-800 leading-relaxed space-y-1.5">
                   <p>
-                    • ClawPro 已为您完成独立化升级：云端原 {migrationStatus.legacySgId} 的规则与已绑定的 Agent，已同步迁移至 ClawPro 安全组 {currentSg.name}。
+                    当前企业下所有 Agent 云服务器共用同一个 ClawPro 安全组，修改规则将对所有 Agent 立即统一生效，请谨慎操作。
                   </p>
-                )}
+                </div>
+              </div>
+
+              {/* 蓝色说明框（仅已配置态显示）
+                  [004] 结构：小标题 + 作用范围 + 一致性保障
+                        （"了解更多"链接暂移除，等详细说明文章上线后再挂回） */}
+              <div className="relative flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+                <div className="flex-1 text-xs leading-relaxed text-blue-700 space-y-1.5">
+                  <p className="font-semibold text-blue-800">ClawPro 安全组规则管理说明</p>
+                  <p>
+                    • 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。
+                  </p>
+                  <p>
+                    • 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -2479,7 +2483,7 @@ export default function SecurityGroupManagement() {
               ) : (
                 <div className="w-full">
                   <div className="flex items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-2xl flex-col text-center">
-                    <div className="text-sm text-gray-500 mb-4">暂未配置 ClawPro 安全组</div>
+                    <div className="text-sm text-gray-500 mb-4">暂未配置 ClawPro 安全组，请选择创建方式：</div>
 
                     <div className="flex gap-3 mb-4">
                       <Button
@@ -2487,14 +2491,14 @@ export default function SecurityGroupManagement() {
                         className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-6 text-sm btn-primary-glow"
                         style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                       >
-                        新建 ClawPro 安全组
+                        自定义规则
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={openSelectSecurityGroupDialog}
+                        onClick={() => openSelectSecurityGroupDialog("create")}
                         className="h-9 px-6 text-sm bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
                       >
-                        从云端安全组导入规则
+                        导入已有规则
                       </Button>
                     </div>
 
@@ -3308,28 +3312,32 @@ export default function SecurityGroupManagement() {
         onPreviewTabChange={setCreateSgPreviewTab}
         onCancel={closeCreateSecurityGroupDialog}
         onConfirm={() => {
-          if (!createSgDraft.name.trim()) {
+          const trimmedName = createSgDraft.name.trim();
+          if (!trimmedName) {
             toast.error("请输入安全组名称");
+            return;
+          }
+          if (!isValidClawproSgName(trimmedName)) {
+            toast.error("安全组名称格式不合法：" + CLAWPRO_SG_NAME_RULE);
             return;
           }
 
           const { inbound: initialInbound, outbound: initialOutbound } = buildRulesFromOptions(createSgCheckedOptions);
 
-          const newSgId = "sg-clawpro-" + Date.now();
           // [004 · BUG FIX 2026-05-05] 用户新建 ClawPro 安全组：
           //   - ClawPro 安全组 name/remark = 用户自定义（如 "mya"）
+          //   - ClawPro 安全组对外没有 ID，name 即唯一标识（API 也以 name 为参数）
           //   - 云端 sg name 不复用用户起名，统一走 K4 默认格式 clawpro-sg-{域名}-default-{序号}
           //   - 云端 sgId 是新生成的 8 位格式（模拟云端 API 返回）
           //
           // 【陷阱】不能调用 applyCurrentSecurityGroup(newSg)：
-          //   该函数的"初始化分支"（prev == null 时）会硬编码 name="clawpro-default" / remark="Agent 默认安全组"
+          //   该函数的"初始化分支"（prev == null 时）会硬编码 name="ClawPro-Default" / remark="Agent 默认安全组"
           //   覆盖用户填的 name/remark。该分支专为"路径 B · 从云端导入规则"设计——
           //   云端 sg name 不可复用，所以走默认值。但路径 A 必须保留用户起名。
           //   修复方案：直接 setCurrentSg(newSg) 跳过初始化分支，并手动同步 inboundRules/outboundRules
           const cloudSgId = generateRandomSgId();
           const newSg: SecurityGroup = {
-            id: newSgId,
-            name: createSgDraft.name,
+            name: trimmedName,
             remark: createSgDraft.remark,
             inboundCount: initialInbound.length,
             outboundCount: initialOutbound.length,
@@ -3349,6 +3357,7 @@ export default function SecurityGroupManagement() {
       {/* ─── 切换安全组大弹窗（上下布局） ──────────────────────────────────────────────────────────────── */}
       {renderSelectExistingSecurityGroupDialog({
         open: isSgDialogOpen,
+        mode: sgDialogMode,
         searchKeyword: sgSearchKeyword,
         selectedSecurityGroup: sgDialogPreviewSecurityGroup,
         previewTab: sgDialogTab,
@@ -3388,6 +3397,15 @@ export default function SecurityGroupManagement() {
         onCancel: closeSelectSecurityGroupDialog,
         onConfirm: () => {
           if (!sgDialogSelected) return;
+          // [004] 空态新建（mode='create'）：跳过二次确认，因为还没有 Agent 绑这个 SG，
+          //   不存在"立即影响所有 Agent"的风险；直接 apply 创建即可。
+          // 稳定态替换（mode='replace'）：保留二次确认，存量 Agent 会立即受影响。
+          if (sgDialogMode === "create") {
+            applyCurrentSecurityGroup(sgDialogSelected);
+            toast.success("ClawPro 安全组已创建，规则已导入");
+            closeSelectSecurityGroupDialog();
+            return;
+          }
           setIsConfirmSwitchDialogOpen(true);
         },
       })}
@@ -3757,14 +3775,6 @@ export default function SecurityGroupManagement() {
               确认保存当前私有网络和子网配置？<br />
               修改后将对后续新创建的 Agent 云服务器生效。
             </p>
-            {hasNetworkTemplateWarning && (
-              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-                <svg className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                <p className="text-xs text-amber-800 leading-relaxed">
-                  检测到当前安全组中存在与旧 VPC 网络配置相关的规则。切换私有网络后，这些规则可能与新的网络配置不一致。保存后，请前往「安全组」检查并调整相关规则。
-                </p>
-              </div>
-            )}
             {hasVpcCidrWarning && (
               <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mt-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />

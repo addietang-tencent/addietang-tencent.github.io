@@ -109,10 +109,11 @@ function buildNotices(): NoticeItem[] {
   return notices;
 }
 
-const NOTICES = buildNotices();
 const AUTO_PLAY_INTERVAL = 5000;
 
 export default function AdminNoticeBar() {
+  // [004] 每次渲染都重算通知列表，以便存量企业 ack 状态变化时能即时从通知条消失
+  const NOTICES = buildNotices();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 

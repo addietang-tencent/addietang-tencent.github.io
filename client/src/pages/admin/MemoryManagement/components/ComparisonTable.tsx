@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Shield, Zap, Crown, Check, Database, Lock, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import React from 'react';
+import { Sparkles, Shield, Zap, Crown, Check, Database, Lock, Minus } from 'lucide-react';
 
 interface ComparisonTableProps {
   // Pro 服务是否已开通
@@ -8,62 +8,23 @@ interface ComparisonTableProps {
 
 /**
  * 版本对比展示：Free 版 → Pro 版
- * 
+ *
  * 方案 B：仅做功能对比展示，开通入口集中在服务概览区域
- * 
+ * 折叠交互由外层容器统一承担（避免触发器重复、视觉重叠），
+ * 本组件只负责"展开后"的对比内容渲染。
+ *
  * 遵循 Agent Enterprise 设计规范：
  * - 品牌渐变：linear-gradient(135deg, #007AFF, #5856D6)
  * - 卡片圆角：rounded-2xl (16px)
  * - 统一阴影：通过 inline style 设置
  * - 图标：仅使用 lucide-react，禁止 emoji
- * - Pro 已开通时支持折叠
  */
-export const ComparisonTable: React.FC<ComparisonTableProps> = ({ 
+export const ComparisonTable: React.FC<ComparisonTableProps> = ({
   isProActive = false,
 }) => {
-  // 折叠状态：Pro 已开通时默认折叠
-  const [isExpanded, setIsExpanded] = useState(!isProActive);
-
-  // 当 isProActive 变化时，更新折叠状态
-  useEffect(() => {
-    if (isProActive) {
-      setIsExpanded(false); // Pro 开通后自动折叠
-    } else {
-      setIsExpanded(true); // Pro 未开通时展开
-    }
-  }, [isProActive]);
-
-  // Pro 已开通且折叠时，显示展开按钮（右对齐，向上移动到标题行）
-  if (isProActive && !isExpanded) {
-    return (
-      <div className="flex justify-end -mt-7">
-        <button
-          onClick={() => setIsExpanded(true)}
-          className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
-        >
-          <span>展开</span>
-          <ChevronDown className="w-4 h-4" />
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div>
-      {/* 如果 Pro 已开通，显示收起按钮（右对齐，向上移动到标题行） */}
-      {isProActive && isExpanded && (
-        <div className="flex justify-end -mt-7 mb-4">
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
-          >
-            <span>收起</span>
-            <ChevronUp className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      <div className={`grid grid-cols-[1fr_1.5fr] gap-5 ${!isProActive ? 'mt-4' : ''}`}>
+      <div className="grid grid-cols-[1fr_1.5fr] gap-5">
         {/* Free 版卡片 */}
         <div 
           className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all duration-200 flex flex-col"

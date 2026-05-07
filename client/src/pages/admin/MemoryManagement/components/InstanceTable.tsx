@@ -79,9 +79,9 @@ interface TriStateSwitchProps {
   isError?: boolean;
   isProDisabled?: boolean;
   proDisabledReason?: string;
-  // 锁定态：不可交互，但滑块保留在当前档位、不渲染内部 loading。
-  // 用于"插件升级中"这类与记忆档位解耦的异步任务：升级过程档位不变，
-  // 只需禁用切换即可，不能让滑块看起来在转圈（会误导用户以为档位在变）。
+  // 锁定态：不可交互。视觉上复用与「开通中」一致的滑块内 loading，
+  // 在当前档位（Pro）的 button 内叠加 spinner，但保留档位文字 —— 用户依然
+  // 知道当前档位没变，只是有一个异步任务（插件升级）在后台跑。
   isLocked?: boolean;
   onChange: (newValue: 'none' | 'free' | 'pro') => void;
 }
@@ -136,11 +136,14 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
 
   return (
     <div className={`relative inline-flex items-center h-8 bg-gray-100 rounded-full p-0.5 w-[200px] ${isLocked ? 'opacity-60' : ''}`}>
-      {/* 滑块 */}
+      {/* 滑块。
+          isTransitioning（开启中/关闭中）与 isLocked（插件升级中）共用同一份 loading 视觉：
+          滑块内只显示一个旋转图标，对应档位的标签文字同步隐藏，避免双重 loading。
+          差异仅在档位含义：transitioning 表示档位正在切换；locked 表示档位不变、仅有后台任务。 */}
       <div
         className={`absolute h-7 w-[calc(33.33%-2px)] rounded-full transition-all duration-200 ${getSliderPosition()} ${getSliderBg()}`}
       >
-        {isTransitioning && (
+        {(isTransitioning || isLocked) && (
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
           </div>
@@ -180,13 +183,13 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
             disabled={isDisabled}
             className={`relative z-10 flex-1 h-7 text-xs font-medium rounded-full transition-colors
               ${isActive 
-                ? (isTransitioning ? 'text-white/80' : 'text-white') 
+                ? ((isTransitioning || isLocked) ? 'text-white/80' : 'text-white') 
                 : isDisabled 
                   ? 'text-gray-400 cursor-not-allowed' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
           >
-            {isActive && isTransitioning ? '' : opt.label}
+            {isActive && (isTransitioning || isLocked) ? '' : opt.label}
           </button>
         );
       })}
@@ -1204,25 +1207,19 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         {AGENT_TYPE_DISPLAY[oc.agentType ?? 'openclaw'] ?? (oc.agentType ?? 'OpenClaw')}
                       </span>
                     </td>
-                    {/* 记忆管理 - 三态 Switch */}
+                    {/* 记忆管理 - 三态 Switch
+                        插件升级中（isLocked）：与「开通中」视觉一致，spinner 直接叠在 Pro 档位标签左侧；
+                        档位文字保留，提示用户当前版本未变、仅是后台异步任务在跑。 */}
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <TriStateSwitch
-                          value={getSwitchValue()}
-                          isTransitioning={isMemoryTransitioning}
-                          isError={isError}
-                          isProDisabled={isProDisabled}
-                          proDisabledReason={proDisabledReason || undefined}
-                          isLocked={isPluginUpgrading}
-                          onChange={handleSwitchChange}
-                        />
-                        {isPluginUpgrading && (
-                          <span className="inline-flex items-center gap-1 text-xs text-blue-600">
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            插件升级中
-                          </span>
-                        )}
-                      </div>
+                      <TriStateSwitch
+                        value={getSwitchValue()}
+                        isTransitioning={isMemoryTransitioning}
+                        isError={isError}
+                        isProDisabled={isProDisabled}
+                        proDisabledReason={proDisabledReason || undefined}
+                        isLocked={isPluginUpgrading}
+                        onChange={handleSwitchChange}
+                      />
                     </td>
                   </tr>
                 );

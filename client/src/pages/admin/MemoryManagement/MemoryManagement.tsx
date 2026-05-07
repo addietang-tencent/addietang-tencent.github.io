@@ -4,8 +4,9 @@ import { ComparisonTable } from './components/ComparisonTable';
 import { InstanceTable, OcInstance, MemoryStatus } from './components/InstanceTable';
 import { ProActivationDialog } from './components/ProActivationDialog';
 import { ProCloseDialog } from './components/ProCloseDialog';
+import { OneClickUpgradeDialog } from './components/OneClickUpgradeDialog';
 import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
-import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, Bot, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { CircleOff, Zap, Crown, AlertCircle, Loader2, CheckCircle2, X, Bot, Info, ChevronDown, ChevronUp, ArrowUpCircle } from 'lucide-react';
 
 // 配置常量
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
@@ -25,6 +26,8 @@ export const MemoryManagement: React.FC = () => {
   // ========== 弹窗状态 ==========
   const [activationDialogOpen, setActivationDialogOpen] = useState(false);
   const [closeDialogOpen, setCloseDialogOpen] = useState(false);
+  // 一键升级弹窗：触发后由弹窗内部异步检测可升级实例并展示对应态
+  const [oneClickUpgradeDialogOpen, setOneClickUpgradeDialogOpen] = useState(false);
   // 版本对比折叠状态，默认收起
   const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
   
@@ -75,6 +78,18 @@ export const MemoryManagement: React.FC = () => {
     freeCount: instances.filter(i => i.memoryStatus === 'free').length,
     noneCount: instances.filter(i => i.memoryStatus === 'none').length,
   };
+
+  // 一键启用短期记忆压缩 · 候选集：本期能力「短期记忆压缩」仅对 OpenClaw 类型的 Pro 版 Agent 生效，
+  // 因此候选集只包含 agentType === 'openclaw' && memoryStatus === 'pro' 且未在插件升级中的 Agent。
+  // 控制台不预判版本新旧，点击入口后由弹窗发起异步检测、由后端返回真正需要升级的清单。
+  // 关闭、开启中、关闭中、异常、插件升级中等中间态 Agent 不在候选范围内。
+  const upgradeCandidates = instances.filter(
+    i => (i.agentType ?? 'openclaw') === 'openclaw'
+      && i.memoryStatus === 'pro'
+      && !i.isPluginUpgrading
+  );
+  // 是否有任一 Agent 正在异步升级中：升级期间禁用"一键升级"入口，避免重复下发。
+  const hasUpgradingInstance = instances.some(i => i.isPluginUpgrading);
 
   // Pro 额度使用率
   const memoryAllocationPercent = purchasedSpaces > 0
@@ -374,6 +389,61 @@ export const MemoryManagement: React.FC = () => {
             </div>
           )}
 
+          {/* Memory Pro 新能力 · 介绍条
+              —— 讲故事位：介绍 Pro 版持续上新的能力 + 使用前提；右侧配套「一键启用」按钮：
+                 · 按钮文案固定为通用动作「一键启用」，不绑定具体能力名；
+                 · 未来新增的 Pro 能力按同格式在下方能力说明区追加一行即可，不改标题 / 按钮 / 弹窗；
+                 · 已开通 Pro 且有 OpenClaw 类型 Pro 版 Agent：可点击，打开一键升级弹窗，将记忆服务
+                   升级至最新版本，OpenClaw 类型 Pro 版 Agent 升级后即可使用 Pro 版最新能力；
+                 · 未开通 Pro / 无候选 Agent / 有 Agent 升级中：按钮置灰，hover 文案按场景区分 */}
+          <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-3 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl px-4 py-3 mb-4">
+            <div className="flex-1 min-w-0">
+              {/* 能力说明区：chip 作为通用标题 + 本期能力「短期记忆压缩」价值描述 + 使用前提
+                  合成为一段，避免多行左对齐问题；后续新增 Pro 能力按同格式在下方追加新段 */}
+              <div className="text-sm text-gray-700 leading-relaxed">
+                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-md border border-blue-200 bg-white/70 text-xs font-semibold text-blue-700 align-middle">
+                  Memory Pro 新能力
+                </span>
+                <span className="font-semibold text-gray-900">短期记忆压缩</span>
+                <span className="text-gray-700">：基于 WideSearch 等数据集测试，长任务可节省 </span>
+                <span className="font-semibold text-blue-600">45%</span>
+                <span className="text-gray-700"> 的 Token 消耗、提高 </span>
+                <span className="font-semibold text-blue-600">20%</span>
+                <span className="text-gray-500"> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）</span>
+              </div>
+            </div>
+            {(() => {
+              const hasCandidate = upgradeCandidates.length > 0;
+              const disabled = !isProActive || hasUpgradingInstance || !hasCandidate;
+              // 仅在禁用态提供 Tooltip 说明原因；可点击态不展示 Tooltip，避免对用户造成干扰。
+              const title = !isProActive
+                ? '请先开通 Memory Pro'
+                : hasUpgradingInstance
+                  ? '有 Agent 正在升级中，请等待当前任务完成后再发起'
+                  : !hasCandidate
+                    ? '暂无可启用的 Pro 版 Agent'
+                    : undefined;
+              return (
+                <button
+                  onClick={() => {
+                    if (disabled) return;
+                    setOneClickUpgradeDialogOpen(true);
+                  }}
+                  disabled={disabled}
+                  title={title}
+                  className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap ${
+                    disabled
+                      ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
+                      : 'text-blue-700 bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-300'
+                  }`}
+                >
+                  <ArrowUpCircle className="w-3.5 h-3.5" />
+                  一键启用
+                </button>
+              );
+            })()}
+          </div>
+
           {/* 新实例默认记忆版本 - 三选一控件 */}
           <div className="pt-5 border-t border-gray-100 mt-5">
             <DefaultMemoryVersion
@@ -571,6 +641,37 @@ export const MemoryManagement: React.FC = () => {
         ocCount={stats.proCount}
         onGoToInstanceList={() => {
           instanceTableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+      />
+      {/* 一键升级弹窗 —— 打开后由弹窗内部异步检测需要升级的 Agent：
+            - 检测中：loading 态
+            - 有可升级：展示清单 + 影响说明，确认后异步下发任务、弹窗立即关闭
+            - 全部最新：友好提示，客户关闭即可
+          升级过程由列表行内「插件升级中」loading 体现，任务完成后 Agent 自动回到稳态。*/}
+      <OneClickUpgradeDialog
+        open={oneClickUpgradeDialogOpen}
+        onOpenChange={setOneClickUpgradeDialogOpen}
+        candidateInstances={upgradeCandidates}
+        onConfirm={(targets) => {
+          // 异步下发升级任务：
+          // 1) 立即把所有 target Agent 标记为「插件升级中」
+          // 2) 给出 toast 提示，用户可以离开页面
+          // 3) 每个 Agent 独立随机延迟（3~6 秒）后回到稳态，模拟后端异步回调
+          if (targets.length === 0) return;
+          const targetIds = new Set(targets.map(t => t.id));
+          setInstances(prev => prev.map(i =>
+            targetIds.has(i.id) ? { ...i, isPluginUpgrading: true } : i
+          ));
+          toast.success(`已下发 ${targets.length} 个 Agent 的记忆服务升级任务`);
+
+          targets.forEach(t => {
+            const delay = 3000 + Math.floor(Math.random() * 3000);
+            setTimeout(() => {
+              setInstances(prev => prev.map(i =>
+                i.id === t.id ? { ...i, isPluginUpgrading: false } : i
+              ));
+            }, delay);
+          });
         }}
       />
     </div>

@@ -23,7 +23,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, MOCK_OPENCLAW_LIST, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
+import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, MOCK_OPENCLAW_LIST, MOCK_CLAWS_WITH_DEPT, type DepartmentNode, type GroupNode, MOCK_GROUP_TREE_MANUAL, MOCK_GROUP_TREE_ONEID, MOCK_TOKEN_BY_GROUP_MANUAL, MOCK_TOKEN_BY_GROUP_ONEID } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // CLS 采集插件版本历史
@@ -306,6 +306,165 @@ function TokenDepartmentFilter({
   );
 }
 
+// ─── 分组树节点（递归）──────────────────────────────────────────────────────
+function TokenGroupTreeNode({
+  node, level, selected, expanded, onToggle, onSelect, search,
+}: {
+  node: GroupNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+  search: string;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+  const isSection = node.id.startsWith("__section_");
+
+  // 搜索过滤：如果有搜索词，只显示匹配的节点
+  const matchesSearch = !search || node.name.toLowerCase().includes(search.toLowerCase());
+  const childrenMatchSearch = hasChildren && node.children!.some(child => {
+    const childMatch = child.name.toLowerCase().includes(search.toLowerCase());
+    const grandChildMatch = child.children?.some(gc => gc.name.toLowerCase().includes(search.toLowerCase()));
+    return childMatch || grandChildMatch;
+  });
+
+  if (search && !matchesSearch && !childrenMatchSearch && !isSection) return null;
+
+  return (
+    <div>
+      {isSection ? (
+        <div className="px-2 pt-3 pb-1">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{node.name}</span>
+        </div>
+      ) : (
+        <div
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+          }`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
+          onClick={() => onSelect(node.id)}
+        >
+          {hasChildren ? (
+            <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+              onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+              {isExpanded
+                ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+            </button>
+          ) : (
+            <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+            </span>
+          )}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        </div>
+      )}
+      {hasChildren && (isExpanded || isSection || (search && childrenMatchSearch)) && node.children!.map((child) => (
+        <TokenGroupTreeNode key={child.id} node={child} level={isSection ? level : level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} search={search} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 分组筛选弹出框（Tokens 监控「按分组」Tab 用） ────────────────────────────
+function TokenGroupFilter({
+  groups, value, onChange,
+}: {
+  groups: GroupNode[]; value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  useEffect(() => { if (open) { setTempValue(value); setSearch(""); } }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  const findNode = (nodes: GroupNode[], id: string): GroupNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) { const found = findNode(n.children, id); if (found) return found; }
+    }
+    return undefined;
+  };
+  const selectedNode = tempValue ? findNode(groups, tempValue) : undefined;
+  const triggerNode = value ? findNode(groups, value) : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[160px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerNode ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerNode?.name || "全部分组"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        {/* 搜索框 */}
+        <div className="p-2 border-b border-gray-100">
+          <input
+            type="text"
+            placeholder="搜索分组"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          />
+        </div>
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {groups.map((group) => (
+            <TokenGroupTreeNode key={group.id} node={group} level={0}
+              selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} search={search} />
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部分组</span>
+            ) : selectedNode?.path ? (
+              <span className="flex items-center gap-0.5 truncate">
+                {selectedNode.path.split("/").map((seg, idx, arr) => (
+                  <span key={idx} className="flex items-center gap-0.5 shrink-0">
+                    {idx > 0 && <span className="text-gray-300 mx-0.5">›</span>}
+                    <span className={idx === arr.length - 1 ? "text-blue-600 font-medium" : "text-gray-500"}>{seg}</span>
+                  </span>
+                ))}
+              </span>
+            ) : selectedNode ? (
+              <span className="text-blue-600 font-medium truncate">{selectedNode.name}</span>
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safe = Math.min(page, totalPages);
@@ -350,6 +509,8 @@ export default function TokensMonitor() {
   const [sessionPage, setSessionPage] = useState(1);
   const [deptPage, setDeptPage] = useState(1);
   const [deptFilter, setDeptFilter] = useState("");
+  const [groupPage, setGroupPage] = useState(1);
+  const [groupFilter, setGroupFilter] = useState("");
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [clsEnabled, setClsEnabled] = useState(() => {
@@ -568,6 +729,7 @@ export default function TokensMonitor() {
     setModelPage(1);
     setSessionPage(1);
     setDeptPage(1);
+    setGroupPage(1);
   };
   const handleToChange = (v: string) => {
     setDateTo(v);
@@ -576,6 +738,7 @@ export default function TokensMonitor() {
     setModelPage(1);
     setSessionPage(1);
     setDeptPage(1);
+    setGroupPage(1);
   };
 
   // 有效时间范围
@@ -645,7 +808,7 @@ export default function TokensMonitor() {
         outputTokens,
         total: inputTokens + outputTokens,
       };
-    }).sort((a, b) => b.requests - a.requests);
+    }).sort((a, b) => b.total - a.total);
   }, [instanceList, effectiveFrom, effectiveTo, hasOneid]);
   const instancePaged = instanceStats.slice((instancePage - 1) * PAGE_SIZE, instancePage * PAGE_SIZE);
 
@@ -662,10 +825,10 @@ export default function TokensMonitor() {
     });
     return Array.from(map.entries())
       .map(([id, v]) => ({ id, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
+      .sort((a, b) => b.total - a.total);
   }, [rangeRecords]);
 
-  // 按模型汇总（随时间联动），按总请求数降序
+  // 按模型汇总（随时间联动），按总 token 降序
   const modelStats = useMemo(() => {
     const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
     rangeRecords.forEach((r) => {
@@ -678,7 +841,7 @@ export default function TokensMonitor() {
     });
     return Array.from(map.entries())
       .map(([name, v]) => ({ name, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
+      .sort((a, b) => b.total - a.total);
   }, [rangeRecords]);
 
   // 按会话汇总（高成本 TOP 5），按成本降序
@@ -777,6 +940,42 @@ export default function TokensMonitor() {
   }, [hasOneid, deptFilter]);
   const deptPaged = deptStats.slice((deptPage - 1) * PAGE_SIZE, deptPage * PAGE_SIZE);
 
+  // 按分组汇总（普通模式和 OneID 模式都可见）
+  const groupTree = hasOneid ? MOCK_GROUP_TREE_ONEID : MOCK_GROUP_TREE_MANUAL;
+  const findGroupAndChildren = (nodes: GroupNode[], targetId: string): string[] => {
+    const ids: string[] = [];
+    const collect = (node: GroupNode) => {
+      if (!node.id.startsWith("__section_")) ids.push(node.id);
+      node.children?.forEach(collect);
+    };
+    const find = (list: GroupNode[]): boolean => {
+      for (const n of list) {
+        if (n.id === targetId) { collect(n); return true; }
+        if (n.children && find(n.children)) return true;
+      }
+      return false;
+    };
+    find(nodes);
+    return ids;
+  };
+
+  const groupStats = useMemo(() => {
+    const rawData = hasOneid ? MOCK_TOKEN_BY_GROUP_ONEID : MOCK_TOKEN_BY_GROUP_MANUAL;
+    let data = rawData;
+    if (groupFilter) {
+      const allowedIds = findGroupAndChildren(groupTree, groupFilter);
+      data = data.filter((d) => allowedIds.includes(d.groupId));
+    }
+    return data.sort((a, b) => b.totalTokens - a.totalTokens);
+  }, [hasOneid, groupFilter, groupTree]);
+  const groupPaged = groupStats.slice((groupPage - 1) * PAGE_SIZE, groupPage * PAGE_SIZE);
+
+  const handleExportGroup = () => runExport(() => {
+    const header = "分组名称,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = groupStats.map((r) => `${r.groupName},${r.requests},${r.inputTokens},${r.outputTokens},${r.totalTokens}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_group_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+
   return (
       <div className="page-enter">
         {/* Header */}
@@ -784,31 +983,28 @@ export default function TokensMonitor() {
 
 
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
-        </div>
-
-        {/* 提示语区域 - 简化版本，第一行 + hover 显示详细文案 */}
-        <div className="flex items-center gap-2 mb-6">
-          <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
-          <UITooltip>
-            <UITooltipTrigger asChild>
-              <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
-                查看tokens统计规则
-              </button>
-            </UITooltipTrigger>
-            <UITooltipContent side="right" className="max-w-sm text-xs">
-              <div className="space-y-1.5">
-                <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
-                <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
-                <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
-                <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
-              </div>
-            </UITooltipContent>
-          </UITooltip>
-        </div>
-
-        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
+                    查看tokens统计规则
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="right" className="max-w-sm text-xs">
+                  <div className="space-y-1.5">
+                    <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
+                    <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
+                    <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
+                    <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
+                  </div>
+                </UITooltipContent>
+              </UITooltip>
+            </div>
+          </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
             <input
@@ -920,21 +1116,19 @@ export default function TokensMonitor() {
               <TabsTrigger value="instance">按实例</TabsTrigger>
               <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
-              {hasOneid && <TabsTrigger value="department" className="relative pr-3">
-                按部门
-                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                </TabsTrigger>}
-              <TabsTrigger value="session" className="relative pr-3">
-                按会话
+              {hasOneid && <TabsTrigger value="department">按部门</TabsTrigger>}
+              <TabsTrigger value="group" className="relative pr-3">
+                按分组
                 <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
               </TabsTrigger>
+              <TabsTrigger value="session">按会话</TabsTrigger>
             </TabsList>
           </div>
 
           {/* 按实例 */}
           <TabsContent value="instance">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总请求数降序排列</p>
+              <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <button
@@ -999,7 +1193,7 @@ export default function TokensMonitor() {
           {/* 按用户 */}
           <TabsContent value="member">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <button
@@ -1045,7 +1239,7 @@ export default function TokensMonitor() {
           {/* 按模型 */}
           <TabsContent value="model">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <button
@@ -1092,7 +1286,7 @@ export default function TokensMonitor() {
           {hasOneid && (
             <TabsContent value="department">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400">汇总各部门的 Token 消耗，按总 Token 降序排列</p>
+                <p className="text-xs text-gray-400">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
                 <div className="flex items-center gap-2">
                   <TokenDepartmentFilter
                     departments={MOCK_DEPARTMENTS}
@@ -1144,6 +1338,59 @@ export default function TokensMonitor() {
               </div>
             </TabsContent>
           )}
+
+          {/* 按分组 */}
+          <TabsContent value="group">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
+              <div className="flex items-center gap-2">
+                <TokenGroupFilter
+                  groups={groupTree}
+                  value={groupFilter}
+                  onChange={(v) => { setGroupFilter(v); setGroupPage(1); }}
+                />
+                <UITooltip>
+                  <UITooltipTrigger asChild>
+                    <button
+                      onClick={handleExportGroup}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  </UITooltipTrigger>
+                  <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                </UITooltip>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {groupPaged.length === 0 ? (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : groupPaged.map((g) => (
+                    <tr key={g.groupId} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{g.groupName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.requests)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination page={groupPage} total={groupStats.length} onChange={setGroupPage} />
+            </div>
+          </TabsContent>
 
           {/* 按会话 */}
           <TabsContent value="session">

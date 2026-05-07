@@ -4319,21 +4319,24 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
       } catch { /* ignore */ }
     }
     // 授权 vs 快照 的生命周期是不同的：
-    //   - 授权：Agent 级一次性事实（hasAuthorizedDiag），授权过就再不问；
-    //   - 快照：每次诊断的独立决策，必须每次都让用户重新选择。
+    //   - 授权：Agent 级一次性事实（hasAuthorizedDiag + hasAskedAuth）—— 对应后端
+    //     POST /openclaw/doctor/authorize 首次授权幂等语义，在当前 Agent 上
+    //     授权过一次后永不再问；
+    //   - 快照：每次诊断的独立决策（对应 /start 请求体的 snapshot 字段），
+    //     必须每次都让用户重新选择。
     // 因此「是否弹窗」的判定不能简单按授权状态短路——只要"快照"这个每次需选的项存在，
     // 弹窗就必须出现，只是弹窗内部按授权状态决定要不要显示「授权」那一行。
     // 弹窗内的条件渲染见下方 ConfirmDialog 的渲染分支。
     //
     // ── 默认勾选策略 ──────────────────────────────────────────────────────
-    // 每次打开「开始诊断」弹窗时，将「创建配置快照」「授权诊断记录」两个勾选项
+    // 每次打开「开始诊断」弹窗时，将「创建配置快照」「同意使用龙虾医生功能」两个勾选项
     // 强制重置为已勾选（覆盖之前持久化的用户偏好）。
     // 设计理由：
-    //   ① 这两项都是「保护性 / 合规性」操作（出问题能回滚 + 留痕可追溯），
-    //      默认选中等价于"安全优先"的引导，避免用户在不熟悉风险的情况下
-    //      跳过保护机制；
-    //   ② 用户仍可手动取消勾选——只是默认从"上次选过什么"变成"安全态启动"，
-    //      产品决策权重由"尊重用户偏好"上移到"鼓励安全实践"。
+    //   ① 两项均为「保护性 / 合规性」操作（快照=出问题能回滚、授权=首次功能同意），
+    //      默认选中等价于"安全优先"的引导；
+    //   ② 用户仍可手动取消勾选——只是默认从"上次选过什么"变成"安全态启动"；
+    //   ③ 授权项若未勾选，下方「确认开始」按钮灰化，用户必须同意才能继续
+    //      （对应后端未授权时 /start 会被拒的硬约束）。
     diagOptions.setAuthorize(true);
     diagOptions.setSnapshot(true);
     setShowStartModal(true);
@@ -4850,40 +4853,72 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
 
             {/* 授权 + 配置快照 合并到同一个气泡框中：
                 外层一个卡片容器，内部两行勾选并列展示，仍保持数据/逻辑独立。
-                授权行使用 hasAskedAuth 判断：本 Agent 已经被问过一次（无论
-                用户当时是否勾选）就不再询问，符合「授权一次性」语义；
-                快照行始终显示，因为快照是每次诊断的独立决策。 */}
+                授权行使用 hasAskedAuth 判断：本 Agent 已经被问过一次就不再询问，
+                符合后端 POST /openclaw/doctor/authorize 的「首次授权、记录到实例、
+                后续不再问」的幂等语义；
+                快照行始终显示，因为快照是每次诊断的独立决策（对接 /start 请求体的
+                snapshot 字段）。
+
+                文案重写：原"授权平台使用本次诊断记录 / ... 用于平台优化龙虾医生能力"
+                与后端接口语义不匹配（后端并无"数据使用同意"相关功能），调整为
+                "同意使用龙虾医生功能"——对应后端 authorize 接口的真实语义：
+                首次创建诊断节点前的功能使用同意书。 */}
             <div
               className="rounded-xl"
               style={{ border: "1px solid #EDEFF5", background: "#FFFFFF" }}
             >
+              {!hasAskedAuth(instanceId) && (
+                <DiagOptionRow
+                  checked={diagOptions.authorize}
+                  onChange={diagOptions.setAuthorize}
+                  title="同意使用龙虾医生功能"
+                  description="龙虾医生将在当前 Agent 上创建临时诊断节点，诊断结束后自动销毁"
+                />
+              )}
               <DiagOptionRow
                 checked={diagOptions.snapshot}
                 onChange={diagOptions.setSnapshot}
                 title="为本次诊断创建配置快照"
                 description="勾选后，结束诊断时可一键回滚至 Agent 开始诊断前的状态"
               />
-              {!hasAskedAuth(instanceId) && (
-                <DiagOptionRow
-                  checked={diagOptions.authorize}
-                  onChange={diagOptions.setAuthorize}
-                  title="授权平台使用本次诊断记录"
-                  description="勾选后，本次诊断记录将用于平台优化龙虾医生能力"
-                />
-              )}
             </div>
 
             <p className="text-xs text-gray-400">初始化约需 3-5 分钟，请稍作等待。</p>
           </div>
           <div className="flex gap-2 pt-1">
-            <Button
-              size="sm"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-xs h-8 px-4 transition-all hover:opacity-90"
-              onClick={handleStartConfirm}
-            >
-              确认开始
-            </Button>
+            {/*
+              「确认开始」按钮的启用条件：
+              ① 首次进入此 Agent（hasAskedAuth 为 false，授权行可见）：
+                 必须先勾选「同意使用龙虾医生功能」才能进入下一步，否则灰化。
+                 对应后端 POST /openclaw/doctor/authorize 的"首次必须授权"语义——
+                 未授权的情况下 /start 接口也会拒绝（error: 'unauthorized'
+                 之类）。
+              ② 非首次（hasAskedAuth 为 true，授权行已隐藏）：
+                 此时仅剩快照选项，而快照是可选项（不勾也能开始诊断），
+                 故按钮永远可点。
+              视觉：灰化采用 disabled 属性 + opacity 降低，悬停提示（title 属性）
+              告知用户"需先同意使用龙虾医生功能"，避免用户困惑"按钮为什么点不动"。
+            */}
+            {(() => {
+              const needAuth = !hasAskedAuth(instanceId);
+              const confirmDisabled = needAuth && !diagOptions.authorize;
+              return (
+                <Button
+                  size="sm"
+                  style={{
+                    background: confirmDisabled
+                      ? "#C7C9D1"
+                      : "linear-gradient(135deg, #007AFF, #5856D6)",
+                  }}
+                  className="text-white text-xs h-8 px-4 transition-all hover:opacity-90 disabled:cursor-not-allowed"
+                  onClick={handleStartConfirm}
+                  disabled={confirmDisabled}
+                  title={confirmDisabled ? "请先勾选「同意使用龙虾医生功能」" : undefined}
+                >
+                  确认开始
+                </Button>
+              );
+            })()}
             <Button
               variant="outline"
               size="sm"

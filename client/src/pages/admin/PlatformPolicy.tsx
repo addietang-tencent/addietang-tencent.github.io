@@ -1244,7 +1244,11 @@ export default function PlatformPolicy() {
   const [cloudBrowserRules, setCloudBrowserRules] = useState<PolicyRule<boolean>[]>(() => [
     { id: "cb-fallback", groupIds: [], value: localStorage.getItem("admin_allow_cloud_browser") === "true" },
   ]);
-  const [lobsterDoctorRules, setLobsterDoctorRules] = useState<PolicyRule<boolean>[]>([{ id: "ld-fallback", groupIds: [], value: false }]);
+  const [lobsterDoctorRules, setLobsterDoctorRules] = useState<PolicyRule<boolean>[]>(() => [
+    // 与「允许用户访问 Agent 云端浏览器」同款持久化策略：从 localStorage 恢复开关状态，
+    // 避免管控端切换开关后用户端无法感知（用户端 OpenClawDetail 读同一个 key）。
+    { id: "ld-fallback", groupIds: [], value: localStorage.getItem("admin_allow_lobster_doctor") === "true" },
+  ]);
   const [modelQuotaRules, setModelQuotaRules] = useState<PolicyRule<boolean>[]>([{ id: "mq-fallback", groupIds: [], value: true }]);
 
   // ── Agent 面板属性 ──
@@ -1399,6 +1403,27 @@ export default function PlatformPolicy() {
     setCloudBrowserRules(next);
   };
 
+  // ── 龙虾医生开关持久化（与云端浏览器同款模式）────────────────────────────
+  // 动机：用户端 OpenClawDetail 通过读取 localStorage 的 "admin_allow_lobster_doctor"
+  //       决定是否渲染「龙虾医生对话卡片」，并监听 storage 事件实现跨 tab 响应。
+  //       而此前本页的 onRulesChange 仅 setState、未 persist，导致：
+  //         ① 管控端开启后切到用户端仍看不到龙虾医生；
+  //         ② 再次回到管控端时 state 复位到初始 false（因无持久化源）；
+  //       形成"开关打不开、也留不住"的双重断裂。此 handler 负责打通该链路。
+  const isLobsterDoctorEnabled = (rs: PolicyRule<boolean>[]) => rs.some((r) => r.value);
+  const handleLobsterDoctorRulesChange = (next: PolicyRule<boolean>[]): boolean | void => {
+    const wasEnabled = isLobsterDoctorEnabled(lobsterDoctorRules);
+    const willEnable = isLobsterDoctorEnabled(next);
+    setLobsterDoctorRules(next);
+    if (!wasEnabled && willEnable) {
+      localStorage.setItem("admin_allow_lobster_doctor", "true");
+      toast.success("已开启龙虾医生");
+    } else if (wasEnabled && !willEnable) {
+      localStorage.setItem("admin_allow_lobster_doctor", "false");
+      toast.success("已关闭龙虾医生");
+    }
+  };
+
   // ── 龙虾医生详情弹窗 ──
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
@@ -1529,7 +1554,7 @@ export default function PlatformPolicy() {
             title="允许用户使用龙虾医生"
             description="开启后，所有用户在用户端可免费使用「龙虾医生」AI 诊断功能，自动检测并对话式修复 Agent 运行问题"
             rules={lobsterDoctorRules}
-            onRulesChange={setLobsterDoctorRules}
+            onRulesChange={handleLobsterDoctorRulesChange}
             extraContent={
               lobsterDoctorRules.some((r) => r.value) ? (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">

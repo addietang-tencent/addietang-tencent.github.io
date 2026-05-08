@@ -549,6 +549,7 @@ export default function AgentMonitor() {
   const hasNonRunning = selectedClaws.some(c => !isUpgradable(c));
   const hasNonAgent = selectedClaws.some(c => c.agentType !== 'OpenClaw');
   const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning || hasNonAgent;
+  const batchDeleteDisabled = selectedCount === 0;
   const batchTooltip = selectedCount === 0
     ? '请先选择实例'
     : selectedCount > 20
@@ -853,7 +854,39 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
               )}
             </Tooltip>
-            {/* 配置默认标签按鈕 */}
+            {/* 批量删除按钮 */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <Button
+                    onClick={() => {
+                      if (selectedCount > 0 && !batchDeleteDisabled) {
+                        const names = selectedClaws.map(c => c.name).join("、");
+                        if (window.confirm(`确认删除选中的 ${selectedCount} 个实例？\n\n${names}\n\n删除后无法恢复。`)) {
+                          setClaws(prev => prev.filter(c => !selectedIds.has(c.id)));
+                          setSelectedIds(new Set());
+                          toast.success(`已删除 ${selectedCount} 个实例`);
+                        }
+                      }
+                    }}
+                    disabled={batchDeleteDisabled}
+                    variant="outline"
+                    className={`rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                      batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    批量删除
+                    {selectedCount > 0 && (
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-xs">{selectedCount}</span>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {batchDeleteDisabled && selectedCount === 0 && (
+                <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
+              )}
+            </Tooltip>
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"

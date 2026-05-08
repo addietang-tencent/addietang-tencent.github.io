@@ -10,6 +10,14 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import GroupList, { UNASSIGNED_GROUP_ID } from "./GroupList";
 import NodeContentPanel from "./NodeContentPanel";
@@ -23,7 +31,7 @@ import {
   findGroupNode,
   getGroupInitHealth,
 } from "./health";
-import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL, MOCK_SYNC_RESULT } from "./mock";
+import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL, MOCK_SYNC_RESULT, MOCK_USER_GROUP_AGENTS, getPrimaryDeptPath } from "./mock";
 
 // OneID 全量组织架构 mock（同步时一次性全部拉取）
 const ONEID_ALL_DEPT_NODES: Array<{
@@ -169,6 +177,13 @@ export default function GroupView({
 
     return ids;
   }, [anomalousGroups, groups, directAnomalousGroupIds]);
+
+  /** 异常分组详情 Map（groupId -> AnomalousGroup），供 Tooltip 动态文案使用 */
+  const anomalousGroupDetails = useMemo(() => {
+    const map = new Map<string, AnomalousGroup>();
+    anomalousGroups.forEach((ag) => map.set(ag.groupId, ag));
+    return map;
+  }, [anomalousGroups]);
 
   /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡） */
   const directUninitializedGroupIds = useMemo(() => {
@@ -419,6 +434,14 @@ export default function GroupView({
     name: string;
   } | null>(null);
 
+  // 编辑分组存量 Agent 实例处理弹窗
+  const [editGroupAgentDialog, setEditGroupAgentDialog] = useState<{
+    open: boolean;
+    agents: Array<{ userId: string; instances: Array<{ id: string; name: string }>; groupName: string }>;
+    pendingAction: () => void;
+  } | null>(null);
+  const [editGroupAgentChoice, setEditGroupAgentChoice] = useState<"keep" | "delete">("keep");
+
   // 新建分组
   const handleCreateGroup = () => {
     setFormMode("create");
@@ -447,13 +470,44 @@ export default function GroupView({
   // 确认新建/编辑/添加子分组
   const handleFormConfirm = (name: string, parentId: string | null) => {
     if (formMode === "edit" && formTarget) {
-      // 编辑
-      setGroups((prev) =>
-        prev.map((g) =>
-          g.id === formTarget.id ? { ...g, name, parentId } : g
-        )
-      );
-      toast.success("分组已更新");
+      const parentChanged = formTarget.parentId !== parentId;
+
+      const doEdit = () => {
+        setGroups((prev) =>
+          prev.map((g) =>
+            g.id === formTarget.id ? { ...g, name, parentId } : g
+          )
+        );
+        toast.success("分组已更新");
+      };
+
+      if (parentChanged) {
+        // 检测该分组下所有用户的 Agent 实例
+        const groupId = formTarget.id;
+        const groupUsers = effectiveUsers.filter((u) => u.groupIds.includes(groupId));
+        const affectedAgents: Array<{ userId: string; instances: Array<{ id: string; name: string }>; groupName: string }> = [];
+        const gName = getPrimaryDeptPath(groupId, groups);
+
+        groupUsers.forEach((u) => {
+          const userAgents = MOCK_USER_GROUP_AGENTS[u.userId];
+          const instances = userAgents?.[groupId];
+          if (instances && instances.length > 0) {
+            affectedAgents.push({ userId: u.userId, instances, groupName: gName });
+          }
+        });
+
+        if (affectedAgents.length > 0) {
+          setEditGroupAgentDialog({
+            open: true,
+            agents: affectedAgents,
+            pendingAction: doEdit,
+          });
+          setEditGroupAgentChoice("keep");
+          return;
+        }
+      }
+
+      doEdit();
     } else {
       // 新建 / 添加子分组
       const newGroup: UserGroup = {
@@ -550,6 +604,21 @@ export default function GroupView({
     [selectedId, effectiveUsers]
   );
 
+  const handleEditUserGroups = useCallback(
+    (userId: string, newGroupIds: string[]) => {
+      const idx = effectiveUsers.findIndex((u) => u.userId === userId);
+      if (idx >= 0) {
+        effectiveUsers[idx] = {
+          ...effectiveUsers[idx],
+          groupIds: newGroupIds,
+        };
+        setUsersVersion((v) => v + 1);
+        toast.success("用户分组已更新");
+      }
+    },
+    [effectiveUsers]
+  );
+
   return (
     <div className="space-y-3">
       {/* 常驻多分组 Alert */}
@@ -602,6 +671,7 @@ export default function GroupView({
                 onRefreshSync={handleRefreshSync}
                 uninitializedGroupIds={uninitializedGroupIds}
                 directUninitializedGroupIds={directUninitializedGroupIds}
+                anomalousGroupDetails={anomalousGroupDetails}
               />
             </div>
             {/* 收起按钮 —— 右边缘贴住分割线竖线 */}
@@ -690,6 +760,7 @@ export default function GroupView({
               allUsers={effectiveUsers}
               onAddUsersToGroup={handleAddUsersToGroup}
               onRemoveFromGroup={handleRemoveFromGroup}
+              onEditUserGroups={handleEditUserGroups}
               isAnomalous={anomalousGroups.some((ag) => ag.groupId === selectedGroup.id)}
               anomalousBoundConfigs={anomalousGroups.find((ag) => ag.groupId === selectedGroup.id)?.boundConfigs}
               isUninitialized={directUninitializedGroupIds.has(selectedGroup.id)}
@@ -721,6 +792,79 @@ export default function GroupView({
         groups={groups}
         onConfirm={handleDeleteConfirm}
       />
+
+      {/* 编辑分组存量 Agent 实例处理弹窗 */}
+      <Dialog open={!!editGroupAgentDialog?.open} onOpenChange={(open) => { if (!open) setEditGroupAgentDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>存量 Agent 实例处理</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-700">
+              该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
+            </p>
+            <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[200px] overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50 sticky top-0">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称/ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {editGroupAgentDialog?.agents.flatMap((a) =>
+                    a.instances.map((inst) => (
+                      <tr key={inst.id}>
+                        <td className="px-3 py-2 text-gray-700">{a.userId}</td>
+                        <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
+                        <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="py-2 space-y-2">
+            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            {[
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent。" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除。" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${editGroupAgentChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                onClick={() => setEditGroupAgentChoice(opt.value as "keep" | "delete")}
+              >
+                <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${editGroupAgentChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
+                  {editGroupAgentChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditGroupAgentDialog(null)}>取消</Button>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => {
+                editGroupAgentDialog?.pendingAction();
+                setEditGroupAgentDialog(null);
+                if (editGroupAgentChoice === "delete") {
+                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                }
+              }}
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

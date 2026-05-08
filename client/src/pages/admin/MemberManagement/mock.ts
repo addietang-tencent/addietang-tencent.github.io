@@ -194,6 +194,14 @@ export const MOCK_RESOURCES: ResourceItem[] = [
 
   // ── 镜像（唯一型） ──
   { id: "img-coder", kind: "image", name: "coder-v2", scope: { type: "all" }, isPlatformDefault: true, createdAt: "2025-01-01" },
+
+  // ── 产品组专属配置（演示删除分组时无法删除） ──
+  { id: "m-product-exclusive", kind: "model", name: "腾讯云混元 - 混元 Pro", scope: { type: "filtered", groupIds: ["mgrp-product"] }, createdAt: "2025-06-10" },
+  { id: "c-product-exclusive", kind: "channel", name: "产品组专属通道", scope: { type: "filtered", groupIds: ["mgrp-product"] }, createdAt: "2025-06-10" },
+  { id: "sg-product-exclusive", kind: "securityGroup", name: "sg-product-group", scope: { type: "filtered", groupIds: ["mgrp-product"] }, createdAt: "2025-06-10" },
+
+  // ── 研发-后端专属模型（演示删除分组时无法删除） ──
+  { id: "m-rd-be-exclusive", kind: "model", name: "DeepSeek V3", scope: { type: "filtered", groupIds: ["mgrp-rd-be"] }, createdAt: "2025-06-12" },
 ];
 
 // ─── 用户覆盖状态 ────────────────────────────────────────
@@ -469,6 +477,12 @@ export function getConfigEntries(
   if (["mgrp-rd", "mgrp-rd-fe", "mgrp-rd-be"].includes(groupId)) {
     entries.push({ id: "m-rd", category: "model", label: "Claude Sonnet 4", source: groupId === "mgrp-rd" ? local(getGroupFullPath("mgrp-rd")) : inherited(getGroupFullPath("mgrp-rd")) });
   }
+  if (groupId === "mgrp-product") {
+    entries.push({ id: "m-product-exclusive", category: "model", label: "腾讯云混元 - 混元 Pro", source: local(getGroupFullPath("mgrp-product")) });
+  }
+  if (groupId === "mgrp-rd-be") {
+    entries.push({ id: "m-rd-be-exclusive", category: "model", label: "DeepSeek V3", source: local(getGroupFullPath("mgrp-rd-be")) });
+  }
 
   // ──── 2. 通道 ────
   entries.push({
@@ -509,6 +523,10 @@ export function getConfigEntries(
   // 运营二组：本地绑定的通道
   if (groupId === "dept-operation-2") {
     entries.push({ id: "c-operation-2", category: "channel", label: "运营二组外部通道", source: local(getGroupFullPath("dept-operation-2")) });
+  }
+  // 普通模式：产品组专属通道
+  if (groupId === "mgrp-product") {
+    entries.push({ id: "c-product-exclusive", category: "channel", label: "产品组专属通道", source: local(getGroupFullPath("mgrp-product")) });
   }
 
   // ──── 4. 技能（初始技能包 + 角色 + 技能安装来源（只有一条）） ────
@@ -729,6 +747,22 @@ export function getConfigEntries(
         ],
       },
     });
+  } else if (groupId === "mgrp-rd-fe") {
+    entries.push({
+      id: "vpc-preset-fe",
+      category: "network",
+      label: "",
+      subLabel: "私有网络与子网",
+      source: { type: "presetPolicy" },
+      meta: {
+        vpcId: "vpc-rd-fe9x2k",
+        vpcName: "clawpro/rd-frontend-vpc",
+        vpcCidr: "10.3.0.0/16",
+        subnets: [
+          { zone: "广州三区", subnetId: "subnet-rdfe4m7p", subnetCidr: "10.3.0.0/19" },
+        ],
+      },
+    });
   } else {
     entries.push({
       id: "vpc-default",
@@ -768,6 +802,14 @@ export function getConfigEntries(
       label: "产品部安全组（sg-prod6j9r）",
       subLabel: "安全组",
       source: groupId === "dept-product" ? local(getGroupFullPath("dept-product")) : inherited(getGroupFullPath("dept-product")),
+    });
+  } else if (groupId === "mgrp-product") {
+    entries.push({
+      id: "sg-mgrp-product",
+      category: "network",
+      label: "产品组安全组（sg-product-group）",
+      subLabel: "安全组",
+      source: local(getGroupFullPath("mgrp-product")),
     });
   } else {
     entries.push({
@@ -825,12 +867,15 @@ export function getConfigEntries(
   });
 
   // ──── 13. 平台策略（用户配额 + 模型配额 + 功能权限开关） ────
+  // 平台策略只有「预设策略」或「本分组」来源，没有「全部用户」
+  const presetPolicy: ConfigEntry["source"] = { type: "presetPolicy" };
+
   entries.push({
     id: "policy-claw-limit",
     category: "platformPolicy",
     label: "单用户 Agent 数量上限",
     subLabel: "用户配额",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { value: 3 },
   });
   entries.push({
@@ -838,17 +883,29 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "单用户每日 Tokens 上限",
     subLabel: "用户配额",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { value: 500000 },
   });
-  entries.push({
-    id: "policy-global-token",
-    category: "platformPolicy",
-    label: "每日全局 Tokens 上限",
-    subLabel: "模型配额",
-    source: platformDefault,
-    meta: { value: 1000000 },
-  });
+  // 全局 Tokens 上限：每日 和 不限时 二选一
+  if (groupId === "mgrp-rd-fe") {
+    entries.push({
+      id: "policy-global-token",
+      category: "platformPolicy",
+      label: "全局 Tokens 上限（不限时）",
+      subLabel: "模型配额",
+      source: local(getGroupFullPath("mgrp-rd-fe")),
+      meta: { value: 2000000 },
+    });
+  } else {
+    entries.push({
+      id: "policy-global-token",
+      category: "platformPolicy",
+      label: "全局 Tokens 上限（每日）",
+      subLabel: "模型配额",
+      source: presetPolicy,
+      meta: { value: 1000000 },
+    });
+  }
   // 功能权限开关：顺序与平台策略页对齐
   const isTechGroup = ["dept-tech", "dept-fe", "dept-be", "dept-ai"].includes(groupId);
   const techSource = isTechGroup
@@ -860,7 +917,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户配置模型",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: true },
   });
   entries.push({
@@ -868,7 +925,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户配置通道",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: true },
   });
   entries.push({
@@ -876,7 +933,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户添加自定义模型",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: false },
   });
   entries.push({
@@ -884,7 +941,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户进入 Agent 终端",
     subLabel: "功能权限开关",
-    source: techSource ?? platformDefault,
+    source: techSource ?? presetPolicy,
     meta: { enabled: isTechGroup ? true : false },
   });
   entries.push({
@@ -892,7 +949,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户访问 Agent 面板",
     subLabel: "功能权限开关",
-    source: techSource ?? platformDefault,
+    source: techSource ?? presetPolicy,
     meta: { enabled: isTechGroup ? true : false },
   });
   entries.push({
@@ -900,7 +957,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户使用对话视图",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: true },
   });
   entries.push({
@@ -908,7 +965,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户访问 Agent 云端浏览器",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: false },
   });
   entries.push({
@@ -916,7 +973,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户使用龙虾医生",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: false },
   });
   entries.push({
@@ -924,7 +981,7 @@ export function getConfigEntries(
     category: "platformPolicy",
     label: "允许用户查看模型额度",
     subLabel: "功能权限开关",
-    source: platformDefault,
+    source: presetPolicy,
     meta: { enabled: true },
   });
 
@@ -1033,6 +1090,40 @@ export const MOCK_ANOMALOUS_GROUP: AnomalousGroup = {
   groupName: "A公司/产品部/运营组",
   memberCount: 5,
   boundConfigs: ["模型", "通道", "Agent 工具"],
+  agentInstanceCount: 4,
+};
+
+// ─── 用户在分组中创建的 Agent 实例（mock，用于移除分组时检测存量） ────────────
+/** 格式：userId -> groupId -> 实例列表 */
+export const MOCK_USER_GROUP_AGENTS: Record<string, Record<string, Array<{ id: string; name: string }>>> = {
+  "fiona@acompany.com": {
+    "mgrp-rd-fe": [
+      { id: "claw-fiona-1", name: "Fiona 的前端助手" },
+    ],
+  },
+  "lucas@acompany.com": {
+    "mgrp-rd-be": [
+      { id: "claw-lucas-1", name: "Lucas 的后端服务" },
+      { id: "claw-lucas-2", name: "Lucas 的 API 测试" },
+    ],
+  },
+  "mia@acompany.com": {
+    "mgrp-design": [
+      { id: "claw-mia-1", name: "Mia 的设计稿助手" },
+    ],
+  },
+  "alice@acompany.com": {
+    "dept-tech": [
+      { id: "claw-alice-1", name: "Alice 的代码助手" },
+      { id: "claw-alice-2", name: "Alice 的文档生成器" },
+      { id: "claw-alice-3", name: "Alice 的测试工具" },
+    ],
+  },
+  "bob@acompany.com": {
+    "dept-fe": [
+      { id: "claw-bob-1", name: "Bob 的组件库助手" },
+    ],
+  },
 };
 
 /** 模拟同步结果（刷新/手动同步后返回） */
@@ -1043,18 +1134,21 @@ export const MOCK_SYNC_RESULT: SyncResult = {
       groupName: "A公司/产品部/运营组",
       memberCount: 5,
       boundConfigs: ["模型", "通道", "Agent 工具"],
+      agentInstanceCount: 4,
     },
     {
       groupId: "dept-operation-1",
       groupName: "A公司/产品部/运营组/运营一组",
       memberCount: 3,
       boundConfigs: ["模型", "通道"],
+      agentInstanceCount: 2,
     },
     {
       groupId: "dept-operation-2",
       groupName: "A公司/产品部/运营组/运营二组",
       memberCount: 2,
       boundConfigs: ["模型", "通道"],
+      agentInstanceCount: 0,
     },
   ],
   anomalousUsers: [

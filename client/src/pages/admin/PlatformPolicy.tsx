@@ -4,7 +4,7 @@
  * 包含：用户配额 / 模型配额 / 功能权限开关
  * 全宽卡片布局，每张卡片支持按分组设置多行规则 + 全部用户兜底行
  */
-import { useState, useMemo, useRef, useLayoutEffect } from "react";
+import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   Zap, Pencil, Check, X, Terminal, Monitor, Cpu,
@@ -748,20 +748,20 @@ function AccessModeIndicator({ mode, onSave }: { mode: "public" | "private"; onS
 
 // ─── 时间维度指示器（基于 LabeledOptionIndicator） ────────────────────────────
 
-function TimeDimensionIndicator({ mode, onSave }: { mode: "daily" | "unlimited"; onSave: (m: "daily" | "unlimited") => void }) {
+function TimeDimensionIndicator({ mode, onSave }: { mode: "daily" | "monthly"; onSave: (m: "daily" | "monthly") => void }) {
   return (
-    <LabeledOptionIndicator<"daily" | "unlimited">
+    <LabeledOptionIndicator<"daily" | "monthly">
       label="时间维度"
       value={mode}
       options={[
         { value: "daily", label: "每日" },
-        { value: "unlimited", label: "不限时" },
+        { value: "monthly", label: "每月" },
       ]}
       onSave={onSave}
       tooltipContent={
         <>
-          <p className="mb-1.5"><span className="font-medium">每日：</span>每日全局 Tokens 到达上限即暂停服务，按自然日统计和刷新。</p>
-          <p><span className="font-medium">不限时：</span>不指定时间，只要全局 Tokens 累计值到达上限即暂停服务。</p>
+          <p className="mb-1.5"><span className="font-medium">每日：</span>每日全局 Tokens 到达上限即暂停服务，按自然日统计，每天 0 点重置。</p>
+          <p><span className="font-medium">每月：</span>每月全局 Tokens 到达上限即暂停服务，按自然月统计，每月 1 号 0 点重置。</p>
         </>
       }
     />
@@ -864,87 +864,88 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
       </div>
 
       <div className="px-5 pb-4">
-        {/* 表头 */}
-        {(groupRules.length > 0 || addingNew) && (
-          <div className={`${ROW_CLASS} border-b border-gray-100`}>
-            <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-            <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
-            <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-          </div>
-        )}
-
-        {/* 分组规则行 */}
-        {groupRules.map((rule) => (
-          <div key={rule.id}>
-            {editingId === rule.id ? (
-              <div className={EDIT_ROW_CLASS}>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <GroupTagSelector
-                    selectedIds={draftGroupIds}
-                    disabledIds={getDisabledIds(rule.id)}
-                    onChange={setDraftGroupIds}
-                  />
-                </div>
-                <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
-                <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
-                </div>
-              </div>
-            ) : (
-              <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
-                <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(rule.value)}</span>
-                <div className="w-14 flex items-center justify-end gap-1">
-                  <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-                  <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* 添加分组策略 */}
-        {addingNew ? (
-          <div className={EDIT_ROW_CLASS}>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <GroupTagSelector
-                selectedIds={draftGroupIds}
-                disabledIds={getDisabledIds()}
-                onChange={setDraftGroupIds}
-              />
-            </div>
-            <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
-            <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+        {/* 预设策略（置顶） */}
+        {editingId === fallbackRule.id ? (
+          <div className={ROW_CLASS}>
+            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
+            <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderValueEditor()}</div>
+            <div className="w-14 flex items-center justify-end gap-1">
               <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+              <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
             </div>
           </div>
         ) : (
-          <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-lg transition-colors">
-            <Plus className="w-3.5 h-3.5" />添加分组策略
-          </button>
+          <div className={ROW_CLASS}>
+            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
+            <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(fallbackRule.value)}</span>
+            <div className="w-14 flex items-center justify-end">
+              <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+            </div>
+          </div>
         )}
 
-        {/* 兜底行 */}
+        {/* 虚线分隔：主策略 vs 例外策略 */}
         <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
-          {editingId === fallbackRule.id ? (
-            <div className={ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1">
+          {/* 表头：仅在新增/编辑分组策略时展示 */}
+          {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
+            <div className={`${ROW_CLASS} border-b border-gray-100`}>
+              <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
+              <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
+              <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
+            </div>
+          )}
+
+          {/* 分组策略行 */}
+          {groupRules.map((rule) => (
+            <div key={rule.id}>
+              {editingId === rule.id ? (
+                <div className={EDIT_ROW_CLASS}>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <GroupTagSelector
+                      selectedIds={draftGroupIds}
+                      disabledIds={getDisabledIds(rule.id)}
+                      onChange={setDraftGroupIds}
+                    />
+                  </div>
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+                    <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                    <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              ) : (
+                <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                  <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
+                  <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(rule.value)}</span>
+                  <div className="w-14 flex items-center justify-end gap-1">
+                    <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+                    <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* 添加分组策略 */}
+          {addingNew ? (
+            <div className={EDIT_ROW_CLASS}>
+              <div className="flex-1 min-w-0 pt-0.5">
+                <GroupTagSelector
+                  selectedIds={draftGroupIds}
+                  disabledIds={getDisabledIds()}
+                  onChange={setDraftGroupIds}
+                />
+              </div>
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
             </div>
           ) : (
-            <div className={ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
-              <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(fallbackRule.value)}</span>
-              <div className="w-14 flex items-center justify-end">
-                <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-              </div>
-            </div>
+            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+              <Plus className="w-3.5 h-3.5" />添加分组策略
+            </button>
           )}
         </div>
       </div>
@@ -1081,94 +1082,97 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
       </div>
 
       <div className="px-5 pb-4">
-        {(groupRules.length > 0 || addingNew) && (
-          <div className={`${ROW_CLASS} border-b border-gray-100`}>
-            <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-            <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
-            <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-          </div>
-        )}
-
-        {groupRules.map((rule) => (
-          <div key={rule.id}>
-            {editingId === rule.id ? (
-              <div className={EDIT_ROW_CLASS}>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <GroupTagSelector
-                    selectedIds={draftGroupIds}
-                    disabledIds={getDisabledIds(rule.id)}
-                    onChange={setDraftGroupIds}
-                  />
-                </div>
-                <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
-                <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
-                </div>
-              </div>
-            ) : (
-              <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
-                <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                <div className={`${valueColClass} text-right`}>
-                  {loadingRuleId === rule.id
-                    ? renderLoading()
-                    : <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
-                </div>
-                <div className="w-14 flex items-center justify-end gap-1">
-                  <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
-                  <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" disabled={!!loadingRuleId}><Trash2 className="w-3 h-3" /></button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {addingNew ? (
-          <div className={EDIT_ROW_CLASS}>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <GroupTagSelector
-                selectedIds={draftGroupIds}
-                disabledIds={getDisabledIds()}
-                onChange={setDraftGroupIds}
-              />
-            </div>
-            <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
-            <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+        {/* 预设策略（置顶） */}
+        {editingId === fallbackRule.id ? (
+          <div className={ROW_CLASS}>
+            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
+            <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderFallbackValueEditor()}</div>
+            <div className="w-14 flex items-center justify-end gap-1">
               <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+              <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
             </div>
           </div>
         ) : (
-          // 最多 1 条分组策略：已有则不显示添加按钮
-          groupRules.length === 0 && (
-            <button onClick={startAdd} disabled={!!loadingRuleId} className="flex items-center gap-1.5 px-3 h-10 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-              <Plus className="w-3.5 h-3.5" />添加分组策略
-            </button>
-          )
+          <div className={ROW_CLASS}>
+            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
+            <div className={`${valueColClass} text-right`}>
+              {loadingRuleId === fallbackRule.id
+                ? renderLoading()
+                : <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>}
+            </div>
+            <div className="w-14 flex items-center justify-end">
+              <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
+            </div>
+          </div>
         )}
 
+        {/* 虚线分隔：主策略 vs 例外策略 */}
         <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
-          {editingId === fallbackRule.id ? (
-            <div className={ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderFallbackValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1">
+          {/* 表头：仅在新增/编辑分组策略时展示 */}
+          {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
+            <div className={`${ROW_CLASS} border-b border-gray-100`}>
+              <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
+              <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
+              <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
+            </div>
+          )}
+
+          {groupRules.map((rule) => (
+            <div key={rule.id}>
+              {editingId === rule.id ? (
+                <div className={EDIT_ROW_CLASS}>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <GroupTagSelector
+                      selectedIds={draftGroupIds}
+                      disabledIds={getDisabledIds(rule.id)}
+                      onChange={setDraftGroupIds}
+                    />
+                  </div>
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+                    <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                    <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              ) : (
+                <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                  <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
+                  <div className={`${valueColClass} text-right`}>
+                    {loadingRuleId === rule.id
+                      ? renderLoading()
+                      : <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
+                  </div>
+                  <div className="w-14 flex items-center justify-end gap-1">
+                    <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
+                    <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" disabled={!!loadingRuleId}><Trash2 className="w-3 h-3" /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {addingNew ? (
+            <div className={EDIT_ROW_CLASS}>
+              <div className="flex-1 min-w-0 pt-0.5">
+                <GroupTagSelector
+                  selectedIds={draftGroupIds}
+                  disabledIds={getDisabledIds()}
+                  onChange={setDraftGroupIds}
+                />
+              </div>
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
             </div>
           ) : (
-            <div className={ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
-              <div className={`${valueColClass} text-right`}>
-                {loadingRuleId === fallbackRule.id
-                  ? renderLoading()
-                  : <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>}
-              </div>
-              <div className="w-14 flex items-center justify-end">
-                <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
-              </div>
-            </div>
+            // 最多 1 条分组策略：已有则不显示添加按钮
+            groupRules.length === 0 && (
+              <button onClick={startAdd} disabled={!!loadingRuleId} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                <Plus className="w-3.5 h-3.5" />添加分组策略
+              </button>
+            )
           )}
         </div>
       </div>
@@ -1214,22 +1218,40 @@ export default function PlatformPolicy() {
     { id: "global-fallback", groupIds: [], value: 1000000 },
   ]);
   // 全局 Tokens 时间维度（每日/不限时）
-  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "unlimited">(() =>
-    (localStorage.getItem("admin_global_token_time_dim") as "daily" | "unlimited") || "daily"
-  );
-  // 将兜底行的值同步到 localStorage（供 TokensMonitor 等外部页面读取）
+  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "monthly">(() => {
+    const v = localStorage.getItem("admin_global_token_time_dim");
+    return v === "monthly" ? "monthly" : "daily"; // 旧值（如 unlimited）回退为 daily
+  });
+  // 初次挂载时把当前分组策略同步到 localStorage，确保 TokensMonitor 能读到
+  useEffect(() => {
+    const groupRules = globalTokenRules
+      .filter((r) => r.groupIds.length > 0)
+      .map((r) => ({ id: r.id, groupIds: r.groupIds, value: r.value }));
+    const serialized = JSON.stringify(groupRules);
+    localStorage.setItem("admin_global_token_group_rules", serialized);
+    window.dispatchEvent(new StorageEvent("storage", { key: "admin_global_token_group_rules", newValue: serialized, storageArea: localStorage }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const handleGlobalTokenRulesChange = (next: PolicyRule<TokenLimit>[]) => {
     setGlobalTokenRules(next);
     const fallback = next.find((r) => r.groupIds.length === 0);
-    if (!fallback) return;
-    if (fallback.value === "unlimited") {
-      localStorage.setItem("globalLimitMode", "unlimited");
-      window.dispatchEvent(new StorageEvent("storage", { key: "globalLimitMode", newValue: "unlimited", storageArea: localStorage }));
-    } else {
-      localStorage.setItem("globalLimitMode", "custom");
-      localStorage.setItem("globalLimit", String(fallback.value));
-      window.dispatchEvent(new StorageEvent("storage", { key: "globalLimitMode", newValue: "custom", storageArea: localStorage }));
+    if (fallback) {
+      if (fallback.value === "unlimited") {
+        localStorage.setItem("globalLimitMode", "unlimited");
+        window.dispatchEvent(new StorageEvent("storage", { key: "globalLimitMode", newValue: "unlimited", storageArea: localStorage }));
+      } else {
+        localStorage.setItem("globalLimitMode", "custom");
+        localStorage.setItem("globalLimit", String(fallback.value));
+        window.dispatchEvent(new StorageEvent("storage", { key: "globalLimitMode", newValue: "custom", storageArea: localStorage }));
+      }
     }
+    // 同步分组策略（除兜底行之外）到 localStorage，供 TokensMonitor 读取
+    const groupRules = next
+      .filter((r) => r.groupIds.length > 0)
+      .map((r) => ({ id: r.id, groupIds: r.groupIds, value: r.value }));
+    const serialized = JSON.stringify(groupRules);
+    localStorage.setItem("admin_global_token_group_rules", serialized);
+    window.dispatchEvent(new StorageEvent("storage", { key: "admin_global_token_group_rules", newValue: serialized, storageArea: localStorage }));
   };
 
   // ── 功能权限开关规则 ──

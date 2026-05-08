@@ -545,10 +545,26 @@ export default function TokensMonitor() {
     const value = localStorage.getItem("globalLimit");
     return value ? parseInt(value, 10) : 2000000;
   });
-  // 全局 Tokens 时间维度（每日/不限时）—— 与平台策略页同步
-  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "unlimited">(() =>
-    (localStorage.getItem("admin_global_token_time_dim") as "daily" | "unlimited") || "daily"
-  );
+  // 全局 Tokens 时间维度（每日/每月）—— 与平台策略页同步
+  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "monthly">(() => {
+    const v = localStorage.getItem("admin_global_token_time_dim");
+    return v === "monthly" ? "monthly" : "daily";
+  });
+  // 全局 Tokens 上限的"分组策略"列表（来自平台策略页）
+  // 每条：{ id, groupIds: string[], value: number | "unlimited" }
+  type GlobalTokenGroupRule = { id: string; groupIds: string[]; value: number | "unlimited" };
+  const [globalTokenGroupRules, setGlobalTokenGroupRules] = useState<GlobalTokenGroupRule[]>(() => {
+    try {
+      const raw = localStorage.getItem("admin_global_token_group_rules");
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  // 是否启用了"按分组"模式（存在分组策略）
+  const IS_GLOBAL_BY_GROUP = globalTokenGroupRules.length > 0;
 
   // 监听 localStorage 变化
   useEffect(() => {
@@ -564,7 +580,14 @@ export default function TokensMonitor() {
           setGlobalLimit(value ? parseInt(value, 10) : 2000000);
         }
       } else if (e.key === "admin_global_token_time_dim") {
-        setGlobalTokenTimeDim((e.newValue as "daily" | "unlimited") || "daily");
+        setGlobalTokenTimeDim(e.newValue === "monthly" ? "monthly" : "daily");
+      } else if (e.key === "admin_global_token_group_rules") {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : [];
+          setGlobalTokenGroupRules(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setGlobalTokenGroupRules([]);
+        }
       }
     };
     window.addEventListener("storage", handleStorageChange);
@@ -970,6 +993,44 @@ export default function TokensMonitor() {
   }, [hasOneid, groupFilter, groupTree]);
   const groupPaged = groupStats.slice((groupPage - 1) * PAGE_SIZE, groupPage * PAGE_SIZE);
 
+  // ── 分组 → 全局 Tokens 上限映射 ──
+  // 把 groupRule.groupIds 展开成"该规则覆盖的所有底层分组ID"
+  const groupLimitMap = useMemo(() => {
+    const map = new Map<string, number | "unlimited">();
+    for (const rule of globalTokenGroupRules) {
+      for (const gid of rule.groupIds) {
+        const expanded = findGroupAndChildren(groupTree, gid);
+        const ids = expanded.length > 0 ? expanded : [gid];
+        for (const id of ids) {
+          // 后写入会覆盖前面（按规则顺序，后定义优先）
+          map.set(id, rule.value);
+        }
+      }
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalTokenGroupRules, groupTree]);
+  // 给每个分组返回"按时间维度的消耗 / 上限"
+  // mock：daily 用 totalTokens × 0.3，monthly 用 totalTokens 直接
+  const getGroupQuotaInfo = (g: { groupId: string; totalTokens: number }) => {
+    const limit = groupLimitMap.get(g.groupId);
+    const consumed = globalTokenTimeDim === "daily"
+      ? Math.round(g.totalTokens * 0.3)
+      : g.totalTokens;
+    if (limit === undefined) {
+      // 未配置策略 → 落入兜底：兜底无限制 ↔ globalLimit === null
+      if (IS_GLOBAL_UNLIMITED) return { unlimited: true, consumed, limit: null as number | null, pct: 0 };
+      const pct = globalLimit && globalLimit > 0 ? (consumed / globalLimit) * 100 : 0;
+      return { unlimited: false, consumed, limit: globalLimit, pct };
+    }
+    if (limit === "unlimited" || limit === -1) {
+      return { unlimited: true, consumed, limit: null as number | null, pct: 0 };
+    }
+    const num = Number(limit);
+    const pct = num > 0 ? (consumed / num) * 100 : 0;
+    return { unlimited: false, consumed, limit: num, pct };
+  };
+
   const handleExportGroup = () => runExport(() => {
     const header = "分组名称,总请求数,输入Tokens,输出Tokens,总Tokens";
     const rows = groupStats.map((r) => `${r.groupName},${r.requests},${r.inputTokens},${r.outputTokens},${r.totalTokens}`);
@@ -1053,7 +1114,7 @@ export default function TokensMonitor() {
               <p className="text-xl font-bold text-gray-900">{stat.value}</p>
             </div>
           ))}
-          {/* 今日全局配额消耗（不随时间联动，放末尾） */}
+          {/* 全局配额消耗（按时间维度展示：今日/本月，不随上方时间筛选联动） */}
           <div className="bg-white rounded-2xl border border-gray-100 p-4"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
             <div className="flex items-center gap-2 mb-2">
@@ -1061,28 +1122,39 @@ export default function TokensMonitor() {
                 <Zap className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="flex items-center gap-1">
-                <p className="text-xs text-gray-400">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "全局配额累计消耗"}</p>
+                <p className="text-xs text-gray-400">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <span className="cursor-default">
                       <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
                     </span>
                   </UITooltipTrigger>
-                  <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    {IS_GLOBAL_UNLIMITED
-                      ? "全局配额已设置为无限制，无需关注消耗占比"
-                      : globalTokenTimeDim === "daily"
-                        ? "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"
-                        : "此处统计所有用户使用所有公司配置模型的总 Tokens 占全局 Tokens 上限的累计占比，到达上限即暂停服务"}
+                  <UITooltipContent side="top" className="max-w-[260px] text-xs">
+                    {IS_GLOBAL_BY_GROUP
+                      ? '全局 Tokens 上限已按分组进行设置，请在下方"按分组"Tab 查看具体分组的消耗'
+                      : IS_GLOBAL_UNLIMITED
+                        ? "全局配额已设置为无限制，无需关注消耗占比"
+                        : globalTokenTimeDim === "daily"
+                          ? "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计，每天 0 点重置"
+                          : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每月全局 Tokens 上限的占比，按自然月统计，每月 1 号 0 点重置"}
                   </UITooltipContent>
                 </UITooltip>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>}
+              <p className="text-2xl font-bold text-gray-900">{IS_GLOBAL_BY_GROUP ? "0" : TODAY_GLOBAL_PCT}%</p>
+              {IS_GLOBAL_BY_GROUP ? (
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">按分组</span>
+              ) : IS_GLOBAL_UNLIMITED ? (
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>
+              ) : null}
             </div>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={globalLimit} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
+            <ProgressBar
+              value={IS_GLOBAL_BY_GROUP ? 0 : TODAY_TOTAL_TOKENS}
+              max={IS_GLOBAL_BY_GROUP ? 1 : globalLimit}
+              showTooltip={!IS_GLOBAL_BY_GROUP}
+              isUnlimited={IS_GLOBAL_UNLIMITED && !IS_GLOBAL_BY_GROUP}
+            />
           </div>
         </div>
 
@@ -1372,20 +1444,44 @@ export default function TokensMonitor() {
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                    {IS_GLOBAL_BY_GROUP && (
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {groupPaged.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
-                  ) : groupPaged.map((g) => (
-                    <tr key={g.groupId} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{g.groupName}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</td>
-                    </tr>
-                  ))}
+                    <tr><td colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : groupPaged.map((g) => {
+                    const q = IS_GLOBAL_BY_GROUP ? getGroupQuotaInfo(g) : null;
+                    return (
+                      <tr key={g.groupId} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{g.groupName}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.requests)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</td>
+                        {IS_GLOBAL_BY_GROUP && q && (
+                          <td className="px-6 py-4 text-sm text-right">
+                            {q.unlimited ? (
+                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-md">无限制</span>
+                            ) : (
+                              <UITooltip>
+                                <UITooltipTrigger asChild>
+                                  <span className="cursor-default text-gray-900 font-medium tabular-nums">
+                                    {q.pct.toFixed(1)}%
+                                  </span>
+                                </UITooltipTrigger>
+                                <UITooltipContent side="top" className="text-xs">
+                                  {fmt(q.consumed)} / {q.limit !== null ? fmt(q.limit) : "—"}
+                                </UITooltipContent>
+                              </UITooltip>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <Pagination page={groupPage} total={groupStats.length} onChange={setGroupPage} />

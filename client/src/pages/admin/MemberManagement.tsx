@@ -3280,7 +3280,7 @@ export default function MemberManagement() {
         open={!!syncResultDialog?.open}
         onOpenChange={(open) => { if (!open) setSyncResultDialog(null); }}
       >
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-gray-900">同步结果</DialogTitle>
           </DialogHeader>
@@ -3785,7 +3785,7 @@ export default function MemberManagement() {
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称/ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
                     <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
                   </tr>
                 </thead>
@@ -3806,8 +3806,8 @@ export default function MemberManagement() {
           <div className="py-2 space-y-2">
             <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
             {[
-              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent。" },
-              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除。" },
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
             ].map((opt) => (
               <label
                 key={opt.value}
@@ -3851,16 +3851,15 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-3">
             <p className="text-sm text-gray-700">
-              本次同步检测到以下 Agent 实例受到影响，请选择如何处理：
+              本次同步导致部分用户被移除分组或上级分组发生变更，以下用户在原分组中创建了 Agent 实例，请选择如何处理存量实例：
             </p>
             <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
                     <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称/ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
                     <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">影响原因</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -3869,7 +3868,6 @@ export default function MemberManagement() {
                       <td className="px-3 py-2 text-gray-700">{a.userId}</td>
                       <td className="px-3 py-2 text-gray-700">{a.instanceName}<span className="text-gray-400 ml-1">({a.instanceId})</span></td>
                       <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
-                      <td className="px-3 py-2 text-gray-500">{a.reason}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -3879,8 +3877,8 @@ export default function MemberManagement() {
           <div className="py-2 space-y-2">
             <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
             {[
-              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent。" },
-              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除。" },
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
             ].map((opt) => (
               <label
                 key={opt.value}

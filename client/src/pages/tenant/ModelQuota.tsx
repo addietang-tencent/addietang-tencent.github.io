@@ -48,6 +48,11 @@ const MOCK_GROUPS: SimpleGroup[] = [
   { id: "grp-custom", name: "前端研发同学", isPrimary: false, allowViewQuota: false },
 ];
 
+// 普通用户的默认分组（只有一个）
+const MOCK_DEFAULT_GROUP: SimpleGroup[] = [
+  { id: "default", name: "默认", isPrimary: true, allowViewQuota: true },
+];
+
 const getDefaultGroup = (groups: SimpleGroup[]): SimpleGroup => {
   return groups.find(g => g.isPrimary) || groups[0];
 };
@@ -231,7 +236,8 @@ export default function ModelQuota() {
   const [groupMode] = useState<UserGroupMode>(() => {
     return (localStorage.getItem("openclaw_group_mode") as UserGroupMode) || "normal";
   });
-  const [selectedGroup, setSelectedGroup] = useState<SimpleGroup>(() => getDefaultGroup(MOCK_GROUPS));
+  const groupList = groupMode === "multi-group" ? MOCK_GROUPS : MOCK_DEFAULT_GROUP;
+  const [selectedGroup, setSelectedGroup] = useState<SimpleGroup>(() => getDefaultGroup(groupMode === "multi-group" ? MOCK_GROUPS : MOCK_DEFAULT_GROUP));
   const [showGroupFilter, setShowGroupFilter] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -315,47 +321,45 @@ export default function ModelQuota() {
           {/* Filter Bar */}
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
             {/* Left: 分组筛选 */}
-            {groupMode === "multi-group" && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowGroupFilter(!showGroupFilter)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  <Filter className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-gray-700">{selectedGroup.name}</span>
-                </button>
-                {showGroupFilter && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowGroupFilter(false)} />
-                    <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[200px]">
-                      {MOCK_GROUPS.map((group) => (
-                        <div key={group.id} className="relative group/item">
-                          <button
-                            disabled={!group.allowViewQuota}
-                            onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
-                            className={cn(
-                              "w-full text-left px-4 py-2.5 text-sm transition-colors",
-                              !group.allowViewQuota
-                                ? "text-gray-300 cursor-not-allowed"
-                                : selectedGroup.id === group.id
-                                  ? "bg-blue-50 text-blue-700 font-medium"
-                                  : "text-gray-700 hover:bg-gray-50"
-                            )}
-                          >
-                            {group.name}
-                          </button>
-                          {!group.allowViewQuota && (
-                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-lg whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
-                              该分组不允许查看模型额度
-                            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowGroupFilter(!showGroupFilter)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Filter className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-gray-700">{selectedGroup.name}</span>
+              </button>
+              {showGroupFilter && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowGroupFilter(false)} />
+                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[200px]">
+                    {groupList.map((group) => (
+                      <div key={group.id} className="relative group/item">
+                        <button
+                          disabled={!group.allowViewQuota}
+                          onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
+                          className={cn(
+                            "w-full text-left px-4 py-2.5 text-sm transition-colors",
+                            !group.allowViewQuota
+                              ? "text-gray-300 cursor-not-allowed"
+                              : selectedGroup.id === group.id
+                                ? "bg-blue-50 text-blue-700 font-medium"
+                                : "text-gray-700 hover:bg-gray-50"
                           )}
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                        >
+                          {group.name}
+                        </button>
+                        {!group.allowViewQuota && (
+                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-lg whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
+                            该分组不允许查看模型额度
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex items-center gap-3 ml-auto flex-wrap">

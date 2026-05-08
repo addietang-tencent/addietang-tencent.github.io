@@ -563,26 +563,33 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                     {isAdmin ? "管理员" : "普通成员"}
                   </span>
                 </div>
-                {/* 所在分组 - 仅多分组模式下显示 */}
-                {groupMode === "multi-group" && (
-                  <div className="px-3 py-2 border-b border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1.5">所在分组</p>
-                    <div className="flex flex-wrap gap-1">
+                {/* 所在分组 - 始终显示 */}
+                <div className="px-3 py-2 border-b border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1.5">所在分组</p>
+                  <div className="flex flex-wrap gap-1">
+                    {groupMode === "multi-group" ? (
+                      <>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          A公司 / 技术部 / 前端组
+                        </span>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          A公司 / 技术部 / AI 组
+                        </span>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          前端研发同学
+                        </span>
+                      </>
+                    ) : (
                       <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
                         style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
-                        A公司 / 技术部 / 前端组
+                        默认
                       </span>
-                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
-                        A公司 / 技术部 / AI 组
-                      </span>
-                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
-                        前端研发同学
-                      </span>
-                    </div>
+                    )}
                   </div>
-                )}
+                </div>
                 <DropdownMenuItem onClick={() => window.location.href = '/reset-password'}>
                   <KeyRound className="w-4 h-4 mr-2 text-gray-500" />
                   重置密码

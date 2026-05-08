@@ -464,7 +464,8 @@ export default function MyOpenClaw() {
       skills: [],
       roleName: selectedRole?.name ?? "通用助手",
       memoryStatus: 'none',
-      ...(groupMode === "multi-group" ? { groupId: selectedGroup.id, groupName: selectedGroup.name } : {}),
+      groupId: groupMode === "multi-group" ? selectedGroup.id : "default",
+      groupName: groupMode === "multi-group" ? selectedGroup.name : "默认",
     };
     setClaws([newClaw, ...claws]);
     setNewName("");
@@ -860,12 +861,10 @@ export default function MyOpenClaw() {
                         )}
                         <p className={`text-xs transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>{claw.instanceId}</p>
                       </div>
-                      {/* 多分组模式下的分组信息 - 灰色小字 */}
-                      {groupMode === "multi-group" && (
-                        <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>
-                          分组：{claw.groupName || "A公司 / 技术部 / 前端组"}
-                        </p>
-                      )}
+                      {/* 分组信息 - 始终显示 */}
+                      <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>
+                        分组：{groupMode === "multi-group" ? (claw.groupName || "A公司 / 技术部 / 前端组") : "默认"}
+                      </p>
                       <p className={`text-xs transition-colors ${isGrayAvatar ? "text-gray-400" : "text-gray-400"}`}>创建于 {claw.createdAt}</p>
                     </div>
 
@@ -1159,28 +1158,15 @@ export default function MyOpenClaw() {
                   🦞
                 </div>
                 创建 Agent
-                {groupMode === "multi-group" && (
-                  <span className="text-xs text-gray-400 font-normal ml-1">
-                    步骤 {createStep}/2
-                  </span>
-                )}
               </DialogTitle>
-              {groupMode === "multi-group" && (
-                <p className="text-xs text-gray-500 mt-1 pl-9">
-                  {createStep === 1 ? "您属于多个分组，请先选择要使用的分组" : "填写 Agent 基本信息"}
-                </p>
-              )}
             </DialogHeader>
 
             {/* ===== 多分组模式 Step 1: 选择分组 ===== */}
             {groupMode === "multi-group" && createStep === 1 && (
-              <div className="py-4 space-y-3">
-                <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 mb-1">
-                  <AlertCircle className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-blue-600 leading-relaxed">
-                    不同分组对应不同的 Agent 配置和权限，选择后将影响可用的 Agent 类型和角色身份。
-                  </p>
-                </div>
+              <div className="py-4 space-y-2.5">
+                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                  您属于多个分组，不同分组对应不同的 Agent 配置和权限，请先选择要使用的分组：
+                </p>
                 {MOCK_USER_GROUPS.map((group) => {
                   const isSelected = selectedGroup.id === group.id;
                   return (
@@ -1188,20 +1174,19 @@ export default function MyOpenClaw() {
                       key={group.id}
                       type="button"
                       onClick={() => setSelectedGroup(group)}
-                      className={`w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 ${
+                      className={`w-full text-left px-3.5 py-3 rounded-lg border transition-all duration-150 ${
                         isSelected
-                          ? "border-blue-400 bg-blue-50/50"
-                          : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50/50"
+                          ? "bg-blue-50/30"
+                          : "border-gray-150 bg-white hover:border-gray-200 hover:bg-gray-50/50"
                       }`}
+                      style={isSelected ? { borderColor: "#007AFF" } : undefined}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={`text-sm font-medium ${isSelected ? "text-gray-900" : "text-gray-700"}`}>
+                        <span className={`text-sm ${isSelected ? "font-medium" : "text-gray-600"}`} style={isSelected ? { color: "#007AFF" } : undefined}>
                           {group.name}
                         </span>
                         {isSelected && (
-                          <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
+                          <Check className="w-3.5 h-3.5" style={{ color: "#007AFF" }} />
                         )}
                       </div>
                     </button>
@@ -1213,13 +1198,6 @@ export default function MyOpenClaw() {
             {/* ===== Step 2 (多分组模式) 或 普通模式: 填写信息 ===== */}
             {(groupMode === "normal" || (groupMode === "multi-group" && createStep === 2)) && (
             <div className="py-4 space-y-4">
-              {/* 多分组模式下显示已选分组提示 */}
-              {groupMode === "multi-group" && (
-                <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 rounded-lg px-3 py-2">
-                  <Users className="w-3.5 h-3.5 text-purple-500" />
-                  <span className="text-xs text-purple-700 font-medium">当前分组：{selectedGroup.name}</span>
-                </div>
-              )}
               {/* Name Input */}
               <div>
                 <Label htmlFor="claw-name" className="text-sm font-medium text-gray-700">

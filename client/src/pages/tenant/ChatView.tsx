@@ -2034,10 +2034,8 @@ export default function ChatView({
                         )}
                         <span className="text-xs text-gray-400 truncate">{claw.instanceId}</span>
                       </div>
-                      {/* 多分组模式下显示分组 - 灰色小字 */}
-                      {groupMode === "multi-group" && (
-                        <p className="text-xs text-gray-400 mt-0.5">分组：{claw.groupName || "A公司 / 技术部 / 前端组"}</p>
-                      )}
+                      {/* 分组信息 - 始终显示 */}
+                      <p className="text-xs text-gray-400 mt-0.5">分组：{groupMode === "multi-group" ? (claw.groupName || "A公司 / 技术部 / 前端组") : "默认"}</p>
                       <p className="text-xs text-gray-400 mt-0.5">创建于 {claw.createdAt}</p>
                       <div className="flex items-center justify-between mt-2">
                         <Tooltip>

@@ -1250,7 +1250,8 @@ function OneidEditMemberFormFields({
   const deptGroupIds = React.useMemo(() => new Set(deptGroups.map((g) => g.id)), [deptGroups]);
   const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(groupSearchStr.toLowerCase()));
   const toggleGroup = (gId: string) => {
-    if (deptGroupIds.has(gId)) return; // dept 分组不可操作    const next = values.groupIds.includes(gId) ? values.groupIds.filter((x) => x !== gId) : [...values.groupIds, gId];
+    if (deptGroupIds.has(gId)) return; // dept 分组不可操作
+    const next = values.groupIds.includes(gId) ? values.groupIds.filter((x) => x !== gId) : [...values.groupIds, gId];
     onChange({ ...values, groupIds: next });
   };
 

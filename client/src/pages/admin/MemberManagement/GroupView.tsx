@@ -808,7 +808,7 @@ export default function GroupView({
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
                     <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称/ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
                     <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
                   </tr>
                 </thead>
@@ -829,8 +829,8 @@ export default function GroupView({
           <div className="py-2 space-y-2">
             <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
             {[
-              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent。" },
-              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除。" },
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
             ].map((opt) => (
               <label
                 key={opt.value}

@@ -52,7 +52,7 @@ const KERNELS: KernelConfig[] = [
   { value: "openclaw",     label: "OpenClaw",      versionPlaceholder: "如 2026.4.2", versionRegex: /^\d{4}\.\d{1,2}\.\d{1,2}$/ },
   { value: "hermes",       label: "Hermes Agent",  versionPlaceholder: "如 0.8.0",    versionRegex: /^\d+\.\d+\.\d+$/ },
   { value: "lightclawace", label: "LightClaw ACE", versionPlaceholder: "如 1.0.2",    versionRegex: /^\d+\.\d+\.\d+$/ },
-  { value: "native",       label: "自研内核",       versionPlaceholder: "如 1.0.0",    versionRegex: /^\d+\.\d+\.\d+$/ },
+  { value: "native",       label: "自定义内核",       versionPlaceholder: "如 1.0.0 或 2026.5.8",    versionRegex: /^\d+\.\d+\.\d+$/ },
 ];
 
 const getKernel = (v: KernelValue) => KERNELS.find((k) => k.value === v)!;
@@ -86,8 +86,8 @@ const DEFAULT_AGENT_TYPE = "openclaw";
 
 const NATIVE_KERNEL_NOTICE_TITLE = "管控台部分功能在该类型上不可用";
 const NATIVE_KERNEL_NOTICE_LINES = [
-  "1. 模型、通道、技能：用户可在用户端登录\"终端\"自行配置",
-  "2. 管控端的 Agent 工具库、记忆管理、网盘管理、运维观测、AI Agent 安全、会话管理 等功能将不可用",
+  "1. 员工端需要登录\"终端\"配置模型/通道/技能，不支持管控台快捷配置；",
+  "2. 管控端部分功能不可用：如 Agent 工具库、记忆管理、网盘管理、运维观测、AI Agent 安全、会话管理 等功能将不可用",
 ];
 
 /** 把任意类型名称转为唯一英文 value（slug） */
@@ -967,7 +967,7 @@ export default function ImageManagement() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default">
-                            自定义
+                            自定义 Agent 类型
                           </span>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行定义和维护的 Agent 类型</TooltipContent>
@@ -980,7 +980,7 @@ export default function ImageManagement() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600 border border-orange-100 cursor-default">
-                              <Layers className="w-3 h-3" /> 自研内核
+                              <Layers className="w-3 h-3" /> 自定义内核
                             </span>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
@@ -1001,7 +1001,7 @@ export default function ImageManagement() {
                       )
                     )}
 
-                    {/* 自研内核：温馨提示图标 */}
+                    {/* 自定义内核：温馨提示图标 */}
                     {isCustom && isNativeKernel && (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1331,7 +1331,7 @@ export default function ImageManagement() {
                 <Plus className="w-5 h-5 text-white" />
               </div>
               <span className="text-sm font-semibold transition-colors" style={{ color: "#5856D6" }}>添加自定义 Agent 类型</span>
-              <span className="text-xs text-gray-500">支持基于现有 Agent 内核扩展，或添加完全自研的 Agent 类型</span>
+              <span className="text-xs text-gray-500">支持基于现有 Agent 内核扩展，或添加完全自定义的 Agent 类型</span>
             </button>
           </div>
         </div>
@@ -1455,9 +1455,13 @@ export default function ImageManagement() {
             )}
 
             {/* Step 2: Agent 类型 */}
-            <div className="space-y-2">
+            <div className={`space-y-2 transition-opacity ${!selectedImageId ? "opacity-50 pointer-events-none" : ""}`}>
               <Label>Agent 类型 <span className="text-red-400">*</span></Label>
-              {isPublicSelected ? (
+              {!selectedImageId ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-400">
+                  请先选择镜像
+                </div>
+              ) : isPublicSelected ? (
                 <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-500">
                   {getTypeLabel(importAgentType)}
                   <span className="text-xs text-gray-400 ml-2">（公共镜像自动匹配）</span>
@@ -1480,9 +1484,13 @@ export default function ImageManagement() {
             </div>
 
             {/* Step 3: Agent 版本 */}
-            <div className="space-y-2">
+            <div className={`space-y-2 transition-opacity ${!selectedImageId ? "opacity-50 pointer-events-none" : ""}`}>
               <Label>Agent 版本 <span className="text-red-400">*</span></Label>
-              {isPublicSelected ? (
+              {!selectedImageId ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-400">
+                  请先选择镜像
+                </div>
+              ) : isPublicSelected ? (
                 <div className="px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-sm text-gray-500 font-mono">
                   {importAgentVersion}
                   <span className="text-xs text-gray-400 ml-2 font-normal">（公共镜像自动匹配）</span>
@@ -1594,20 +1602,20 @@ export default function ImageManagement() {
 
       {/* ─── 添加自定义 Agent 类型弹窗 ─── */}
       <Dialog open={showAddTypeDialog} onOpenChange={setShowAddTypeDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>添加自定义 Agent 类型</DialogTitle>
             <DialogDescription className="text-xs text-gray-500">
-              支持基于现有 Agent 内核扩展，或添加完全自研的 Agent 类型
+              支持基于现有 Agent 内核扩展，或添加完全自定义的 Agent 类型
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-1 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="space-y-4 py-1">
             {/* 类型名称 */}
             <div className="space-y-2">
               <Label>类型名称 <span className="text-red-400">*</span></Label>
               <Input
-                placeholder="例如：PetzhouClaw"
+                placeholder="例如：CustomClaw"
                 value={newTypeLabel}
                 maxLength={32}
                 autoComplete="off"
@@ -1643,12 +1651,12 @@ export default function ImageManagement() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-medium text-gray-900">
-                            {isNative ? "自研内核 / 不兼容上述已知类型" : `兼容 ${k.label}`}
+                            {isNative ? "自定义内核 / 不兼容上述已知类型" : `兼容 ${k.label}`}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 leading-relaxed mt-0.5">
                           {isNative
-                            ? "该类型为完全自研，与上述已知 Agent 内核均不兼容；部分管控台功能将不可用，详见下方说明"
+                            ? "该类型为自定义内核，与上述已知 Agent 内核均不兼容；部分管控台功能将不可用，详见下方说明"
                             : `该类型与 ${k.label} 完全兼容，管控台功能与 ${k.label} 保持一致`}
                         </p>
                       </div>
@@ -1668,7 +1676,7 @@ export default function ImageManagement() {
               </div>
             )}
 
-            {/* 自研内核 - 温馨提示 + 必须勾选 */}
+            {/* 自定义内核 - 温馨提示 + 必须勾选 */}
             {newTypeKernel === "native" && (
               <div className="space-y-2">
                 <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5">

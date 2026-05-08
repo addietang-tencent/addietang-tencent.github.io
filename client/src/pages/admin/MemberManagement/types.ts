@@ -98,7 +98,8 @@ export type ConfigCategory =
 export type ConfigSource =
   | { type: "local"; groupName: string }        // 本分组
   | { type: "inherited"; groupName: string }     // 继承自某上层分组
-  | { type: "platformDefault" };                 // 平台默认
+  | { type: "platformDefault" }                  // 平台默认
+  | { type: "presetPolicy" };                    // 预设策略（仅 VPC 和平台策略）
 
 /** 统一配置条目 */
 export interface ConfigEntry {
@@ -160,6 +161,8 @@ export interface AnomalousGroup {
   memberCount: number;
   /** 已应用的配置类别名称列表（如 ["模型", "通道", "Agent 工具"]） */
   boundConfigs: string[];
+  /** 分组下 Agent 实例数 */
+  agentInstanceCount: number;
 }
 
 /** 同步结果（分组异常 + 用户异常） */

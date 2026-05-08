@@ -38,7 +38,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import type { UserGroup, UserOrg } from "./types";
+import type { UserGroup, UserOrg, AnomalousGroup } from "./types";
 import {
   buildGroupTree,
   getUsersOfGroupDeep,
@@ -83,6 +83,8 @@ interface GroupListProps {
   uninitializedGroupIds?: Set<string>;
   /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡；用于 Tooltip 区分文案） */
   directUninitializedGroupIds?: Set<string>;
+  /** 异常分组详情 Map（groupId -> AnomalousGroup），用于动态 Tooltip 文案 */
+  anomalousGroupDetails?: Map<string, AnomalousGroup>;
 }
 
 // ─── 单行节点 ────────────────────────────────────────────
@@ -112,6 +114,8 @@ interface RowProps {
   directUninitializedGroupIds?: Set<string>;
   /** 筛选函数：判断节点是否匹配当前筛选条件 */
   filterFn?: (node: GroupTreeNode) => boolean;
+  /** 异常分组详情 Map（groupId -> AnomalousGroup），用于动态 Tooltip 文案 */
+  anomalousGroupDetails?: Map<string, AnomalousGroup>;
 }
 
 function GroupRow(props: RowProps) {
@@ -134,6 +138,7 @@ function GroupRow(props: RowProps) {
     uninitializedGroupIds,
     directUninitializedGroupIds,
     filterFn,
+    anomalousGroupDetails,
   } = props;
 
   // 递归渲染子节点
@@ -214,8 +219,25 @@ function GroupRow(props: RowProps) {
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs max-w-[260px]">
               {directAnomalousGroupIds?.has(node.id)
-                ? "该分组对应的部门已在腾讯统一身份管理平台被删除，但仍有配置未解绑"
-                : "该部门下有分组已在腾讯统一身份管理平台被删除，但仍有配置未解绑，展开查看"}
+                ? (() => {
+                    const detail = anomalousGroupDetails?.get(node.id);
+                    const hasConfig = detail ? detail.boundConfigs.length > 0 : true;
+                    const hasAgent = detail ? detail.agentInstanceCount > 0 : false;
+                    const reasons = [
+                      hasConfig ? "配置未解绑" : null,
+                      hasAgent ? "Agent 实例未删除" : null,
+                    ].filter(Boolean).join("、");
+                    return `该分组对应的部门已在腾讯统一身份管理平台被删除，但仍有${reasons}`;
+                  })()
+                : (() => {
+                    const hasConfig = Array.from(anomalousGroupDetails?.values() ?? []).some((d) => d.boundConfigs.length > 0);
+                    const hasAgent = Array.from(anomalousGroupDetails?.values() ?? []).some((d) => d.agentInstanceCount > 0);
+                    const reasons = [
+                      hasConfig ? "配置未解绑" : null,
+                      hasAgent ? "Agent 实例未删除" : null,
+                    ].filter(Boolean).join("、");
+                    return `该部门下有分组已在腾讯统一身份管理平台被删除，但仍有${reasons}，展开查看`;
+                  })()}
             </TooltipContent>
           </Tooltip>
         )}
@@ -286,16 +308,28 @@ function GroupRow(props: RowProps) {
                   编辑分组
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-xs gap-2 text-red-600 focus:text-red-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteGroup?.(node.id);
-                  }}
-                >
-                  <Trash2 className="w-3 h-3" />
-                  删除分组
-                </DropdownMenuItem>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DropdownMenuItem
+                        className={`text-xs gap-2 ${hasChildren ? "text-gray-400 cursor-not-allowed" : "text-red-600 focus:text-red-600"}`}
+                        disabled={hasChildren}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!hasChildren) onDeleteGroup?.(node.id);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        删除分组
+                      </DropdownMenuItem>
+                    </div>
+                  </TooltipTrigger>
+                  {hasChildren && (
+                    <TooltipContent side="right" className="text-xs">
+                      请先删除该分组下的子分组
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </DropdownMenuContent>
             </DropdownMenu>
           </span>
@@ -351,6 +385,7 @@ export default function GroupList({
   onRefreshSync,
   uninitializedGroupIds,
   directUninitializedGroupIds,
+  anomalousGroupDetails,
 }: GroupListProps) {
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
@@ -572,6 +607,7 @@ export default function GroupList({
                     uninitializedGroupIds={uninitializedGroupIds}
                     directUninitializedGroupIds={directUninitializedGroupIds}
                     filterFn={matchFilter}
+                    anomalousGroupDetails={anomalousGroupDetails}
                   />
                 ))}
               </>
@@ -660,6 +696,7 @@ export default function GroupList({
                     uninitializedGroupIds={uninitializedGroupIds}
                     directUninitializedGroupIds={directUninitializedGroupIds}
                     filterFn={matchFilter}
+                    anomalousGroupDetails={anomalousGroupDetails}
                   />
                 ))
               ) : (
@@ -701,9 +738,11 @@ export default function GroupList({
                 onEditGroup={onEditGroup}
                 onDeleteGroup={onDeleteGroup}
                 anomalousGroupIds={anomalousGroupIds}
+                directAnomalousGroupIds={directAnomalousGroupIds}
                 uninitializedGroupIds={uninitializedGroupIds}
                 directUninitializedGroupIds={directUninitializedGroupIds}
                 filterFn={matchFilter}
+                anomalousGroupDetails={anomalousGroupDetails}
               />
             ))}
           </>

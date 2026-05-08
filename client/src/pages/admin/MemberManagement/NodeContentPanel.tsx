@@ -26,6 +26,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Search,
   ChevronRight,
   ChevronLeft,
@@ -47,6 +52,8 @@ import {
   Gauge,
   Shield,
   ChevronDown,
+  X,
+  Pencil,
 } from "lucide-react";
 import { Link } from "wouter";
 import type {
@@ -56,7 +63,7 @@ import type {
   ConfigCategory,
   ConfigEntry,
 } from "./types";
-import { getPrimaryDeptPath, getConfigEntries, CONFIG_CATEGORY_META } from "./mock";
+import { getPrimaryDeptPath, getConfigEntries, CONFIG_CATEGORY_META, MOCK_USER_GROUP_AGENTS } from "./mock";
 import {
   getGroupHealth,
   getGroupInitHealth,
@@ -96,6 +103,8 @@ interface NodeContentPanelProps {
   onAddUsersToGroup?: (userIds: string[]) => void;
   /** 从分组中移除用户的回调 */
   onRemoveFromGroup?: (userId: string) => void;
+  /** 编辑用户分组的回调 */
+  onEditUserGroups?: (userId: string, groupIds: string[]) => void;
   /** 是否为异常分组（配置未解绑，需显示红点+告警条） */
   isAnomalous?: boolean;
   /** 异常分组绑定的配置名称（用于告警条展示） */
@@ -160,6 +169,158 @@ const CATEGORY_NAV_LABEL: Record<ConfigCategory, string> = {
   platformPolicy: "策略",
 };
 
+// ─── 分组标签选择器（简化版，用于添加/编辑用户弹窗） ───────
+function GroupTagSelect({
+  groups,
+  selectedIds,
+  onChange,
+}: {
+  groups: UserGroup[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  // 只显示 manual 分组（普通模式）
+  const manualGroups = useMemo(
+    () => groups.filter((g) => g.source === "manual"),
+    [groups]
+  );
+  const groupMap = useMemo(
+    () => new Map(manualGroups.map((g) => [g.id, g])),
+    [manualGroups]
+  );
+
+  // 获取分组全路径
+  const getPath = (gId: string): string => {
+    const chain: string[] = [];
+    let node = groupMap.get(gId);
+    while (node) {
+      chain.unshift(node.name);
+      node = node.parentId ? groupMap.get(node.parentId) : undefined;
+    }
+    return chain.join(" / ");
+  };
+
+  // 搜索过滤
+  const filtered = useMemo(() => {
+    if (!search.trim()) return manualGroups;
+    const q = search.trim().toLowerCase();
+    return manualGroups.filter(
+      (g) => g.name.toLowerCase().includes(q) || getPath(g.id).toLowerCase().includes(q)
+    );
+  }, [manualGroups, search]);
+
+  const toggleGroup = (id: string) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((x) => x !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative w-full min-h-[36px] px-2 py-1.5 rounded-lg border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7">
+          {selectedIds.length === 0 ? (
+            <span className="text-xs text-gray-400 px-1">选择分组…</span>
+          ) : (
+            selectedIds.map((id) => (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] max-w-full"
+              >
+                <span className="truncate">{getPath(id)}</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange(selectedIds.filter((x) => x !== id));
+                  }}
+                  className="text-blue-400 hover:text-blue-700 shrink-0"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))
+          )}
+          {selectedIds.length > 0 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange([]);
+              }}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center shrink-0"
+              title="清空"
+            >
+              <X className="w-2.5 h-2.5 text-white" />
+            </button>
+          )}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-0"
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+        align="start"
+        sideOffset={4}
+      >
+        <div className="p-2.5 border-b border-gray-100">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索分组…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="max-h-[240px] overflow-y-auto p-1.5">
+          {filtered.length === 0 ? (
+            <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
+          ) : (
+            filtered.map((g) => {
+              const isSelected = selectedIds.includes(g.id);
+              return (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => toggleGroup(g.id)}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${
+                    isSelected ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  <span
+                    className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                      isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="truncate">{getPath(g.id)}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ─── 获取用户所有 oneid-dept 类型部门的完整路径 ────────────
 function getUserDeptPaths(
   user: UserOrg,
@@ -189,6 +350,7 @@ export default function NodeContentPanel({
   allUsers = [],
   onAddUsersToGroup,
   onRemoveFromGroup,
+  onEditUserGroups,
   isAnomalous = false,
   anomalousBoundConfigs = [],
   isUninitialized = false,
@@ -206,12 +368,26 @@ export default function NodeContentPanel({
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addSearch, setAddSearch] = useState("");
   const [addSelected, setAddSelected] = useState<string[]>([]);
+  const [addGroupIds, setAddGroupIds] = useState<string[]>([]);
+
+  // 编辑用户分组弹窗
+  const [editUserDialog, setEditUserDialog] = useState<{ userId: string; displayName: string; groupIds: string[] } | null>(null);
+  const [editGroupIds, setEditGroupIds] = useState<string[]>([]);
 
   // 从分组中移除确认弹窗
   const [removeDialog, setRemoveDialog] = useState<{
     userId: string;
     groupName: string;
   } | null>(null);
+
+  // 存量 Agent 实例处理弹窗
+  const [agentInstanceDialog, setAgentInstanceDialog] = useState<{
+    open: boolean;
+    userId: string;
+    groupName: string;
+    instances: Array<{ id: string; name: string }>;
+  } | null>(null);
+  const [agentInstanceChoice, setAgentInstanceChoice] = useState<"keep" | "delete">("keep");
 
   React.useEffect(() => {
     setPage(1);
@@ -257,8 +433,23 @@ export default function NodeContentPanel({
   };
 
   const handleRemoveConfirm = () => {
-    if (removeDialog) {
-      onRemoveFromGroup?.(removeDialog.userId);
+    if (!removeDialog) return;
+    const { userId } = removeDialog;
+    // 检测该用户在当前分组是否有 Agent 实例
+    const userAgents = MOCK_USER_GROUP_AGENTS[userId];
+    const instances = userAgents?.[nodeId] ?? [];
+
+    if (instances.length > 0) {
+      // 有存量实例，弹出二次确认
+      setRemoveDialog(null);
+      setAgentInstanceDialog({
+        open: true,
+        userId,
+        groupName: getPrimaryDeptPath(nodeId, groups),
+        instances,
+      });
+    } else {
+      onRemoveFromGroup?.(userId);
       setRemoveDialog(null);
     }
   };
@@ -276,17 +467,36 @@ export default function NodeContentPanel({
           </div>
           <div className="text-xs text-gray-500">分组名称：{nodePath}</div>
         </div>
-        {nodeId !== "__unassigned__" && (isManualMode || nodeSource !== "oneid-dept") && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 border-gray-200 shrink-0"
-            onClick={() => setShowAddDialog(true)}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            添加用户到分组
-          </Button>
-        )}
+        {nodeId !== "__unassigned__" && (isManualMode || nodeSource !== "oneid-dept") && (() => {
+          const totalUserCount = allUsers?.length ?? 0;
+          const isAtLimit = totalUserCount >= 20;
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 border-gray-200 shrink-0"
+                    onClick={() => {
+                      setAddGroupIds([nodeId]);
+                      setShowAddDialog(true);
+                    }}
+                    disabled={isAtLimit}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    添加用户到分组
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {isAtLimit && (
+                <TooltipContent className="text-xs">
+                  已达用户人数上限（{totalUserCount}/{20}）
+                </TooltipContent>
+              )}
+            </Tooltip>
+          );
+        })()}
       </div>
 
       {/* Tab 切换 */}
@@ -537,7 +747,7 @@ export default function NodeContentPanel({
                             {/* 操作（仅普通模式且非未分组） */}
                             {isManualMode && nodeId !== "__unassigned__" && (
                               <td className="px-5 py-4">
-                                <div className="flex items-center justify-center">
+                                <div className="flex items-center justify-center gap-1">
                                   {nodeId !== "__unassigned__" && (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -645,6 +855,7 @@ export default function NodeContentPanel({
             setShowAddDialog(false);
             setAddSearch("");
             setAddSelected([]);
+            setAddGroupIds([]);
           }
         }}
       >
@@ -804,6 +1015,7 @@ export default function NodeContentPanel({
                 setShowAddDialog(false);
                 setAddSearch("");
                 setAddSelected([]);
+                setAddGroupIds([]);
               }}
             >
               取消
@@ -868,6 +1080,136 @@ export default function NodeContentPanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 存量 Agent 实例处理弹窗 */}
+      <Dialog open={!!agentInstanceDialog?.open} onOpenChange={(open) => { if (!open) setAgentInstanceDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>存量 Agent 实例处理</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-700">
+              该用户在「{agentInstanceDialog?.groupName}」下创建了 {agentInstanceDialog?.instances.length} 个 Agent 实例，用户已从该分组中移除，请选择如何处理存量实例：
+            </p>
+            <div className="rounded-lg border border-gray-100 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称/ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {agentInstanceDialog?.instances.map((inst) => (
+                    <tr key={inst.id}>
+                      <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.userId}</td>
+                      <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
+                      <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.groupName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="py-2 space-y-2">
+            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            {[
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent。" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除。" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                onClick={() => setAgentInstanceChoice(opt.value as "keep" | "delete")}
+              >
+                <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
+                  {agentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAgentInstanceDialog(null)}>取消</Button>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => {
+                if (agentInstanceDialog) {
+                  onRemoveFromGroup?.(agentInstanceDialog.userId);
+                }
+                setAgentInstanceDialog(null);
+                if (agentInstanceChoice === "delete") {
+                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                }
+              }}
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 编辑用户分组弹窗 */}
+      <Dialog
+        open={!!editUserDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditUserDialog(null);
+            setEditGroupIds([]);
+          }
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>编辑用户分组</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">用户 ID</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {editUserDialog?.userId}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-gray-700">用户分组</label>
+              <GroupTagSelect
+                groups={groups}
+                selectedIds={editGroupIds}
+                onChange={setEditGroupIds}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setEditUserDialog(null); setEditGroupIds([]); }}>
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                if (editUserDialog) {
+                  onEditUserGroups?.(editUserDialog.userId, editGroupIds);
+                }
+                setEditUserDialog(null);
+                setEditGroupIds([]);
+              }}
+              disabled={editGroupIds.length === 0}
+              className="text-white"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              确认修改
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -898,6 +1240,14 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
     return (
       <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
         全部用户
+      </span>
+    );
+  }
+  if (source.type === "presetPolicy") {
+    // 预设策略 → 灰色标签（与全部用户一致）
+    return (
+      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+        预设策略
       </span>
     );
   }
@@ -1147,7 +1497,7 @@ function ConfigOverviewTab({
               该分组的专属配置未解绑
             </div>
             <div className="text-xs text-red-700 mt-0.5 leading-relaxed">
-              该分组对应的部门已在腾讯统一身份管理平台被删除。请前往对应配置页面将专属于「本分组」的配置与本分组解绑或删除，处理完成后分组将被自动清除。来自「全部用户」或「继承自上级分组」的配置项无需处理。
+              该分组对应的部门已在腾讯统一身份管理平台被删除。请前往对应配置页面将专属于「本分组」的配置与本分组解绑或删除，处理完成后刷新分组列表，分组即可被清除。来自「全部用户」、「继承自上级分组」和「预设策略」的配置项无需处理。
             </div>
           </div>
         </div>

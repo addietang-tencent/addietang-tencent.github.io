@@ -30,6 +30,7 @@ import {
   findGroupNode,
   getResourcesOfGroup,
 } from "./health";
+import { MOCK_USER_GROUP_AGENTS } from "./mock";
 
 // ─── 下拉树形选择器（单选，用于选择上级分组） ────────────────────
 function ParentDropdownSelector({
@@ -450,6 +451,20 @@ export interface DeleteGroupDialogProps {
   onConfirm: (groupId: string) => void;
 }
 
+/** 统计某分组下的 Agent 实例（仅该分组自身，不递归子分组） */
+function getGroupAgentStats(groupId: string) {
+  let instanceCount = 0;
+  const userIds = new Set<string>();
+  for (const [userId, groupMap] of Object.entries(MOCK_USER_GROUP_AGENTS)) {
+    const instances = groupMap[groupId];
+    if (instances && instances.length > 0) {
+      instanceCount += instances.length;
+      userIds.add(userId);
+    }
+  }
+  return { instanceCount, userCount: userIds.size };
+}
+
 export function DeleteGroupDialog({
   open,
   onOpenChange,
@@ -459,6 +474,7 @@ export function DeleteGroupDialog({
   onConfirm,
 }: DeleteGroupDialogProps) {
   const [configRefreshing, setConfigRefreshing] = useState(false);
+  const [agentRefreshing, setAgentRefreshing] = useState(false);
 
   // 获取关联的资源配置
   const relatedResources = useMemo(
@@ -468,22 +484,37 @@ export function DeleteGroupDialog({
 
   const hasRelatedConfigs = relatedResources.length > 0;
 
-  // 按 kind 分组
-  const configSummary = useMemo(() => {
-    const map = new Map<string, number>();
-    relatedResources.forEach((r) => {
-      map.set(r.kind, (map.get(r.kind) ?? 0) + 1);
-    });
-    return Array.from(map.entries());
+  // 按 kind 去重（只关心有哪些类别，不计数）
+  const configKinds = useMemo(() => {
+    const kinds = new Set<string>();
+    relatedResources.forEach((r) => kinds.add(r.kind));
+    return Array.from(kinds);
   }, [relatedResources]);
 
+  // 统计该分组下的 Agent 实例
+  const agentStats = useMemo(
+    () => (group ? getGroupAgentStats(group.id) : { instanceCount: 0, userCount: 0 }),
+    [group]
+  );
+  const hasAgentInstances = agentStats.instanceCount > 0;
+
+  // 是否可以删除：无配置且无实例
+  const canDelete = !hasRelatedConfigs && !hasAgentInstances;
+
   const kindLabel: Record<string, string> = {
-    model: "可见模型",
-    channel: "可见通道",
-    securityGroup: "安全组",
-    vpc: "VPC",
+    model: "模型",
+    channel: "通道",
+    skill: "技能",
+    agentTool: "Agent 工具",
     memory: "记忆",
+    drive: "网盘",
     image: "镜像",
+    network: "网络",
+    securityGroup: "网络",
+    vpc: "网络",
+    cls: "CLS 日志服务",
+    aiAgentSecurity: "AI Agent 安全",
+    platformPolicy: "平台策略",
   };
 
   return (
@@ -510,10 +541,10 @@ export function DeleteGroupDialog({
             </span>
           </div>
 
-          {/* 已应用配置 */}
+          {/* 分组专属配置 */}
           <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-500">已应用配置</span>
+              <span className="text-sm text-gray-500">分组专属配置</span>
               <button
                 className="text-gray-400 hover:text-blue-500 transition-colors"
                 title="刷新"
@@ -531,9 +562,9 @@ export function DeleteGroupDialog({
             </div>
             {hasRelatedConfigs ? (
               <div className="flex items-center gap-1.5 flex-wrap">
-                {configSummary.map(([kind, count]) => (
+                {configKinds.map((kind) => (
                   <span key={kind} className="badge-shutdown">
-                    {kindLabel[kind] ?? kind}({count})
+                    {kindLabel[kind] ?? kind}
                   </span>
                 ))}
               </div>
@@ -542,21 +573,53 @@ export function DeleteGroupDialog({
             )}
           </div>
 
+          {/* Agent 实例数 */}
+          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-500">分组下 Agent 实例</span>
+              <button
+                className="text-gray-400 hover:text-blue-500 transition-colors"
+                title="刷新"
+                onClick={() => {
+                  setAgentRefreshing(true);
+                  setTimeout(() => setAgentRefreshing(false), 1200);
+                }}
+              >
+                {agentRefreshing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
+            {hasAgentInstances ? (
+              <span className="text-sm font-semibold text-gray-800">
+                {agentStats.instanceCount} 个实例
+              </span>
+            ) : (
+              <span className="text-sm text-green-600">无 Agent 实例</span>
+            )}
+          </div>
+
           {/* 状态提示 */}
-          {hasRelatedConfigs ? (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
-              <p className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
-                以上配置的应用范围包含该分组，请先前往对应配置页面移除该分组后再执行删除。
-              </p>
-              <p className="flex items-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
-                删除分组后，组内用户不会被删除，仅解除分组关联。
-              </p>
+          {canDelete ? (
+            <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
+              该分组无关联配置且无 Agent 实例，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
             </div>
           ) : (
-            <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
-              该分组无关联配置，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
+              {hasRelatedConfigs && (
+                <p className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
+                  以上配置的应用范围包含该分组，请先前往对应配置页面移除该分组后再执行删除。
+                </p>
+              )}
+              {hasAgentInstances && (
+                <p className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
+                  该分组下仍有 Agent 实例，请先删除实例后再执行删除。
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -565,7 +628,7 @@ export function DeleteGroupDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          {!hasRelatedConfigs && (
+          {canDelete && (
             <Button
               className="bg-red-500 hover:bg-red-600 text-white"
               onClick={() => group && onConfirm(group.id)}

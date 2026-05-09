@@ -329,6 +329,13 @@ const MOCK_SUBNETS: Record<string, SubnetEntity[]> = {
   ],
   "vpc-ab3cd4ef": [
     { id: "subnet-yz9ab1cd", name: "企业内网子网", cidr: "172.16.1.0/24", totalIp: 254, remainingIp: 90 },
+    { id: "subnet-cd1ef2gh", name: "企业内网-办公区", cidr: "172.16.2.0/24", totalIp: 254, remainingIp: 120 },
+    { id: "subnet-ij3kl4mn", name: "企业内网-应用区", cidr: "172.16.3.0/24", totalIp: 254, remainingIp: 200 },
+    { id: "subnet-op5qr6st", name: "企业内网-数据区", cidr: "172.16.4.0/24", totalIp: 254, remainingIp: 60 },
+    { id: "subnet-uv7wx8yz", name: "企业内网-灾备区", cidr: "172.16.5.0/24", totalIp: 254, remainingIp: 240 },
+    { id: "subnet-ab1cd2ef", name: "企业内网-测试区", cidr: "172.16.6.0/24", totalIp: 254, remainingIp: 180 },
+    { id: "subnet-gh3ij4kl", name: "企业内网-生产区", cidr: "172.16.7.0/24", totalIp: 254, remainingIp: 50 },
+    { id: "subnet-mn5op6qr", name: "企业内网-预发区", cidr: "172.16.8.0/24", totalIp: 254, remainingIp: 220 },
   ],
 };
 
@@ -578,9 +585,9 @@ const VPC_ZONE_SUBNETS: Record<string, Record<string, string[]>> = {
     "广州七区": [],
   },
   "vpc-ab3cd4ef": {
-    "广州五区": ["subnet-yz9ab1cd"],
-    "广州六区": [],
-    "广州七区": [],
+    "广州五区": ["subnet-yz9ab1cd", "subnet-cd1ef2gh", "subnet-ab1cd2ef", "subnet-gh3ij4kl", "subnet-mn5op6qr"],
+    "广州六区": ["subnet-ij3kl4mn", "subnet-op5qr6st"],
+    "广州七区": ["subnet-uv7wx8yz"],
   },
 };
 
@@ -1893,6 +1900,133 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
       <TooltipContent side="top" className="max-w-[360px] text-xs leading-relaxed">
         <div className="space-y-0.5">
           {paths.map((p, i) => <div key={i}>{p}</div>)}
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── 子网胶囊行（列表展开"子网配置明细"，每个可用区一行） ──────────────────
+//
+// 视觉：每个子网包成浅灰胶囊（id | name | cidr），容器宽度自适应；
+//       超出可视宽度时按"放得下几个就显几个 + …共 N 个子网"折叠，hover 列出全部。
+// 参考实现：与列表行 GroupBadges 同款 ResizeObserver + 隐藏测量区方案。
+function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [visibleCount, setVisibleCount] = useState(subnets.length);
+
+  useLayoutEffect(() => {
+    if (subnets.length === 0) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const computeVisible = () => {
+      const available = container.clientWidth;
+      if (available <= 0) return;
+      const gap = 6; // gap-1.5
+      let totalW = 0;
+      let fitCount = 0;
+      for (let i = 0; i < subnets.length; i++) {
+        const el = tagRefs.current[i];
+        if (!el) break;
+        const w = el.offsetWidth;
+        const add = totalW === 0 ? w : w + gap;
+        if (totalW + add <= available) {
+          totalW += add;
+          fitCount = i + 1;
+        } else {
+          break;
+        }
+      }
+      if (fitCount === subnets.length) {
+        setVisibleCount(subnets.length);
+        return;
+      }
+      const moreEl = moreRef.current;
+      if (!moreEl) {
+        setVisibleCount(Math.max(1, fitCount));
+        return;
+      }
+      for (let n = fitCount; n >= 1; n--) {
+        let w = 0;
+        for (let i = 0; i < n; i++) {
+          const el = tagRefs.current[i];
+          if (!el) continue;
+          w += el.offsetWidth + (i === 0 ? 0 : gap);
+        }
+        moreEl.textContent = `…共 ${subnets.length} 个子网`;
+        const moreW = moreEl.offsetWidth;
+        if (w + gap + moreW <= available) {
+          setVisibleCount(n);
+          return;
+        }
+      }
+      setVisibleCount(1);
+    };
+
+    computeVisible();
+    const observer = new ResizeObserver(computeVisible);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [subnets]);
+
+  const omitted = subnets.length - visibleCount;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          ref={containerRef}
+          className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden cursor-default"
+        >
+          {/* 可见胶囊 */}
+          {subnets.slice(0, visibleCount).map((s, i) => (
+            <span
+              key={s.id}
+              ref={(el) => { tagRefs.current[i] = el; }}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-xs whitespace-nowrap shrink-0"
+            >
+              <span className="font-mono text-gray-500">{s.id}</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-700">{s.name}</span>
+              <span className="text-gray-300">|</span>
+              <span className="font-mono text-gray-400">{s.cidr}</span>
+            </span>
+          ))}
+          {/* 折叠提示 */}
+          {omitted > 0 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap shrink-0">
+              …共 {subnets.length} 个子网
+            </span>
+          )}
+          {/* 隐藏测量区 */}
+          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
+            {subnets.map((s, i) => (
+              <span
+                key={`m-${s.id}`}
+                ref={(el) => { tagRefs.current[i] = el; }}
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-xs whitespace-nowrap"
+              >
+                <span className="font-mono text-gray-500">{s.id}</span>
+                <span className="text-gray-300">|</span>
+                <span className="text-gray-700">{s.name}</span>
+                <span className="text-gray-300">|</span>
+                <span className="font-mono text-gray-400">{s.cidr}</span>
+              </span>
+            ))}
+            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap" />
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[480px] text-xs leading-relaxed">
+        <div className="space-y-1">
+          {subnets.map((s) => (
+            <div key={s.id} className="font-mono whitespace-nowrap">
+              {s.id} | <span className="not-italic font-sans">{s.name}</span> | {s.cidr}
+            </div>
+          ))}
         </div>
       </TooltipContent>
     </Tooltip>
@@ -3509,20 +3643,7 @@ export default function SecurityGroupManagement() {
                                       {rowIsAutoAssigned ? (
                                         <span className="text-xs text-gray-400">自动分配</span>
                                       ) : isAssigned ? (
-                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
-                                          {subnets.map((subnet) => (
-                                            <span
-                                              key={subnet.id}
-                                              className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap"
-                                            >
-                                              <span className="font-mono text-gray-500">{subnet.id}</span>
-                                              <span className="text-gray-300">|</span>
-                                              <span className="font-medium text-gray-700">{subnet.name}</span>
-                                              <span className="text-gray-300">|</span>
-                                              <span className="font-mono text-gray-400">{subnet.cidr}</span>
-                                            </span>
-                                          ))}
-                                        </div>
+                                        <SubnetBadgesRow subnets={subnets} />
                                       ) : (
                                         <span className="text-xs text-gray-400">未分配</span>
                                       )}

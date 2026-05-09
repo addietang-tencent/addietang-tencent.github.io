@@ -769,7 +769,7 @@ export function getConfigEntries(
       category: "network",
       label: "",
       subLabel: "私有网络与子网",
-      source: platformDefault,
+      source: { type: "presetPolicy" },
       meta: {
         vpcId: "vpc-cwu34v7p",
         vpcName: "clawpro/default-vpc-pk878am5",

@@ -3833,7 +3833,8 @@ export default function MemberManagement() {
                 agentInstanceDialog?.pendingAction();
                 setAgentInstanceDialog(null);
                 if (agentInstanceChoice === "delete") {
-                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                  const ids = agentInstanceDialog?.agents.flatMap(a => a.instances.map(i => i.id)).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
                 }
               }}
             >
@@ -3903,7 +3904,8 @@ export default function MemberManagement() {
               onClick={() => {
                 setSyncAgentInstanceDialog(null);
                 if (syncAgentInstanceChoice === "delete") {
-                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                  const ids = syncAgentInstanceDialog?.agents.map(a => a.instanceId).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
                 }
               }}
             >

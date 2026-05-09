@@ -646,6 +646,25 @@ function GroupColumnFilter({
 export default function AgentMonitor() {
   const [, setLocation] = useLocation();
   const { hasOneid } = useAdminMode();
+
+  // ─── URL 参数筛选（从存量 Agent 实例处理弹窗跳转过来） ───
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string> | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("filter") === "pending-delete" && params.get("ids")) {
+      return new Set(params.get("ids")!.split(",").filter(Boolean));
+    }
+    return null;
+  });
+
+  const clearPendingDeleteFilter = () => {
+    setPendingDeleteIds(null);
+    // 清除 URL 参数
+    const url = new URL(window.location.href);
+    url.searchParams.delete("filter");
+    url.searchParams.delete("ids");
+    window.history.replaceState({}, "", url.pathname);
+  };
+
   const [claws, setClaws] = useState<Claw[]>(() => {
     if (hasOneid) {
       // MOCK_CLAWS_WITH_DEPT 缺少 agentType/version/pluginVersions/tags，从 MOCK_CLAWS 补充
@@ -997,9 +1016,13 @@ export default function AgentMonitor() {
 
   const versionFiltered = statusFiltered;
 
-  const totalPages = Math.max(1, Math.ceil(versionFiltered.length / PAGE_SIZE));
+  // 从存量 Agent 实例处理跳转过来时，按实例 ID 筛选
+  const finalFiltered = pendingDeleteIds ? versionFiltered.filter(c => pendingDeleteIds.has(c.id) || pendingDeleteIds.has(c.instanceId)) : versionFiltered;
+  const pendingDeleteMatchCount = pendingDeleteIds ? finalFiltered.length : 0;
+
+  const totalPages = Math.max(1, Math.ceil(finalFiltered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const paginated = versionFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const paginated = finalFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   // 当前页所有实例 id
   const pageIds = paginated.map(c => c.id);
@@ -1361,6 +1384,23 @@ export default function AgentMonitor() {
               </button>
             </Link>
           </div>
+
+          {/* 存量 Agent 实例筛选提示条 */}
+          {pendingDeleteIds && (
+            <div className="flex items-center gap-2.5 bg-blue-50 border-y border-blue-100 px-4 py-2.5 -mx-0 mb-3">
+              <Info className="w-4 h-4 text-blue-400 shrink-0" />
+              <p className="text-sm text-blue-700 flex-1">
+                已帮您筛选出 <span className="font-semibold">{pendingDeleteMatchCount}</span> 个符合条件的 Agent 实例
+              </p>
+              <button
+                type="button"
+                onClick={clearPendingDeleteFilter}
+                className="inline-flex items-center gap-0.5 text-sm text-blue-600 hover:text-blue-800 font-medium shrink-0"
+              >
+                清除筛选<X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           <div className="overflow-x-auto" ref={tableScrollRef}>
           <table className="text-sm" style={{ width: 'max-content', minWidth: '100%' }}>

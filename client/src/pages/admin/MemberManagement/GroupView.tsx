@@ -25,7 +25,6 @@ import { GroupFormDialog, DeleteGroupDialog } from "./GroupDialog";
 
 import type { UserGroup, UserOrg, UserOverrideInfo, AnomalousGroup } from "./types";
 import {
-  countMultiGroupUsers,
   getUsersOfGroupDeep,
   buildGroupTree,
   findGroupNode,
@@ -268,11 +267,6 @@ export default function GroupView({
       ? getUsersOfGroupDeep(selectedGroup.id, groups, effectiveUsers)
       : [];
   }, [selectedId, selectedGroup, groups, effectiveUsers]);
-
-  const multiGroupCount = useMemo(
-    () => countMultiGroupUsers(effectiveUsers),
-    [effectiveUsers]
-  );
 
   // 一键同步全部组织架构
   const handleSyncDepts = () => {
@@ -621,16 +615,13 @@ export default function GroupView({
 
   return (
     <div className="space-y-3">
-      {/* 常驻多分组 Alert */}
-      {multiGroupCount > 0 && (
+      {/* 常驻分组命名提醒 */}
+      {groups.length > 0 && (
         <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
           <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-medium text-amber-800">
-              检测到 <span className="tabular-nums">{multiGroupCount}</span> 位用户同时归属于多个分组
-            </div>
-            <div className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-              用户端将向这些用户展示其所归属的全部分组列表，由用户自行选择使用哪个分组。请注意：分组名称会直接暴露给终端用户，建议确保分组命名规范、无敏感信息。
+            <div className="text-xs text-amber-700 leading-relaxed">
+              分组名称将在用户端展示，用户可查看自己所属的分组。请确保分组命名规范、清晰，避免使用内部代号或敏感信息。
             </div>
           </div>
         </div>
@@ -856,7 +847,8 @@ export default function GroupView({
                 editGroupAgentDialog?.pendingAction();
                 setEditGroupAgentDialog(null);
                 if (editGroupAgentChoice === "delete") {
-                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                  const ids = editGroupAgentDialog?.agents.flatMap(a => a.instances.map(i => i.id)).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
                 }
               }}
             >

@@ -14,12 +14,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { MessageSquare, Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle, Pencil } from "lucide-react";
+import { MessageSquare, Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle } from "lucide-react";
+import { ScopePopover } from "@/components/ScopePopover";
+import type { UserGroup } from "./MemberManagement/types";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import {
   type CustomChannel,
   type CredentialField,
@@ -30,6 +29,9 @@ import {
   saveBuiltinChannelVisibility,
   onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
+
+// 合并所有分组（与模型配置页保持一致）
+const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
 
 // ─── 图标组件 ────────────────────────────────────────────────────────────────────
 
@@ -165,61 +167,6 @@ function emptyForm(): FormState {
   };
 }
 
-// ─── 子组件：应用范围指示器（与平台策略页 ScopeIndicator 一致） ──────────────────
-
-function ChannelScopeIndicator() {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="text-gray-400">应用范围</span>
-      <span className="badge-loading whitespace-nowrap">全部用户</span>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            className="text-gray-300 hover:text-blue-500 transition-colors"
-            title="编辑应用范围"
-          >
-            <Pencil className="w-3 h-3" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
-          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
-            <div className="flex gap-1.5">
-              <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-blue-200 bg-blue-50 text-blue-600">
-                全部用户
-              </button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors border-gray-200 bg-white text-gray-300 cursor-not-allowed">
-                    按分组
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs max-w-[220px]">
-                  按分组设置通道 — 即将开放
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs px-3"
-              onClick={() => { setOpen(false); toast.success("应用范围已更新"); }}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-            >
-              确认
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
-
 // ─── 主组件 ──────────────────────────────────────────────────────────────────────
 
 export default function ChannelConfig() {
@@ -258,6 +205,20 @@ export default function ChannelConfig() {
 
   // 展开/折叠通道详情（展示 IM 服务器地址 + 用户凭证字段）
   const [expandedCustomId, setExpandedCustomId] = useState<string | null>(null);
+
+  // ── 通道应用范围状态（每个通道独立） ──
+  // 内置通道：{ channelId: { scope, groupIds } }
+  const [builtinScopes, setBuiltinScopes] = useState<Record<string, { scope: "all" | "groups"; groupIds: string[] }>>(
+    () => {
+      // 初始化：全部为"全部用户"
+      const init: Record<string, { scope: "all" | "groups"; groupIds: string[] }> = {};
+      BUILTIN_CHANNELS.forEach((ch) => { init[ch.id] = { scope: "all", groupIds: [] }; });
+      return init;
+    }
+  );
+
+  // 自定义通道：{ channelId: { scope, groupIds } }
+  const [customScopes, setCustomScopes] = useState<Record<string, { scope: "all" | "groups"; groupIds: string[] }>>({});
 
   // ── 同步到 localStorage ──
   const updateChannels = (channels: CustomChannel[]) => {
@@ -386,7 +347,14 @@ export default function ChannelConfig() {
                   />
                 </div>
                 <div className="w-px h-4 bg-gray-200" />
-                <ChannelScopeIndicator />
+                <ScopePopover
+                  visibilityScope={builtinScopes[ch.id]?.scope || "all"}
+                  visibilityGroupIds={builtinScopes[ch.id]?.groupIds || []}
+                  groups={ALL_GROUPS}
+                  onSave={(scope, groupIds) => {
+                    setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                  }}
+                />
               </div>
             </div>
           ))}
@@ -474,7 +442,14 @@ export default function ChannelConfig() {
                       onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
                     />
                     <div className="w-px h-4 bg-gray-200" />
-                    <ChannelScopeIndicator />
+                    <ScopePopover
+                      visibilityScope={customScopes[ch.id]?.scope || "all"}
+                      visibilityGroupIds={customScopes[ch.id]?.groupIds || []}
+                      groups={ALL_GROUPS}
+                      onSave={(scope, groupIds) => {
+                        setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                      }}
+                    />
                     <div className="w-px h-4 bg-gray-200" />
                     {/* ⑦ 修改7：去掉编辑按钮，只保留删除 */}
                     <button

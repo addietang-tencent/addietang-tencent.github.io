@@ -40,6 +40,7 @@ import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, UserMinus,
   LayoutGrid, MessageSquare, Monitor, Copy, Users, Check, ArrowRight, ArrowLeft,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
@@ -48,6 +49,9 @@ import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclaw
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
+
+// [006] 列表分页：每页默认 30 条，与后端 GET /openclaw/list 默认 page_size 保持一致
+const PAGE_SIZE = 30;
 
 // 8 种状态配置
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
@@ -375,6 +379,9 @@ export default function MyOpenClaw() {
   // 卡片视图 Agent 类型子 Tab
   const [activeAgentTab, setActiveAgentTab] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
 
+  // [006] 当前分页页码
+  const [page, setPage] = useState(1);
+
   const [refreshingIds, setRefreshingIds] = useState<Set<string>>(new Set());
   
   // 从管控端同步的开关
@@ -473,6 +480,7 @@ export default function MyOpenClaw() {
     setRoleExpanded(false);
     setShowCreate(false);
     setCreateStep(1);
+    setPage(1); // [006] 创建后跳回第 1 页，展示刚创建的实例
     toast.success(`「${newClaw.name}」创建中...`);
   };
 
@@ -703,6 +711,11 @@ export default function MyOpenClaw() {
                 />
               ) : (() => {
                 const allClaws = claws;
+                // [006] 分页切片：先按创建时间倒序，再按当前页切出 30 条
+                const sortedClaws = [...allClaws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                const totalPages = Math.max(1, Math.ceil(sortedClaws.length / PAGE_SIZE));
+                const safePage = Math.min(page, totalPages);
+                const paginatedClaws = sortedClaws.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
                 return (
                   <div>
                     {/* 单页展示所有实例（不按 agent 类型分 Tab） */}
@@ -716,8 +729,9 @@ export default function MyOpenClaw() {
                         </Button>
                       </div>
                     ) : (
+                      <>
                       <div className="grid grid-cols-3 gap-4">
-              {[...allClaws].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((claw) => {
+              {paginatedClaws.map((claw) => {
                 const cfg = STATUS_CONFIG[claw.status as OpenClawStatus];
                 const isDisabled = cfg.isDisabled;
                 const isGrayAvatar = cfg.isGrayAvatar;
@@ -907,6 +921,45 @@ export default function MyOpenClaw() {
                 );
               })}
                     </div>
+                    {/* [006] 分页控件（对齐管控端-用户管理 MemberManagement.tsx 样式） */}
+                    <div className="mt-6 px-6 py-3 border-t border-gray-50 flex items-center justify-between">
+                      <span className="text-xs text-gray-400">共 {sortedClaws.length} 个实例，第 {safePage} / {totalPages} 页</span>
+                      {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          {(() => {
+                            const pages: (number | string)[] = [];
+                            if (totalPages <= 7) {
+                              for (let i = 1; i <= totalPages; i++) pages.push(i);
+                            } else {
+                              pages.push(1);
+                              if (safePage > 3) pages.push("...");
+                              for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
+                              if (safePage < totalPages - 2) pages.push("...");
+                              pages.push(totalPages);
+                            }
+                            return pages.map((p, idx) =>
+                              typeof p === "string" ? (
+                                <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
+                              ) : (
+                                <button
+                                  key={p}
+                                  className={`h-7 w-7 rounded-md text-xs font-medium transition-colors ${p === safePage ? "text-white" : "text-gray-500 hover:bg-gray-100"}`}
+                                  style={p === safePage ? { background: "#007AFF" } : undefined}
+                                  onClick={() => setPage(p as number)}
+                                >{p}</button>
+                              )
+                            );
+                          })()}
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}>
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    </>
                   )}
                   </div>
                 );

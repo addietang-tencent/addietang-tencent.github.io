@@ -676,6 +676,18 @@ export default function ChatView({
   const effectiveClaws = useMemo(() => claws.map(applyDemoBrowserMockFields), [claws]);
   const sortedClaws = [...effectiveClaws].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
 
+  // [006] 侧栏列表无限滚动：每次加载 30 条，滚动到底自动加载下一批
+  const SIDEBAR_PAGE_SIZE = 30;
+  const [sidebarLoadedCount, setSidebarLoadedCount] = useState(SIDEBAR_PAGE_SIZE);
+  const [sidebarIsLoadingMore, setSidebarIsLoadingMore] = useState(false);
+  const sidebarSentinelRef = useRef<HTMLDivElement>(null);
+  // 侧栏当前已渲染的 claws（按时间倒序，扁平不分组，本期改造点）
+  const sidebarVisibleClaws = useMemo(
+    () => sortedClaws.slice(0, sidebarLoadedCount),
+    [sortedClaws, sidebarLoadedCount]
+  );
+  const sidebarHasMore = sidebarVisibleClaws.length < sortedClaws.length;
+
   const [selectedClawId, setSelectedClawId] = useState<string | null>(() => {
     if (sortedClaws.length === 0) return null;
     // 默认选中第一个 OpenClaw 类型的实例，没有则选第一个
@@ -753,6 +765,37 @@ export default function ChatView({
   useEffect(() => {
     clawsRef.current = effectiveClaws;
   }, [effectiveClaws]);
+
+  // [006] 列表数据变化时（如新建 / 删除），重置侧栏分页到首批
+  useEffect(() => {
+    setSidebarLoadedCount(SIDEBAR_PAGE_SIZE);
+  }, [effectiveClaws.length]);
+
+  // [006] 侧栏无限滚动：哨兵元素进入视口时加载下一批
+  // 注：showFullListSidebar 在 1937 行才声明，这里不能依赖；侧栏未显示时哨兵未挂载，sentinel 为 null 会自动 early return
+  useEffect(() => {
+    if (!sidebarHasMore) return;
+    const sentinel = sidebarSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && sidebarHasMore && !sidebarIsLoadingMore) {
+          setSidebarIsLoadingMore(true);
+          // 模拟一小段加载时间，让转圈圈可见；接入真实后端接口时改为 await fetchList(nextPage) 后再 setLoadedCount
+          window.setTimeout(() => {
+            setSidebarLoadedCount((prev) => prev + SIDEBAR_PAGE_SIZE);
+            setSidebarIsLoadingMore(false);
+          }, 300);
+        }
+      },
+      { rootMargin: "100px" } // 提前 100px 触发，体验更顺滑
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [sidebarHasMore, sidebarIsLoadingMore]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1972,15 +2015,8 @@ export default function ChatView({
               </div>
             ) : (
               <div>
-                {(() => {
-                  const sidebarGroups: { key: string; label: string; items: typeof sortedClaws }[] = [
-                    { key: "openclaw", label: "OpenClaw", items: sortedClaws.filter(c => !c.agentType || c.agentType === "openclaw") },
-                    { key: "hermes", label: "Hermes", items: sortedClaws.filter(c => c.agentType === "hermes") },
-                    { key: "lightclawace", label: "LightclawACE", items: sortedClaws.filter(c => c.agentType === "lightclawace") },
-                  ].filter(g => g.items.length > 0);
-                  return sidebarGroups.map(group => (
-                    <div key={group.key}>
-                      {group.items.map((claw) => {
+                {/* [006] 侧栏列表：扁平按时间倒序 + 无限滚动分批加载（每批 30 条） */}
+                {sidebarVisibleClaws.map((claw) => {
                   const isSelected = claw.id === selectedClawId;
                   const isConfigEnabled = claw.status === "running";
                   const isNonOpenclaw = claw.agentType === "hermes" || claw.agentType === "lightclawace";
@@ -2158,9 +2194,24 @@ export default function ChatView({
                     </Tooltip>
                   );
                 })}
-                    </div>
-                  ));
-                })()}
+                {/* [006] 滚动哨兵 + 加载状态 */}
+                {sidebarHasMore && (
+                  <div ref={sidebarSentinelRef} className="py-3 flex items-center justify-center">
+                    {sidebarIsLoadingMore ? (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                        加载中...
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-300">下滑加载更多</span>
+                    )}
+                  </div>
+                )}
+                {!sidebarHasMore && sortedClaws.length > SIDEBAR_PAGE_SIZE && (
+                  <div className="py-3 text-center">
+                    <span className="text-xs text-gray-300">已加载全部 {sortedClaws.length} 个 Agent</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

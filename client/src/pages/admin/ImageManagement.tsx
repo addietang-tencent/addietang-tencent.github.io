@@ -89,6 +89,7 @@ const NATIVE_KERNEL_NOTICE_LINES = [
   "1. 员工端需要登录\"终端\"配置模型/通道/技能，不支持管控台快捷配置；",
   "2. 管控端部分功能不可用：如 Agent 工具库、记忆管理、网盘管理、运维观测、AI Agent 安全、会话管理 等功能将不可用",
 ];
+// 注：上方 TITLE 与 LINES 同时被「Agent 类型卡片温馨提示」与「添加自定义 Agent 类型」弹窗复用，文案保持一致
 
 /** 把任意类型名称转为唯一英文 value（slug） */
 function nameToValue(name: string): string {

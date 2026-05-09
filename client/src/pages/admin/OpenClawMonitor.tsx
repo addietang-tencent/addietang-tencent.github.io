@@ -1103,16 +1103,22 @@ export default function AgentMonitor() {
   };
 
   // 详情抽屉模拟数据
+  interface AppliedModelItem {
+    name: string;
+    version: string;
+    isPrimary: boolean;
+  }
   interface ClawDetail {
-    appliedModel: string;
-    appliedModelVersion: string;
+    appliedModels: AppliedModelItem[];
     connectedChannels: { name: string; bots: string[] }[];
     installedSkills: string[];
   }
   const getClawDetail = (_clawId: string): ClawDetail => {
     return {
-      appliedModel: "tencentcodingplan",
-      appliedModelVersion: "minimax-m2.5",
+      appliedModels: [
+        { name: "自定义模型", version: "azure-gpt-5.4", isPrimary: true },
+        { name: "腾讯云 DeepSeek", version: "deepseek-v3.2", isPrimary: false },
+      ],
       connectedChannels: [
         { name: "飞书", bots: [] },
       ],
@@ -2379,10 +2385,33 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已应用模型 */}
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">已应用模型</div>
-                  <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200">
-                    <div className="text-sm font-semibold text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
-                    <div className="text-xs text-gray-400 mt-1">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
+                  <div className="text-sm text-gray-500 mb-2">
+                    已应用模型（{getClawDetail(selectedClaw.id).appliedModels.length}）
+                  </div>
+                  <div className="space-y-2">
+                    {/* 主模型 */}
+                    {getClawDetail(selectedClaw.id).appliedModels.filter(m => m.isPrimary).map((model) => (
+                      <div key={model.version} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{model.name}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{model.version}</div>
+                        </div>
+                        <span className="flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-100 rounded-full px-2.5 py-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                          主模型
+                        </span>
+                      </div>
+                    ))}
+                    {/* 备选模型 */}
+                    {getClawDetail(selectedClaw.id).appliedModels.filter(m => !m.isPrimary).map((model) => (
+                      <div key={model.version} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{model.name}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{model.version}</div>
+                        </div>
+                        <span className="flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 rounded-full px-2.5 py-1">备选模型</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 {/* 已接入通道 */}

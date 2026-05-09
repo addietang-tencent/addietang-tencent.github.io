@@ -1900,7 +1900,11 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
 }
 
 export default function SecurityGroupManagement() {
-  const [activeTab, setActiveTab] = useState("security");
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    return tab === "vpc" ? "vpc" : "security";
+  });
   const initialDefaultSecurityGroup = getInitialDefaultSecurityGroup();
 
   // 安全组状态

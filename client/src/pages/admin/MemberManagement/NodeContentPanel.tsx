@@ -1144,7 +1144,8 @@ export default function NodeContentPanel({
                 }
                 setAgentInstanceDialog(null);
                 if (agentInstanceChoice === "delete") {
-                  window.location.href = "/admin/openclaw-monitor?filter=pending-delete";
+                  const ids = agentInstanceDialog?.instances.map(i => i.id).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
                 }
               }}
             >

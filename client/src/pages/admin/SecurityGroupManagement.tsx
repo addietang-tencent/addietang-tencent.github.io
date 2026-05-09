@@ -2,12 +2,11 @@
  * SecurityGroupManagement - 管控端网络管理页
  * 采用 Tab 结构：私有网络和子网、安全组、公网、更多功能
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -18,15 +17,239 @@ import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, RefreshCw, Network, ExternalLink, Wifi, Lock, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, ArrowRight, Search, X, AlertTriangle, ShieldCheck, ListChecks } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Switch } from "@/components/ui/switch";
+// 与「模型配置 · 应用范围」对齐：共享 MemberManagement 的分组 mock，
+//   - 列表行 badge 渲染完整分组路径
+//   - 应用范围 Popover 使用同款树形多选（按 source 分桶 + 父子级联）
+import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+import {
+  MOCK_GROUPS as MOCK_ONEID_GROUPS_SHARED,
+  MOCK_MANUAL_GROUPS as MOCK_MANUAL_GROUPS_SHARED,
+} from "./MemberManagement/mock";
 
-// ─── Mock 数据 ────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// types / interfaces
+// ─────────────────────────────────────────────────────────────────────────────
 
-// 迁移影响范围 Mock 数据
+// ─── 子网 / VPC ──────────────────────────────────────────────────────────────
+
+type SubnetEntity = {
+  id: string;
+  name: string;
+  cidr: string;
+  totalIp: number;
+  remainingIp: number;
+};
+
+type VpcListItemType = "enterprise" | "group";
+
+type VpcListItem = {
+  id: string;
+  vpcId: string;
+  vpcName: string;
+  cidr: string;
+  type: VpcListItemType;
+  // 应用范围：企业级（全局）固定为空数组；用户组类型支持多选，存用户组名数组
+  associatedGroups: string[];
+  subnetStrategy: "auto" | "specified";
+  // 指定子网模式下，按可用区分组的子网 ID 列表；未分配该可用区则为空数组
+  zoneSubnets: Record<string, string[]>;
+  instanceCount: number;
+};
+
+// ─── 安全组 ──────────────────────────────────────────────────────────────────
+
+type CloudSg = {
+  sgId: string;
+  cloudSgName: string;
+  seq: number; // 1, 2, 3... 第 1 个是原生，≥2 为自动扩容
+};
+
+type SecurityGroup = {
+  // [004] ClawPro 安全组对外不暴露 ID，name 作为企业内唯一标识 + 主键
+  //   - 跨企业唯一性由 identifier + name 联合保证（identifier 由登录态隐式提供）
+  //   - 前后端 API 全部以 name 作为参数（不再使用 sg.id）
+  //   - 创建后 name 不可修改（避免重命名传播代价）
+  name: string;
+  remark: string;
+  inboundCount: number;
+  outboundCount: number;
+  inboundRules: Rule[];
+  outboundRules: Rule[];
+  // [004] 该 ClawPro 安全组对应的云端安全组列表
+  cloudSgs: CloudSg[];
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // [004 · K12 · K13] v2.0 用户管理 & 应用范围 预留字段（本期不使用）
+  //
+  // 后端 security_groups 表在 004 建表时已预留以下字段，默认值保证本期
+  // 行为不变。v2.0 激活"多条安全组 × 应用范围（分组）"能力时：
+  //   - 只需在已有行上更新这几个字段 + 新增几行 SG 记录
+  //   - 不需要 alter table、不需要改 API schema、不需要改前端数据契约
+  //
+  // 规则 K13：004 本期前端代码**不读写**这 3 个字段（如后端响应返回也忽略）
+  // 未来 v2.0 前端代码可直接消费这些字段，本类型声明已为其预留位置
+  //
+  // scope_type:           "all" | "filtered"        DEFAULT "all"
+  //   - all:      全企业生效（本期唯一取值）
+  //   - filtered: 仅指定分组生效（v2.0 启用）
+  // scope_group_ids:      string[]                  DEFAULT []
+  //   - 仅 scope_type=filtered 时有意义
+  // is_platform_default:  boolean                   DEFAULT true
+  //   - v2.0 多条 SG 共存时，标记哪一条是"平台兜底"
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // scope_type?: "all" | "filtered";    // v2.0 启用，本期不使用
+  // scope_group_ids?: string[];          // v2.0 启用，本期不使用
+  // is_platform_default?: boolean;       // v2.0 启用，本期不使用
+};
+
+// ─── 独立化升级状态 ────────────────────────────────────────────────────────────
+
+// [004] 独立化升级状态（站点级，非 SG 级）
+// 模拟后端 GET /admin/config/security-group 返回的 ClawPro namespace 字段
+type MigrationStatus = {
+  isLegacyMigrated: boolean;        // 本企业是否经历过独立化升级（存量=true，新建=false）
+  ackedByCurrentAdmin: boolean;     // 当前管理员是否已关闭过蓝条
+  legacySgId?: string;              // 原 sg-legacy（仅 isLegacyMigrated=true）
+  agentCountAtMigration?: number;   // 迁移时的 Agent 数量快照（蓝条文案用）
+};
+
+// ─── 规则 ────────────────────────────────────────────────────────────────────
+
+type Rule = {
+  id: string;
+  source: string;
+  protocol: string;
+  port: string;
+  policy: string;
+  remark: string;
+};
+
+type RuleTableBodyProps = {
+  rules: Rule[];
+  type: "inbound" | "outbound";
+  readonly?: boolean;
+  onEdit?: (rule: Rule, type: "inbound" | "outbound") => void;
+  onDelete?: (rule: Rule, type: "inbound" | "outbound") => void;
+  paginate?: boolean;
+};
+
+type CommonRuleOptionKey = "allow-public" | "allow-ssh";
+
+type CommonRuleOption = {
+  key: CommonRuleOptionKey;
+  label: string;
+  description: string;
+  defaultChecked: boolean;
+  rules: {
+    inbound: Array<Omit<Rule, "id">>;
+    outbound: Array<Omit<Rule, "id">>;
+  };
+};
+
+// ─── 树形多选辅助 ─────────────────────────────────────────────────────────────
+
+type CheckState = "checked" | "unchecked" | "indeterminate";
+
+// ─── Dialog Props ───────────────────────────────────────────────────────────
+
+type CreateSecurityGroupDialogProps = {
+  open: boolean;
+  checkedOptions: CommonRuleOptionKey[];
+  draft: {
+    name: string;
+    remark: string;
+  };
+  previewTab: "inbound" | "outbound";
+  onOpenChange: (open: boolean) => void;
+  onOptionToggle: (optionKey: CommonRuleOptionKey, checked: boolean) => void;
+  onNameChange: (name: string) => void;
+  onRemarkChange: (remark: string) => void;
+  onPreviewTabChange: (tab: "inbound" | "outbound") => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+type SelectExistingSecurityGroupDialogProps = {
+  open: boolean;
+  searchKeyword: string;
+  selectedSecurityGroup: SecurityGroup | null;
+  previewTab: "outbound" | "inbound";
+  candidateSecurityGroups: SecurityGroup[];
+  candidatePage: number;
+  candidateTotalPages: number;
+  shouldShowPanelAccessAssist: boolean;
+  isPanelAccessStaged: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSearchChange: (value: string) => void;
+  onClearSearch: () => void;
+  onSelectSecurityGroup: (sg: SecurityGroup) => void;
+  onCandidatePageChange: (page: number) => void;
+  onTogglePanelAccessStaged: () => void;
+  onPreviewTabChange: (tab: "outbound" | "inbound") => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── 可用区 ─────────────────────────────────────────────────────────────────
+
+const AVAILABLE_ZONES = ["广州五区", "广州六区", "广州七区"];
+const AUTO_ASSIGNED_VPC = { id: "vpc-jp7fjg13", name: "clawpro/default-vpc", cidr: "10.0.0.0/16" };
+const NEW_GROUP_VPC_ID = "__new_group_vpc__";
+
+// ─── 默认安全组身份 ───────────────────────────────────────────────────────────
+
+const INITIAL_DEFAULT_SECURITY_GROUP_NAME = "ClawPro-Default";
+const ENABLE_SECURITY_GROUP_EMPTY_STATE_DEMO = true;
+
+// [004] ClawPro 默认安全组在云端的标准命名（K4 约定：clawpro-sg-{域名}-default-{序号}）
+//       与 INITIAL_DEFAULT_SECURITY_GROUP_NAME 语义不同：
+//         - INITIAL_DEFAULT_SECURITY_GROUP_NAME：ClawPro 安全组的对外 name（用户可见）
+//         - DEFAULT_CLOUD_SECURITY_GROUP_NAME：对应到云端那一片云端安全组的 name（云端命名空间）
+const DEFAULT_CLOUD_SECURITY_GROUP_NAME = "clawpro-sg-acme-default-01";
+
+// ─── localStorage key ──────────────────────────────────────────────────────
+
+// 默认安全组的本地快照 key：供平台策略页等其他管理员页面只读消费（单向同步）。
+const DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY = "admin_default_security_group_snapshot";
+// [004] 独立化升级状态本地快照 key：模拟"管理员关闭蓝条"的持久化行为
+const MIGRATION_ACK_STORAGE_KEY = "admin_sg_migration_ack";
+
+// ─── 平台策略联动 ─────────────────────────────────────────────────────────────
+
+const DEFAULT_PANEL_ACCESS_PORT = "443";
+
+// ─── 选择安全组弹窗 ───────────────────────────────────────────────────────────
+
+const SECURITY_GROUP_DIALOG_PAGE_SIZE = 5;
+
+// ─── ClawPro 安全组命名规范 ─────────────────────────────────────────────────
+
+// [004] ClawPro 安全组名称命名规范（与后端 + 平台策略页保持一致）
+//   - 首字符必须是字母（大小写均可）
+//   - 中间允许字母、数字、短横线
+//   - 末字符必须是字母或数字（不允许以短横线结尾）
+//   - 总长 3–32 个字符
+const CLAWPRO_SG_NAME_REGEX = /^[A-Za-z][a-zA-Z0-9-]{1,30}[a-zA-Z0-9]$/;
+// 命名规则（非法态红色错误、提交 toast 复用此简短版本）
+const CLAWPRO_SG_NAME_RULE = "支持字母、数字、短横线，以字母开头，3–32 个字符";
+// 完整 hint（合法态灰字提示：规则 + 命名特点）
+const CLAWPRO_SG_NAME_HINT = `${CLAWPRO_SG_NAME_RULE}；创建后不可修改，对应的云端安全组由 ClawPro 自动创建并命名。`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// mock data / 初始化数据
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── 迁移影响范围 Mock 数据 ────────────────────────────────────────────────────
+
 const MIGRATION_INSTANCES = [
   { user: "alice@acompany.com", instance: "openclaw-alice-01", currentNet: "vpc-aa1 / subnet-aa1", targetNet: "vpc-jp7fjg13 / subnet-gz5-001", note: "可迁移" },
   { user: "alice@acompany.com", instance: "openclaw-alice-02", currentNet: "vpc-aa1 / subnet-aa1", targetNet: "vpc-jp7fjg13 / subnet-gz5-001", note: "暂不支持迁移：已绑定负载均衡" },
@@ -49,6 +272,8 @@ const MIGRATION_FAILURE_SCENARIOS: Record<string, { step: string; reason: string
   },
 };
 
+// ─── 默认安全组规则（入站/出站） ──────────────────────────────────────────────
+
 const DEFAULT_INBOUND = [
   { id: "1", source: "0.0.0.0/0", protocol: "ICMP", port: "ALL", policy: "允许", remark: "放通 Ping 服务" },
   { id: "2", source: "::/0", protocol: "ICMPv6", port: "ALL", policy: "允许", remark: "放通 Ping 服务（IPv6）" },
@@ -70,20 +295,7 @@ const DEFAULT_OUTBOUND = [
   { id: "2", source: "0.0.0.0/0", protocol: "ALL", port: "ALL", policy: "拒绝", remark: "" },
 ];
 
-// 系统分配的可用区
-const AVAILABLE_ZONES = ["广州五区", "广州六区", "广州七区"];
-
-// 系统自动分配的 VPC（模拟后端返回的实际生效资源）
-const AUTO_ASSIGNED_VPC = { id: "vpc-jp7fjg13", name: "clawpro/default-vpc", cidr: "10.0.0.0/16" };
-
-// 子网实体类型（对齐后端接口：remaining_ip / total_ip 字段已转为驼峰）
-type SubnetEntity = {
-  id: string;
-  name: string;
-  cidr: string;
-  totalIp: number;
-  remainingIp: number;
-};
+// ─── 子网 / VPC ──────────────────────────────────────────────────────────────
 
 // 系统自动分配的子网（按可用区，模拟后端返回的实际生效资源）
 const AUTO_ASSIGNED_SUBNETS: Record<string, SubnetEntity> = {
@@ -130,59 +342,6 @@ const MOCK_SUBNETS: Record<string, SubnetEntity[]> = {
 //       · 序号 01：与 ClawPro 安全组同名（管理员自定义或导入而来）
 //       · 序号 ≥02：ClawPro 自动命名为 clawpro-sg-{域名}-{分组slug|default}-{序号}
 //   - seq: 云端分片序号（01/02/03...），UI 不露出 base/shard 术语，只用序号
-type CloudSg = {
-  sgId: string;
-  cloudSgName: string;
-  seq: number; // 1, 2, 3... 第 1 个是原生，≥2 为自动扩容
-};
-
-type SecurityGroup = {
-  // [004] ClawPro 安全组对外不暴露 ID，name 作为企业内唯一标识 + 主键
-  //   - 跨企业唯一性由 identifier + name 联合保证（identifier 由登录态隐式提供）
-  //   - 前后端 API 全部以 name 作为参数（不再使用 sg.id）
-  //   - 创建后 name 不可修改（避免重命名传播代价）
-  name: string;
-  remark: string;
-  inboundCount: number;
-  outboundCount: number;
-  inboundRules: Rule[];
-  outboundRules: Rule[];
-  // [004] 该 ClawPro 安全组对应的云端安全组列表
-  cloudSgs: CloudSg[];
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // [004 · K12 · K13] v2.0 用户管理 & 应用范围 预留字段（本期不使用）
-  //
-  // 后端 security_groups 表在 004 建表时已预留以下字段，默认值保证本期
-  // 行为不变。v2.0 激活"多条安全组 × 应用范围（分组）"能力时：
-  //   - 只需在已有行上更新这几个字段 + 新增几行 SG 记录
-  //   - 不需要 alter table、不需要改 API schema、不需要改前端数据契约
-  //
-  // 规则 K13：004 本期前端代码**不读写**这 3 个字段（如后端响应返回也忽略）
-  // 未来 v2.0 前端代码可直接消费这些字段，本类型声明已为其预留位置
-  //
-  // scope_type:           "all" | "filtered"        DEFAULT "all"
-  //   - all:      全企业生效（本期唯一取值）
-  //   - filtered: 仅指定分组生效（v2.0 启用）
-  // scope_group_ids:      string[]                  DEFAULT []
-  //   - 仅 scope_type=filtered 时有意义
-  // is_platform_default:  boolean                   DEFAULT true
-  //   - v2.0 多条 SG 共存时，标记哪一条是"平台兜底"
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // scope_type?: "all" | "filtered";    // v2.0 启用，本期不使用
-  // scope_group_ids?: string[];          // v2.0 启用，本期不使用
-  // is_platform_default?: boolean;       // v2.0 启用，本期不使用
-};
-
-// [004] 独立化升级状态（站点级，非 SG 级）
-// 模拟后端 GET /admin/config/security-group 返回的 ClawPro namespace 字段
-type MigrationStatus = {
-  isLegacyMigrated: boolean;        // 本企业是否经历过独立化升级（存量=true，新建=false）
-  ackedByCurrentAdmin: boolean;     // 当前管理员是否已关闭过蓝条
-  legacySgId?: string;              // 原 sg-legacy（仅 isLegacyMigrated=true）
-  agentCountAtMigration?: number;   // 迁移时的 Agent 数量快照（蓝条文案用）
-};
-
 const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
   {
     name: "ClawPro-Default",
@@ -194,7 +353,7 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
     // [004] 默认主（存量迁移场景）：ClawPro 迁移时自动创建的第 1 片使用
     //       clawpro-sg-{域名}-default-{序号} 命名约定，实例超 2000 扩出第 2/3 片
     cloudSgs: [
-      { sgId: "sg-cur00001", cloudSgName: "clawpro-sg-acme-default-01", seq: 1 },
+      { sgId: "sg-cur00001", cloudSgName: DEFAULT_CLOUD_SECURITY_GROUP_NAME, seq: 1 },
       { sgId: "sg-eqei0gwz", cloudSgName: "clawpro-sg-acme-default-02", seq: 2 },
       { sgId: "sg-ca78qfkx", cloudSgName: "clawpro-sg-acme-default-03", seq: 3 },
     ],
@@ -339,38 +498,7 @@ const MOCK_SECURITY_GROUP_DIALOG_CANDIDATES = [
   ...MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES,
 ];
 
-// ─── 类型定义 ─────────────────────────────────────────────────────────────────
-
-type Rule = {
-  id: string;
-  source: string;
-  protocol: string;
-  port: string;
-  policy: string;
-  remark: string;
-};
-
-type RuleTableBodyProps = {
-  rules: Rule[];
-  type: "inbound" | "outbound";
-  readonly?: boolean;
-  onEdit?: (rule: Rule, type: "inbound" | "outbound") => void;
-  onDelete?: (rule: Rule, type: "inbound" | "outbound") => void;
-  paginate?: boolean;
-};
-
-type CommonRuleOptionKey = "allow-public" | "allow-ssh";
-
-type CommonRuleOption = {
-  key: CommonRuleOptionKey;
-  label: string;
-  description: string;
-  defaultChecked: boolean;
-  rules: {
-    inbound: Array<Omit<Rule, "id">>;
-    outbound: Array<Omit<Rule, "id">>;
-  };
-};
+// ─── 常用规则选项 ─────────────────────────────────────────────────────────────
 
 const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
   {
@@ -425,20 +553,127 @@ const COMMON_RULE_OPTIONS: CommonRuleOption[] = [
   },
 ];
 
-const INITIAL_DEFAULT_SECURITY_GROUP_NAME = "ClawPro-Default";
-const ENABLE_SECURITY_GROUP_EMPTY_STATE_DEMO = true;
+// ─── 用户组 / 分组共享数据 ─────────────────────────────────────────────────────
 
-// 默认安全组的本地快照 key：供平台策略页等其他管理员页面只读消费（单向同步）。
-const DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY = "admin_default_security_group_snapshot";
+// 与「模型配置」对齐：合并 OneID + 自建分组作为完整分组树数据源。
+// 应用范围 Popover、列表 badge 渲染、新增/编辑用户组配置都以此为分组数据源。
+const ALL_GROUPS_SHARED: UserGroup[] = [...MOCK_ONEID_GROUPS_SHARED, ...MOCK_MANUAL_GROUPS_SHARED];
 
-// [004] 独立化升级状态本地快照 key：模拟"管理员关闭蓝条"的持久化行为
-const MIGRATION_ACK_STORAGE_KEY = "admin_sg_migration_ack";
+// ─── VPC × 可用区 × 子网映射 ────────────────────────────────────────────────
+
+const VPC_ZONE_SUBNETS: Record<string, Record<string, string[]>> = {
+  "vpc-jp7fjg13": {
+    "广州五区": ["subnet-nvupa1uw", "subnet-f7t69gji"],
+    "广州六区": ["subnet-h8u80hkj"],
+    "广州七区": ["subnet-p9q0r1st"],
+  },
+  "vpc-9lyx5t8h": {
+    "广州五区": ["subnet-gaclgbzu"],
+    "广州六区": [],
+    "广州七区": [],
+  },
+  "vpc-ri7mmw6n": {
+    "广州五区": ["subnet-mn3op5qr"],
+    "广州六区": ["subnet-st6uv7wx"],
+    "广州七区": [],
+  },
+  "vpc-ab3cd4ef": {
+    "广州五区": ["subnet-yz9ab1cd"],
+    "广州六区": [],
+    "广州七区": [],
+  },
+};
+
+// ─── 初始 VPC 列表 ────────────────────────────────────────────────────────────
+
+const INITIAL_VPC_LIST: VpcListItem[] = [
+  {
+    id: "vpc-row-001",
+    vpcId: "vpc-jp7fjg13",
+    vpcName: "企业默认网络",
+    cidr: "10.0.0.0/16",
+    type: "enterprise",
+    associatedGroups: [],
+    subnetStrategy: "auto",
+    zoneSubnets: { "广州五区": [], "广州六区": [], "广州七区": [] },
+    instanceCount: 36,
+  },
+  {
+    id: "vpc-row-002",
+    vpcId: "vpc-9lyx5t8h",
+    vpcName: "研发组网络",
+    cidr: "10.1.0.0/16",
+    type: "group",
+    associatedGroups: ["研发组"],
+    subnetStrategy: "specified",
+    zoneSubnets: { "广州五区": ["subnet-gaclgbzu"], "广州六区": [], "广州七区": [] },
+    instanceCount: 12,
+  },
+  {
+    id: "vpc-row-003",
+    vpcId: "vpc-ri7mmw6n",
+    vpcName: "产品组网络",
+    cidr: "10.2.0.0/16",
+    type: "group",
+    associatedGroups: ["产品组"],
+    subnetStrategy: "specified",
+    zoneSubnets: { "广州五区": ["subnet-mn3op5qr"], "广州六区": ["subnet-st6uv7wx"], "广州七区": [] },
+    instanceCount: 8,
+  },
+];
+
+// [Mock] 演示空态：URL 带 ?state=empty 时，列表初始仅保留预设策略（type === "enterprise"）一行，
+// 用于展示"新建企业首次进入网络管理"的初始体验。仅作用于 vpcList，不联动其他 mock 状态。
+function getInitialVpcList(): VpcListItem[] {
+  if (typeof window === "undefined") return INITIAL_VPC_LIST;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("state") === "empty") {
+      return INITIAL_VPC_LIST.filter((v) => v.type === "enterprise");
+    }
+  } catch {
+    /* SSR / 非 URL 环境兜底 */
+  }
+  return INITIAL_VPC_LIST;
+}
+
+// ─── Tab 定义 ───────────────────────────────────────────────────────────────
+
+const TABS = [
+  {
+    id: "vpc",
+    label: "私有网络和子网",
+    description: "配置 Agent 实例的私有网络和子网部署策略。",
+  },
+  {
+    id: "security",
+    label: "安全组",
+    description: "配置 ClawPro 安全组的入站与出站规则，管控 Agent 云服务器的网络流量策略。",
+  },
+  {
+    id: "public",
+    label: "公网",
+    description: "配置 Agent 云服务器的公网 IP 和带宽策略。用户组公网配置优先于默认公网配置。",
+  },
+  {
+    id: "coming",
+    label: "更多功能",
+    description: "更多功能即将上线。",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 纯工具函数
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── 迁移状态 ────────────────────────────────────────────────────────────────
 
 // [004] Mock: 根据 URL query 切换不同场景，便于 vibecoding 演示
-//   - 默认（无 query）：存量企业 · 蓝条可见（优先读 localStorage ack 状态）
-//   - ?state=unacked：存量企业 · 强制未 ack（忽略 localStorage，演示用）
-//   - ?state=acked：存量企业 · 强制已 ack（忽略 localStorage，演示用）
-//   - ?state=new：新建企业 · 无迁移
+//   - 默认（无 query）：新建企业 · 无迁移（迁移条不显示）
+//   - ?state=migrate：存量企业 · 强制未 ack（显示迁移条 + 完整迁移流程）
+//   - ?state=unacked：[Legacy] 存量企业 · 强制未 ack（=migrate，向后兼容）
+//   - ?state=acked：  [Legacy] 存量企业 · 强制已 ack（保留以演示已确认态）
+//   - ?state=new：    [Legacy] 新建企业 · 无迁移（=默认，向后兼容）
 function getInitialMigrationStatus(): MigrationStatus {
   if (typeof window === "undefined") {
     return { isLegacyMigrated: false, ackedByCurrentAdmin: false };
@@ -446,23 +681,20 @@ function getInitialMigrationStatus(): MigrationStatus {
   const params = new URLSearchParams(window.location.search);
   const state = params.get("state");
 
-  if (state === "new") {
+  // 无 state / state=new：新建企业，无迁移条
+  if (state === null || state === "new") {
     return { isLegacyMigrated: false, ackedByCurrentAdmin: false };
   }
 
-  // ack 判定优先级：URL 强制 > localStorage > 默认未 ack
-  //   - ?state=unacked → 强制未 ack（无视 localStorage，保证每次看得到迁移告知）
-  //   - ?state=acked   → 强制已 ack（无视 localStorage）
-  //   - 无 state 参数   → 按 localStorage（真实用户行为）
-  let ackedByCurrentAdmin: boolean;
-  if (state === "unacked") {
-    ackedByCurrentAdmin = false;
-  } else if (state === "acked") {
-    ackedByCurrentAdmin = true;
-  } else {
-    ackedByCurrentAdmin =
-      window.localStorage.getItem(MIGRATION_ACK_STORAGE_KEY) === "true";
+  // 仅 migrate / unacked / acked 走存量企业分支；其他未识别 state（如 empty）→ 同默认无迁移
+  if (state !== "migrate" && state !== "unacked" && state !== "acked") {
+    return { isLegacyMigrated: false, ackedByCurrentAdmin: false };
   }
+
+  // ack 判定：
+  //   - migrate / unacked → 强制未 ack（演示完整迁移流程）
+  //   - acked             → 强制已 ack（演示已确认态）
+  const ackedByCurrentAdmin = state === "acked";
 
   return {
     isLegacyMigrated: true,
@@ -472,6 +704,8 @@ function getInitialMigrationStatus(): MigrationStatus {
     agentCountAtMigration: 127,
   };
 }
+
+// ─── 安全组 id 与查找 ─────────────────────────────────────────────────────────
 
 // [004] 生成符合云端格式的 sgId：sg- + 8 位随机字符（小写字母 + 数字）
 //   云端真实 sg-id 格式：sg- 后接 8 位字符（如 sg-eqei0gwz）
@@ -556,7 +790,7 @@ function getInitialDefaultSecurityGroup(): SecurityGroup | null {
 
 // 写入默认安全组快照：currentSg 为 null 时清除 key。
 // [004] 快照需持久化 ClawPro 安全组的完整身份（含 cloudSgs / remark / outboundRules），
-//       否则刷新后若快照 id 不在 MOCK 里，身份信息会丢失（B15 违约）。
+//       否则刷新后若快照 name 不在 MOCK 里，身份信息会丢失（B15 违约）。
 function writeDefaultSecurityGroupSnapshot(
   currentSg: SecurityGroup | null,
   inboundRules: Rule[],
@@ -575,6 +809,8 @@ function writeDefaultSecurityGroupSnapshot(
   localStorage.setItem(DEFAULT_SECURITY_GROUP_SNAPSHOT_KEY, JSON.stringify(snapshot));
 }
 
+// ─── 规则比较 / 构造 ──────────────────────────────────────────────────────────
+
 function isSameRuleContent(rule: Omit<Rule, "id">, expectedRule: Omit<Rule, "id">) {
   return (
     rule.source === expectedRule.source &&
@@ -582,17 +818,6 @@ function isSameRuleContent(rule: Omit<Rule, "id">, expectedRule: Omit<Rule, "id"
     rule.port === expectedRule.port &&
     rule.policy === expectedRule.policy &&
     rule.remark === expectedRule.remark
-  );
-}
-
-function hasCommonRulePreviewRule(rules: Rule[], optionKey: CommonRuleOptionKey, direction: "inbound" | "outbound") {
-  const option = COMMON_RULE_OPTIONS.find((item) => item.key === optionKey);
-  if (!option) {
-    return false;
-  }
-
-  return option.rules[direction].some((expectedRule) =>
-    rules.some((rule) => isSameRuleContent(rule, expectedRule))
   );
 }
 
@@ -626,7 +851,7 @@ function buildRulesFromOptions(checkedKeys: CommonRuleOptionKey[]) {
   };
 }
 
-const DEFAULT_PANEL_ACCESS_PORT = "443";
+// ─── 平台策略联动（面板访问规则） ───────────────────────────────────────────
 
 function buildPanelAccessRequiredRules(panelAccessPort: string): Array<Omit<Rule, "id">> {
   return [
@@ -702,103 +927,148 @@ function buildSecurityGroupWithPanelAccessRules(securityGroup: SecurityGroup, pa
   };
 }
 
-type NetworkConfig = {
-  vpcId: string;
-  // 每个可用区可配置一个或多个子网槽位；值可为：
-  //   - "auto"：自动分配 VPC 下的占位
-  //   - "none"：不分配（独占，不能与具体子网并存）
-  //   - "__pending__"：用户点击"+ 添加子网"后新增但尚未选择具体子网的占位（待选态）
-  //   - 具体 subnet-id
-  // 不变式：同一可用区 slots 内不会出现重复的具体 subnet-id；至少保留 1 个 slot
-  zoneSubnets: Record<string, string[]>;
-};
+// ─── ClawPro 安全组命名校验 ───────────────────────────────────────────────────
 
-// 子网 Slot 的"待选中"哨兵值：新增 Slot 时使用，保存前必须由用户选定具体子网
-const SUBNET_PENDING = "__pending__";
-
-// ─── Tab 定义 ──────────────────────────────────────────────
-
-const TABS = [
-  {
-    id: "vpc",
-    label: "私有网络和子网",
-    description: "配置 Agent 云服务器的私有网络和子网部署策略。",
-  },
-  {
-    id: "security",
-    label: "安全组",
-    description: "配置 ClawPro 安全组的入站与出站规则，管控 Agent 云服务器的网络流量策略。",
-  },
-  {
-    id: "public",
-    label: "公网",
-    description: "配置 Agent 云服务器的公网 IP 和带宽策略。",
-  },
-  {
-    id: "coming",
-    label: "更多功能",
-    description: "更多功能即将上线。",
-  },
-];
-
-// ─── 组件 ─────────────────────────────────────────────────────────────────────
-
-type CreateSecurityGroupDialogProps = {
-  open: boolean;
-  checkedOptions: CommonRuleOptionKey[];
-  draft: {
-    name: string;
-    remark: string;
-  };
-  previewTab: "inbound" | "outbound";
-  onOpenChange: (open: boolean) => void;
-  onOptionToggle: (optionKey: CommonRuleOptionKey, checked: boolean) => void;
-  onNameChange: (name: string) => void;
-  onRemarkChange: (remark: string) => void;
-  onPreviewTabChange: (tab: "inbound" | "outbound") => void;
-  onCancel: () => void;
-  onConfirm: () => void;
-};
-
-type SelectExistingSecurityGroupDialogProps = {
-  open: boolean;
-  /** [004] 弹窗模式：'create' = 空态首次建组（新用户），'replace' = 稳定态规则替换（存量用户）
-   *   两种模式只影响标题和顶部说明文案，业务逻辑相同
-   */
-  mode: "create" | "replace";
-  searchKeyword: string;
-  selectedSecurityGroup: SecurityGroup | null;
-  previewTab: "outbound" | "inbound";
-  candidateSecurityGroups: SecurityGroup[];
-  candidatePage: number;
-  candidateTotalPages: number;
-  shouldShowPanelAccessAssist: boolean;
-  isPanelAccessStaged: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSearchChange: (value: string) => void;
-  onClearSearch: () => void;
-  onSelectSecurityGroup: (sg: SecurityGroup) => void;
-  onCandidatePageChange: (page: number) => void;
-  onTogglePanelAccessStaged: () => void;
-  onPreviewTabChange: (tab: "outbound" | "inbound") => void;
-  onCancel: () => void;
-  onConfirm: () => void;
-};
-
-const SECURITY_GROUP_DIALOG_PAGE_SIZE = 5;
-
-// [004] ClawPro 安全组 name 格式校验
-//   - 字符集：英文字母（大小写）+ 数字 + 短横线
-//   - 长度：3-32 字符
-//   - 首字符必须是字母；尾字符必须是字母或数字（不能以短横线结尾）
-//   - 创建后不可修改（避免重命名传播代价）
-const CLAWPRO_SG_NAME_REGEX = /^[A-Za-z][a-zA-Z0-9-]{1,30}[a-zA-Z0-9]$/;
-// 命名规则（非法态红色错误、提交 toast 复用此简短版本）
-const CLAWPRO_SG_NAME_RULE = "支持字母、数字、短横线，以字母开头，3–32 个字符";
-// 完整 hint（合法态灰字提示：规则 + 命名特点）
-const CLAWPRO_SG_NAME_HINT = `${CLAWPRO_SG_NAME_RULE}；创建后不可修改，对应的云端安全组由 ClawPro 自动创建并命名。`;
 function isValidClawproSgName(name: string): boolean {
   return CLAWPRO_SG_NAME_REGEX.test(name);
+}
+
+// ─── 用户分组：树形多选工具函数（与 PlatformPolicy GroupTagSelector 同款语义） ────
+//
+// 关键差异（相对前版）：
+//   - getCheckState：祖先被选中时，子节点视为 checked（"父覆盖子" 语义）
+//   - 新增 isNodeOrAncestorSelected / hasSelectedDescendant / aggregateSelection，
+//     供 GroupTagSelector 在勾选父节点后递归向上聚合（兄弟全选时合并到父级）
+//   - 路径分隔符使用 " / "（前后带空格），与 PlatformPolicy 视觉一致
+
+/** id → 完整分组路径（父/子，" / " 拼接） */
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const g = groups.find((x) => x.id === groupId);
+  if (!g) return groupId;
+  const parts: string[] = [g.name];
+  let current = g;
+  while (current.parentId) {
+    const parent = groups.find((x) => x.id === current.parentId);
+    if (!parent) break;
+    parts.unshift(parent.name);
+    current = parent;
+  }
+  return parts.join(" / ");
+}
+
+/** name → 完整分组路径（专给列表行 GroupBadges 使用） */
+function getGroupPathByName(name: string, groups: UserGroup[]): string {
+  const g = groups.find((x) => x.name === name);
+  if (!g) return name;
+  return getGroupPath(g.id, groups);
+}
+
+/** 任一子孙被选中（不含自身） */
+function hasSelectedDescendant(node: GroupTreeNode, selectedIds: Set<string>): boolean {
+  for (const c of node.children) {
+    if (selectedIds.has(c.id)) return true;
+    if (hasSelectedDescendant(c, selectedIds)) return true;
+  }
+  return false;
+}
+
+/**
+ * 三态：本身被选=checked；祖先被选=checked；有子孙被选=indeterminate；其他=unchecked
+ * 与 PlatformPolicy 同款"父覆盖子"语义
+ */
+function getCheckState(
+  node: GroupTreeNode,
+  selectedIds: Set<string>,
+  groupMap: Map<string, UserGroup>
+): CheckState {
+  if (selectedIds.has(node.id)) return "checked";
+  let cur: UserGroup | undefined = groupMap.get(node.id);
+  while (cur && cur.parentId) {
+    if (selectedIds.has(cur.parentId)) return "checked";
+    cur = groupMap.get(cur.parentId);
+  }
+  if (hasSelectedDescendant(node, selectedIds)) return "indeterminate";
+  return "unchecked";
+}
+
+/** 获取子孙所有 id（含自身） */
+function getDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getDescendantIds(c)));
+  return ids;
+}
+
+/**
+ * 递归向上聚合：若某父节点的所有直接可用（非 disabled）子节点都已被选中，
+ * 则将这些子节点 id 全部移除，换成该父节点 id。继续向上直到无法再聚合。
+ */
+function aggregateSelection(
+  selected: Set<string>,
+  roots: GroupTreeNode[],
+  disabledIds: Set<string>
+): Set<string> {
+  const result = new Set(selected);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const walk = (node: GroupTreeNode) => {
+      if (node.children.length === 0) return;
+      node.children.forEach(walk);
+      if (result.has(node.id)) return;
+      const hasDisabled = node.children.some((c) => disabledIds.has(c.id));
+      if (hasDisabled) return;
+      const allSelected = node.children.every((c) => result.has(c.id));
+      if (!allSelected) return;
+      node.children.forEach((c) => result.delete(c.id));
+      result.add(node.id);
+      changed = true;
+    };
+    roots.forEach(walk);
+  }
+  return result;
+}
+
+// ─── VPC × 子网计算 ──────────────────────────────────────────────────────────
+
+function getSubnetsByVpcZone(vpcId: string, zone: string): SubnetEntity[] {
+  const mapping = VPC_ZONE_SUBNETS[vpcId];
+  if (!mapping) return [];
+  const subnetIds = mapping[zone] ?? [];
+  const allSubnets = MOCK_SUBNETS[vpcId] ?? [];
+  return subnetIds
+    .map((id) => allSubnets.find((s) => s.id === id))
+    .filter((s): s is SubnetEntity => !!s);
+}
+
+// 根据 VPC 行的当前配置，计算每个可用区实际承接的子网列表
+// - 指定子网模式：按用户配置
+// - 自动分配模式：展示系统实际选择的默认子网（此处取 AUTO_ASSIGNED_SUBNETS，
+//   若该 VPC 不在默认分配映射中，则回退取 VPC_ZONE_SUBNETS 的第一个子网作为代表）
+function getEffectiveZoneSubnets(row: VpcListItem): Record<string, SubnetEntity[]> {
+  const result: Record<string, SubnetEntity[]> = {};
+  if (row.subnetStrategy === "specified") {
+    for (const zone of AVAILABLE_ZONES) {
+      const ids = row.zoneSubnets[zone] ?? [];
+      const all = MOCK_SUBNETS[row.vpcId] ?? [];
+      result[zone] = ids
+        .map((id) => all.find((s) => s.id === id))
+        .filter((s): s is SubnetEntity => !!s);
+    }
+    return result;
+  }
+  // auto 策略
+  for (const zone of AVAILABLE_ZONES) {
+    // 企业级默认 VPC 使用 AUTO_ASSIGNED_SUBNETS
+    if (row.vpcId === AUTO_ASSIGNED_VPC.id) {
+      const s = AUTO_ASSIGNED_SUBNETS[zone];
+      result[zone] = s ? [s] : [];
+    } else {
+      // 其他 VPC 的 auto 策略：取 VPC_ZONE_SUBNETS 在该可用区的第一个子网作为系统默认代表
+      const candidates = getSubnetsByVpcZone(row.vpcId, zone);
+      result[zone] = candidates.length > 0 ? [candidates[0]] : [];
+    }
+  }
+  return result;
 }
 
 function CreateSecurityGroupDialog({
@@ -853,6 +1123,7 @@ function CreateSecurityGroupDialog({
                 {CLAWPRO_SG_NAME_HINT}
               </p>
             )}
+
           </div>
 
           <div className="space-y-1.5">
@@ -1007,7 +1278,7 @@ function CreateSecurityGroupDialog({
             取消
           </Button>
           <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onConfirm}
             disabled={isCreateDisabled}
           >
@@ -1016,6 +1287,615 @@ function CreateSecurityGroupDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── 应用范围（与平台策略 GroupTagSelector 同款） ─────────────────────────────
+//
+// VPC 用户组配置的「应用范围」选择器，移植自 PlatformPolicy.tsx 的 GroupTagSelector：
+//   - 行内 trigger（标签输入框风格）+ 树形 Popover；勾选即生效，无确认按钮
+//   - 数据契约：外部 value 仍是「分组 name 数组」（与 vpcList[].associatedGroups 一致），
+//     不引入 id 字段；组件内部 name ↔ id 自行换算
+//   - 仅展示两个桶：部门（oneid-dept） / 自定义分组（manual），屏蔽用户组桶（oneid-group）
+//   - 业务约束：
+//       a. 兜底/预设策略行（type === "enterprise"）通过列表行的紫色徽章独立呈现，
+//          不进入选择器，因此本组件不再需要「全部用户」radio 切换
+//       b. disabledIds：已被其他分组策略占用的分组 id，置灰展示 + Tooltip 提示
+//       c. 当前编辑行已绑定的分组不会进入 disabledIds（编辑时可保留 / 可取消）
+
+// 选择框内只展示部门和自定义分组（不含用户组）
+const SOURCE_ORDER: GroupSource[] = ["oneid-dept", "manual"];
+const SOURCE_LABELS: Record<GroupSource, string> = {
+  "oneid-dept": "部门",
+  "oneid-group": "用户组",
+  "manual": "自定义分组",
+};
+
+function GroupTagSelector({
+  value,
+  onChange,
+  disabledIds,
+  disabledTooltip,
+}: {
+  value: string[]; // 已选分组 name 数组
+  onChange: (next: string[]) => void;
+  disabledIds?: Set<string>;
+  disabledTooltip?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [hover, setHover] = useState(false);
+
+  // 仅保留部门和自定义分组（不含用户组），与 PlatformPolicy 一致
+  const visibleGroups = useMemo(
+    () => ALL_GROUPS_SHARED.filter((g) => SOURCE_ORDER.includes(g.source)),
+    []
+  );
+  const groupMap = useMemo(
+    () => new Map(visibleGroups.map((g) => [g.id, g])),
+    [visibleGroups]
+  );
+
+  // name ↔ id 映射（外部契约 name；内部操作 id）
+  const nameToId = useMemo(() => {
+    const m = new Map<string, string>();
+    visibleGroups.forEach((g) => m.set(g.name, g.id));
+    return m;
+  }, [visibleGroups]);
+  const valueIds = useMemo(() => {
+    const ids: string[] = [];
+    value.forEach((n) => {
+      const id = nameToId.get(n);
+      if (id) ids.push(id);
+    });
+    return ids;
+  }, [value, nameToId]);
+
+  const disabledSet = useMemo(() => disabledIds ?? new Set<string>(), [disabledIds]);
+
+  // ── 三态切换（idle / editing / filled） ──
+  // mode === "idle"     ：空态初始 → 显示"+ 添加分组策略"按钮
+  // mode === "editing"  ：编辑中 → 输入框 trigger（点击展开 Popover）+ ❌ ✅
+  //                       期间所有勾选 / 删除 tag 仅修改 draftIds，不触达 onChange
+  // mode === "filled"   ：有值只读态 → "研发组 …共 N 个分组 ✏️"
+  // 状态转移：
+  //   idle    ─ 点 "+ 添加分组策略" ─→ editing(draft=[])
+  //   editing ─ 点 ❌ ─────────────→ idle (valueIds 仍为 []) 或 filled (恢复原值)
+  //   editing ─ 点 ✅ ─────────────→ filled (onChange 提交 draft)
+  //   filled  ─ 点 ✏️ ─────────────→ editing(draft=valueIds)
+  const [draftIds, setDraftIds] = useState<string[] | null>(null); // null = 非编辑态
+  const isEditing = draftIds !== null;
+  // editing 态下用 draft，否则用外部 value
+  const effectiveIds = isEditing ? draftIds : valueIds;
+
+  // 按 source 分桶 + 建树
+  const groupsBySource = useMemo(() => {
+    const buckets: Record<string, UserGroup[]> = { "oneid-dept": [], manual: [] };
+    visibleGroups.forEach((g) => { if (buckets[g.source]) buckets[g.source].push(g); });
+    return buckets;
+  }, [visibleGroups]);
+  const activeSources = useMemo(
+    () => SOURCE_ORDER.filter((s) => (groupsBySource[s] || []).length > 0),
+    [groupsBySource]
+  );
+  const treesMap = useMemo(() => {
+    const map: Record<string, GroupTreeNode[]> = {};
+    activeSources.forEach((s) => { map[s] = buildGroupTree(groupsBySource[s] || []); });
+    return map;
+  }, [activeSources, groupsBySource]);
+
+  const allRoots = useMemo(
+    () => activeSources.flatMap((s) => treesMap[s] || []),
+    [activeSources, treesMap]
+  );
+
+  // 打开时：默认展开已选祖先 + 根节点
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setSearch("");
+      const expandSet = new Set<string>();
+      effectiveIds.forEach((gid) => {
+        let cur = groupMap.get(gid);
+        while (cur && cur.parentId) {
+          expandSet.add(cur.parentId);
+          cur = groupMap.get(cur.parentId);
+        }
+      });
+      activeSources.forEach((s) => {
+        treesMap[s]?.forEach((root) => expandSet.add(root.id));
+      });
+      setExpanded(expandSet);
+    }
+    setOpen(v);
+  };
+
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // 在所有可见树中查找节点
+  const findTreeNode = (id: string): GroupTreeNode | null => {
+    const walk = (nodes: GroupTreeNode[]): GroupTreeNode | null => {
+      for (const n of nodes) {
+        if (n.id === id) return n;
+        const found = walk(n.children);
+        if (found) return found;
+      }
+      return null;
+    };
+    return walk(allRoots);
+  };
+
+  // 写入：editing 时只改本地 draft；filled/idle 时直接 onChange
+  const writeIds = (ids: Iterable<string>) => {
+    const arr = Array.from(ids);
+    if (isEditing) {
+      setDraftIds(arr);
+    } else {
+      const names: string[] = [];
+      arr.forEach((gid) => {
+        const node = groupMap.get(gid);
+        if (node) names.push(node.name);
+      });
+      onChange(names);
+    }
+  };
+
+  // 进入编辑态：缓存当前值到 draft，并展开 Popover
+  const enterEditing = () => {
+    setDraftIds([...valueIds]);
+    handleOpenChange(true);
+  };
+
+  // 取消编辑：丢弃 draft，关 Popover；valueIds 不变
+  const cancelEditing = () => {
+    setDraftIds(null);
+    setOpen(false);
+  };
+
+  // 保存编辑：把 draft 提交到 onChange，关 Popover，回到 filled
+  const saveEditing = () => {
+    if (!draftIds || draftIds.length === 0) return;
+    const names: string[] = [];
+    draftIds.forEach((gid) => {
+      const node = groupMap.get(gid);
+      if (node) names.push(node.name);
+    });
+    onChange(names);
+    setDraftIds(null);
+    setOpen(false);
+  };
+
+  /**
+   * 点击节点（与 PlatformPolicy GroupTagSelector 同款语义）：
+   * - 本身已选 → 移除
+   * - 祖先已选（自动 checked）→ 展开祖先为除当前路径外的兄弟子节点
+   * - 半选（indeterminate）→ 清空所有子孙，加入自身
+   * - 未选 → 加入自身
+   * 最后执行递归向上聚合（兄弟全选时合并到父级）
+   */
+  const toggleNode = (node: GroupTreeNode) => {
+    if (disabledSet.has(node.id)) return;
+    const ids = new Set(effectiveIds);
+
+    let ancestorSelectedId: string | null = null;
+    let cur: UserGroup | undefined = groupMap.get(node.id);
+    while (cur && cur.parentId) {
+      if (ids.has(cur.parentId)) { ancestorSelectedId = cur.parentId; break; }
+      cur = groupMap.get(cur.parentId);
+    }
+
+    if (ids.has(node.id)) {
+      ids.delete(node.id);
+    } else if (ancestorSelectedId) {
+      // 展开祖先：移除祖先 → 沿祖先到 node 的路径，把每层"非下一跳"的子节点加入
+      ids.delete(ancestorSelectedId);
+      const pathNodes: UserGroup[] = [];
+      let p: UserGroup | undefined = groupMap.get(node.id);
+      while (p && p.id !== ancestorSelectedId) {
+        pathNodes.push(p);
+        p = p.parentId ? groupMap.get(p.parentId) : undefined;
+      }
+      pathNodes.reverse();
+      let cursor = findTreeNode(ancestorSelectedId);
+      for (let i = 0; i < pathNodes.length; i++) {
+        const nextHopId = pathNodes[i].id;
+        if (!cursor) break;
+        cursor.children.forEach((c) => {
+          if (c.id !== nextHopId && !disabledSet.has(c.id)) ids.add(c.id);
+        });
+        cursor = cursor.children.find((c) => c.id === nextHopId) || null;
+      }
+    } else {
+      const state = hasSelectedDescendant(node, ids) ? "indeterminate" : "unchecked";
+      if (state === "indeterminate") {
+        getDescendantIds(node).forEach((d) => ids.delete(d));
+      }
+      ids.add(node.id);
+    }
+
+    const aggregated = aggregateSelection(ids, allRoots, disabledSet);
+    writeIds(aggregated);
+  };
+
+  // 搜索过滤
+  const matchedIds = useMemo(() => {
+    if (!search.trim()) return null;
+    const q = search.toLowerCase();
+    return new Set(
+      visibleGroups
+        .filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, visibleGroups).toLowerCase().includes(q))
+        .map((g) => g.id)
+    );
+  }, [search, visibleGroups]);
+  const isVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedIds) return true;
+    if (matchedIds.has(node.id)) return true;
+    return node.children.some(isVisible);
+  };
+
+  const renderNode = (node: GroupTreeNode, depth: number) => {
+    if (!isVisible(node)) return null;
+    const checkState = getCheckState(node, new Set(effectiveIds), groupMap);
+    const isExpanded = expanded.has(node.id);
+    const hasChildren = node.children.length > 0;
+    const isDisabled = disabledSet.has(node.id);
+
+    const nameSpan = <span className="text-xs text-gray-700 truncate">{node.name}</span>;
+
+    return (
+      <div key={node.id}>
+        <button
+          type="button"
+          onClick={() => !isDisabled && toggleNode(node)}
+          disabled={isDisabled}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors text-left ${isDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
+          style={{ paddingLeft: 8 + depth * 16 }}
+        >
+          {hasChildren ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          <span
+            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+              checkState === "checked" || checkState === "indeterminate"
+                ? "bg-blue-500 border-blue-500"
+                : "border-gray-300 bg-white"
+            }`}
+          >
+            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
+            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
+          </span>
+          {isDisabled && disabledTooltip ? (
+            <Tooltip>
+              <TooltipTrigger asChild>{nameSpan}</TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8} className="text-xs max-w-[260px] leading-relaxed">
+                {disabledTooltip}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            nameSpan
+          )}
+        </button>
+        {hasChildren && isExpanded && node.children.map((c) => renderNode(c, depth + 1))}
+      </div>
+    );
+  };
+
+  return (
+    <TooltipProvider>
+      {isEditing ? (
+        <div className="flex items-center gap-1.5 w-full">
+          <div className="flex-1 min-w-0">
+            <Popover
+              open={open}
+              onOpenChange={(v) => {
+                handleOpenChange(v);
+                // 编辑态下 Popover 关闭不退出编辑（用户可能只是收起列表整理 tag），
+                // 退出由 ❌/✅ 显式触发
+              }}
+            >
+              <PopoverTrigger asChild>
+                <div
+                  onMouseEnter={() => setHover(true)}
+                  onMouseLeave={() => setHover(false)}
+                  className="relative w-full min-h-7 px-2 py-1 rounded-lg border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+                >
+                  {effectiveIds.length === 0 ? (
+                    <span className="text-xs text-gray-400 px-1">选择分组…</span>
+                  ) : (
+                    effectiveIds.map((id) => {
+                      const path = getGroupPath(id, ALL_GROUPS_SHARED);
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 max-w-full"
+                        >
+                          <span className="truncate">{path}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const next = new Set(effectiveIds);
+                              next.delete(id);
+                              writeIds(next);
+                            }}
+                            className="text-blue-400 hover:text-blue-700 shrink-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      );
+                    })
+                  )}
+                  {hover && effectiveIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        writeIds([]);
+                      }}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center shrink-0"
+                      title="清空"
+                    >
+                      <X className="w-2.5 h-2.5 text-white" />
+                    </button>
+                  )}
+                </div>
+              </PopoverTrigger>
+              <PopoverContent
+                className="p-0"
+                style={{ width: "var(--radix-popover-trigger-width)" }}
+                align="start"
+                sideOffset={4}
+              >
+                <div className="p-2.5 border-b border-gray-100">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="搜索分组…"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                    />
+                    {search && (
+                      <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="max-h-[280px] overflow-y-auto p-1.5">
+                  {activeSources.length === 0 ? (
+                    <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
+                  ) : (
+                    activeSources.map((source) => {
+                      const trees = treesMap[source] || [];
+                      const hasVisibleTrees = trees.some(isVisible);
+                      if (!hasVisibleTrees) return null;
+                      return (
+                        <div key={source} className="mb-1.5 last:mb-0">
+                          <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
+                          {trees.map((root) => renderNode(root, 0))}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          {/* ❌ 取消 / ✅ 保存（图标按钮：取消=描边淡灰，保存=实心蓝主操作，禁用态淡灰） */}
+          <button
+            type="button"
+            onClick={cancelEditing}
+            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+            title="取消"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={saveEditing}
+            disabled={!draftIds || draftIds.length === 0}
+            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors disabled:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-gray-100 disabled:cursor-not-allowed"
+            title={!draftIds || draftIds.length === 0 ? "请至少选择一个分组" : "保存"}
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : valueIds.length === 0 ? (
+        // idle 空态：显示"+ 添加分组策略"按钮
+        <button
+          type="button"
+          onClick={enterEditing}
+          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          添加分组
+        </button>
+      ) : (
+        // filled 有值只读态：首条徽章（截断）+ …共 N 个分组 + 铅笔；hover Tooltip 列出全部
+        <div className="inline-flex items-center gap-1.5 min-h-7">
+          {(() => {
+            const firstPath = getGroupPath(valueIds[0], ALL_GROUPS_SHARED);
+            const rest = valueIds.length - 1;
+            const allPaths = valueIds.map((gid) => getGroupPath(gid, ALL_GROUPS_SHARED));
+            const badge = (
+              <span className="inline-flex items-center gap-1 cursor-default align-middle">
+                <span className="inline-flex items-center max-w-[180px] px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap overflow-hidden">
+                  <span className="truncate">{firstPath}</span>
+                </span>
+                {rest > 0 && (
+                  <span className="text-[11px] text-gray-500 whitespace-nowrap shrink-0">
+                    …共 {valueIds.length} 个分组
+                  </span>
+                )}
+              </span>
+            );
+            // 单分组路径过长 / 多分组都需要 Tooltip 显示完整内容
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[360px] text-xs leading-relaxed">
+                  <div className="space-y-0.5">
+                    {allPaths.map((p, i) => <div key={i}>{p}</div>)}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })()}
+          <button
+            type="button"
+            onClick={enterEditing}
+            className="text-gray-300 hover:text-blue-500 transition-colors shrink-0"
+            title="编辑应用范围"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+    </TooltipProvider>
+  );
+}
+
+// ─── 列表行只读徽章（与 PlatformPolicy GroupBadges 同款：单行 + 折叠） ────────
+//
+// 输入是分组 name 数组（保持与 vpcList[].associatedGroups 一致）。
+// 渲染：可见容器内逐个测量分组路径徽章宽度，放不下时截断并显示「…共 N 个分组」，
+//       Tooltip 中以多行完整路径展示全部。
+function GroupBadges({ groupNames }: { groupNames: string[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [visibleCount, setVisibleCount] = useState(groupNames.length);
+
+  const paths = useMemo(
+    () => groupNames.map((n) => getGroupPathByName(n, ALL_GROUPS_SHARED)),
+    [groupNames]
+  );
+
+  useLayoutEffect(() => {
+    if (groupNames.length === 0) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const computeVisible = () => {
+      const available = container.clientWidth;
+      if (available <= 0) return;
+
+      const gap = 4; // gap-1
+      let totalW = 0;
+      let fitCount = 0;
+      for (let i = 0; i < paths.length; i++) {
+        const el = tagRefs.current[i];
+        if (!el) break;
+        const w = el.offsetWidth;
+        const add = totalW === 0 ? w : w + gap;
+        if (totalW + add <= available) {
+          totalW += add;
+          fitCount = i + 1;
+        } else {
+          break;
+        }
+      }
+
+      if (fitCount === paths.length) {
+        setVisibleCount(paths.length);
+        return;
+      }
+
+      const moreEl = moreRef.current;
+      if (!moreEl) {
+        setVisibleCount(Math.max(1, fitCount));
+        return;
+      }
+      for (let n = fitCount; n >= 1; n--) {
+        let w = 0;
+        for (let i = 0; i < n; i++) {
+          const el = tagRefs.current[i];
+          if (!el) continue;
+          w += el.offsetWidth + (i === 0 ? 0 : gap);
+        }
+        moreEl.textContent = `…共 ${paths.length} 个分组`;
+        const moreW = moreEl.offsetWidth;
+        if (w + gap + moreW <= available) {
+          setVisibleCount(n);
+          return;
+        }
+      }
+      setVisibleCount(1);
+    };
+
+    computeVisible();
+    const observer = new ResizeObserver(computeVisible);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [paths, groupNames.length]);
+
+  if (groupNames.length === 0) {
+    return <span className="text-xs text-gray-400">—</span>;
+  }
+
+  const omitted = paths.length - visibleCount;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          ref={containerRef}
+          className="flex items-center gap-1 w-full max-w-[220px] overflow-hidden cursor-default"
+        >
+          {paths.slice(0, visibleCount).map((p, i) => (
+            <span
+              key={i}
+              ref={(el) => { tagRefs.current[i] = el; }}
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap shrink-0"
+            >
+              {p}
+            </span>
+          ))}
+          {omitted > 0 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">
+              …共 {paths.length} 个分组
+            </span>
+          )}
+          {/* 隐藏测量区 */}
+          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
+            {paths.map((p, i) => (
+              <span
+                key={`m-${i}`}
+                ref={(el) => { tagRefs.current[i] = el; }}
+                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap"
+              >
+                {p}
+              </span>
+            ))}
+            <span
+              ref={moreRef}
+              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap"
+            />
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[360px] text-xs leading-relaxed">
+        <div className="space-y-0.5">
+          {paths.map((p, i) => <div key={i}>{p}</div>)}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -1029,12 +1909,9 @@ export default function SecurityGroupManagement() {
   const [securityTab, setSecurityTab] = useState<"outbound" | "inbound">("outbound");
 
   // [004] 独立化升级状态（存量/新建企业判断 + 蓝条 ack 状态）
+  //   - migrationStatus.isLegacyMigrated：当前是否为存量企业（决定是否显示迁移黄条）
+  //   - setMigrationStatus 由 handleAckMigration 调用以同步 localStorage 与会话内存模型
   const [migrationStatus, setMigrationStatus] = useState<MigrationStatus>(getInitialMigrationStatus);
-  // 蓝条是否展示（仅存量企业 × 未 ack）
-  const showMigrationBanner =
-    migrationStatus.isLegacyMigrated && !migrationStatus.ackedByCurrentAdmin;
-  // 使用须知第 3 条是否展示（仅存量企业，与是否 ack 无关）
-  const showLegacyHintInUseGuide = migrationStatus.isLegacyMigrated;
   // 关闭蓝条（模拟后端 POST /admin/config/security-group/migration-ack）
   const handleAckMigration = () => {
     setMigrationStatus((prev) => ({ ...prev, ackedByCurrentAdmin: true }));
@@ -1043,28 +1920,44 @@ export default function SecurityGroupManagement() {
     }
   };
 
-  // 用户端访问 Agent 面板开关 - 持久化到 localStorage
-  const [allowPanelAccess, setAllowPanelAccess] = useState(() => {
+  // 用户端访问 Agent 面板开关 - 持久化到 localStorage（潜伏能力，PR #169 暂未暴露入口）
+  const [allowPanelAccess] = useState(() => {
     return localStorage.getItem("admin_allow_panel_access") === "true";
   });
-  const [panelPort, setPanelPort] = useState<string | null>(() => {
+  const [panelPort] = useState<string | null>(() => {
     return localStorage.getItem("admin_panel_port");
   });
-  const [panelAccessLoading, setPanelAccessLoading] = useState(false);
 
-  // VPC 和子网配置状态
-  const INITIAL_NETWORK_CONFIG: NetworkConfig = { vpcId: "", zoneSubnets: {} };
-  const [config, setConfig] = useState<NetworkConfig>(INITIAL_NETWORK_CONFIG);
-  const [savedConfig, setSavedConfig] = useState<NetworkConfig>(INITIAL_NETWORK_CONFIG); // 上次保存的快照
-  const [isDirty, setIsDirty] = useState(false);
-  const [showVpcSaveDialog, setShowVpcSaveDialog] = useState(false);
-  const [refreshingVpc, setRefreshingVpc] = useState(false);
-  const [refreshingZone, setRefreshingZone] = useState<string | null>(null);
-  // Combobox 搜索状态
-  const [vpcOpen, setVpcOpen] = useState(false);
-  const [vpcSearch, setVpcSearch] = useState("");
-  const [subnetOpen, setSubnetOpen] = useState<Record<string, boolean>>({});
-  const [subnetSearch, setSubnetSearch] = useState<Record<string, string>>({});
+  // ── VPC 列表管理状态 ──
+  const [vpcList, setVpcList] = useState<VpcListItem[]>(getInitialVpcList);
+  const [showEditVpcDialog, setShowEditVpcDialog] = useState<VpcListItem | null>(null);
+  const [showDeleteVpcDialog, setShowDeleteVpcDialog] = useState<VpcListItem | null>(null);
+  // 保存确认弹窗：把"已通过表单校验、待落库"的动作挂起，展示二次确认。
+  // mode 决定弹窗文案分支（newGroup / editGlobal / editGroup）。
+  const [pendingVpcSave, setPendingVpcSave] = useState<{
+    mode: "newGroup" | "editGlobal" | "editGroup";
+    execute: () => void;
+  } | null>(null);
+  const [editVpcDraft, setEditVpcDraft] = useState<{
+    vpcId: string;
+    subnetStrategy: "auto" | "specified";
+    zoneSubnets: Record<string, string[]>;
+    associatedGroups: string[];
+  }>({ vpcId: "", subnetStrategy: "auto", zoneSubnets: {}, associatedGroups: [] });
+  // 每个可用区下「添加子网」浮层开关
+  const [zoneSubnetPickerOpen, setZoneSubnetPickerOpen] = useState<Record<string, boolean>>({});
+  // 编辑弹窗中「VPC」选择器浮层开关
+  const [editVpcPickerOpen, setEditVpcPickerOpen] = useState(false);
+  // 列表中展开查看子网配置详情的 VPC id 集合
+  const [expandedVpcIds, setExpandedVpcIds] = useState<Set<string>>(() => new Set());
+  const toggleVpcExpanded = (id: string) => {
+    setExpandedVpcIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   // 迁移状态
   type MigrationBusinessState = "idle" | "running" | "success" | "failed";
@@ -1082,11 +1975,11 @@ export default function SecurityGroupManagement() {
     failReason?: string;
   };
 
-  const migrationDialogTitle = "Agent 云服务器网络迁移";
+  const migrationDialogTitle = "Agent 实例网络迁移";
   const migrationFlowSteps = ["确认迁移范围", "执行迁移", "查看迁移结果"] as const;
-  const confirmTableColumns = ["用户名", "Agent 云服务器", "当前网络", "目标网络", "说明"] as const;
-  const executionTableColumns = ["用户名", "Agent 云服务器", "迁移任务状态"] as const;
-  const resultTableColumns = ["用户名", "Agent 云服务器", "当前网络", "迁移任务状态", "说明"] as const;
+  const confirmTableColumns = ["用户名", "Agent 实例", "当前网络", "目标网络", "说明"] as const;
+  const executionTableColumns = ["用户名", "Agent 实例", "迁移任务状态"] as const;
+  const resultTableColumns = ["用户名", "Agent 实例", "当前网络", "迁移任务状态", "说明"] as const;
   const confirmTableGridClass = "grid grid-cols-[1.3fr_1.4fr_1.7fr_1.7fr_1.8fr]";
   const executionTableGridClass = "grid grid-cols-[1.5fr_1.5fr_1fr]";
   const resultTableGridClass = "grid grid-cols-[1.3fr_1.4fr_1.7fr_1fr_2fr]";
@@ -1128,7 +2021,8 @@ export default function SecurityGroupManagement() {
   const isRetryRunCompletedWithAllSuccess = isCurrentRunCompleted && isRetryFailedRun && currentRunFailedMigrationTasks.length === 0;
   const hasRunningTasks = instanceTasks.some((task) => task.status === "待迁移" || task.status === "迁移中");
   const hasFailedTasks = failedMigrationTasks.length > 0;
-  const shouldShowMigrationBanner = migrationBusinessState !== "success";
+  // 仅"存量企业"才可能显示迁移黄条；迁移完成（success）后也隐藏
+  const shouldShowMigrationBanner = migrationStatus.isLegacyMigrated && migrationBusinessState !== "success";
   const migrationBannerState: "idle" | "running" | "failed" = migrationBusinessState === "running"
     ? "running"
     : migrationBusinessState === "failed"
@@ -1302,16 +2196,16 @@ export default function SecurityGroupManagement() {
   }, [migrationBusinessState, hasRunningTasks, hasFailedTasks]);
 
   const MigrationBanner = shouldShowMigrationBanner ? (
-    <div className="mb-3 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+    <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs leading-relaxed text-amber-800">
           {migrationBannerState === "running" ? (
-            <>Agent 云服务器迁移任务正在执行中。单击「<button onClick={openMigrationProgressDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看进度</button>」可查看实例迁移情况。</>
+            <>Agent 实例迁移任务正在执行中。单击「<button onClick={openMigrationProgressDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看进度</button>」可查看实例迁移情况。</>
           ) : migrationBannerState === "failed" ? (
-            <>仍有 Agent 云服务器未完成迁移，请根据失败原因处理后重试。单击「<button onClick={() => openMigrationResultDialog("failed")} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看失败实例并继续迁移。</>
+            <>仍有 Agent 实例未完成迁移，请根据失败原因处理后重试。单击「<button onClick={() => openMigrationResultDialog("failed")} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看失败实例并继续迁移。</>
           ) : (
-            <>检测到当前企业下仍有 Agent 云服务器运行在用户个人 VPC 中，为避免后续网络管理和实例治理持续分散，建议尽快发起迁移。单击「<button onClick={openMigrationConfirmDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看迁移范围并确认迁移。</>
+            <>检测到当前企业下仍有 Agent 实例运行在用户个人 VPC 中，为避免后续网络管理和实例治理持续分散，建议尽快发起迁移。单击「<button onClick={openMigrationConfirmDialog} className="font-medium text-amber-700 underline underline-offset-2 transition-colors hover:text-amber-900">查看详情</button>」可查看迁移范围并确认迁移。</>
           )}
         </p>
       </div>
@@ -1327,12 +2221,11 @@ export default function SecurityGroupManagement() {
         <div className="space-y-4 py-1">
           {renderMigrationStepBar(0)}
 
-
           <div className="flex items-start gap-2.5 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2.5">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-amber-700">
-              <li>迁移过程中，Agent 云服务器会重启；迁移完成后，内网 IP 默认会发生变化，请提前告知相关用户。</li>
-              <li>仅迁移“可迁移”列表的 Agent 云服务器，您可查看暂不支持迁移的 Agent 云服务器，按提示处理后在发起迁移。</li>
+              <li>迁移过程中，Agent 实例会重启；迁移完成后，内网 IP 默认会发生变化，请提前告知相关用户。</li>
+              <li>仅迁移“可迁移”列表的 Agent 实例，您可查看暂不支持迁移的 Agent 实例，按提示处理后在发起迁移。</li>
             </ul>
           </div>
 
@@ -1361,7 +2254,7 @@ export default function SecurityGroupManagement() {
               </div>
               <div className="shrink-0 text-xs text-gray-400">
                 <span>
-                  涉及 Agent 云服务器数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.instanceCount}</span>
+                  涉及 Agent 实例数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.instanceCount}</span>
                 </span>
                 <span className="mx-2 text-gray-300">｜</span>
                 <span>
@@ -1570,12 +2463,14 @@ export default function SecurityGroupManagement() {
 
   // 安全组切换状态
   const [currentSg, setCurrentSg] = useState<SecurityGroup | null>(initialDefaultSecurityGroup);
+
   const [isSgDialogOpen, setIsSgDialogOpen] = useState(false);
-  // [004] 弹窗模式：'create' = 空态首次创建（新用户）、'replace' = 稳定态规则替换（存量）
-  //        - create 模式：标题 "新建 ClawPro 安全组 · 从已有规则导入"
-  //        - replace 模式：标题 "导入规则到 ClawPro 安全组"（保持现状，存量用户 0 感知）
-  const [sgDialogMode, setSgDialogMode] = useState<"create" | "replace">("replace");
+  // [PR #169] "导入规则"操作的二次确认弹窗开关（点击导入弹窗的"确定"后弹出）
   const [isConfirmSwitchDialogOpen, setIsConfirmSwitchDialogOpen] = useState(false);
+  // 当前「导入已有安全组规则」弹窗的业务语义（与 main 状态机命名对齐）：
+  //  - "replace"  已有默认安全组 → 仅复制规则到当前默认安全组，不新建、不切换
+  //  - "create"   尚未配置默认安全组 → 复制规则并创建一个默认安全组（空态入口）
+  const [sgDialogMode, setSgDialogMode] = useState<"create" | "replace">("replace");
   const [sgSearchKeyword, setSgSearchKeyword] = useState("");
   const [sgDialogCandidatePage, setSgDialogCandidatePage] = useState(1);
   const [sgDialogSelected, setSgDialogSelected] = useState<SecurityGroup | null>(null); // 弹窗内选中的候选
@@ -1590,6 +2485,7 @@ export default function SecurityGroupManagement() {
   // 新建安全组状态
   const [showCreateSgDialog, setShowCreateSgDialog] = useState(false);
   const [createSgDraft, setCreateSgDraft] = useState({ name: "", remark: "" });
+
   const [createSgCheckedOptions, setCreateSgCheckedOptions] = useState<CommonRuleOptionKey[]>(
     COMMON_RULE_OPTIONS.filter((o) => o.defaultChecked).map((o) => o.key)
   );
@@ -1634,128 +2530,6 @@ export default function SecurityGroupManagement() {
   const [showAddDialog, setShowAddDialog] = useState<"inbound" | "outbound" | null>(null);
   const [addDraft, setAddDraft] = useState<Partial<Rule>>({});
 
-  // ── VPC 和子网处理函数 ──
-  const handleVpcChange = (val: string) => {
-    // val: "auto" 表示自动分配，其他为具体 vpc id
-    setConfig((prev) => {
-      const updatedZoneSubnets: Record<string, string[]> = {};
-      if (val === "auto") {
-        // 切换回自动分配：每个可用区 1 个自动分配槽位，且不可添加
-        AVAILABLE_ZONES.forEach((zone) => {
-          updatedZoneSubnets[zone] = ["auto"];
-        });
-      } else {
-        // 切换到具体 VPC：每个可用区初始 1 个"不分配"槽位
-        AVAILABLE_ZONES.forEach((zone) => {
-          updatedZoneSubnets[zone] = ["none"];
-        });
-      }
-      return { ...prev, vpcId: val, zoneSubnets: updatedZoneSubnets };
-    });
-    setIsDirty(true);
-  };
-
-  // 修改指定可用区、指定槽位的子网选择
-  // 语义规则：
-  //   - "不分配"（none）是可用区级别的状态，不能与具体子网共存
-  //   - 若把某 Slot 改为具体子网，则清除该可用区内其它 "none" Slot（避免并存）
-  //   - 若把某 Slot 改回 "none"，则把整个可用区重置为单行 ["none"]（因为 none 必须独占）
-  const handleSubnetChange = (zone: string, index: number, val: string) => {
-    setConfig((prev) => {
-      const slots = prev.zoneSubnets[zone] ?? ["none"];
-      // 回退到"不分配"：整个可用区折叠为 ["none"]
-      if (val === "none") {
-        return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: ["none"] } };
-      }
-      // 选为 "auto" / 具体子网：替换目标 Slot，并清掉可能残留的 "none"
-      const nextSlots = slots.slice();
-      nextSlots[index] = val;
-      const cleaned = nextSlots.filter((v, i) => !(v === "none" && i !== index));
-      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: cleaned } };
-    });
-    setIsDirty(true);
-  };
-
-  // 追加一个新子网 Slot：
-  //   - 若当前是初始状态 ["none"]，则把它直接替换为一个 pending 占位（避免 none 与具体子网并存）
-  //   - 否则追加一个 pending 占位
-  //   - 新 Slot 必须由用户主动通过下拉选择具体子网，不做任何预选
-  //   - 若当前 VPC 下所有子网都已被占用，则拒绝追加（不变更 state）
-  const handleAddSubnet = (zone: string) => {
-    let openedSlotKey: string | null = null;
-    setConfig((prev) => {
-      const slots = prev.zoneSubnets[zone] ?? [];
-      const effectiveVpcId =
-        prev.vpcId && prev.vpcId !== "auto" ? prev.vpcId : AUTO_ASSIGNED_VPC.id;
-      const zoneSubnetList = MOCK_SUBNETS[effectiveVpcId] ?? [];
-      const used = new Set(slots.filter((v) => v !== "none" && v !== "auto" && v !== SUBNET_PENDING));
-      // 若所有具体子网都已被占用（或 VPC 根本没有子网），禁止再追加
-      if (used.size >= zoneSubnetList.length) return prev;
-      // 若已有 pending slot，说明上一次添加还没完成选择，不重复添加
-      if (slots.includes(SUBNET_PENDING)) return prev;
-      // 若当前只有一个 "none"，直接替换；否则追加
-      const isInitialNone = slots.length === 1 && slots[0] === "none";
-      const nextSlots = isInitialNone ? [SUBNET_PENDING] : [...slots, SUBNET_PENDING];
-      // 记录 pending slot 的位置（zone#index），用于紧接着自动打开其下拉
-      openedSlotKey = `${zone}#${nextSlots.length - 1}`;
-      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: nextSlots } };
-    });
-    // 自动打开新增 pending slot 的下拉，引导用户立即选择
-    // 使用双重 rAF：第一帧确保 React 完成 DOM 更新，第二帧确保浏览器完成布局计算，
-    // 避免 Radix Popover 在 trigger 尚未挂载时调用 getBoundingClientRect 导致报错
-    if (openedSlotKey) {
-      const key = openedSlotKey;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setSubnetOpen((prev) => ({ ...prev, [key]: true }));
-        });
-      });
-    }
-    setIsDirty(true);
-  };
-
-  // 删除指定可用区的指定槽位；若只剩 1 个槽位，则将其重置为"不分配"
-  const handleRemoveSubnet = (zone: string, index: number) => {
-    setConfig((prev) => {
-      const slots = prev.zoneSubnets[zone] ?? [];
-      let nextSlots: string[];
-      if (slots.length <= 1) {
-        nextSlots = ["none"];
-      } else {
-        nextSlots = slots.filter((_, i) => i !== index);
-      }
-      return { ...prev, zoneSubnets: { ...prev.zoneSubnets, [zone]: nextSlots } };
-    });
-    setIsDirty(true);
-  };
-
-  const handleRefreshVpc = () => {
-    setRefreshingVpc(true);
-    setTimeout(() => setRefreshingVpc(false), 1000);
-  };
-
-  const handleRefreshZone = (zone: string) => {
-    setRefreshingZone(zone);
-    setTimeout(() => setRefreshingZone(null), 1000);
-  };
-
-  const handleDiscard = () => {
-    setConfig(savedConfig); // 还原到上次保存的快照
-    setIsDirty(false);
-  };
-
-  const handleSaveVpc = () => {
-    setSavedConfig(config); // 保存当前配置为快照
-    toast.success("VPC 和子网配置已保存");
-    setShowVpcSaveDialog(false);
-    setIsDirty(false);
-  };
-
-  // 校验：是否至少存在一个有效（具体）子网（排除 "none" / "auto" / pending）
-  const hasAtLeastOneSubnet = Object.values(config.zoneSubnets)
-    .flat()
-    .some((v) => v !== undefined && v !== "none" && v !== "auto" && v !== SUBNET_PENDING);
-
   // ── 公网配置处理函数 ──
   const handleBillingModeChange = (mode: "monthly" | "traffic") => {
     setPublicConfig((prev) => ({
@@ -1781,16 +2555,16 @@ export default function SecurityGroupManagement() {
   // [004] 导入规则到当前 ClawPro 安全组（B15：抄规则，ClawPro 安全组身份恒定）
   //
   // 【背景】
-  //   ClawPro 安全组是一个本地对象（id / name / remark / cloudSgs 恒定）。
+  //   ClawPro 安全组是一个本地对象（name / remark / cloudSgs 恒定，对外不暴露 ID）。
   //   "切换"和"选择已有"本质上都是"把另一个 sg 的规则抄到当前 ClawPro 安全组里"。
-  //   sourceSg 仅作为"规则模板"，其 name/id/cloudSgs 等身份信息一律不继承。
+  //   sourceSg 仅作为"规则模板"，其 name/cloudSgs 等身份信息一律不继承。
   //
   // 【稳定态】currentSg 已存在
   //   ✅ 只覆盖 rules（inboundRules/outboundRules + 对应计数）
   //   ❌ 不改 currentSg.name / remark / cloudSgs（K2/K4/B15 联合约束）
   //
   // 【初始化】currentSg 为空（用户首次点"选择已有安全组"建立 ClawPro 安全组）
-  //   ⚠️  不能直接 setCurrentSg(sourceSg)，否则 UI 会把腾讯云 sg 的名字 / id
+  //   ⚠️  不能直接 setCurrentSg(sourceSg)，否则 UI 会把腾讯云 sg 的名字
   //       显示成 ClawPro 安全组的身份，违反 004 解耦心智。
   //   ✅ 构造一个新的 ClawPro 安全组：
   //       - name: "ClawPro-Default"（ClawPro 默认名，不继承 sourceSg.name）
@@ -1807,7 +2581,7 @@ export default function SecurityGroupManagement() {
       if (!prev) {
         const cloudSgId = generateRandomSgId();
         return {
-          name: "ClawPro-Default",
+          name: INITIAL_DEFAULT_SECURITY_GROUP_NAME,
           remark: "Agent 默认安全组",
           inboundCount: sourceSg.inboundCount,
           outboundCount: sourceSg.outboundCount,
@@ -1817,7 +2591,7 @@ export default function SecurityGroupManagement() {
           //   - sgId: 云端真实 sg-id 格式（sg-xxxxxxxx，8 位字符）
           //   - cloudSgName: 默认格式 clawpro-sg-{域名}-default-{序号}（不复用 sourceSg.name）
           cloudSgs: [
-            { sgId: cloudSgId, cloudSgName: "clawpro-sg-acme-default-01", seq: 1 },
+            { sgId: cloudSgId, cloudSgName: DEFAULT_CLOUD_SECURITY_GROUP_NAME, seq: 1 },
           ],
         };
       }
@@ -1878,6 +2652,7 @@ export default function SecurityGroupManagement() {
   const closeSelectSecurityGroupDialog = () => {
     setSgSearchKeyword("");
     setSgDialogCandidatePage(1);
+    setSgDialogSelected(null);
     setIsSgDialogPanelAccessStaged(false);
     setIsSgDialogOpen(false);
   };
@@ -2016,21 +2791,18 @@ export default function SecurityGroupManagement() {
 
   const renderSelectExistingSecurityGroupDialog = ({
     open,
-    mode,
     searchKeyword,
     selectedSecurityGroup,
     previewTab,
     candidateSecurityGroups,
     candidatePage,
     candidateTotalPages,
-    shouldShowPanelAccessAssist,
-    isPanelAccessStaged,
+    // 旧「一键添加 / 取消添加」交互已移除，相关 props 保留在接口定义以兼容调用方，但此处不再消费
     onOpenChange,
     onSearchChange,
     onClearSearch,
     onSelectSecurityGroup,
     onCandidatePageChange,
-    onTogglePanelAccessStaged,
     onPreviewTabChange,
     onCancel,
     onConfirm,
@@ -2058,7 +2830,7 @@ export default function SecurityGroupManagement() {
             <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
               <p className="text-xs leading-relaxed text-blue-600">
-                {mode === "create"
+                {sgDialogMode === "create"
                   ? "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到 ClawPro 安全组（默认名称为 ClawPro-Default），原云端安全组不受影响。"
                   : "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。"}
               </p>
@@ -2118,7 +2890,6 @@ export default function SecurityGroupManagement() {
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-800"}`}>{sg.name}</span>
-                                      <span className="text-xs text-gray-400 font-mono shrink-0 truncate max-w-[140px]">(id: {sg.cloudSgs[0]?.sgId ?? "—"})</span>
                                     </div>
                                     <p className="text-xs text-gray-500 mt-0.5 truncate">{sg.remark || "—"}</p>
                                   </div>
@@ -2172,34 +2943,6 @@ export default function SecurityGroupManagement() {
                 <div className="mb-3">
                   <Label className="text-sm font-medium text-gray-700">规则预览</Label>
                 </div>
-                {shouldShowPanelAccessAssist && (
-                  <div className={`mb-3 rounded-lg border px-3 py-2.5 ${
-                    isPanelAccessStaged
-                      ? "border-blue-100 bg-blue-50"
-                      : "border-amber-100 bg-amber-50"
-                  }`}>
-                    <div className="flex items-start gap-2">
-                      {isPanelAccessStaged ? (
-                        <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-400" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
-                      )}
-                      <p className={`text-xs leading-relaxed ${isPanelAccessStaged ? "text-blue-600" : "text-amber-700"}`}>
-                        {isPanelAccessStaged
-                          ? "已根据当前已启用的 ClawPro 配置，为本次导入补齐所需规则，确认后将随规则导入一并生效。"
-                          : "检测到该规则模板缺少当前已启用的 ClawPro 配置所需规则，导入后可能影响相关功能使用。"}
-                        {" "}
-                        <button
-                          type="button"
-                          onClick={onTogglePanelAccessStaged}
-                          className={`inline-flex items-center whitespace-nowrap align-middle rounded-md border px-2 py-0.5 text-xs font-medium transition-colors ${isPanelAccessStaged ? "border-blue-200 bg-white text-blue-600 hover:bg-blue-50" : "border-amber-200 bg-white text-amber-700 hover:bg-amber-50"}`}
-                        >
-                          {isPanelAccessStaged ? "取消添加" : "一键添加"}
-                        </button>
-                      </p>
-                    </div>
-                  </div>
-                )}
                 <div className="bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center px-4 border-b border-gray-100" style={{ minHeight: "44px" }}>
                     {(["outbound", "inbound"] as const).map((tab) => (
@@ -2257,7 +3000,6 @@ export default function SecurityGroupManagement() {
     </Dialog>
   );
 
-  const availableSubnets = config.vpcId ? (MOCK_SUBNETS[config.vpcId] ?? []) : [];
   const currentTab = TABS.find((t) => t.id === activeTab)!;
   // [004] U8：候选列表过滤掉 ClawPro 自建的云 sg（不能导入自己的规则到自己）
   //   判定条件（任一即过滤）：
@@ -2277,7 +3019,7 @@ export default function SecurityGroupManagement() {
       !isClawproManagedSg(sg) &&
       (sgSearchKeyword === "" ||
         sg.name.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
-        (sg.cloudSgs[0]?.sgId ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
+        sg.name.toLowerCase().includes(sgSearchKeyword.toLowerCase()) ||
         (sg.remark ?? "").toLowerCase().includes(sgSearchKeyword.toLowerCase()))
   );
   const selectableSecurityGroupTotalPages = Math.max(1, Math.ceil(selectableSecurityGroups.length / SECURITY_GROUP_DIALOG_PAGE_SIZE));
@@ -2307,14 +3049,6 @@ export default function SecurityGroupManagement() {
     : sgDialogSelected;
   const shouldShowSgDialogPanelAccessAssist = Boolean(
     sgDialogSelected && allowPanelAccess && (sgDialogMissingPanelAccessRules || isSgDialogPanelAccessStaged)
-  );
-
-  // VPC 切换且 CIDR 不一致的补充说明逻辑
-  const isVpcSwitched = config.vpcId !== savedConfig.vpcId;
-  const oldVpcCidr = MOCK_VPCS.find((v) => v.id === savedConfig.vpcId)?.cidr || (!savedConfig.vpcId || savedConfig.vpcId === "auto" ? AUTO_ASSIGNED_VPC.cidr : "");
-  const targetVpcCidr = MOCK_VPCS.find((v) => v.id === config.vpcId)?.cidr || (!config.vpcId || config.vpcId === "auto" ? AUTO_ASSIGNED_VPC.cidr : "");
-  const hasVpcCidrWarning = isVpcSwitched && targetVpcCidr !== oldVpcCidr && [...inboundRules, ...outboundRules].some(
-    (r) => r.source === oldVpcCidr && r.protocol === "ALL" && r.port === "ALL" && r.policy === "拒绝"
   );
 
   return (
@@ -2583,298 +3317,457 @@ export default function SecurityGroupManagement() {
 
         {activeTab === "vpc" && (
         <div>
-          {/* 私有网络与子网顶部提示条 */}
+          {/* 私有网络与子网顶部迁移提示条（存量企业 Agent VPC 迁移入口） */}
           {MigrationBanner}
 
-          {/* 说明文字区域 */}
+          {/* 顶部说明区 */}
           <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
             <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
             <ul className="text-xs text-blue-700 leading-relaxed space-y-1.5">
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><span className="font-medium">私有网络（VPC）：</span>选择「自动分配」时，系统会为企业统一分配 VPC，所有用户创建的 Agent 云服务器将默认共享该 VPC；您也可以选择其他已有 VPC，作为企业统一使用的 VPC。</span>
+                <span><span className="font-medium">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span><span className="font-medium">子网：</span>选择「自动分配」 VPC 时，系统会将 Agent 云服务器随机部署到系统分配可用区的子网下；您也可选择其他的 VPC 下的子网，或选择「不分配」跳过该可用区部署。</span>
+                <span><span className="font-medium">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</span>
               </li>
               <li className="flex gap-1.5">
                 <span className="shrink-0">•</span>
-                <span>如需限制实例间的内网互访，请将安全策略设置为内网不互通，以实现 Agent 云服务器间的隔离。</span>
+                <span><span className="font-medium">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用「预设策略」。</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="shrink-0">•</span>
+                <span><span className="font-medium">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
               </li>
             </ul>
           </div>
 
-          {/* VPC / 子网配置卡片 */}
+          {/* VPC 列表卡片 */}
           <div
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            {/* 标题栏 */}
-            <div className="flex items-center justify-between px-6 border-b border-gray-100" style={{ minHeight: "56px" }}>
+            {/* 标题栏：标题（按钮已下移到表格 tbody 末尾，弱化视觉） */}
+            <div className="flex items-center px-6 py-4 border-b border-gray-100">
               <span className="text-sm font-semibold text-gray-800">私有网络与子网配置</span>
-              {isDirty && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDiscard}
-                    className="h-7 px-3 text-xs text-gray-500"
-                  >
-                    取消
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      // 校验 0：不允许存在尚未完成选择的 pending slot
-                      for (const z of AVAILABLE_ZONES) {
-                        const slots = config.zoneSubnets[z] ?? [];
-                        if (slots.includes(SUBNET_PENDING)) {
-                          toast.error(`${z} 存在尚未选择的子网，请先完成选择或删除该行`);
-                          return;
-                        }
-                      }
-                      // 校验 1：至少有一个 Slot 非 "none"
-                      const allNone = AVAILABLE_ZONES.every((z) => {
-                        const slots = config.zoneSubnets[z] ?? [];
-                        return slots.every((v) => v === "none");
-                      });
-                      if (allNone) {
-                        toast.error("请至少选择一个子网");
-                        return;
-                      }
-                      // 校验 2：同一可用区内不允许重复具体子网 id
-                      for (const z of AVAILABLE_ZONES) {
-                        const slots = (config.zoneSubnets[z] ?? []).filter(
-                          (v) => v !== "none" && v !== "auto"
-                        );
-                        const unique = new Set(slots);
-                        if (unique.size !== slots.length) {
-                          toast.error(`${z} 存在重复选择的子网，请修改后再保存`);
-                          return;
-                        }
-                      }
-                      setShowVpcSaveDialog(true);
-                    }}
-                    className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    保存
-                  </Button>
-                </div>
-              )}
             </div>
 
-            {/* ── 私有网络区域 ── */}
-            <div className="px-6 py-4 border-b border-gray-100">
-              {/* 字段标题行 */}
-              <div className="grid grid-cols-[100px_1fr_40px] gap-4 mb-2">
-                <span className="text-xs font-medium text-gray-400">私有网络（VPC）</span>
-                <span />
-              </div>
-              {/* VPC 数据行 */}
-              <div className="grid grid-cols-[100px_1fr_40px] gap-4 items-center">
-                {/* 左：地域 */}
-                <span className="text-sm text-[oklch(0.707_0.022_261.325)]">全局</span>
+            {/* 表格 */}
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-50 bg-gray-50/50">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">私有网络（VPC）</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">子网配置</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">应用范围</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* 显示顺序：预设策略（type === "enterprise"）固定排在表格首行（默认主线），
+                    其余分组策略保持原有顺序（不影响 vpcList 状态本身的存储顺序） */}
+                {[...vpcList]
+                  .sort((a, b) => {
+                    const aDefault = a.type === "enterprise" ? 1 : 0;
+                    const bDefault = b.type === "enterprise" ? 1 : 0;
+                    return bDefault - aDefault;
+                  })
+                  .map((row, idx) => {
+                  const effectiveZoneSubnets = getEffectiveZoneSubnets(row);
+                  const assignedZones = AVAILABLE_ZONES.filter((z) => (effectiveZoneSubnets[z] ?? []).length > 0);
+                  const totalSubnets = assignedZones.reduce((sum, z) => sum + effectiveZoneSubnets[z].length, 0);
+                  const isDefault = row.type === "enterprise";
 
-                {/* 中： Combobox（自动分配 + 所有可选 VPC，支持关键字搜索） */}
-                {(() => {
-                  const currentVpc = MOCK_VPCS.find(v => v.id === config.vpcId);
-                  const isAuto = !config.vpcId || config.vpcId === "auto";
-                  const displayLabel = isAuto
-                    ? "自动分配"
-                    : currentVpc ? `${currentVpc.id} | ${currentVpc.name} | ${currentVpc.cidr}` : config.vpcId;
-                  const filteredVpcs = vpcSearch
-                    ? MOCK_VPCS.filter(v =>
-                        `${v.id} ${v.name} ${v.cidr}`.toLowerCase().includes(vpcSearch.toLowerCase())
-                      )
-                    : MOCK_VPCS;
                   return (
-                    <Popover open={vpcOpen} onOpenChange={(o) => { setVpcOpen(o); if (!o) setVpcSearch(""); }}>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={`h-9 w-full flex items-center justify-between px-3 rounded-md border border-gray-200 bg-white text-sm hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors ${
-                            isAuto ? "text-[oklch(0.707_0.022_261.325)]" : "text-[oklch(0.446_0.03_256.802)]"
-                          }`}
-                        >
-                          <span className="truncate">{displayLabel}</span>
-                          <ChevronDown className="w-4 h-4 shrink-0 text-gray-400 ml-2" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="p-0 shadow-lg border border-gray-200 rounded-lg overflow-hidden"
-                        style={{ width: "var(--radix-popover-trigger-width)" }}
-                        align="start"
-                        sideOffset={4}
-                      >
-                        <Command shouldFilter={false}>
-                          <CommandInput
-                            placeholder="搜索 VPC…"
-                            value={vpcSearch}
-                            onValueChange={setVpcSearch}
-                            className="text-sm"
-                          />
-                          <CommandList className="max-h-52 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                            <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的 VPC</CommandEmpty>
-                            <CommandGroup>
-                              {/* 自动分配选项：仅在无搜索关键字时显示 */}
-                              {!vpcSearch && (
-                                <CommandItem
-                                  value="auto"
-                                  onSelect={() => { handleVpcChange("auto"); setVpcOpen(false); setVpcSearch(""); }}
-                                  className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
-                                >
-                                  <span className="flex-1">自动分配</span>
-                                  {isAuto && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                </CommandItem>
-                              )}
-                              {filteredVpcs.map((vpc) => (
-                                <CommandItem
-                                  key={vpc.id}
-                                  value={vpc.id}
-                                  onSelect={() => { handleVpcChange(vpc.id); setVpcOpen(false); setVpcSearch(""); }}
-                                  className="text-[oklch(0.446_0.03_256.802)] cursor-pointer"
-                                >
-                                  <span className="flex-1">{vpc.id} | {vpc.name} | {vpc.cidr}</span>
-                                  {config.vpcId === vpc.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  );
-                })()}
-
-                {/* 刷新按钮 */}
-                <button
-                  onClick={handleRefreshVpc}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
-                  title="刷新私有网络列表"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${refreshingVpc ? "animate-spin" : ""}`} />
-                </button>
-              </div>
-            </div>
-
-            {/* ── 子网区域 ── */}
-            <div>
-              {/* 字段标题行 */}
-              <div className="grid grid-cols-[100px_1fr_40px] gap-4 px-6 py-2.5 border-b border-gray-50 bg-gray-50/30">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-medium text-gray-400">系统分配可用区</span>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 cursor-default shrink-0" />
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-[240px] text-xs leading-relaxed">
-                        系统自动选择的 Agent 云服务器主力可用区，不可修改。可通过指定子网来规定云服务器部署在哪个可用区。
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <span className="text-xs font-medium text-gray-400">子网</span>
-                <span />
-              </div>
-
-              {/* 每个可用区一个分组：左列为可用区名 + 刷新按钮，右列为多个子网 Slot + 添加按钮 */}
-              {AVAILABLE_ZONES.map((zone, zIdx) => {
-                const isRefreshing = refreshingZone === zone;
-                // 当前生效的 VPC ID：自动分配时用系统分配的 VPC
-                const effectiveVpcId = (config.vpcId && config.vpcId !== "auto") ? config.vpcId : AUTO_ASSIGNED_VPC.id;
-                const zoneSubnetList = MOCK_SUBNETS[effectiveVpcId] ?? [];
-                // VPC 是否为自动分配（此时子网行只读展示）
-                const isAutoVpc = !config.vpcId || config.vpcId === "auto";
-                const slots = config.zoneSubnets[zone] ?? (isAutoVpc ? ["auto"] : ["none"]);
-
-                // 已被该可用区其它 Slot 选中的具体 subnet id 集合（用于下拉置灰）
-                // 注意：pending slot 不算"已选"，不参与占用
-                const usedSubnetIds = new Set(
-                  slots.filter((v) => v !== "none" && v !== "auto" && v !== SUBNET_PENDING)
-                );
-                // 该可用区是否已存在具体子网（用于控制"+ 添加子网"按钮的出现时机）
-                // 未分配（仅 ["none"]）时隐藏该入口；用户通过下拉首次选定具体子网后，再显露"追加子网"的能力
-                const hasAnyConcrete = usedSubnetIds.size > 0;
-                // 是否存在尚未选择的 pending slot：存在时禁止再追加（强制用户先完成当前选择）
-                const hasPendingSlot = slots.includes(SUBNET_PENDING);
-                // 可添加更多 Slot 的条件：
-                //   - 非自动 VPC
-                //   - 仍有未被占用的具体子网
-                //   - 当前没有处于 pending 的 slot
-                const canAddMore =
-                  !isAutoVpc && usedSubnetIds.size < zoneSubnetList.length && !hasPendingSlot;
-
-                return (
-                  <div
-                    key={zone}
-                    className={`grid grid-cols-[100px_1fr_40px] gap-4 items-start px-6 py-3.5 ${
-                      zIdx < AVAILABLE_ZONES.length - 1 ? "border-b border-gray-50" : ""
-                    }`}
-                  >
-                    {/* 左：可用区（顶部对齐，多行时仍显示在首行） */}
-                    <span className="text-sm text-gray-700 pt-2">{zone}</span>
-
-                    {/* 中：多个子网 Slot + 添加子网按钮 */}
-                    <div className="flex flex-col gap-2">
-                      {slots.map((subnetVal, sIdx) => {
-                        const slotKey = `${zone}#${sIdx}`;
-                        const currentSubnet = zoneSubnetList.find((s) => s.id === subnetVal);
-                        const isPending = subnetVal === SUBNET_PENDING;
-                        const subnetDisplayLabel =
-                          subnetVal === "auto"
-                            ? "自动分配"
-                            : subnetVal === "none"
-                            ? "不分配"
-                            : isPending
-                            ? "请选择子网"
-                            : currentSubnet
-                            ? `${currentSubnet.id} | ${currentSubnet.name} | ${currentSubnet.cidr}`
-                            : subnetVal;
-                        const isSpecialVal = subnetVal === "auto" || subnetVal === "none" || isPending;
-                        const sq = subnetSearch[slotKey] ?? "";
-                        const filteredSubnets = sq
-                          ? zoneSubnetList.filter((s) =>
-                              `${s.id} ${s.name} ${s.cidr}`.toLowerCase().includes(sq.toLowerCase())
-                            )
-                          : zoneSubnetList;
-                        // 当前 Slot 右侧的剩余/总 IP（仅具体子网时展示）
-                        const currentRemainingLow =
-                          currentSubnet && currentSubnet.remainingIp / currentSubnet.totalIp < 0.1;
-
-                        return (
-                          <div key={slotKey} className="flex items-center gap-2">
-                            <Popover
-                              open={isAutoVpc ? false : !!subnetOpen[slotKey]}
-                              onOpenChange={(o) => {
-                                if (isAutoVpc) return;
-                                setSubnetOpen((prev) => ({ ...prev, [slotKey]: o }));
-                                if (!o) setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
-                              }}
+                    <Fragment key={row.id}>
+                      {/* 主行 */}
+                      <tr className={`${isDefault ? "bg-blue-50/80" : "hover:bg-gray-50/30"} transition-colors ${idx > 0 ? "border-t border-gray-50" : ""}`}>
+                        {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
+                        <td className="px-6 pt-4 pb-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => toggleVpcExpanded(row.id)}
+                              className="mt-0.5 shrink-0 text-gray-400 hover:text-blue-500 transition-colors"
+                              aria-label={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
+                              title={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
                             >
+                              {expandedVpcIds.has(row.id) ? (
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                            <div className="flex flex-col gap-0.5 min-w-0">
+                              <span className="text-sm font-medium text-gray-900 truncate">{row.vpcName}</span>
+                              {row.subnetStrategy === "auto" ? (
+                                // 自动分配 VPC：与子网保持一致的端到端语义，不展示具体 vpc-id/cidr
+                                <span className="text-xs text-gray-400">自动分配</span>
+                              ) : (
+                                <span className="text-xs text-gray-400 font-mono">{row.vpcId} · {row.cidr}</span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        {/* 子网配置：仅展示已配置子网总数 */}
+                        <td className="px-4 pt-4 pb-2">
+                          {totalSubnets === 0 ? (
+                            <span className="text-xs text-gray-400 whitespace-nowrap">未配置</span>
+                          ) : (
+                            <span className="text-sm text-gray-700 whitespace-nowrap">
+                              <span className="tabular-nums font-medium">{totalSubnets}</span>
+                              <span className="text-gray-500"> 个</span>
+                            </span>
+                          )}
+                        </td>
+                        {/* 策略：胶囊式徽章（对齐 ModelConfig 风格）；预设策略额外带 tooltip 说明 */}
+                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
+                          {row.type === "enterprise" ? (
+                            <span className="inline-flex items-center gap-1 align-middle">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default whitespace-nowrap">预设策略</span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center text-gray-400 hover:text-gray-500 cursor-default">
+                                    <Info className="w-3 h-3" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+                                  企业默认网络配置，适用于未分组用户，以及未匹配到用户组网络配置的场景。
+                                </TooltipContent>
+                              </Tooltip>
+                            </span>
+                          ) : (
+                            // 多选应用范围（与平台策略 GroupBadges 同款）：单行展示完整分组路径，
+                            // 放不下时折叠成「…共 N 个分组」，Tooltip 列出全部路径
+                            <GroupBadges groupNames={row.associatedGroups ?? []} />
+                          )}
+                        </td>
+                        {/* 操作：图标按钮（对齐 skills 规范） */}
+                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const isSystemDefault =
+                                  row.type === "enterprise" && row.vpcId === AUTO_ASSIGNED_VPC.id;
+                                setEditVpcDraft({
+                                  vpcId: row.vpcId,
+                                  // 仅系统默认企业级 VPC 保留原策略（可能是 auto）；
+                                  // 其他场景强制为 specified
+                                  subnetStrategy: isSystemDefault ? row.subnetStrategy : "specified",
+                                  zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => {
+                                    acc[z] = [...(row.zoneSubnets[z] ?? [])];
+                                    return acc;
+                                  }, {}),
+                                  associatedGroups: [...(row.associatedGroups ?? [])],
+                                });
+                                setZoneSubnetPickerOpen({});
+                                setShowEditVpcDialog(row);
+                              }}
+                              className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                              title="编辑"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            {row.type === "group" && (
+                              <button
+                                type="button"
+                                onClick={() => setShowDeleteVpcDialog(row)}
+                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                title="删除"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* 次级详情行：仅展开时渲染，按可用区纵向展示（视觉弱化，作当前行补充说明） */}
+                      {expandedVpcIds.has(row.id) && (
+                        <tr className={`${isDefault ? "bg-blue-50/80" : ""}`}>
+                          <td colSpan={4} className="px-6 pb-3 pt-0">
+                            <div className={`rounded-md ${isDefault ? "bg-white/60 border border-blue-100/40" : "bg-gray-50/50 border border-gray-100/80"} px-3 py-2`}>
+                              <div className="text-[11px] text-gray-400 mb-1.5">子网配置明细</div>
+                              <div className="flex flex-col gap-1">
+                                {AVAILABLE_ZONES.map((zone) => {
+                                  const subnets = effectiveZoneSubnets[zone] ?? [];
+                                  const isAssigned = subnets.length > 0;
+                                  // 自动分配 VPC 模式：后端尚未返回实际命中的子网标识，与线上保持一致：
+                                  // 每个可用区只展示"自动分配"四字（不渲染 subnet-id/name/cidr）
+                                  const rowIsAutoAssigned = row.subnetStrategy === "auto";
+                                  return (
+                                    <div key={zone} className="flex items-start gap-2 min-w-0">
+                                      <span className="text-xs font-medium shrink-0 w-16 text-gray-600">
+                                        {zone}
+                                      </span>
+                                      <span className="text-xs text-gray-300 shrink-0">:</span>
+                                      {rowIsAutoAssigned ? (
+                                        <span className="text-xs text-gray-400">自动分配</span>
+                                      ) : isAssigned ? (
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
+                                          {subnets.map((subnet) => (
+                                            <span
+                                              key={subnet.id}
+                                              className="inline-flex items-center gap-1.5 text-xs whitespace-nowrap"
+                                            >
+                                              <span className="font-mono text-gray-500">{subnet.id}</span>
+                                              <span className="text-gray-300">|</span>
+                                              <span className="font-medium text-gray-700">{subnet.name}</span>
+                                              <span className="text-gray-300">|</span>
+                                              <span className="font-mono text-gray-400">{subnet.cidr}</span>
+                                            </span>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <span className="text-xs text-gray-400">未分配</span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
+                {/* 表格末尾：添加分组网络策略入口（弱化为文字按钮，左对齐紧贴预设策略行下方） */}
+                <tr className="border-t border-gray-50">
+                  <td colSpan={4} className="px-6 py-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const placeholder: VpcListItem = {
+                          id: NEW_GROUP_VPC_ID,
+                          vpcId: "",
+                          vpcName: "",
+                          cidr: "",
+                          type: "group",
+                          associatedGroups: [],
+                          subnetStrategy: "specified",
+                          zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                          instanceCount: 0,
+                        };
+                        setEditVpcDraft({
+                          vpcId: "",
+                          subnetStrategy: "specified",
+                          zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                          associatedGroups: [],
+                        });
+                        setZoneSubnetPickerOpen({});
+                        setShowEditVpcDialog(placeholder);
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-1 -mx-2 rounded-md text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      添加分组网络策略
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* 底部提示 */}
+            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50/50">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                如现有私有网络/子网不符合要求，可以去腾讯云控制台{" "}
+                <a
+                  href="https://console.cloud.tencent.com/vpc/vpc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 underline inline-flex items-center gap-0.5"
+                >
+                  新建私有网络
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                {" "}或{" "}
+                <a
+                  href="https://console.cloud.tencent.com/vpc/subnet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 underline inline-flex items-center gap-0.5"
+                >
+                  新建子网
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                。
+              </p>
+            </div>
+          </div>
+
+          {/* ─── 编辑 VPC 弹窗 ─── */}
+          <Dialog open={!!showEditVpcDialog} onOpenChange={(open) => {
+            if (!open) {
+              setShowEditVpcDialog(null);
+              // 重置草稿，避免上次选择的用户组 / VPC / 子网在下次新增时残留
+              setEditVpcDraft({ vpcId: "", subnetStrategy: "auto", zoneSubnets: {}, associatedGroups: [] });
+              setZoneSubnetPickerOpen({});
+            }
+          }}>
+            <DialogContent
+              className="flex flex-col gap-0 p-0 overflow-hidden"
+              style={{ width: "min(92vw, 520px)", maxWidth: "520px", maxHeight: "min(90vh, 720px)" }}
+              onInteractOutside={(e) => e.preventDefault()}
+              onEscapeKeyDown={(e) => e.preventDefault()}
+            >
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100 shrink-0">
+                <DialogTitle className="text-base font-semibold text-gray-900">
+                  {showEditVpcDialog?.type === "enterprise"
+                    ? "编辑预设策略"
+                    : showEditVpcDialog?.id === NEW_GROUP_VPC_ID
+                      ? "添加分组策略"
+                      : "编辑分组策略"}
+                </DialogTitle>
+                {showEditVpcDialog?.type === "enterprise" ? (
+                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 mt-3">
+                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
+                      </li>
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                      </li>
+                    </ul>
+                  </div>
+                ) : showEditVpcDialog?.id === NEW_GROUP_VPC_ID ? (
+                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 mt-3">
+                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
+                      </li>
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                      </li>
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5 mt-3">
+                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>可修改该分组策略的应用范围、VPC 和子网。</span>
+                      </li>
+                      <li className="flex gap-1.5">
+                        <span className="shrink-0">•</span>
+                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </DialogHeader>
+
+              {/* 可滚动内容区 */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
+                {(() => {
+                  const isEnterprise = showEditVpcDialog?.type === "enterprise";
+                  // 企业级 VPC 的"自动分配"状态：vpcId = 系统默认 + subnetStrategy = auto
+                  const isAutoAssigned =
+                    isEnterprise &&
+                    editVpcDraft.vpcId === AUTO_ASSIGNED_VPC.id &&
+                    editVpcDraft.subnetStrategy === "auto";
+
+                  return (
+                    <>
+                      {/* ── 应用范围（仅分组网络） ── */}
+                      {showEditVpcDialog?.type === "group" && (
+                        <div className="space-y-3">
+                          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                            <span>应用范围</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center text-gray-400 hover:text-gray-600 cursor-help">
+                                    <Info className="w-3 h-3" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed normal-case tracking-normal font-normal">
+                                  新建 Agent 实例时若选择该用户组，将使用此分组策略。
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          {(() => {
+                            // 已被其他分组策略占用的分组 id 集合（置灰展示）。
+                            // 当前行已绑定的分组不算"被占用"——编辑时允许保留/取消。
+                            const currentRowNames = new Set(showEditVpcDialog?.associatedGroups ?? []);
+                            const occupiedNames = new Set<string>();
+                            vpcList.forEach((r) => {
+                              if (r.id === showEditVpcDialog?.id) return;
+                              (r.associatedGroups ?? []).forEach((name) => occupiedNames.add(name));
+                            });
+                            currentRowNames.forEach((name) => occupiedNames.delete(name));
+                            // [V5] 仅占用「分组自身 id」：父子节点彼此独立，可分别配置自己的策略
+                            //   - 业务约束：一个分组同一时刻只能存在一条策略（自己 id 不可被重复占用）
+                            //   - 父级被占用时，其子级仍可独立配置自己的策略；反之亦然
+                            //   - 在弹窗内的临时勾选交互（级联勾选父→子）仍由 ScopePopover 自身处理，与本处的"占用置灰"无关
+                            const nameToNode = new Map(ALL_GROUPS_SHARED.map((g) => [g.name, g]));
+                            const disabledIds = new Set<string>();
+                            occupiedNames.forEach((name) => {
+                              const node = nameToNode.get(name);
+                              if (!node) return;
+                              disabledIds.add(node.id);
+                            });
+                            const isNewRow = showEditVpcDialog?.id === NEW_GROUP_VPC_ID;
+                            const disabledTooltip = isNewRow
+                              ? "该用户组已配置策略，请编辑已有策略。"
+                              : "该用户组已配置策略，请选择其他用户组。";
+                            return (
+                              <GroupTagSelector
+                                value={editVpcDraft.associatedGroups}
+                                disabledIds={disabledIds}
+                                disabledTooltip={disabledTooltip}
+                                onChange={(next) => setEditVpcDraft((prev) => ({ ...prev, associatedGroups: next }))}
+                              />
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      {/* ── 私有网络（VPC） ── */}
+                      <div className="space-y-3">
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">私有网络（VPC）</div>
+                        {(() => {
+                          // 触发器展示值：优先展示选中 VPC 的完整信息；"自动分配"特殊态展示系统默认 VPC
+                          const triggerVpc = isAutoAssigned
+                            ? AUTO_ASSIGNED_VPC
+                            : MOCK_VPCS.find((v) => v.id === editVpcDraft.vpcId);
+                          // 下拉总条数：企业级场景含一条「自动分配」虚拟项
+                          const totalCount = MOCK_VPCS.length + (isEnterprise ? 1 : 0);
+                          return (
+                            <Popover open={editVpcPickerOpen} onOpenChange={setEditVpcPickerOpen}>
                               <PopoverTrigger asChild>
                                 <button
-                                  disabled={isAutoVpc}
-                                  className={`h-9 flex-1 min-w-0 flex items-center gap-2 px-3 rounded-md border bg-white text-sm transition-colors ${
-                                    isAutoVpc
-                                      ? "border-gray-100 bg-gray-50 text-[oklch(0.707_0.022_261.325)] opacity-60 cursor-not-allowed"
-                                      : `border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
-                                          isSpecialVal ? "text-[oklch(0.707_0.022_261.325)]" : "text-[oklch(0.446_0.03_256.802)]"
-                                        }`
-                                  }`}
+                                  type="button"
+                                  className="w-full h-12 px-4 rounded-xl border border-gray-100 bg-gray-50/40 text-sm text-gray-800 hover:border-gray-200 transition-colors data-[state=open]:border-blue-300 data-[state=open]:bg-white flex items-center justify-between gap-2"
+                                  data-state={editVpcPickerOpen ? "open" : "closed"}
                                 >
-                                  <span className="truncate flex-1 text-left">{subnetDisplayLabel}</span>
-                                  {/* 右侧剩余IP标签（仅具体子网显示） */}
-                                  {currentSubnet && (
-                                    <span
-                                      className={`shrink-0 text-xs tabular-nums whitespace-nowrap ${
-                                        currentRemainingLow ? "text-orange-500" : "text-gray-400"
-                                      }`}
-                                    >
-                                      剩余IP {currentSubnet.remainingIp}/{currentSubnet.totalIp}
-                                    </span>
+                                  {triggerVpc ? (
+                                    isAutoAssigned ? (
+                                      // 后端尚未返回"实际命中的 VPC 标识"，与线上保持一致：仅展示"自动分配"四字，
+                                      // 不暴露任何具体 VPC ID/名称/CIDR
+                                      <span className="text-gray-800">自动分配</span>
+                                    ) : (
+                                      <span className="flex items-center gap-2 min-w-0 text-gray-800">
+                                        <span className="font-mono shrink-0">{triggerVpc.id}</span>
+                                        <span className="text-gray-300 shrink-0">|</span>
+                                        <span className="truncate">{triggerVpc.name}</span>
+                                        <span className="text-gray-300 shrink-0">|</span>
+                                        <span className="font-mono shrink-0">{triggerVpc.cidr}</span>
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span className="text-gray-400">请选择 VPC</span>
                                   )}
-                                  <ChevronDown className="w-4 h-4 shrink-0 text-gray-400" />
+                                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
                                 </button>
                               </PopoverTrigger>
                               <PopoverContent
@@ -2883,81 +3776,60 @@ export default function SecurityGroupManagement() {
                                 align="start"
                                 sideOffset={4}
                               >
-                                <Command shouldFilter={false}>
-                                  <CommandInput
-                                    placeholder="搜索子网…"
-                                    value={sq}
-                                    onValueChange={(v) => setSubnetSearch((prev) => ({ ...prev, [slotKey]: v }))}
-                                    className="text-sm"
-                                  />
-                                  <CommandList className="max-h-60 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-                                    <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的子网</CommandEmpty>
+                                <Command>
+                                  <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-sm" />
+                                  <CommandList className="max-h-72 overflow-y-auto">
+                                    <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的 VPC</CommandEmpty>
                                     <CommandGroup>
-                                      {/* 不分配：仅在第一个子网（sIdx === 0）的下拉中显示，
-                                         用户可以通过选择"不分配"将整个可用区重置为初始态 */}
-                                      {!sq && sIdx === 0 && (
+                                      {isEnterprise && (
                                         <CommandItem
-                                          value="none"
+                                          key="auto"
+                                          value="自动分配"
                                           onSelect={() => {
-                                            handleSubnetChange(zone, sIdx, "none");
-                                            setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
-                                            setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                                            setEditVpcDraft((prev) => ({
+                                              ...prev,
+                                              vpcId: AUTO_ASSIGNED_VPC.id,
+                                              subnetStrategy: "auto",
+                                              zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                                            }));
+                                            setEditVpcPickerOpen(false);
                                           }}
-                                          className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
+                                          className="cursor-pointer"
                                         >
-                                          <span className="flex-1">不分配</span>
-                                          {subnetVal === "none" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                                          {/* 后端尚未返回"实际命中的 VPC 标识"，与线上保持一致：仅展示"自动分配"四字 */}
+                                          <div className="flex-1 min-w-0 flex items-center gap-2 text-sm">
+                                            <span className="text-gray-800">自动分配</span>
+                                          </div>
+                                          {isAutoAssigned && (
+                                            <Check className="w-4 h-4 text-blue-500 shrink-0 ml-2" />
+                                          )}
                                         </CommandItem>
                                       )}
-                                      {/* 自动分配：仅 VPC 为自动分配且无搜索关键字时显示（当前场景下此下拉已禁用） */}
-                                      {isAutoVpc && !sq && (
-                                        <CommandItem
-                                          value="auto"
-                                          onSelect={() => {
-                                            handleSubnetChange(zone, sIdx, "auto");
-                                            setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
-                                            setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
-                                          }}
-                                          className="text-[oklch(0.707_0.022_261.325)] cursor-pointer"
-                                        >
-                                          <span className="flex-1">自动分配</span>
-                                          {subnetVal === "auto" && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                                        </CommandItem>
-                                      )}
-                                      {filteredSubnets.map((subnet) => {
-                                        // 同可用区内已被其它 Slot 选择的子网，置灰不可选（但当前 Slot 自身除外）
-                                        const isTakenByOther =
-                                          usedSubnetIds.has(subnet.id) && subnet.id !== subnetVal;
-                                        const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                      {MOCK_VPCS.map((vpc) => {
+                                        const selected = !isAutoAssigned && editVpcDraft.vpcId === vpc.id;
                                         return (
                                           <CommandItem
-                                            key={subnet.id}
-                                            value={subnet.id}
-                                            disabled={isTakenByOther}
+                                            key={vpc.id}
+                                            value={`${vpc.id} ${vpc.name} ${vpc.cidr}`}
                                             onSelect={() => {
-                                              if (isTakenByOther) return;
-                                              handleSubnetChange(zone, sIdx, subnet.id);
-                                              setSubnetOpen((prev) => ({ ...prev, [slotKey]: false }));
-                                              setSubnetSearch((prev) => ({ ...prev, [slotKey]: "" }));
+                                              setEditVpcDraft((prev) => ({
+                                                ...prev,
+                                                vpcId: vpc.id,
+                                                subnetStrategy: "specified",
+                                                zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                                              }));
+                                              setEditVpcPickerOpen(false);
                                             }}
-                                            className={`cursor-pointer ${
-                                              isTakenByOther
-                                                ? "opacity-40 cursor-not-allowed"
-                                                : "text-[oklch(0.446_0.03_256.802)]"
-                                            }`}
+                                            className="cursor-pointer"
                                           >
-                                            <span className="flex-1 truncate">
-                                              {subnet.id} | {subnet.name} | {subnet.cidr}
-                                            </span>
-                                            {/* 剩余IP：标签 + 数值 */}
-                                            <span
-                                              className={`shrink-0 text-xs tabular-nums ml-2 whitespace-nowrap ${
-                                                remainingLow ? "text-orange-500" : "text-gray-400"
-                                              }`}
-                                            >
-                                              剩余IP {subnet.remainingIp}/{subnet.totalIp}
-                                            </span>
-                                            {subnetVal === subnet.id && (
+                                            <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
+                                              <span className="font-mono shrink-0">{vpc.id}</span>
+                                              <span className="text-gray-300 shrink-0">|</span>
+                                              <span className="truncate">{vpc.name}</span>
+                                              <span className="text-gray-300 shrink-0">|</span>
+                                              <span className="font-mono shrink-0">{vpc.cidr}</span>
+                                            </div>
+                                            {selected && (
                                               <Check className="w-4 h-4 text-blue-500 shrink-0 ml-2" />
                                             )}
                                           </CommandItem>
@@ -2965,102 +3837,406 @@ export default function SecurityGroupManagement() {
                                       })}
                                     </CommandGroup>
                                   </CommandList>
+                                  <div className="border-t border-gray-100 px-3 py-2 text-xs text-gray-400 bg-gray-50/50">
+                                    共 {totalCount} 条
+                                  </div>
                                 </Command>
                               </PopoverContent>
                             </Popover>
+                          );
+                        })()}
+                      </div>
 
-                            {/* 删除按钮：
-                               - 自动 VPC → 不显示
-                               - 已是 "不分配" 初始态（仅 1 行且值为 none）→ 禁用（无需再删）
-                               - 仅剩 1 行具体子网 → 删除后回退"不分配"
-                               - 多行 → 正常删除当前行（第二行及以上被移除，第一行被移除则后续行前移） */}
-                            {!isAutoVpc && (
-                              <button
-                                onClick={() => handleRemoveSubnet(zone, sIdx)}
-                                disabled={slots.length === 1 && subnetVal === "none"}
-                                className="w-8 h-8 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                title={
-                                  slots.length === 1 && subnetVal === "none"
-                                    ? "当前已是不分配状态"
-                                    : slots.length === 1
-                                    ? "删除后该可用区将变为不分配"
-                                    : "删除此子网"
-                                }
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                      {/* ── 可用区子网配置（新增模式下默认展开；其他场景：自动分配或已选 VPC 时展示） ── */}
+                      {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID) && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">可用区及子网配置</div>
+                            {!isAutoAssigned && (
+                              <span className="text-xs text-gray-400">
+                                已分配 {AVAILABLE_ZONES.filter((z) => (editVpcDraft.zoneSubnets[z] ?? []).length > 0).length} / {AVAILABLE_ZONES.length} 个可用区
+                              </span>
                             )}
                           </div>
-                        );
-                      })}
+                          <div className="space-y-3">
+                            {AVAILABLE_ZONES.map((zone) => {
+                              // 自动分配模式：每个可用区只读，仅展示"自动分配"四字
+                              // （后端尚未返回实际命中的子网标识，与线上保持一致：不展示 subnet-id/name/cidr）
+                              if (isAutoAssigned) {
+                                return (
+                                  <div
+                                    key={zone}
+                                    className="rounded-xl border border-gray-100 bg-gray-50/50"
+                                  >
+                                    <div className="flex items-center gap-3 px-4 py-3 min-w-0">
+                                      <span className="text-sm font-medium text-gray-700 shrink-0">{zone}</span>
+                                      <span className="text-xs text-gray-400">自动分配</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
 
-                      {/* + 添加子网按钮：
-                         - 自动分配 VPC 下永远不显示（子网行只读）
-                         - 未分配（仅 ["none"]）时也隐藏：用户需要先通过下拉选中一个具体子网，才会出现"追加"入口
-                         - 已分配至少一个具体子网时显示；若所有子网都已被占用，按钮保留但置为禁用态 */}
-                      {!isAutoVpc && hasAnyConcrete && (
-                        <button
-                          type="button"
-                          onClick={() => canAddMore && handleAddSubnet(zone)}
-                          disabled={!canAddMore}
-                          className={`h-9 w-1/5 self-start flex items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors ${
-                            canAddMore
-                              ? "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/30"
-                              : "border-gray-100 text-gray-300 cursor-not-allowed"
-                          }`}
-                          title={canAddMore ? "添加子网" : "该 VPC 下已无可添加子网"}
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span className="truncate">添加子网</span>
-                        </button>
+                              const selectedIds = editVpcDraft.zoneSubnets[zone] ?? [];
+                              const zoneAllSubnets = getSubnetsByVpcZone(editVpcDraft.vpcId, zone);
+                              const selectedSubnets = selectedIds
+                                .map((id) => zoneAllSubnets.find((s) => s.id === id))
+                                .filter((s): s is SubnetEntity => !!s);
+                              const selectableSubnets = zoneAllSubnets.filter((s) => !selectedIds.includes(s.id));
+                              const pickerKey = `${showEditVpcDialog?.id ?? ""}#${zone}`;
+                              const isPickerOpen = !!zoneSubnetPickerOpen[pickerKey];
+                              const isUnassigned = selectedIds.length === 0;
+
+                              return (
+                                <div
+                                  key={zone}
+                                  className={`rounded-xl border transition-colors ${
+                                    isUnassigned ? "border-gray-100 bg-gray-50/40" : "border-gray-200 bg-white"
+                                  }`}
+                                >
+                                  {/* 可用区头部 */}
+                                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-gray-800">{zone}</span>
+                                      {isUnassigned ? (
+                                        <span className="text-xs text-gray-400">未分配</span>
+                                      ) : (
+                                        <span className="text-xs text-gray-500">{selectedSubnets.length} 个子网</span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      {!isUnassigned && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditVpcDraft((prev) => ({
+                                            ...prev,
+                                            zoneSubnets: { ...prev.zoneSubnets, [zone]: [] },
+                                          }))}
+                                          className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded-md hover:bg-gray-100"
+                                        >
+                                          不分配
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* 子网内容区 */}
+                                  {!isUnassigned && (
+                                    <div className="px-4 py-3 space-y-2">
+                                      {/* 已选子网 chips */}
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {selectedSubnets.map((subnet) => {
+                                          const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                          return (
+                                            <div
+                                              key={subnet.id}
+                                              className="inline-flex items-center gap-2 pl-2.5 pr-1 py-1 rounded-md bg-blue-50 border border-blue-100 text-xs"
+                                            >
+                                              <div className="flex items-center gap-1.5 min-w-0">
+                                                <span className="font-medium text-blue-700 truncate max-w-[140px]">{subnet.name}</span>
+                                                <span className="text-blue-400 font-mono">{subnet.cidr}</span>
+                                                <span className={`tabular-nums ${remainingLow ? "text-orange-500" : "text-blue-400"}`}>
+                                                  · 剩余 IP {subnet.remainingIp}/{subnet.totalIp}
+                                                </span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={() => setEditVpcDraft((prev) => ({
+                                                  ...prev,
+                                                  zoneSubnets: {
+                                                    ...prev.zoneSubnets,
+                                                    [zone]: (prev.zoneSubnets[zone] ?? []).filter((id) => id !== subnet.id),
+                                                  },
+                                                }))}
+                                                className="w-4 h-4 flex items-center justify-center rounded-sm text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                                                title="移除此子网"
+                                              >
+                                                <X className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* 添加子网 */}
+                                  <div className={`px-4 ${isUnassigned ? "py-3" : "pb-3"}`}>
+                                    <Popover
+                                      open={isPickerOpen}
+                                      onOpenChange={(o) => setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: o }))}
+                                    >
+                                      <PopoverTrigger asChild>
+                                        <button
+                                          type="button"
+                                          disabled={selectableSubnets.length === 0}
+                                          className={`h-8 w-full flex items-center justify-center gap-1.5 rounded-md border border-dashed text-xs transition-colors ${
+                                            selectableSubnets.length === 0
+                                              ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                                              : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/40"
+                                          }`}
+                                          title={!editVpcDraft.vpcId ? "请先选择 VPC" : selectableSubnets.length === 0 ? "该可用区下无可添加的子网" : "添加子网"}
+                                        >
+                                          <Plus className="w-3.5 h-3.5" />
+                                          <span>
+                                            {!editVpcDraft.vpcId
+                                              ? "请先选择 VPC"
+                                              : selectableSubnets.length === 0
+                                                ? (zoneAllSubnets.length === 0 ? "该可用区暂无子网" : "已全部添加")
+                                                : "添加子网"}
+                                          </span>
+                                        </button>
+                                      </PopoverTrigger>
+                                      <PopoverContent
+                                        className="p-0 shadow-lg border border-gray-200 rounded-lg overflow-hidden"
+                                        style={{ width: "var(--radix-popover-trigger-width)" }}
+                                        align="start"
+                                        sideOffset={4}
+                                      >
+                                        <Command>
+                                          <CommandInput placeholder="搜索子网 ID / 名称…" className="text-sm" />
+                                          <CommandList className="max-h-72 overflow-y-auto">
+                                            <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的子网</CommandEmpty>
+                                            <CommandGroup>
+                                              {selectableSubnets.map((subnet) => {
+                                                const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                                return (
+                                                  <CommandItem
+                                                    key={subnet.id}
+                                                    value={`${subnet.id} ${subnet.name} ${subnet.cidr}`}
+                                                    onSelect={() => {
+                                                      setEditVpcDraft((prev) => ({
+                                                        ...prev,
+                                                        zoneSubnets: {
+                                                          ...prev.zoneSubnets,
+                                                          [zone]: [...(prev.zoneSubnets[zone] ?? []), subnet.id],
+                                                        },
+                                                      }));
+                                                      setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: false }));
+                                                    }}
+                                                    className="cursor-pointer"
+                                                  >
+                                                    <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
+                                                      <span className="font-mono shrink-0">{subnet.id}</span>
+                                                      <span className="text-gray-300 shrink-0">|</span>
+                                                      <span className="truncate">{subnet.name}</span>
+                                                      <span className="text-gray-300 shrink-0">|</span>
+                                                      <span className="font-mono shrink-0">{subnet.cidr}</span>
+                                                    </div>
+                                                    <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-orange-500" : "text-gray-400"}`}>
+                                                      剩余 IP {subnet.remainingIp}/{subnet.totalIp}
+                                                    </span>
+                                                  </CommandItem>
+                                                );
+                                              })}
+                                            </CommandGroup>
+                                          </CommandList>
+                                          <div className="border-t border-gray-100 px-3 py-2 text-xs text-gray-400 bg-gray-50/50">
+                                            共 {selectableSubnets.length} 条
+                                          </div>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* 底部按钮 */}
+              <div className="shrink-0 flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-white">
+                <Button variant="outline" size="sm" onClick={() => setShowEditVpcDialog(null)}>取消</Button>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => {
+                    if (!showEditVpcDialog) return;
+                    const isEnterprise = showEditVpcDialog.type === "enterprise";
+                    const isAutoAssigned =
+                      isEnterprise &&
+                      editVpcDraft.vpcId === AUTO_ASSIGNED_VPC.id &&
+                      editVpcDraft.subnetStrategy === "auto";
+                    // 校验：分组网络必须选择应用范围
+                    if (!isEnterprise && editVpcDraft.associatedGroups.length === 0) {
+                      toast.error("请选择应用范围");
+                      return;
+                    }
+                    // 校验：非自动分配场景下必须已选 VPC
+                    if (!isAutoAssigned && !editVpcDraft.vpcId) {
+                      toast.error("请先选择私有网络（VPC）");
+                      return;
+                    }
+                    // 校验：指定子网模式下至少有一个可用区分配了子网
+                    if (editVpcDraft.subnetStrategy === "specified") {
+                      const hasAny = AVAILABLE_ZONES.some((z) => (editVpcDraft.zoneSubnets[z] ?? []).length > 0);
+                      if (!hasAny) {
+                        toast.error("请至少为一个可用区配置子网");
+                        return;
+                      }
+                    }
+                    const vpc = MOCK_VPCS.find((v) => v.id === editVpcDraft.vpcId);
+                    const isNewRow = showEditVpcDialog.id === NEW_GROUP_VPC_ID;
+                    if (isNewRow) {
+                      // 新增：校验所选用户组未被其他行占用
+                      const selectedSet = new Set(editVpcDraft.associatedGroups);
+                      const conflictGroup = vpcList
+                        .flatMap((r) => r.associatedGroups ?? [])
+                        .find((g) => selectedSet.has(g));
+                      if (conflictGroup) {
+                        toast.error(`用户组「${conflictGroup}」已绑定分组策略`);
+                        return;
+                      }
+                      const displayName = editVpcDraft.associatedGroups[0] ?? "";
+                      const newItem: VpcListItem = {
+                        id: "vpc-row-" + Date.now(),
+                        vpcId: editVpcDraft.vpcId,
+                        vpcName: vpc?.name || `${displayName}网络`,
+                        cidr: vpc?.cidr || "",
+                        type: "group",
+                        associatedGroups: [...editVpcDraft.associatedGroups],
+                        subnetStrategy: editVpcDraft.subnetStrategy,
+                        zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => {
+                          acc[z] = [...(editVpcDraft.zoneSubnets[z] ?? [])];
+                          return acc;
+                        }, {}),
+                        instanceCount: 0,
+                      };
+                      // 校验通过 → 挂起待二次确认
+                      setPendingVpcSave({
+                        mode: "newGroup",
+                        execute: () => {
+                          setVpcList((prev) => [...prev, newItem]);
+                          setShowEditVpcDialog(null);
+                        },
+                      });
+                      return;
+                    }
+                    // 编辑：构造新行 + 挂起待二次确认
+                    const targetId = showEditVpcDialog.id;
+                    setPendingVpcSave({
+                      mode: isEnterprise ? "editGlobal" : "editGroup",
+                      execute: () => {
+                        setVpcList((prev) => prev.map((r) =>
+                          r.id === targetId
+                            ? {
+                                ...r,
+                                vpcId: editVpcDraft.vpcId,
+                                // auto 模式（仅预设策略可选）锁定为"企业默认网络"，
+                                // 避免回写具体 VPC 的 name/cidr 与"自动分配"语义矛盾
+                                vpcName: editVpcDraft.subnetStrategy === "auto"
+                                  ? "企业默认网络"
+                                  : (vpc?.name || r.vpcName),
+                                cidr: editVpcDraft.subnetStrategy === "auto"
+                                  ? r.cidr
+                                  : (vpc?.cidr || r.cidr),
+                                subnetStrategy: editVpcDraft.subnetStrategy,
+                                // 分组网络允许切换应用范围；企业级不变
+                                associatedGroups: isEnterprise ? r.associatedGroups : [...editVpcDraft.associatedGroups],
+                                zoneSubnets: editVpcDraft.subnetStrategy === "specified"
+                                  ? AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => {
+                                      acc[z] = [...(editVpcDraft.zoneSubnets[z] ?? [])];
+                                      return acc;
+                                    }, {})
+                                  : AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                              }
+                            : r
+                        ));
+                        setShowEditVpcDialog(null);
+                      },
+                    });
+                  }}
+                >
+                  保存
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* ─── 删除确认弹窗 ─── */}
+          <Dialog open={!!showDeleteVpcDialog} onOpenChange={(open) => !open && setShowDeleteVpcDialog(null)}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-base font-semibold text-gray-900">确认删除</DialogTitle>
+              </DialogHeader>
+              <div className="py-2">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  该操作仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowDeleteVpcDialog(null)}>取消</Button>
+                <Button
+                  className="bg-red-500 hover:bg-red-600 text-white"
+                  onClick={() => {
+                    if (!showDeleteVpcDialog) return;
+                    setVpcList((prev) => prev.filter((r) => r.id !== showDeleteVpcDialog.id));
+                    setShowDeleteVpcDialog(null);
+                    toast.success("已删除该分组策略");
+                  }}
+                >
+                  确认
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* ─── 保存确认弹窗（新增分组 / 编辑预设 / 编辑分组 三种模式共用） ─── */}
+          <Dialog open={!!pendingVpcSave} onOpenChange={(open) => !open && setPendingVpcSave(null)}>
+            <DialogContent className="sm:max-w-md">
+              {(() => {
+                if (!pendingVpcSave) return null;
+                const titleMap = {
+                  newGroup: "确认添加",
+                  editGlobal: "确认修改",
+                  editGroup: "确认修改",
+                } as const;
+                const bodyMap = {
+                  newGroup: "新增后，若用户在新建 Agent 实例时选择该用户组，则实例将使用所选 VPC 与子网。",
+                  editGlobal: "修改后，未分组用户及未匹配到分组策略的用户，后续新建 Agent 实例时将使用新的预设策略。已有 Agent 实例不受影响。",
+                  editGroup: "修改后，后续新建 Agent 实例时，将按新的应用范围、VPC 与子网配置生效。已有 Agent 实例不受影响。",
+                } as const;
+                const confirmTextMap = {
+                  newGroup: "确认",
+                  editGlobal: "确认",
+                  editGroup: "确认",
+                } as const;
+                const successTextMap = {
+                  newGroup: "已新增分组策略",
+                  editGlobal: "已更新预设策略",
+                  editGroup: "已更新分组策略",
+                } as const;
+                const mode = pendingVpcSave.mode;
+                return (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle className="text-base font-semibold text-gray-900">{titleMap[mode]}</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-2">
+                      <p className="text-sm text-gray-600 leading-relaxed">{bodyMap[mode]}</p>
                     </div>
-
-                    {/* 右：刷新按钮（按可用区刷新当前 VPC 下的子网列表） */}
-                    <button
-                      onClick={() => handleRefreshZone(zone)}
-                      disabled={isAutoVpc}
-                      className={`w-8 h-8 mt-0.5 flex items-center justify-center rounded-lg border transition-colors ${
-                        isAutoVpc
-                          ? "border-gray-100 text-gray-300 opacity-60 cursor-not-allowed"
-                          : "border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300"
-                      }`}
-                      title="刷新子网列表"
-                    >
-                      <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-                    </button>
-                  </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setPendingVpcSave(null)}>取消</Button>
+                      <Button
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          pendingVpcSave.execute();
+                          setPendingVpcSave(null);
+                          toast.success(successTextMap[mode]);
+                        }}
+                      >
+                        {confirmTextMap[mode]}
+                      </Button>
+                    </DialogFooter>
+                  </>
                 );
-              })}
-            </div>
-
-            {/* 底部提示文案 */}
-            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50/50">
-              <p className="text-xs text-gray-500 leading-relaxed">
-                如现有私有网络/子网不符合要求，可以去腾讯云控制台{" "}
-                <a
-                  href="https://console.cloud.tencent.com/vpc/vpc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
-                >
-                  新建私有网络
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-                </a>
-                {" "}或{" "}
-                <a
-                  href="https://console.cloud.tencent.com/vpc/subnet"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
-                >
-                  新建子网
-                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-                </a>
-                。
-              </p>
-            </div>
-          </div>
+              })()}
+            </DialogContent>
+          </Dialog>
         </div>
         )}
 
@@ -3343,7 +4519,7 @@ export default function SecurityGroupManagement() {
             outboundCount: initialOutbound.length,
             inboundRules: initialInbound,
             outboundRules: initialOutbound,
-            cloudSgs: [{ sgId: cloudSgId, cloudSgName: "clawpro-sg-acme-default-01", seq: 1 }],
+            cloudSgs: [{ sgId: cloudSgId, cloudSgName: DEFAULT_CLOUD_SECURITY_GROUP_NAME, seq: 1 }],
           };
           MOCK_SECURITY_GROUPS.unshift(newSg);
           setCurrentSg(newSg);
@@ -3357,7 +4533,6 @@ export default function SecurityGroupManagement() {
       {/* ─── 切换安全组大弹窗（上下布局） ──────────────────────────────────────────────────────────────── */}
       {renderSelectExistingSecurityGroupDialog({
         open: isSgDialogOpen,
-        mode: sgDialogMode,
         searchKeyword: sgSearchKeyword,
         selectedSecurityGroup: sgDialogPreviewSecurityGroup,
         previewTab: sgDialogTab,
@@ -3396,16 +4571,8 @@ export default function SecurityGroupManagement() {
         onPreviewTabChange: setSgDialogTab,
         onCancel: closeSelectSecurityGroupDialog,
         onConfirm: () => {
-          if (!sgDialogSelected) return;
-          // [004] 空态新建（mode='create'）：跳过二次确认，因为还没有 Agent 绑这个 SG，
-          //   不存在"立即影响所有 Agent"的风险；直接 apply 创建即可。
-          // 稳定态替换（mode='replace'）：保留二次确认，存量 Agent 会立即受影响。
-          if (sgDialogMode === "create") {
-            applyCurrentSecurityGroup(sgDialogSelected);
-            toast.success("ClawPro 安全组已创建，规则已导入");
-            closeSelectSecurityGroupDialog();
-            return;
-          }
+          if (!sgDialogPreviewSecurityGroup) return;
+          // 不直接执行变更，先弹二次确认弹窗（PR #169 精打磨）
           setIsConfirmSwitchDialogOpen(true);
         },
       })}
@@ -3454,7 +4621,6 @@ export default function SecurityGroupManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
 
       {/* ─── 添加规则弹窗 ───────────────────────────────────────────────────────────────── */}
       <Dialog
@@ -3599,7 +4765,6 @@ export default function SecurityGroupManagement() {
                     } else {
                       setOutboundRules((prev) => [...prev, newRule]);
                     }
-
                     setShowAddDialog(null);
                     setAddDraft({});
                     toast.success("规则添加成功");
@@ -3764,33 +4929,6 @@ export default function SecurityGroupManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* VPC 保存确认对话框 */}
-      <Dialog open={showVpcSaveDialog} onOpenChange={setShowVpcSaveDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>确认保存网络配置</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600">
-              确认保存当前私有网络和子网配置？<br />
-              修改后将对后续新创建的 Agent 云服务器生效。
-            </p>
-            {hasVpcCidrWarning && (
-              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mt-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <p className="text-xs text-amber-700 leading-relaxed">
-                  检测到目标 VPC 的 CIDR 与当前安全组中的 VPC CIDR 规则不一致。切换后，请检查并调整相关安全组规则。
-                </p>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowVpcSaveDialog(false)}>取消</Button>
-            <Button onClick={handleSaveVpc} className="bg-blue-600 hover:bg-blue-700 text-white">继续保存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {MigrationConfirmDialog}
       {MigrationProgressDialog}
       {/* ─── 删除规则二次确认弹窗 ──────────────────────────────────────────────────────── */}
@@ -3814,14 +4952,14 @@ export default function SecurityGroupManagement() {
             <Button
               className="bg-red-600 hover:bg-red-700 text-white border-transparent"
               onClick={() => {
-                if (showDeleteDialog) {
-                  if (showDeleteDialog.type === "inbound") {
-                    setInboundRules((prev) => prev.filter((r) => r.id !== showDeleteDialog.id));
-                  } else {
-                    setOutboundRules((prev) => prev.filter((r) => r.id !== showDeleteDialog.id));
-                  }
-                  toast.success("规则已删除");
+                if (!showDeleteDialog) return;
+                const snapshot = showDeleteDialog;
+                if (snapshot.type === "inbound") {
+                  setInboundRules((prev) => prev.filter((r) => r.id !== snapshot.id));
+                } else {
+                  setOutboundRules((prev) => prev.filter((r) => r.id !== snapshot.id));
                 }
+                toast.success("规则已删除");
                 setShowDeleteDialog(null);
               }}
             >

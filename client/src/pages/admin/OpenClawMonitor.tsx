@@ -2,7 +2,7 @@
  * AgentList - 管控端 Agent 列表页
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,9 @@ import {
 } from "@/components/ui/popover";
 import { MOCK_DEPARTMENTS, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
+import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -127,6 +130,241 @@ const MOCK_CLAWS: Claw[] = [
 ];
 
 const PAGE_SIZE = 10;
+
+// ─── 分组相关工具函数 ─────────────────────────────────────────────────────
+
+/** 获取分组的完整路径（如 "产品组" 或 "研发组 / 前端"） */
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.join(" / ");
+}
+
+/** 按 source 分桶标题 */
+const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
+  "oneid-dept": "部门",
+  "oneid-group": "自定义分组",
+  manual: "自定义分组",
+};
+
+/** 获取某 agent creator 对应的分组信息（OneID 模式，只返回一个） */
+function getCreatorGroupItemOneid(creator: string): { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null {
+  const user = MOCK_USERS.find((u) => u.userId === creator);
+  if (!user) return null;
+  // 优先取 oneid-group（自定义分组），其次取 oneid-dept（部门）
+  let deptItem: { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null = null;
+  for (const gid of user.groupIds) {
+    const g = MOCK_GROUPS.find((g) => g.id === gid);
+    if (!g) continue;
+    if (g.source === "oneid-group") {
+      return { id: gid, path: getGroupPath(gid, MOCK_GROUPS), kind: "oneid-group" };
+    }
+    if (g.source === "oneid-dept" && !deptItem) {
+      deptItem = { id: gid, path: getGroupPath(gid, MOCK_GROUPS), kind: "oneid-dept" };
+    }
+  }
+  return deptItem;
+}
+
+/** 获取某 agent creator 对应的分组信息（普通模式，只返回一个） */
+function getCreatorGroupItemManual(creator: string): { id: string; path: string } | null {
+  const user = MOCK_USERS_MANUAL.find((u) => u.userId === creator);
+  if (!user || user.groupIds.length === 0) return null;
+  const gid = user.groupIds[0];
+  return { id: gid, path: getGroupPath(gid, MOCK_MANUAL_GROUPS) };
+}
+
+/** 获取某 agent creator 所属的所有分组 id（含子孙逻辑：选中某分组时，其用户应该被命中） */
+function getCreatorAllGroupIds(creator: string, hasOneid: boolean): string[] {
+  if (hasOneid) {
+    const user = MOCK_USERS.find((u) => u.userId === creator);
+    return user ? user.groupIds : [];
+  } else {
+    const user = MOCK_USERS_MANUAL.find((u) => u.userId === creator);
+    return user ? user.groupIds : [];
+  }
+}
+
+/** 获取节点及其所有子孙 ID */
+function getGroupDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getGroupDescendantIds(c)));
+  return ids;
+}
+
+// ─── 分组筛选树节点（递归） ──────────────────────────────────────────────
+function GroupTreeNodeItem({
+  node, level, selected, expanded, onToggle, onSelect,
+}: {
+  node: GroupTreeNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+        }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+            {isExpanded
+              ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+          </button>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          </span>
+        )}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+      </div>
+      {hasChildren && isExpanded && node.children.map((child) => (
+        <GroupTreeNodeItem key={child.id} node={child} level={level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 分组筛选弹出框 ─────────────────────────────────────────────────────
+function InstanceGroupFilter({
+  groups, value, onChange, hasOneid,
+}: {
+  groups: UserGroup[]; value: string; onChange: (v: string) => void; hasOneid: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => { if (open) { setTempValue(value); setSearchQuery(""); } }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  // 按 source 分桶构建树
+  const { activeSources, treesMap } = useMemo(() => {
+    if (hasOneid) {
+      const buckets: Record<string, UserGroup[]> = { "oneid-dept": [], "oneid-group": [] };
+      groups.forEach((g) => { if (buckets[g.source]) buckets[g.source].push(g); });
+      const order: GroupSource[] = ["oneid-dept", "oneid-group"];
+      const active = order.filter((s) => (buckets[s] || []).length > 0);
+      const tMap: Record<string, GroupTreeNode[]> = {};
+      active.forEach((s) => { tMap[s] = buildGroupTree(buckets[s]); });
+      return { activeSources: active, treesMap: tMap };
+    } else {
+      const trees = buildGroupTree(groups);
+      return { activeSources: ["manual" as GroupSource], treesMap: { manual: trees } };
+    }
+  }, [groups, hasOneid]);
+
+  // 搜索过滤
+  const matchedIds = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    return new Set(
+      groups.filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q)).map((g) => g.id)
+    );
+  }, [searchQuery, groups]);
+
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedIds) return true;
+    if (matchedIds.has(node.id)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  // 找到选中节点名称
+  const selectedGroup = tempValue ? groups.find((g) => g.id === tempValue) : undefined;
+  const triggerGroup = value ? groups.find((g) => g.id === value) : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerGroup ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerGroup?.name || "全部分组"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        {/* 搜索 */}
+        <div className="px-3 pt-3 pb-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索分组"
+              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+        </div>
+        <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+          {/* 全部分组 */}
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {/* 按 source 分区展示 */}
+          {activeSources.map((source) => (
+            <div key={source}>
+              {hasOneid && (
+                <div className="px-2 pt-3 pb-1">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {GROUP_SOURCE_LABELS[source]}
+                  </span>
+                </div>
+              )}
+              {(treesMap[source] || []).map((root) =>
+                isNodeVisible(root) ? (
+                  <GroupTreeNodeItem key={root.id} node={root} level={0}
+                    selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+                ) : null
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 text-xs text-gray-500 truncate">
+            {selectedGroup ? getGroupPath(selectedGroup.id, groups) : "全部分组"}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 // ─── 部门树节点（递归）──────────────────────────────────────────────────────
 function InstanceDepartmentTreeNode({
@@ -257,27 +495,228 @@ function InstanceDepartmentFilter({
   );
 }
 
+// ─── 部门列头筛选面板 ─────────────────────────────────────────────────────
+function DepartmentColumnFilter({
+  departments, value, onConfirm, onCancel,
+}: {
+  departments: DepartmentNode[]; value: string; onConfirm: (v: string) => void; onCancel: () => void;
+}) {
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const isNodeVisible = (node: DepartmentNode): boolean => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    if (node.name.toLowerCase().includes(q)) return true;
+    return (node.children || []).some(isNodeVisible);
+  };
+
+  const renderNode = (node: DepartmentNode, level: number) => {
+    if (!isNodeVisible(node)) return null;
+    const hasChildren = node.children && node.children.length > 0;
+    const isExpanded = expanded.has(node.id);
+    const isSelected = tempValue === node.id;
+    return (
+      <div key={node.id}>
+        <div
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
+          onClick={() => setTempValue(node.id)}
+        >
+          {hasChildren ? (
+            <button className="w-4 h-4 flex items-center justify-center flex-shrink-0" onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}>
+              {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+            </button>
+          ) : (
+            <span className="w-4 h-4 flex items-center justify-center flex-shrink-0"><span className="w-1.5 h-1.5 rounded-full bg-gray-300" /></span>
+          )}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        </div>
+        {hasChildren && isExpanded && node.children!.map((child) => renderNode(child, level + 1))}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索部门"
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+      </div>
+      <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+        </div>
+        {departments.map((d) => renderNode(d, 0))}
+      </div>
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+      </div>
+    </>
+  );
+}
+
+// ─── 分组列头筛选面板 ─────────────────────────────────────────────────────
+function GroupColumnFilter({
+  groups, value, hasOneid, onConfirm, onCancel,
+}: {
+  groups: UserGroup[]; value: string; hasOneid: boolean; onConfirm: (v: string) => void; onCancel: () => void;
+}) {
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const { activeSources, treesMap } = useMemo(() => {
+    if (hasOneid) {
+      const buckets: Record<string, UserGroup[]> = { "oneid-dept": [], "oneid-group": [] };
+      groups.forEach((g) => { if (buckets[g.source]) buckets[g.source].push(g); });
+      const order: GroupSource[] = ["oneid-dept", "oneid-group"];
+      const active = order.filter((s) => (buckets[s] || []).length > 0);
+      const tMap: Record<string, GroupTreeNode[]> = {};
+      active.forEach((s) => { tMap[s] = buildGroupTree(buckets[s]); });
+      return { activeSources: active, treesMap: tMap };
+    } else {
+      const trees = buildGroupTree(groups);
+      return { activeSources: ["manual" as GroupSource], treesMap: { manual: trees } };
+    }
+  }, [groups, hasOneid]);
+
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    if (node.name.toLowerCase().includes(q)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  return (
+    <>
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索分组"
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+      </div>
+      <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+        </div>
+        {activeSources.map((source) => (
+          <div key={source}>
+            {hasOneid && (
+              <div className="px-2 pt-3 pb-1">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {GROUP_SOURCE_LABELS[source]}
+                </span>
+              </div>
+            )}
+            {(treesMap[source] || []).map((root) =>
+              isNodeVisible(root) ? (
+                <GroupTreeNodeItem key={root.id} node={root} level={0}
+                  selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+              ) : null
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+      </div>
+    </>
+  );
+}
+
 export default function AgentMonitor() {
   const [, setLocation] = useLocation();
   const { hasOneid } = useAdminMode();
-  const [claws, setClaws] = useState<Claw[]>(
-    [...(hasOneid ? (MOCK_CLAWS_WITH_DEPT as Claw[]) : MOCK_CLAWS)].sort((a, b) => b.createTime.localeCompare(a.createTime))
-  );
+  const [claws, setClaws] = useState<Claw[]>(() => {
+    if (hasOneid) {
+      // MOCK_CLAWS_WITH_DEPT 缺少 agentType/version/pluginVersions/tags，从 MOCK_CLAWS 补充
+      const clawMap = new Map(MOCK_CLAWS.map((c) => [c.id, c]));
+      return (MOCK_CLAWS_WITH_DEPT as any[]).map((d) => {
+        const base = clawMap.get(d.id);
+        return {
+          ...d,
+          agentType: base?.agentType ?? "OpenClaw",
+          version: base?.version ?? "2026.3.28",
+          pluginVersions: base?.pluginVersions ?? DEFAULT_PLUGIN_VERSIONS,
+          tags: base?.tags,
+        } as Claw;
+      }).sort((a, b) => b.createTime.localeCompare(a.createTime));
+    }
+    return [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime));
+  });
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState("");
+  const [groupFilter, setGroupFilter] = useState("");
+  const ALL_AGENT_TYPES = Object.keys(AGENT_TYPE_DISPLAY);
+  const [agentTypeFilter, setAgentTypeFilter] = useState<Set<string>>(new Set(ALL_AGENT_TYPES));
+
+  // 列头筛选弹窗状态
+  const [deptColFilterOpen, setDeptColFilterOpen] = useState(false);
+  const [groupColFilterOpen, setGroupColFilterOpen] = useState(false);
+  const [typeColFilterOpen, setTypeColFilterOpen] = useState(false);
+  const [tempTypeFilter, setTempTypeFilter] = useState<Set<string>>(new Set());
 
   // 状态卡片筛选
   const [activeCardFilter, setActiveCardFilter] = useState<"all" | "running" | "shutdown" | "other">("all");
 
   // 状态列筛选
+  const ALL_STATUSES: ClawStatus[] = ["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"];
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set());
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set(ALL_STATUSES));
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [filterPosition, setFilterPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // 表格横向滚动检测
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const [isTableScrolled, setIsTableScrolled] = useState(false);
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    // 给 flex 父容器加 min-width:0 防止 table 撑开页面
+    let parent = el.parentElement;
+    while (parent) {
+      const style = getComputedStyle(parent);
+      if (style.display === 'flex' || style.display === 'inline-flex') {
+        // 给 flex 容器的子元素（main）加约束
+        const children = parent.children;
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i] as HTMLElement;
+          if (child.tagName === 'MAIN' || getComputedStyle(child).flex !== '0 1 auto') {
+            child.style.minWidth = '0';
+            child.style.overflow = 'hidden';
+          }
+        }
+        break;
+      }
+      parent = parent.parentElement;
+    }
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   // 操作对话框
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -513,7 +952,35 @@ export default function AgentMonitor() {
     return c.departmentId ? allowedIds.includes(c.departmentId) : false;
   }) : searchFiltered;
 
-  const cardFiltered = deptFiltered.filter((c) => {
+  // 分组筛选
+  const groupFiltered = deptFiltered.filter((c) => {
+    if (!groupFilter) return true;
+    const currentGroups = hasOneid ? MOCK_GROUPS : MOCK_MANUAL_GROUPS;
+    const trees = buildGroupTree(currentGroups);
+    // 找到选中分组节点及其所有子孙 id
+    const findNode = (nodes: GroupTreeNode[], id: string): GroupTreeNode | null => {
+      for (const n of nodes) {
+        if (n.id === id) return n;
+        const hit = findNode(n.children, id);
+        if (hit) return hit;
+      }
+      return null;
+    };
+    const targetNode = findNode(trees, groupFilter);
+    if (!targetNode) return true;
+    const allowedGroupIds = new Set(getGroupDescendantIds(targetNode));
+    // 检查 agent 创建者是否属于这些分组
+    const creatorGroupIds = getCreatorAllGroupIds(c.creator, hasOneid);
+    return creatorGroupIds.some((gid) => allowedGroupIds.has(gid));
+  });
+
+  // Agent 类型筛选
+  const typeFiltered = groupFiltered.filter((c) => {
+    if (agentTypeFilter.size === 0 || agentTypeFilter.size === ALL_AGENT_TYPES.length) return true;
+    return agentTypeFilter.has(c.agentType);
+  });
+
+  const cardFiltered = typeFiltered.filter((c) => {
     switch (activeCardFilter) {
       case "running": return c.status === "running";
       case "shutdown": return c.status === "shutdown";
@@ -523,7 +990,7 @@ export default function AgentMonitor() {
   });
 
   const statusFiltered = cardFiltered.filter((c) => {
-    if (selectedStatuses.size === 0) return true;
+    if (selectedStatuses.size === 0 || selectedStatuses.size === ALL_STATUSES.length) return true;
     return selectedStatuses.has(c.status);
   });
 
@@ -659,7 +1126,7 @@ export default function AgentMonitor() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="page-enter">
+      <div className="page-enter min-w-0">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
@@ -805,20 +1272,12 @@ export default function AgentMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-visible"
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
 
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* 部门筛选 - 仅 OneID 模式显示 */}
-              {hasOneid && (
-                <InstanceDepartmentFilter
-                  departments={MOCK_DEPARTMENTS}
-                  value={departmentFilter}
-                  onChange={(v) => { setDepartmentFilter(v); setPage(1); }}
-                />
-              )}
               {/* 搜索框 */}
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -903,12 +1362,18 @@ export default function AgentMonitor() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full">
+          <div className="overflow-x-auto" ref={tableScrollRef}>
+          <table className="text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
             <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50 relative">
-                {/* 复选框列 */}
-                <th className="py-3 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+              <tr style={{ backgroundColor: '#f9fafb' }}>
+                {/* 复选框列 - sticky left */}
+                <th className="py-3 whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
+                  {isTableScrolled && (
+                    <>
+                      <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                      <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                    </>
+                  )}
                   <div className="flex items-center gap-1.5">
                     <Checkbox
                       checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
@@ -918,11 +1383,8 @@ export default function AgentMonitor() {
                     <span className="text-xs font-medium text-gray-500 whitespace-nowrap">全选</span>
                   </div>
                 </th>
-                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '16%', paddingLeft: '4px' }}>名称 / ID</th>
-                {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">用户归属</th>
-                )}
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '7%' : '10%' }}>
+                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -932,8 +1394,8 @@ export default function AgentMonitor() {
                         if (filterButtonRef.current) {
                           const rect = filterButtonRef.current.getBoundingClientRect();
                           setFilterPosition({
-                            top: rect.bottom + window.scrollY + 8,
-                            left: rect.left + window.scrollX
+                            top: rect.bottom + 4,
+                            left: rect.left
                           });
                         }
                         setShowStatusFilter(!showStatusFilter);
@@ -983,18 +1445,105 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建人</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent类型</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '9%' : '10%' }}>Agent 版本</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '6%' : '7%' }}>标签</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建人</th>
+                {hasOneid && (
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>
+                    <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
+                      <PopoverTrigger asChild>
+                        <button className="flex items-center gap-1 group/dept">
+                          <span>部门</span>
+                          <Filter className={`w-3.5 h-3.5 transition-colors ${departmentFilter ? 'text-blue-500' : 'text-gray-400 group-hover/dept:text-gray-600'}`} />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                        <DepartmentColumnFilter
+                          departments={MOCK_DEPARTMENTS}
+                          value={departmentFilter}
+                          onConfirm={(v) => { setDepartmentFilter(v); setPage(1); setDeptColFilterOpen(false); }}
+                          onCancel={() => setDeptColFilterOpen(false)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </th>
+                )}
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '150px' }}>
+                  <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 group/grp">
+                        <span>分组</span>
+                        <Filter className={`w-3.5 h-3.5 transition-colors ${groupFilter ? 'text-blue-500' : 'text-gray-400 group-hover/grp:text-gray-600'}`} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                      <GroupColumnFilter
+                        groups={hasOneid ? MOCK_GROUPS : MOCK_MANUAL_GROUPS}
+                        value={groupFilter}
+                        hasOneid={hasOneid}
+                        onConfirm={(v) => { setGroupFilter(v); setPage(1); setGroupColFilterOpen(false); }}
+                        onCancel={() => setGroupColFilterOpen(false)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                  <Popover open={typeColFilterOpen} onOpenChange={(open) => {
+                    setTypeColFilterOpen(open);
+                    if (open) setTempTypeFilter(new Set(agentTypeFilter));
+                  }}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 group/type">
+                        <span>Agent类型</span>
+                        <Filter className={`w-3.5 h-3.5 transition-colors ${agentTypeFilter.size > 0 && agentTypeFilter.size < ALL_AGENT_TYPES.length ? 'text-blue-500' : 'text-gray-400 group-hover/type:text-gray-600'}`} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-0" align="start" side="bottom">
+                      <div className="p-3 space-y-2">
+                        {Object.entries(AGENT_TYPE_DISPLAY).map(([key, label]) => (
+                          <label key={key} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={tempTypeFilter.has(key)}
+                              onCheckedChange={(checked) => {
+                                setTempTypeFilter(prev => {
+                                  const next = new Set(prev);
+                                  if (checked) next.add(key); else next.delete(key);
+                                  return next;
+                                });
+                              }}
+                            />
+                            <span className="text-sm text-gray-700">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-100 p-2 flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                          setTempTypeFilter(new Set(ALL_AGENT_TYPES));
+                          setAgentTypeFilter(new Set(ALL_AGENT_TYPES));
+                          setPage(1);
+                          setTypeColFilterOpen(false);
+                        }}>重置</Button>
+                        <Button size="sm" className="flex-1" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => {
+                          setAgentTypeFilter(new Set(tempTypeFilter));
+                          setPage(1);
+                          setTypeColFilterOpen(false);
+                        }}>确认</Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                  <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
+                  操作
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={hasOneid ? 12 : 11} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 Agent
                   </td>
                 </tr>
@@ -1009,9 +1558,15 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
                       {/* 复选框 */}
-                      <td className="py-4 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+                      <td className="py-4 whitespace-nowrap sticky left-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px' }}>
+                        {isTableScrolled && (
+                          <>
+                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                          </>
+                        )}
                         <Checkbox
                           checked={selectedIds.has(claw.id)}
                           onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
@@ -1035,12 +1590,6 @@ export default function AgentMonitor() {
                           </div>
                         </div>
                       </td>
-                      {/* 用户归属 - 仅 OneID 模式显示 */}
-                      {hasOneid && (
-                        <td className="px-4 py-4 text-sm text-gray-600">
-                          {claw.department ? claw.department.replace(/\//g, " / ") : "—"}
-                        </td>
-                      )}
                       {/* 状态列 */}
                       <td className="px-4 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
@@ -1050,6 +1599,62 @@ export default function AgentMonitor() {
                       </td>
                       {/* 创建人 */}
                       <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
+                      {/* 部门 - 仅 OneID 模式显示 */}
+                      {hasOneid && (
+                        <td className="px-4 py-4 text-sm text-gray-600">
+                          {claw.department ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="block truncate max-w-[120px] cursor-default">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start">
+                                <span className="text-xs">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : <span className="text-gray-300">—</span>}
+                        </td>
+                      )}
+                      {/* 分组 */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {(() => {
+                          if (hasOneid) {
+                            const item = getCreatorGroupItemOneid(claw.creator);
+                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1.5 max-w-[200px] cursor-default">
+                                    <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                      item.kind === "oneid-dept"
+                                        ? "text-blue-600 bg-blue-50"
+                                        : "text-purple-600 bg-purple-50"
+                                    }`}>
+                                      {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                    </span>
+                                    <span className="text-sm text-gray-700 truncate max-w-[120px]">{item.path}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          } else {
+                            const item = getCreatorGroupItemManual(claw.creator);
+                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-sm text-gray-700 truncate max-w-[160px] block cursor-default">{item.path}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          }
+                        })()}
+                      </td>
                       {/* 创建时间 */}
                       <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
@@ -1099,7 +1704,9 @@ export default function AgentMonitor() {
                         )}
                       </td>
                       {/* 操作 */}
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
                           {/* 终端 */}
                           {!isRunning ? (
@@ -1216,35 +1823,40 @@ export default function AgentMonitor() {
 
           {/* Pagination */}
           <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {statusFiltered.length} 条记录</span>
+            <span className="text-xs text-gray-400">共 {versionFiltered.length} 条记录，第 {safePage}/{totalPages} 页</span>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
-                <button
-                  disabled={safePage === 1}
-                  onClick={() => setPage(safePage - 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-4 h-4" />
+                <button disabled={safePage === 1} onClick={() => setPage(safePage - 1)}
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium transition-colors border ${
-                      p === safePage
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-500'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  disabled={safePage === totalPages}
-                  onClick={() => setPage(safePage + 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-4 h-4" />
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (safePage > 3) pages.push("...");
+                    for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
+                    if (safePage < totalPages - 2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+                  return pages.map((p, idx) =>
+                    typeof p === "string" ? (
+                      <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`h-7 w-7 rounded-md text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
+                        style={p === safePage ? { background: "#007AFF" } : undefined}
+                        onClick={() => setPage(p as number)}
+                      >{p}</button>
+                    )
+                  );
+                })()}
+                <button disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}

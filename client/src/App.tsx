@@ -17,6 +17,7 @@ import MyAgent from "./pages/tenant/MyOpenClaw";
 import AgentDetail from "./pages/tenant/OpenClawDetail";
 import ModelQuota from "./pages/tenant/ModelQuota";
 import HelpDocs from "./pages/tenant/HelpDocs";
+import SkillSquare from "./pages/tenant/SkillSquare";
 import ResetPassword from "./pages/tenant/ResetPassword";
 
 // Admin
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/my-openclaw" component={MyAgent} />
       <Route path="/openclaw/:id" component={AgentDetail} />
       <Route path="/model-quota" component={ModelQuota} />
+      <Route path="/skill-square" component={SkillSquare} />
       <Route path="/help-docs" component={HelpDocs} />
       <Route path="/reset-password" component={ResetPassword} />
 

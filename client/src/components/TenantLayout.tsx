@@ -24,6 +24,7 @@ import { useUserRole } from "@/contexts/UserRoleContext";
 
 const NAV_ITEMS = [
   { label: "我的 Agent", path: "/my-openclaw", newTab: false },
+  { label: "技能广场", path: "/skill-square", newTab: false },
   { label: "模型额度", path: "/model-quota", newTab: false },
   { label: "帮助文档", path: "/help-docs", newTab: false },
 ];

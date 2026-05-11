@@ -13,6 +13,7 @@ export interface CachedDistributionInstance {
   name: string;
   createdBy: string;
   distributionStatus: DistributionStatus;
+  failReason?: string;
 }
 
 export interface CachedDistributionRecord {
@@ -119,4 +120,75 @@ export function hasInProgressDistribution(skillId: string): boolean {
 /** 创建一个新的下发记录 ID */
 export function createDistributionRecordId(): string {
   return 'dist-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+}
+
+/**
+ * 初始化预设下发记录（仅当 localStorage 为空时）。
+ * 预设部分技能有不同下发状态，其余保持未下发以展示置灰按钮。
+ */
+export function initMockDistributionRecords() {
+  const existing = getAllDistributionRecords();
+  if (existing.length > 0) return; // 已有数据则跳过
+
+  const now = new Date();
+
+  const presetRecords: CachedDistributionRecord[] = [
+    // skill-6 K8s 故障排查助手 — 下发成功
+    {
+      id: 'dist-preset-1',
+      skillId: 'skill-6',
+      timestamp: new Date(now.getTime() - 2 * 3600_000).toISOString(),
+      totalCount: 3,
+      successCount: 3,
+      failedCount: 0,
+      inProgressCount: 0,
+      status: 'success',
+      instances: [
+        { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'success' },
+        { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'success' },
+        { id: 'inst-3', name: '运营助手', createdBy: 'admin', distributionStatus: 'success' },
+      ],
+    },
+    // skill-5 SQL 查询优化助手 — 下发失败
+    {
+      id: 'dist-preset-2',
+      skillId: 'skill-5',
+      timestamp: new Date(now.getTime() - 5 * 3600_000).toISOString(),
+      totalCount: 2,
+      successCount: 0,
+      failedCount: 2,
+      inProgressCount: 0,
+      status: 'failed',
+      instances: [
+        { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '实例不可用' },
+        { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '网络超时' },
+      ],
+    },
+    // skill-4 GitHub 集成 — 下发成功（部分）
+    {
+      id: 'dist-preset-3',
+      skillId: 'skill-4',
+      timestamp: new Date(now.getTime() - 8 * 3600_000).toISOString(),
+      totalCount: 2,
+      successCount: 1,
+      failedCount: 1,
+      inProgressCount: 0,
+      status: 'partial',
+      instances: [
+        { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'success' },
+        { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '版本冲突' },
+      ],
+    },
+  ];
+
+  // 逐条写入
+  presetRecords.forEach(r => {
+    const all = getAllDistributionRecords();
+    all.unshift(r);
+    try {
+      localStorage.setItem(DISTRIBUTION_RECORDS_KEY, JSON.stringify(all));
+    } catch (e) {
+      console.warn('初始化预设下发记录失败:', e);
+    }
+  });
 }

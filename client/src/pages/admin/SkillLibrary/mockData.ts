@@ -423,6 +423,68 @@ The \`gh api\` command is useful for accessing data not available through other 
       ]},
     ],
   },
+  {
+    id: 'skill-8',
+    slug: 'api-doc-generator',
+    name: 'API 文档生成器',
+    description: '根据代码注释和接口定义自动生成 API 文档。支持 OpenAPI/Swagger 规范、多语言代码解析，可导出 Markdown、HTML 等格式，与 CI/CD 集成自动更新。',
+    version: '1.0.0',
+    categories: ['2', '1'],
+    scope: 'public',
+    groupIds: [],
+    uploadTime: new Date('2025-04-08'),
+    securityInfo: MOCK_SECURITY_SAFE,
+    content: '# API 文档生成器\n\n根据代码注释和接口定义自动生成标准化 API 文档的 Skill...',
+    versions: ['1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1024, content: '# API 文档生成器\n\n根据代码注释和接口定义自动生成标准化 API 文档的 Skill...' },
+      { name: 'README.md', size: 512, content: '# API Doc Generator\n\n## Features\n\n- OpenAPI/Swagger 规范生成\n- 多语言代码解析\n- 导出 Markdown/HTML' },
+      { name: '_meta.json', size: 256, content: '{\n  "name": "api-doc-generator",\n  "version": "1.0.0",\n  "description": "API 文档自动生成"\n}' },
+    ],
+    versionHistory: [
+      { version: '1.0.0', date: '2025-04-08', changeLog: '首次发布，支持 OpenAPI 规范和多语言解析', files: [
+        { name: 'SKILL.md', size: 1024, content: '# API 文档生成器\n\n根据代码注释和接口定义自动生成标准化 API 文档的 Skill...' },
+        { name: 'README.md', size: 512, content: '# API Doc Generator\n\n## Features\n\n- OpenAPI/Swagger 规范生成' },
+        { name: '_meta.json', size: 256, content: '{\n  "name": "api-doc-generator",\n  "version": "1.0.0"\n}' },
+      ]},
+    ],
+  },
+  {
+    id: 'skill-9',
+    slug: 'performance-monitor',
+    name: '性能监控分析器',
+    description: '实时监控应用性能指标，自动识别性能瓶颈和异常。支持 CPU/内存/IO 分析、慢查询检测、调用链追踪，并提供优化建议和告警通知。',
+    version: '2.1.0',
+    categories: ['3', '5'],
+    scope: 'public',
+    groupIds: [],
+    uploadTime: new Date('2025-04-12'),
+    securityInfo: MOCK_SECURITY_NOT_SCANNED,
+    content: '# 性能监控分析器\n\n实时监控应用性能指标并自动识别瓶颈的 Skill...',
+    versions: ['2.1.0', '2.0.0', '1.0.0'],
+    files: [
+      { name: 'SKILL.md', size: 1200, content: '# 性能监控分析器\n\n实时监控应用性能指标并自动识别瓶颈的 Skill...' },
+      { name: 'README.md', size: 600, content: '# Performance Monitor\n\n## Features\n\n- CPU/内存/IO 实时监控\n- 慢查询自动检测\n- 调用链可视化追踪' },
+      { name: '_meta.json', size: 256, content: '{\n  "name": "performance-monitor",\n  "version": "2.1.0",\n  "description": "性能监控分析"\n}' },
+      { name: 'dist/', size: 0, content: '' },
+      { name: 'dist/index.js', size: 4096, content: '// Performance monitor entry point\nmodule.exports = { init() { /* ... */ } }' },
+    ],
+    versionHistory: [
+      { version: '2.1.0', date: '2025-04-12', changeLog: '1、新增调用链追踪可视化\n2、优化告警灵敏度\n3、支持自定义监控指标', files: [
+        { name: 'SKILL.md', size: 1200, content: '# 性能监控分析器\n\n实时监控应用性能指标并自动识别瓶颈的 Skill...' },
+        { name: 'README.md', size: 600, content: '# Performance Monitor v2.1\n\n新增调用链追踪可视化。' },
+        { name: '_meta.json', size: 256, content: '{\n  "name": "performance-monitor",\n  "version": "2.1.0"\n}' },
+        { name: 'dist/', size: 0, content: '' },
+        { name: 'dist/index.js', size: 4096, content: '// Performance monitor v2.1 entry point' },
+      ]},
+      { version: '2.0.0', date: '2025-03-20', changeLog: '1、全新架构重构\n2、新增慢查询自动检测', files: [
+        { name: 'SKILL.md', size: 1100, content: '# 性能监控分析器 v2.0\n\n全新架构，新增慢查询检测。' },
+      ]},
+      { version: '1.0.0', date: '2025-02-15', changeLog: '首次发布', files: [
+        { name: 'SKILL.md', size: 900, content: '# 性能监控分析器 v1.0\n\n基础性能监控功能。' },
+      ]},
+    ],
+  },
 ];
 
 export const MOCK_OPENCLAW_INSTANCES: OpenClawInstance[] = [

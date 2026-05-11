@@ -160,8 +160,8 @@ export default function BatchDistributeDialog({
   // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
   useEffect(() => {
     if (open) {
-      // MCP 场景默认「全部下发状态」（空数组），Skill 场景默认选中「未下发」+「下发失败」
-      setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
+      // MCP 和 Skill 场景默认选中「未下发」+「下发失败」
+      setStatusFilters(['not_distributed', 'failed']);
       setSearchQuery('');
       setCurrentPage(1);
       setPageSize(20);
@@ -342,7 +342,7 @@ export default function BatchDistributeDialog({
     
     setSelectedInstances([]);
     setSearchQuery('');
-    setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
+    setStatusFilters(['not_distributed', 'failed']);
     setScopeFilters([]);
     setCurrentPage(1);
     setPageSize(20);
@@ -389,7 +389,7 @@ export default function BatchDistributeDialog({
               {descriptionNode || (
                 <>
                   <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
-                  <p className="mt-1">筛选限制：仅限智能体类型为 <span className="font-medium text-gray-700">OpenClaw</span> 且状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}或 <span className="font-medium text-gray-700">下发失败</span></>}。</p>
+                  <p className="mt-1">筛选限制：仅限状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></>}。</p>
                 </>
               )}
             </div>
@@ -598,18 +598,22 @@ export default function BatchDistributeDialog({
           </div>
           )}
           {singleStatusFilter ? (
-            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」 ── */
+            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」「待更新」 ── */
             <Select
               value={
                 statusFilters.length === 0
                   ? '__all__'
                   : statusFilters.length === 1
                     ? statusFilters[0]
-                    : '__all__'
+                    : statusFilters.length === 2 && statusFilters.includes('not_distributed') && statusFilters.includes('failed')
+                      ? '__default__'
+                      : '__all__'
               }
               onValueChange={(value) => {
                 if (value === '__all__') {
                   setStatusFilters([]);
+                } else if (value === '__default__') {
+                  setStatusFilters(['not_distributed', 'failed']);
                 } else {
                   setStatusFilters([value as FilterOption]);
                 }
@@ -621,8 +625,10 @@ export default function BatchDistributeDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">全部下发状态</SelectItem>
+                <SelectItem value="__default__">未下发+下发失败</SelectItem>
                 <SelectItem value="not_distributed">未下发</SelectItem>
                 <SelectItem value="failed">下发失败</SelectItem>
+                <SelectItem value="pending_update">待更新</SelectItem>
               </SelectContent>
             </Select>
           ) : (
@@ -737,9 +743,9 @@ export default function BatchDistributeDialog({
             pagedInstances.map(instance => (
               <div
                 key={instance.id}
-                className="flex gap-3 px-3 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-3 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
               >
-                <div className="self-center">
+                <div className="flex-shrink-0">
                   <Checkbox
                     checked={selectedInstances.includes(instance.id)}
                     onCheckedChange={() => handleSelectInstance(instance.id)}

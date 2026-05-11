@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   MemoryStick,
   FolderOpen,
+  LayoutTemplate,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -82,6 +83,7 @@ const NAV_GROUPS = [
   {
     label: "云设备配置",
     items: [
+      { label: "Agent 模板", path: "/admin/agent-template", icon: LayoutTemplate },
       { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
       { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
       { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },

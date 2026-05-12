@@ -1295,7 +1295,14 @@ export default function TokensMonitor() {
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
                   ) : memberPaged.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700">{m.id}</td>
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <UITooltip>
+                          <UITooltipTrigger asChild>
+                            <span className="text-sm text-gray-700 truncate block max-w-[180px]">{m.id}</span>
+                          </UITooltipTrigger>
+                          <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
+                        </UITooltip>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>

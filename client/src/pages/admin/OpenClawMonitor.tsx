@@ -2143,13 +2143,18 @@ export default function AgentMonitor() {
                         />
                       </td>
                       {/* 名称/ID */}
-                      <td className="pr-4 py-4" style={{ paddingLeft: '4px' }}>
-                        <div className="flex items-center gap-2.5">
+                      <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
+                          <div className="min-w-0 flex-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{claw.name}</div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{claw.name}</TooltipContent>
+                            </Tooltip>
                             <button
                               onClick={() => handleOpenDrawer(claw)}
                               className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"

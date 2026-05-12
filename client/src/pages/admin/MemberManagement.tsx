@@ -2620,8 +2620,13 @@ export default function MemberManagement() {
                 const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{member.id}</span>
+                  <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-sm font-medium text-gray-900 truncate block max-w-[180px]">{member.id}</span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-xs break-all">{member.id}</TooltipContent>
+                    </Tooltip>
                   </td>
                   {hasOneid && (
                     <>

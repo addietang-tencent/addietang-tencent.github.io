@@ -941,19 +941,29 @@ export default function FileManagement() {
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
                             <Bot className="w-5 h-5 text-white" />
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-medium text-gray-900 truncate">{item.instanceName}</span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{item.instanceName}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.instanceName}</TooltipContent>
+                            </Tooltip>
                             <span className="text-xs font-mono text-blue-500">{item.instanceId}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-900 truncate">{item.creator}</span>
+                      <td className="px-6 py-4" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-sm text-gray-900 truncate block max-w-[140px]">{item.creator}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
+                        </Tooltip>
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">

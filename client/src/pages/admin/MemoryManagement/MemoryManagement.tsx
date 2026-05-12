@@ -59,8 +59,10 @@ export const MemoryManagement: React.FC = () => {
       { id: 'oc-016', name: '测试工程助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'sunqi@tencent.com' },
       { id: 'oc-017', name: '安全审计助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'zhouba@tencent.com' },
       { id: 'oc-018', name: '知识库管理助手', memoryStatus: 'none', version: 'none', state: 'idle', memoryId: '-', enabledAt: '-', creator: 'wujiu@tencent.com' },
+      { id: 'oc-019', name: '这是一个名称非常非常长的智能助手用来测试超长文本截断效果', memoryStatus: 'pro', version: 'none', state: 'running', memoryId: 'mem-long-001', enabledAt: '2026-05-01', creator: 'longname-user@very-long-domain-example.com' },
+      { id: 'oc-020', name: 'GPULab产品线专属AI智能运营分析与决策支持系统', memoryStatus: 'free', version: 'none', state: 'running', memoryId: 'mem-long-002', enabledAt: '2026-05-02', creator: 'product-ops-admin@enterprise-acompany.com' },
     ];
-    // 给 19 个 mock 实例按固定模式分配 agentType：每 3 个里第 2 个为 Hermes，其余为 OpenClaw，
+    // 给 21 个 mock 实例按固定模式分配 agentType：每 3 个里第 2 个为 Hermes，其余为 OpenClaw，
     // 便于在记忆空间列表中验证「Agent 类型」列的展示效果。
     // 真实接入后，agentType 由后端返回，这段映射可移除。
     return baseList.map((inst, idx) => {

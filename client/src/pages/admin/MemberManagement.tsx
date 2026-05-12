@@ -105,6 +105,8 @@ const MOCK_MEMBERS_BASE = [
   { id: "mike@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },             // 自定义 VPC
   { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/nina", hasVpcResources: true },   // 无 claw，但还有残留资源
   { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/oscar", hasVpcResources: false }, // 无 claw，资源已清空
+  { id: "longname-user@very-long-domain-example.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2026-05-01", vpcType: "auto" as const, vpcName: "openclaw/longname", hasVpcResources: true },  // 超长 ID 测试截断
+  { id: "product-ops-admin@enterprise-acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2026-05-02", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },             // 超长 ID 测试截断
 ];
 
 // ─── OneID 模式用户 → 用户信息快速查表（按 userId） ───────────────

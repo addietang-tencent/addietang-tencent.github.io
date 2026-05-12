@@ -57,6 +57,8 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-16", instanceId: "ins-x88r0xuu", instanceName: "Mike的产品分析", creator: "mike@acompany.com", avatar: "M", type: "个人", used: "13GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-17", instanceId: "ins-y99s1yvv", instanceName: "Kate的客服助手", creator: "kate@acompany.com", avatar: "K", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-18", instanceId: "ins-z00t2zww", instanceName: "Ryan的技术文档", creator: "ryan@acompany.com", avatar: "R", type: "个人", used: "10GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-19", instanceId: "ins-a11u3axv", instanceName: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "longname-user@very-long-domain-example.com", avatar: "L", type: "个人", used: "8GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-20", instanceId: "ins-b22v4byw", instanceName: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", avatar: "G", type: "个人", used: "22GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
 ];
 
 const StatCard = ({ title, value, icon: Icon, gradient }: any) => (

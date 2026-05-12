@@ -77,6 +77,8 @@ const MEMBERS = [
   "jack@acompany.com",
   "karen@acompany.com",
   "leo@acompany.com",
+  "longname-user@very-long-domain-example.com",
+  "product-ops-admin@enterprise-acompany.com",
 ];
 
 const MODELS = [

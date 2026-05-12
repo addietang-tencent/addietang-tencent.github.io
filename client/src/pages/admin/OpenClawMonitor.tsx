@@ -33,6 +33,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -41,12 +51,22 @@ import {
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info
+  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
+  Pencil, Plus,
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { MOCK_DEPARTMENTS, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
+import { CHANNEL_OPTIONS, type ChannelConfig } from "@/lib/agentConfigConstants";
+import { useAdminModels, CUSTOM_PROVIDER_VALUE, type ModelRow } from "@/lib/modelConfigStore";
+import {
+  loadBuiltinChannelVisibility,
+  loadVisibleCustomChannels,
+  onBuiltinChannelVisibilityChange,
+  onCustomChannelsChange,
+  type CustomChannel as AdminCustomChannel,
+} from "@/lib/customChannelStore";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
@@ -646,25 +666,6 @@ function GroupColumnFilter({
 export default function AgentMonitor() {
   const [, setLocation] = useLocation();
   const { hasOneid } = useAdminMode();
-
-  // ─── URL 参数筛选（从存量 Agent 实例处理弹窗跳转过来） ───
-  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string> | null>(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("filter") === "pending-delete" && params.get("ids")) {
-      return new Set(params.get("ids")!.split(",").filter(Boolean));
-    }
-    return null;
-  });
-
-  const clearPendingDeleteFilter = () => {
-    setPendingDeleteIds(null);
-    // 清除 URL 参数
-    const url = new URL(window.location.href);
-    url.searchParams.delete("filter");
-    url.searchParams.delete("ids");
-    window.history.replaceState({}, "", url.pathname);
-  };
-
   const [claws, setClaws] = useState<Claw[]>(() => {
     if (hasOneid) {
       // MOCK_CLAWS_WITH_DEPT 缺少 agentType/version/pluginVersions/tags，从 MOCK_CLAWS 补充
@@ -1016,13 +1017,9 @@ export default function AgentMonitor() {
 
   const versionFiltered = statusFiltered;
 
-  // 从存量 Agent 实例处理跳转过来时，按实例 ID 筛选
-  const finalFiltered = pendingDeleteIds ? versionFiltered.filter(c => pendingDeleteIds.has(c.id) || pendingDeleteIds.has(c.instanceId)) : versionFiltered;
-  const pendingDeleteMatchCount = pendingDeleteIds ? finalFiltered.length : 0;
-
-  const totalPages = Math.max(1, Math.ceil(finalFiltered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(versionFiltered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const paginated = finalFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const paginated = versionFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   // 当前页所有实例 id
   const pageIds = paginated.map(c => c.id);
@@ -1102,25 +1099,94 @@ export default function AgentMonitor() {
     toast.success(`已删除 ${claw?.name}`);
   };
 
-  // 详情抽屉模拟数据
-  interface AppliedModelItem {
+  // ── Agent 详情抽屉数据（可编辑） ─────────────────────────────────────────
+  // 每个 claw 一份独立详情，编辑后保留在内存（管控端 demo 不持久化）。
+
+  /** 已接入通道：除了基本展示字段，还保留一份凭证录入值 */
+  interface ConnectedChannel {
+    /** 通道展示名，与 CHANNEL_OPTIONS.label 对应，作为唯一标识 */
     name: string;
-    version: string;
-    isPrimary: boolean;
+    /** 通道 value（CHANNEL_OPTIONS.value），便于反查 fields 定义 */
+    value: string;
+    /** 凭证字段值：按 ChannelField.key 存储 */
+    fieldValues: Record<string, string>;
+    bots: string[];
   }
+
+  /**
+   * 单条已应用模型：对应"模型配置"页中的一条记录。
+   * - modelConfigId：关联管控端模型表 id；被删除/隐藏时按 Q3(c) 完全无感处理，仍用冗余字段展示
+   * - providerLabel / versionLabel：展示态冗余，避免管控端模型变更后失去展示文案
+   * - isCustom：是否自定义模型（展示"自定义模型"一级文案 + 小字为模型名）
+   * - primary：是否主模型；整个列表至多一条 primary=true
+   */
+  interface AppliedModelItem {
+    id: number;
+    modelConfigId: string;
+    providerLabel: string;
+    versionLabel: string;
+    isCustom: boolean;
+    primary: boolean;
+    addedAt: number;
+  }
+
   interface ClawDetail {
+    /** 已应用模型列表：可能为空（无模型）、只主、主+备 */
     appliedModels: AppliedModelItem[];
-    connectedChannels: { name: string; bots: string[] }[];
+    /** 已接入通道列表 */
+    connectedChannels: ConnectedChannel[];
     installedSkills: string[];
   }
-  const getClawDetail = (_clawId: string): ClawDetail => {
+
+  /** 基于 clawId 稳定分布，模拟三种场景：hash%3 → 0=空 / 1=只主 / 2=主+备 */
+  const hashClawId = (s: string): number => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  };
+
+  const buildDefaultClawDetail = (clawId: string): ClawDetail => {
+    const scenario = hashClawId(clawId) % 3;
+    const baseTs = Date.now();
+    const appliedModels: AppliedModelItem[] =
+      scenario === 0
+        ? []
+        : scenario === 1
+        ? [
+            {
+              id: 1,
+              modelConfigId: "1",
+              providerLabel: "腾讯云 DeepSeek",
+              versionLabel: "DeepSeek V3 0324",
+              isCustom: false,
+              primary: true,
+              addedAt: baseTs,
+            },
+          ]
+        : [
+            {
+              id: 1,
+              modelConfigId: "1",
+              providerLabel: "腾讯云 DeepSeek",
+              versionLabel: "DeepSeek V3 0324",
+              isCustom: false,
+              primary: true,
+              addedAt: baseTs,
+            },
+            {
+              id: 2,
+              modelConfigId: "2",
+              providerLabel: "腾讯混元",
+              versionLabel: "Hunyuan Turbo",
+              isCustom: false,
+              primary: false,
+              addedAt: baseTs - 60_000,
+            },
+          ];
     return {
-      appliedModels: [
-        { name: "自定义模型", version: "azure-gpt-5.4", isPrimary: true },
-        { name: "腾讯云 DeepSeek", version: "deepseek-v3.2", isPrimary: false },
-      ],
+      appliedModels,
       connectedChannels: [
-        { name: "飞书", bots: [] },
+        { name: "飞书", value: "feishu", fieldValues: { appId: "cli_a1b2c3", appSecret: "fsk_xxxxxx" }, bots: [] },
       ],
       installedSkills: [
         "feishu-doc", "feishu-drive", "feishu-perm", "feishu-wiki",
@@ -1129,9 +1195,481 @@ export default function AgentMonitor() {
     };
   };
 
+  const [clawDetailMap, setClawDetailMap] = useState<Record<string, ClawDetail>>({});
+
+  /** 读取某个 claw 的详情（不存在则按 clawId hash 生成默认快照，不写入 map 以避免 render 期间 setState） */
+  const getClawDetail = (clawId: string): ClawDetail => {
+    return clawDetailMap[clawId] ?? buildDefaultClawDetail(clawId);
+  };
+
+  /** 用 updater 形式更新某个 claw 的详情，缺失时基于默认值初始化 */
+  const updateClawDetail = (
+    clawId: string,
+    updater: (prev: ClawDetail) => ClawDetail,
+  ) => {
+    setClawDetailMap(prev => {
+      const current = prev[clawId] ?? buildDefaultClawDetail(clawId);
+      return { ...prev, [clawId]: updater(current) };
+    });
+  };
+
+  /** 生成下一个模型 entry id：取当前列表最大 id + 1 */
+  const nextModelEntryId = (list: AppliedModelItem[]): number => {
+    return list.reduce((max, m) => (m.id > max ? m.id : max), 0) + 1;
+  };
+
+  // ── 订阅"模型配置"页的数据（仅 visible=true 的对外可见） ───────────────────
+  const adminModels = useAdminModels();
+  const visibleAdminModels = useMemo(() => adminModels.filter(m => m.visible), [adminModels]);
+
+  /**
+   * 把可见模型按"厂商"分组：
+   *   - 普通厂商：按 provider 分组，组 key = provider，组 label = 同 provider 第一条 name
+   *   - 自定义模型（provider === __custom__）：聚合到单一"自定义模型"组下，每条作为一个版本
+   * 厂商一级显示顺序：先按出现顺序，自定义模型组始终放最后。
+   */
+  interface ProviderGroup {
+    key: string;           // provider 值；自定义模型组固定为 __custom__
+    label: string;         // 一级 Select 显示文本
+    models: ModelRow[];    // 该厂商下所有可见模型记录
+    isCustom: boolean;
+  }
+
+  const providerGroups = useMemo<ProviderGroup[]>(() => {
+    const orderedKeys: string[] = [];
+    const buckets = new Map<string, ModelRow[]>();
+    for (const m of visibleAdminModels) {
+      const key = m.provider;
+      if (!buckets.has(key)) {
+        buckets.set(key, []);
+        orderedKeys.push(key);
+      }
+      buckets.get(key)!.push(m);
+    }
+    const groups: ProviderGroup[] = [];
+    let customGroup: ProviderGroup | null = null;
+    for (const key of orderedKeys) {
+      const models = buckets.get(key)!;
+      if (key === CUSTOM_PROVIDER_VALUE) {
+        customGroup = {
+          key,
+          label: "自定义模型",
+          models,
+          isCustom: true,
+        };
+      } else {
+        groups.push({
+          key,
+          // 同 provider 的多条记录 name 理论上一致，取第一条
+          label: models[0].name,
+          models,
+          isCustom: false,
+        });
+      }
+    }
+    if (customGroup) groups.push(customGroup);
+    return groups;
+  }, [visibleAdminModels]);
+
+  // ── 模型编辑态 ───────────────────────────────────────────────────────────
+  /**
+   * 模型编辑上下文：
+   * - idle：未进入编辑态
+   * - add：点击右上角"添加备选/设为主模型"按钮 → 底部 inline 新增卡
+   * - replace：点击某条模型行的 ✏️ → 底部 inline 卡用于替换该条
+   */
+  type ModelActionContext =
+    | { kind: "idle" }
+    | { kind: "add" }
+    | { kind: "replace"; modelEntryId: number };
+  const [modelAction, setModelAction] = useState<ModelActionContext>({ kind: "idle" });
+  const modelEditing = modelAction.kind !== "idle";
+
+  /** 一级草稿：厂商 key（即 provider 值） */
+  const [modelDraftProvider, setModelDraftProvider] = useState<string>("");
+  /** 二级草稿：具体模型记录 id */
+  const [modelDraftModelId, setModelDraftModelId] = useState<string>("");
+
+  /** 模型操作二次确认弹窗（复用用户端三种类型） */
+  const [modelConfirmDialog, setModelConfirmDialog] = useState<{
+    open: boolean;
+    type: "set-primary" | "delete" | "delete-backup";
+    modelEntryId: number | null;
+  }>({ open: false, type: "set-primary", modelEntryId: null });
+
+  /** 把一个管控端 ModelRow + 其所在组转换成 AppliedModelItem 的展示字段 */
+  const toAppliedModelFields = (
+    group: ProviderGroup,
+    model: ModelRow,
+  ): Pick<AppliedModelItem, "modelConfigId" | "providerLabel" | "versionLabel" | "isCustom"> => ({
+    modelConfigId: model.id,
+    providerLabel: group.label,
+    // 自定义模型：一级展示"自定义模型"，二级用模型 name；普通模型二级用 version
+    versionLabel: group.isCustom ? model.name : model.version,
+    isCustom: group.isCustom,
+  });
+
+  /** 进入"添加"模式：默认草稿回填首组首项 */
+  const startAddModel = () => {
+    if (providerGroups.length === 0) {
+      setModelDraftProvider("");
+      setModelDraftModelId("");
+      setModelAction({ kind: "add" });
+      return;
+    }
+    const g0 = providerGroups[0];
+    setModelDraftProvider(g0.key);
+    setModelDraftModelId(g0.models[0]?.id ?? "");
+    setModelAction({ kind: "add" });
+  };
+
+  /** 进入"替换"模式：按被替换条目当前的 modelConfigId 回填；找不到则回退首组首项 */
+  const startReplaceModel = (entry: AppliedModelItem) => {
+    if (providerGroups.length === 0) {
+      setModelDraftProvider("");
+      setModelDraftModelId("");
+      setModelAction({ kind: "replace", modelEntryId: entry.id });
+      return;
+    }
+    let targetGroup: ProviderGroup | undefined;
+    let targetModel: ModelRow | undefined;
+    for (const g of providerGroups) {
+      const m = g.models.find(x => x.id === entry.modelConfigId);
+      if (m) { targetGroup = g; targetModel = m; break; }
+    }
+    if (!targetGroup || !targetModel) {
+      targetGroup = providerGroups[0];
+      targetModel = targetGroup.models[0];
+    }
+    setModelDraftProvider(targetGroup.key);
+    setModelDraftModelId(targetModel.id);
+    setModelAction({ kind: "replace", modelEntryId: entry.id });
+  };
+
+  const cancelEditModel = () => setModelAction({ kind: "idle" });
+
+  const saveEditModel = () => {
+    if (!selectedClaw) return;
+    const group = providerGroups.find(g => g.key === modelDraftProvider);
+    const model = group?.models.find(m => m.id === modelDraftModelId);
+    if (!group || !model) {
+      toast.error("请选择有效的模型厂商和版本");
+      return;
+    }
+    const fields = toAppliedModelFields(group, model);
+    const action = modelAction;
+    const current = getClawDetail(selectedClaw.id);
+    const list = current.appliedModels;
+    // 重复校验：同一条模型配置不可重复添加（替换时允许命中自己）
+    const dupe = list.find(m => m.modelConfigId === fields.modelConfigId
+      && !(action.kind === "replace" && m.id === action.modelEntryId));
+    if (dupe) {
+      toast.error("该模型已在列表中，请勿重复添加");
+      return;
+    }
+    const hadPrimaryBefore = list.some(m => m.primary);
+    updateClawDetail(selectedClaw.id, prev => {
+      if (action.kind === "add") {
+        const hasPrimary = prev.appliedModels.some(m => m.primary);
+        const newEntry: AppliedModelItem = {
+          id: nextModelEntryId(prev.appliedModels),
+          ...fields,
+          // 无主模型时新加的直接成为主模型；否则作为备选
+          primary: !hasPrimary,
+          addedAt: Date.now(),
+        };
+        return { ...prev, appliedModels: [...prev.appliedModels, newEntry] };
+      }
+      if (action.kind === "replace") {
+        return {
+          ...prev,
+          appliedModels: prev.appliedModels.map(m => m.id === action.modelEntryId
+            ? { ...m, ...fields }
+            : m),
+        };
+      }
+      return prev;
+    });
+    if (action.kind === "add") {
+      toast.success(hadPrimaryBefore ? "备选模型已添加" : "已设为主模型");
+    } else {
+      toast.success("模型已更新");
+    }
+    setModelAction({ kind: "idle" });
+  };
+
+  /** 切换一级厂商时，把二级草稿重置为该厂商的第一项 */
+  const handleDraftProviderChange = (value: string) => {
+    setModelDraftProvider(value);
+    const group = providerGroups.find(g => g.key === value);
+    if (group && group.models.length > 0) {
+      setModelDraftModelId(group.models[0].id);
+    } else {
+      setModelDraftModelId("");
+    }
+  };
+
+  /** 确认二次确认 Dialog 的操作 */
+  const runModelConfirm = () => {
+    if (!selectedClaw) return;
+    const { type, modelEntryId } = modelConfirmDialog;
+    if (modelEntryId === null) {
+      setModelConfirmDialog(prev => ({ ...prev, open: false }));
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => {
+      const list = prev.appliedModels;
+      if (type === "set-primary") {
+        return {
+          ...prev,
+          appliedModels: list.map(m => ({ ...m, primary: m.id === modelEntryId })),
+        };
+      }
+      if (type === "delete-backup") {
+        return { ...prev, appliedModels: list.filter(m => m.id !== modelEntryId) };
+      }
+      // type === "delete" (主模型)：删除后首条备选自动升主
+      const next = list.filter(m => m.id !== modelEntryId);
+      const wasPrimary = list.find(m => m.id === modelEntryId)?.primary ?? false;
+      if (wasPrimary && next.length > 0 && !next.some(m => m.primary)) {
+        next[0] = { ...next[0], primary: true };
+      }
+      return { ...prev, appliedModels: next };
+    });
+    setModelConfirmDialog(prev => ({ ...prev, open: false }));
+    // 如果当前正在替换的正是被删除的这条，取消编辑态
+    if (modelAction.kind === "replace" && modelAction.modelEntryId === modelEntryId) {
+      setModelAction({ kind: "idle" });
+    }
+    if (type === "set-primary") toast.success("已设为主模型");
+    else if (type === "delete-backup") toast.success("备选模型已删除");
+    else toast.success("主模型已删除，已自动升级备选模型");
+  };
+
+  // ── 通道编辑态 ───────────────────────────────────────────────────────────
+  /** 是否处于"新增通道"模式（展示底部 inline 选择条） */
+  const [channelAdding, setChannelAdding] = useState(false);
+  const [channelDraft, setChannelDraft] = useState<string>("");
+  /** 新增通道时正在录入的凭证字段值 */
+  const [channelDraftFields, setChannelDraftFields] = useState<Record<string, string>>({});
+  /** 待移除的通道 name（触发 AlertDialog 二次确认） */
+  const [channelRemoveTarget, setChannelRemoveTarget] = useState<string | null>(null);
+  /** 当前展开查看/编辑凭证的通道 name（null 表示全部收起） */
+  const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
+  /** 当前展开通道的编辑草稿值；null 表示未进入编辑态（只读查看） */
+  const [channelEditDraft, setChannelEditDraft] = useState<Record<string, string> | null>(null);
+  /** 密码字段可见性：用 "channelName:fieldKey" 作为 key */
+  const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
+
+  const toggleSecretVisibility = (channelName: string, fieldKey: string) => {
+    const key = `${channelName}:${fieldKey}`;
+    setVisibleSecrets(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const isSecretVisible = (channelName: string, fieldKey: string): boolean => {
+    return visibleSecrets.has(`${channelName}:${fieldKey}`);
+  };
+
+  /** 加密显示：保留前 3 字符，后面用 •••••• 替代 */
+  const maskSecret = (val: string): string => {
+    if (!val) return "—";
+    if (val.length <= 3) return val;
+    return val.slice(0, 3) + "••••••";
+  };
+
+  // ── 订阅"通道配置"页的可见性数据 ─────────────────────────────────────────
+  const [builtinChannelVisibility, setBuiltinChannelVisibility] = useState<Record<string, boolean>>(
+    () => loadBuiltinChannelVisibility(),
+  );
+  useEffect(() => {
+    return onBuiltinChannelVisibilityChange(() => {
+      setBuiltinChannelVisibility(loadBuiltinChannelVisibility());
+    });
+  }, []);
+
+  const [visibleCustomChannels, setVisibleCustomChannels] = useState<AdminCustomChannel[]>(
+    () => loadVisibleCustomChannels(),
+  );
+  useEffect(() => {
+    return onCustomChannelsChange(() => {
+      setVisibleCustomChannels(loadVisibleCustomChannels());
+    });
+  }, []);
+
+  /**
+   * 用户/Agent 可见的通道列表（内置 + 自定义）。
+   *   - 内置通道：用 builtinId 或 value 查 builtinChannelVisibility，缺省按 true 处理
+   *   - 自定义通道：来自管控端"通道配置"页，且 visible=true（loadVisibleCustomChannels 已过滤）
+   */
+  const availableChannelOptions = useMemo<ChannelConfig[]>(() => {
+    const builtins = CHANNEL_OPTIONS.filter((ch) => {
+      const key = ch.builtinId ?? ch.value;
+      return builtinChannelVisibility[key] !== false;
+    });
+    const customs: ChannelConfig[] = visibleCustomChannels.map((cc) => ({
+      value: `admin_custom_${cc.id}`,
+      label: cc.name,
+      descText: `企业自定义通道（Channel ID: ${cc.channelId}）`,
+      detailUrl: "#",
+      adminCustomMode: true as const,
+      adminCustomId: cc.id,
+      fields: cc.credentialFields.map((f) => ({
+        key: f.key || f.id,
+        label: f.label,
+        secret: true,
+      })),
+    }));
+    return [...builtins, ...customs];
+  }, [builtinChannelVisibility, visibleCustomChannels]);
+
+  /**
+   * 通道反查表：用 channel.value 查 ChannelConfig（含 fields 定义）
+   * - 内置通道：6 个全集（包括当前不可见的，避免已添加通道行失去字段定义）
+   * - 自定义通道：所有"可见"的（loadVisibleCustomChannels 已过滤；不可见的暂不反查）
+   * 注：现实场景中，自定义通道一旦被删除，已添加到 Agent 的同名通道将无 fields 元数据。
+   */
+  const channelLookup = useMemo<Map<string, ChannelConfig>>(() => {
+    const map = new Map<string, ChannelConfig>();
+    for (const ch of CHANNEL_OPTIONS) map.set(ch.value, ch);
+    for (const ch of availableChannelOptions) {
+      if (ch.adminCustomMode) map.set(ch.value, ch);
+    }
+    return map;
+  }, [availableChannelOptions]);
+
+  const startAddChannel = (detail: ClawDetail) => {
+    // 默认选中第一个尚未被添加的通道；全部已添加时留空
+    const existing = new Set(detail.connectedChannels.map(c => c.name));
+    const firstAvailable = availableChannelOptions.find(c => !existing.has(c.label));
+    setChannelDraft(firstAvailable?.value ?? "");
+    setChannelDraftFields({});
+    setChannelAdding(true);
+    setExpandedChannel(null); // 收起已展开的通道，避免视觉混乱
+    setChannelEditDraft(null);
+  };
+
+  const cancelAddChannel = () => {
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+  };
+
+  /** 切换新增草稿中选择的通道 */
+  const handleChannelDraftChange = (value: string) => {
+    setChannelDraft(value);
+    setChannelDraftFields({});
+  };
+
+  const confirmAddChannel = () => {
+    if (!selectedClaw) return;
+    const ch = availableChannelOptions.find(c => c.value === channelDraft);
+    if (!ch) {
+      toast.error("请选择要添加的通道");
+      return;
+    }
+    const detail = getClawDetail(selectedClaw.id);
+    if (detail.connectedChannels.some(c => c.name === ch.label)) {
+      toast.error(`「${ch.label}」已添加，请勿重复`);
+      return;
+    }
+    // 校验 fields（如有）必须填齐
+    const requiredFields = ch.fields ?? [];
+    const missing = requiredFields.find(f => !(channelDraftFields[f.key] ?? "").trim());
+    if (missing) {
+      toast.error(`请填写「${missing.label}」`);
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: [
+        ...prev.connectedChannels,
+        {
+          name: ch.label,
+          value: ch.value,
+          fieldValues: { ...channelDraftFields },
+          bots: [],
+        },
+      ],
+    }));
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+    toast.success(`已添加通道「${ch.label}」`);
+  };
+
+  const confirmRemoveChannel = () => {
+    if (!selectedClaw || !channelRemoveTarget) return;
+    const targetName = channelRemoveTarget;
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: prev.connectedChannels.filter(c => c.name !== targetName),
+    }));
+    // 如果被删除的通道正展开，顺手收起
+    if (expandedChannel === targetName) {
+      setExpandedChannel(null);
+      setChannelEditDraft(null);
+    }
+    setChannelRemoveTarget(null);
+    toast.success(`已移除通道「${targetName}」`);
+  };
+
+  /** 展开/收起某个通道的凭证展示区（同一时刻只展开一个） */
+  const toggleExpandChannel = (channel: ConnectedChannel) => {
+    if (expandedChannel === channel.name) {
+      setExpandedChannel(null);
+      setChannelEditDraft(null);
+    } else {
+      setExpandedChannel(channel.name);
+      setChannelEditDraft(null); // 默认进入只读查看态
+    }
+  };
+
+  /** 进入某个已接入通道的编辑态（只读 → 编辑） */
+  const startEditChannel = (channel: ConnectedChannel) => {
+    setExpandedChannel(channel.name);
+    setChannelEditDraft({ ...channel.fieldValues });
+  };
+
+  const cancelEditChannel = () => {
+    setChannelEditDraft(null);
+  };
+
+  const saveEditChannel = (channel: ConnectedChannel) => {
+    if (!selectedClaw || !channelEditDraft) return;
+    const chConfig = channelLookup.get(channel.value);
+    const requiredFields = chConfig?.fields ?? [];
+    const missing = requiredFields.find(f => !(channelEditDraft[f.key] ?? "").trim());
+    if (missing) {
+      toast.error(`请填写「${missing.label}」`);
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: prev.connectedChannels.map(c =>
+        c.name === channel.name ? { ...c, fieldValues: { ...channelEditDraft } } : c,
+      ),
+    }));
+    setChannelEditDraft(null);
+    toast.success(`「${channel.name}」凭证已更新`);
+  };
+
   const handleOpenDrawer = (claw: Claw) => {
     setSelectedClaw(claw);
     setShowDetailDrawer(true);
+    // 切换实例时重置所有编辑态，避免上一个实例残留
+    setModelAction({ kind: "idle" });
+    setModelConfirmDialog({ open: false, type: "set-primary", modelEntryId: null });
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+    setExpandedChannel(null);
+    setChannelEditDraft(null);
+    setVisibleSecrets(new Set());
   };
 
   const handleRefreshDrawer = () => {
@@ -1390,23 +1928,6 @@ export default function AgentMonitor() {
               </button>
             </Link>
           </div>
-
-          {/* 存量 Agent 实例筛选提示条 */}
-          {pendingDeleteIds && (
-            <div className="flex items-center gap-2.5 bg-blue-50 border-y border-blue-100 px-4 py-2.5 -mx-0 mb-3">
-              <Info className="w-4 h-4 text-blue-400 shrink-0" />
-              <p className="text-sm text-blue-700 flex-1">
-                已帮您筛选出 <span className="font-semibold">{pendingDeleteMatchCount}</span> 个符合条件的 Agent 实例
-              </p>
-              <button
-                type="button"
-                onClick={clearPendingDeleteFilter}
-                className="inline-flex items-center gap-0.5 text-sm text-blue-600 hover:text-blue-800 font-medium shrink-0"
-              >
-                清除筛选<X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
 
           <div className="overflow-x-auto" ref={tableScrollRef}>
           <table className="text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
@@ -2384,46 +2905,436 @@ export default function AgentMonitor() {
                   </div>
                 </div>
                 {/* 已应用模型 */}
-                <div>
-                  <div className="text-sm text-gray-500 mb-2">
-                    已应用模型（{getClawDetail(selectedClaw.id).appliedModels.length}）
-                  </div>
-                  <div className="space-y-2">
-                    {/* 主模型 */}
-                    {getClawDetail(selectedClaw.id).appliedModels.filter(m => m.isPrimary).map((model) => (
-                      <div key={model.version} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-gray-900">{model.name}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{model.version}</div>
+                {(() => {
+                  const detail = getClawDetail(selectedClaw.id);
+                  const models = detail.appliedModels;
+                  const hasPrimary = models.some(m => m.primary);
+                  const primaryList = models.filter(m => m.primary);
+                  const backupList = [...models.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt);
+                  const addButtonLabel = hasPrimary ? "添加备选模型" : "设为主模型";
+                  const isAdding = modelAction.kind === "add";
+
+                  /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
+                  const renderInlineEditForm = () => (
+                    <div className="space-y-3">
+                      {providerGroups.length === 0 ? (
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                          <p className="text-xs text-amber-700 leading-relaxed">
+                            当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
+                          </p>
                         </div>
-                        <span className="flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-100 rounded-full px-2.5 py-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                          主模型
-                        </span>
+                      ) : (
+                        <>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-gray-600">模型厂商</label>
+                            <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择模型厂商" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {providerGroups.map((g) => (
+                                  <SelectItem key={g.key} value={g.key}>{g.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-gray-600">模型名称</label>
+                            <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择模型名称" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(providerGroups.find(g => g.key === modelDraftProvider)?.models ?? []).map((m) => {
+                                  const isCustom = m.provider === CUSTOM_PROVIDER_VALUE;
+                                  return (
+                                    <SelectItem key={m.id} value={m.id}>
+                                      {isCustom ? m.name : m.version}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditModel}>
+                          取消
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-8 px-3 text-xs text-white"
+                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                          onClick={saveEditModel}
+                          disabled={!modelDraftProvider || !modelDraftModelId}
+                        >
+                          保存
+                        </Button>
                       </div>
-                    ))}
-                    {/* 备选模型 */}
-                    {getClawDetail(selectedClaw.id).appliedModels.filter(m => !m.isPrimary).map((model) => (
-                      <div key={model.version} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-gray-900">{model.name}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{model.version}</div>
+                    </div>
+                  );
+
+                  /** 渲染一行模型卡：替换态下卡片内直接变为编辑表单 */
+                  const renderModelRow = (model: AppliedModelItem, isPrimary: boolean) => {
+                    const isReplacingThis = modelAction.kind === "replace" && modelAction.modelEntryId === model.id;
+                    return (
+                      <div
+                        key={model.id}
+                        className={`px-4 py-3 bg-white rounded-2xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
+                      >
+                        {isReplacingThis ? (
+                          renderInlineEditForm()
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                              <span className="text-sm font-semibold text-gray-900 leading-tight truncate">
+                                {model.providerLabel}
+                              </span>
+                              {model.versionLabel && (
+                                <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate">
+                                  {model.versionLabel}
+                                </span>
+                              )}
+                            </div>
+                            {isPrimary ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                                主模型
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
+                                备选
+                              </span>
+                            )}
+                            <div className="flex items-center gap-1 shrink-0">
+                              {!isPrimary && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => setModelConfirmDialog({ open: true, type: "set-primary", modelEntryId: model.id })}
+                                      className="p-1 rounded text-gray-400 hover:text-blue-500 transition-colors"
+                                    >
+                                      <ArrowLeftRight className="w-3.5 h-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                    设为主模型
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => startReplaceModel(model)}
+                                    className="p-1 rounded text-gray-400 hover:text-blue-500 transition-colors"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                  替换
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => setModelConfirmDialog({
+                                      open: true,
+                                      type: isPrimary ? "delete" : "delete-backup",
+                                      modelEntryId: model.id,
+                                    })}
+                                    className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                  删除模型
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  };
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm text-gray-500">已应用模型（{models.length}）</div>
+                        {!isAdding && (
+                          <button
+                            onClick={startAddModel}
+                            className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                            {addButtonLabel}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 空态（无模型且不在新增态） */}
+                      {models.length === 0 && !isAdding && (
+                        <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                          暂未配置模型
                         </div>
-                        <span className="flex items-center gap-1 text-xs font-medium text-gray-500 bg-gray-100 rounded-full px-2.5 py-1">备选模型</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                      )}
+
+                      {/* 主模型分组 */}
+                      {primaryList.length > 0 && (
+                        <div className="space-y-1.5 mb-3">
+                          {primaryList.map((m) => renderModelRow(m, true))}
+                        </div>
+                      )}
+
+                      {/* 备选模型分组 */}
+                      {backupList.length > 0 && (
+                        <div>
+                          <div className="space-y-1.5">
+                            {backupList.map((m) => renderModelRow(m, false))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
+                      {isAdding && (
+                        <div className="mt-2 px-4 py-3 bg-white rounded-2xl border border-blue-200">
+                          {renderInlineEditForm()}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 {/* 已接入通道 */}
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
+                    {!channelAdding && (
+                      <button
+                        onClick={() => startAddChannel(getClawDetail(selectedClaw.id))}
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                        添加通道
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => (
-                      <div key={channel.name} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center gap-3">
-                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                        <span className="text-sm font-semibold text-gray-900">{channel.name}</span>
+                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {
+                      const chConfig = channelLookup.get(channel.value);
+                      const fields = chConfig?.fields ?? [];
+                      const isExpanded = expandedChannel === channel.name;
+                      const isEditingThis = isExpanded && channelEditDraft !== null;
+                      return (
+                        <div key={channel.name} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                          {/* 行头：通道名 + 展开/折叠按钮 */}
+                          <div className="group px-4 py-3 flex items-center gap-3">
+                            <button
+                              onClick={() => toggleExpandChannel(channel)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                              title={isExpanded ? "收起" : "展开查看凭证"}
+                            >
+                              <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                            </button>
+                            <span className="text-sm font-semibold text-gray-900 flex-1">{channel.name}</span>
+                            <button
+                              onClick={() => setChannelRemoveTarget(channel.name)}
+                              className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                              title="移除"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* 展开区域：凭证查看 / 编辑 */}
+                          {isExpanded && (
+                            <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50 space-y-2">
+                              {fields.length === 0 ? (
+                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                                  <p className="text-xs text-blue-600 leading-relaxed">
+                                    该通道无需凭证配置（由租户在用户端完成扫码授权）。
+                                  </p>
+                                </div>
+                              ) : (
+                                <>
+                                  {fields.map((field) => {
+                                    const visible = isSecretVisible(channel.name, field.key);
+                                    if (isEditingThis) {
+                                      // 编辑态：Input + 密码可见切换
+                                      return (
+                                        <div key={field.key} className="space-y-1">
+                                          <label className="text-xs font-medium text-gray-600">{field.label}</label>
+                                          <div className="relative">
+                                            <Input
+                                              type={field.secret && !visible ? "password" : "text"}
+                                              value={channelEditDraft![field.key] ?? ""}
+                                              onChange={(e) => setChannelEditDraft(prev => ({ ...(prev ?? {}), [field.key]: e.target.value }))}
+                                              className="bg-white border-gray-200 text-sm h-9 pr-10"
+                                            />
+                                            {field.secret && (
+                                              <button
+                                                type="button"
+                                                onClick={() => toggleSecretVisibility(channel.name, field.key)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                              >
+                                                {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    // 只读态：key - value（secret 自动 mask）
+                                    const rawValue = channel.fieldValues[field.key] ?? "";
+                                    const displayValue = field.secret && !visible ? maskSecret(rawValue) : (rawValue || "—");
+                                    return (
+                                      <div key={field.key} className="flex items-center gap-3 py-1.5">
+                                        <span className="text-xs text-gray-500 w-28 shrink-0 truncate" title={field.label}>{field.label}</span>
+                                        <span className="text-xs text-gray-800 flex-1 font-mono break-all">{displayValue}</span>
+                                        {field.secret && rawValue && (
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleSecretVisibility(channel.name, field.key)}
+                                            className="text-gray-300 hover:text-blue-500 transition-colors flex-shrink-0"
+                                            title={visible ? "隐藏" : "查看"}
+                                          >
+                                            {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                          </button>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+
+                                  {/* 操作按钮 */}
+                                  <div className="flex justify-end gap-2 pt-1">
+                                    {isEditingThis ? (
+                                      <>
+                                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditChannel}>
+                                          取消
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          className="h-8 px-3 text-xs text-white"
+                                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                                          onClick={() => saveEditChannel(channel)}
+                                        >
+                                          保存
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={() => startEditChannel(channel)}>
+                                        <Pencil className="w-3 h-3 mr-1" />
+                                        编辑凭证
+                                      </Button>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
+                      <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                        暂未接入通道
                       </div>
-                    ))}
+                    )}
+                    {/* 新增通道面板 */}
+                    {channelAdding && (() => {
+                      const existing = new Set(getClawDetail(selectedClaw.id).connectedChannels.map(c => c.name));
+                      const available = availableChannelOptions.filter(c => !existing.has(c.label));
+                      const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
+                      const isWechatLike = currentCh?.wechatMode;
+                      return (
+                        <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200 space-y-3">
+                          {/* 通道选择 */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-gray-600">通道类型</label>
+                            <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择要添加的通道" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {available.length === 0 ? (
+                                  <div className="px-3 py-6 text-center text-xs text-gray-400">
+                                    所有通道均已添加
+                                  </div>
+                                ) : (
+                                  available.map((c) => (
+                                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* 无凭证字段的通道（微信）：提示框 */}
+                          {currentCh && isWechatLike && (
+                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                              <p className="text-xs text-blue-600 leading-relaxed">
+                                微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
+                              </p>
+                            </div>
+                          )}
+
+                          {/* 凭证字段录入 */}
+                          {currentCh && !isWechatLike && (currentCh.fields ?? []).length > 0 && (
+                            <div className="space-y-2">
+                              {(currentCh.fields ?? []).map((field) => {
+                                const visible = isSecretVisible("__draft__", field.key);
+                                return (
+                                  <div key={field.key} className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">{field.label}</label>
+                                    <div className="relative">
+                                      <Input
+                                        type={field.secret && !visible ? "password" : "text"}
+                                        value={channelDraftFields[field.key] ?? ""}
+                                        onChange={(e) => setChannelDraftFields(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                        placeholder={field.label}
+                                        className="bg-gray-50 border-gray-200 text-sm h-9 pr-10"
+                                      />
+                                      {field.secret && (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleSecretVisibility("__draft__", field.key)}
+                                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelAddChannel}>
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 px-3 text-xs text-white"
+                              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                              onClick={confirmAddChannel}
+                              disabled={!channelDraft}
+                            >
+                              确认添加
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
                 {/* 已安装技能 */}
@@ -2442,6 +3353,71 @@ export default function AgentMonitor() {
           </div>
         </div>
       )}
+
+      {/* 移除通道二次确认 */}
+      <AlertDialog open={!!channelRemoveTarget} onOpenChange={(open) => { if (!open) setChannelRemoveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认移除通道</AlertDialogTitle>
+            <AlertDialogDescription>
+              移除「{channelRemoveTarget}」后，该 Agent 将无法通过此通道收发消息。该操作不会删除通道下已有的凭证配置，可在用户端重新接入。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={confirmRemoveChannel}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 模型操作二次确认（设为主/删主/删备）—— 与用户端 OpenClawDetail 保持一致 */}
+      <Dialog
+        open={modelConfirmDialog.open}
+        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600">
+              {modelConfirmDialog.type === "delete"
+                ? "确认删除主模型"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "确认删除备选模型"
+                : "切换主模型"}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              {modelConfirmDialog.type === "delete"
+                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
+                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={runModelConfirm}
+            >
+              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
+                ? "确认删除"
+                : "确认设置"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (

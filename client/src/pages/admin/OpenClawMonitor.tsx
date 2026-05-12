@@ -1390,8 +1390,9 @@ export default function AgentMonitor() {
       }
       return prev;
     });
+    const _isOpenClawSave = selectedClaw?.agentType === 'OpenClaw';
     if (action.kind === "add") {
-      toast.success(hadPrimaryBefore ? "备选模型已添加" : "已设为主模型");
+      toast.success(hadPrimaryBefore ? "备选模型已添加" : (_isOpenClawSave ? "已设为主模型" : "模型已添加成功"));
     } else {
       toast.success("模型已更新");
     }
@@ -1441,9 +1442,10 @@ export default function AgentMonitor() {
     if (modelAction.kind === "replace" && modelAction.modelEntryId === modelEntryId) {
       setModelAction({ kind: "idle" });
     }
+    const _isOpenClaw = selectedClaw?.agentType === 'OpenClaw';
     if (type === "set-primary") toast.success("已设为主模型");
     else if (type === "delete-backup") toast.success("备选模型已删除");
-    else toast.success("主模型已删除，已自动升级备选模型");
+    else toast.success(_isOpenClaw ? "主模型已删除，已自动升级备选模型" : "模型删除成功");
   };
 
   // ── 通道编辑态 ───────────────────────────────────────────────────────────
@@ -2911,7 +2913,13 @@ export default function AgentMonitor() {
                   const hasPrimary = models.some(m => m.primary);
                   const primaryList = models.filter(m => m.primary);
                   const backupList = [...models.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt);
-                  const addButtonLabel = hasPrimary ? "添加备选模型" : "设为主模型";
+                  // 是否为 OpenClaw 类型：OpenClaw 支持主模型 + 备选模型；其他类型只能配置一个模型
+                  const isOpenClaw = selectedClaw.agentType === 'OpenClaw';
+                  // 非 OpenClaw 且已有模型时不展示添加按鈕；OpenClaw 按现有逻辑
+                  const canAddMore = isOpenClaw || models.length === 0;
+                  const addButtonLabel = isOpenClaw
+                    ? (hasPrimary ? "添加备选模型" : "添加主模型")
+                    : "添加模型";
                   const isAdding = modelAction.kind === "add";
 
                   /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
@@ -2998,18 +3006,18 @@ export default function AgentMonitor() {
                                 </span>
                               )}
                             </div>
-                            {isPrimary ? (
+                            {isOpenClaw && (isPrimary ? (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                                 主模型
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
-                                备选
+                                备选模型
                               </span>
-                            )}
+                            ))}
                             <div className="flex items-center gap-1 shrink-0">
-                              {!isPrimary && (
+                              {isOpenClaw && !isPrimary && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button
@@ -3025,6 +3033,7 @@ export default function AgentMonitor() {
                                   </TooltipContent>
                                 </Tooltip>
                               )}
+                              {!isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -3039,6 +3048,8 @@ export default function AgentMonitor() {
                                   替换
                                 </TooltipContent>
                               </Tooltip>
+                              )}
+                              {isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -3057,6 +3068,7 @@ export default function AgentMonitor() {
                                   删除模型
                                 </TooltipContent>
                               </Tooltip>
+                              )}
                             </div>
                           </div>
                         )}
@@ -3068,7 +3080,7 @@ export default function AgentMonitor() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <div className="text-sm text-gray-500">已应用模型（{models.length}）</div>
-                        {!isAdding && (
+                        {!isAdding && canAddMore && (
                           <button
                             onClick={startAddModel}
                             className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
@@ -3115,15 +3127,7 @@ export default function AgentMonitor() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
-                    {!channelAdding && (
-                      <button
-                        onClick={() => startAddChannel(getClawDetail(selectedClaw.id))}
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                      >
-                        <Plus className="w-3 h-3" />
-                        添加通道
-                      </button>
-                    )}
+                    {/* 添加通道按钮已移除（本期需求不包含） */}
                   </div>
                   <div className="space-y-2">
                     {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {

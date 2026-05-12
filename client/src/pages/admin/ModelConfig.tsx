@@ -28,6 +28,11 @@ import { AVAILABLE_MODELS } from "@/lib/mockData";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+import {
+  CUSTOM_PROVIDER_VALUE,
+  useAdminModelsState,
+  type ModelRow,
+} from "@/lib/modelConfigStore";
 
 // 模型配置页不区分 OneID/普通模式，合并展示所有分组
 const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
@@ -38,8 +43,8 @@ AVAILABLE_MODELS.forEach((m) => {
   PROVIDER_VERSIONS[m.value] = m.versions;
 });
 
-// 自定义模型选项值
-const CUSTOM_PROVIDER_VALUE = "__custom__";
+// 自定义模型选项值 / 模型行类型 / 默认数据均迁移到 lib/modelConfigStore.ts，
+// 这里只继续维护"下拉选项"等纯 UI 派生数据。
 
 // 下拉选项：厂商 + 自定义模型
 const PROVIDER_OPTIONS = [
@@ -49,54 +54,6 @@ const PROVIDER_OPTIONS = [
 
 // localStorage key，供用户端读取
 const DEFAULT_MODEL_STORAGE_KEY = "adminDefaultModelId";
-
-interface ModelRow {
-  id: string;
-  name: string;
-  version: string;
-  modelUrl: string;
-  visible: boolean;
-  isDefault: boolean;
-  dailyLimit: number;
-  provider: string; // 对应 AVAILABLE_MODELS.value
-  versions: string[]; // 该厂商可用的版本列表
-  isMultimodal?: boolean; // 是否支持多模态输入
-  visibilityScope: "all" | "groups"; // 应用范围：全部用户 / 按分组
-  visibilityGroupIds: string[]; // 按分组时选中的分组 id
-}
-
-const MOCK_MODELS: ModelRow[] = [
-  {
-    id: "1", name: "腾讯云 DeepSeek", version: "DeepSeek V3 0324",
-    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: true, isDefault: true, isMultimodal: false, dailyLimit: 500000,
-    provider: "tencent-deepseek",
-    versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
-    visibilityScope: "all", visibilityGroupIds: [],
-  },
-  {
-    id: "2", name: "腾讯云混元", version: "混元 TurboS Latest",
-    modelUrl: "https://hunyuan.tencentcloudapi.com", visible: true, isDefault: false, isMultimodal: false, dailyLimit: 200000,
-    provider: "tencent-hunyuan",
-    versions: ["混元 TurboS Latest", "混元 Pro", "混元 Standard"],
-    visibilityScope: "groups",
-    visibilityGroupIds: ["dept-tech", "dept-fe", "og-ai-core"],
-  },
-  {
-    id: "3", name: "腾讯云 DeepSeek", version: "DeepSeek R1",
-    modelUrl: "https://api.lkeap.cloud.tencent.com/v1", visible: false, isDefault: false, isMultimodal: false, dailyLimit: 100000,
-    provider: "tencent-deepseek",
-    versions: ["DeepSeek V3 0324", "DeepSeek R1", "DeepSeek V2.5"],
-    visibilityScope: "all", visibilityGroupIds: [],
-  },
-  {
-    id: "4", name: "OpenAI GPT-4o", version: "GPT-4o 2024-05-13",
-    modelUrl: "https://api.openai.com/v1", visible: true, isDefault: false, isMultimodal: true, dailyLimit: 300000,
-    provider: CUSTOM_PROVIDER_VALUE,
-    versions: [],
-    visibilityScope: "groups",
-    visibilityGroupIds: ["dept-ai", "og-ai-core"],
-  },
-];
 
 const DEFAULT_JSON = `{
   "provider": "provider_name",
@@ -625,7 +582,7 @@ function EditQuotaDialog({
 }
 
 export default function ModelConfig() {
-  const [models, setModels] = useState<ModelRow[]>(MOCK_MODELS);
+  const [models, setModels] = useAdminModelsState();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [customInputMode, setCustomInputMode] = useState<"json" | "form">("form");
   // 删除二次确认弹窗

@@ -131,148 +131,15 @@ import {
   onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
 
-// ─── 通道配置定义 ───────────────────────────────────────────────────────────────
+// ─── 通道 / 模型配置共享常量（迁移到 lib/agentConfigConstants） ─────────────────
 
-type ChannelField = {
-  key: string;
-  label: string;
-  secret: boolean; // true = 加密显示（保留前3字符）
-};
-
-type ChannelConfig = {
-  value: string;
-  label: string;
-  descText: string;
-  detailUrl: string;
-  hasInfoIcon?: boolean;
-  fields?: ChannelField[];
-  feishuMode?: true; // 飞书特殊处理
-  weworkMode?: true; // 企业微信特殊处理
-  wechatMode?: true; // 微信特殊处理
-  adminCustomMode?: true; // 管控端配置的自定义通道
-  adminCustomId?: string; // 对应的自定义通道 ID
-  builtinId?: string; // 对应管控端内置通道 ID，用于可见性过滤
-};
-
-const CHANNEL_OPTIONS: ChannelConfig[] = [
-  {
-    value: "wework",
-    label: "企业微信",
-    descText: "企业微信是一款高效协同办公的企业通讯与办公工具。",
-    detailUrl: "#",
-    hasInfoIcon: true,
-    weworkMode: true,
-    fields: [
-      { key: "botId", label: "企业微信机器人的botId", secret: false },
-      { key: "secret", label: "企业微信机器人的secret", secret: true },
-    ],
-  },
-  {
-    value: "qq",
-    label: "QQ",
-    descText: "一键解锁智能玩法，开启你的个性化QQ机器人之旅。",
-    detailUrl: "#",
-    fields: [
-      { key: "appId", label: "QQ机器人的App ID", secret: false },
-      { key: "appSecret", label: "QQ机器人的App Secret", secret: true },
-    ],
-  },
-  {
-    value: "wework-app",
-    label: "企业微信应用",
-    descText: "通过企业微信应用接口，将 Agent 接入企业微信应用，支持消息互动与业务集成。",
-    detailUrl: "#",
-    fields: [
-      { key: "corpId",         label: "企业微信应用的Corp ID",           secret: false },
-      { key: "corpSecret",     label: "企业微信应用的Corp Secret",       secret: true  },
-      { key: "agentId",        label: "企业微信应用的Agent ID",          secret: false },
-      { key: "token",          label: "企业微信应用的Token",             secret: false },
-      { key: "encodingAesKey", label: "企业微信应用的Encoding AES Key", secret: true  },
-    ],
-    builtinId: "wework-app",
-  },
-  {
-    value: "feishu",
-    label: "飞书",
-    descText: "飞书是字节跳动推出的一站式先进协作平台，AI 赋能助力高效办公。",
-    detailUrl: "#",
-    feishuMode: true,
-    // 快捷配置和手动配置都存 appId + appSecret
-    fields: [
-      { key: "appId", label: "飞书应用的App ID", secret: false },
-      { key: "appSecret", label: "飞书应用的App Secret", secret: true },
-    ],
-  },
-  {
-    value: "dingtalk",
-    label: "钉钉",
-    descText: "钉钉是阿里打造的智能办公平台，驱动组织数字化管理升级。",
-    detailUrl: "#",
-    fields: [
-      { key: "clientId", label: "钉钉应用的Client ID", secret: false },
-      { key: "clientSecret", label: "钉钉应用的Client Secret", secret: true },
-    ],
-  },
-  {
-    value: "wechat",
-    label: "微信",
-    descText: "通过微信扫码授权，将 Agent 接入微信，支持微信消息交互。",
-    detailUrl: "#",
-    wechatMode: true,
-  },
-];
-
-// ─── 模型配置定义 ────────────────────────────────────────────────────────────────
-
-type ModelVersion = {
-  value: string;
-  label: string;
-  badge?: string;
-  badgeColor?: string;
-};
-
-type ModelProvider = {
-  value: string;
-  label: string;
-  versions: ModelVersion[];
-};
-
-const MODEL_PROVIDERS: ModelProvider[] = [
-  {
-    value: "tencent-deepseek",
-    label: "腾讯云 DeepSeek",
-    versions: [
-      { value: "deepseek-v3", label: "DeepSeek V3 0324" },
-      { value: "deepseek-r1", label: "DeepSeek R1" },
-    ],
-  },
-  {
-    value: "tencent-hunyuan",
-    label: "腾讯云混元",
-    versions: [
-      { value: "hunyuan-turbos", label: "混元 TurboS Latest" },
-      { value: "hunyuan-pro", label: "混元 Pro" },
-    ],
-  },
-  {
-    value: "custom",
-    label: "自定义模型",
-    versions: [
-      { value: "custom", label: "自定义模型", badge: "需自费", badgeColor: "bg-amber-50 text-amber-600 border-amber-100" },
-    ],
-  },
-];
-
-const DEFAULT_CUSTOM_JSON = `{
-  "provider": "provider_name",
-  "base_url": "baseurl",
-  "api": "API协议",
-  "api_key": "your-api-key-here",
-  "model": {
-    "id": "model_id",
-    "name": "model_name"
-  }
-}`;
+import {
+  MODEL_PROVIDERS,
+  CHANNEL_OPTIONS,
+  DEFAULT_CUSTOM_JSON,
+  type ChannelField,
+  type ChannelConfig,
+} from "@/lib/agentConfigConstants";
 
 // ─── 工具函数 ────────────────────────────────────────────────────────────────────
 

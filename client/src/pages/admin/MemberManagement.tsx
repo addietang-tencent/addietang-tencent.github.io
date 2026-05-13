@@ -31,15 +31,21 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImportDialog";
+// ─── 新：分组视图（多层级 + 节点健康度 + 覆盖状态 + 就地决策，v2.0） ────
+import NewGroupView from "./MemberManagement/GroupView";
+import { MOCK_USERS as MM_MOCK_USERS, MOCK_USER_OVERRIDES as MM_MOCK_OVERRIDES, MOCK_SYNC_RESULT as MM_MOCK_SYNC_RESULT, MOCK_GROUPS as MM_MOCK_GROUPS, MOCK_MANUAL_GROUPS as MM_MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL as MM_MOCK_USERS_MANUAL, getPrimaryDeptPath as mmGetPrimaryDeptPath } from "./MemberManagement/mock";
+import type { UserOverrideInfo as MMUserOverrideInfo, UserOrg as MMUserOrg, UserGroup as MMUserGroup } from "./MemberManagement/types";
 
 const PAGE_SIZE = 10;
 
 // ─── 分组选择框触发器（自适应截断） ──────────────────────────────────────────
-function GroupSelectTrigger({ names }: { names: string[] }) {
+function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { names: string[]; onRemove?: (name: string) => void; onClear?: () => void; lockedNames?: string[] }) {
+  const [hover, setHover] = React.useState(false);
+  const lockedSet = React.useMemo(() => new Set(lockedNames), [lockedNames]);
   if (names.length === 0) {
     return (
       <div className="w-full overflow-hidden">
-        <button type="button" className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50">
+        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-md border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50">
           <span className="text-muted-foreground truncate">请选择分组</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
         </button>
@@ -47,27 +53,35 @@ function GroupSelectTrigger({ names }: { names: string[] }) {
     );
   }
 
-  const fullText = names.join(", ");
-  const displayText = names.length === 1 ? names[0] : `${names[0]} +${names.length - 1}`;
-
-  const btn = (
-    <div className="w-full overflow-hidden">
-      <button type="button" className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50">
-        <span className="text-gray-900 truncate text-left" style={{ minWidth: 0, flex: "1 1 0%" }}>{displayText}</span>
-        <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
+  return (
+    <div className="w-full overflow-hidden" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-md border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50 relative pr-7">
+        {names.map((name) => (
+          <span
+            key={name}
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 text-[11px] shrink-0"
+          >
+            {name}
+            {onRemove && !lockedSet.has(name) && (
+              <span onClick={(e) => { e.stopPropagation(); onRemove(name); }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                <X className="w-3 h-3" />
+              </span>
+            )}
+          </span>
+        ))}
+        {hover && onClear ? (
+          <span
+            onClick={(e) => { e.stopPropagation(); onClear(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center cursor-pointer"
+          >
+            <X className="w-2.5 h-2.5 text-white" />
+          </span>
+        ) : (
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 opacity-50 shrink-0" />
+        )}
       </button>
     </div>
   );
-
-  if (names.length > 1) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{btn}</TooltipTrigger>
-        <TooltipContent className="max-w-[300px]">{fullText}</TooltipContent>
-      </Tooltip>
-    );
-  }
-  return btn;
 }
 
 // 生成更多 mock 数据以演示翻页
@@ -91,7 +105,141 @@ const MOCK_MEMBERS_BASE = [
   { id: "mike@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },             // 自定义 VPC
   { id: "nina@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/nina", hasVpcResources: true },   // 无 claw，但还有残留资源
   { id: "oscar@acompany.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2026-03-20", vpcType: "auto" as const, vpcName: "openclaw/oscar", hasVpcResources: false }, // 无 claw，资源已清空
+  { id: "longname-user@very-long-domain-example.com", role: "member", status: "active", clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2026-05-01", vpcType: "auto" as const, vpcName: "openclaw/longname", hasVpcResources: true },  // 超长 ID 测试截断
+  { id: "product-ops-admin@enterprise-acompany.com", role: "member", status: "active", clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2026-05-02", vpcType: "custom" as const, vpcName: null, hasVpcResources: null },             // 超长 ID 测试截断
 ];
+
+// ─── OneID 模式用户 → 用户信息快速查表（按 userId） ───────────────
+const MM_USERS_BY_ID = new Map<string, MMUserOrg>(MM_MOCK_USERS.map((u) => [u.userId, u]));
+
+/** 获取用户所有 oneid-dept 类型部门的完整路径（主部门排首位） */
+function getMmUserDeptPaths(userId: string): Array<{ path: string; isPrimary: boolean }> {
+  const user = MM_USERS_BY_ID.get(userId);
+  if (!user) return [];
+  const deptGroupIds = user.groupIds.filter((gid) => {
+    const g = MM_MOCK_GROUPS.find((g) => g.id === gid);
+    return g?.source === "oneid-dept";
+  });
+  if (deptGroupIds.length === 0) return [];
+  return deptGroupIds
+    .map((gid) => ({
+      path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS),
+      isPrimary: gid === user.primaryGroupId,
+    }))
+    .sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+}
+
+/** 获取用户的「分组」展示项（组织架构 + 自定义分组），用于全部视图的分组列 */
+function getMmUserGroupItems(userId: string): Array<{
+  id: string;
+  path: string;
+  kind: "oneid-dept" | "oneid-group";
+}> {
+  const user = MM_USERS_BY_ID.get(userId);
+  if (!user) return [];
+  const result: Array<{ id: string; path: string; kind: "oneid-dept" | "oneid-group" }> = [];
+  user.groupIds.forEach((gid) => {
+    const g = MM_MOCK_GROUPS.find((g) => g.id === gid);
+    if (!g) return;
+    if (g.source === "oneid-dept") {
+      result.push({ id: gid, path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS), kind: "oneid-dept" });
+    } else if (g.source === "oneid-group") {
+      result.push({ id: gid, path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS), kind: "oneid-group" });
+    }
+  });
+  return result;
+}
+
+// ─── 普通模式：MOCK_USERS_MANUAL 扩展为 member 兼容的数据结构 ─────────────
+// 补齐 Agent/VPC 相关字段，便于全部视图渲染
+const MM_MANUAL_MEMBER_EXTRAS: Record<string, { clawLimit: number; tokenLimit: number; clawCount: number; joinTime: string; vpcType: "auto" | "custom"; vpcName: string | null; hasVpcResources: boolean | null }> = {
+  // ── 产品组 ──
+  "anna@acompany.com":   { clawLimit: 3, tokenLimit: 50000,  clawCount: 2, joinTime: "2025-06-05", vpcType: "auto",   vpcName: "openclaw/anna",   hasVpcResources: true },
+  "bill@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 3, joinTime: "2025-06-05", vpcType: "auto",   vpcName: "openclaw/bill",   hasVpcResources: true },
+  "cara@acompany.com":   { clawLimit: 3, tokenLimit: 50000,  clawCount: 0, joinTime: "2025-06-10", vpcType: "custom", vpcName: null,              hasVpcResources: null },
+  // ── 研发组 ──
+  "daniel@acompany.com": { clawLimit: 10, tokenLimit: 200000, clawCount: 4, joinTime: "2025-06-01", vpcType: "auto", vpcName: "openclaw/daniel", hasVpcResources: true },
+  "eric@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-06-01", vpcType: "auto",  vpcName: "openclaw/eric",   hasVpcResources: true },
+  // ── 研发-前端 ──
+  "fiona@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-06-15", vpcType: "auto",   vpcName: "openclaw/fiona",   hasVpcResources: true },
+  "george@acompany.com": { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-06-20", vpcType: "auto",   vpcName: "openclaw/george",  hasVpcResources: false },
+  "helen@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 2, joinTime: "2025-07-01", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  "ivan@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-07-05", vpcType: "auto",   vpcName: "openclaw/ivan",    hasVpcResources: true },
+  // ── 研发-后端 ──
+  "jason@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 3, joinTime: "2025-07-10", vpcType: "auto",   vpcName: "openclaw/jason",   hasVpcResources: true },
+  "kelly@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-07-15", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  "lucas@acompany.com":  { clawLimit: 5, tokenLimit: 80000, clawCount: 2, joinTime: "2025-07-20", vpcType: "auto",   vpcName: "openclaw/lucas",   hasVpcResources: true },
+  // ── 设计组 ──
+  "mia@acompany.com":    { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-08-01", vpcType: "auto",   vpcName: "openclaw/mia",     hasVpcResources: true },
+  "nick@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-08-05", vpcType: "auto",   vpcName: "openclaw/nick",    hasVpcResources: false },
+  // ── 产品运营与市场推广团队 ──
+  "olivia@acompany.com": { clawLimit: 3, tokenLimit: 50000,  clawCount: 1, joinTime: "2025-09-01", vpcType: "auto",   vpcName: "openclaw/olivia", hasVpcResources: true },
+  "paul@acompany.com":   { clawLimit: 5, tokenLimit: 100000, clawCount: 2, joinTime: "2025-09-05", vpcType: "auto",   vpcName: "openclaw/paul",   hasVpcResources: true },
+  "quinn@acompany.com":  { clawLimit: 3, tokenLimit: 50000,  clawCount: 0, joinTime: "2025-09-10", vpcType: "custom", vpcName: null,               hasVpcResources: null },
+  // ── 未分组 ──
+  "ryan@acompany.com":   { clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-10-01", vpcType: "auto",   vpcName: "openclaw/ryan",    hasVpcResources: false },
+  "susan@acompany.com":  { clawLimit: 3, tokenLimit: 50000, clawCount: 1, joinTime: "2025-10-05", vpcType: "auto",   vpcName: "openclaw/susan",   hasVpcResources: true },
+};
+
+/** 普通模式下：由 MOCK_USERS_MANUAL + 扩展字段组合得到的 members 基础数据（19 人） */
+const MOCK_MEMBERS_MANUAL_BASE = MM_MOCK_USERS_MANUAL.map((u) => {
+  const extras = MM_MANUAL_MEMBER_EXTRAS[u.userId] ?? {
+    clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-06-01", vpcType: "auto" as const, vpcName: `openclaw/${u.userId.split("@")[0]}`, hasVpcResources: false,
+  };
+  return {
+    id: u.userId,
+    role: u.role ?? "member",
+    status: u.status ?? "active",
+    ...extras,
+  };
+});
+
+// ─── OneID 模式：MOCK_USERS 扩展为 member 兼容的数据结构 ─────────────
+// 其中 alice~oscar 15 人复用 MOCK_MEMBERS_BASE 里已 mock 的 Agent/VPC 字段；
+// ceo / tim / peter 3 人是分组视图新增的高管，需要单独 mock Agent/VPC 字段
+const MM_ONEID_EXTRA_MEMBERS: Record<string, { clawLimit: number; tokenLimit: number; clawCount: number; joinTime: string; vpcType: "auto" | "custom"; vpcName: string | null; hasVpcResources: boolean | null }> = {
+  "ceo@acompany.com":   { clawLimit: 10, tokenLimit: 200000, clawCount: 0, joinTime: "2024-12-01", vpcType: "auto", vpcName: "openclaw/ceo",   hasVpcResources: false },
+  "tim@acompany.com":   { clawLimit: 5,  tokenLimit: 100000, clawCount: 2, joinTime: "2024-12-15", vpcType: "auto", vpcName: "openclaw/tim",   hasVpcResources: true },
+  "peter@acompany.com": { clawLimit: 5,  tokenLimit: 100000, clawCount: 1, joinTime: "2024-12-15", vpcType: "auto", vpcName: "openclaw/peter", hasVpcResources: true },
+};
+
+/** OneID 模式下：由 MOCK_USERS + 扩展字段组合得到的 members 基础数据（18 人） */
+const MOCK_MEMBERS_ONEID_BASE = MM_MOCK_USERS.map((u) => {
+  // 1) 优先用 MOCK_MEMBERS_BASE 里已 mock 好的字段（alice~oscar 15 人）
+  const baseMember = MOCK_MEMBERS_BASE.find((m) => m.id === u.userId);
+  if (baseMember) {
+    return baseMember;
+  }
+  // 2) 否则用 MM_ONEID_EXTRA_MEMBERS 里 ceo / tim / peter 的 mock
+  const extras = MM_ONEID_EXTRA_MEMBERS[u.userId] ?? {
+    clawLimit: 3, tokenLimit: 50000, clawCount: 0, joinTime: "2025-01-01", vpcType: "auto" as const, vpcName: `openclaw/${u.userId.split("@")[0]}`, hasVpcResources: false,
+  };
+  return {
+    id: u.userId,
+    role: (u.role ?? "member") as "admin" | "member",
+    status: (u.status ?? "active") as "active" | "disabled",
+    ...extras,
+  };
+}) as typeof MOCK_MEMBERS_BASE;
+
+/** 普通模式下：构造分组完整路径（如 "研发组 / 研发-前端"） */
+function getManualGroupPath(groupId: string): string {
+  const map = new Map(MM_MOCK_MANUAL_GROUPS.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.length > 0 ? chain.join(" / ") : "—";
+}
+
+/** 普通模式下：获取某用户的分组完整路径列表 */
+function getManualUserGroupPaths(userId: string): Array<{ id: string; path: string }> {
+  const user = MM_MOCK_USERS_MANUAL.find((u) => u.userId === userId);
+  if (!user) return [];
+  return user.groupIds.map((gid) => ({ id: gid, path: getManualGroupPath(gid) }));
+}
 
 // ─── Mock 部门数据（仅 OneID 模式使用） ─────────────────────────────────────────
 interface DepartmentNode {
@@ -104,55 +252,116 @@ interface DepartmentNode {
 const MOCK_DEPARTMENTS: DepartmentNode[] = [
   {
     id: "dept-root",
-    name: "全公司",
-    path: "全公司",
+    name: "A公司",
+    path: "A公司",
     children: [
       {
         id: "dept-tech",
         name: "技术部",
-        path: "全公司/技术部",
+        path: "A公司/技术部",
         children: [
-          { id: "dept-fe", name: "前端组", path: "全公司/技术部/前端组" },
-          { id: "dept-be", name: "后端组", path: "全公司/技术部/后端组" },
-          { id: "dept-ai", name: "AI 组", path: "全公司/技术部/AI 组" },
+          { id: "dept-fe", name: "前端组", path: "A公司/技术部/前端组" },
+          { id: "dept-be", name: "后端组", path: "A公司/技术部/后端组" },
+          { id: "dept-ai", name: "AI 组", path: "A公司/技术部/AI 组" },
         ],
       },
       {
         id: "dept-product",
         name: "产品部",
-        path: "全公司/产品部",
+        path: "A公司/产品部",
         children: [
-          { id: "dept-pm", name: "产品策划", path: "全公司/产品部/产品策划" },
-          { id: "dept-design", name: "设计组", path: "全公司/产品部/设计组" },
+          { id: "dept-pm", name: "产品策划", path: "A公司/产品部/产品策划" },
+          { id: "dept-design", name: "设计组", path: "A公司/产品部/设计组" },
         ],
       },
-      { id: "dept-hr", name: "人力资源", path: "全公司/人力资源" },
-      { id: "dept-finance", name: "财务部", path: "全公司/财务部" },
+      { id: "dept-hr", name: "人力资源", path: "A公司/人力资源" },
+      { id: "dept-finance", name: "财务部", path: "A公司/财务部" },
     ],
   },
 ];
 
 /** 用户归属 mock 映射 */
 const MOCK_MEMBER_DEPARTMENTS: Record<string, string> = {
-  "alice@acompany.com": "全公司/技术部/前端组",
-  "bob@acompany.com": "全公司/技术部/后端组",
-  "carol@acompany.com": "全公司/技术部/AI 组",
-  "david@acompany.com": "全公司/产品部/产品策划",
-  "eve@acompany.com": "全公司/产品部/设计组",
-  "frank@acompany.com": "全公司/技术部/前端组",
-  "grace@acompany.com": "全公司/技术部/后端组",
-  "henry@acompany.com": "全公司/人力资源",
-  "iris@acompany.com": "全公司/技术部/AI 组",
-  "jack@acompany.com": "全公司/财务部",
-  "kate@acompany.com": "全公司/技术部/前端组",
-  "leo@acompany.com": "全公司/产品部/产品策划",
-  "mike@acompany.com": "全公司/技术部/后端组",
-  "nina@acompany.com": "全公司/产品部/设计组",
-  "oscar@acompany.com": "全公司/财务部",
+  "alice@acompany.com": "A公司/技术部/前端组",
+  "bob@acompany.com": "A公司/技术部/后端组",
+  "carol@acompany.com": "A公司/技术部/AI 组",
+  "david@acompany.com": "A公司/产品部/产品策划",
+  "eve@acompany.com": "A公司/产品部/设计组",
+  "frank@acompany.com": "A公司/技术部/前端组",
+  "grace@acompany.com": "A公司/技术部/后端组",
+  "henry@acompany.com": "A公司/人力资源",
+  "iris@acompany.com": "A公司/技术部/AI 组",
+  "jack@acompany.com": "A公司/财务部",
+  "kate@acompany.com": "A公司/技术部/前端组",
+  "leo@acompany.com": "A公司/产品部/产品策划",
+  "mike@acompany.com": "A公司/技术部/后端组",
+  "nina@acompany.com": "A公司/产品部/设计组",
+  "oscar@acompany.com": "A公司/财务部",
 };
 
 const LAST_CLAW_LIMIT = 3;
 const LAST_TOKEN_LIMIT = 50000;
+
+// ─── 平台策略：预设策略默认值（可被管理员修改） ─────────────────────────────────
+const PRESET_POLICY_CLAW_LIMIT = 3;
+const PRESET_POLICY_TOKEN_LIMIT = 50000;
+
+// ─── 平台策略：按分组配额（模拟平台策略页配置的结果） ────────────────────────────
+/** 普通模式分组配额 */
+const GROUP_POLICY_QUOTAS: Record<string, { clawLimit: number; tokenLimit: number }> = {
+  "mgrp-product": { clawLimit: 3, tokenLimit: 50000 },
+  "mgrp-rd": { clawLimit: 5, tokenLimit: 100000 },
+  "mgrp-rd-fe": { clawLimit: 5, tokenLimit: 100000 },
+  "mgrp-rd-be": { clawLimit: 5, tokenLimit: 100000 },
+  "mgrp-design": { clawLimit: 3, tokenLimit: 50000 },
+  "mgrp-ops": { clawLimit: 3, tokenLimit: 50000 },
+};
+/** OneID 模式分组配额（按部门/用户组） */
+const ONEID_GROUP_POLICY_QUOTAS: Record<string, { clawLimit: number; tokenLimit: number }> = {
+  "dept-tech": { clawLimit: 5, tokenLimit: 100000 },
+  "dept-fe": { clawLimit: 5, tokenLimit: 100000 },
+  "dept-be": { clawLimit: 5, tokenLimit: 100000 },
+  "dept-ai": { clawLimit: 10, tokenLimit: 200000 },
+  "dept-product": { clawLimit: 3, tokenLimit: 80000 },
+  "dept-pm": { clawLimit: 3, tokenLimit: 80000 },
+  "dept-design": { clawLimit: 3, tokenLimit: 50000 },
+  "dept-operation": { clawLimit: 3, tokenLimit: 50000 },
+  "og-frontend": { clawLimit: 5, tokenLimit: 100000 },
+  "og-backend": { clawLimit: 5, tokenLimit: 100000 },
+  "og-ai-core": { clawLimit: 10, tokenLimit: 200000 },
+};
+
+// ─── 用户在分组中创建的 Agent 实例（mock） ────────────────────────────────────
+/** 格式：userId -> groupId -> 实例列表 */
+const MOCK_USER_GROUP_AGENTS: Record<string, Record<string, Array<{ id: string; name: string }>>> = {
+  // 普通模式：fiona 在研发-前端有 1 个实例
+  "fiona@acompany.com": {
+    "mgrp-rd-fe": [
+      { id: "claw-fiona-1", name: "Fiona 的前端助手" },
+    ],
+  },
+  // 普通模式：lucas 在研发-后端有 2 个实例（lucas 兼任前端+后端）
+  "lucas@acompany.com": {
+    "mgrp-rd-be": [
+      { id: "claw-lucas-1", name: "Lucas 的后端服务" },
+      { id: "claw-lucas-2", name: "Lucas 的 API 测试" },
+    ],
+  },
+  // OneID 模式：alice 在技术部有实例
+  "alice@acompany.com": {
+    "dept-tech": [
+      { id: "claw-alice-1", name: "Alice 的代码助手" },
+      { id: "claw-alice-2", name: "Alice 的文档生成器" },
+      { id: "claw-alice-3", name: "Alice 的测试工具" },
+    ],
+  },
+  // OneID 模式：bob 在前端组有实例
+  "bob@acompany.com": {
+    "dept-fe": [
+      { id: "claw-bob-1", name: "Bob 的组件库助手" },
+    ],
+  },
+};
 
 // ─── 分组数据模型 ─────────────────────────────────────────────────────────────
 export interface MemberGroup {
@@ -293,6 +502,7 @@ function AddMemberFormFields({
   onChange,
   existingMemberIds = [],
   groups = [],
+  userGroups = [],
   onOpenCreateGroupDialog,
   groupPopoverReopenKey = 0,
 }: {
@@ -300,6 +510,7 @@ function AddMemberFormFields({
   onChange: (v: typeof emptyNewMember) => void;
   existingMemberIds?: string[];
   groups?: MemberGroup[];
+  userGroups?: MMUserGroup[];
   onOpenCreateGroupDialog?: () => void;
   groupPopoverReopenKey?: number;
 }) {
@@ -333,13 +544,97 @@ function AddMemberFormFields({
     }
   };
 
+  // 使用 userGroups 渲染（有层级和 source），fallback 到 groups
+  const hasUserGroups = userGroups.length > 0;
+  const ugMap = React.useMemo(() => new Map(userGroups.map((g) => [g.id, g])), [userGroups]);
+  const getUgPath = (gId: string): string => {
+    const chain: string[] = [];
+    let node = ugMap.get(gId);
+    while (node) { chain.unshift(node.name); node = node.parentId ? ugMap.get(node.parentId) : undefined; }
+    return chain.join(" / ");
+  };
+  // OneID 模式：组织架构 + 用户组；普通模式：全部 manual 分组
+  const deptGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-dept"), [userGroups]);
+  const ogGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-group"), [userGroups]);
+  const manualUGroups = React.useMemo(() => userGroups.filter((g) => g.source === "manual"), [userGroups]);
+  // 构建树
+  const buildTree = (list: typeof userGroups) => {
+    const map = new Map(list.map((g) => [g.id, { ...g, children: [] as typeof list }]));
+    const roots: Array<typeof list[0] & { children: typeof list }> = [];
+    map.forEach((node) => {
+      if (node.parentId && map.has(node.parentId)) {
+        map.get(node.parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+    return roots;
+  };
+  const deptTree = React.useMemo(() => buildTree(deptGroups), [deptGroups]);
+  const ogTree = React.useMemo(() => buildTree(ogGroups), [ogGroups]);
+  const manualTree = React.useMemo(() => buildTree(manualUGroups), [manualUGroups]);
+  // 展开状态
+  const [treeExpanded, setTreeExpanded] = React.useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => setTreeExpanded((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  // 搜索
+  const matchSearch = (g: { id: string; name: string }) => {
+    if (!groupSearchStr.trim()) return true;
+    const q = groupSearchStr.toLowerCase();
+    return g.name.toLowerCase().includes(q) || getUgPath(g.id).toLowerCase().includes(q);
+  };
+
   const filteredGroups = groups.filter((g) =>
     g.name.toLowerCase().includes(groupSearchStr.toLowerCase())
   );
 
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId) ? [] : [gId];
+    const next = values.groupIds.includes(gId) ? values.groupIds.filter((x) => x !== gId) : [...values.groupIds, gId];
     onChange({ ...values, groupIds: next });
+  };
+
+  // 获取已选分组的显示名称
+  const selectedNames = React.useMemo(() => {
+    if (hasUserGroups) {
+      return values.groupIds.map((id) => getUgPath(id)).filter(Boolean);
+    }
+    return groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name);
+  }, [values.groupIds, hasUserGroups, groups, userGroups]);
+
+  // 树形节点渲染
+  const renderTreeNode = (node: any, depth: number): React.ReactNode => {
+    if (!matchSearch(node) && !(node.children?.length > 0 && node.children.some((c: any) => matchSearch(c)))) return null;
+    const hasChildren = node.children && node.children.length > 0;
+    const isExpanded = treeExpanded.has(node.id);
+    const isSelected = values.groupIds.includes(node.id);
+    return (
+      <div key={node.id}>
+        <div
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          style={{ paddingLeft: 8 + depth * 16 }}
+          onClick={() => toggleGroup(node.id)}
+        >
+          {hasChildren ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center ${isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"}`}>
+            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="truncate">{node.name}</span>
+        </div>
+        {hasChildren && isExpanded && node.children.map((c: any) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
   };
 
   return (
@@ -391,7 +686,14 @@ function AddMemberFormFields({
             <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
               <PopoverTrigger asChild>
                 <div>
-                  <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
+                  <GroupSelectTrigger
+                    names={selectedNames}
+                    onRemove={(name) => {
+                      const id = values.groupIds.find((gid) => selectedNames.indexOf(name) === values.groupIds.indexOf(gid));
+                      if (id) onChange({ ...values, groupIds: values.groupIds.filter((x) => x !== id) });
+                    }}
+                    onClear={() => onChange({ ...values, groupIds: [] })}
+                  />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
@@ -401,35 +703,47 @@ function AddMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
-                  {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <span className="truncate">{g.name}</span>
-                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                    </button>
-                  ))}
-                  {filteredGroups.length === 0 && groupSearchStr.trim() && (
-                    <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>
-                  )}
-                  {filteredGroups.length === 0 && !groupSearchStr.trim() && (
-                    <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>
-                  )}
-                </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
-                  {values.groupIds.length > 0 && (
+                <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
+                  {hasUserGroups ? (
                     <>
-                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
-                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                      {/* OneID 模式：组织架构 + 用户组 */}
+                      {deptTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          {deptTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {ogTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          {ogTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {/* 普通模式：直接树形，无小标题 */}
+                      {deptTree.length === 0 && ogTree.length === 0 && manualTree.length > 0 && (
+                        <div className="mb-1">
+                          {manualTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {deptTree.length === 0 && ogTree.length === 0 && manualTree.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {filteredGroups.map((g) => (
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                          <span className="truncate">{g.name}</span>
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                        </button>
+                      ))}
+                      {filteredGroups.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
                     </>
                   )}
-                  <div className="flex-1" />
-                  <button
-                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
-                    onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
-                  >
-                    <FolderPlus className="w-3 h-3" />新建分组
-                  </button>
                 </div>
+
               </PopoverContent>
             </Popover>
           </div>
@@ -455,6 +769,38 @@ function AddMemberFormFields({
 
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        {values.groupIds.length > 0 ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-gray-100 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {values.groupIds.map((gId) => {
+                    const quotaMap = hasUserGroups && userGroups.some((g) => g.source === 'oneid-dept' || g.source === 'oneid-group') ? ONEID_GROUP_POLICY_QUOTAS : GROUP_POLICY_QUOTAS;
+                    const ugName = hasUserGroups ? getUgPath(gId) : gId;
+                    const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
+                    return (
+                      <tr key={gId}>
+                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            </p>
+          </div>
+        ) : (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -499,6 +845,7 @@ function AddMemberFormFields({
             <TokenLimitInput value={values.tokenLimit} onChange={(v) => onChange({ ...values, tokenLimit: v })} />
           </div>
         </div>
+        )}
       </div>
     </div>
   );
@@ -510,6 +857,7 @@ function EditMemberFormFields({
   onChange,
   isInitialAdmin = false,
   groups = [],
+  userGroups = [],
   onOpenCreateGroupDialog,
   groupPopoverReopenKey = 0,
 }: {
@@ -517,6 +865,7 @@ function EditMemberFormFields({
   onChange: (v: typeof emptyEditForm) => void;
   isInitialAdmin?: boolean;
   groups?: MemberGroup[];
+  userGroups?: MMUserGroup[];
   onOpenCreateGroupDialog?: () => void;
   groupPopoverReopenKey?: number;
 }) {
@@ -540,12 +889,89 @@ function EditMemberFormFields({
     }
   }, [groupPopoverReopenKey]);
 
+
+  // 使用 userGroups 渲染（有层级和 source），fallback 到 groups
+  const hasUserGroups = userGroups.length > 0;
+  const ugMap = React.useMemo(() => new Map(userGroups.map((g) => [g.id, g])), [userGroups]);
+  const getUgPath = (gId: string): string => {
+    const chain: string[] = [];
+    let node = ugMap.get(gId);
+    while (node) { chain.unshift(node.name); node = node.parentId ? ugMap.get(node.parentId) : undefined; }
+    return chain.join(" / ");
+  };
+  const deptGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-dept"), [userGroups]);
+  const ogGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-group"), [userGroups]);
+  const manualUGroups = React.useMemo(() => userGroups.filter((g) => g.source === "manual"), [userGroups]);
+  const buildTree = (list: typeof userGroups) => {
+    const map = new Map(list.map((g) => [g.id, { ...g, children: [] as typeof list }]));
+    const roots: Array<typeof list[0] & { children: typeof list }> = [];
+    map.forEach((node) => {
+      if (node.parentId && map.has(node.parentId)) {
+        map.get(node.parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+    return roots;
+  };
+  const deptTree = React.useMemo(() => buildTree(deptGroups), [deptGroups]);
+  const ogTree = React.useMemo(() => buildTree(ogGroups), [ogGroups]);
+  const manualTree = React.useMemo(() => buildTree(manualUGroups), [manualUGroups]);
+  const [treeExpanded, setTreeExpanded] = React.useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => setTreeExpanded((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const matchSearch = (g: { id: string; name: string }) => {
+    if (!groupSearchStr.trim()) return true;
+    const q = groupSearchStr.toLowerCase();
+    return g.name.toLowerCase().includes(q) || getUgPath(g.id).toLowerCase().includes(q);
+  };
   const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(groupSearchStr.toLowerCase()));
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId) ? [] : [gId];
+    const next = values.groupIds.includes(gId) ? values.groupIds.filter((x) => x !== gId) : [...values.groupIds, gId];
     onChange({ ...values, groupIds: next });
   };
 
+  const selectedNames = React.useMemo(() => {
+    if (hasUserGroups) {
+      return values.groupIds.map((id) => getUgPath(id)).filter(Boolean);
+    }
+    return groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name);
+  }, [values.groupIds, hasUserGroups, groups, userGroups]);
+
+  const renderTreeNode = (node: any, depth: number): React.ReactNode => {
+    if (!matchSearch(node) && !(node.children?.length > 0 && node.children.some((c: any) => matchSearch(c)))) return null;
+    const hasChildren = node.children && node.children.length > 0;
+    const isExpanded = treeExpanded.has(node.id);
+    const isSelected = values.groupIds.includes(node.id);
+    return (
+      <div key={node.id}>
+        <div
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          style={{ paddingLeft: 8 + depth * 16 }}
+          onClick={() => toggleGroup(node.id)}
+        >
+          {hasChildren ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center ${isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"}`}>
+            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="truncate">{node.name}</span>
+        </div>
+        {hasChildren && isExpanded && node.children.map((c: any) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
+  };
   return (
     <div className="py-2 space-y-6">
       <div>
@@ -589,7 +1015,14 @@ function EditMemberFormFields({
             <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
               <PopoverTrigger asChild>
                 <div>
-                  <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
+                  <GroupSelectTrigger
+                    names={selectedNames}
+                    onRemove={(name) => {
+                      const id = values.groupIds.find((gid) => selectedNames.indexOf(name) === values.groupIds.indexOf(gid));
+                      if (id) onChange({ ...values, groupIds: values.groupIds.filter((x) => x !== id) });
+                    }}
+                    onClear={() => onChange({ ...values, groupIds: [] })}
+                  />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
@@ -599,31 +1032,47 @@ function EditMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
-                  {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <span className="truncate">{g.name}</span>
-                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                    </button>
-                  ))}
-                  {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
-                  {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
-                </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
-                  {values.groupIds.length > 0 && (
+                <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
+                  {hasUserGroups ? (
                     <>
-                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
-                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                      {/* OneID 模式：组织架构 + 用户组 */}
+                      {deptTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          {deptTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {ogTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          {ogTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {/* 普通模式：直接树形，无小标题 */}
+                      {deptTree.length === 0 && ogTree.length === 0 && manualTree.length > 0 && (
+                        <div className="mb-1">
+                          {manualTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {deptTree.length === 0 && ogTree.length === 0 && manualTree.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {filteredGroups.map((g) => (
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                          <span className="truncate">{g.name}</span>
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                        </button>
+                      ))}
+                      {filteredGroups.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
                     </>
                   )}
-                  <div className="flex-1" />
-                  <button
-                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
-                    onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
-                  >
-                    <FolderPlus className="w-3 h-3" />新建分组
-                  </button>
                 </div>
+
               </PopoverContent>
             </Popover>
           </div>
@@ -636,6 +1085,38 @@ function EditMemberFormFields({
       {/* 第二大块：用户配额 */}
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        {values.groupIds.length > 0 ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-gray-100 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {values.groupIds.map((gId) => {
+                    const quotaMap = hasUserGroups && userGroups.some((g) => g.source === 'oneid-dept' || g.source === 'oneid-group') ? ONEID_GROUP_POLICY_QUOTAS : GROUP_POLICY_QUOTAS;
+                    const ugName = hasUserGroups ? getUgPath(gId) : gId;
+                    const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
+                    return (
+                      <tr key={gId}>
+                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            </p>
+          </div>
+        ) : (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -684,6 +1165,7 @@ function EditMemberFormFields({
             />
           </div>
         </div>
+        )}
       </div>
     </div>
   );
@@ -698,12 +1180,14 @@ function OneidEditMemberFormFields({
   values,
   onChange,
   groups = [],
+  userGroups = [],
   onOpenCreateGroupDialog,
   groupPopoverReopenKey = 0,
 }: {
   values: typeof emptyOneidEditForm;
   onChange: (v: typeof emptyOneidEditForm) => void;
   groups?: MemberGroup[];
+  userGroups?: MMUserGroup[];
   onOpenCreateGroupDialog?: () => void;
   groupPopoverReopenKey?: number;
 }) {
@@ -727,10 +1211,99 @@ function OneidEditMemberFormFields({
     }
   }, [groupPopoverReopenKey]);
 
+  // userGroups 树形逻辑
+  const hasUserGroups = userGroups.length > 0;
+  const ugMap = React.useMemo(() => new Map(userGroups.map((g) => [g.id, g])), [userGroups]);
+  const getUgPath = (gId: string): string => {
+    const chain: string[] = [];
+    let node = ugMap.get(gId);
+    while (node) { chain.unshift(node.name); node = node.parentId ? ugMap.get(node.parentId) : undefined; }
+    return chain.join(" / ");
+  };
+  const deptGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-dept"), [userGroups]);
+  const ogGroups = React.useMemo(() => userGroups.filter((g) => g.source === "oneid-group"), [userGroups]);
+  const buildTree = (list: typeof userGroups) => {
+    const map = new Map(list.map((g) => [g.id, { ...g, children: [] as typeof list }]));
+    const roots: Array<typeof list[0] & { children: typeof list }> = [];
+    map.forEach((node) => {
+      if (node.parentId && map.has(node.parentId)) {
+        map.get(node.parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+    return roots;
+  };
+  const deptTree = React.useMemo(() => buildTree(deptGroups), [deptGroups]);
+  const ogTree = React.useMemo(() => buildTree(ogGroups), [ogGroups]);
+  const [treeExpanded, setTreeExpanded] = React.useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) => setTreeExpanded((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const matchSearch = (g: { id: string; name: string }) => {
+    if (!groupSearchStr.trim()) return true;
+    const q = groupSearchStr.toLowerCase();
+    return g.name.toLowerCase().includes(q) || getUgPath(g.id).toLowerCase().includes(q);
+  };
+
+  // dept 分组 id 集合（不可编辑）
+  const deptGroupIds = React.useMemo(() => new Set(deptGroups.map((g) => g.id)), [deptGroups]);
   const filteredGroups = groups.filter((g) => g.name.toLowerCase().includes(groupSearchStr.toLowerCase()));
   const toggleGroup = (gId: string) => {
-    const next = values.groupIds.includes(gId) ? [] : [gId];
+    if (deptGroupIds.has(gId)) return; // dept 分组不可操作
+    const next = values.groupIds.includes(gId) ? values.groupIds.filter((x) => x !== gId) : [...values.groupIds, gId];
     onChange({ ...values, groupIds: next });
+  };
+
+  const selectedNames = React.useMemo(() => {
+    if (hasUserGroups) {
+      return values.groupIds.map((id) => getUgPath(id)).filter(Boolean);
+    }
+    return groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name);
+  }, [values.groupIds, hasUserGroups, groups, userGroups]);
+
+  const renderTreeNode = (node: any, depth: number): React.ReactNode => {
+    if (!matchSearch(node) && !(node.children?.length > 0 && node.children.some((c: any) => matchSearch(c)))) return null;
+    const hasChildren = node.children && node.children.length > 0;
+    const isExpanded = treeExpanded.has(node.id);
+    const isSelected = values.groupIds.includes(node.id);
+    const isDept = deptGroupIds.has(node.id);
+    const row = (
+      <div key={node.id}>
+        <div
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors ${isDept ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          style={{ paddingLeft: 8 + depth * 16 }}
+          onClick={() => !isDept && toggleGroup(node.id)}
+        >
+          {hasChildren ? (
+            <span
+              onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center ${isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300 bg-white"}`}>
+            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="truncate">{node.name}</span>
+        </div>
+        {hasChildren && isExpanded && node.children.map((c: any) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
+    if (isDept) {
+      return (
+        <Tooltip key={node.id}>
+          <TooltipTrigger asChild>{row}</TooltipTrigger>
+          <TooltipContent side="right" className="text-xs max-w-[220px]">同步部门的分组不可编辑，如需编辑请前往腾讯统一身份管理平台</TooltipContent>
+        </Tooltip>
+      );
+    }
+    return row;
   };
 
   return (
@@ -769,7 +1342,7 @@ function OneidEditMemberFormFields({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>用户归属</Label>
+            <Label>部门</Label>
             <Input
               value={values.department || "—"}
               readOnly
@@ -783,7 +1356,15 @@ function OneidEditMemberFormFields({
             <Popover open={groupPopoverOpen} onOpenChange={setGroupPopoverOpen}>
               <PopoverTrigger asChild>
                 <div>
-                  <GroupSelectTrigger names={groups.filter((g) => values.groupIds.includes(g.id)).map((g) => g.name)} />
+                  <GroupSelectTrigger
+                    names={selectedNames}
+                    lockedNames={values.groupIds.filter((gid) => deptGroupIds.has(gid)).map((gid) => getUgPath(gid))}
+                    onRemove={(name) => {
+                      const id = values.groupIds.find((gid) => selectedNames.indexOf(name) === values.groupIds.indexOf(gid));
+                      if (id && !deptGroupIds.has(id)) onChange({ ...values, groupIds: values.groupIds.filter((x) => x !== id) });
+                    }}
+                    onClear={() => onChange({ ...values, groupIds: values.groupIds.filter((gid) => deptGroupIds.has(gid)) })}
+                  />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
@@ -793,31 +1374,40 @@ function OneidEditMemberFormFields({
                     <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-md outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
-                <div ref={groupListRef} className="max-h-[180px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
-                  {filteredGroups.map((g) => (
-                    <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
-                      <span className="truncate">{g.name}</span>
-                      {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-                    </button>
-                  ))}
-                  {filteredGroups.length === 0 && groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">未找到匹配的分组</p>}
-                  {filteredGroups.length === 0 && !groupSearchStr.trim() && <p className="text-xs text-gray-400 text-center py-3">暂无分组</p>}
-                </div>
-                <div className="border-t border-gray-100 px-3 py-2 flex items-center">
-                  {values.groupIds.length > 0 && (
+                <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
+                  {hasUserGroups ? (
                     <>
-                      <span className="text-[11px] text-gray-400 shrink-0">一个用户仅支持加入一个分组</span>
-                      <button className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline shrink-0 ml-2" onClick={() => onChange({ ...values, groupIds: [] })}>清除选择</button>
+                      {deptTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          {deptTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {ogTree.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          {ogTree.map((n) => renderTreeNode(n, 0))}
+                        </div>
+                      )}
+                      {deptTree.length === 0 && ogTree.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {filteredGroups.map((g) => (
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                          <span className="truncate">{g.name}</span>
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                        </button>
+                      ))}
+                      {filteredGroups.length === 0 && (
+                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                      )}
                     </>
                   )}
-                  <div className="flex-1" />
-                  <button
-                    className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 shrink-0"
-                    onClick={() => { setGroupPopoverOpen(false); onOpenCreateGroupDialog?.(); }}
-                  >
-                    <FolderPlus className="w-3 h-3" />新建分组
-                  </button>
                 </div>
+
               </PopoverContent>
             </Popover>
           </div>
@@ -829,6 +1419,38 @@ function OneidEditMemberFormFields({
       {/* 用户配额（可编辑） */}
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        {values.groupIds.length > 0 ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-gray-100 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
+                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {values.groupIds.map((gId) => {
+                    const quotaMap = ONEID_GROUP_POLICY_QUOTAS;
+                    const ugName = hasUserGroups ? getUgPath(gId) : gId;
+                    const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
+                    return (
+                      <tr key={gId}>
+                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
+                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            </p>
+          </div>
+        ) : (
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -877,6 +1499,7 @@ function OneidEditMemberFormFields({
             />
           </div>
         </div>
+        )}
       </div>
     </div>
   );
@@ -1136,11 +1759,40 @@ function CredentialResultDialog({
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
+/** 获取用户所在分组的配额信息（用于列表和弹窗展示） */
+function getMemberGroupQuotas(memberId: string, hasOneid: boolean): Array<{ groupId: string; groupName: string; clawLimit: number; tokenLimit: number }> {
+  // 从实际 mock 用户数据中获取用户的 groupIds
+  const userOrg = hasOneid
+    ? MM_MOCK_USERS.find((u) => u.userId === memberId)
+    : MM_MOCK_USERS_MANUAL.find((u) => u.userId === memberId);
+  if (!userOrg || userOrg.groupIds.length === 0) return [];
+
+  const quotaMap = hasOneid ? ONEID_GROUP_POLICY_QUOTAS : GROUP_POLICY_QUOTAS;
+  const allGroups = hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS;
+  const groupMap = new Map(allGroups.map((g) => [g.id, g]));
+
+  return userOrg.groupIds
+    .filter((gId) => groupMap.has(gId))
+    .map((gId) => {
+      const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
+      const fullPath = mmGetPrimaryDeptPath(gId, allGroups);
+      return { groupId: gId, groupName: fullPath, clawLimit: quota.clawLimit, tokenLimit: quota.tokenLimit };
+    });
+}
+
 export default function MemberManagement() {
   // 获取 hasOneid 状态
   const { hasOneid } = useAdminMode();
 
-  const [members, setMembers] = useState(MOCK_MEMBERS_BASE);
+  const [members, setMembers] = useState<typeof MOCK_MEMBERS_BASE>(
+    hasOneid ? MOCK_MEMBERS_ONEID_BASE : (MOCK_MEMBERS_MANUAL_BASE as typeof MOCK_MEMBERS_BASE)
+  );
+  // 监听 hasOneid 切换，members 重置为对应模式的基础数据
+  useEffect(() => {
+    setMembers(
+      hasOneid ? MOCK_MEMBERS_ONEID_BASE : (MOCK_MEMBERS_MANUAL_BASE as typeof MOCK_MEMBERS_BASE)
+    );
+  }, [hasOneid]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isInitialAdminEdit, setIsInitialAdminEdit] = useState(false);
@@ -1150,13 +1802,19 @@ export default function MemberManagement() {
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "member">("all");
   const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
   const [isSyncing, setIsSyncing] = useState(false);
+  /** 组织架构是否已同步为分组（由 GroupView 回调通知） */
+  const [mmDeptSynced, setMmDeptSynced] = useState(false);
+  /** 手动同步时产生的异常分组数据，传递给 GroupView 显示红点 */
+  const [mmAnomalousGroups, setMmAnomalousGroups] = useState<{ groupId: string; groupName: string; memberCount: number; boundConfigs: string[]; agentInstanceCount: number }[]>([]);
 
-  // OneID 同步结果弹窗：展示因名下有未清理 Agent 而无法删除的用户
+  // OneID 同步结果弹窗：展示因名下有未清理 Agent 而无法删除的用户 + 分组异常
   const [syncResultDialog, setSyncResultDialog] = useState<{
     open: boolean;
     failedUsers: { id: string; clawCount: number; vpcName?: string }[];
     deletedCount: number;
     addedCount: number;
+    /** 分组异常：组织架构被删除但仍有配置绑定的分组 */
+    anomalousGroups?: { groupId: string; groupName: string; memberCount: number; boundConfigs: string[]; agentInstanceCount: number }[];
   } | null>(null);
 
   // 排序：管理员置顶（按加入时间升序），普通用户按加入时间降序
@@ -1224,10 +1882,33 @@ export default function MemberManagement() {
 
   // ─── 分组相关状态 ─────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"all" | "group">("all");
+
+  // 新：部门视图的裁决 state（mock 级持久化）
+  const [mmOverrides, setMmOverrides] = useState<Record<string, MMUserOverrideInfo>>(
+    () => ({ ...MM_MOCK_OVERRIDES })
+  );
+  const handleMmResolveConflict = useCallback(
+    (userId: string, winnerResourceId: string) => {
+      setMmOverrides((prev) => {
+        const cur = prev[userId];
+        if (!cur) return prev;
+        return {
+          ...prev,
+          [userId]: {
+            ...cur,
+            winnerResourceId,
+            isResolved: true,
+          },
+        };
+      });
+    },
+    []
+  );
   const [groups, setGroups] = useState<MemberGroup[]>(MOCK_GROUPS_INIT);
   const [selectedGroupId, setSelectedGroupId] = useState<string>(MOCK_GROUPS_INIT.length > 0 ? MOCK_GROUPS_INIT[0].id : "__ungrouped__");
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupParentId, setNewGroupParentId] = useState<string | null>(null);
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
   const [editingGroupName, setEditingGroupName] = useState("");
   const [deleteGroupDialog, setDeleteGroupDialog] = useState<{ open: boolean; groupId: string; groupName: string; memberCount: number; configRefreshing: boolean } | null>(null);
@@ -1240,6 +1921,23 @@ export default function MemberManagement() {
   const [groupPopoverReopenKey, setGroupPopoverReopenKey] = useState(0);
   const [removeFromGroupDialog, setRemoveFromGroupDialog] = useState<{ open: boolean; groupId: string; groupName: string; memberId: string } | null>(null);
   const [configSectionExpanded, setConfigSectionExpanded] = useState(false);
+
+  // 存量 Agent 实例处理弹窗
+  const [agentInstanceDialog, setAgentInstanceDialog] = useState<{
+    open: boolean;
+    userId: string;
+    removedGroupIds: string[];
+    agents: Array<{ groupName: string; instances: Array<{ id: string; name: string }> }>;
+    pendingAction: () => void; // 原始操作（保留原配置时执行）
+  } | null>(null);
+  const [agentInstanceChoice, setAgentInstanceChoice] = useState<"keep" | "delete">("keep");
+
+  // 同步后存量 Agent 实例处理弹窗
+  const [syncAgentInstanceDialog, setSyncAgentInstanceDialog] = useState<{
+    open: boolean;
+    agents: Array<{ userId: string; instanceId: string; instanceName: string; groupName: string; reason: string }>;
+  } | null>(null);
+  const [syncAgentInstanceChoice, setSyncAgentInstanceChoice] = useState<"keep" | "delete">("keep");
 
   // 筛选逻辑：hasOneid 模式时支持部门和角色筛选
   const filtered = sortedMembers.filter((m) => {
@@ -1293,7 +1991,11 @@ export default function MemberManagement() {
   };
 
   const openEditDialog = (member: typeof MOCK_MEMBERS_BASE[0]) => {
-    const memberGroupIds = groups.filter((g) => g.memberIds.includes(member.id)).map((g) => g.id);
+    // 从实际 mock 用户数据获取该用户的 groupIds（用于分组选择框）
+    const userOrg = hasOneid
+      ? MM_MOCK_USERS.find((u) => u.userId === member.id)
+      : MM_MOCK_USERS_MANUAL.find((u) => u.userId === member.id);
+    const actualGroupIds = userOrg?.groupIds ?? [];
     if (hasOneid) {
       setOneidEditForm({
         id: member.id,
@@ -1301,7 +2003,7 @@ export default function MemberManagement() {
         department: MOCK_MEMBER_DEPARTMENTS[member.id] || "",
         clawLimit: member.clawLimit,
         tokenLimit: member.tokenLimit,
-        groupIds: memberGroupIds,
+        groupIds: actualGroupIds,
       });
     } else {
       setEditForm({
@@ -1309,7 +2011,7 @@ export default function MemberManagement() {
         role: member.role,
         clawLimit: member.clawLimit,
         tokenLimit: member.tokenLimit,
-        groupIds: memberGroupIds,
+        groupIds: actualGroupIds,
       });
       setIsInitialAdminEdit(member.id === initialAdminId);
     }
@@ -1319,29 +2021,67 @@ export default function MemberManagement() {
   const handleEdit = () => {
     const targetId = editMemberId!;
     const newGroupIds = hasOneid ? oneidEditForm.groupIds : editForm.groupIds;
-    if (hasOneid) {
-      setMembers(members.map((m) =>
-        m.id === targetId
-          ? { ...m, clawLimit: oneidEditForm.clawLimit, tokenLimit: oneidEditForm.tokenLimit }
-          : m
-      ));
-    } else {
-      setMembers(members.map((m) =>
-        m.id === targetId
-          ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
-          : m
-      ));
+
+    // 获取用户原来的 groupIds
+    const userOrg = hasOneid
+      ? MM_MOCK_USERS.find((u) => u.userId === targetId)
+      : MM_MOCK_USERS_MANUAL.find((u) => u.userId === targetId);
+    const oldGroupIds = userOrg?.groupIds ?? [];
+    // 找出被移除的分组
+    const removedGroupIds = oldGroupIds.filter((gId) => !newGroupIds.includes(gId));
+
+    // 检查被移除分组中是否有 Agent 实例
+    const userAgents = MOCK_USER_GROUP_AGENTS[targetId];
+    const affectedAgents: Array<{ groupName: string; instances: Array<{ id: string; name: string }> }> = [];
+    if (userAgents) {
+      const allGroups = hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS;
+      removedGroupIds.forEach((gId) => {
+        const instances = userAgents[gId];
+        if (instances && instances.length > 0) {
+          const g = allGroups.find((g) => g.id === gId);
+          affectedAgents.push({ groupName: mmGetPrimaryDeptPath(gId, allGroups), instances });
+        }
+      });
     }
-    // 同步分组数据：先从所有组中移除该用户，再添加到选中的组
-    setGroups(groups.map((g) => {
-      const without = g.memberIds.filter((id) => id !== targetId);
-      if (newGroupIds.includes(g.id)) {
-        return { ...g, memberIds: [...new Set([...without, targetId])] };
+
+    const doEdit = () => {
+      if (hasOneid) {
+        setMembers(members.map((m) =>
+          m.id === targetId
+            ? { ...m, clawLimit: oneidEditForm.clawLimit, tokenLimit: oneidEditForm.tokenLimit }
+            : m
+        ));
+      } else {
+        setMembers(members.map((m) =>
+          m.id === targetId
+            ? { ...m, role: editForm.role, clawLimit: editForm.clawLimit, tokenLimit: editForm.tokenLimit }
+            : m
+        ));
       }
-      return { ...g, memberIds: without };
-    }));
-    setEditMemberId(null);
-    toast.success("用户信息已更新");
+      // 同步分组数据：先从所有组中移除该用户，再添加到选中的组
+      setGroups(groups.map((g) => {
+        const without = g.memberIds.filter((id) => id !== targetId);
+        if (newGroupIds.includes(g.id)) {
+          return { ...g, memberIds: Array.from(new Set([...without, targetId])) };
+        }
+        return { ...g, memberIds: without };
+      }));
+      setEditMemberId(null);
+      toast.success("用户信息已更新");
+    };
+
+    if (affectedAgents.length > 0) {
+      // 有存量实例，弹出二次确认
+      setAgentInstanceDialog({
+        open: true,
+        userId: targetId,
+        removedGroupIds,
+        agents: affectedAgents,
+        pendingAction: doEdit,
+      });
+    } else {
+      doEdit();
+    }
   };
 
   // 手动同步（OneID 模式）
@@ -1382,8 +2122,29 @@ export default function MemberManagement() {
       setIsSyncing(false);
 
       if (failedUsers.length > 0) {
-        // 有无法删除的用户，弹窗提醒
-        setSyncResultDialog({ open: true, failedUsers, deletedCount, addedCount });
+        // 有无法删除的用户，弹窗提醒（已同步过组织架构时同时展示分组异常）
+        const groupAnomalies = mmDeptSynced ? MM_MOCK_SYNC_RESULT.anomalousGroups : [];
+        setSyncResultDialog({
+          open: true,
+          failedUsers,
+          deletedCount,
+          addedCount,
+          anomalousGroups: groupAnomalies,
+        });
+        // 同步异常分组数据到 GroupView 以显示红点
+        if (groupAnomalies.length > 0) {
+          setMmAnomalousGroups(groupAnomalies);
+          // 模拟：组织架构被删除后，用户从这些分组中被移除
+          const deletedGroupIds = new Set(["dept-operation", "dept-operation-1", "dept-operation-2"]);
+          MM_MOCK_USERS.forEach((u, idx) => {
+            if (u.groupIds.some((gid) => deletedGroupIds.has(gid))) {
+              MM_MOCK_USERS[idx] = {
+                ...u,
+                groupIds: u.groupIds.filter((gid) => !deletedGroupIds.has(gid)),
+              };
+            }
+          });
+        }
       } else {
         const parts: string[] = [];
         if (addedCount > 0) parts.push(`新增 ${addedCount} 个`);
@@ -1391,7 +2152,7 @@ export default function MemberManagement() {
         toast.success(`同步完成${parts.length > 0 ? `，${parts.join("，")}用户` : ""}`);
       }
     }, 2000);
-  }, []);
+  }, [mmDeptSynced]);
 
   const handleToggleStatus = (id: string) => {
     setMembers(members.map((m) =>
@@ -1454,6 +2215,7 @@ export default function MemberManagement() {
     const newGroup: MemberGroup = { id: `grp-${Date.now()}`, name: newGroupName.trim(), memberIds: [], createdAt: new Date().toISOString().slice(0, 10) };
     setGroups([...groups, newGroup]);
     setNewGroupName("");
+    setNewGroupParentId(null);
     setShowCreateGroupDialog(false);
     setSelectedGroupId(newGroup.id);
     // 如果添加用户弹窗打开，自动选中新分组并重新打开 Popover
@@ -1500,7 +2262,7 @@ export default function MemberManagement() {
     if (addToGroupSelected.length === 0) return;
     setGroups(groups.map((g) => {
       if (g.id !== selectedGroupId) return g;
-      const newIds = [...new Set([...g.memberIds, ...addToGroupSelected])];
+      const newIds = Array.from(new Set([...g.memberIds, ...addToGroupSelected]));
       return { ...g, memberIds: newIds };
     }));
     setShowAddToGroupDialog(false);
@@ -1755,7 +2517,7 @@ export default function MemberManagement() {
                 >
                   <Download className="w-4 h-4" />
                 </Button>
-                {members.length >= 16 ? (
+                {members.length >= 20 ? (
                   <div
                     className="relative inline-block cursor-not-allowed"
                     onMouseEnter={() => setAddBtnHovered(true)}
@@ -1809,19 +2571,24 @@ export default function MemberManagement() {
                   </div>
                 </th>
                 {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
-                      用户归属
-                      <Tooltip>
-                        <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
-                        <TooltipContent>用户在统一身份平台中的组织归属</TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </th>
+                  <>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        部门
+                        <Tooltip>
+                          <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                          <TooltipContent>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
+                  </>
+                )}
+                {!hasOneid && (
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
                 )}
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
                     Agent 上限
@@ -1848,18 +2615,138 @@ export default function MemberManagement() {
               {paginated.map((member) => {
                 const memberGroups = groups.filter((g) => g.memberIds.includes(member.id));
                 const groupNames = memberGroups.map((g) => g.name);
+                // OneID 模式：从 MM_MOCK_USERS 获取部门 + 分组
+                const mmDeptPaths = hasOneid ? getMmUserDeptPaths(member.id) : [];
+                const mmGroupItems = hasOneid ? getMmUserGroupItems(member.id) : [];
+                // 普通模式：从 MM_MOCK_USERS_MANUAL 获取分组完整路径
+                const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-gray-900">{member.id}</span>
+                  <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-sm font-medium text-gray-900 truncate block max-w-[180px]">{member.id}</span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-xs break-all">{member.id}</TooltipContent>
+                    </Tooltip>
                   </td>
                   {hasOneid && (
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                        <span className="text-sm text-gray-600 truncate max-w-[140px]" title={MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}>
-                          {MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}
-                        </span>
+                    <>
+                      {/* 部门列 */}
+                      <td className="px-4 py-4">
+                        {mmDeptPaths.length === 0 ? (
+                          <span className="text-sm text-gray-300">—</span>
+                        ) : mmDeptPaths.length === 1 ? (
+                          <span
+                            className="text-sm text-gray-600 truncate block max-w-[200px]"
+                            title={mmDeptPaths[0].path}
+                          >
+                            {mmDeptPaths[0].path}
+                          </span>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
+                                <span className="text-sm text-gray-600 truncate">
+                                  {mmDeptPaths[0].path}
+                                </span>
+                                <span className="text-xs text-gray-400 tabular-nums shrink-0">
+                                  +{mmDeptPaths.length - 1}
+                                </span>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
+                              <div className="py-2">
+                                {mmDeptPaths.map((dp, idx) => (
+                                  <div key={idx} className="px-3 py-1.5 text-sm">
+                                    <span className="text-gray-200 mr-1">{idx + 1}.</span>
+                                    <span className="text-white">{dp.path}</span>
+                                    {dp.isPrimary && (
+                                      <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
+                                        主部门
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </td>
+                      {/* 分组列（OneID 模式：紧跟部门列） */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1 max-w-[160px]">
+                          {mmGroupItems.length === 0 ? (
+                            <span className="text-sm text-gray-300">—</span>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 cursor-default max-w-full">
+                                  <span className="badge-shutdown max-w-[120px] truncate inline-block align-middle">
+                                    {mmGroupItems[0].path}
+                                  </span>
+                                  {mmGroupItems.length > 1 && (
+                                    <span className="badge-shutdown whitespace-nowrap">
+                                      +{mmGroupItems.length - 1}
+                                    </span>
+                                  )}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                                <div className="py-2">
+                                  {mmGroupItems.map((gi, idx) => (
+                                    <div key={idx} className="px-3 py-1.5 text-sm flex items-center gap-2">
+                                      <span
+                                        className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                          gi.kind === "oneid-dept"
+                                            ? "text-blue-400 bg-blue-500/20"
+                                            : "text-purple-400 bg-purple-500/20"
+                                        }`}
+                                      >
+                                        {gi.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                      </span>
+                                      <span className="text-white">{gi.path}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </td>
+                    </>
+                  )}
+                  {!hasOneid && (
+                    /* 普通模式分组列：紧跟用户ID，完整路径 + hover tooltip */
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1 max-w-[200px]">
+                        {manualGroupPaths.length === 0 ? (
+                          <span className="text-sm text-gray-300">—</span>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center gap-1 cursor-default max-w-full">
+                                <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle">
+                                  {manualGroupPaths[0].path}
+                                </span>
+                                {manualGroupPaths.length > 1 && (
+                                  <span className="badge-shutdown whitespace-nowrap">
+                                    +{manualGroupPaths.length - 1}
+                                  </span>
+                                )}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                              <div className="py-2">
+                                {manualGroupPaths.map((gp, idx) => (
+                                  <div key={idx} className="px-3 py-1.5 text-sm">
+                                    <span className="text-white">{gp.path}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                     </td>
                   )}
@@ -1875,25 +2762,55 @@ export default function MemberManagement() {
                       <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                     )}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1 max-w-[140px]">
-                    {groupNames.length === 0 ? (
-                      <span className="text-sm text-gray-300">—</span>
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="badge-shutdown max-w-[130px] truncate inline-block align-middle cursor-default">{groupNames[0]}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>{groupNames[0]}</TooltipContent>
-                      </Tooltip>
-                    )}
-                    </div>
+                  <td className="px-4 py-4">
+                    {(() => {
+                      const quotas = getMemberGroupQuotas(member.id, hasOneid);
+                      if (quotas.length > 0) {
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-sm text-gray-700 cursor-default border-b border-dashed border-gray-300">按分组</span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs max-w-[240px]">
+                              <div className="space-y-1">
+                                {quotas.map((q) => (
+                                  <div key={q.groupId} className="flex items-center justify-between gap-3">
+                                    <span className="text-gray-300">{q.groupName}</span>
+                                    <span className="text-white font-medium">{q.clawLimit}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return <span className="text-sm text-gray-700">{member.clawLimit}</span>;
+                    })()}
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm text-gray-700">{member.clawLimit}</span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm text-gray-700">{member.tokenLimit.toLocaleString()}</span>
+                    {(() => {
+                      const quotas = getMemberGroupQuotas(member.id, hasOneid);
+                      if (quotas.length > 0) {
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-sm text-gray-700 cursor-default border-b border-dashed border-gray-300">按分组</span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs max-w-[240px]">
+                              <div className="space-y-1">
+                                {quotas.map((q) => (
+                                  <div key={q.groupId} className="flex items-center justify-between gap-3">
+                                    <span className="text-gray-300">{q.groupName}</span>
+                                    <span className="text-white font-medium">{q.tokenLimit.toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return <span className="text-sm text-gray-700">{member.tokenLimit.toLocaleString()}</span>;
+                    })()}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
@@ -2036,251 +2953,54 @@ export default function MemberManagement() {
         </div>
         )}
 
-        {/* 分组视图 */}
+        {/* 分组视图（v2.0：多层级树 + 健康圆点 + 配置总览 + 导入组织架构） */}
         {viewMode === "group" && (
-          <div className="flex gap-4">
-            {/* 左侧分组列表 */}
-            <div
-              className="w-[280px] shrink-0 bg-white rounded-2xl border border-gray-100 overflow-hidden self-start"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-            >
-              {/* 顶部：新建分组 + 搜索 */}
-              <div className="p-3 flex items-center gap-2">
-                <button
-                  className="shrink-0 flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
-                  onClick={() => { setShowCreateGroupDialog(true); setNewGroupName(""); }}
-                >
-                  <FolderPlus className="w-3.5 h-3.5" />
-                  新建
-                </button>
-                <div className="relative flex-1">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                  <input
-                    className="w-full h-8 pl-7 pr-2 text-xs border border-gray-200 rounded-lg outline-none focus:border-blue-300 bg-white placeholder:text-gray-400"
-                    placeholder="搜索分组..."
-                    value={groupListSearch}
-                    onChange={(e) => setGroupListSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-              {/* 分组列表 */}
-              <div className="max-h-[400px] overflow-y-auto">
-                {/* 已有分组 */}
-                {groups
-                  .filter((g) => g.name.toLowerCase().includes(groupListSearch.toLowerCase()))
-                  .map((group) => (
-                  <div key={group.id} className={`flex items-center gap-1 px-4 py-2.5 transition-colors ${selectedGroupId === group.id ? "bg-blue-50" : "hover:bg-gray-50"}`}>
-                    {editingGroupId === group.id ? (
-                      <div className="flex-1 flex items-center gap-1 min-w-0">
-                        <input
-                          className="flex-1 min-w-0 h-6 px-2 text-sm border border-blue-300 rounded outline-none bg-white"
-                          value={editingGroupName}
-                          onChange={(e) => setEditingGroupName(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameGroup(group.id); if (e.key === "Escape") setEditingGroupId(null); }}
-                          autoFocus
-                        />
-                        <button
-                          className="w-5 h-5 flex items-center justify-center rounded text-green-600 hover:bg-green-50 transition-colors shrink-0"
-                          title="保存"
-                          onMouseDown={(e) => { e.preventDefault(); handleRenameGroup(group.id); }}
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          className="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:bg-gray-100 transition-colors shrink-0"
-                          title="取消"
-                          onMouseDown={(e) => { e.preventDefault(); setEditingGroupId(null); }}
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === group.id ? "text-blue-600 font-medium" : "text-gray-700"}`}
-                        onClick={() => { setSelectedGroupId(group.id); setGroupPage(1); }}
-                      >
-                        <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
-                        <span className="truncate">{group.name}</span>
-                        <span className="text-xs text-gray-400 shrink-0">({group.memberIds.length})</span>
-                      </button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className={`w-6 h-6 flex items-center justify-center rounded-md transition-colors shrink-0 ${selectedGroupId === group.id ? "text-blue-500 hover:bg-blue-100" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}>
-                          <MoreHorizontal className="w-3.5 h-3.5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="text-xs text-gray-600 focus:text-gray-600 focus:bg-gray-50" onClick={() => { setEditingGroupId(group.id); setEditingGroupName(group.name); }}>
-                          <Pencil className="w-3.5 h-3.5 mr-2" />重命名
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => setDeleteGroupDialog({ open: true, groupId: group.id, groupName: group.name, memberCount: group.memberIds.length, configRefreshing: false })}>
-                          <Trash2 className="w-3.5 h-3.5 mr-2" />删除分组
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))}
-                {/* 暂无分组提示 */}
-                {groups.filter((g) => g.name.toLowerCase().includes(groupListSearch.toLowerCase())).length === 0 && (
-                  <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-gray-400">暂无分组</p>
-                  </div>
-                )}
-                {/* 未分组（放在最下面） */}
-                <div className={`flex items-center gap-1 px-4 py-2.5 transition-colors border-t border-gray-100 ${selectedGroupId === "__ungrouped__" ? "bg-blue-50" : "hover:bg-gray-50"}`}>
-                <button
-                  className={`flex-1 flex items-center gap-2 text-sm text-left min-w-0 ${selectedGroupId === "__ungrouped__" ? "text-blue-600 font-medium" : "text-gray-700"}`}
-                  onClick={() => { setSelectedGroupId("__ungrouped__"); setGroupPage(1); }}
-                >
-                  <Users className="w-4 h-4 flex-shrink-0 opacity-60" />
-                  <span className="truncate">未分组</span>
-                  <span className="text-xs text-gray-400 shrink-0">({(() => { const allGroupedIds = new Set(groups.flatMap((g) => g.memberIds)); return sortedMembers.filter((m) => !allGroupedIds.has(m.id)).length; })()})</span>
-                </button>
-                <div className="w-6 h-6 shrink-0" />
-                </div>
-              </div>
-            </div>
-
-            {/* 右侧用户列表 */}
-            <div className="flex-1 min-w-0">
-              <div
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-              >
-                {/* 卡片 header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 min-h-[56px]">
-                  <h2 className="font-semibold text-gray-900">
-                    {selectedGroupId === "__ungrouped__" ? "未分组" : groups.find((g) => g.id === selectedGroupId)?.name || ""}
-                  </h2>
-                  {selectedGroupId !== "__ungrouped__" && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-sm border-gray-200 text-gray-700 hover:bg-gray-50"
-                      onClick={() => { setShowAddToGroupDialog(true); setAddToGroupSearch(""); setAddToGroupSelected([]); }}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />添加用户到分组
-                    </Button>
-                  )}
-                </div>
-
-                {groupFiltered.length === 0 ? (
-                  <div className="py-16 flex flex-col items-center gap-3">
-                    <Users className="w-12 h-12 text-gray-200" />
-                    <p className="text-sm text-gray-400">
-                      {selectedGroupId === "__ungrouped__" ? "所有用户均已分组" : "该分组暂无用户"}
-                    </p>
-                    {selectedGroupId !== "__ungrouped__" && (
-                      <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={() => { setShowAddToGroupDialog(true); setAddToGroupSearch(""); setAddToGroupSelected([]); }}>
-                        <Plus className="w-3.5 h-3.5 mr-1" />添加用户到分组
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-100 bg-gray-50/50">
-                          <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户 ID</th>
-                          {hasOneid && (
-                            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">用户归属</th>
-                          )}
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
-                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                          {selectedGroupId !== "__ungrouped__" && (
-                            <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {groupPaginated.map((member) => (
-                          <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap"><span className="text-sm font-medium text-gray-900">{member.id}</span></td>
-                            {hasOneid && (
-                              <td className="px-4 py-4">
-                                <div className="flex items-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                                  <span className="text-sm text-gray-600 truncate max-w-[140px]" title={MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}>
-                                    {MOCK_MEMBER_DEPARTMENTS[member.id] || "—"}
-                                  </span>
-                                </div>
-                              </td>
-                            )}
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
-                                {member.role === "admin" ? "管理员" : "用户"}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              {member.status === "active" ? (
-                                <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
-                              ) : (
-                                <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
-                              )}
-                            </td>
-                            {selectedGroupId !== "__ungrouped__" && (
-                              <td className="px-4 py-4 text-center">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 h-7 w-7 p-0" onClick={() => setRemoveFromGroupDialog({ open: true, groupId: selectedGroupId, groupName: groups.find((g) => g.id === selectedGroupId)?.name || "", memberId: member.id })}>
-                                      <UserMinus className="w-3.5 h-3.5" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>从分组中移除</TooltipContent>
-                                </Tooltip>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    </div>
-                    {/* 翻页 */}
-                    <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">共 {groupFiltered.length} 名用户，第 {groupCurrentPage} / {groupTotalPages} 页</span>
-                      {groupTotalPages > 1 && (
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={groupCurrentPage === 1} onClick={() => setGroupPage(groupCurrentPage - 1)}>
-                            <ChevronLeft className="w-4 h-4" />
-                          </Button>
-                          {(() => {
-                            const pages: (number | string)[] = [];
-                            if (groupTotalPages <= 7) {
-                              for (let i = 1; i <= groupTotalPages; i++) pages.push(i);
-                            } else {
-                              pages.push(1);
-                              if (groupCurrentPage > 3) pages.push("...");
-                              for (let i = Math.max(2, groupCurrentPage - 1); i <= Math.min(groupTotalPages - 1, groupCurrentPage + 1); i++) pages.push(i);
-                              if (groupCurrentPage < groupTotalPages - 2) pages.push("...");
-                              pages.push(groupTotalPages);
-                            }
-                            return pages.map((p, idx) =>
-                              typeof p === "string" ? (
-                                <span key={`gellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
-                              ) : (
-                                <button
-                                  key={p}
-                                  className={`h-7 w-7 rounded-md text-xs font-medium transition-colors ${p === groupCurrentPage ? "text-white" : "text-gray-500 hover:bg-gray-100"}`}
-                                  style={p === groupCurrentPage ? { background: "#007AFF" } : undefined}
-                                  onClick={() => setGroupPage(p as number)}
-                                >{p}</button>
-                              )
-                            );
-                          })()}
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={groupCurrentPage === groupTotalPages} onClick={() => setGroupPage(groupCurrentPage + 1)}>
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <NewGroupView
+            hasOneid={hasOneid}
+            users={MM_MOCK_USERS}
+            overrides={mmOverrides}
+            onResolveConflict={handleMmResolveConflict}
+            onDeptSyncedChange={setMmDeptSynced}
+            externalAnomalousGroups={mmAnomalousGroups}
+            onShowSyncResult={(anomalousGroups) => {
+              // 模拟刷新同步：与手动同步保持一致，返回用户异常 + 分组异常
+              // 假设 OneID 侧删除了 jack 和 iris（与 handleSync 一致）
+              const oneidDeletedUserIds = ["jack@acompany.com", "iris@acompany.com"];
+              const vpcBindings: Record<string, string> = {
+                "iris@acompany.com": "openclaw/iris",
+              };
+              const failedUsers: { id: string; clawCount: number; vpcName?: string }[] = [];
+              let deletedCount = 0;
+              setMembers((prev) => {
+                const updated = prev.map((m) => {
+                  if (!oneidDeletedUserIds.includes(m.id)) return m;
+                  const hasVpc = !!vpcBindings[m.id];
+                  if (m.clawCount > 0 || hasVpc) {
+                    failedUsers.push({ id: m.id, clawCount: m.clawCount, vpcName: vpcBindings[m.id] });
+                    return { ...m, status: "disabled" as const };
+                  } else {
+                    deletedCount++;
+                    return { ...m, _deleted: true } as typeof m & { _deleted: true };
+                  }
+                });
+                return updated.filter((m) => !(m as { _deleted?: boolean })._deleted);
+              });
+              setSyncResultDialog({
+                open: true,
+                failedUsers,
+                deletedCount,
+                addedCount: 0,
+                anomalousGroups,
+              });
+              // 同步异常分组数据到 GroupView 以显示红点
+              if (anomalousGroups.length > 0) {
+                setMmAnomalousGroups(anomalousGroups);
+              }
+            }}
+          />
         )}
+
+        {/* 旧分组视图已由 NewGroupView 替代 */}
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -2293,7 +3013,8 @@ export default function MemberManagement() {
             onChange={setNewMember}
             existingMemberIds={members.map((m) => m.id)}
             groups={groups}
-            onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); }}
+            userGroups={hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS}
+            onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); setNewGroupParentId(null); }}
             groupPopoverReopenKey={groupPopoverReopenKey}
           />
           <DialogFooter>
@@ -2314,7 +3035,8 @@ export default function MemberManagement() {
               values={oneidEditForm}
               onChange={setOneidEditForm}
               groups={groups}
-              onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); }}
+              userGroups={MM_MOCK_GROUPS}
+              onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); setNewGroupParentId(null); }}
               groupPopoverReopenKey={groupPopoverReopenKey}
             />
           ) : (
@@ -2323,7 +3045,8 @@ export default function MemberManagement() {
               onChange={setEditForm}
               isInitialAdmin={isInitialAdminEdit}
               groups={groups}
-              onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); }}
+              userGroups={hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS}
+              onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); setNewGroupParentId(null); }}
               groupPopoverReopenKey={groupPopoverReopenKey}
             />
           )}
@@ -2559,105 +3282,215 @@ export default function MemberManagement() {
         password={credentialDialog.password}
       />
 
-      {/* OneID 同步结果弹窗：展示无法直接删除的用户 */}
+      {/* OneID 同步结果弹窗：展示分组异常 + 用户异常 */}
       <Dialog
         open={!!syncResultDialog?.open}
         onOpenChange={(open) => { if (!open) setSyncResultDialog(null); }}
       >
-        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-gray-900">同步结果</DialogTitle>
           </DialogHeader>
-          <div className="py-2 space-y-5">
-            {/* 同步概要 */}
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-              <p className="text-sm text-blue-600 leading-relaxed">
-                本次同步
-                {[
-                  (syncResultDialog?.addedCount ?? 0) > 0 ? <>新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</> : null,
-                  (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <>禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</> : null,
-                  (syncResultDialog?.deletedCount ?? 0) > 0 ? <>删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</> : null,
-                ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
-                  if (i === 0) return [item];
-                  return [...acc, "，", item];
-                }, [])}
-                。
-                {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {
-                  const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
-                  const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
-                  const parts: React.ReactNode[] = [];
-                  if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 Agent 无法直接删除</React.Fragment>);
-                  if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
-                  return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
-                })()}
-              </p>
-            </div>
+          <div className="py-2 space-y-6">
 
-            {/* 无法删除的用户列表 */}
-            {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-              >
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {syncResultDialog?.failedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-medium text-gray-900">{user.id}</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          {user.vpcName ? (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
-                              <span className="text-xs text-red-600">(有关联云资源)</span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="badge-stopped">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                            禁用
-                          </span>
-                        </td>
+            {/* ═══ 分组异常区块（上方） ═══ */}
+            {(syncResultDialog?.anomalousGroups?.length ?? 0) > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">分组异常</h4>
+
+                {/* 分组异常提示 */}
+                <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
+                  <Info className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-600 leading-relaxed">
+                    以下分组对应的部门已在腾讯统一身份管理平台被删除，分组内用户已被移除。但由于分组仍有专属配置未解绑或存量 Agent 实例未删除，需管理员处理完成后，分组才会被彻底删除。专属配置可前往{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSyncResultDialog(null);
+                        setViewMode("group");
+                      }}
+                      className="inline font-semibold text-red-700 underline underline-offset-2 hover:text-red-800"
+                    >
+                      用户管理-分组视图
+                    </button>
+                    {" "}查看并解绑，Agent 实例可前往{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSyncResultDialog(null);
+                        window.location.href = "/admin/openclaw-monitor";
+                      }}
+                      className="inline font-semibold text-red-700 underline underline-offset-2 hover:text-red-800"
+                    >
+                      Agent 列表
+                    </button>
+                    {" "}页删除。
+                  </p>
+                </div>
+
+                {/* 分组异常表格 */}
+                <div className="rounded-2xl border border-gray-100 overflow-hidden"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                >
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-50 bg-gray-50/50">
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组总人数</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组专属配置</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Agent 实例数</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {syncResultDialog?.anomalousGroups?.map((group) => (
+                        <tr key={group.groupId} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-gray-900">{group.groupName}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-sm tabular-nums text-gray-600">{group.memberCount}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-1.5">
+                              {group.boundConfigs.map((config) => (
+                                <span key={config} className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-md border border-red-100">
+                                  {config}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className={`text-sm tabular-nums ${group.agentInstanceCount > 0 ? "font-semibold text-red-600" : "text-gray-400"}`}>
+                              {group.agentInstanceCount > 0 ? `${group.agentInstanceCount} 个` : "—"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
-            {/* 警告提示：与删除弹窗红色框风格一致 */}
-            <div className="rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
-              <p className="font-semibold">无法删除用户</p>
-              <p>
-                删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
-              </p>
-              {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
-                <p>
-                  删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
-                  <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
-                  {" "}解除后，再刷新检查。
-                </p>
-              )}
-            </div>
+            {/* ═══ 用户异常区块（下方） ═══ */}
+            {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">用户异常</h4>
+
+                {/* 同步概要 */}
+                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-3">
+                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-blue-600 leading-relaxed">
+                    本次同步
+                    {[
+                      (syncResultDialog?.addedCount ?? 0) > 0 ? <React.Fragment key="added">新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <React.Fragment key="failed">禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <React.Fragment key="deleted">删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</React.Fragment> : null,
+                    ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
+                      if (i === 0) return [item];
+                      return [...acc, <React.Fragment key={`sep-${i}`}>，</React.Fragment>, item];
+                    }, [])}
+                    。
+                    {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (() => {
+                      const clawFailCount = syncResultDialog?.failedUsers.filter(u => u.clawCount > 0).length ?? 0;
+                      const vpcFailCount = syncResultDialog?.failedUsers.filter(u => !!u.vpcName).length ?? 0;
+                      const parts: React.ReactNode[] = [];
+                      if (clawFailCount > 0) parts.push(<React.Fragment key="claw">其中 <span className="font-semibold text-red-600">{clawFailCount}</span> 个用户因名下存在未清理的 Agent 无法直接删除</React.Fragment>);
+                      if (vpcFailCount > 0) parts.push(<React.Fragment key="vpc"><span className="font-semibold text-red-600">{vpcFailCount}</span> 个用户因名下存在未解除的私有网络无法直接删除</React.Fragment>);
+                      return parts.length > 0 ? <>{parts.reduce<React.ReactNode[]>((acc, item, i) => i === 0 ? [item] : [...acc, "，", item], [])}，状态已自动改为禁用。</> : null;
+                    })()}
+                  </p>
+                </div>
+
+                {/* 无法删除的用户列表 */}
+                <div className="rounded-2xl border border-gray-100 overflow-hidden"
+                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                >
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-50 bg-gray-50/50">
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {syncResultDialog?.failedUsers.map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-gray-900">{user.id}</span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {user.vpcName ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
+                                <span className="text-xs text-red-600">(有关联云资源)</span>
+                              </div>
+                            ) : (
+                              <span className="text-sm text-gray-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="badge-stopped">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                              禁用
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 警告提示：与删除弹窗红色框风格一致 */}
+                <div className="mt-3 rounded-lg bg-red-50 border border-red-400 px-4 py-3 text-sm text-red-600 space-y-2">
+                  <p className="font-semibold">无法删除用户</p>
+                  <p>
+                    删除用户需要该用户名下没有任何 Agent。可让用户自行删除，或由管理员在 Agent 监控页手动删除。
+                  </p>
+                  {syncResultDialog?.failedUsers.some(u => !!u.vpcName) && (
+                    <p>
+                      删除用户需要系统自动分配的私有网络下无关联云资源。请前往{" "}
+                      <a href="https://console.cloud.tencent.com/vpc" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 underline hover:text-red-700">腾讯云控制台<ExternalLink className="w-3 h-3 inline-block" /></a>
+                      {" "}解除后，再刷新检查。
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
           <DialogFooter>
             <Button
-              onClick={() => setSyncResultDialog(null)}
+              onClick={() => {
+                setSyncResultDialog(null);
+                // 同步后检测存量 Agent 实例
+                // 模拟：alice 被从 dept-tech 移出、bob 被从 dept-fe 移出、dept-ai 上级变动
+                const syncAffectedAgents: Array<{ userId: string; instanceId: string; instanceName: string; groupName: string; reason: string }> = [];
+                // 用户从分组中移除
+                const removedFromGroup: Array<{ userId: string; groupId: string }> = [
+                  { userId: "alice@acompany.com", groupId: "dept-tech" },
+                  { userId: "bob@acompany.com", groupId: "dept-fe" },
+                ];
+                removedFromGroup.forEach(({ userId, groupId }) => {
+                  const userAgents = MOCK_USER_GROUP_AGENTS[userId];
+                  const instances = userAgents?.[groupId];
+                  if (instances && instances.length > 0) {
+                    const gName = mmGetPrimaryDeptPath(groupId, hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS);
+                    instances.forEach((inst) => {
+                      syncAffectedAgents.push({ userId, instanceId: inst.id, instanceName: inst.name, groupName: gName, reason: "用户从分组中移除" });
+                    });
+                  }
+                });
+                if (syncAffectedAgents.length > 0) {
+                  setSyncAgentInstanceDialog({ open: true, agents: syncAffectedAgents });
+                  setSyncAgentInstanceChoice("keep");
+                }
+              }}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
               className="text-white btn-primary-glow"
             >
@@ -2944,6 +3777,151 @@ export default function MemberManagement() {
         </DialogContent>
       </Dialog>
 
+      {/* 存量 Agent 实例处理弹窗 */}
+      <Dialog open={!!agentInstanceDialog?.open} onOpenChange={(open) => { if (!open) setAgentInstanceDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>存量 Agent 实例处理</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-700">
+              该用户在以下分组中创建了 Agent 实例，用户已从这些分组中移除，请选择如何处理存量实例：
+            </p>
+            <div className="rounded-lg border border-gray-100 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {agentInstanceDialog?.agents.flatMap((a) =>
+                    a.instances.map((inst) => (
+                      <tr key={inst.id}>
+                        <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.userId}</td>
+                        <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
+                        <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="py-2 space-y-2">
+            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            {[
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                onClick={() => setAgentInstanceChoice(opt.value as "keep" | "delete")}
+              >
+                <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
+                  {agentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAgentInstanceDialog(null)}>取消</Button>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => {
+                agentInstanceDialog?.pendingAction();
+                setAgentInstanceDialog(null);
+                if (agentInstanceChoice === "delete") {
+                  const ids = agentInstanceDialog?.agents.flatMap(a => a.instances.map(i => i.id)).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
+                }
+              }}
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 同步后存量 Agent 实例处理弹窗 */}
+      <Dialog open={!!syncAgentInstanceDialog?.open} onOpenChange={(open) => { if (!open) setSyncAgentInstanceDialog(null); }}>
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>存量 Agent 实例处理</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-gray-700">
+              本次同步导致部分用户被移除分组或上级分组发生变更，以下用户在原分组中创建了 Agent 实例，请选择如何处理存量实例：
+            </p>
+            <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[200px] overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50 sticky top-0">
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {syncAgentInstanceDialog?.agents.map((a) => (
+                    <tr key={a.instanceId}>
+                      <td className="px-3 py-2 text-gray-700">{a.userId}</td>
+                      <td className="px-3 py-2 text-gray-700">{a.instanceName}<span className="text-gray-400 ml-1">({a.instanceId})</span></td>
+                      <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="py-2 space-y-2">
+            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            {[
+              { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
+              { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${syncAgentInstanceChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                onClick={() => setSyncAgentInstanceChoice(opt.value as "keep" | "delete")}
+              >
+                <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${syncAgentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
+                  {syncAgentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSyncAgentInstanceDialog(null)}>取消</Button>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => {
+                setSyncAgentInstanceDialog(null);
+                if (syncAgentInstanceChoice === "delete") {
+                  const ids = syncAgentInstanceDialog?.agents.map(a => a.instanceId).join(",") ?? "";
+                  window.location.href = `/admin/openclaw-monitor?filter=pending-delete&ids=${ids}`;
+                }
+              }}
+            >
+              确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 新建分组 Dialog */}
       <Dialog open={showCreateGroupDialog} onOpenChange={setShowCreateGroupDialog}>
         <DialogContent className="sm:max-w-sm" onOpenAutoFocus={(e) => e.preventDefault()}>
@@ -2952,15 +3930,36 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-4">
             <div className="space-y-2">
+              <Label>上级分组</Label>
+              <Select value={newGroupParentId ?? "__root__"} onValueChange={(v) => setNewGroupParentId(v === "__root__" ? null : v)}>
+                <SelectTrigger className="bg-gray-50 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__root__">无（顶层分组）</SelectItem>
+                  {(hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS).map((g) => (
+                    <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>分组名称</Label>
-              <Input
-                placeholder="请输入分组名称"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleCreateGroup(); }}
-                className="bg-gray-50"
-                autoFocus
-              />
+              <div className="flex items-center gap-1">
+                {newGroupParentId && (
+                  <span className="text-xs text-gray-400 shrink-0">
+                    {(hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS).find((g) => g.id === newGroupParentId)?.name} /
+                  </span>
+                )}
+                <Input
+                  placeholder="请输入分组名称"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCreateGroup(); }}
+                  className="bg-gray-50 flex-1"
+                  autoFocus
+                />
+              </div>
               <p className="text-xs text-gray-400">分组名称为唯一标识，不能与已有分组重名，创建后支持修改</p>
             </div>
           </div>
@@ -3097,7 +4096,7 @@ export default function MemberManagement() {
           {/* 单分组规则提示 */}
           <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg">
             <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span className="text-xs text-blue-600">一个用户仅支持加入一个分组，可按分组设置不同的配置与权限</span>
+            <span className="text-xs text-blue-600">一个用户支持加入多个分组，可按分组设置不同的配置与权限</span>
           </div>
           <div className="py-2 space-y-3">
             <div className="flex items-center gap-2">

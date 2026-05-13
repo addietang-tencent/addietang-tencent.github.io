@@ -20,7 +20,9 @@ const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
   3: { label: "导入企业用户", done: false },
   4: { label: "配置至少一个模型", done: true },
   5: { label: "配置至少一个通道", done: false },
-  6: { label: "配置私有网络和安全组", done: false },
+  6: { label: "配置至少一个镜像", done: true },
+  7: { label: "配置私有网络", done: true },
+  8: { label: "配置安全组", done: false },
 };
 
 // ─── 腾讯云配额问题 mock 数据 ─────────────────────────────────────────────────
@@ -109,10 +111,11 @@ function buildNotices(): NoticeItem[] {
   return notices;
 }
 
-const NOTICES = buildNotices();
 const AUTO_PLAY_INTERVAL = 5000;
 
 export default function AdminNoticeBar() {
+  // [004] 每次渲染都重算通知列表，以便存量企业 ack 状态变化时能即时从通知条消失
+  const NOTICES = buildNotices();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 

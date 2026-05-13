@@ -81,22 +81,20 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
             </div>
           )}
 
-          {/* 限免活动提示 */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p className="font-semibold text-amber-800 text-sm mb-1">限时免费体验（至 2026.6.15）</p>
+          {/* 限免活动提示 —— 合并「免费体验规则」与「开通后获得的额度 / 准备时长」，让管理员一眼看全本次开通的边界 */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-2">
+            <p className="font-semibold text-amber-800 text-sm">限时免费体验（至 2026.6.15）</p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              免费体验期间可使用全部功能，定价将在体验期结束前提前通知
+              免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。
             </p>
-          </div>
-
-          {/* 配额说明 */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 space-y-2">
-            <p className="text-xs text-blue-700 leading-relaxed">
-              开通后将获得 <strong>{FIXED_MEMORY_SPACES}</strong> 个记忆空间，每个记忆空间可绑定一个 Agent。
-            </p>
-            <p className="text-xs text-blue-700 leading-relaxed">
-              开通服务需要 3-5 分钟准备资源，准备完成后即可使用。
-            </p>
+            <div className="pt-2 border-t border-amber-200/70 space-y-1">
+              <p className="text-xs text-amber-700 leading-relaxed">
+                开通后将获得 <span className="font-semibold">{FIXED_MEMORY_SPACES}</span> 个记忆空间，每个记忆空间可绑定一个 Agent。
+              </p>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                开通服务需要 3-5 分钟准备资源，准备完成后即可使用。
+              </p>
+            </div>
           </div>
 
           {/* 配置项 */}

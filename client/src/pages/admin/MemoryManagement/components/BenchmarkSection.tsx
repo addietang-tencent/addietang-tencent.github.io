@@ -21,7 +21,7 @@ export const BenchmarkSection: React.FC<BenchmarkSectionProps> = () => {
 
       {/* 内容区 — 常驻展示 */}
       <div className="px-5 pb-5">
-        <FreeVersionCard variant="chart-only" />
+        <FreeVersionCard isEnabled={false} onEnabledChange={() => {}} />
       </div>
     </div>
   );

@@ -17,13 +17,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
+  ArrowRight, Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
 const NAV_ITEMS = [
   { label: "我的 Agent", path: "/my-openclaw", newTab: false },
+  { label: "技能广场", path: "/skill-square", newTab: false },
   { label: "模型额度", path: "/model-quota", newTab: false },
   { label: "帮助文档", path: "/help-docs", newTab: false },
 ];
@@ -40,6 +41,10 @@ interface Notification {
   timestamp: string;
   category: NotificationCategory;
   read: boolean;
+  /** 可选：点击"前往查看"跳转的目标路径（如 /admin/security-group） */
+  actionHref?: string;
+  /** 可选：跳转按钮文案，默认"前往查看" */
+  actionLabel?: string;
 }
 
 const NOTIFICATION_CATEGORY_CONFIG: Record<
@@ -146,7 +151,22 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 
 // ==================== 通知面板组件 ====================
 
-function NotificationPanel() {
+// [004] 独立化升级完成消息（仅对"兼具管理员身份"的用户端账号推送）
+//   - 展示条件：isAdmin=true（普通员工看不到，不懂、点了会 403）
+//   - 交互行为：与其他铃铛通知一致——用户自行点 X 删除 / 点"已读"变灰 / 点"前往查看"跳管控端
+//     删除和已读均为当前 Session 内内存态，与管控端蓝条的 ack 状态解耦
+const MIGRATION_NOTIFICATION: Notification = {
+  id: "sg-migration-done",
+  message:
+    "ClawPro 安全组独立化升级已完成，原规则与绑定 Agent 已迁移至 ClawPro-Default",
+  timestamp: "2026-05-05 15:00",
+  category: "notice",
+  read: false,
+  actionHref: "/admin/security-group",
+  actionLabel: "前往查看",
+};
+
+function NotificationPanel({ isAdmin }: { isAdmin: boolean }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | NotificationCategory>("all");
@@ -155,8 +175,16 @@ function NotificationPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setNotifications(MOCK_NOTIFICATIONS);
-  }, []);
+    // [004] 仅"兼具管理员身份"的用户端账号展示独立化升级完成消息
+    //   普通员工看不到（不懂、点了会 403）
+    //   删除/已读行为与其他通知一致：内存态，不持久化，刷新后恢复
+    if (isAdmin) {
+      // 放在最新时间点（最顶部），管理员打开铃铛立刻能看到
+      setNotifications([MIGRATION_NOTIFICATION, ...MOCK_NOTIFICATIONS]);
+    } else {
+      setNotifications(MOCK_NOTIFICATIONS);
+    }
+  }, [isAdmin]);
 
   const hasUnread = notifications.some((n) => !n.read);
 
@@ -320,10 +348,13 @@ function NotificationPanel() {
                       onMouseLeave={() => setHoveredId(null)}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className={[
-                          "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
-                          notif.read ? "text-gray-400" : "text-gray-700",
-                        ].join(" ")}>
+                        <p
+                          className={[
+                            "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
+                            notif.read ? "text-gray-400" : "text-gray-700",
+                          ].join(" ")}
+                          title={notif.message}
+                        >
                           {notif.message}
                         </p>
                         <button
@@ -350,6 +381,23 @@ function NotificationPanel() {
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5">
+                          {/* [004] 带跳转的通知：显示"前往查看"按钮（hover 时浮现），
+                              点击跳转 + 自动标已读 */}
+                          {notif.actionHref && hoveredId === notif.id && (
+                            <Link href={notif.actionHref}>
+                              <button
+                                onClick={() => {
+                                  handleMarkRead(notif.id);
+                                  setShowPanel(false);
+                                }}
+                                className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                                title="前往查看"
+                              >
+                                {notif.actionLabel || "前往查看"}
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                            </Link>
+                          )}
                           {/* 标为已读：hover 时浮现，已读后隐藏 */}
                           {!notif.read && hoveredId === notif.id && (
                             <button
@@ -399,6 +447,42 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   const [location] = useLocation();
   const { isAdmin, toggleRole } = useUserRole();
 
+  // 读取多分组模式状态
+  const [groupMode, setGroupMode] = useState<"normal" | "multi-group">(() => {
+    return (localStorage.getItem("openclaw_group_mode") as "normal" | "multi-group") || "normal";
+  });
+  // 监听 localStorage 变化（从 MyOpenClaw 切换时同步）
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "openclaw_group_mode") {
+        setGroupMode((e.newValue as "normal" | "multi-group") || "normal");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => { window.removeEventListener("storage", handleStorage); };
+  }, []);
+
+  // 读取管控端「允许用户查看模型额度」开关状态（默认开启）
+  const [modelQuotaEnabled, setModelQuotaEnabled] = useState(() => {
+    const v = localStorage.getItem("admin_allow_model_quota");
+    return v !== null ? v === "true" : true;
+  });
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "admin_allow_model_quota") {
+        setModelQuotaEnabled(e.newValue !== null ? e.newValue === "true" : true);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  // 根据开关过滤导航项
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.path === "/model-quota" && !modelQuotaEnabled) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Navigation */}
@@ -419,7 +503,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
           {/* Navigation */}
           <nav className="flex items-center gap-1">
-            {NAV_ITEMS.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = !item.newTab && location.startsWith(item.path);
               const btnClass = `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
@@ -444,7 +528,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
           {/* Right Side: Bell + Admin Button + User Menu */}
           <div className="flex items-center gap-2">
             {/* 消息中心 */}
-            <NotificationPanel />
+            <NotificationPanel isAdmin={isAdmin} />
 
             {/* 管理后台按钮：仅管理员可见 */}
             {isAdmin && (
@@ -479,6 +563,33 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                   }`}>
                     {isAdmin ? "管理员" : "普通成员"}
                   </span>
+                </div>
+                {/* 所在分组 - 始终显示 */}
+                <div className="px-3 py-2 border-b border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1.5">所在分组</p>
+                  <div className="flex flex-wrap gap-1">
+                    {groupMode === "multi-group" ? (
+                      <>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          A公司 / 技术部 / 前端组
+                        </span>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          A公司 / 技术部 / AI 组
+                        </span>
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          前端研发同学
+                        </span>
+                      </>
+                    ) : (
+                      <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                        默认
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <DropdownMenuItem onClick={() => window.location.href = '/reset-password'}>
                   <KeyRound className="w-4 h-4 mr-2 text-gray-500" />

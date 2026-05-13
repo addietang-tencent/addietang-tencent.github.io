@@ -12,162 +12,21 @@ export const SITE_CONFIG = {
 };
 
 export const MOCK_OPENCLAW_LIST = [
-  {
-    id: "oc-001",
-    instanceId: "ins-creating01",
-    name: "创建中示例",
-    status: "creating",
-    agentType: "openclaw",
-    createdAt: "2026-03-26 09:00:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-002",
-    instanceId: "ins-createfail01",
-    name: "创建失败示例",
-    status: "createFail",
-    agentType: "openclaw",
-    createdAt: "2026-03-26 09:05:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-003",
-    instanceId: "ins-running01",
-    name: "运行中示例",
-    status: "running",
-    agentType: "openclaw",
-    createdAt: "2026-03-01 10:23:45",
-    model: "腾讯云 DeepSeek",
-    modelVersion: "DeepSeek V3 0324",
-    channels: ["飞书"],
-    skills: ["github 1.0.0"],
-  },
-  {
-    id: "oc-004",
-    instanceId: "ins-loading01",
-    name: "加载中示例",
-    status: "loading",
-    agentType: "openclaw",
-    createdAt: "2026-03-26 09:10:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-005",
-    instanceId: "ins-loadfail01",
-    name: "加载失败示例",
-    status: "loadFail",
-    agentType: "openclaw",
-    createdAt: "2026-03-26 09:15:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-006",
-    instanceId: "ins-shutdown01",
-    name: "已关机示例",
-    status: "shutdown",
-    agentType: "openclaw",
-    createdAt: "2026-03-05 09:00:00",
-    model: "腾讯云混元",
-    modelVersion: "混元 Turbo",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-007",
-    instanceId: "ins-maintaining01",
-    name: "维护中示例",
-    status: "maintaining",
-    agentType: "openclaw",
-    createdAt: "2026-03-10 16:45:00",
-    model: "腾讯云混元",
-    modelVersion: "混元 Pro",
-    channels: ["企业微信机器人"],
-    skills: [],
-  },
-  {
-    id: "oc-008",
-    instanceId: "ins-pending01",
-    name: "待处理示例",
-    status: "pending",
-    agentType: "openclaw",
-    createdAt: "2026-03-26 09:20:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-009",
-    instanceId: "ins-longname01",
-    name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果",
-    status: "running",
-    agentType: "openclaw",
-    createdAt: "2026-03-28 14:30:00",
-    model: "腾讯云 DeepSeek",
-    modelVersion: "DeepSeek V3 0324",
-    channels: ["企业微信"],
-    skills: ["github 1.0.0"],
-  },
-  {
-    id: "oc-010",
-    instanceId: "ins-hermes01",
-    name: "Hermes 示例",
-    status: "running",
-    agentType: "hermes",
-    createdAt: "2026-04-01 10:00:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-011",
-    instanceId: "ins-hermes02",
-    name: "Hermes 加载失败示例",
-    status: "loadFail",
-    agentType: "hermes",
-    createdAt: "2026-04-02 11:00:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-012",
-    instanceId: "ins-lightclaw01",
-    name: "LightclawACE 示例",
-    status: "running",
-    agentType: "lightclawace",
-    createdAt: "2026-04-03 09:30:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
-  {
-    id: "oc-013",
-    instanceId: "ins-lightclaw02",
-    name: "LightclawACE 创建中示例",
-    status: "creating",
-    agentType: "lightclawace",
-    createdAt: "2026-04-04 14:00:00",
-    model: "",
-    modelVersion: "",
-    channels: [],
-    skills: [],
-  },
+  { id: "oc-001", instanceId: "ins-creating01",  name: "创建中示例",                                          creator: "alice@acompany.com",  status: "creating",    agentType: "openclaw",     createdAt: "2026-03-26 09:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-002", instanceId: "ins-createfail01", name: "创建失败示例",                                          creator: "bob@acompany.com",    status: "createFail",  agentType: "openclaw",     createdAt: "2026-03-26 09:05:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-003", instanceId: "ins-running01",    name: "运行中示例",                                          creator: "carol@acompany.com",  status: "running",     agentType: "openclaw",     createdAt: "2026-03-01 10:23:45", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: ["飞书"], skills: ["github 1.0.0"] },
+  { id: "oc-004", instanceId: "ins-loading01",    name: "加载中示例",                                          creator: "dave@acompany.com",   status: "loading",     agentType: "openclaw",     createdAt: "2026-03-26 09:10:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-005", instanceId: "ins-loadfail01",   name: "加载失败示例",                                          creator: "eve@acompany.com",    status: "loadFail",    agentType: "openclaw",     createdAt: "2026-03-26 09:15:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-006", instanceId: "ins-shutdown01",   name: "已关机示例",                                          creator: "frank@acompany.com",  status: "shutdown",    agentType: "openclaw",     createdAt: "2026-03-05 09:00:00", model: "腾讯云混元",   modelVersion: "混元 Turbo",     channels: [], skills: [] },
+  { id: "oc-007", instanceId: "ins-maintaining01",name: "维护中示例",                                          creator: "grace@acompany.com",  status: "maintaining", agentType: "openclaw",     createdAt: "2026-03-10 16:45:00", model: "腾讯云混元",   modelVersion: "混元 Pro",       channels: ["企业微信机器人"], skills: [] },
+  { id: "oc-008", instanceId: "ins-pending01",    name: "待处理示例",                                          creator: "henry@acompany.com",  status: "pending",     agentType: "openclaw",     createdAt: "2026-03-26 09:20:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-009", instanceId: "ins-longname01",   name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "ivy@acompany.com",    status: "running",     agentType: "openclaw",     createdAt: "2026-03-28 14:30:00", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: ["企业微信"], skills: ["github 1.0.0"] },
+  { id: "oc-010", instanceId: "ins-hermes01",     name: "Hermes 示例",                                              creator: "jack@acompany.com",   status: "running",     agentType: "hermes",       createdAt: "2026-04-01 10:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-011", instanceId: "ins-hermes02",     name: "Hermes 加载失败示例",                                      creator: "karen@acompany.com",  status: "loadFail",    agentType: "hermes",       createdAt: "2026-04-02 11:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-012", instanceId: "ins-lightclaw01",  name: "LightclawACE 示例",                                          creator: "leo@acompany.com",    status: "running",     agentType: "lightclawace", createdAt: "2026-04-03 09:30:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-013", instanceId: "ins-lightclaw02",  name: "LightclawACE 创建中示例",                                      creator: "alice@acompany.com",  status: "creating",    agentType: "lightclawace", createdAt: "2026-04-04 14:00:00", model: "",               modelVersion: "",           channels: [], skills: [] },
+  { id: "oc-014", instanceId: "ins-grpdemo01",   name: "多分组示例-前端组",                                            creator: "alice@acompany.com",  status: "running",     agentType: "openclaw",     createdAt: "2026-04-05 10:00:00", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: [], skills: [], groupId: "grp-fe", groupName: "A公司 / 技术部 / 前端组" },
+  { id: "oc-015", instanceId: "ins-grpdemo02",   name: "多分组示例-前端研发",                                            creator: "alice@acompany.com",  status: "running",     agentType: "openclaw",     createdAt: "2026-04-05 11:00:00", model: "腾讯云 DeepSeek", modelVersion: "DeepSeek V3 0324", channels: [], skills: [], groupId: "grp-custom", groupName: "前端研发同学" },
 ];
 
 export const MOCK_MEMBERS = [
@@ -689,6 +548,119 @@ export const MOCK_TOKEN_BY_DEPARTMENT = [
   { departmentId: "dept-design", departmentName: "设计组", path: "A公司/产品部/设计组", requests: 900, inputTokens: 230000, outputTokens: 130000, totalTokens: 360000 },
   { departmentId: "dept-ops", departmentName: "运营部", path: "A公司/运营部", requests: 600, inputTokens: 151580, outputTokens: 96320, totalTokens: 247900 },
   { departmentId: "dept-hr", departmentName: "人力资源部", path: "A公司/人力资源部", requests: 250, inputTokens: 50000, outputTokens: 30000, totalTokens: 80000 },
+];
+
+/** 按分组汇总的 Token 消耗数据 —— 普通模式（manual 分组，树形层级）*/
+export interface GroupNode {
+  id: string;
+  name: string;
+  path?: string;
+  children?: GroupNode[];
+}
+
+export const MOCK_GROUP_TREE_MANUAL: GroupNode[] = [
+  { id: "mgrp-product", name: "产品组", path: "产品组" },
+  {
+    id: "mgrp-rd", name: "研发组", path: "研发组",
+    children: [
+      { id: "mgrp-rd-fe", name: "研发-前端", path: "研发组/研发-前端" },
+      { id: "mgrp-rd-be", name: "研发-后端", path: "研发组/研发-后端" },
+    ],
+  },
+  { id: "mgrp-design", name: "设计组", path: "设计组" },
+  { id: "mgrp-ops", name: "产品运营与市场推广团队", path: "产品运营与市场推广团队" },
+];
+
+export const MOCK_TOKEN_BY_GROUP_MANUAL = [
+  { groupId: "mgrp-product", groupName: "产品组", requests: 1800, inputTokens: 460000, outputTokens: 250000, totalTokens: 710000 },
+  { groupId: "mgrp-rd", groupName: "研发组", requests: 5200, inputTokens: 1320000, outputTokens: 780000, totalTokens: 2100000 },
+  { groupId: "mgrp-rd-fe", groupName: "研发组/研发-前端", requests: 3100, inputTokens: 790000, outputTokens: 440000, totalTokens: 1230000 },
+  { groupId: "mgrp-rd-be", groupName: "研发组/研发-后端", requests: 2600, inputTokens: 680000, outputTokens: 370000, totalTokens: 1050000 },
+  { groupId: "mgrp-design", groupName: "设计组", requests: 950, inputTokens: 240000, outputTokens: 135000, totalTokens: 375000 },
+  { groupId: "mgrp-ops", groupName: "产品运营与市场推广团队", requests: 720, inputTokens: 182000, outputTokens: 108000, totalTokens: 290000 },
+];
+
+/** 按分组汇总的 Token 消耗数据 —— OneID 模式（部门 + 自定义分组，树形层级）*/
+export const MOCK_GROUP_TREE_ONEID: GroupNode[] = [
+  {
+    id: "__section_dept", name: "部门", path: "部门",
+    children: [
+      {
+        id: "dept-root", name: "A公司", path: "A公司",
+        children: [
+          {
+            id: "dept-tech", name: "技术部", path: "A公司/技术部",
+            children: [
+              { id: "dept-fe", name: "前端组", path: "A公司/技术部/前端组" },
+              { id: "dept-be", name: "后端组", path: "A公司/技术部/后端组" },
+              { id: "dept-ai", name: "AI 组", path: "A公司/技术部/AI 组" },
+            ],
+          },
+          {
+            id: "dept-product", name: "产品部", path: "A公司/产品部",
+            children: [
+              { id: "dept-pm", name: "产品策划", path: "A公司/产品部/产品策划" },
+              { id: "dept-design", name: "设计组", path: "A公司/产品部/设计组" },
+              {
+                id: "dept-operation", name: "运营组", path: "A公司/产品部/运营组",
+                children: [
+                  { id: "dept-operation-1", name: "运营一组", path: "A公司/产品部/运营组/运营一组" },
+                  { id: "dept-operation-2", name: "运营二组", path: "A公司/产品部/运营组/运营二组" },
+                ],
+              },
+            ],
+          },
+          { id: "dept-hr", name: "人力资源", path: "A公司/人力资源" },
+          { id: "dept-finance", name: "财务部", path: "A公司/财务部" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "__section_group", name: "自定义分组", path: "自定义分组",
+    children: [
+      {
+        id: "og-frontend", name: "前端研发同学", path: "前端研发同学",
+        children: [
+          { id: "og-fe-web", name: "Web 端", path: "前端研发同学/Web 端" },
+          { id: "og-fe-mobile", name: "移动端", path: "前端研发同学/移动端" },
+        ],
+      },
+      {
+        id: "og-backend", name: "后端研发同学", path: "后端研发同学",
+        children: [
+          { id: "og-be-java", name: "Java 方向", path: "后端研发同学/Java 方向" },
+          { id: "og-be-go", name: "Go 方向", path: "后端研发同学/Go 方向" },
+        ],
+      },
+      { id: "og-ai-core", name: "AI 核心团队", path: "AI 核心团队" },
+    ],
+  },
+];
+
+export const MOCK_TOKEN_BY_GROUP_ONEID = [
+  // 部门
+  { groupId: "dept-root", groupName: "A公司", requests: 14200, inputTokens: 3620000, outputTokens: 2060000, totalTokens: 5680000 },
+  { groupId: "dept-tech", groupName: "A公司/技术部", requests: 10100, inputTokens: 2580000, outputTokens: 1440000, totalTokens: 4020000 },
+  { groupId: "dept-fe", groupName: "A公司/技术部/前端组", requests: 3200, inputTokens: 820000, outputTokens: 450000, totalTokens: 1270000 },
+  { groupId: "dept-be", groupName: "A公司/技术部/后端组", requests: 2800, inputTokens: 710000, outputTokens: 390000, totalTokens: 1100000 },
+  { groupId: "dept-ai", groupName: "A公司/技术部/AI 组", requests: 4100, inputTokens: 1050000, outputTokens: 600000, totalTokens: 1650000 },
+  { groupId: "dept-product", groupName: "A公司/产品部", requests: 3500, inputTokens: 891580, outputTokens: 506320, totalTokens: 1397900 },
+  { groupId: "dept-pm", groupName: "A公司/产品部/产品策划", requests: 1500, inputTokens: 380000, outputTokens: 210000, totalTokens: 590000 },
+  { groupId: "dept-design", groupName: "A公司/产品部/设计组", requests: 900, inputTokens: 230000, outputTokens: 130000, totalTokens: 360000 },
+  { groupId: "dept-operation", groupName: "A公司/产品部/运营组", requests: 1100, inputTokens: 281580, outputTokens: 166320, totalTokens: 447900 },
+  { groupId: "dept-operation-1", groupName: "A公司/产品部/运营组/运营一组", requests: 650, inputTokens: 165000, outputTokens: 95000, totalTokens: 260000 },
+  { groupId: "dept-operation-2", groupName: "A公司/产品部/运营组/运营二组", requests: 450, inputTokens: 116580, outputTokens: 71320, totalTokens: 187900 },
+  { groupId: "dept-hr", groupName: "A公司/人力资源", requests: 250, inputTokens: 50000, outputTokens: 30000, totalTokens: 80000 },
+  { groupId: "dept-finance", groupName: "A公司/财务部", requests: 350, inputTokens: 98420, outputTokens: 83680, totalTokens: 182100 },
+  // 自定义分组
+  { groupId: "og-frontend", groupName: "前端研发同学", requests: 2900, inputTokens: 740000, outputTokens: 410000, totalTokens: 1150000 },
+  { groupId: "og-fe-web", groupName: "前端研发同学/Web 端", requests: 1600, inputTokens: 410000, outputTokens: 225000, totalTokens: 635000 },
+  { groupId: "og-fe-mobile", groupName: "前端研发同学/移动端", requests: 1300, inputTokens: 330000, outputTokens: 185000, totalTokens: 515000 },
+  { groupId: "og-backend", groupName: "后端研发同学", requests: 2500, inputTokens: 640000, outputTokens: 350000, totalTokens: 990000 },
+  { groupId: "og-be-java", groupName: "后端研发同学/Java 方向", requests: 1400, inputTokens: 360000, outputTokens: 195000, totalTokens: 555000 },
+  { groupId: "og-be-go", groupName: "后端研发同学/Go 方向", requests: 1100, inputTokens: 280000, outputTokens: 155000, totalTokens: 435000 },
+  { groupId: "og-ai-core", groupName: "AI 核心团队", requests: 3600, inputTokens: 920000, outputTokens: 520000, totalTokens: 1440000 },
 ];
 
 /** OpenClaw 列表（带部门信息，OneID 模式使用） */

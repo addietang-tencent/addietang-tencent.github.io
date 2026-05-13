@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, type DepartmentNode } from "@/lib/mockData";
+import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, MOCK_OPENCLAW_LIST, MOCK_CLAWS_WITH_DEPT, type DepartmentNode, type GroupNode, MOCK_GROUP_TREE_MANUAL, MOCK_GROUP_TREE_ONEID, MOCK_TOKEN_BY_GROUP_MANUAL, MOCK_TOKEN_BY_GROUP_ONEID } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // CLS 采集插件版本历史
@@ -77,6 +77,8 @@ const MEMBERS = [
   "jack@acompany.com",
   "karen@acompany.com",
   "leo@acompany.com",
+  "longname-user@very-long-domain-example.com",
+  "product-ops-admin@enterprise-acompany.com",
 ];
 
 const MODELS = [
@@ -159,6 +161,19 @@ function ProgressBar({ value, max, showTooltip, isUnlimited }: { value: number; 
       </UITooltipContent>
     </UITooltip>
   );
+}
+
+// ─── CSV 导出工具 ────────────────────────────────────────────────────────────
+function makeCsvBlob(header: string, rows: string[]): Blob {
+  return new Blob(["\uFEFF" + header + "\n" + rows.join("\n")], { type: "text/csv;charset=utf-8" });
+}
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── 翻页组件 ─────────────────────────────────────────────────────────────────
@@ -293,6 +308,165 @@ function TokenDepartmentFilter({
   );
 }
 
+// ─── 分组树节点（递归）──────────────────────────────────────────────────────
+function TokenGroupTreeNode({
+  node, level, selected, expanded, onToggle, onSelect, search,
+}: {
+  node: GroupNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+  search: string;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+  const isSection = node.id.startsWith("__section_");
+
+  // 搜索过滤：如果有搜索词，只显示匹配的节点
+  const matchesSearch = !search || node.name.toLowerCase().includes(search.toLowerCase());
+  const childrenMatchSearch = hasChildren && node.children!.some(child => {
+    const childMatch = child.name.toLowerCase().includes(search.toLowerCase());
+    const grandChildMatch = child.children?.some(gc => gc.name.toLowerCase().includes(search.toLowerCase()));
+    return childMatch || grandChildMatch;
+  });
+
+  if (search && !matchesSearch && !childrenMatchSearch && !isSection) return null;
+
+  return (
+    <div>
+      {isSection ? (
+        <div className="px-2 pt-3 pb-1">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{node.name}</span>
+        </div>
+      ) : (
+        <div
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+          }`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
+          onClick={() => onSelect(node.id)}
+        >
+          {hasChildren ? (
+            <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+              onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+              {isExpanded
+                ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+            </button>
+          ) : (
+            <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+            </span>
+          )}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        </div>
+      )}
+      {hasChildren && (isExpanded || isSection || (search && childrenMatchSearch)) && node.children!.map((child) => (
+        <TokenGroupTreeNode key={child.id} node={child} level={isSection ? level : level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} search={search} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 分组筛选弹出框（Tokens 监控「按分组」Tab 用） ────────────────────────────
+function TokenGroupFilter({
+  groups, value, onChange,
+}: {
+  groups: GroupNode[]; value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  useEffect(() => { if (open) { setTempValue(value); setSearch(""); } }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  const findNode = (nodes: GroupNode[], id: string): GroupNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) { const found = findNode(n.children, id); if (found) return found; }
+    }
+    return undefined;
+  };
+  const selectedNode = tempValue ? findNode(groups, tempValue) : undefined;
+  const triggerNode = value ? findNode(groups, value) : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[160px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerNode ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerNode?.name || "全部分组"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        {/* 搜索框 */}
+        <div className="p-2 border-b border-gray-100">
+          <input
+            type="text"
+            placeholder="搜索分组"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          />
+        </div>
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {groups.map((group) => (
+            <TokenGroupTreeNode key={group.id} node={group} level={0}
+              selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} search={search} />
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部分组</span>
+            ) : selectedNode?.path ? (
+              <span className="flex items-center gap-0.5 truncate">
+                {selectedNode.path.split("/").map((seg, idx, arr) => (
+                  <span key={idx} className="flex items-center gap-0.5 shrink-0">
+                    {idx > 0 && <span className="text-gray-300 mx-0.5">›</span>}
+                    <span className={idx === arr.length - 1 ? "text-blue-600 font-medium" : "text-gray-500"}>{seg}</span>
+                  </span>
+                ))}
+              </span>
+            ) : selectedNode ? (
+              <span className="text-blue-600 font-medium truncate">{selectedNode.name}</span>
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safe = Math.min(page, totalPages);
@@ -331,11 +505,14 @@ export default function TokensMonitor() {
   const [dateFrom, setDateFrom] = useState(today);
   const [dateTo, setDateTo] = useState(today);
   const [refreshing, setRefreshing] = useState(false);
+  const [instancePage, setInstancePage] = useState(1);
   const [memberPage, setMemberPage] = useState(1);
   const [modelPage, setModelPage] = useState(1);
   const [sessionPage, setSessionPage] = useState(1);
   const [deptPage, setDeptPage] = useState(1);
   const [deptFilter, setDeptFilter] = useState("");
+  const [groupPage, setGroupPage] = useState(1);
+  const [groupFilter, setGroupFilter] = useState("");
   const [isEnablingCls, setIsEnablingCls] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [clsEnabled, setClsEnabled] = useState(() => {
@@ -370,6 +547,26 @@ export default function TokensMonitor() {
     const value = localStorage.getItem("globalLimit");
     return value ? parseInt(value, 10) : 2000000;
   });
+  // 全局 Tokens 时间维度（每日/每月）—— 与平台策略页同步
+  const [globalTokenTimeDim, setGlobalTokenTimeDim] = useState<"daily" | "monthly">(() => {
+    const v = localStorage.getItem("admin_global_token_time_dim");
+    return v === "monthly" ? "monthly" : "daily";
+  });
+  // 全局 Tokens 上限的"分组策略"列表（来自平台策略页）
+  // 每条：{ id, groupIds: string[], value: number | "unlimited" }
+  type GlobalTokenGroupRule = { id: string; groupIds: string[]; value: number | "unlimited" };
+  const [globalTokenGroupRules, setGlobalTokenGroupRules] = useState<GlobalTokenGroupRule[]>(() => {
+    try {
+      const raw = localStorage.getItem("admin_global_token_group_rules");
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+  // 是否启用了"按分组"模式（存在分组策略）
+  const IS_GLOBAL_BY_GROUP = globalTokenGroupRules.length > 0;
 
   // 监听 localStorage 变化
   useEffect(() => {
@@ -383,6 +580,15 @@ export default function TokensMonitor() {
         } else {
           const value = localStorage.getItem("globalLimit");
           setGlobalLimit(value ? parseInt(value, 10) : 2000000);
+        }
+      } else if (e.key === "admin_global_token_time_dim") {
+        setGlobalTokenTimeDim(e.newValue === "monthly" ? "monthly" : "daily");
+      } else if (e.key === "admin_global_token_group_rules") {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : [];
+          setGlobalTokenGroupRules(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          setGlobalTokenGroupRules([]);
         }
       }
     };
@@ -543,17 +749,21 @@ export default function TokensMonitor() {
 
   const handleFromChange = (v: string) => {
     setDateFrom(v);
+    setInstancePage(1);
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
     setDeptPage(1);
+    setGroupPage(1);
   };
   const handleToChange = (v: string) => {
     setDateTo(v);
+    setInstancePage(1);
     setMemberPage(1);
     setModelPage(1);
     setSessionPage(1);
     setDeptPage(1);
+    setGroupPage(1);
   };
 
   // 有效时间范围
@@ -601,6 +811,32 @@ export default function TokensMonitor() {
     }
   }, [isSingleDay, effectiveFrom, effectiveTo, today]);
 
+  // 按实例汇总（随时间联动），按总 token 降序
+  // 普通模式用 MOCK_OPENCLAW_LIST，OneID 模式用 MOCK_CLAWS_WITH_DEPT
+  const instanceList = hasOneid ? MOCK_CLAWS_WITH_DEPT : MOCK_OPENCLAW_LIST;
+  const instanceStats = useMemo(() => {
+    // 用实例 id 作为 seed 生成稳定的 mock 消耗数据
+    return instanceList.map((inst, idx) => {
+      const rand = seedRand(idx * 777 + 42);
+      const days = daysBetween(effectiveFrom, effectiveTo) + 1;
+      const requests = Math.floor(rand() * 200 * days + 10);
+      const inputTokens = Math.floor(rand() * 30000 * days + 5000);
+      const outputTokens = Math.floor(rand() * 25000 * days + 3000);
+      return {
+        id: inst.id,
+        instanceId: inst.instanceId,
+        name: inst.name,
+        creator: (inst as any).creator ?? "",
+        department: (inst as any).department ?? "",
+        requests,
+        inputTokens,
+        outputTokens,
+        total: inputTokens + outputTokens,
+      };
+    }).sort((a, b) => b.total - a.total);
+  }, [instanceList, effectiveFrom, effectiveTo, hasOneid]);
+  const instancePaged = instanceStats.slice((instancePage - 1) * PAGE_SIZE, instancePage * PAGE_SIZE);
+
   // 按用户汇总（随时间联动），按总请求数降序
   const memberStats = useMemo(() => {
     const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
@@ -614,10 +850,10 @@ export default function TokensMonitor() {
     });
     return Array.from(map.entries())
       .map(([id, v]) => ({ id, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
+      .sort((a, b) => b.total - a.total);
   }, [rangeRecords]);
 
-  // 按模型汇总（随时间联动），按总请求数降序
+  // 按模型汇总（随时间联动），按总 token 降序
   const modelStats = useMemo(() => {
     const map = new Map<string, { requests: number; inputTokens: number; outputTokens: number }>();
     rangeRecords.forEach((r) => {
@@ -630,7 +866,7 @@ export default function TokensMonitor() {
     });
     return Array.from(map.entries())
       .map(([name, v]) => ({ name, ...v, total: v.inputTokens + v.outputTokens }))
-      .sort((a, b) => b.requests - a.requests);
+      .sort((a, b) => b.total - a.total);
   }, [rangeRecords]);
 
   // 按会话汇总（高成本 TOP 5），按成本降序
@@ -653,6 +889,48 @@ export default function TokensMonitor() {
     { sessionId: "7bec562c", sessionName: "你还在吗 / 我是觉得现在 agent 仍...", channel: "Feishu Group", model: "hunyuan-turbos-latest", lastActiveTime: "2026-03-08 21:58", rounds: 28, tokens: 755000, cost: 0.1076, duration: "548m 57s" },
   ];
   const sessionPaged = sessionStats.slice((sessionPage - 1) * PAGE_SIZE, sessionPage * PAGE_SIZE);
+
+  // 导出函数
+  const runExport = (buildBlob: () => { blob: Blob; filename: string }) => {
+    const tid = toast.loading("正在导出Tokens消耗明细列表");
+    setTimeout(() => {
+      const { blob, filename } = buildBlob();
+      downloadBlob(blob, filename);
+      toast.dismiss(tid);
+    }, 500);
+  };
+
+  const handleExportInstance = () => runExport(() => {
+    const header = hasOneid
+      ? "实例名称,实例ID,用户ID,所属部门,总请求数,输入Tokens,输出Tokens,总Tokens"
+      : "实例名称,实例ID,用户ID,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = instanceStats.map((r) =>
+      hasOneid
+        ? `${r.name},${r.instanceId},${r.creator},${r.department},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`
+        : `${r.name},${r.instanceId},${r.creator},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`
+    );
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_instance_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportMember = () => runExport(() => {
+    const header = "用户ID,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = memberStats.map((r) => `${r.id},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_member_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportModel = () => runExport(() => {
+    const header = "模型名称,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = modelStats.map((r) => `${r.name},${r.requests},${r.inputTokens},${r.outputTokens},${r.total}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_model_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportDept = () => runExport(() => {
+    const header = "部门名称,所属路径,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = deptStats.map((r) => `${r.departmentName},${r.path},${r.requests},${r.inputTokens},${r.outputTokens},${r.totalTokens}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_department_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+  const handleExportSession = () => runExport(() => {
+    const header = "会话ID,会话名称,渠道,模型,最后活动时间,轮次,Tokens,成本($),耗时";
+    const rows = sessionStats.map((r) => `${r.sessionId},"${r.sessionName}",${r.channel},${r.model},${r.lastActiveTime},${r.rounds},${r.tokens},${r.cost.toFixed(4)},${r.duration}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_session_${effectiveFrom}_${effectiveTo}.csv` };
+  });
 
   // 翻页切片
   const memberPaged = memberStats.slice((memberPage - 1) * PAGE_SIZE, memberPage * PAGE_SIZE);
@@ -687,6 +965,80 @@ export default function TokensMonitor() {
   }, [hasOneid, deptFilter]);
   const deptPaged = deptStats.slice((deptPage - 1) * PAGE_SIZE, deptPage * PAGE_SIZE);
 
+  // 按分组汇总（普通模式和 OneID 模式都可见）
+  const groupTree = hasOneid ? MOCK_GROUP_TREE_ONEID : MOCK_GROUP_TREE_MANUAL;
+  const findGroupAndChildren = (nodes: GroupNode[], targetId: string): string[] => {
+    const ids: string[] = [];
+    const collect = (node: GroupNode) => {
+      if (!node.id.startsWith("__section_")) ids.push(node.id);
+      node.children?.forEach(collect);
+    };
+    const find = (list: GroupNode[]): boolean => {
+      for (const n of list) {
+        if (n.id === targetId) { collect(n); return true; }
+        if (n.children && find(n.children)) return true;
+      }
+      return false;
+    };
+    find(nodes);
+    return ids;
+  };
+
+  const groupStats = useMemo(() => {
+    const rawData = hasOneid ? MOCK_TOKEN_BY_GROUP_ONEID : MOCK_TOKEN_BY_GROUP_MANUAL;
+    let data = rawData;
+    if (groupFilter) {
+      const allowedIds = findGroupAndChildren(groupTree, groupFilter);
+      data = data.filter((d) => allowedIds.includes(d.groupId));
+    }
+    return data.sort((a, b) => b.totalTokens - a.totalTokens);
+  }, [hasOneid, groupFilter, groupTree]);
+  const groupPaged = groupStats.slice((groupPage - 1) * PAGE_SIZE, groupPage * PAGE_SIZE);
+
+  // ── 分组 → 全局 Tokens 上限映射 ──
+  // 把 groupRule.groupIds 展开成"该规则覆盖的所有底层分组ID"
+  const groupLimitMap = useMemo(() => {
+    const map = new Map<string, number | "unlimited">();
+    for (const rule of globalTokenGroupRules) {
+      for (const gid of rule.groupIds) {
+        const expanded = findGroupAndChildren(groupTree, gid);
+        const ids = expanded.length > 0 ? expanded : [gid];
+        for (const id of ids) {
+          // 后写入会覆盖前面（按规则顺序，后定义优先）
+          map.set(id, rule.value);
+        }
+      }
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalTokenGroupRules, groupTree]);
+  // 给每个分组返回"按时间维度的消耗 / 上限"
+  // mock：daily 用 totalTokens × 0.3，monthly 用 totalTokens 直接
+  const getGroupQuotaInfo = (g: { groupId: string; totalTokens: number }) => {
+    const limit = groupLimitMap.get(g.groupId);
+    const consumed = globalTokenTimeDim === "daily"
+      ? Math.round(g.totalTokens * 0.3)
+      : g.totalTokens;
+    if (limit === undefined) {
+      // 未配置策略 → 落入兜底：兜底无限制 ↔ globalLimit === null
+      if (IS_GLOBAL_UNLIMITED) return { unlimited: true, consumed, limit: null as number | null, pct: 0 };
+      const pct = globalLimit && globalLimit > 0 ? (consumed / globalLimit) * 100 : 0;
+      return { unlimited: false, consumed, limit: globalLimit, pct };
+    }
+    if (limit === "unlimited" || limit === -1) {
+      return { unlimited: true, consumed, limit: null as number | null, pct: 0 };
+    }
+    const num = Number(limit);
+    const pct = num > 0 ? (consumed / num) * 100 : 0;
+    return { unlimited: false, consumed, limit: num, pct };
+  };
+
+  const handleExportGroup = () => runExport(() => {
+    const header = "分组名称,总请求数,输入Tokens,输出Tokens,总Tokens";
+    const rows = groupStats.map((r) => `${r.groupName},${r.requests},${r.inputTokens},${r.outputTokens},${r.totalTokens}`);
+    return { blob: makeCsvBlob(header, rows), filename: `tokens_by_group_${effectiveFrom}_${effectiveTo}.csv` };
+  });
+
   return (
       <div className="page-enter">
         {/* Header */}
@@ -694,31 +1046,28 @@ export default function TokensMonitor() {
 
 
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
-        </div>
-
-        {/* 提示语区域 - 简化版本，第一行 + hover 显示详细文案 */}
-        <div className="flex items-center gap-2 mb-6">
-          <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
-          <UITooltip>
-            <UITooltipTrigger asChild>
-              <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
-                查看tokens统计规则
-              </button>
-            </UITooltipTrigger>
-            <UITooltipContent side="right" className="max-w-sm text-xs">
-              <div className="space-y-1.5">
-                <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
-                <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
-                <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
-                <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
-              </div>
-            </UITooltipContent>
-          </UITooltip>
-        </div>
-
-        <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
+                    查看tokens统计规则
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="right" className="max-w-sm text-xs">
+                  <div className="space-y-1.5">
+                    <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
+                    <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
+                    <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
+                    <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
+                  </div>
+                </UITooltipContent>
+              </UITooltip>
+            </div>
+          </div>
           {/* 时间范围筛选 + 刷新 */}
           <div className="flex items-center gap-2">
             <input
@@ -767,7 +1116,7 @@ export default function TokensMonitor() {
               <p className="text-xl font-bold text-gray-900">{stat.value}</p>
             </div>
           ))}
-          {/* 今日全局配额消耗（不随时间联动，放末尾） */}
+          {/* 全局配额消耗（按时间维度展示：今日/本月，不随上方时间筛选联动） */}
           <div className="bg-white rounded-2xl border border-gray-100 p-4"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
             <div className="flex items-center gap-2 mb-2">
@@ -775,24 +1124,39 @@ export default function TokensMonitor() {
                 <Zap className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="flex items-center gap-1">
-                <p className="text-xs text-gray-400">今日全局配额消耗</p>
+                <p className="text-xs text-gray-400">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <span className="cursor-default">
                       <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
                     </span>
                   </UITooltipTrigger>
-                  <UITooltipContent side="top" className="max-w-[240px] text-xs">
-                    {IS_GLOBAL_UNLIMITED ? "全局配额已设置为无限制，无需关注消耗占比" : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计和刷新"}
+                  <UITooltipContent side="top" className="max-w-[260px] text-xs">
+                    {IS_GLOBAL_BY_GROUP
+                      ? '全局 Tokens 上限已按分组进行设置，请在下方"按分组"Tab 查看具体分组的消耗'
+                      : IS_GLOBAL_UNLIMITED
+                        ? "全局配额已设置为无限制，无需关注消耗占比"
+                        : globalTokenTimeDim === "daily"
+                          ? "此处统计所有用户使用所有公司配置模型的总 Tokens 占每日全局 Tokens 上限的占比，按自然日统计，每天 0 点重置"
+                          : "此处统计所有用户使用所有公司配置模型的总 Tokens 占每月全局 Tokens 上限的占比，按自然月统计，每月 1 号 0 点重置"}
                   </UITooltipContent>
                 </UITooltip>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold text-gray-900">{TODAY_GLOBAL_PCT}%</p>
-              {IS_GLOBAL_UNLIMITED && <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>}
+              <p className="text-2xl font-bold text-gray-900">{IS_GLOBAL_BY_GROUP ? "0" : TODAY_GLOBAL_PCT}%</p>
+              {IS_GLOBAL_BY_GROUP ? (
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">按分组</span>
+              ) : IS_GLOBAL_UNLIMITED ? (
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>
+              ) : null}
             </div>
-            <ProgressBar value={TODAY_TOTAL_TOKENS} max={globalLimit} showTooltip isUnlimited={IS_GLOBAL_UNLIMITED} />
+            <ProgressBar
+              value={IS_GLOBAL_BY_GROUP ? 0 : TODAY_TOTAL_TOKENS}
+              max={IS_GLOBAL_BY_GROUP ? 1 : globalLimit}
+              showTooltip={!IS_GLOBAL_BY_GROUP}
+              isUnlimited={IS_GLOBAL_UNLIMITED && !IS_GLOBAL_BY_GROUP}
+            />
           </div>
         </div>
 
@@ -820,25 +1184,102 @@ export default function TokensMonitor() {
         </div>
 
         {/* Detail Tabs */}
-        <Tabs defaultValue="member">
-          <div className="flex items-center justify-between mb-4">
+        <Tabs defaultValue="instance">
+          <div className="flex items-center justify-between mb-2">
             <TabsList>
+              <TabsTrigger value="instance">按实例</TabsTrigger>
               <TabsTrigger value="member">按用户</TabsTrigger>
               <TabsTrigger value="model">按模型</TabsTrigger>
-              {hasOneid && <TabsTrigger value="department" className="relative pr-3">
-                按部门
-                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                </TabsTrigger>}
-              <TabsTrigger value="session" className="relative pr-3">
-                按会话
+              {hasOneid && <TabsTrigger value="department">按部门</TabsTrigger>}
+              <TabsTrigger value="group" className="relative pr-3">
+                按分组
                 <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
               </TabsTrigger>
+              <TabsTrigger value="session">按会话</TabsTrigger>
             </TabsList>
           </div>
 
+          {/* 按实例 */}
+          <TabsContent value="instance">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportInstance}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
+                    {hasOneid && <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">所属部门</th>}
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {instancePaged.length === 0 ? (
+                    <tr><td colSpan={hasOneid ? 7 : 6} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : instancePaged.map((inst) => (
+                    <tr key={inst.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <UITooltip>
+                              <UITooltipTrigger asChild>
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{inst.name}</div>
+                              </UITooltipTrigger>
+                              <UITooltipContent side="top" className="text-xs max-w-xs break-all">{inst.name}</UITooltipContent>
+                            </UITooltip>
+                            <div className="text-xs font-mono text-blue-500">{inst.instanceId}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{inst.creator || "—"}</td>
+                      {hasOneid && <td className="px-6 py-4 text-sm text-gray-500">{inst.department || "—"}</td>}
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.requests)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.inputTokens)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.outputTokens)}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(inst.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Pagination page={instancePage} total={instanceStats.length} onChange={setInstancePage} />
+            </div>
+          </TabsContent>
+
           {/* 按用户 */}
           <TabsContent value="member">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个用户使用所有模型的消耗，按总请求数降序排列</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportMember}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">
@@ -856,7 +1297,14 @@ export default function TokensMonitor() {
                     <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
                   ) : memberPaged.map((m) => (
                     <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-700">{m.id}</td>
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <UITooltip>
+                          <UITooltipTrigger asChild>
+                            <span className="text-sm text-gray-700 truncate block max-w-[180px]">{m.id}</span>
+                          </UITooltipTrigger>
+                          <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
+                        </UITooltip>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>
@@ -871,7 +1319,20 @@ export default function TokensMonitor() {
 
           {/* 按模型 */}
           <TabsContent value="model">
-            <p className="text-xs text-gray-400 mb-3">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总请求数降序排列</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
+              <UITooltip>
+                <UITooltipTrigger asChild>
+                  <button
+                    onClick={handleExportModel}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
+                </UITooltipTrigger>
+                <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+              </UITooltip>
+            </div>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
               <table className="w-full">
@@ -906,12 +1367,25 @@ export default function TokensMonitor() {
           {hasOneid && (
             <TabsContent value="department">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400">汇总各部门的 Token 消耗，按总 Token 降序排列</p>
-                <TokenDepartmentFilter
-                  departments={MOCK_DEPARTMENTS}
-                  value={deptFilter}
-                  onChange={(v) => { setDeptFilter(v); setDeptPage(1); }}
-                />
+                <p className="text-xs text-gray-400">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
+                <div className="flex items-center gap-2">
+                  <TokenDepartmentFilter
+                    departments={MOCK_DEPARTMENTS}
+                    value={deptFilter}
+                    onChange={(v) => { setDeptFilter(v); setDeptPage(1); }}
+                  />
+                  <UITooltip>
+                    <UITooltipTrigger asChild>
+                      <button
+                        onClick={handleExportDept}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    </UITooltipTrigger>
+                    <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                  </UITooltip>
+                </div>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
@@ -945,6 +1419,83 @@ export default function TokensMonitor() {
               </div>
             </TabsContent>
           )}
+
+          {/* 按分组 */}
+          <TabsContent value="group">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs text-gray-400">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
+              <div className="flex items-center gap-2">
+                <TokenGroupFilter
+                  groups={groupTree}
+                  value={groupFilter}
+                  onChange={(v) => { setGroupFilter(v); setGroupPage(1); }}
+                />
+                <UITooltip>
+                  <UITooltipTrigger asChild>
+                    <button
+                      onClick={handleExportGroup}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  </UITooltipTrigger>
+                  <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                </UITooltip>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-50 bg-gray-50/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+                    {IS_GLOBAL_BY_GROUP && (
+                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {groupPaged.length === 0 ? (
+                    <tr><td colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                  ) : groupPaged.map((g) => {
+                    const q = IS_GLOBAL_BY_GROUP ? getGroupQuotaInfo(g) : null;
+                    return (
+                      <tr key={g.groupId} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{g.groupName}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.requests)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</td>
+                        {IS_GLOBAL_BY_GROUP && q && (
+                          <td className="px-6 py-4 text-sm text-right">
+                            {q.unlimited ? (
+                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-md">无限制</span>
+                            ) : (
+                              <UITooltip>
+                                <UITooltipTrigger asChild>
+                                  <span className="cursor-default text-gray-900 font-medium tabular-nums">
+                                    {q.pct.toFixed(1)}%
+                                  </span>
+                                </UITooltipTrigger>
+                                <UITooltipContent side="top" className="text-xs">
+                                  {fmt(q.consumed)} / {q.limit !== null ? fmt(q.limit) : "—"}
+                                </UITooltipContent>
+                              </UITooltip>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <Pagination page={groupPage} total={groupStats.length} onChange={setGroupPage} />
+            </div>
+          </TabsContent>
 
           {/* 按会话 */}
           <TabsContent value="session">
@@ -1108,33 +1659,8 @@ export default function TokensMonitor() {
             )}
             {clsEnabled && (
               <>
-              {/* 提示语区域 - 参考私有网络和子网样式 */}
-              <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
-                <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                <ul className="text-xs text-blue-700 leading-relaxed space-y-1">
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>查看所选时间范围内的模型 Token 使用情况。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>因此页面展示的总 Token 数不等于等额的实际计费成本。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="shrink-0">•</span>
-                    <span>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</span>
-                  </li>
-                </ul>
-              </div>
-              {/* 顶部：关闭 CLS 按钮（右上角）+ Agent 搜索框（左下方）*/}
+
+              {/* 顶部：关闭 CLS 按钮（右上角）+ OpenClaw 搜索框（左下方）*/}
               <div className="flex items-start justify-between mb-6 gap-4">
                 {/* 左侧：Agent 名称筛选 */}
                 <div className="flex-1">
@@ -1165,6 +1691,17 @@ export default function TokensMonitor() {
               </div>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
+                <UITooltip>
+                  <UITooltipTrigger asChild>
+                    <button
+                      onClick={handleExportSession}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  </UITooltipTrigger>
+                  <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                </UITooltip>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>

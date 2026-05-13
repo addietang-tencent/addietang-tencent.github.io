@@ -5,10 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check, ShieldCheck } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check, ShieldCheck, Settings } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import JSZip from 'jszip';
 import { Skill, type SkillScope } from './types';
 import { DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
@@ -19,6 +20,8 @@ interface SkillUploadDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (skill: Skill) => void;
   existingSlugs?: string[];
+  defaultSecurityScan?: boolean;
+  onDefaultSecurityScanChange?: (value: boolean) => void;
 }
 
 interface UploadedFile {
@@ -155,7 +158,7 @@ const parseZipFile = async (file: File): Promise<{
   }
 };
 
-export default function SkillUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [] }: SkillUploadDialogProps) {
+export default function SkillUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [], defaultSecurityScan = true, onDefaultSecurityScanChange = () => {} }: SkillUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -175,7 +178,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
         groupIds: [],
       });
       setGroupSearchQuery('');
-      setEnableSecurityScan(true);
+      setEnableSecurityScan(defaultSecurityScan);
     }
     onOpenChange(newOpen);
   };
@@ -190,7 +193,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
     groupIds: [] as string[],
   });
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [enableSecurityScan, setEnableSecurityScan] = useState(true);
+  const [enableSecurityScan, setEnableSecurityScan] = useState(defaultSecurityScan);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -929,12 +932,50 @@ description: this is a skill creator.
                   className="mt-0.5"
                 />
                 <div className="flex-1">
-                  <label htmlFor="security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
-                    <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-                    提交安全检测
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
+                      <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                      提交安全检测
+                      <span className="relative group">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                          限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
+                        </span>
+                      </span>
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Settings className="w-3.5 h-3.5" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[280px] p-3" align="end" side="top">
+                        <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600">上传/更新时默认</span>
+                          <div className="flex items-center gap-2 ml-3 shrink-0">
+                            <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
+                            <Switch
+                              checked={defaultSecurityScan}
+                              onCheckedChange={(checked) => {
+                                onDefaultSecurityScanChange(checked);
+                                // 同步当前勾选状态
+                                setEnableSecurityScan(checked);
+                              }}
+                              className="scale-90"
+                            />
+                            <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                   <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                    开启后将由科恩实验室、云鼎实验室对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
+                    开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
                   </p>
                 </div>
               </div>

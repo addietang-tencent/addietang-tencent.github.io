@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2 } from "lucide-react";
+import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2, Clock, X } from "lucide-react";
 
 // Mock 数据 - Persona
 const mockPersona = `# 用户画像
@@ -166,6 +166,10 @@ interface MemoryPreviewProps {
   onStatusChange?: (newStatus: MemoryStatus) => Promise<void>;
   // 是否正在加载数据（首次进入时加载）
   isLoading?: boolean;
+  // [本期新增] 是否处于 Pro 免费体验期
+  isFreeTrial?: boolean;
+  // [本期新增] 免费体验预计结束时间（展示用字符串，如 "2026-06-30"）
+  freeTrialEndDate?: string;
 }
 
 // 记忆类型标签组件
@@ -192,6 +196,8 @@ export function MemoryPreview({
   proQuotaAvailable: _proQuotaAvailable = true,
   onStatusChange: _onStatusChange,
   isLoading = false,
+  isFreeTrial = false,
+  freeTrialEndDate,
 }: MemoryPreviewProps) {
   const [activeNav, setActiveNav] = useState<NavItem>('persona');
   const [recordFilter, setRecordFilter] = useState<'all' | 'fact' | 'preference' | 'event'>('all');
@@ -211,7 +217,22 @@ export function MemoryPreview({
   
   // 每页显示条数（固定为 10）
   const pageSize = 10;
-  
+
+  // 免费体验期提示条（仅 Pro 且 isFreeTrial=true 时展示）
+  const renderFreeTrialBanner = () => {
+    if (!isFreeTrial) return null;
+    return (
+      <div className="mb-4 px-4 py-2.5 rounded-lg bg-amber-50 border border-amber-100 flex items-center gap-2 text-xs text-amber-700">
+        <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+        <span className="leading-relaxed">
+          当前处于 Pro 免费体验期
+          {freeTrialEndDate && <> · 预计结束时间 <span className="font-medium">{freeTrialEndDate}</span></>}
+          。免费期结束后不会自动扣费，如需延续请在控制台确认转为付费。
+        </span>
+      </div>
+    );
+  };
+
   // 分页状态
   const [scenesPage, setScenesPage] = useState(1);
   const [recordsPage, setRecordsPage] = useState(1);
@@ -969,6 +990,9 @@ export function MemoryPreview({
           </div>
         </div>
       </div>
+
+      {/* [本期新增] 免费体验期提示条 */}
+      {renderFreeTrialBanner()}
 
       <div className="flex items-start flex-1 min-h-0">
         <ProNavigation />

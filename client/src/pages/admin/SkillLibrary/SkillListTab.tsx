@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -139,6 +141,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   // 安全检测确认弹窗
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
   const [securityScanSkillId, setSecurityScanSkillId] = useState<string | null>(null);
+  // 默认行为设置
+  const [defaultSecurityScan, setDefaultSecurityScan] = useState<boolean>(() => {
+    const saved = localStorage.getItem('skill_default_security_scan');
+    return saved !== null ? saved === 'true' : true;
+  });
   // 应用范围筛选：含 'public'=全部用户, 含 'grp-xxx'=特定分组（多选）
   // 空 Set = 未选任何范围（按钮显示"选择应用范围"）；全选时包含 public + 所有 groupId
   const allScopeKeys = useMemo(() => ['public', ...MOCK_GROUPS.map(g => g.id)], []);
@@ -393,10 +400,8 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       ];
 
       const dims = result === 'safe' ? safeDims : result === 'suspicious' ? suspiciousDims : maliciousDims;
-      const score1 = result === 'safe' ? 92 : result === 'suspicious' ? 90 : 88;
-      const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
-      const engine1Status = 'safe' as const;
-      const engine2Status = result as 'safe' | 'suspicious' | 'malicious';
+      const score = result === 'safe' ? 92 : result === 'suspicious' ? 55 : 15;
+      const engineStatus = result as 'safe' | 'suspicious' | 'malicious';
 
       setSkills(prev => prev.map(s =>
         s.id === targetId && s.securityInfo?.overallStatus === 'scanning'
@@ -406,8 +411,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
                 overallStatus: result,
                 contentHash: Math.random().toString(36).slice(2, 18),
                 engines: [
-                  { engineName: '科恩实验室', status: engine1Status, reportUrl: '#', score: score1, dimensions: safeDims },
-                  { engineName: '云鼎实验室', status: engine2Status, reportUrl: '#', score: score2, dimensions: dims },
+                  { engineName: '腾讯云 AI Agent 安全', status: engineStatus, reportUrl: '#', score, dimensions: dims },
                 ],
               },
             }
@@ -794,9 +798,11 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             </button>
           </div>
 
-          <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-            + 发布 Skill
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+              + 发布 Skill
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1418,6 +1424,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         onOpenChange={setUploadDialogOpen}
         onConfirm={handleUploadSkill}
         existingSlugs={skills.map(s => s.slug)}
+        defaultSecurityScan={defaultSecurityScan}
+        onDefaultSecurityScanChange={(value) => {
+          setDefaultSecurityScan(value);
+          localStorage.setItem('skill_default_security_scan', String(value));
+          toast.success('默认行为已保存');
+        }}
       />
 
       {distributeSkillId && (
@@ -1446,6 +1458,12 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
             }}
             skill={updateSkill}
             onConfirm={handleSkillUpdated}
+            defaultSecurityScan={defaultSecurityScan}
+            onDefaultSecurityScanChange={(value) => {
+              setDefaultSecurityScan(value);
+              localStorage.setItem('skill_default_security_scan', String(value));
+              toast.success('默认行为已保存');
+            }}
           />
         ) : null;
       })()}
@@ -1517,9 +1535,17 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
       <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
         <AlertDialogContent className="sm:max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>提交安全检测</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              提交安全检测
+              <span className="relative group">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
+                </span>
+              </span>
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              确认对技能「{securityScanSkillId ? skills.find(s => s.id === securityScanSkillId)?.name : ''}」提交安全检测？检测将由科恩实验室、云鼎实验室进行，通常几分钟内完成。
+              确认对技能「{securityScanSkillId ? skills.find(s => s.id === securityScanSkillId)?.name : ''}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

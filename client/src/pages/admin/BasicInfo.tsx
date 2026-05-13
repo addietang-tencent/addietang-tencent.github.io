@@ -42,60 +42,62 @@ const MOCK_STEP_STATUS: Record<number, boolean> = {
   3: false, // 导入企业用户 — 未完成
   4: true,  // 配置模型 — 已完成
   5: false, // 配置通道 — 未完成
-  6: false, // 配置网络和安全组 — 未完成
+  6: true,  // 配置镜像 — 已完成（默认有公共镜像）
+  7: true,  // 配置私有网络 — 已完成（默认有预设VPC）
+  8: false, // 配置安全组 — 未完成
 };
 
 // ─── 产品动态 Mock 数据 ───────────────────────────────────────────────────────
 
 const PRODUCT_UPDATES = [
   {
-    version: "v2.4.0",
+    version: "",
     date: "2026-03-28",
     type: "feature" as const,
+    title: "内置大模型支持多模态",
+    summary: "内置大模型现已支持文本与图片解析，提升对话理解能力。自定义模型暂不支持多模态。",
+  },
+  {
+    version: "",
+    date: "2026-03-15",
+    type: "feature" as const,
     title: "记忆管理功能上线",
-    summary: "支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力，管理员可在后台统一管理企业内所有用户的记忆数据，包括查看、导出和批量清理，同时支持按部门维度设置记忆容量配额。",
+    summary: '记忆管理功能直击"失忆"助理痛点，让 AI Agent记住你、理解你，更有企业级记忆增强版孵化中。',
   },
   {
-    version: "v2.3.0",
-    date: "2026-03-10",
-    type: "feature" as const,
-    title: "模型配置支持设置默认模型",
-    summary: "管理员可在模型列表中指定一个默认模型，新建 Agent 实例时自动预填。",
-  },
-  {
-    version: "v2.2.1",
-    date: "2026-02-25",
+    version: "",
+    date: "2026-03-01",
     type: "improvement" as const,
-    title: "通道配置体验优化",
-    summary: "自定义通道新增凭证字段管理，支持多字段动态配置，降低接入成本。",
+    title: "模型支持设为默认",
+    summary: "管理员可在模型配置页将模型设为默认，用户端新建 OpenClaw 时直接应用，无需手动添加。",
   },
   {
-    version: "v2.2.0",
-    date: "2026-02-10",
+    version: "",
+    date: "2026-02-15",
     type: "feature" as const,
-    title: "技能库新增公共技能包分发",
-    summary: "管理员可将企业技能包一键分发给指定用户或全体成员，支持批量操作。",
+    title: "公共技能库上线",
+    summary: "管控端支持在技能配置页直接浏览上万个精选公共技能，自由挑选市场上的优质技能为龙虾赋能。",
   },
   {
-    version: "v2.1.2",
-    date: "2026-01-22",
-    type: "improvement" as const,
-    title: "用户管理体验优化",
-    summary: "批量导入用户支持预览和校验，导入失败时提供详细错误提示，降低操作成本。",
-  },
-  {
-    version: "v2.1.0",
-    date: "2026-01-08",
+    version: "",
+    date: "2026-02-01",
     type: "feature" as const,
-    title: "平台策略新增 Tokens 用量统计",
-    summary: "管理员可在平台策略页查看全平台及各用户的 Tokens 消耗趋势，便于资源管控。",
+    title: "初始技能包上线，搭配免费 50G 存储",
+    summary: "管理员可在技能配置页自由配置初始技能包并加入专有存储空间，OpenClaw 创建时极速下载预装技能。",
   },
   {
-    version: "v2.0.0",
+    version: "",
+    date: "2026-01-15",
+    type: "feature" as const,
+    title: "ClawPro 新增法兰克福地域",
+    summary: "ClawPro 法兰克福地域上线，支持欧洲区域就近部署（仅后端支持）。",
+  },
+  {
+    version: "",
     date: "2025-12-20",
-    type: "feature" as const,
-    title: "通道配置支持自定义通道接入",
-    summary: "新增自定义通道类型，支持企业自有 IM 系统通过 Webhook 方式接入 Agent。",
+    type: "improvement" as const,
+    title: "所有用户默认共用 1 个私有网络",
+    summary: "企业内所有用户统一使用平台自动分配的 1 个 VPC，建议将安全组规则设置为内网不互通，以实现 OpenClaw 云服务器间隔离。",
   },
 ];
 
@@ -490,17 +492,20 @@ export default function BasicInfo() {
             step={4}
             done={MOCK_STEP_STATUS[4]}
             title="配置至少一个模型"
-            description="为用户端配置至少一个可用的 AI 模型，用户在创建 Agent 时将从已配置的模型中选择"
+            description="为用户端配置至少一个全部用户可见的 AI 模型，用户创建 OpenClaw 时将从中选择"
           >
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/admin/model-config")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
-            >
-              前往模型配置
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
+            <div className="space-y-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/admin/model-config")}
+                className="text-xs flex items-center gap-1.5 text-gray-600"
+              >
+                前往模型配置
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+            </div>
           </StepCard>
 
           {/* 步骤 5：配置通道 */}
@@ -508,25 +513,70 @@ export default function BasicInfo() {
             step={5}
             done={MOCK_STEP_STATUS[5]}
             title="配置至少一个通道"
-            description="通道决定用户可以通过哪些聊天软件（企业微信、飞书、钉钉等）与 Agent 对话，至少配置一个"
+            description="为用户端配置至少一个全部用户启用的通道，用户创建 OpenClaw 时可选择对话平台"
           >
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/admin/channel-config")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
-            >
-              前往通道配置
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
+            <div className="space-y-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/admin/channel-config")}
+                className="text-xs flex items-center gap-1.5 text-gray-600"
+              >
+                前往通道配置
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+            </div>
           </StepCard>
 
-          {/* 步骤 6：配置安全组 */}
+          {/* 步骤 6：配置镜像 */}
           <StepCard
             step={6}
             done={MOCK_STEP_STATUS[6]}
+            title="配置至少一个镜像"
+            description="为用户端配置至少一个全部用户启用的镜像，系统默认已启用公共镜像"
+          >
+            <div className="space-y-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/admin/image-management")}
+                className="text-xs flex items-center gap-1.5 text-gray-600"
+              >
+                前往镜像管理
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+            </div>
+          </StepCard>
+
+          {/* 步骤 7：配置私有网络 */}
+          <StepCard
+            step={7}
+            done={MOCK_STEP_STATUS[7]}
+            title="配置私有网络"
+            description="配置私有网络的预设策略，系统默认已创建一个预设 VPC"
+          >
+            <div className="space-y-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/admin/security-group?tab=vpc")}
+                className="text-xs flex items-center gap-1.5 text-gray-600"
+              >
+                前往私有网络管理
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+            </div>
+          </StepCard>
+
+          {/* 步骤 8：配置安全组 */}
+          <StepCard
+            step={8}
+            done={MOCK_STEP_STATUS[8]}
             title="配置安全组"
-            description="为 Agent 云设备配置安全组规则，确保访问安全"
+            description="为 OpenClaw 云设备配置安全组规则，确保访问安全"
           >
             <Button
               size="sm"
@@ -603,7 +653,7 @@ export default function BasicInfo() {
           {/* 产品动态 */}
           <div
             className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", minHeight: "1125px" }}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
             <div className="space-y-2.5">

@@ -2,7 +2,7 @@
  * AgentList - 管控端 Agent 列表页
  * 4 个模块：状态统计卡片、状态列+列头筛选、操作列、监控抽屉面板
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -41,13 +51,26 @@ import {
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
-  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info
+  MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
+  Pencil, Plus,
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { MOCK_DEPARTMENTS, MOCK_CLAWS_WITH_DEPT, type DepartmentNode } from "@/lib/mockData";
+import { CHANNEL_OPTIONS, type ChannelConfig } from "@/lib/agentConfigConstants";
+import { useAdminModels, CUSTOM_PROVIDER_VALUE, type ModelRow } from "@/lib/modelConfigStore";
+import {
+  loadBuiltinChannelVisibility,
+  loadVisibleCustomChannels,
+  onBuiltinChannelVisibilityChange,
+  onCustomChannelsChange,
+  type CustomChannel as AdminCustomChannel,
+} from "@/lib/customChannelStore";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
+import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -94,6 +117,13 @@ const STATUS_CONFIG: Record<ClawStatus, {
 
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
 
+// Agent 类型显示名称映射
+const AGENT_TYPE_DISPLAY: Record<string, string> = {
+  'OpenClaw':    'OpenClaw',
+  'Hermes':      'Hermes Agent',
+  'LightclawACE': 'LightClaw ACE',
+};
+
 const MOCK_CLAWS: Claw[] = [
   { id: "1",  instanceId: "ins-g71c6vud", name: "Alice的技术助手", tags: [{ key: "所属产品", value: "gpulab" }, { key: "env", value: "production" }],    creator: "alice@acompany.com",  createTime: "2025-12-01 09:12:34", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "2",  instanceId: "ins-h92d7xwe", name: "Bob工作助手",       creator: "bob@acompany.com",    createTime: "2025-12-15 14:05:22", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
@@ -117,9 +147,246 @@ const MOCK_CLAWS: Claw[] = [
   { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  { id: "23", instanceId: "ins-d14y8szp", name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "longname-user@very-long-domain-example.com", createTime: "2026-05-01 09:00:00", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
+  { id: "24", instanceId: "ins-e25z9taq", name: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", createTime: "2026-05-02 10:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
 ];
 
 const PAGE_SIZE = 10;
+
+// ─── 分组相关工具函数 ─────────────────────────────────────────────────────
+
+/** 获取分组的完整路径（如 "产品组" 或 "研发组 / 前端"） */
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.join(" / ");
+}
+
+/** 按 source 分桶标题 */
+const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
+  "oneid-dept": "部门",
+  "oneid-group": "自定义分组",
+  manual: "自定义分组",
+};
+
+/** 获取某 agent creator 对应的分组信息（OneID 模式，只返回一个） */
+function getCreatorGroupItemOneid(creator: string): { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null {
+  const user = MOCK_USERS.find((u) => u.userId === creator);
+  if (!user) return null;
+  // 优先取 oneid-group（自定义分组），其次取 oneid-dept（部门）
+  let deptItem: { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null = null;
+  for (const gid of user.groupIds) {
+    const g = MOCK_GROUPS.find((g) => g.id === gid);
+    if (!g) continue;
+    if (g.source === "oneid-group") {
+      return { id: gid, path: getGroupPath(gid, MOCK_GROUPS), kind: "oneid-group" };
+    }
+    if (g.source === "oneid-dept" && !deptItem) {
+      deptItem = { id: gid, path: getGroupPath(gid, MOCK_GROUPS), kind: "oneid-dept" };
+    }
+  }
+  return deptItem;
+}
+
+/** 获取某 agent creator 对应的分组信息（普通模式，只返回一个） */
+function getCreatorGroupItemManual(creator: string): { id: string; path: string } | null {
+  const user = MOCK_USERS_MANUAL.find((u) => u.userId === creator);
+  if (!user || user.groupIds.length === 0) return null;
+  const gid = user.groupIds[0];
+  return { id: gid, path: getGroupPath(gid, MOCK_MANUAL_GROUPS) };
+}
+
+/** 获取某 agent creator 所属的所有分组 id（含子孙逻辑：选中某分组时，其用户应该被命中） */
+function getCreatorAllGroupIds(creator: string, hasOneid: boolean): string[] {
+  if (hasOneid) {
+    const user = MOCK_USERS.find((u) => u.userId === creator);
+    return user ? user.groupIds : [];
+  } else {
+    const user = MOCK_USERS_MANUAL.find((u) => u.userId === creator);
+    return user ? user.groupIds : [];
+  }
+}
+
+/** 获取节点及其所有子孙 ID */
+function getGroupDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getGroupDescendantIds(c)));
+  return ids;
+}
+
+// ─── 分组筛选树节点（递归） ──────────────────────────────────────────────
+function GroupTreeNodeItem({
+  node, level, selected, expanded, onToggle, onSelect,
+}: {
+  node: GroupTreeNode; level: number; selected: string;
+  expanded: Set<string>; onToggle: (id: string) => void; onSelect: (id: string) => void;
+}) {
+  const hasChildren = node.children && node.children.length > 0;
+  const isExpanded = expanded.has(node.id);
+  const isSelected = selected === node.id;
+
+  return (
+    <div>
+      <div
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+        }`}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
+            {isExpanded
+              ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+          </button>
+        ) : (
+          <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+          </span>
+        )}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+      </div>
+      {hasChildren && isExpanded && node.children.map((child) => (
+        <GroupTreeNodeItem key={child.id} node={child} level={level + 1}
+          selected={selected} expanded={expanded} onToggle={onToggle} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+// ─── 分组筛选弹出框 ─────────────────────────────────────────────────────
+function InstanceGroupFilter({
+  groups, value, onChange, hasOneid,
+}: {
+  groups: UserGroup[]; value: string; onChange: (v: string) => void; hasOneid: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => { if (open) { setTempValue(value); setSearchQuery(""); } }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  // 按 source 分桶构建树
+  const { activeSources, treesMap } = useMemo(() => {
+    if (hasOneid) {
+      const buckets: Record<string, UserGroup[]> = { "oneid-dept": [], "oneid-group": [] };
+      groups.forEach((g) => { if (buckets[g.source]) buckets[g.source].push(g); });
+      const order: GroupSource[] = ["oneid-dept", "oneid-group"];
+      const active = order.filter((s) => (buckets[s] || []).length > 0);
+      const tMap: Record<string, GroupTreeNode[]> = {};
+      active.forEach((s) => { tMap[s] = buildGroupTree(buckets[s]); });
+      return { activeSources: active, treesMap: tMap };
+    } else {
+      const trees = buildGroupTree(groups);
+      return { activeSources: ["manual" as GroupSource], treesMap: { manual: trees } };
+    }
+  }, [groups, hasOneid]);
+
+  // 搜索过滤
+  const matchedIds = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    return new Set(
+      groups.filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q)).map((g) => g.id)
+    );
+  }, [searchQuery, groups]);
+
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedIds) return true;
+    if (matchedIds.has(node.id)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  // 找到选中节点名称
+  const selectedGroup = tempValue ? groups.find((g) => g.id === tempValue) : undefined;
+  const triggerGroup = value ? groups.find((g) => g.id === value) : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
+            triggerGroup ? "text-foreground" : "text-muted-foreground"
+          }`}>
+          <span className="truncate">{triggerGroup?.name || "全部分组"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        {/* 搜索 */}
+        <div className="px-3 pt-3 pb-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索分组"
+              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+        </div>
+        <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+          {/* 全部分组 */}
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          }`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {/* 按 source 分区展示 */}
+          {activeSources.map((source) => (
+            <div key={source}>
+              {hasOneid && (
+                <div className="px-2 pt-3 pb-1">
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {GROUP_SOURCE_LABELS[source]}
+                  </span>
+                </div>
+              )}
+              {(treesMap[source] || []).map((root) =>
+                isNodeVisible(root) ? (
+                  <GroupTreeNodeItem key={root.id} node={root} level={0}
+                    selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+                ) : null
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 text-xs text-gray-500 truncate">
+            {selectedGroup ? getGroupPath(selectedGroup.id, groups) : "全部分组"}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+              onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 // ─── 部门树节点（递归）──────────────────────────────────────────────────────
 function InstanceDepartmentTreeNode({
@@ -250,27 +517,228 @@ function InstanceDepartmentFilter({
   );
 }
 
+// ─── 部门列头筛选面板 ─────────────────────────────────────────────────────
+function DepartmentColumnFilter({
+  departments, value, onConfirm, onCancel,
+}: {
+  departments: DepartmentNode[]; value: string; onConfirm: (v: string) => void; onCancel: () => void;
+}) {
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const isNodeVisible = (node: DepartmentNode): boolean => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    if (node.name.toLowerCase().includes(q)) return true;
+    return (node.children || []).some(isNodeVisible);
+  };
+
+  const renderNode = (node: DepartmentNode, level: number) => {
+    if (!isNodeVisible(node)) return null;
+    const hasChildren = node.children && node.children.length > 0;
+    const isExpanded = expanded.has(node.id);
+    const isSelected = tempValue === node.id;
+    return (
+      <div key={node.id}>
+        <div
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
+          style={{ paddingLeft: `${level * 16 + 8}px` }}
+          onClick={() => setTempValue(node.id)}
+        >
+          {hasChildren ? (
+            <button className="w-4 h-4 flex items-center justify-center flex-shrink-0" onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}>
+              {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+            </button>
+          ) : (
+            <span className="w-4 h-4 flex items-center justify-center flex-shrink-0"><span className="w-1.5 h-1.5 rounded-full bg-gray-300" /></span>
+          )}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        </div>
+        {hasChildren && isExpanded && node.children!.map((child) => renderNode(child, level + 1))}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索部门"
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+      </div>
+      <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+        </div>
+        {departments.map((d) => renderNode(d, 0))}
+      </div>
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+      </div>
+    </>
+  );
+}
+
+// ─── 分组列头筛选面板 ─────────────────────────────────────────────────────
+function GroupColumnFilter({
+  groups, value, hasOneid, onConfirm, onCancel,
+}: {
+  groups: UserGroup[]; value: string; hasOneid: boolean; onConfirm: (v: string) => void; onCancel: () => void;
+}) {
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const toggleExpand = (id: string) => {
+    setExpanded((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+
+  const { activeSources, treesMap } = useMemo(() => {
+    if (hasOneid) {
+      const buckets: Record<string, UserGroup[]> = { "oneid-dept": [], "oneid-group": [] };
+      groups.forEach((g) => { if (buckets[g.source]) buckets[g.source].push(g); });
+      const order: GroupSource[] = ["oneid-dept", "oneid-group"];
+      const active = order.filter((s) => (buckets[s] || []).length > 0);
+      const tMap: Record<string, GroupTreeNode[]> = {};
+      active.forEach((s) => { tMap[s] = buildGroupTree(buckets[s]); });
+      return { activeSources: active, treesMap: tMap };
+    } else {
+      const trees = buildGroupTree(groups);
+      return { activeSources: ["manual" as GroupSource], treesMap: { manual: trees } };
+    }
+  }, [groups, hasOneid]);
+
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    if (node.name.toLowerCase().includes(q)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  return (
+    <>
+      <div className="px-3 pt-3 pb-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索分组"
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        </div>
+      </div>
+      <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+        </div>
+        {activeSources.map((source) => (
+          <div key={source}>
+            {hasOneid && (
+              <div className="px-2 pt-3 pb-1">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {GROUP_SOURCE_LABELS[source]}
+                </span>
+              </div>
+            )}
+            {(treesMap[source] || []).map((root) =>
+              isNodeVisible(root) ? (
+                <GroupTreeNodeItem key={root.id} node={root} level={0}
+                  selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
+              ) : null
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+      </div>
+    </>
+  );
+}
+
 export default function AgentMonitor() {
   const [, setLocation] = useLocation();
   const { hasOneid } = useAdminMode();
-  const [claws, setClaws] = useState<Claw[]>(
-    [...(hasOneid ? (MOCK_CLAWS_WITH_DEPT as Claw[]) : MOCK_CLAWS)].sort((a, b) => b.createTime.localeCompare(a.createTime))
-  );
+  const [claws, setClaws] = useState<Claw[]>(() => {
+    if (hasOneid) {
+      // MOCK_CLAWS_WITH_DEPT 缺少 agentType/version/pluginVersions/tags，从 MOCK_CLAWS 补充
+      const clawMap = new Map(MOCK_CLAWS.map((c) => [c.id, c]));
+      return (MOCK_CLAWS_WITH_DEPT as any[]).map((d) => {
+        const base = clawMap.get(d.id);
+        return {
+          ...d,
+          agentType: base?.agentType ?? "OpenClaw",
+          version: base?.version ?? "2026.3.28",
+          pluginVersions: base?.pluginVersions ?? DEFAULT_PLUGIN_VERSIONS,
+          tags: base?.tags,
+        } as Claw;
+      }).sort((a, b) => b.createTime.localeCompare(a.createTime));
+    }
+    return [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime));
+  });
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState("");
+  const [groupFilter, setGroupFilter] = useState("");
+  const ALL_AGENT_TYPES = Object.keys(AGENT_TYPE_DISPLAY);
+  const [agentTypeFilter, setAgentTypeFilter] = useState<Set<string>>(new Set(ALL_AGENT_TYPES));
+
+  // 列头筛选弹窗状态
+  const [deptColFilterOpen, setDeptColFilterOpen] = useState(false);
+  const [groupColFilterOpen, setGroupColFilterOpen] = useState(false);
+  const [typeColFilterOpen, setTypeColFilterOpen] = useState(false);
+  const [tempTypeFilter, setTempTypeFilter] = useState<Set<string>>(new Set());
 
   // 状态卡片筛选
   const [activeCardFilter, setActiveCardFilter] = useState<"all" | "running" | "shutdown" | "other">("all");
 
   // 状态列筛选
+  const ALL_STATUSES: ClawStatus[] = ["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"];
   const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set());
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set(ALL_STATUSES));
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [filterPosition, setFilterPosition] = useState<{ top: number; left: number } | null>(null);
+
+  // 表格横向滚动检测
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const [isTableScrolled, setIsTableScrolled] = useState(false);
+  useEffect(() => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    // 给 flex 父容器加 min-width:0 防止 table 撑开页面
+    let parent = el.parentElement;
+    while (parent) {
+      const style = getComputedStyle(parent);
+      if (style.display === 'flex' || style.display === 'inline-flex') {
+        // 给 flex 容器的子元素（main）加约束
+        const children = parent.children;
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i] as HTMLElement;
+          if (child.tagName === 'MAIN' || getComputedStyle(child).flex !== '0 1 auto') {
+            child.style.minWidth = '0';
+            child.style.overflow = 'hidden';
+          }
+        }
+        break;
+      }
+      parent = parent.parentElement;
+    }
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   // 操作对话框
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -282,6 +750,9 @@ export default function AgentMonitor() {
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
+  // 批量升级失败结果弹窗
+  const [showUpgradeResultDialog, setShowUpgradeResultDialog] = useState(false);
+  const [upgradeFailedAgents, setUpgradeFailedAgents] = useState<{ name: string; instanceId: string; agentType: string; reason: string }[]>([]);
 
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
@@ -337,12 +808,55 @@ export default function AgentMonitor() {
     });
   };
 
+  // agentType 映射：Claw 中的 agentType → ImageManagement 中的 agentType
+  const CLAW_TO_IMAGE_AGENT_TYPE: Record<string, string> = {
+    'OpenClaw':    'OpenClaw',
+    'Hermes':      'HermesAgent',
+    'LightclawACE': 'LightClawACE',
+  };
   const confirmBatchUpgrade = () => {
     const ids = Array.from(selectedIds);
-    setClaws(prev => prev.map(c => ids.includes(c.id) ? { ...c, status: "upgrading" as ClawStatus } : c));
-    setSelectedIds(new Set());
+    const selectedClaws = claws.filter(c => ids.includes(c.id));
+    // 读取镜像管理中的生效镜像（若 localStorage 为空，使用默认公共镜像，全部生效）
+    let images: { agentType: string; active: boolean }[] = [];
+    try {
+      const raw = localStorage.getItem('admin_images');
+      if (raw) {
+        images = JSON.parse(raw);
+      } else {
+        // 默认公共镜像全部生效
+        images = [
+          { agentType: 'OpenClaw',    active: true },
+          { agentType: 'HermesAgent', active: true },
+          { agentType: 'LightClawACE', active: true },
+        ];
+      }
+    } catch { /* ignore */ }
+    // 统计每种 agentType 是否有生效镜像
+    const activeImageTypes = new Set(images.filter(i => i.active).map(i => i.agentType));
+    // 分组：可升级 vs 无法升级
+    const failed: { name: string; instanceId: string; agentType: string; reason: string }[] = [];
+    const upgradableIds: string[] = [];
+    for (const c of selectedClaws) {
+      const imageAgentType = CLAW_TO_IMAGE_AGENT_TYPE[c.agentType] ?? c.agentType;
+      if (!activeImageTypes.has(imageAgentType)) {
+        failed.push({ name: c.name, instanceId: c.instanceId, agentType: c.agentType, reason: `当前没有生效的 ${c.agentType} 镜像，以下 agent 无法升级` });
+      } else {
+        upgradableIds.push(c.id);
+      }
+    }
     setShowBatchUpgradeDialog(false);
-    toast.success(`已开始升级 ${ids.length} 个实例`);
+    if (failed.length > 0) {
+      setUpgradeFailedAgents(failed);
+      setShowUpgradeResultDialog(true);
+    }
+    if (upgradableIds.length > 0) {
+      setClaws(prev => prev.map(c => upgradableIds.includes(c.id) ? { ...c, status: 'upgrading' as ClawStatus } : c));
+      setSelectedIds(new Set());
+      toast.success(`已开始升级 ${upgradableIds.length} 个实例`);
+    } else if (failed.length === 0) {
+      setSelectedIds(new Set());
+    }
   };
 
   // 详情抽屉
@@ -460,7 +974,35 @@ export default function AgentMonitor() {
     return c.departmentId ? allowedIds.includes(c.departmentId) : false;
   }) : searchFiltered;
 
-  const cardFiltered = deptFiltered.filter((c) => {
+  // 分组筛选
+  const groupFiltered = deptFiltered.filter((c) => {
+    if (!groupFilter) return true;
+    const currentGroups = hasOneid ? MOCK_GROUPS : MOCK_MANUAL_GROUPS;
+    const trees = buildGroupTree(currentGroups);
+    // 找到选中分组节点及其所有子孙 id
+    const findNode = (nodes: GroupTreeNode[], id: string): GroupTreeNode | null => {
+      for (const n of nodes) {
+        if (n.id === id) return n;
+        const hit = findNode(n.children, id);
+        if (hit) return hit;
+      }
+      return null;
+    };
+    const targetNode = findNode(trees, groupFilter);
+    if (!targetNode) return true;
+    const allowedGroupIds = new Set(getGroupDescendantIds(targetNode));
+    // 检查 agent 创建者是否属于这些分组
+    const creatorGroupIds = getCreatorAllGroupIds(c.creator, hasOneid);
+    return creatorGroupIds.some((gid) => allowedGroupIds.has(gid));
+  });
+
+  // Agent 类型筛选
+  const typeFiltered = groupFiltered.filter((c) => {
+    if (agentTypeFilter.size === 0 || agentTypeFilter.size === ALL_AGENT_TYPES.length) return true;
+    return agentTypeFilter.has(c.agentType);
+  });
+
+  const cardFiltered = typeFiltered.filter((c) => {
     switch (activeCardFilter) {
       case "running": return c.status === "running";
       case "shutdown": return c.status === "shutdown";
@@ -470,7 +1012,7 @@ export default function AgentMonitor() {
   });
 
   const statusFiltered = cardFiltered.filter((c) => {
-    if (selectedStatuses.size === 0) return true;
+    if (selectedStatuses.size === 0 || selectedStatuses.size === ALL_STATUSES.length) return true;
     return selectedStatuses.has(c.status);
   });
 
@@ -496,12 +1038,13 @@ export default function AgentMonitor() {
   const hasNonRunning = selectedClaws.some(c => !isUpgradable(c));
   const hasNonAgent = selectedClaws.some(c => c.agentType !== 'OpenClaw');
   const batchDisabled = selectedCount === 0 || selectedCount > 20 || hasNonRunning || hasNonAgent;
+  const batchDeleteDisabled = selectedCount === 0;
   const batchTooltip = selectedCount === 0
     ? '请先选择实例'
     : selectedCount > 20
     ? '批量更新数量不可大丠20'
     : hasNonAgent
-    ? '仅Agent支持更新'
+    ? '仅OpenClaw支持更新'
     : hasNonRunning
     ? '仅运行中的实例支持更新'
     : '';
@@ -558,19 +1101,94 @@ export default function AgentMonitor() {
     toast.success(`已删除 ${claw?.name}`);
   };
 
-  // 详情抽屉模拟数据
+  // ── Agent 详情抽屉数据（可编辑） ─────────────────────────────────────────
+  // 每个 claw 一份独立详情，编辑后保留在内存（管控端 demo 不持久化）。
+
+  /** 已接入通道：除了基本展示字段，还保留一份凭证录入值 */
+  interface ConnectedChannel {
+    /** 通道展示名，与 CHANNEL_OPTIONS.label 对应，作为唯一标识 */
+    name: string;
+    /** 通道 value（CHANNEL_OPTIONS.value），便于反查 fields 定义 */
+    value: string;
+    /** 凭证字段值：按 ChannelField.key 存储 */
+    fieldValues: Record<string, string>;
+    bots: string[];
+  }
+
+  /**
+   * 单条已应用模型：对应"模型配置"页中的一条记录。
+   * - modelConfigId：关联管控端模型表 id；被删除/隐藏时按 Q3(c) 完全无感处理，仍用冗余字段展示
+   * - providerLabel / versionLabel：展示态冗余，避免管控端模型变更后失去展示文案
+   * - isCustom：是否自定义模型（展示"自定义模型"一级文案 + 小字为模型名）
+   * - primary：是否主模型；整个列表至多一条 primary=true
+   */
+  interface AppliedModelItem {
+    id: number;
+    modelConfigId: string;
+    providerLabel: string;
+    versionLabel: string;
+    isCustom: boolean;
+    primary: boolean;
+    addedAt: number;
+  }
+
   interface ClawDetail {
-    appliedModel: string;
-    appliedModelVersion: string;
-    connectedChannels: { name: string; bots: string[] }[];
+    /** 已应用模型列表：可能为空（无模型）、只主、主+备 */
+    appliedModels: AppliedModelItem[];
+    /** 已接入通道列表 */
+    connectedChannels: ConnectedChannel[];
     installedSkills: string[];
   }
-  const getClawDetail = (_clawId: string): ClawDetail => {
+
+  /** 基于 clawId 稳定分布，模拟三种场景：hash%3 → 0=空 / 1=只主 / 2=主+备 */
+  const hashClawId = (s: string): number => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  };
+
+  const buildDefaultClawDetail = (clawId: string): ClawDetail => {
+    const scenario = hashClawId(clawId) % 3;
+    const baseTs = Date.now();
+    const appliedModels: AppliedModelItem[] =
+      scenario === 0
+        ? []
+        : scenario === 1
+        ? [
+            {
+              id: 1,
+              modelConfigId: "1",
+              providerLabel: "腾讯云 DeepSeek",
+              versionLabel: "DeepSeek V3 0324",
+              isCustom: false,
+              primary: true,
+              addedAt: baseTs,
+            },
+          ]
+        : [
+            {
+              id: 1,
+              modelConfigId: "1",
+              providerLabel: "腾讯云 DeepSeek",
+              versionLabel: "DeepSeek V3 0324",
+              isCustom: false,
+              primary: true,
+              addedAt: baseTs,
+            },
+            {
+              id: 2,
+              modelConfigId: "2",
+              providerLabel: "腾讯混元",
+              versionLabel: "Hunyuan Turbo",
+              isCustom: false,
+              primary: false,
+              addedAt: baseTs - 60_000,
+            },
+          ];
     return {
-      appliedModel: "tencentcodingplan",
-      appliedModelVersion: "minimax-m2.5",
+      appliedModels,
       connectedChannels: [
-        { name: "飞书", bots: [] },
+        { name: "飞书", value: "feishu", fieldValues: { appId: "cli_a1b2c3", appSecret: "fsk_xxxxxx" }, bots: [] },
       ],
       installedSkills: [
         "feishu-doc", "feishu-drive", "feishu-perm", "feishu-wiki",
@@ -579,9 +1197,483 @@ export default function AgentMonitor() {
     };
   };
 
+  const [clawDetailMap, setClawDetailMap] = useState<Record<string, ClawDetail>>({});
+
+  /** 读取某个 claw 的详情（不存在则按 clawId hash 生成默认快照，不写入 map 以避免 render 期间 setState） */
+  const getClawDetail = (clawId: string): ClawDetail => {
+    return clawDetailMap[clawId] ?? buildDefaultClawDetail(clawId);
+  };
+
+  /** 用 updater 形式更新某个 claw 的详情，缺失时基于默认值初始化 */
+  const updateClawDetail = (
+    clawId: string,
+    updater: (prev: ClawDetail) => ClawDetail,
+  ) => {
+    setClawDetailMap(prev => {
+      const current = prev[clawId] ?? buildDefaultClawDetail(clawId);
+      return { ...prev, [clawId]: updater(current) };
+    });
+  };
+
+  /** 生成下一个模型 entry id：取当前列表最大 id + 1 */
+  const nextModelEntryId = (list: AppliedModelItem[]): number => {
+    return list.reduce((max, m) => (m.id > max ? m.id : max), 0) + 1;
+  };
+
+  // ── 订阅"模型配置"页的数据（仅 visible=true 的对外可见） ───────────────────
+  const adminModels = useAdminModels();
+  const visibleAdminModels = useMemo(() => adminModels.filter(m => m.visible), [adminModels]);
+
+  /**
+   * 把可见模型按"厂商"分组：
+   *   - 普通厂商：按 provider 分组，组 key = provider，组 label = 同 provider 第一条 name
+   *   - 自定义模型（provider === __custom__）：聚合到单一"自定义模型"组下，每条作为一个版本
+   * 厂商一级显示顺序：先按出现顺序，自定义模型组始终放最后。
+   */
+  interface ProviderGroup {
+    key: string;           // provider 值；自定义模型组固定为 __custom__
+    label: string;         // 一级 Select 显示文本
+    models: ModelRow[];    // 该厂商下所有可见模型记录
+    isCustom: boolean;
+  }
+
+  const providerGroups = useMemo<ProviderGroup[]>(() => {
+    const orderedKeys: string[] = [];
+    const buckets = new Map<string, ModelRow[]>();
+    for (const m of visibleAdminModels) {
+      const key = m.provider;
+      if (!buckets.has(key)) {
+        buckets.set(key, []);
+        orderedKeys.push(key);
+      }
+      buckets.get(key)!.push(m);
+    }
+    const groups: ProviderGroup[] = [];
+    let customGroup: ProviderGroup | null = null;
+    for (const key of orderedKeys) {
+      const models = buckets.get(key)!;
+      if (key === CUSTOM_PROVIDER_VALUE) {
+        customGroup = {
+          key,
+          label: "自定义模型",
+          models,
+          isCustom: true,
+        };
+      } else {
+        groups.push({
+          key,
+          // 同 provider 的多条记录 name 理论上一致，取第一条
+          label: models[0].name,
+          models,
+          isCustom: false,
+        });
+      }
+    }
+    if (customGroup) groups.push(customGroup);
+    return groups;
+  }, [visibleAdminModels]);
+
+  // ── 模型编辑态 ───────────────────────────────────────────────────────────
+  /**
+   * 模型编辑上下文：
+   * - idle：未进入编辑态
+   * - add：点击右上角"添加备选/设为主模型"按钮 → 底部 inline 新增卡
+   * - replace：点击某条模型行的 ✏️ → 底部 inline 卡用于替换该条
+   */
+  type ModelActionContext =
+    | { kind: "idle" }
+    | { kind: "add" }
+    | { kind: "replace"; modelEntryId: number };
+  const [modelAction, setModelAction] = useState<ModelActionContext>({ kind: "idle" });
+  const modelEditing = modelAction.kind !== "idle";
+
+  /** 一级草稿：厂商 key（即 provider 值） */
+  const [modelDraftProvider, setModelDraftProvider] = useState<string>("");
+  /** 二级草稿：具体模型记录 id */
+  const [modelDraftModelId, setModelDraftModelId] = useState<string>("");
+
+  /** 模型操作二次确认弹窗（复用用户端三种类型） */
+  const [modelConfirmDialog, setModelConfirmDialog] = useState<{
+    open: boolean;
+    type: "set-primary" | "delete" | "delete-backup";
+    modelEntryId: number | null;
+  }>({ open: false, type: "set-primary", modelEntryId: null });
+
+  /** 把一个管控端 ModelRow + 其所在组转换成 AppliedModelItem 的展示字段 */
+  const toAppliedModelFields = (
+    group: ProviderGroup,
+    model: ModelRow,
+  ): Pick<AppliedModelItem, "modelConfigId" | "providerLabel" | "versionLabel" | "isCustom"> => ({
+    modelConfigId: model.id,
+    providerLabel: group.label,
+    // 自定义模型：一级展示"自定义模型"，二级用模型 name；普通模型二级用 version
+    versionLabel: group.isCustom ? model.name : model.version,
+    isCustom: group.isCustom,
+  });
+
+  /** 进入"添加"模式：默认草稿回填首组首项 */
+  const startAddModel = () => {
+    if (providerGroups.length === 0) {
+      setModelDraftProvider("");
+      setModelDraftModelId("");
+      setModelAction({ kind: "add" });
+      return;
+    }
+    const g0 = providerGroups[0];
+    setModelDraftProvider(g0.key);
+    setModelDraftModelId(g0.models[0]?.id ?? "");
+    setModelAction({ kind: "add" });
+  };
+
+  /** 进入"替换"模式：按被替换条目当前的 modelConfigId 回填；找不到则回退首组首项 */
+  const startReplaceModel = (entry: AppliedModelItem) => {
+    if (providerGroups.length === 0) {
+      setModelDraftProvider("");
+      setModelDraftModelId("");
+      setModelAction({ kind: "replace", modelEntryId: entry.id });
+      return;
+    }
+    let targetGroup: ProviderGroup | undefined;
+    let targetModel: ModelRow | undefined;
+    for (const g of providerGroups) {
+      const m = g.models.find(x => x.id === entry.modelConfigId);
+      if (m) { targetGroup = g; targetModel = m; break; }
+    }
+    if (!targetGroup || !targetModel) {
+      targetGroup = providerGroups[0];
+      targetModel = targetGroup.models[0];
+    }
+    setModelDraftProvider(targetGroup.key);
+    setModelDraftModelId(targetModel.id);
+    setModelAction({ kind: "replace", modelEntryId: entry.id });
+  };
+
+  const cancelEditModel = () => setModelAction({ kind: "idle" });
+
+  const saveEditModel = () => {
+    if (!selectedClaw) return;
+    const group = providerGroups.find(g => g.key === modelDraftProvider);
+    const model = group?.models.find(m => m.id === modelDraftModelId);
+    if (!group || !model) {
+      toast.error("请选择有效的模型厂商和版本");
+      return;
+    }
+    const fields = toAppliedModelFields(group, model);
+    const action = modelAction;
+    const current = getClawDetail(selectedClaw.id);
+    const list = current.appliedModels;
+    // 重复校验：同一条模型配置不可重复添加（替换时允许命中自己）
+    const dupe = list.find(m => m.modelConfigId === fields.modelConfigId
+      && !(action.kind === "replace" && m.id === action.modelEntryId));
+    if (dupe) {
+      toast.error("该模型已在列表中，请勿重复添加");
+      return;
+    }
+    const hadPrimaryBefore = list.some(m => m.primary);
+    updateClawDetail(selectedClaw.id, prev => {
+      if (action.kind === "add") {
+        const hasPrimary = prev.appliedModels.some(m => m.primary);
+        const newEntry: AppliedModelItem = {
+          id: nextModelEntryId(prev.appliedModels),
+          ...fields,
+          // 无主模型时新加的直接成为主模型；否则作为备选
+          primary: !hasPrimary,
+          addedAt: Date.now(),
+        };
+        return { ...prev, appliedModels: [...prev.appliedModels, newEntry] };
+      }
+      if (action.kind === "replace") {
+        return {
+          ...prev,
+          appliedModels: prev.appliedModels.map(m => m.id === action.modelEntryId
+            ? { ...m, ...fields }
+            : m),
+        };
+      }
+      return prev;
+    });
+    const _isOpenClawSave = selectedClaw?.agentType === 'OpenClaw';
+    if (action.kind === "add") {
+      toast.success(hadPrimaryBefore ? "备选模型已添加" : (_isOpenClawSave ? "已设为主模型" : "模型已添加成功"));
+    } else {
+      toast.success("模型已更新");
+    }
+    setModelAction({ kind: "idle" });
+  };
+
+  /** 切换一级厂商时，把二级草稿重置为该厂商的第一项 */
+  const handleDraftProviderChange = (value: string) => {
+    setModelDraftProvider(value);
+    const group = providerGroups.find(g => g.key === value);
+    if (group && group.models.length > 0) {
+      setModelDraftModelId(group.models[0].id);
+    } else {
+      setModelDraftModelId("");
+    }
+  };
+
+  /** 确认二次确认 Dialog 的操作 */
+  const runModelConfirm = () => {
+    if (!selectedClaw) return;
+    const { type, modelEntryId } = modelConfirmDialog;
+    if (modelEntryId === null) {
+      setModelConfirmDialog(prev => ({ ...prev, open: false }));
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => {
+      const list = prev.appliedModels;
+      if (type === "set-primary") {
+        return {
+          ...prev,
+          appliedModels: list.map(m => ({ ...m, primary: m.id === modelEntryId })),
+        };
+      }
+      if (type === "delete-backup") {
+        return { ...prev, appliedModels: list.filter(m => m.id !== modelEntryId) };
+      }
+      // type === "delete" (主模型)：删除后首条备选自动升主
+      const next = list.filter(m => m.id !== modelEntryId);
+      const wasPrimary = list.find(m => m.id === modelEntryId)?.primary ?? false;
+      if (wasPrimary && next.length > 0 && !next.some(m => m.primary)) {
+        next[0] = { ...next[0], primary: true };
+      }
+      return { ...prev, appliedModels: next };
+    });
+    setModelConfirmDialog(prev => ({ ...prev, open: false }));
+    // 如果当前正在替换的正是被删除的这条，取消编辑态
+    if (modelAction.kind === "replace" && modelAction.modelEntryId === modelEntryId) {
+      setModelAction({ kind: "idle" });
+    }
+    const _isOpenClaw = selectedClaw?.agentType === 'OpenClaw';
+    if (type === "set-primary") toast.success("已设为主模型");
+    else if (type === "delete-backup") toast.success("备选模型已删除");
+    else toast.success(_isOpenClaw ? "主模型已删除，已自动升级备选模型" : "模型删除成功");
+  };
+
+  // ── 通道编辑态 ───────────────────────────────────────────────────────────
+  /** 是否处于"新增通道"模式（展示底部 inline 选择条） */
+  const [channelAdding, setChannelAdding] = useState(false);
+  const [channelDraft, setChannelDraft] = useState<string>("");
+  /** 新增通道时正在录入的凭证字段值 */
+  const [channelDraftFields, setChannelDraftFields] = useState<Record<string, string>>({});
+  /** 待移除的通道 name（触发 AlertDialog 二次确认） */
+  const [channelRemoveTarget, setChannelRemoveTarget] = useState<string | null>(null);
+  /** 当前展开查看/编辑凭证的通道 name（null 表示全部收起） */
+  const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
+  /** 当前展开通道的编辑草稿值；null 表示未进入编辑态（只读查看） */
+  const [channelEditDraft, setChannelEditDraft] = useState<Record<string, string> | null>(null);
+  /** 密码字段可见性：用 "channelName:fieldKey" 作为 key */
+  const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
+
+  const toggleSecretVisibility = (channelName: string, fieldKey: string) => {
+    const key = `${channelName}:${fieldKey}`;
+    setVisibleSecrets(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const isSecretVisible = (channelName: string, fieldKey: string): boolean => {
+    return visibleSecrets.has(`${channelName}:${fieldKey}`);
+  };
+
+  /** 加密显示：保留前 3 字符，后面用 •••••• 替代 */
+  const maskSecret = (val: string): string => {
+    if (!val) return "—";
+    if (val.length <= 3) return val;
+    return val.slice(0, 3) + "••••••";
+  };
+
+  // ── 订阅"通道配置"页的可见性数据 ─────────────────────────────────────────
+  const [builtinChannelVisibility, setBuiltinChannelVisibility] = useState<Record<string, boolean>>(
+    () => loadBuiltinChannelVisibility(),
+  );
+  useEffect(() => {
+    return onBuiltinChannelVisibilityChange(() => {
+      setBuiltinChannelVisibility(loadBuiltinChannelVisibility());
+    });
+  }, []);
+
+  const [visibleCustomChannels, setVisibleCustomChannels] = useState<AdminCustomChannel[]>(
+    () => loadVisibleCustomChannels(),
+  );
+  useEffect(() => {
+    return onCustomChannelsChange(() => {
+      setVisibleCustomChannels(loadVisibleCustomChannels());
+    });
+  }, []);
+
+  /**
+   * 用户/Agent 可见的通道列表（内置 + 自定义）。
+   *   - 内置通道：用 builtinId 或 value 查 builtinChannelVisibility，缺省按 true 处理
+   *   - 自定义通道：来自管控端"通道配置"页，且 visible=true（loadVisibleCustomChannels 已过滤）
+   */
+  const availableChannelOptions = useMemo<ChannelConfig[]>(() => {
+    const builtins = CHANNEL_OPTIONS.filter((ch) => {
+      const key = ch.builtinId ?? ch.value;
+      return builtinChannelVisibility[key] !== false;
+    });
+    const customs: ChannelConfig[] = visibleCustomChannels.map((cc) => ({
+      value: `admin_custom_${cc.id}`,
+      label: cc.name,
+      descText: `企业自定义通道（Channel ID: ${cc.channelId}）`,
+      detailUrl: "#",
+      adminCustomMode: true as const,
+      adminCustomId: cc.id,
+      fields: cc.credentialFields.map((f) => ({
+        key: f.key || f.id,
+        label: f.label,
+        secret: true,
+      })),
+    }));
+    return [...builtins, ...customs];
+  }, [builtinChannelVisibility, visibleCustomChannels]);
+
+  /**
+   * 通道反查表：用 channel.value 查 ChannelConfig（含 fields 定义）
+   * - 内置通道：6 个全集（包括当前不可见的，避免已添加通道行失去字段定义）
+   * - 自定义通道：所有"可见"的（loadVisibleCustomChannels 已过滤；不可见的暂不反查）
+   * 注：现实场景中，自定义通道一旦被删除，已添加到 Agent 的同名通道将无 fields 元数据。
+   */
+  const channelLookup = useMemo<Map<string, ChannelConfig>>(() => {
+    const map = new Map<string, ChannelConfig>();
+    for (const ch of CHANNEL_OPTIONS) map.set(ch.value, ch);
+    for (const ch of availableChannelOptions) {
+      if (ch.adminCustomMode) map.set(ch.value, ch);
+    }
+    return map;
+  }, [availableChannelOptions]);
+
+  const startAddChannel = (detail: ClawDetail) => {
+    // 默认选中第一个尚未被添加的通道；全部已添加时留空
+    const existing = new Set(detail.connectedChannels.map(c => c.name));
+    const firstAvailable = availableChannelOptions.find(c => !existing.has(c.label));
+    setChannelDraft(firstAvailable?.value ?? "");
+    setChannelDraftFields({});
+    setChannelAdding(true);
+    setExpandedChannel(null); // 收起已展开的通道，避免视觉混乱
+    setChannelEditDraft(null);
+  };
+
+  const cancelAddChannel = () => {
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+  };
+
+  /** 切换新增草稿中选择的通道 */
+  const handleChannelDraftChange = (value: string) => {
+    setChannelDraft(value);
+    setChannelDraftFields({});
+  };
+
+  const confirmAddChannel = () => {
+    if (!selectedClaw) return;
+    const ch = availableChannelOptions.find(c => c.value === channelDraft);
+    if (!ch) {
+      toast.error("请选择要添加的通道");
+      return;
+    }
+    const detail = getClawDetail(selectedClaw.id);
+    if (detail.connectedChannels.some(c => c.name === ch.label)) {
+      toast.error(`「${ch.label}」已添加，请勿重复`);
+      return;
+    }
+    // 校验 fields（如有）必须填齐
+    const requiredFields = ch.fields ?? [];
+    const missing = requiredFields.find(f => !(channelDraftFields[f.key] ?? "").trim());
+    if (missing) {
+      toast.error(`请填写「${missing.label}」`);
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: [
+        ...prev.connectedChannels,
+        {
+          name: ch.label,
+          value: ch.value,
+          fieldValues: { ...channelDraftFields },
+          bots: [],
+        },
+      ],
+    }));
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+    toast.success(`已添加通道「${ch.label}」`);
+  };
+
+  const confirmRemoveChannel = () => {
+    if (!selectedClaw || !channelRemoveTarget) return;
+    const targetName = channelRemoveTarget;
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: prev.connectedChannels.filter(c => c.name !== targetName),
+    }));
+    // 如果被删除的通道正展开，顺手收起
+    if (expandedChannel === targetName) {
+      setExpandedChannel(null);
+      setChannelEditDraft(null);
+    }
+    setChannelRemoveTarget(null);
+    toast.success(`已移除通道「${targetName}」`);
+  };
+
+  /** 展开/收起某个通道的凭证展示区（同一时刻只展开一个） */
+  const toggleExpandChannel = (channel: ConnectedChannel) => {
+    if (expandedChannel === channel.name) {
+      setExpandedChannel(null);
+      setChannelEditDraft(null);
+    } else {
+      setExpandedChannel(channel.name);
+      setChannelEditDraft(null); // 默认进入只读查看态
+    }
+  };
+
+  /** 进入某个已接入通道的编辑态（只读 → 编辑） */
+  const startEditChannel = (channel: ConnectedChannel) => {
+    setExpandedChannel(channel.name);
+    setChannelEditDraft({ ...channel.fieldValues });
+  };
+
+  const cancelEditChannel = () => {
+    setChannelEditDraft(null);
+  };
+
+  const saveEditChannel = (channel: ConnectedChannel) => {
+    if (!selectedClaw || !channelEditDraft) return;
+    const chConfig = channelLookup.get(channel.value);
+    const requiredFields = chConfig?.fields ?? [];
+    const missing = requiredFields.find(f => !(channelEditDraft[f.key] ?? "").trim());
+    if (missing) {
+      toast.error(`请填写「${missing.label}」`);
+      return;
+    }
+    updateClawDetail(selectedClaw.id, prev => ({
+      ...prev,
+      connectedChannels: prev.connectedChannels.map(c =>
+        c.name === channel.name ? { ...c, fieldValues: { ...channelEditDraft } } : c,
+      ),
+    }));
+    setChannelEditDraft(null);
+    toast.success(`「${channel.name}」凭证已更新`);
+  };
+
   const handleOpenDrawer = (claw: Claw) => {
     setSelectedClaw(claw);
     setShowDetailDrawer(true);
+    // 切换实例时重置所有编辑态，避免上一个实例残留
+    setModelAction({ kind: "idle" });
+    setModelConfirmDialog({ open: false, type: "set-primary", modelEntryId: null });
+    setChannelAdding(false);
+    setChannelDraft("");
+    setChannelDraftFields({});
+    setExpandedChannel(null);
+    setChannelEditDraft(null);
+    setVisibleSecrets(new Set());
   };
 
   const handleRefreshDrawer = () => {
@@ -605,7 +1697,7 @@ export default function AgentMonitor() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="page-enter">
+      <div className="page-enter min-w-0">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
@@ -751,20 +1843,12 @@ export default function AgentMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-visible"
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
           style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
 
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* 部门筛选 - 仅 OneID 模式显示 */}
-              {hasOneid && (
-                <InstanceDepartmentFilter
-                  departments={MOCK_DEPARTMENTS}
-                  value={departmentFilter}
-                  onChange={(v) => { setDepartmentFilter(v); setPage(1); }}
-                />
-              )}
               {/* 搜索框 */}
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -800,7 +1884,39 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
               )}
             </Tooltip>
-            {/* 配置默认标签按鈕 */}
+            {/* 批量删除按钮 */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">
+                  <Button
+                    onClick={() => {
+                      if (selectedCount > 0 && !batchDeleteDisabled) {
+                        const names = selectedClaws.map(c => c.name).join("、");
+                        if (window.confirm(`确认删除选中的 ${selectedCount} 个实例？\n\n${names}\n\n删除后无法恢复。`)) {
+                          setClaws(prev => prev.filter(c => !selectedIds.has(c.id)));
+                          setSelectedIds(new Set());
+                          toast.success(`已删除 ${selectedCount} 个实例`);
+                        }
+                      }
+                    }}
+                    disabled={batchDeleteDisabled}
+                    variant="outline"
+                    className={`rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                      batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    批量删除
+                    {selectedCount > 0 && (
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-xs">{selectedCount}</span>
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {batchDeleteDisabled && selectedCount === 0 && (
+                <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
+              )}
+            </Tooltip>
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
@@ -817,12 +1933,18 @@ export default function AgentMonitor() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto overflow-y-visible">
-          <table className="w-full">
+          <div className="overflow-x-auto" ref={tableScrollRef}>
+          <table className="text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
             <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50 relative">
-                {/* 复选框列 */}
-                <th className="py-3 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+              <tr style={{ backgroundColor: '#f9fafb' }}>
+                {/* 复选框列 - sticky left */}
+                <th className="py-3 whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
+                  {isTableScrolled && (
+                    <>
+                      <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                      <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                    </>
+                  )}
                   <div className="flex items-center gap-1.5">
                     <Checkbox
                       checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
@@ -832,11 +1954,8 @@ export default function AgentMonitor() {
                     <span className="text-xs font-medium text-gray-500 whitespace-nowrap">全选</span>
                   </div>
                 </th>
-                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '16%', paddingLeft: '4px' }}>名称 / ID</th>
-                {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">用户归属</th>
-                )}
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '7%' : '10%' }}>
+                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -846,8 +1965,8 @@ export default function AgentMonitor() {
                         if (filterButtonRef.current) {
                           const rect = filterButtonRef.current.getBoundingClientRect();
                           setFilterPosition({
-                            top: rect.bottom + window.scrollY + 8,
-                            left: rect.left + window.scrollX
+                            top: rect.bottom + 4,
+                            left: rect.left
                           });
                         }
                         setShowStatusFilter(!showStatusFilter);
@@ -897,18 +2016,105 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建人</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '13%' : '15%' }}>创建时间</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '8%' : '9%' }}>Agent类型</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: hasOneid ? '9%' : '10%' }}>Agent 版本</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '6%' : '7%' }}>标签</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: hasOneid ? '12%' : '13%' }}>操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建人</th>
+                {hasOneid && (
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>
+                    <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
+                      <PopoverTrigger asChild>
+                        <button className="flex items-center gap-1 group/dept">
+                          <span>部门</span>
+                          <Filter className={`w-3.5 h-3.5 transition-colors ${departmentFilter ? 'text-blue-500' : 'text-gray-400 group-hover/dept:text-gray-600'}`} />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                        <DepartmentColumnFilter
+                          departments={MOCK_DEPARTMENTS}
+                          value={departmentFilter}
+                          onConfirm={(v) => { setDepartmentFilter(v); setPage(1); setDeptColFilterOpen(false); }}
+                          onCancel={() => setDeptColFilterOpen(false)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </th>
+                )}
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '150px' }}>
+                  <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 group/grp">
+                        <span>分组</span>
+                        <Filter className={`w-3.5 h-3.5 transition-colors ${groupFilter ? 'text-blue-500' : 'text-gray-400 group-hover/grp:text-gray-600'}`} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                      <GroupColumnFilter
+                        groups={hasOneid ? MOCK_GROUPS : MOCK_MANUAL_GROUPS}
+                        value={groupFilter}
+                        hasOneid={hasOneid}
+                        onConfirm={(v) => { setGroupFilter(v); setPage(1); setGroupColFilterOpen(false); }}
+                        onCancel={() => setGroupColFilterOpen(false)}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                  <Popover open={typeColFilterOpen} onOpenChange={(open) => {
+                    setTypeColFilterOpen(open);
+                    if (open) setTempTypeFilter(new Set(agentTypeFilter));
+                  }}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 group/type">
+                        <span>Agent类型</span>
+                        <Filter className={`w-3.5 h-3.5 transition-colors ${agentTypeFilter.size > 0 && agentTypeFilter.size < ALL_AGENT_TYPES.length ? 'text-blue-500' : 'text-gray-400 group-hover/type:text-gray-600'}`} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-56 p-0" align="start" side="bottom">
+                      <div className="p-3 space-y-2">
+                        {Object.entries(AGENT_TYPE_DISPLAY).map(([key, label]) => (
+                          <label key={key} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={tempTypeFilter.has(key)}
+                              onCheckedChange={(checked) => {
+                                setTempTypeFilter(prev => {
+                                  const next = new Set(prev);
+                                  if (checked) next.add(key); else next.delete(key);
+                                  return next;
+                                });
+                              }}
+                            />
+                            <span className="text-sm text-gray-700">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-100 p-2 flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                          setTempTypeFilter(new Set(ALL_AGENT_TYPES));
+                          setAgentTypeFilter(new Set(ALL_AGENT_TYPES));
+                          setPage(1);
+                          setTypeColFilterOpen(false);
+                        }}>重置</Button>
+                        <Button size="sm" className="flex-1" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => {
+                          setAgentTypeFilter(new Set(tempTypeFilter));
+                          setPage(1);
+                          setTypeColFilterOpen(false);
+                        }}>确认</Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                  <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
+                  操作
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={hasOneid ? 12 : 11} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-gray-400">
                     暂无符合条件的 Agent
                   </td>
                 </tr>
@@ -923,9 +2129,15 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <tr key={claw.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
                       {/* 复选框 */}
-                      <td className="py-4 whitespace-nowrap" style={{ width: '1%', paddingLeft: '12px', paddingRight: '8px' }}>
+                      <td className="py-4 whitespace-nowrap sticky left-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px' }}>
+                        {isTableScrolled && (
+                          <>
+                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
+                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
+                          </>
+                        )}
                         <Checkbox
                           checked={selectedIds.has(claw.id)}
                           onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
@@ -933,13 +2145,18 @@ export default function AgentMonitor() {
                         />
                       </td>
                       {/* 名称/ID */}
-                      <td className="pr-4 py-4" style={{ paddingLeft: '4px' }}>
-                        <div className="flex items-center gap-2.5">
+                      <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
+                          <div className="min-w-0 flex-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{claw.name}</div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{claw.name}</TooltipContent>
+                            </Tooltip>
                             <button
                               onClick={() => handleOpenDrawer(claw)}
                               className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
@@ -949,12 +2166,6 @@ export default function AgentMonitor() {
                           </div>
                         </div>
                       </td>
-                      {/* 用户归属 - 仅 OneID 模式显示 */}
-                      {hasOneid && (
-                        <td className="px-4 py-4 text-sm text-gray-600">
-                          {claw.department ? claw.department.replace(/\//g, " / ") : "—"}
-                        </td>
-                      )}
                       {/* 状态列 */}
                       <td className="px-4 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
@@ -964,11 +2175,67 @@ export default function AgentMonitor() {
                       </td>
                       {/* 创建人 */}
                       <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
+                      {/* 部门 - 仅 OneID 模式显示 */}
+                      {hasOneid && (
+                        <td className="px-4 py-4 text-sm text-gray-600">
+                          {claw.department ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="block truncate max-w-[120px] cursor-default">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start">
+                                <span className="text-xs">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : <span className="text-gray-300">—</span>}
+                        </td>
+                      )}
+                      {/* 分组 */}
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {(() => {
+                          if (hasOneid) {
+                            const item = getCreatorGroupItemOneid(claw.creator);
+                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1.5 max-w-[200px] cursor-default">
+                                    <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                      item.kind === "oneid-dept"
+                                        ? "text-blue-600 bg-blue-50"
+                                        : "text-purple-600 bg-purple-50"
+                                    }`}>
+                                      {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                    </span>
+                                    <span className="text-sm text-gray-700 truncate max-w-[120px]">{item.path}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          } else {
+                            const item = getCreatorGroupItemManual(claw.creator);
+                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-sm text-gray-700 truncate max-w-[160px] block cursor-default">{item.path}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          }
+                        })()}
+                      </td>
                       {/* 创建时间 */}
                       <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
                       <td className="px-4 py-4">
-                        <span className="text-xs font-medium text-gray-500">{claw.agentType}</span>
+                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
                       </td>
                       {/* Agent 版本 */}
                       <td className="px-4 py-4">
@@ -1013,7 +2280,9 @@ export default function AgentMonitor() {
                         )}
                       </td>
                       {/* 操作 */}
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
+                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
                           {/* 终端 */}
                           {!isRunning ? (
@@ -1130,35 +2399,40 @@ export default function AgentMonitor() {
 
           {/* Pagination */}
           <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {statusFiltered.length} 条记录</span>
+            <span className="text-xs text-gray-400">共 {versionFiltered.length} 条记录，第 {safePage}/{totalPages} 页</span>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
-                <button
-                  disabled={safePage === 1}
-                  onClick={() => setPage(safePage - 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-4 h-4" />
+                <button disabled={safePage === 1} onClick={() => setPage(safePage - 1)}
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-medium transition-colors border ${
-                      p === safePage
-                        ? 'bg-blue-500 text-white border-blue-500'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-500'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  disabled={safePage === totalPages}
-                  onClick={() => setPage(safePage + 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-4 h-4" />
+                {(() => {
+                  const pages: (number | string)[] = [];
+                  if (totalPages <= 7) {
+                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                  } else {
+                    pages.push(1);
+                    if (safePage > 3) pages.push("...");
+                    for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
+                    if (safePage < totalPages - 2) pages.push("...");
+                    pages.push(totalPages);
+                  }
+                  return pages.map((p, idx) =>
+                    typeof p === "string" ? (
+                      <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        className={`h-7 w-7 rounded-md text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
+                        style={p === safePage ? { background: "#007AFF" } : undefined}
+                        onClick={() => setPage(p as number)}
+                      >{p}</button>
+                    )
+                  );
+                })()}
+                <button disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
@@ -1295,7 +2569,7 @@ export default function AgentMonitor() {
                         </div>
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className="text-xs font-medium text-gray-500">{c.agentType}</span>
+                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
                       </td>
                       <td className="px-4 py-2.5">
                         <span className="font-mono text-xs text-gray-500">{c.version}</span>
@@ -1329,6 +2603,59 @@ export default function AgentMonitor() {
         </DialogContent>
       </Dialog>
 
+
+      {/* 批量升级失败结果弹窗 */}
+      <Dialog open={showUpgradeResultDialog} onOpenChange={setShowUpgradeResultDialog}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900">下发失败提醒</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
+            <p>当前没有生效的 OpenClaw 镜像，以下 agent 无法升级。</p>
+            <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
+          </div>
+          <p className="text-sm text-gray-600">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
+          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-xl">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
+                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">下发失败原因</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {upgradeFailedAgents.map((a, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50/50">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white" style={{ fontSize: '10px' }}>C</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{a.name}</div>
+                          <div className="text-xs text-gray-400 font-mono">{a.instanceId}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[a.agentType] ?? a.agentType}</span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="text-xs text-red-600">当前没有生效的 {AGENT_TYPE_DISPLAY[a.agentType] ?? a.agentType} 镜像</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter className="gap-2 pt-2">
+            <Button onClick={() => setShowUpgradeResultDialog(false)} className="bg-blue-500 hover:bg-blue-600 text-white">
+              我知道了
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 配置默认标签弹窗 */}
       <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); setValueDropdownOpen(false); } }}>
@@ -1587,23 +2914,438 @@ export default function AgentMonitor() {
                   </div>
                 </div>
                 {/* 已应用模型 */}
-                <div>
-                  <div className="text-sm text-gray-500 mb-2">已应用模型</div>
-                  <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200">
-                    <div className="text-sm font-semibold text-gray-900">{getClawDetail(selectedClaw.id).appliedModel}</div>
-                    <div className="text-xs text-gray-400 mt-1">{getClawDetail(selectedClaw.id).appliedModelVersion}</div>
-                  </div>
-                </div>
+                {(() => {
+                  const detail = getClawDetail(selectedClaw.id);
+                  const models = detail.appliedModels;
+                  const hasPrimary = models.some(m => m.primary);
+                  const primaryList = models.filter(m => m.primary);
+                  const backupList = [...models.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt);
+                  // 是否为 OpenClaw 类型：OpenClaw 支持主模型 + 备选模型；其他类型只能配置一个模型
+                  const isOpenClaw = selectedClaw.agentType === 'OpenClaw';
+                  // 非 OpenClaw 且已有模型时不展示添加按鈕；OpenClaw 按现有逻辑
+                  const canAddMore = isOpenClaw || models.length === 0;
+                  const addButtonLabel = isOpenClaw
+                    ? (hasPrimary ? "添加备选模型" : "添加主模型")
+                    : "添加模型";
+                  const isAdding = modelAction.kind === "add";
+
+                  /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
+                  const renderInlineEditForm = () => (
+                    <div className="space-y-3">
+                      {providerGroups.length === 0 ? (
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                          <p className="text-xs text-amber-700 leading-relaxed">
+                            当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-gray-600">模型厂商</label>
+                            <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择模型厂商" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {providerGroups.map((g) => (
+                                  <SelectItem key={g.key} value={g.key}>{g.label}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-gray-600">模型名称</label>
+                            <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择模型名称" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(providerGroups.find(g => g.key === modelDraftProvider)?.models ?? []).map((m) => {
+                                  const isCustom = m.provider === CUSTOM_PROVIDER_VALUE;
+                                  return (
+                                    <SelectItem key={m.id} value={m.id}>
+                                      {isCustom ? m.name : m.version}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-end gap-2 pt-1">
+                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditModel}>
+                          取消
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-8 px-3 text-xs text-white"
+                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                          onClick={saveEditModel}
+                          disabled={!modelDraftProvider || !modelDraftModelId}
+                        >
+                          保存
+                        </Button>
+                      </div>
+                    </div>
+                  );
+
+                  /** 渲染一行模型卡：替换态下卡片内直接变为编辑表单 */
+                  const renderModelRow = (model: AppliedModelItem, isPrimary: boolean) => {
+                    const isReplacingThis = modelAction.kind === "replace" && modelAction.modelEntryId === model.id;
+                    return (
+                      <div
+                        key={model.id}
+                        className={`px-4 py-3 bg-white rounded-2xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
+                      >
+                        {isReplacingThis ? (
+                          renderInlineEditForm()
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                              <span className="text-sm font-semibold text-gray-900 leading-tight truncate">
+                                {model.providerLabel}
+                              </span>
+                              {model.versionLabel && (
+                                <span className="text-xs text-gray-400 leading-tight mt-0.5 truncate">
+                                  {model.versionLabel}
+                                </span>
+                              )}
+                            </div>
+                            {isOpenClaw && (isPrimary ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                                主模型
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
+                                备选模型
+                              </span>
+                            ))}
+                            <div className="flex items-center gap-1 shrink-0">
+                              {isOpenClaw && !isPrimary && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => setModelConfirmDialog({ open: true, type: "set-primary", modelEntryId: model.id })}
+                                      className="p-1 rounded text-gray-400 hover:text-blue-500 transition-colors"
+                                    >
+                                      <ArrowLeftRight className="w-3.5 h-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                    设为主模型
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                              {!isOpenClaw && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => startReplaceModel(model)}
+                                    className="p-1 rounded text-gray-400 hover:text-blue-500 transition-colors"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                  替换
+                                </TooltipContent>
+                              </Tooltip>
+                              )}
+                              {isOpenClaw && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => setModelConfirmDialog({
+                                      open: true,
+                                      type: isPrimary ? "delete" : "delete-backup",
+                                      modelEntryId: model.id,
+                                    })}
+                                    className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                  删除模型
+                                </TooltipContent>
+                              </Tooltip>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  };
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm text-gray-500">已应用模型（{models.length}）</div>
+                        {!isAdding && canAddMore && (
+                          <button
+                            onClick={startAddModel}
+                            className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                            {addButtonLabel}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 空态（无模型且不在新增态） */}
+                      {models.length === 0 && !isAdding && (
+                        <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                          暂未配置模型
+                        </div>
+                      )}
+
+                      {/* 主模型分组 */}
+                      {primaryList.length > 0 && (
+                        <div className="space-y-1.5 mb-3">
+                          {primaryList.map((m) => renderModelRow(m, true))}
+                        </div>
+                      )}
+
+                      {/* 备选模型分组 */}
+                      {backupList.length > 0 && (
+                        <div>
+                          <div className="space-y-1.5">
+                            {backupList.map((m) => renderModelRow(m, false))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
+                      {isAdding && (
+                        <div className="mt-2 px-4 py-3 bg-white rounded-2xl border border-blue-200">
+                          {renderInlineEditForm()}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 {/* 已接入通道 */}
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
+                    {/* 添加通道按钮已移除（本期需求不包含） */}
+                  </div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => (
-                      <div key={channel.name} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 flex items-center gap-3">
-                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                        <span className="text-sm font-semibold text-gray-900">{channel.name}</span>
+                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {
+                      const chConfig = channelLookup.get(channel.value);
+                      const fields = chConfig?.fields ?? [];
+                      const isExpanded = expandedChannel === channel.name;
+                      const isEditingThis = isExpanded && channelEditDraft !== null;
+                      return (
+                        <div key={channel.name} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                          {/* 行头：通道名 + 展开/折叠按钮 */}
+                          <div className="group px-4 py-3 flex items-center gap-3">
+                            <button
+                              onClick={() => toggleExpandChannel(channel)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                              title={isExpanded ? "收起" : "展开查看凭证"}
+                            >
+                              <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                            </button>
+                            <span className="text-sm font-semibold text-gray-900 flex-1">{channel.name}</span>
+                            <button
+                              onClick={() => setChannelRemoveTarget(channel.name)}
+                              className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                              title="移除"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* 展开区域：凭证查看 / 编辑 */}
+                          {isExpanded && (
+                            <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50 space-y-2">
+                              {fields.length === 0 ? (
+                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                                  <p className="text-xs text-blue-600 leading-relaxed">
+                                    该通道无需凭证配置（由租户在用户端完成扫码授权）。
+                                  </p>
+                                </div>
+                              ) : (
+                                <>
+                                  {fields.map((field) => {
+                                    const visible = isSecretVisible(channel.name, field.key);
+                                    if (isEditingThis) {
+                                      // 编辑态：Input + 密码可见切换
+                                      return (
+                                        <div key={field.key} className="space-y-1">
+                                          <label className="text-xs font-medium text-gray-600">{field.label}</label>
+                                          <div className="relative">
+                                            <Input
+                                              type={field.secret && !visible ? "password" : "text"}
+                                              value={channelEditDraft![field.key] ?? ""}
+                                              onChange={(e) => setChannelEditDraft(prev => ({ ...(prev ?? {}), [field.key]: e.target.value }))}
+                                              className="bg-white border-gray-200 text-sm h-9 pr-10"
+                                            />
+                                            {field.secret && (
+                                              <button
+                                                type="button"
+                                                onClick={() => toggleSecretVisibility(channel.name, field.key)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                              >
+                                                {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    // 只读态：key - value（secret 自动 mask）
+                                    const rawValue = channel.fieldValues[field.key] ?? "";
+                                    const displayValue = field.secret && !visible ? maskSecret(rawValue) : (rawValue || "—");
+                                    return (
+                                      <div key={field.key} className="flex items-center gap-3 py-1.5">
+                                        <span className="text-xs text-gray-500 w-28 shrink-0 truncate" title={field.label}>{field.label}</span>
+                                        <span className="text-xs text-gray-800 flex-1 font-mono break-all">{displayValue}</span>
+                                        {field.secret && rawValue && (
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleSecretVisibility(channel.name, field.key)}
+                                            className="text-gray-300 hover:text-blue-500 transition-colors flex-shrink-0"
+                                            title={visible ? "隐藏" : "查看"}
+                                          >
+                                            {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                          </button>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+
+                                  {/* 操作按钮 */}
+                                  <div className="flex justify-end gap-2 pt-1">
+                                    {isEditingThis ? (
+                                      <>
+                                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditChannel}>
+                                          取消
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          className="h-8 px-3 text-xs text-white"
+                                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                                          onClick={() => saveEditChannel(channel)}
+                                        >
+                                          保存
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={() => startEditChannel(channel)}>
+                                        <Pencil className="w-3 h-3 mr-1" />
+                                        编辑凭证
+                                      </Button>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
+                      <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                        暂未接入通道
                       </div>
-                    ))}
+                    )}
+                    {/* 新增通道面板 */}
+                    {channelAdding && (() => {
+                      const existing = new Set(getClawDetail(selectedClaw.id).connectedChannels.map(c => c.name));
+                      const available = availableChannelOptions.filter(c => !existing.has(c.label));
+                      const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
+                      const isWechatLike = currentCh?.wechatMode;
+                      return (
+                        <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200 space-y-3">
+                          {/* 通道选择 */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-gray-600">通道类型</label>
+                            <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
+                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                                <SelectValue placeholder="选择要添加的通道" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {available.length === 0 ? (
+                                  <div className="px-3 py-6 text-center text-xs text-gray-400">
+                                    所有通道均已添加
+                                  </div>
+                                ) : (
+                                  available.map((c) => (
+                                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* 无凭证字段的通道（微信）：提示框 */}
+                          {currentCh && isWechatLike && (
+                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+                              <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                              <p className="text-xs text-blue-600 leading-relaxed">
+                                微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
+                              </p>
+                            </div>
+                          )}
+
+                          {/* 凭证字段录入 */}
+                          {currentCh && !isWechatLike && (currentCh.fields ?? []).length > 0 && (
+                            <div className="space-y-2">
+                              {(currentCh.fields ?? []).map((field) => {
+                                const visible = isSecretVisible("__draft__", field.key);
+                                return (
+                                  <div key={field.key} className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">{field.label}</label>
+                                    <div className="relative">
+                                      <Input
+                                        type={field.secret && !visible ? "password" : "text"}
+                                        value={channelDraftFields[field.key] ?? ""}
+                                        onChange={(e) => setChannelDraftFields(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                        placeholder={field.label}
+                                        className="bg-gray-50 border-gray-200 text-sm h-9 pr-10"
+                                      />
+                                      {field.secret && (
+                                        <button
+                                          type="button"
+                                          onClick={() => toggleSecretVisibility("__draft__", field.key)}
+                                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelAddChannel}>
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 px-3 text-xs text-white"
+                              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                              onClick={confirmAddChannel}
+                              disabled={!channelDraft}
+                            >
+                              确认添加
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
                 {/* 已安装技能 */}
@@ -1622,6 +3364,71 @@ export default function AgentMonitor() {
           </div>
         </div>
       )}
+
+      {/* 移除通道二次确认 */}
+      <AlertDialog open={!!channelRemoveTarget} onOpenChange={(open) => { if (!open) setChannelRemoveTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认移除通道</AlertDialogTitle>
+            <AlertDialogDescription>
+              移除「{channelRemoveTarget}」后，该 Agent 将无法通过此通道收发消息。该操作不会删除通道下已有的凭证配置，可在用户端重新接入。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={confirmRemoveChannel}
+            >
+              确认移除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 模型操作二次确认（设为主/删主/删备）—— 与用户端 OpenClawDetail 保持一致 */}
+      <Dialog
+        open={modelConfirmDialog.open}
+        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600">
+              {modelConfirmDialog.type === "delete"
+                ? "确认删除主模型"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "确认删除备选模型"
+                : "切换主模型"}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              {modelConfirmDialog.type === "delete"
+                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
+                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={runModelConfirm}
+            >
+              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
+                ? "确认删除"
+                : "确认设置"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (

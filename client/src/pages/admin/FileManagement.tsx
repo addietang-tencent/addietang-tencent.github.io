@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,17 +7,31 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { 
   Search, 
   Bot,
@@ -31,8 +45,478 @@ import {
   UserCheck,
   ShoppingCart,
   Trash2,
-  RotateCcw
+  RotateCcw,
+  Plus,
+  Pencil,
+  X,
+  Check,
 } from "lucide-react";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { MOCK_GROUP_TREE_MANUAL, type GroupNode } from "@/lib/mockData";
+
+// ─── creator → 分组 ID 映射（普通模式下，与 MemberManagement mock 对齐） ──────
+const CREATOR_GROUP_MAP: Record<string, string> = {
+  "noah@acompany.com":  "mgrp-rd",
+  "mia@acompany.com":   "mgrp-design",
+  "leo@acompany.com":   "mgrp-product",
+  "emma@acompany.com":  "mgrp-rd-fe",
+  "alice@acompany.com": "mgrp-product",
+  "bob@acompany.com":   "mgrp-rd-be",
+  "carol@acompany.com": "mgrp-design",
+  "david@acompany.com": "mgrp-ops",
+  "frank@acompany.com": "mgrp-rd-fe",
+  "grace@acompany.com": "mgrp-rd-be",
+  "helen@acompany.com": "mgrp-rd-fe",
+  "ivan@acompany.com":  "mgrp-rd-fe",
+  "jason@acompany.com": "mgrp-rd-be",
+  "kelly@acompany.com": "mgrp-rd-be",
+  "lisa@acompany.com":  "mgrp-design",
+  "tom@acompany.com":   "mgrp-ops",
+  "amy@acompany.com":   "mgrp-product",
+  "mike@acompany.com":  "mgrp-rd-be",
+  "kate@acompany.com":  "mgrp-rd-fe",
+  "ryan@acompany.com":  "mgrp-rd",
+};
+
+// ─── 分组筛选器组件（与 TokensMonitor 同款） ────────────────────────────────
+function FMGroupFilter({
+  groups, value, onChange,
+}: {
+  groups: GroupNode[]; value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [tempValue, setTempValue] = useState(value);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  React.useEffect(() => { if (open) { setTempValue(value); setSearch(""); } }, [open, value]);
+
+  const toggleExpand = (id: string) => {
+    setExpanded(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
+  const handleConfirm = () => { onChange(tempValue); setOpen(false); };
+  const handleCancel = () => { setTempValue(value); setOpen(false); };
+
+  const findNode = (nodes: GroupNode[], id: string): GroupNode | undefined => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) { const found = findNode(n.children, id); if (found) return found; }
+    }
+  };
+  const triggerNode = value ? findNode(groups, value) : undefined;
+  const selectedNode = tempValue ? findNode(groups, tempValue) : undefined;
+
+  function TreeNode({ node, level = 0 }: { node: GroupNode; level?: number }) {
+    const hasChildren = !!node.children?.length;
+    const isExpanded = expanded.has(node.id);
+    const isSelected = tempValue === node.id;
+    const matchSearch = !search || node.name.includes(search);
+    const childMatch = search ? (node.children || []).some(c => c.name.includes(search)) : true;
+    if (!matchSearch && !childMatch) return null;
+    return (
+      <div>
+        <div
+          className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-100"}`}
+          style={{ paddingLeft: `${8 + level * 16}px` }}
+          onClick={() => setTempValue(node.id)}
+        >
+          {hasChildren ? (
+            <button className="p-0.5 text-gray-400 shrink-0" onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}>
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </button>
+          ) : <span className="w-4 shrink-0" />}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        </div>
+        {hasChildren && (isExpanded || !!search) && node.children!.map(c => <TreeNode key={c.id} node={c} level={level + 1} />)}
+      </div>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox"
+          className={`w-[140px] justify-between bg-white text-sm font-normal h-9 hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
+          <span className="truncate">{triggerNode?.name || "全部分组"}</span>
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        <div className="p-2 border-b border-gray-100">
+          <input
+            type="text" placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
+            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          />
+        </div>
+        <div className="max-h-[280px] overflow-y-auto p-2">
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          </div>
+          {groups.map(g => <TreeNode key={g.id} node={g} />)}
+        </div>
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0 text-xs overflow-hidden">
+            {tempValue === "" ? (
+              <span className="text-blue-600 font-medium truncate">全部分组</span>
+            ) : selectedNode ? (
+              <span className="text-blue-600 font-medium truncate">{selectedNode.name}</span>
+            ) : (
+              <span className="text-gray-400 truncate">未选择</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={handleCancel}>取消</Button>
+            <Button size="sm" className="text-xs h-7 px-3" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── PolicyRule 类型 ─────────────────────────────────────────────────────────
+
+interface PolicyRule<T> {
+  id: string;
+  groupIds: string[];
+  value: T;
+}
+
+// ─── 行容器样式常量 ──────────────────────────────────────────────────────────
+const FM_ROW_CLASS = "flex items-center gap-3 px-3 h-10";
+const FM_EDIT_ROW_CLASS = "flex items-start gap-3 px-3 min-h-10 py-1.5";
+
+// ─── 分组选择器 ──────────────────────────────────────────────────────────────
+function FMGroupTagSelector({
+  selectedIds,
+  disabledIds = [],
+  onChange,
+}: {
+  selectedIds: string[];
+  disabledIds?: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const allGroups: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
+  const tree: GroupTreeNode[] = buildGroupTree(allGroups);
+
+  const getGroupName = (id: string) => allGroups.find((g) => g.id === id)?.name ?? id;
+
+  const toggle = (id: string) => {
+    if (disabledIds.includes(id)) return;
+    onChange(selectedIds.includes(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id]);
+  };
+
+  const filterTree = (nodes: GroupTreeNode[], q: string): GroupTreeNode[] => {
+    if (!q) return nodes;
+    return nodes.reduce<GroupTreeNode[]>((acc, node) => {
+      const children = filterTree(node.children, q);
+      if (node.name.includes(q) || children.length > 0) acc.push({ ...node, children });
+      return acc;
+    }, []);
+  };
+
+  function TreeNode({ node, depth = 0 }: { node: GroupTreeNode; depth?: number }) {
+    const [expanded, setExpanded] = useState(true);
+    const checked = selectedIds.includes(node.id);
+    const disabled = disabledIds.includes(node.id);
+    return (
+      <div>
+        <div
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md cursor-pointer transition-colors ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
+          style={{ paddingLeft: `${8 + depth * 16}px` }}
+          onClick={() => !disabled && toggle(node.id)}
+        >
+          {node.children.length > 0 ? (
+            <button className="p-0.5 text-gray-400 shrink-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+              {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </button>
+          ) : <span className="w-4 shrink-0" />}
+          <Checkbox checked={checked} disabled={disabled} className="w-3.5 h-3.5 shrink-0" onChange={() => {}} />
+          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+        </div>
+        {expanded && node.children.map((c) => <TreeNode key={c.id} node={c} depth={depth + 1} />)}
+      </div>
+    );
+  }
+
+  const filtered = filterTree(tree, search.trim());
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="min-h-7 flex flex-wrap gap-1 items-center px-2 py-1 border border-gray-200 rounded-md cursor-pointer hover:border-blue-400 transition-colors bg-white">
+          {selectedIds.length === 0
+            ? <span className="text-xs text-gray-400">选择分组…</span>
+            : selectedIds.map((id) => (
+              <span key={id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px]">
+                {getGroupName(id)}
+                <button onClick={(e) => { e.stopPropagation(); toggle(id); }} className="hover:text-blue-900"><X className="w-2.5 h-2.5" /></button>
+              </span>
+            ))}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-60 p-2">
+        <Input placeholder="搜索分组…" value={search} onChange={(e) => setSearch(e.target.value)} className="h-7 text-xs mb-2" />
+        <div className="max-h-48 overflow-y-auto">
+          {filtered.length === 0
+            ? <p className="text-xs text-gray-400 text-center py-4">无匹配分组</p>
+            : filtered.map((n) => <TreeNode key={n.id} node={n} />)}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── 分组名称展示 ────────────────────────────────────────────────────────────
+function FMGroupBadges({ groupIds }: { groupIds: string[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [visibleCount, setVisibleCount] = useState(groupIds.length);
+
+  const allGroups: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
+  const paths = groupIds.map((id) => allGroups.find((g) => g.id === id)?.name ?? id);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const computeVisible = () => {
+      const available = container.offsetWidth;
+      const gap = 4;
+      let w = 0; let fitCount = 0;
+      for (let i = 0; i < paths.length; i++) {
+        const el = tagRefs.current[i];
+        if (!el) continue;
+        const add = el.offsetWidth + (i === 0 ? 0 : gap);
+        if (w + add > available) break;
+        w += add; fitCount++;
+      }
+      if (fitCount === paths.length) { setVisibleCount(paths.length); return; }
+      const moreEl = moreRef.current;
+      if (!moreEl) { setVisibleCount(Math.max(1, fitCount)); return; }
+      for (let n = fitCount; n >= 1; n--) {
+        let tw = 0;
+        for (let i = 0; i < n; i++) { const el = tagRefs.current[i]; if (!el) continue; tw += el.offsetWidth + (i === 0 ? 0 : gap); }
+        moreEl.textContent = `…共 ${paths.length} 个分组`;
+        if (tw + gap + moreEl.offsetWidth <= available) { setVisibleCount(n); return; }
+      }
+      setVisibleCount(1);
+    };
+    computeVisible();
+    const observer = new ResizeObserver(computeVisible);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [paths, groupIds.length]);
+
+  if (groupIds.length === 0) return <span className="text-xs text-gray-500 font-medium">预设策略</span>;
+  const omitted = paths.length - visibleCount;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div ref={containerRef} className="flex items-center gap-1 w-full overflow-hidden cursor-default">
+          {paths.slice(0, visibleCount).map((p, i) => (
+            <span key={i} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap shrink-0">{p}</span>
+          ))}
+          {omitted > 0 && <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">…共 {paths.length} 个分组</span>}
+          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
+            {paths.map((p, i) => <span key={`m-${i}`} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap">{p}</span>)}
+            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap" />
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent><p className="text-xs">{paths.join("、")}</p></TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── TogglePolicyCard ────────────────────────────────────────────────────────
+interface TogglePolicyCardProps {
+  icon: React.ReactNode;
+  iconBg: string;
+  title: string;
+  description: string;
+  rules: PolicyRule<boolean>[];
+  onRulesChange: (rules: PolicyRule<boolean>[]) => boolean | void;
+}
+
+function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChange }: TogglePolicyCardProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftGroupIds, setDraftGroupIds] = useState<string[]>([]);
+  const [draftValue, setDraftValue] = useState<boolean>(true);
+  const [addingNew, setAddingNew] = useState(false);
+  const [confirmFallbackDraft, setConfirmFallbackDraft] = useState<boolean | null>(null);
+
+  const getDisabledIds = (excludeRuleId?: string) =>
+    rules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+
+  const fallbackRule = rules.find((r) => r.groupIds.length === 0)!;
+  const groupRules = rules.filter((r) => r.groupIds.length > 0);
+  const groupRuleValue = !fallbackRule.value;
+
+  const startEdit = (rule: PolicyRule<boolean>) => {
+    setEditingId(rule.id);
+    setDraftGroupIds([...rule.groupIds]);
+    setDraftValue(rule.groupIds.length === 0 ? rule.value : groupRuleValue);
+    setAddingNew(false);
+  };
+  const startAdd = () => { setAddingNew(true); setEditingId(null); setDraftGroupIds([]); setDraftValue(groupRuleValue); };
+  const cancelEdit = () => { setEditingId(null); setAddingNew(false); };
+
+  const saveEdit = (ruleId?: string) => {
+    if (addingNew) {
+      if (draftGroupIds.length === 0) { toast.error("请选择至少一个分组"); return; }
+      const result = onRulesChange([...groupRules, { id: `rule-${Date.now()}`, groupIds: draftGroupIds, value: groupRuleValue }, fallbackRule]);
+      if (result === false) return;
+      toast.success("策略已保存"); cancelEdit(); return;
+    }
+    if (!ruleId) return;
+    if (ruleId === fallbackRule.id) {
+      if (draftValue !== fallbackRule.value && groupRules.length > 0) { setConfirmFallbackDraft(draftValue); return; }
+      const result = onRulesChange(rules.map((r) => r.id === ruleId ? { ...r, value: draftValue } : r));
+      if (result === false) return;
+      toast.success("策略已保存"); cancelEdit(); return;
+    }
+    const result = onRulesChange(rules.map((r) => r.id === ruleId ? { ...r, groupIds: draftGroupIds, value: groupRuleValue } : r));
+    if (result === false) return;
+    toast.success("策略已保存"); cancelEdit();
+  };
+
+  const handleConfirmFallbackSwitch = () => {
+    if (confirmFallbackDraft === null) return;
+    const result = onRulesChange([{ ...fallbackRule, value: confirmFallbackDraft }]);
+    if (result !== false) { toast.success("已更新预设策略，分组策略已清空"); cancelEdit(); }
+    setConfirmFallbackDraft(null);
+  };
+
+  const deleteRule = (ruleId: string) => {
+    const result = onRulesChange(rules.filter((r) => r.id !== ruleId));
+    if (result === false) return;
+    toast.success("策略已删除");
+  };
+
+  const renderFallbackValueEditor = () => (
+    <>
+      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-gray-200 text-gray-500"}`}>开启</button>
+      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-gray-200 text-gray-500"}`}>关闭</button>
+    </>
+  );
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+      <div className="px-5 pt-5 pb-3">
+        <div className="flex items-center gap-3 mb-1.5">
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
+          <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
+        </div>
+        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+      </div>
+
+      <div className="px-5 pb-4">
+        {(groupRules.length > 0 || addingNew) && (
+          <div className={`${FM_ROW_CLASS} border-b border-gray-100`}>
+            <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
+            <span className="w-24 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">权限</span>
+            <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
+          </div>
+        )}
+
+        {groupRules.map((rule) => (
+          <div key={rule.id}>
+            {editingId === rule.id ? (
+              <div className={FM_EDIT_ROW_CLASS}>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds(rule.id)} onChange={setDraftGroupIds} />
+                </div>
+                <div className="w-24 flex items-center justify-end gap-1 h-7 pt-0.5">
+                  <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
+                </div>
+                <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                  <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                </div>
+              </div>
+            ) : (
+              <div className={`${FM_ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                <div className="flex-1 min-w-0"><FMGroupBadges groupIds={rule.groupIds} /></div>
+                <div className="w-24 text-right">
+                  <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>
+                </div>
+                <div className="w-14 flex items-center justify-end gap-1">
+                  <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+                  <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {addingNew ? (
+          <div className={FM_EDIT_ROW_CLASS}>
+            <div className="flex-1 min-w-0 pt-0.5">
+              <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds()} onChange={setDraftGroupIds} />
+            </div>
+            <div className="w-24 flex items-center justify-end gap-1 h-7 pt-0.5">
+              <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
+            </div>
+            <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+              <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+              <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+            </div>
+          </div>
+        ) : (
+          groupRules.length === 0 && (
+            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-lg transition-colors">
+              <Plus className="w-3.5 h-3.5" />添加分组策略
+            </button>
+          )
+        )}
+
+        <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
+          {editingId === fallbackRule.id ? (
+            <div className={FM_ROW_CLASS}>
+              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
+              <div className="w-24 flex items-center justify-end gap-1">{renderFallbackValueEditor()}</div>
+              <div className="w-14 flex items-center justify-end gap-1">
+                <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+              </div>
+            </div>
+          ) : (
+            <div className={FM_ROW_CLASS}>
+              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
+              <div className="w-24 text-right">
+                <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>
+              </div>
+              <div className="w-14 flex items-center justify-end">
+                <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>切换后将清空分组策略</AlertDialogTitle>
+            <AlertDialogDescription>分组策略是基于「预设策略」的例外设置。切换「预设策略」后，现有分组策略将全部清空，需重新添加。</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmFallbackSwitch}>确认切换</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
 
 // Updated Mock Data for Enterprise Spaces
 const ENTERPRISE_SPACES = [
@@ -57,6 +541,8 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-16", instanceId: "ins-x88r0xuu", instanceName: "Mike的产品分析", creator: "mike@acompany.com", avatar: "M", type: "个人", used: "13GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-17", instanceId: "ins-y99s1yvv", instanceName: "Kate的客服助手", creator: "kate@acompany.com", avatar: "K", type: "个人", used: "5GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
   { id: "user-ins-18", instanceId: "ins-z00t2zww", instanceName: "Ryan的技术文档", creator: "ryan@acompany.com", avatar: "R", type: "个人", used: "10GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-19", instanceId: "ins-a11u3axv", instanceName: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "longname-user@very-long-domain-example.com", avatar: "L", type: "个人", used: "8GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
+  { id: "user-ins-20", instanceId: "ins-b22v4byw", instanceName: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", avatar: "G", type: "个人", used: "22GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
 ];
 
 const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
@@ -76,8 +562,13 @@ const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
 
 export default function FileManagement() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [autoBindNewInstance, setAutoBindNewInstance] = useState(true);
-  const [allowUserSelfEnable, setAllowUserSelfEnable] = useState(true);
+  const [groupFilter, setGroupFilter] = useState("");
+  const [autoBindRules, setAutoBindRules] = useState<PolicyRule<boolean>[]>([
+    { id: "autobind-fallback", groupIds: [], value: true },
+  ]);
+  const [allowSelfEnableRules, setAllowSelfEnableRules] = useState<PolicyRule<boolean>[]>([
+    { id: "selfopen-fallback", groupIds: [], value: true },
+  ]);
   const [instancesEnabled, setInstancesEnabled] = useState<Record<string, boolean>>(
     PERSONAL_SPACES_DATA.reduce((acc, item) => {
       acc[item.id] = item.enabled;
@@ -110,10 +601,6 @@ export default function FileManagement() {
   const [instanceToDisable, setInstanceToDisable] = useState<{ id: string; name: string } | null>(null);
   const [batchEnableDialogOpen, setBatchEnableDialogOpen] = useState(false);
   const [singleEnableDialogOpen, setSingleEnableDialogOpen] = useState(false);
-  const [autoBindToggleDialogOpen, setAutoBindToggleDialogOpen] = useState(false);
-  const [allowUserSelfEnableDialogOpen, setAllowUserSelfEnableDialogOpen] = useState(false);
-  const [pendingAutoBindValue, setPendingAutoBindValue] = useState<boolean | null>(null);
-  const [pendingAllowUserSelfEnableValue, setPendingAllowUserSelfEnableValue] = useState<boolean | null>(null);
   const [instanceToEnable, setInstanceToEnable] = useState<{ id: string; name: string } | null>(null);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [instanceToPurchase, setInstanceToPurchase] = useState<{ id: string; name: string } | null>(null);
@@ -259,41 +746,6 @@ export default function FileManagement() {
     setInstanceToEnableChoice(null);
   };
 
-  const handleAutoBindToggle = (checked: boolean) => {
-    setPendingAutoBindValue(checked);
-    setAutoBindToggleDialogOpen(true);
-  };
-
-  const handleConfirmAutoBindToggle = () => {
-    if (pendingAutoBindValue !== null) {
-      setAutoBindNewInstance(pendingAutoBindValue);
-    }
-    setAutoBindToggleDialogOpen(false);
-    setPendingAutoBindValue(null);
-  };
-
-  const handleCancelAutoBindToggle = () => {
-    setAutoBindToggleDialogOpen(false);
-    setPendingAutoBindValue(null);
-  };
-
-  const handleAllowUserSelfEnableToggle = (checked: boolean) => {
-    setPendingAllowUserSelfEnableValue(checked);
-    setAllowUserSelfEnableDialogOpen(true);
-  };
-
-  const handleConfirmAllowUserSelfEnableToggle = () => {
-    if (pendingAllowUserSelfEnableValue !== null) {
-      setAllowUserSelfEnable(pendingAllowUserSelfEnableValue);
-    }
-    setAllowUserSelfEnableDialogOpen(false);
-    setPendingAllowUserSelfEnableValue(null);
-  };
-
-  const handleCancelAllowUserSelfEnableToggle = () => {
-    setAllowUserSelfEnableDialogOpen(false);
-    setPendingAllowUserSelfEnableValue(null);
-  };
 
   const handleConfirmPurchase = () => {
     if (instanceToPurchase) {
@@ -640,16 +1092,40 @@ export default function FileManagement() {
 
   // 搜索过滤
   const filteredPersonalSpaces = React.useMemo(() => {
-    if (!searchQuery.trim()) {
-      return PERSONAL_SPACES_DATA;
+    let result = PERSONAL_SPACES_DATA;
+    // 分组筛选
+    if (groupFilter) {
+      // 收集所选分组及其子孙 ID
+      const collectIds = (nodes: GroupNode[], targetId: string): string[] => {
+        const ids: string[] = [];
+        const collect = (node: GroupNode) => { ids.push(node.id); node.children?.forEach(collect); };
+        const find = (list: GroupNode[]): boolean => {
+          for (const n of list) {
+            if (n.id === targetId) { collect(n); return true; }
+            if (n.children && find(n.children)) return true;
+          }
+          return false;
+        };
+        find(nodes);
+        return ids;
+      };
+      const allowedGroupIds = collectIds(MOCK_GROUP_TREE_MANUAL, groupFilter);
+      result = result.filter(item => {
+        const g = CREATOR_GROUP_MAP[item.creator];
+        return g && allowedGroupIds.includes(g);
+      });
     }
-    const query = searchQuery.toLowerCase().trim();
-    return PERSONAL_SPACES_DATA.filter(item => 
-      item.instanceName.toLowerCase().includes(query) ||
-      item.instanceId.toLowerCase().includes(query) ||
-      item.creator.toLowerCase().includes(query)
-    );
-  }, [searchQuery]);
+    // 关键词搜索
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(item =>
+        item.instanceName.toLowerCase().includes(query) ||
+        item.instanceId.toLowerCase().includes(query) ||
+        item.creator.toLowerCase().includes(query)
+      );
+    }
+    return result;
+  }, [searchQuery, groupFilter]);
 
   // 计算总页数
   const totalPages = Math.ceil(filteredPersonalSpaces.length / itemsPerPage);
@@ -661,10 +1137,10 @@ export default function FileManagement() {
     return filteredPersonalSpaces.slice(startIndex, endIndex);
   }, [filteredPersonalSpaces, currentPage]);
 
-  // 当搜索条件变化时重置到第一页
+  // 当搜索或分组条件变化时重置到第一页
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, groupFilter]);
 
   return (
     <div className="page-enter space-y-8 w-full">
@@ -695,7 +1171,6 @@ export default function FileManagement() {
       {/* Enterprise Public Space Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Building className="w-5 h-5 text-blue-600" />
           <h2 className="font-semibold text-gray-900">企业公共空间</h2>
         </div>
 
@@ -763,7 +1238,6 @@ export default function FileManagement() {
       {/* AI Agent Private Space Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-purple-600" />
           <h2 className="font-semibold text-gray-900">智能体网盘</h2>
         </div>
 
@@ -777,51 +1251,22 @@ export default function FileManagement() {
 
         {/* 网盘配置卡片 */}
         <div className="grid grid-cols-2 gap-4">
-          {/* 新增实例是否自动绑定网盘 */}
-          <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                  <Link className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-gray-900">新增实例是否自动绑定网盘</span>
-                  <span className="text-xs text-gray-500 mt-1">开启后,新创建的 AI 智能体实例将自动分配网盘空间</span>
-                </div>
-              </div>
-              <Switch 
-                checked={autoBindNewInstance}
-                onCheckedChange={handleAutoBindToggle}
-                className="shrink-0"
-              />
-            </div>
-          </div>
-
-          {/* 允许用户自行开启网盘 */}
-          <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-sm font-semibold text-gray-900">允许用户自行开启网盘</span>
-                  <span className="text-xs text-gray-500 mt-1">开启后,用户可在自己的实例中自主开启网盘服务</span>
-                </div>
-              </div>
-              <Switch 
-                checked={allowUserSelfEnable}
-                onCheckedChange={handleAllowUserSelfEnableToggle}
-                className="shrink-0"
-              />
-            </div>
-          </div>
+          <FMTogglePolicyCard
+            icon={<Link className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            title="新增实例是否自动绑定网盘"
+            description="开启后,新创建的 AI 智能体实例将自动分配网盘空间"
+            rules={autoBindRules}
+            onRulesChange={setAutoBindRules}
+          />
+          <FMTogglePolicyCard
+            icon={<UserCheck className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            title="允许用户自行开启网盘"
+            description="开启后,用户可在自己的实例中自主开启网盘服务"
+            rules={allowSelfEnableRules}
+            onRulesChange={setAllowSelfEnableRules}
+          />
         </div>
 
         <div
@@ -846,6 +1291,11 @@ export default function FileManagement() {
                   </span>
                 )}
               </Button>
+              <FMGroupFilter
+                groups={MOCK_GROUP_TREE_MANUAL}
+                value={groupFilter}
+                onChange={(v) => setGroupFilter(v)}
+              />
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input 
@@ -941,19 +1391,29 @@ export default function FileManagement() {
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
                             <Bot className="w-5 h-5 text-white" />
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-medium text-gray-900 truncate">{item.instanceName}</span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{item.instanceName}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.instanceName}</TooltipContent>
+                            </Tooltip>
                             <span className="text-xs font-mono text-blue-500">{item.instanceId}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-gray-900 truncate">{item.creator}</span>
+                      <td className="px-6 py-4" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-sm text-gray-900 truncate block max-w-[140px]">{item.creator}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
+                        </Tooltip>
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
@@ -1198,96 +1658,6 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
             <Button onClick={handleConfirmSingleEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
               确认启用
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Auto-Bind Toggle Confirmation Dialog */}
-      <Dialog open={autoBindToggleDialogOpen} onOpenChange={setAutoBindToggleDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">
-              {pendingAutoBindValue ? "开启自动绑定网盘" : "关闭自动绑定网盘"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-700">
-              {pendingAutoBindValue 
-                ? "您确定要开启新增实例自动绑定网盘功能吗?" 
-                : "您确定要关闭新增实例自动绑定网盘功能吗?"}
-            </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
-                {pendingAutoBindValue ? (
-                  <>
-                    <p className="font-semibold">开启后：</p>
-                    <div className="space-y-0.5 ml-1">
-                      <p>• 新创建的 AI 智能体实例将自动分配网盘空间</p>
-                      <p>• 实例可以立即使用网盘服务</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-semibold">关闭后：</p>
-                    <div className="space-y-0.5 ml-1">
-                      <p>• 新创建的实例将不会自动分配网盘空间</p>
-                      <p>• 需要手动为实例开启网盘服务</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelAutoBindToggle}>取消</Button>
-            <Button onClick={handleConfirmAutoBindToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-              确认{pendingAutoBindValue ? "开启" : "关闭"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Allow User Self Enable Toggle Confirmation Dialog */}
-      <Dialog open={allowUserSelfEnableDialogOpen} onOpenChange={setAllowUserSelfEnableDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-gray-900">
-              {pendingAllowUserSelfEnableValue ? "允许用户自行开启网盘" : "禁止用户自行开启网盘"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-700">
-              {pendingAllowUserSelfEnableValue 
-                ? "您确定要允许用户自行开启网盘服务吗?" 
-                : "您确定要禁止用户自行开启网盘服务吗?"}
-            </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-              <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
-                {pendingAllowUserSelfEnableValue ? (
-                  <>
-                    <p className="font-semibold">开启后：</p>
-                    <div className="space-y-0.5 ml-1">
-                      <p>• 用户可在自己的实例详情页中自主开启网盘服务</p>
-                      <p>• 无需管理员手动开启</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="font-semibold">关闭后：</p>
-                    <div className="space-y-0.5 ml-1">
-                      <p>• 用户无法自行开启网盘服务</p>
-                      <p>• 需要由管理员统一管理开启</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelAllowUserSelfEnableToggle}>取消</Button>
-            <Button onClick={handleConfirmAllowUserSelfEnableToggle} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
-              确认{pendingAllowUserSelfEnableValue ? "允许" : "禁止"}
             </Button>
           </DialogFooter>
         </DialogContent>

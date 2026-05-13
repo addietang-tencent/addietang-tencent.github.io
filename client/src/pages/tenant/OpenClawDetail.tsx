@@ -61,6 +61,7 @@ import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
+import ToolsMcpPanel from "./ToolsMcpPanel";
 
 // ─── 实例状态配置（与 MyAgent 保持一致） ──────────────────────────────────────
 
@@ -2097,7 +2098,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
           {/* 工具管理 tab */}
           {activeDetailTab === "tools" && (
-            <div />
+            <ToolsMcpPanel />
           )}{/* end tools tab */}
 
           {/* 记忆管理 tab */}

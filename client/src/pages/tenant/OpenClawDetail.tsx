@@ -1484,6 +1484,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <div className="flex flex-col gap-1 flex-shrink-0 w-36">
             {([
               { id: "basic", label: "基础配置" },
+              { id: "tools", label: "工具管理" },
               { id: "memory", label: "记忆管理" },
               { id: "files", label: "网盘管理" },
               { id: "doctor", label: "龙虾医院" },
@@ -2093,6 +2094,11 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
             </div>
           )}{/* end basic tab */}
+
+          {/* 工具管理 tab */}
+          {activeDetailTab === "tools" && (
+            <div />
+          )}{/* end tools tab */}
 
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (

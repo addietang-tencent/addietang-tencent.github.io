@@ -12,6 +12,7 @@
 import { useState } from "react";
 import { Brain, Info } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { SurfaceCard } from "@/components/ui/Surface";
 import { toast } from "sonner";
 import EnableMemoryDialog from "./EnableMemoryDialog";
 import DisableMemoryDialog from "./DisableMemoryDialog";
@@ -128,12 +129,9 @@ export default function MemoryCard({
 
   return (
     <>
-      <div
-        className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col"
-        style={{
-          boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-          height: "476px",
-        }}
+      <SurfaceCard
+        className="overflow-hidden flex flex-col"
+        style={{ height: "476px" }}
       >
         {/* ── Header - 符合设计规范 ── */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
@@ -196,7 +194,7 @@ export default function MemoryCard({
             </div>
           )}
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* ── Dialogs ── */}
       <EnableMemoryDialog

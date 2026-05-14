@@ -141,6 +141,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
                   </div>
                   <button
                     onClick={handleOpenClick}
+                    // allow-shadow: 立即开通按钮 hover glow，非卡片
                     className="inline-flex items-center gap-2 px-6 py-2.5 rounded-[4px] text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98]"
                     style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)' }}
                   >

@@ -26,6 +26,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,17 +113,14 @@ export const AgentCard = ({
   };
 
   return (
-    <div
-      className={`bg-card rounded-[4px] transition-all duration-200 group relative flex flex-col ${
-        !isDisabled
-          ? "hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
-          : "cursor-default"
+    <SurfaceCard
+      hover={!isDisabled}
+      className={`group relative flex flex-col ${
+        !isDisabled ? "cursor-pointer" : "cursor-default"
       }`}
       style={{
         padding: "20px",
         gap: "24px",
-        boxShadow:
-          "0 1px 4px rgba(0,0,0,0.05), 0 0 2px rgba(0,0,0,0.1)",
       }}
       onClick={() => {
         if (!isDisabled) onClickCard(claw);
@@ -425,6 +423,6 @@ export const AgentCard = ({
           </Button>
         </div>
       </div>
-    </div>
+    </SurfaceCard>
   );
 };

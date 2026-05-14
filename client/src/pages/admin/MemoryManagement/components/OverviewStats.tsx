@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bot, Zap, Crown, CircleOff, Info } from 'lucide-react';
+import { SurfaceCard } from '@/components/ui/Surface';
 
 interface OverviewStatsProps {
   totalCount: number;
@@ -51,10 +52,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
   ];
 
   return (
-    <div
-      className="bg-white rounded-[4px] border border-gray-100 p-5"
-      style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
-    >
+    <SurfaceCard className="p-5">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="font-semibold text-gray-900">记忆空间概览</h3>
       </div>
@@ -63,10 +61,9 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
         {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <div
+            <SurfaceCard
               key={stat.label}
-              className="bg-white rounded-[4px] border border-gray-100 p-5"
-              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+              className="p-5"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div
@@ -93,7 +90,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
                   ))}
                 </div>
               )}
-            </div>
+            </SurfaceCard>
           );
         })}
       </div>
@@ -107,6 +104,6 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
           </p>
         </div>
       )}
-    </div>
+    </SurfaceCard>
   );
 };

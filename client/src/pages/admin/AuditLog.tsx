@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -268,8 +269,7 @@ export default function AuditLog() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+        <SurfaceCard className="overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -347,7 +347,7 @@ export default function AuditLog() {
               </div>
             )}
           </div>
-        </div>
+        </SurfaceCard>
       </div>
 
       {/* Detail Dialog */}

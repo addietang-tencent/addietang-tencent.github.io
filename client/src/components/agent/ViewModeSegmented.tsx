@@ -39,7 +39,7 @@ export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) =
                 ? "bg-white text-[#0A0A0A]"
                 : "text-[#737373] hover:text-[#0A0A0A]"
             }`}
-            style={active ? { boxShadow: "0px 1.11px 2.22px rgba(0,0,0,0.05)" } : undefined}
+            style={active ? { boxShadow: "var(--shadow-segment)" } : undefined}
           >
             <Icon className="w-4 h-4" />
             {label}

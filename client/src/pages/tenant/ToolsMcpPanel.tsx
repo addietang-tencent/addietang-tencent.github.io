@@ -354,9 +354,8 @@ export default function ToolsMcpPanel() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMcpId, setDeleteMcpId] = useState<string | null>(null);
 
-  // ── 重启确认（删除/保存源码/切换开关后弹出） ──
+  // ── 重启确认（仅切换开关后弹出） ──
   const [restartDialogOpen, setRestartDialogOpen] = useState(false);
-  const [restartAction, setRestartAction] = useState<"delete" | "save" | "toggle">("save");
   /** 切换开关时记录的 MCP id，取消修改时需要回退 */
   const [toggleRevertId, setToggleRevertId] = useState<string | null>(null);
 
@@ -415,8 +414,31 @@ export default function ToolsMcpPanel() {
         })
       );
       setRefreshing(false);
-      toast.success("状态已刷新");
+      toast.success("技能列表已刷新");
     }, 1000);
+  }, []);
+
+  // ── 单条刷新连接状态 ──
+  const [refreshingSingleId, setRefreshingSingleId] = useState<string | null>(null);
+  const handleRefreshSingle = useCallback((mcpId: string) => {
+    setRefreshingSingleId(mcpId);
+    setTimeout(() => {
+      setMcpList((prev) =>
+        prev.map((m) => {
+          if (m.id !== mcpId || !m.enabled) return m;
+          // Mock：随机切换连接状态
+          const newStatus = Math.random() > 0.3 ? "connected" : "failed";
+          return {
+            ...m,
+            status: newStatus as "connected" | "failed",
+            tools: newStatus === "connected" ? (m.tools.length > 0 ? m.tools : ["tool_a", "tool_b"]) : [],
+            errorMessage: newStatus === "failed" ? "连接超时，请检查网络配置" : undefined,
+          };
+        })
+      );
+      setRefreshingSingleId(null);
+      toast.success("连接状态已刷新");
+    }, 800);
   }, []);
 
   // ── 添加 MCP ──
@@ -482,7 +504,7 @@ export default function ToolsMcpPanel() {
     setSourceDialogOpen(true);
   };
 
-  const handleSaveSource = () => {
+  const handleSaveSource = (restart: boolean) => {
     // 组装完整 JSON 并校验
     const fullJson = assembleFullJson(sourceServerName, sourceEditorContent);
     try {
@@ -496,8 +518,12 @@ export default function ToolsMcpPanel() {
       prev.map((m) => (m.id === sourceMcpId ? { ...m, configJson: fullJson } : m))
     );
     setSourceDialogOpen(false);
-    setRestartAction("save");
-    setRestartDialogOpen(true);
+    if (restart) {
+      toast.success("已保存，正在重启实例…");
+      setTimeout(() => toast.success("重启完成"), 2000);
+    } else {
+      toast("已保存，可稍后手动重启生效");
+    }
   };
 
   // ── 删除 ──
@@ -506,15 +532,18 @@ export default function ToolsMcpPanel() {
     setDeleteDialogOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (restart: boolean) => {
     if (!deleteMcpId) return;
     const mcp = mcpList.find((m) => m.id === deleteMcpId);
     setMcpList((prev) => prev.filter((m) => m.id !== deleteMcpId));
     setDeleteDialogOpen(false);
     setDeleteMcpId(null);
-    toast.success(`MCP「${mcp?.displayName || mcp?.serverName}」已删除`);
-    setRestartAction("delete");
-    setRestartDialogOpen(true);
+    if (restart) {
+      toast.success(`MCP「${mcp?.displayName || mcp?.serverName}」已删除，正在重启实例…`);
+      setTimeout(() => toast.success("重启完成"), 2000);
+    } else {
+      toast.success(`MCP「${mcp?.displayName || mcp?.serverName}」已删除，可稍后手动重启生效`);
+    }
   };
 
   // ── 开启/关闭 ──
@@ -526,13 +555,12 @@ export default function ToolsMcpPanel() {
       })
     );
     setToggleRevertId(mcpId);
-    setRestartAction("toggle");
     setRestartDialogOpen(true);
   };
 
   const handleRestartCancel = () => {
-    // 「取消修改」仅在 toggle 时回退
-    if (restartAction === "toggle" && toggleRevertId) {
+    // 「取消修改」回退开关状态
+    if (toggleRevertId) {
       setMcpList((prev) =>
         prev.map((m) => {
           if (m.id !== toggleRevertId) return m;
@@ -705,6 +733,21 @@ export default function ToolsMcpPanel() {
                             <TooltipContent side="bottom" align="start" className="text-xs max-w-[280px]">
                               {mcp.description || "用户自定义 MCP"}
                             </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        {/* 刷新技能连接状态 */}
+                        <TooltipProvider delayDuration={1000}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => handleRefreshSingle(mcp.id)}
+                                disabled={refreshingSingleId === mcp.id}
+                                className="w-6 h-6 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center transition-colors shrink-0 disabled:opacity-50"
+                              >
+                                <RefreshCw className={`w-3.5 h-3.5 ${refreshingSingleId === mcp.id ? "animate-spin" : ""}`} />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">刷新技能连接状态</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                         {/* 查看源码 */}
@@ -958,16 +1001,19 @@ export default function ToolsMcpPanel() {
               <p className="text-xs text-red-500">{sourceJsonError}</p>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
+            <Button variant="outline" onClick={() => handleSaveSource(false)} className="text-sm">
+              保存但不重启
+            </Button>
             <Button
-              onClick={handleSaveSource}
+              onClick={() => handleSaveSource(true)}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white"
+              className="text-white text-sm"
             >
-              保存
+              保存并重启实例
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -982,19 +1028,25 @@ export default function ToolsMcpPanel() {
               确认删除 <span className="font-medium text-gray-900">{deleteMcp?.displayName || deleteMcp?.serverName}</span> MCP，删除后将不可使用。
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel className="text-sm">取消</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={handleConfirmDelete}
+              className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
+              onClick={() => handleConfirmDelete(false)}
             >
-              确认
+              删除但不重启
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white text-sm"
+              onClick={() => handleConfirmDelete(true)}
+            >
+              删除并重启实例
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ===== 重启确认弹窗 ===== */}
+      {/* ===== 重启确认弹窗（仅开关切换时弹出） ===== */}
       <Dialog open={restartDialogOpen} onOpenChange={(open) => { if (!open) handleRestartCancel(); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

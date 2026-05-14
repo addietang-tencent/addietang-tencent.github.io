@@ -244,7 +244,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
             <div
               onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
               onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${uploadedFiles.length > 0 ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-blue-400'}`}
+              className={`border-2 border-dashed rounded-[4px] p-8 text-center transition-colors ${uploadedFiles.length > 0 ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-blue-400'}`}
             >
               <Upload className={`w-8 h-8 mx-auto mb-2 ${uploadedFiles.length > 0 ? 'text-gray-300' : 'text-gray-400'}`} />
               <p className={`text-sm mb-2 ${uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -297,7 +297,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
               <Label className="text-base font-semibold">已上传文件</Label>
               <div className="space-y-2">
                 {uploadedFiles.map((file) => (
-                  <div key={file.name} className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div key={file.name} className="border border-gray-200 rounded-[4px] overflow-hidden">
                     <div className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-3 flex-1">
                         {file.status !== 'parsing' && (
@@ -363,7 +363,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
           )}
 
           {uploadedFiles.length === 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-[4px]">
               <p className="text-sm text-blue-600 font-medium">请先上传插件文件，然后填写插件信息</p>
             </div>
           )}

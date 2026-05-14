@@ -49,14 +49,14 @@ export default function DocManagement() {
             </p>
           </div>
           <Button onClick={() => setShowAddDialog(true)}
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
             <Plus className="w-4 h-4 mr-1.5" />
             添加文档
           </Button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -151,7 +151,7 @@ export default function DocManagement() {
             <div className="space-y-2">
               <Label>上传文档</Label>
               <p className="text-xs text-gray-400">仅支持上传 .md 格式的 Markdown 文件</p>
-              <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
+              <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-[4px] cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
                 {newDoc.file ? (
                   <div className="text-center">
                     <FileText className="w-6 h-6 text-blue-500 mx-auto mb-1" />
@@ -170,7 +170,7 @@ export default function DocManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button onClick={handleAdd} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>确认添加</Button>
+            <Button onClick={handleAdd} style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>确认添加</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

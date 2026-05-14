@@ -139,7 +139,7 @@ function ParentDropdownSelector({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1.5 h-8 px-2 rounded-md cursor-pointer text-sm transition-colors ${
+          className={`flex items-center gap-1.5 h-8 px-2 rounded-[4px] cursor-pointer text-sm transition-colors ${
             isSelected
               ? "bg-blue-50 text-blue-600"
               : "text-gray-700 hover:bg-gray-50"
@@ -179,7 +179,7 @@ function ParentDropdownSelector({
     <div className="relative" ref={containerRef}>
       {/* 触发器 */}
       <div
-        className={`w-full h-9 px-3 flex items-center gap-2 text-sm bg-white border rounded-lg cursor-pointer transition-colors ${dropdownOpen ? "border-blue-300 ring-2 ring-blue-50" : "border-gray-200"} ${disabled ? "opacity-50 pointer-events-none bg-gray-50" : ""}`}
+        className={`w-full h-9 px-3 flex items-center gap-2 text-sm bg-white border rounded-[4px] cursor-pointer transition-colors ${dropdownOpen ? "border-blue-300 ring-2 ring-blue-50" : "border-gray-200"} ${disabled ? "opacity-50 pointer-events-none bg-gray-50" : ""}`}
         onClick={() => !disabled && setDropdownOpen(!dropdownOpen)}
       >
         {selectedFullPath ? (
@@ -206,10 +206,10 @@ function ParentDropdownSelector({
 
       {/* 下拉面板 */}
       {dropdownOpen && (
-        <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full bg-white border border-gray-200 rounded-[4px] shadow-lg overflow-hidden">
           {/* 搜索框 */}
           <div className="px-2 pt-2 pb-1.5 border-b border-gray-100">
-            <div className="flex items-center gap-1.5 h-8 px-2 bg-gray-50 border border-gray-200 rounded-md">
+            <div className="flex items-center gap-1.5 h-8 px-2 bg-gray-50 border border-gray-200 rounded-[4px]">
               <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
               <input
                 ref={searchInputRef}
@@ -373,7 +373,7 @@ export function GroupFormDialog({
               上级分组
             </label>
             {parentLocked && lockedParentName ? (
-              <div className="h-9 flex items-center px-3 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="h-9 flex items-center px-3 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-[4px]">
                 {lockedParentName}
               </div>
             ) : (
@@ -392,7 +392,7 @@ export function GroupFormDialog({
               分组名称<span className="text-red-500 ml-0.5">*</span>
             </label>
             <div
-              className="w-full flex items-center h-9 bg-white border border-gray-200 rounded-lg transition-colors focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-50 cursor-text"
+              className="w-full flex items-center h-9 bg-white border border-gray-200 rounded-[4px] transition-colors focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-50 cursor-text"
               onClick={() => nameInputRef.current?.focus()}
             >
               {pathPrefix && (
@@ -430,7 +430,7 @@ export function GroupFormDialog({
               if (!isValid) return;
               onConfirm(name.trim(), parentId);
             }}
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             className="text-white"
           >
             {confirmText}
@@ -528,13 +528,13 @@ export function DeleteGroupDialog({
         </DialogHeader>
 
         <div className="py-2 space-y-3">
-          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-gray-500">分组名称</span>
             <span className="text-sm font-medium text-gray-900">
               {group?.name}
             </span>
           </div>
-          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
             <span className="text-sm text-gray-500">分组内用户数</span>
             <span className="text-sm font-semibold text-gray-800">
               {memberCount} 人
@@ -542,7 +542,7 @@ export function DeleteGroupDialog({
           </div>
 
           {/* 分组专属配置 */}
-          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-500">分组专属配置</span>
               <button
@@ -574,7 +574,7 @@ export function DeleteGroupDialog({
           </div>
 
           {/* Agent 实例数 */}
-          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-500">分组下 Agent 实例</span>
               <button
@@ -603,11 +603,11 @@ export function DeleteGroupDialog({
 
           {/* 状态提示 */}
           {canDelete ? (
-            <div className="rounded-lg bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
+            <div className="rounded-[4px] bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
               该分组无关联配置且无 Agent 实例，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
             </div>
           ) : (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
+            <div className="rounded-[4px] bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
               {hasRelatedConfigs && (
                 <p className="flex items-start gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />

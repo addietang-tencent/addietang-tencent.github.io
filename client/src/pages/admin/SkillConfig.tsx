@@ -52,7 +52,7 @@ const PRESET_CARDS = [
     description:
       "从多个公共技能库以及企业私有技能库中自由挑选技能，组合成每个 Agent 开箱即用的初始技能集合",
     icon: PackagePlus,
-    color: "#007AFF",
+    color: "#1447E6",
   },
   {
     id: "manage",
@@ -72,7 +72,7 @@ const PUBLIC_CARDS = [
     description:
       "从多个公共技能库中浏览和挑选技能，按需组合形成适合企业实际场景的公共技能库，避免团队自行搜索安装的重复劳动",
     icon: Globe,
-    color: "#007AFF",
+    color: "#1447E6",
   },
   {
     id: "speed",
@@ -92,7 +92,7 @@ const LIBRARY_CARDS = [
     description:
       "支持企业自定义 Skill 压缩包上传与版本控制，构建企业私有技能仓库，确保核心资产仅限内部调用",
     icon: Upload,
-    color: "#007AFF",
+    color: "#1447E6",
   },
   {
     id: "bucket",
@@ -125,14 +125,14 @@ function ComingSoonCards({
         return (
           <div
             key={card.id}
-            className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-[4px] border border-gray-100 p-6 hover:shadow-md transition-shadow"
             style={{
-              boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+              boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
             }}
           >
             <div className="flex items-start gap-4">
               <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                className="w-12 h-12 rounded-[4px] flex items-center justify-center flex-shrink-0"
                 style={{ background: card.color }}
               >
                 <Icon className="w-6 h-6 text-white" />
@@ -194,12 +194,12 @@ function SkillSourceTab() {
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+      style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
     >
       {/* 卡片标题 */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+        <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
           <Puzzle className="w-4 h-4 text-white" />
         </div>
         <h2 className="font-semibold text-gray-900">SkillHub 地址</h2>
@@ -229,7 +229,7 @@ function SkillSourceTab() {
                 size="sm"
                 onClick={handleSave}
                 className="gap-1"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 <Check className="w-3.5 h-3.5" />
                 保存
@@ -243,12 +243,12 @@ function SkillSourceTab() {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 rounded-lg bg-gray-50 font-mono text-sm text-gray-700">
+            <div className="flex-1 px-3 py-2 rounded-[4px] bg-gray-50 font-mono text-sm text-gray-700">
               {skillhubUrl || <span className="text-gray-400 font-sans">未配置</span>}
             </div>
             <button
               onClick={handleEdit}
-              className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded-[4px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               title="编辑"
             >
               <Pencil className="w-4 h-4" />

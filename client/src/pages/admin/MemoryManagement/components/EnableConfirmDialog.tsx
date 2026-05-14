@@ -47,7 +47,7 @@ export const EnableConfirmDialog: React.FC<EnableConfirmDialogProps> = ({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
       <DialogContent className="max-w-[500px]">
         <DialogHeader className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#007AFF] to-[#5856D6] flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#1447E6] to-[#1447E6] flex items-center justify-center flex-shrink-0">
             <span className="text-xl">✓</span>
           </div>
           <div>
@@ -107,7 +107,7 @@ export const EnableConfirmDialog: React.FC<EnableConfirmDialogProps> = ({
           <Button
             onClick={handleConfirm}
             disabled={!isChecked}
-            className="bg-[#007AFF] text-white hover:bg-[#0051d5] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#1447E6] text-white hover:bg-[#0051d5] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             确认开启
           </Button>

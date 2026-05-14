@@ -1,9 +1,9 @@
 /**
  * AdminLayout - 管控端布局
  * Design: 「流动蓝图」Fluid Blueprint
- * - 浅灰色背景 (#F0F2F8)
+ * - 管理端背景：#FFFFFF 纯白 (v2)
  * - 左侧固定导航栏 (256px)，白色背景，可缩进
- * - 主色 #007AFF，导航分组
+ * - 主色 #1447E6，导航分组
  */
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -126,7 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminModeProvider>
-    <div className="flex min-h-screen" style={{ background: "#F0F2F8" }}>
+    <div className="flex min-h-screen" style={{ background: "#FFFFFF" }}>
       {/* Sidebar */}
       <aside className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 flex flex-col z-40 transition-all duration-300 ${
         sidebarCollapsed ? "w-20" : "w-64"
@@ -139,8 +139,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="px-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
               <div className="h-16 flex items-center">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                  <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-lg"
+                    style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
                     🦞
                   </div>
                   <div>
@@ -154,7 +154,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {/* 前往用户端 */}
               <div className="px-5">
               <Link href="/my-openclaw">
-                <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
+                <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-[4px] text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
                   <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
                   <span>前往用户端</span>
                 </div>
@@ -198,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       // 始终保留 2px 左边框占位（transparent），active 时显示颜色
                       const borderColor = isComingSoon
                         ? (isActive ? "#D1D5DB" : "transparent")
-                        : (isActive ? "#007AFF" : "transparent");
+                        : (isActive ? "#1447E6" : "transparent");
                       borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: "calc(0.75rem - 2px)" };
 
                       if (isComingSoon) {
@@ -228,7 +228,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       return (
                         <Link key={item.path} href={item.path}>
                           <div
-                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
+                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-[4px] text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
                             style={borderStyle}
                           >
                             <div className="flex items-center gap-2.5 flex-1 min-w-0 relative z-10">
@@ -240,7 +240,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </span>
                               )}
                             {isNewFeature && (
-                                <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#007AFF', letterSpacing: '0.02em' }}>
+                                <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#1447E6', letterSpacing: '0.02em' }}>
                                   new
                                 </span>
                               )}
@@ -261,15 +261,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {sidebarCollapsed && (
           <>
             <div className="h-16 flex items-center justify-between border-b border-gray-100 px-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg cursor-pointer hover:opacity-80 transition-opacity"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-lg cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                 onClick={() => setSidebarCollapsed(false)}
                 title="展开侧边栏">
                 🦞
               </div>
               <button
                 onClick={() => setSidebarCollapsed(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                className="p-1.5 rounded-[4px] hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
                 title="展开侧边栏"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -288,10 +288,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="border-t border-gray-100 p-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-[4px] hover:bg-gray-50 transition-colors">
                 <Avatar className="w-7 h-7 flex-shrink-0">
                   <AvatarFallback className="text-xs font-medium text-white"
-                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                    style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
                     {CURRENT_ADMIN.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -323,7 +323,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="ml-auto">
               <button
                 onClick={() => setSidebarCollapsed(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                className="p-2 rounded-[4px] hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
                 title="展开侧边栏"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -341,7 +341,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {!sidebarCollapsed && (
         <button
           onClick={() => setSidebarCollapsed(true)}
-          className="fixed top-4 left-56 p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900 z-50"
+          className="fixed top-4 left-56 p-1.5 rounded-[4px] hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900 z-50"
           title="收起侧边栏"
         >
           <ChevronLeft className="w-4 h-4" />

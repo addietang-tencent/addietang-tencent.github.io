@@ -61,12 +61,12 @@ export default function EditCategoriesDialog({
               <button
                 key={cat.id}
                 onClick={() => handleToggleCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+                className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
                   selected.includes(cat.id)
                     ? 'text-white border-transparent'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
-                style={selected.includes(cat.id) ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+                style={selected.includes(cat.id) ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
               >
                 {cat.name}
               </button>

@@ -617,7 +617,7 @@ export default function GroupView({
     <div className="space-y-3">
       {/* 常驻分组命名提醒 */}
       {groups.length > 0 && (
-        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3">
           <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-xs text-amber-700 leading-relaxed">
@@ -629,10 +629,10 @@ export default function GroupView({
 
       {/* 主体：合并为一个卡片，左右面板 + 可拖拽分割线 */}
       <div
-        className="flex bg-white rounded-2xl border border-gray-100 overflow-hidden"
+        className="flex bg-white rounded-[4px] border border-gray-100 overflow-hidden"
         style={{
           boxShadow:
-            "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+            "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
           height: "calc(100vh - 220px)",
         }}
       >
@@ -688,7 +688,7 @@ export default function GroupView({
               {/* 上段竖线 */}
               <div className="flex-1 w-px bg-gray-100" />
               {/* 拖拽手柄：圆角矩形 + 2×3 六点阵列 */}
-              <div className="w-3 py-1.5 flex flex-col items-center justify-center gap-[2px] rounded-md bg-gray-50 group-hover:bg-gray-100 transition-colors">
+              <div className="w-3 py-1.5 flex flex-col items-center justify-center gap-[2px] rounded-[4px] bg-gray-50 group-hover:bg-gray-100 transition-colors">
                 <div className="flex gap-[2px]">
                   <span className="w-[1.5px] h-[1.5px] rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
                   <span className="w-[1.5px] h-[1.5px] rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
@@ -794,7 +794,7 @@ export default function GroupView({
             <p className="text-sm text-gray-700">
               该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
             </p>
-            <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[200px] overflow-y-auto">
+            <div className="rounded-[4px] border border-gray-100 overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
@@ -825,7 +825,7 @@ export default function GroupView({
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${editGroupAgentChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${editGroupAgentChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
                 onClick={() => setEditGroupAgentChoice(opt.value as "keep" | "delete")}
               >
                 <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${editGroupAgentChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
@@ -841,7 +841,7 @@ export default function GroupView({
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditGroupAgentDialog(null)}>取消</Button>
             <Button
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               className="text-white"
               onClick={() => {
                 editGroupAgentDialog?.pendingAction();

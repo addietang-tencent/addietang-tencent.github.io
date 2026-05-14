@@ -31,12 +31,12 @@ export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
           <p className="text-[10px] text-gray-400 font-medium px-0.5">成员管理模式</p>
 
           {/* 分段选择器容器 */}
-          <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+          <div className="flex items-center bg-gray-100 rounded-[4px] p-0.5 gap-0.5">
             {/* 普通模式（左侧，对应 custom） */}
             <button
               onClick={() => setMode("custom")}
               className={`
-                flex-1 flex items-center justify-center gap-1 h-7 rounded-md text-xs font-medium
+                flex-1 flex items-center justify-center gap-1 h-7 rounded-[4px] text-xs font-medium
                 transition-all duration-200 select-none
                 ${isCustom
                   ? "bg-white text-violet-600 shadow-sm shadow-black/10 font-semibold"
@@ -56,7 +56,7 @@ export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
             <button
               onClick={() => setMode("standard")}
               className={`
-                flex-1 flex items-center justify-center gap-1 h-7 rounded-md text-xs font-medium
+                flex-1 flex items-center justify-center gap-1 h-7 rounded-[4px] text-xs font-medium
                 transition-all duration-200 select-none
                 ${!isCustom
                   ? "bg-white text-blue-600 shadow-sm shadow-black/10 font-semibold"

@@ -30,7 +30,7 @@ export default function EnableMemoryDialog({
 }: EnableMemoryDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="sm:max-w-md rounded-2xl">
+      <DialogContent className="sm:max-w-md rounded-[4px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold text-gray-900">
             启用 Memory 记忆功能
@@ -45,7 +45,7 @@ export default function EnableMemoryDialog({
           </DialogDescription>
 
           {/* Warning Block */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 flex gap-3">
+          <div className="rounded-[4px] border border-amber-200 bg-amber-50 p-3 flex gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-amber-900 leading-relaxed">
               <p className="font-medium mb-1">⚠️ 重启期间 Gateway 服务将短暂不可用</p>

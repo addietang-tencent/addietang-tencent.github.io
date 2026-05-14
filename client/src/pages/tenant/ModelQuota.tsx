@@ -424,10 +424,10 @@ export default function ModelQuota() {
 
               {/* Refresh */}
               <Button
-                variant="outline"
-                size="sm"
+                variant="claw-outline"
+                size="claw-sm"
                 onClick={handleRefresh}
-                className="flex items-center gap-1.5 text-gray-600 bg-white"
+                className="text-xs"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 刷新

@@ -58,15 +58,14 @@ export default function EnableMemoryDialog({
           {/* Action Buttons */}
           <div className="flex gap-3 justify-end pt-2">
             <Button
-              variant="outline"
+              variant="claw-outline"
               onClick={onCancel}
-              className="border-gray-200 text-gray-700 hover:bg-gray-50"
             >
               取消
             </Button>
             <Button
+              variant="claw-primary"
               onClick={onConfirm}
-              className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white"
             >
               确认启用
             </Button>

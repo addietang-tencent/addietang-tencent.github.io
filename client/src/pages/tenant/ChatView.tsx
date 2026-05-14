@@ -7,7 +7,7 @@
  */
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1924,6 +1924,7 @@ export default function ChatView({
                 className="h-full rounded-full transition-[width] duration-500 ease-out"
                 style={{
                   width: `${currentBrowserState.panelLoadProgress}%`,
+                  // allow-inline-gradient: 进度条填充色（非按钮，SKILL §8.1 白名单）
                   background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
                 }}
               />
@@ -2305,7 +2306,7 @@ export default function ChatView({
                       <p className="text-base font-medium text-gray-900 mb-1">当前 OpenClaw 未在运行中，暂时无法对话</p>
                       <p className="text-xs text-gray-400 mb-4">你可以刷新状态查看最新情况或选择其他 OpenClaw</p>
                       {selectedClaw.status === "loadFail" ? (
-                        <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="outline" size="sm" className="text-xs">
+                        <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="claw-outline" size="claw-sm" className="text-xs">
                           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                           重试恢复
                         </Button>
@@ -2403,6 +2404,7 @@ export default function ChatView({
                           onClick={handleSend}
                           disabled={!inputText.trim() || currentIsTyping}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all duration-150 disabled:opacity-30"
+                          // allow-inline-gradient: 圆形发送按钮非标准矩形按钮，属于 SKILL §8.1 白名单场景
                           style={{ background: inputText.trim() && !currentIsTyping ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#d1d5db" }}
                         >
                           <Send className="w-3 h-3" />
@@ -2756,38 +2758,38 @@ export default function ChatView({
 
           <DialogFooter className="justify-center gap-3 pt-1 sm:justify-center sm:space-x-0">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={closeBrowserStartupModal}
-              className="px-6 text-gray-600"
+              className="px-6"
             >
               取消
             </Button>
 
             {browserStartupModal.flowStatus === "failed" ? (
               <Button
-                size="sm"
+                variant="claw-primary"
+                size="claw-sm"
                 onClick={handleRetryBrowserStartup}
-                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-                className="px-6 text-white hover:opacity-95"
+                className="px-6"
               >
                 重试
               </Button>
             ) : browserStartupModal.flowStatus === "success" ? (
               <Button
-                size="sm"
+                variant="claw-primary"
+                size="claw-sm"
                 onClick={handleConfirmBrowserStartup}
-                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-                className="px-6 text-white hover:opacity-95"
+                className="px-6"
               >
                 立即进入
               </Button>
             ) : (
               <Button
-                size="sm"
+                variant="claw-primary"
+                size="claw-sm"
                 disabled
-                className="px-6 text-white"
-                style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.55), rgba(88,86,214,0.55))" }}
+                className="px-6"
               >
                 校验中...
               </Button>
@@ -2822,8 +2824,7 @@ export default function ChatView({
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmNewChat}
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-              className="text-white hover:opacity-90"
+              className={buttonVariants({ variant: "claw-primary", size: "claw-sm" })}
             >
               确认
             </AlertDialogAction>
@@ -2880,8 +2881,7 @@ export default function ChatView({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDesktopUpgrade}
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-              className="text-white btn-primary-glow"
+              className={buttonVariants({ variant: "claw-primary", size: "claw-sm" })}
             >
               确认
             </AlertDialogAction>

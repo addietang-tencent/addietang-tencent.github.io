@@ -1037,7 +1037,7 @@ function SkillSquareDetail({
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">技能未找到</p>
-        <Button onClick={onBack} className="mt-4" variant="outline">返回列表</Button>
+        <Button onClick={onBack} className="mt-4" variant="claw-outline">返回列表</Button>
       </div>
     );
   }
@@ -1062,15 +1062,14 @@ function SkillSquareDetail({
           </div>
           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
             {/* 下载按钮 */}
-            <Button variant="outline" onClick={handleDownload} disabled={isDownloading}>
+            <Button variant="claw-outline" onClick={handleDownload} disabled={isDownloading}>
               {isDownloading ? <Loader className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
               下载
             </Button>
             {/* 下发按钮 */}
             <Button
+              variant="claw-primary"
               onClick={() => setDistributeDialogOpen(true)}
-              className="btn-primary-glow text-white"
-              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
               disabled={hasInProgress}
             >
               <Plus className="w-4 h-4 mr-1.5" />

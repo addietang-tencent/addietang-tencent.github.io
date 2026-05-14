@@ -47,7 +47,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
           {/* 头部：图标 + 标题 + 状态标签（跟在标题后面） */}
           <div className="flex items-center gap-3 mb-4">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              className="w-9 h-9 rounded-[4px] flex items-center justify-center flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)' }}
             >
               <Gem className="w-5 h-5 text-white" />
@@ -120,7 +120,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
           {/* 操作区 - 与 Free 版对齐，放在底部 */}
           <div className="mt-auto pt-4 border-t border-gray-100">
             {serviceStatus === 'activating' ? (
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-50 border border-blue-100 w-fit">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-[4px] bg-blue-50 border border-blue-100 w-fit">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
                 <span className="text-sm text-blue-700 font-medium">请稍候...</span>
               </div>
@@ -128,7 +128,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
               <Button
                 onClick={onRetry}
                 variant="outline"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-sm font-semibold border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[4px] text-sm font-semibold border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
               >
                 <RotateCcw className="w-4 h-4" />
                 重试
@@ -141,7 +141,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
                   </div>
                   <button
                     onClick={handleOpenClick}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-[4px] text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-purple-500/25 hover:scale-[1.02] active:scale-[0.98]"
                     style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)' }}
                   >
                     <Sparkles className="w-4 h-4" />

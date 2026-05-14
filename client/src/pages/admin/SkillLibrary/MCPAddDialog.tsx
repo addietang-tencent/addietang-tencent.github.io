@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Eye, Code, ChevronDown, ChevronRight, Globe, Terminal, AlignLeft } from 'lucide-react';
+import { Eye, Code, ChevronDown, ChevronRight, Globe, Terminal, AlignLeft, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import MDXRenderer from '@/components/MDXRenderer';
 import {
@@ -436,6 +436,13 @@ export default function MCPAddDialog({
             className="flex flex-col min-h-0 flex-1"
           >
             <div className="flex-1 overflow-y-auto space-y-5 px-6">
+              {/* 用户自填字段提示 */}
+              <div className="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                <span className="text-gray-400 text-sm mt-0.5 shrink-0">💡</span>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  用户可在租户端自选配此 MCP，请注意敏感数据泄露风险。
+                </p>
+              </div>
               <div className="space-y-4">
                 <Label className="text-base font-semibold">基本信息</Label>
 
@@ -506,7 +513,7 @@ export default function MCPAddDialog({
                           key={cat}
                           type="button"
                           onClick={() => handleCategoryChange(cat)}
-                          className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border-2 transition-all ${
+                          className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-[4px] border-2 transition-all ${
                             isSelected
                               ? 'border-blue-500 bg-blue-50/60'
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -550,7 +557,7 @@ export default function MCPAddDialog({
                               key={proto}
                               type="button"
                               onClick={() => handleRemoteProtocolChange(proto)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border transition-all text-sm ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border transition-all text-sm ${
                                 isSelected
                                   ? 'border-blue-500 bg-blue-50/60 text-blue-700 font-medium'
                                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
@@ -594,12 +601,12 @@ export default function MCPAddDialog({
                   服务配置 <span className="text-red-500">*</span>
                 </Label>
                 <p className="text-xs text-gray-500 mb-1">
-                  外层结构 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">mcp.servers.{displayServerName}</code> 已固定，仅需编辑服务器字段内容
+                  外层结构 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">mcp.servers.{displayServerName}</code> 已固定，仅需编辑服务器字段内容；可用 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">&lt;&gt;</code> 框住需用户填写的内容。
                 </p>
 
                 {/* 可折叠的配置参考 */}
                 {effectiveTransportType && (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="border border-gray-200 rounded-[4px] overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setConfigRefExpanded(!configRefExpanded)}
@@ -623,7 +630,7 @@ export default function MCPAddDialog({
                 )}
 
                 {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
-                <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
+                <div className="border border-gray-200 rounded-[4px] overflow-hidden font-mono text-xs">
                   {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
                   <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
@@ -671,6 +678,42 @@ export default function MCPAddDialog({
                 {errors.configJson && (
                   <p className="text-xs text-red-500 mt-1">{errors.configJson}</p>
                 )}
+                {/* 展示配置中检测到的需用户填写字段 */}
+                {(() => {
+                  const matches = serverValueContent.match(/<([^>]+)>/g);
+                  // 从配置文本中提取包含占位符的 JSON key 名称
+                  const extractFieldKeys = (content: string, placeholders: string[]): string[] => {
+                    const keys: string[] = [];
+                    placeholders.forEach(ph => {
+                      // 匹配 "KeyName": "...<placeholder>..." 或 "KeyName": "<placeholder>" 模式
+                      const keyMatch = content.match(new RegExp(`"([^"]+)"\\s*:\\s*"[^"]*${ph.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^"]*"`));
+                      if (keyMatch) {
+                        keys.push(keyMatch[1]);
+                      }
+                    });
+                    return [...new Set(keys)];
+                  };
+                  const placeholders = matches ? [...new Set(matches)] : [];
+                  const fieldKeys = placeholders.length > 0 ? extractFieldKeys(serverValueContent, placeholders) : [];
+                  return (
+                    <div className="flex items-center gap-2 mt-2 mb-3 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                      <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <div className="text-xs text-blue-700 leading-relaxed flex items-center gap-1.5 flex-wrap">
+                        <span>需填写字段：</span>
+                        {fieldKeys.length > 0 ? (
+                          fieldKeys.map((f, i) => (
+                            <span key={f} className="inline-flex items-center">
+                              {i > 0 && <span className="mx-0.5 text-blue-300">、</span>}
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium text-xs">{f}</span>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-blue-400">无</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               </motion.div>
               )}
@@ -741,7 +784,7 @@ export default function MCPAddDialog({
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-[4px] p-4 max-h-[240px] overflow-y-auto bg-white">
                     {usageDoc.trim() ? (
                       <MDXRenderer content={usageDoc} />
                     ) : (
@@ -792,7 +835,7 @@ export default function MCPAddDialog({
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-[4px] p-4 max-h-[240px] overflow-y-auto bg-white">
                     {toolDoc.trim() ? (
                       <MDXRenderer content={toolDoc} />
                     ) : (

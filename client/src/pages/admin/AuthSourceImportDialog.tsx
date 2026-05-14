@@ -470,7 +470,7 @@ export default function AuthSourceImportDialog({
                 }`}
                 style={
                   step >= s.num
-                    ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" }
+                    ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }
                     : undefined
                 }
               >
@@ -501,7 +501,7 @@ export default function AuthSourceImportDialog({
           return (
             <div
               key={source.id}
-              className="flex flex-col items-center text-center p-5 rounded-xl border border-gray-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer group"
+              className="flex flex-col items-center text-center p-5 rounded-[4px] border border-gray-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer group"
               style={{
                 boxShadow:
                   "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.02)",
@@ -509,7 +509,7 @@ export default function AuthSourceImportDialog({
               onClick={() => handleSelectSource(source.id)}
             >
               {/* 图标 */}
-              <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+              <div className="w-12 h-12 rounded-[4px] bg-white border border-gray-100 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform overflow-hidden">
                 <img
                   src={source.iconUrl}
                   alt={source.name}
@@ -582,7 +582,7 @@ export default function AuthSourceImportDialog({
               {entries.length > 1 && (
                 <button
                   type="button"
-                  className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                  className="w-8 h-8 flex items-center justify-center rounded-[4px] text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
                   onClick={() => removeEntry(idx)}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -882,7 +882,7 @@ export default function AuthSourceImportDialog({
                 </Select>
                 {!mapping.fixed ? (
                   <button
-                    className="w-8 h-8 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-[4px] text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                     onClick={() => removeMemberMapping(mapping.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -910,7 +910,7 @@ export default function AuthSourceImportDialog({
     <div className="flex flex-col items-center justify-center py-10">
       <div
         className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
-        style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+        style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
       >
         <CheckCircle className="w-8 h-8 text-white" />
       </div>
@@ -934,7 +934,7 @@ export default function AuthSourceImportDialog({
             {(step === 2 || step === 3) && (
               <button
                 onClick={handleBack}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                className="w-7 h-7 flex items-center justify-center rounded-[4px] hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -961,7 +961,7 @@ export default function AuthSourceImportDialog({
               </Button>
               <Button
                 onClick={handleNextToMapping}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 下一步
               </Button>
@@ -974,7 +974,7 @@ export default function AuthSourceImportDialog({
               </Button>
               <Button
                 onClick={handleSubmit}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 确定
               </Button>
@@ -983,7 +983,7 @@ export default function AuthSourceImportDialog({
           {step === 4 && (
             <Button
               onClick={() => onOpenChange(false)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               完成
             </Button>

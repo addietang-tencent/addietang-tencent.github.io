@@ -84,12 +84,12 @@ const FEATURE_POINTS = [
 export default function LandingPage() {
   const { isAdmin } = useUserRole();
   return (
-    <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}>
       {/* Top Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+            <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-lg"
               style={{ background: "#FFFFFF" }}>
               🦞
             </div>
@@ -101,7 +101,7 @@ export default function LandingPage() {
             </Link>
             {isAdmin && (
               <Link href="/admin/basic-info">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
                   <Settings className="w-3.5 h-3.5" />
                   管理后台
                 </button>
@@ -117,19 +117,19 @@ export default function LandingPage() {
         <div className="absolute top-20 right-10 w-96 h-96 orb-blue opacity-60 pointer-events-none" />
         <div className="absolute bottom-20 left-10 w-80 h-80 orb-purple opacity-50 pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(circle, rgba(0,122,255,0.04) 0%, transparent 70%)" }} />
+          style={{ background: "radial-gradient(circle, rgba(20,71,230,0.04) 0%, transparent 70%)" }} />
 
         <div className="relative z-10 text-center max-w-3xl mx-auto px-6 page-enter">
           {/* Mascot */}
           <div className="flex justify-center mb-8">
             <div className="relative">
-              <div className="w-40 h-40 rounded-3xl overflow-hidden flex items-center justify-center relative"
+              <div className="w-40 h-40 rounded-[4px] overflow-hidden flex items-center justify-center relative"
                 style={{ background: "#FFFFFF" }}>
-                <div className="text-8xl select-none" style={{ filter: "drop-shadow(0 4px 12px rgba(0,122,255,0.2))" }}>🦞</div>
+                <div className="text-8xl select-none" style={{ filter: "drop-shadow(0 4px 12px rgba(20,71,230,0.2))" }}>🦞</div>
               </div>
               {/* Floating badge */}
               <div className="absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-semibold text-white"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
                 Enterprise
               </div>
             </div>
@@ -149,8 +149,8 @@ export default function LandingPage() {
             <Link href="/my-openclaw">
               <Button
                 size="lg"
-                className="px-8 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                className="px-8 py-3 text-base font-semibold rounded-[4px] text-white btn-primary-glow"
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 立刻创建
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -206,9 +206,9 @@ export default function LandingPage() {
               const Icon = point.icon;
               return (
                 <div key={point.title}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:-translate-y-0.5 transition-all duration-200"
-                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${point.gradient} flex items-center justify-center mb-4`}>
+                  className="bg-white rounded-[4px] p-6 border border-gray-100 hover:-translate-y-0.5 transition-all duration-200"
+                  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+                  <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${point.gradient} flex items-center justify-center mb-4`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-base font-semibold text-gray-900 mb-2">{point.title}</h3>
@@ -222,7 +222,7 @@ export default function LandingPage() {
 
       {/* Features Section */}
       <section className="py-24 px-6 relative overflow-hidden"
-        style={{ background: "linear-gradient(180deg, #FAFBFF 0%, #F0F4FF 100%)" }}>
+        style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}>
         <div className="absolute bottom-0 left-0 w-72 h-72 orb-purple opacity-30 pointer-events-none" />
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -240,9 +240,9 @@ export default function LandingPage() {
               const Icon = feature.icon;
               return (
                 <div key={feature.title}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:-translate-y-0.5 transition-all duration-200"
-                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4`}>
+                  className="bg-white rounded-[4px] p-6 border border-gray-100 hover:-translate-y-0.5 transition-all duration-200"
+                  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+                  <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-base font-semibold text-gray-900 mb-2">{feature.title}</h3>
@@ -257,8 +257,8 @@ export default function LandingPage() {
             <Link href="/my-openclaw">
               <Button
                 size="lg"
-                className="px-10 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                className="px-10 py-3 text-base font-semibold rounded-[4px] text-white btn-primary-glow"
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 立刻开始使用
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -272,8 +272,8 @@ export default function LandingPage() {
       <footer className="py-8 px-6 border-t border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md flex items-center justify-center text-sm"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <div className="w-6 h-6 rounded-[4px] flex items-center justify-center text-sm"
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
               🦞
             </div>
             <span className="text-sm text-gray-500">{SITE_CONFIG.name}</span>

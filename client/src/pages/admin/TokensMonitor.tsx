@@ -193,7 +193,7 @@ function TokenDepartmentTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
           isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -268,7 +268,7 @@ function TokenDepartmentFilter({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
@@ -300,7 +300,7 @@ function TokenDepartmentFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -339,7 +339,7 @@ function TokenGroupTreeNode({
         </div>
       ) : (
         <div
-          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
             isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
           }`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -421,11 +421,11 @@ function TokenGroupFilter({
             placeholder="搜索分组"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            className="w-full h-8 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
           />
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
@@ -459,7 +459,7 @@ function TokenGroupFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -478,18 +478,18 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
       <span className="text-xs text-gray-400">共 {total} 条记录，第 {safe} / {totalPages} 页</span>
       <div className="flex items-center gap-1">
         <button onClick={() => onChange(Math.max(1, safe - 1))} disabled={safe <= 1}
-          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          className="w-7 h-7 flex items-center justify-center rounded-[4px] border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
           <button key={p} onClick={() => onChange(p)}
-            className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${p === safe ? "text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-            style={p === safe ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}>
+            className={`w-7 h-7 flex items-center justify-center rounded-[4px] text-xs font-medium transition-colors ${p === safe ? "text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+            style={p === safe ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" } : {}}>
             {p}
           </button>
         ))}
         <button onClick={() => onChange(Math.min(totalPages, safe + 1))} disabled={safe >= totalPages}
-          className="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          className="w-7 h-7 flex items-center justify-center rounded-[4px] border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -1074,7 +1074,7 @@ export default function TokensMonitor() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
@@ -1082,13 +1082,13 @@ export default function TokensMonitor() {
               type="date"
               value={dateTo}
               onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+              className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
               title="刷新数据"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -1105,10 +1105,10 @@ export default function TokensMonitor() {
             { label: "输出 Tokens", value: fmt(totalOutput), icon: ArrowDown, color: "from-purple-500 to-purple-600" },
             { label: "总 Tokens", value: fmt(totalTokens), icon: Zap, color: "from-blue-600 to-purple-600" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white rounded-2xl border border-gray-100 p-4"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div key={stat.label} className="bg-white rounded-[4px] border border-gray-100 p-4"
+              style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <div className="flex items-center gap-2 mb-2">
-                <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                <div className={`w-7 h-7 rounded-[4px] bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
                   <stat.icon className="w-3.5 h-3.5 text-white" />
                 </div>
                 <p className="text-xs text-gray-400">{stat.label}</p>
@@ -1117,10 +1117,10 @@ export default function TokensMonitor() {
             </div>
           ))}
           {/* 全局配额消耗（按时间维度展示：今日/本月，不随上方时间筛选联动） */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <div className="bg-white rounded-[4px] border border-gray-100 p-4"
+            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
                 <Zap className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="flex items-center gap-1">
@@ -1146,9 +1146,9 @@ export default function TokensMonitor() {
             <div className="flex items-center gap-2">
               <p className="text-2xl font-bold text-gray-900">{IS_GLOBAL_BY_GROUP ? "0" : TODAY_GLOBAL_PCT}%</p>
               {IS_GLOBAL_BY_GROUP ? (
-                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">按分组</span>
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-[4px]">按分组</span>
               ) : IS_GLOBAL_UNLIMITED ? (
-                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-md">无限制</span>
+                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-[4px]">无限制</span>
               ) : null}
             </div>
             <ProgressBar
@@ -1161,8 +1161,8 @@ export default function TokensMonitor() {
         </div>
 
         {/* Line Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <div className="bg-white rounded-[4px] border border-gray-100 p-5 mb-6"
+          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
           <p className="text-sm font-medium text-gray-700 mb-4">
             {isSingleDay ? "最近 7 天 Tokens 趋势" : "所选时间段 Tokens 趋势"}
           </p>
@@ -1207,7 +1207,7 @@ export default function TokensMonitor() {
                 <UITooltipTrigger asChild>
                   <button
                     onClick={handleExportInstance}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
@@ -1215,8 +1215,8 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1236,7 +1236,7 @@ export default function TokensMonitor() {
                     <tr key={inst.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                           </div>
                           <div className="min-w-0 flex-1">
@@ -1272,7 +1272,7 @@ export default function TokensMonitor() {
                 <UITooltipTrigger asChild>
                   <button
                     onClick={handleExportMember}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
@@ -1280,8 +1280,8 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1325,7 +1325,7 @@ export default function TokensMonitor() {
                 <UITooltipTrigger asChild>
                   <button
                     onClick={handleExportModel}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
                   </button>
@@ -1333,8 +1333,8 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1378,7 +1378,7 @@ export default function TokensMonitor() {
                     <UITooltipTrigger asChild>
                       <button
                         onClick={handleExportDept}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />
                       </button>
@@ -1387,8 +1387,8 @@ export default function TokensMonitor() {
                   </UITooltip>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1434,7 +1434,7 @@ export default function TokensMonitor() {
                   <UITooltipTrigger asChild>
                     <button
                       onClick={handleExportGroup}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
@@ -1443,8 +1443,8 @@ export default function TokensMonitor() {
                 </UITooltip>
               </div>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+              style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1473,7 +1473,7 @@ export default function TokensMonitor() {
                         {IS_GLOBAL_BY_GROUP && q && (
                           <td className="px-6 py-4 text-sm text-right">
                             {q.unlimited ? (
-                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-md">无限制</span>
+                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-[4px]">无限制</span>
                             ) : (
                               <UITooltip>
                                 <UITooltipTrigger asChild>
@@ -1502,7 +1502,7 @@ export default function TokensMonitor() {
             {!clsEnabled && (
               <>
                 {/* CLS 提示弹框 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-[4px] p-4 mb-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
@@ -1565,9 +1565,9 @@ export default function TokensMonitor() {
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#F59E0B" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#F59E0B" }}>
                             <TrendingUp className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1576,9 +1576,9 @@ export default function TokensMonitor() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#AF52DE" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#AF52DE" }}>
                             <Zap className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1597,9 +1597,9 @@ export default function TokensMonitor() {
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
                             <BarChart3 className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1608,9 +1608,9 @@ export default function TokensMonitor() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#FF9500" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#FF9500" }}>
                             <BarChart3 className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1619,9 +1619,9 @@ export default function TokensMonitor() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
                             <Activity className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1630,9 +1630,9 @@ export default function TokensMonitor() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                      <div className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
+                          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
                             <Activity className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1648,7 +1648,7 @@ export default function TokensMonitor() {
             )}
 
             {showSuccessMessage && (
-              <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+              <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-[4px] px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
                 <div className="flex items-start gap-3">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
                   <div>
@@ -1695,7 +1695,7 @@ export default function TokensMonitor() {
                   <UITooltipTrigger asChild>
                     <button
                       onClick={handleExportSession}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
@@ -1703,8 +1703,8 @@ export default function TokensMonitor() {
                   <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
                 </UITooltip>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -1807,7 +1807,7 @@ export default function TokensMonitor() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-[4px] p-4 space-y-2">
               <p className="text-sm text-gray-700">
                 为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
@@ -1856,7 +1856,7 @@ export default function TokensMonitor() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+            <div className="bg-red-50 border border-red-200 rounded-[4px] p-3 space-y-2">
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">运维观测：</span>
                 <span>支持通过全链路性能监控采集核心运行指标</span>

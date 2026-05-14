@@ -204,7 +204,7 @@ export function ScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
@@ -345,7 +345,7 @@ export function ScopePopover({
             <div className="flex gap-1.5">
               <button
                 onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === "all"
                     ? "border-blue-200 bg-blue-50 text-blue-600"
                     : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
@@ -355,7 +355,7 @@ export function ScopePopover({
               </button>
               <button
                 onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === "groups"
                     ? "border-blue-200 bg-blue-50 text-blue-600"
                     : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
@@ -386,12 +386,12 @@ export function ScopePopover({
                   <>
                     {/* 合并搜索框 + 已选标签 */}
                     <div
-                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
+                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
                     >
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-md border border-blue-100 shrink-0 max-w-[200px]"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]"
                         >
                           <span className="truncate">{tag.path}</span>
                           <button
@@ -469,7 +469,7 @@ export function ScopePopover({
               className="h-7 text-xs px-3"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={isConfirmDisabled ? undefined : { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               确认
             </Button>

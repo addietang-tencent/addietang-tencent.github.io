@@ -470,7 +470,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <SecretInput value={srcSk} onChange={setSrcSk} placeholder="源端 SecretKey" />
               </div>
               <div className="flex-shrink-0 pt-5">
-                <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading} style={{ background: "#007AFF" }} className="h-8">
+                <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading} style={{ background: "#1447E6" }} className="h-8">
                   {srcLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Search className="w-3.5 h-3.5 mr-1" />}
                   获取实例
                 </Button>
@@ -520,7 +520,7 @@ rm -f /tmp/openclaw-state.tgz`;
                   通过 <code className="bg-amber-50 px-1 rounded">kubectl exec &lt;pod&gt; -- bash /tmp/migrate.sh</code> 执行
                 </p>
               )}
-              <div className="relative bg-gray-900 rounded-lg p-3 overflow-x-auto">
+              <div className="relative bg-gray-900 rounded-[4px] p-3 overflow-x-auto">
                 <div className="absolute top-2 right-2"><CopyBtn text={uploadScript} /></div>
                 <pre className="text-xs text-green-400 font-mono whitespace-pre leading-relaxed">{uploadScript}</pre>
               </div>
@@ -569,7 +569,7 @@ rm -f /tmp/openclaw-state.tgz`;
         {editMode === "csv" ? (
           /* ===== CSV Tab ===== */
           <div className="space-y-3">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <div className="bg-blue-50 border border-blue-100 rounded-[4px] p-3">
               <p className="text-xs text-blue-700 leading-relaxed">
                 <FileSpreadsheet className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
                 <strong>批量迁移推荐使用 CSV：</strong>下载映射模板 → 在 Excel 中填写源端标识与目标用户/实例的对应关系 → 上传 CSV 自动导入。
@@ -600,7 +600,7 @@ rm -f /tmp/openclaw-state.tgz`;
               </Button>
               <label className="cursor-pointer">
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 hover:bg-blue-100 cursor-pointer transition-colors">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[4px] border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 hover:bg-blue-100 cursor-pointer transition-colors">
                   <Upload className="w-3 h-3" /> 上传 CSV 文件
                 </span>
               </label>
@@ -609,7 +609,7 @@ rm -f /tmp/openclaw-state.tgz`;
               CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
             </div>
             {rows.length > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-2.5">
+              <div className="bg-green-50 border border-green-200 rounded-[4px] p-2.5">
                 <p className="text-xs text-green-700 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   已导入 {rows.length} 条映射，其中 {validRows.length} 条有效。可切换到「在线编辑」查看和调整。
@@ -631,7 +631,7 @@ rm -f /tmp/openclaw-state.tgz`;
                     <Input value={srcSearch} onChange={(e) => setSrcSearch(e.target.value)} placeholder="搜索源端标识..." className="h-7 text-xs w-48" />
                   )}
                 </div>
-                <div className="border rounded-lg overflow-hidden max-h-[380px] overflow-y-auto">
+                <div className="border rounded-[4px] overflow-hidden max-h-[380px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-gray-50 sticky top-0 z-10">
@@ -744,7 +744,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 {showCommand ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="relative bg-gray-900 rounded-lg p-3 overflow-x-auto mb-3">
+                <div className="relative bg-gray-900 rounded-[4px] p-3 overflow-x-auto mb-3">
                   <div className="absolute top-2 right-2"><CopyBtn text={migrationCommand} /></div>
                   <pre className="text-xs text-green-400 font-mono whitespace-pre leading-relaxed">{migrationCommand}</pre>
                 </div>
@@ -753,7 +753,7 @@ rm -f /tmp/openclaw-state.tgz`;
 
             <div className="flex items-center gap-3">
               <Button onClick={startMigration} disabled={validRows.length === 0}
-                style={{ background: validRows.length > 0 ? "#007AFF" : undefined }} className="px-6">
+                style={{ background: validRows.length > 0 ? "#1447E6" : undefined }} className="px-6">
                 <Play className="w-4 h-4 mr-1.5" />
                 开始迁移（{validRows.length} 台）
               </Button>
@@ -786,7 +786,7 @@ rm -f /tmp/openclaw-state.tgz`;
             {/* Task list */}
             <div className="space-y-1 max-h-[260px] overflow-y-auto">
               {tasks.map((t, i) => (
-                <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-md text-xs ${
+                <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-[4px] text-xs ${
                   t.status === "success" ? "bg-green-50" :
                   t.status === "failed" ? "bg-red-50" :
                   t.status === "pending" ? "bg-gray-50" : "bg-blue-50"
@@ -823,7 +823,7 @@ rm -f /tmp/openclaw-state.tgz`;
                   <Button variant="outline" size="sm" onClick={() => toast.info("跳转到列表")} className="h-7 text-xs">
                     <ExternalLink className="w-3 h-3 mr-1" /> Agent 列表
                   </Button>
-                  <Button size="sm" onClick={resetAll} style={{ background: "#007AFF" }} className="h-7 text-xs">
+                  <Button size="sm" onClick={resetAll} style={{ background: "#1447E6" }} className="h-7 text-xs">
                     <RefreshCw className="w-3 h-3 mr-1" /> 新建迁移
                   </Button>
                 </div>
@@ -840,7 +840,7 @@ rm -f /tmp/openclaw-state.tgz`;
           {showHistory ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-[4px] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">

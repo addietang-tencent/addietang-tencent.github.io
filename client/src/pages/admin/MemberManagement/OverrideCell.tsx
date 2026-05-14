@@ -211,7 +211,7 @@ function ConflictPopover({
           {candidates.map((c) => (
             <label
               key={c.resourceId}
-              className={`flex items-start gap-2.5 p-2.5 rounded-lg cursor-pointer border transition-colors ${
+              className={`flex items-start gap-2.5 p-2.5 rounded-[4px] cursor-pointer border transition-colors ${
                 selected === c.resourceId
                   ? "border-blue-300 bg-blue-50/60"
                   : "border-gray-100 hover:bg-gray-50"
@@ -249,7 +249,7 @@ function ConflictPopover({
           <Button
             size="sm"
             className="text-white"
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             onClick={handleConfirm}
           >
             确定本次选择

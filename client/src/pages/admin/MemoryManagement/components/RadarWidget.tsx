@@ -1,7 +1,7 @@
 /**
  * RadarWidget — Agent Design System (Light theme)
  * Adapted from Deep Space Tech radar with idle/hover progressive reveal
- * Colors: Brand Blue #007AFF / Purple #5856D6 for TDAI, Gray for Agent
+ * Colors: Brand Blue #1447E6 / Purple #1447E6 for TDAI, Gray for Agent
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -108,12 +108,12 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
       <svg viewBox="0 0 390 320" className="w-full h-full">
         <defs>
           <radialGradient id="rwGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={hovered ? 'rgba(0,122,255,0.06)' : 'rgba(0,122,255,0.02)'} />
+            <stop offset="0%" stopColor={hovered ? 'rgba(20,71,230,0.06)' : 'rgba(20,71,230,0.02)'} />
             <stop offset="100%" stopColor="rgba(0,0,0,0)" />
           </radialGradient>
           <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#007AFF" />
-            <stop offset="100%" stopColor="#5856D6" />
+            <stop offset="0%" stopColor="#1447E6" />
+            <stop offset="100%" stopColor="#1447E6" />
           </linearGradient>
           <filter id="blueGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -134,7 +134,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
             cy={CY}
             r={R + 6}
             fill="none"
-            stroke="rgba(0,122,255,0.1)"
+            stroke="rgba(20,71,230,0.1)"
             strokeWidth={1}
             animate={{
               r: [R + 4, R + 12, R + 4],
@@ -165,7 +165,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
           <motion.polygon
             points={tdPoints}
             fill="none"
-            stroke="rgba(0,122,255,0.15)"
+            stroke="rgba(20,71,230,0.15)"
             strokeWidth={1}
             strokeLinejoin="round"
             strokeDasharray="4 6"
@@ -177,7 +177,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
         {/* TDAI area — full on hover */}
         <motion.polygon
           points={tdPoints}
-          fill="rgba(0,122,255,0.08)"
+          fill="rgba(20,71,230,0.08)"
           stroke="url(#brandGrad)"
           strokeWidth={2}
           strokeLinejoin="round"
@@ -201,11 +201,11 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
                   cx={td.x}
                   cy={td.y}
                   r={3}
-                  fill="#007AFF"
+                  fill="#1447E6"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: i * 0.04, type: 'spring' }}
-                  style={{ filter: 'drop-shadow(0 0 4px rgba(0,122,255,0.5))' }}
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(20,71,230,0.5))' }}
                 />
               )}
             </g>
@@ -230,7 +230,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               <div className="text-[10px] text-blue-500 font-medium mb-0.5">Memory Pro 版</div>
               <div
                 className="text-lg font-bold font-mono"
-                style={{ color: '#007AFF', textShadow: '0 0 12px rgba(0,122,255,0.25)' }}
+                style={{ color: '#1447E6', textShadow: '0 0 12px rgba(20,71,230,0.25)' }}
               >
                 {TOTAL.tdaiMemory}%
               </div>
@@ -261,7 +261,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
           <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
-            <path d="M4 8L10 3L16 8" stroke="#007AFF" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+            <path d="M4 8L10 3L16 8" stroke="#1447E6" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
           </svg>
         </motion.div>
       )}

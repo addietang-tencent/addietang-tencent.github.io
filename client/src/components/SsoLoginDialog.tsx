@@ -42,8 +42,8 @@ function DialogHeaderSection({ siteName }: { siteName: string }) {
   return (
     <DialogHeader className="items-center mb-6">
       <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg mb-4"
-        style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+        className="w-14 h-14 rounded-[4px] flex items-center justify-center shadow-lg mb-4"
+        style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
       >
         <span className="text-2xl">🦞</span>
       </div>
@@ -161,9 +161,9 @@ function SsoImCardList({ options, onSelect }: { options: SsoImOption[]; onSelect
         <button
           key={opt.type}
           onClick={() => onSelect(opt.type)}
-          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl bg-gray-100 transition-all duration-150 text-left group hover:bg-gray-200 cursor-pointer flex-shrink-0"
+          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-[4px] bg-gray-100 transition-all duration-150 text-left group hover:bg-gray-200 cursor-pointer flex-shrink-0"
         >
-          <img src={opt.iconUrl} alt={opt.label} className="w-10 h-10 rounded-lg object-contain flex-shrink-0" />
+          <img src={opt.iconUrl} alt={opt.label} className="w-10 h-10 rounded-[4px] object-contain flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="text-sm font-medium text-gray-900 transition-colors group-hover:text-blue-600">
               {opt.label}
@@ -223,7 +223,7 @@ function PhoneLoginForm() {
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" style={{ color: '#1d2129' }}>手机号</label>
         <div
-          className="flex items-center rounded-lg border transition-all overflow-hidden"
+          className="flex items-center rounded-[4px] border transition-all overflow-hidden"
           style={{ borderColor: '#e5e6eb' }}
         >
           {/* +86 区号选择 */}
@@ -252,7 +252,7 @@ function PhoneLoginForm() {
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium" style={{ color: '#1d2129' }}>验证码</label>
         <div
-          className="flex items-center rounded-lg border transition-all overflow-hidden"
+          className="flex items-center rounded-[4px] border transition-all overflow-hidden"
           style={{ borderColor: '#e5e6eb' }}
         >
           <input

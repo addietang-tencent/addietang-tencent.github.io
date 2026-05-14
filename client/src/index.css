@@ -1,13 +1,69 @@
+/* ─── Webfont（v2）必须放在最顶部 ──────────────────────────────────
+ * PingFang SC / Menlo / DIN Alternate：系统字体，无需引入
+ * Open Sans：Google Fonts CDN（首版可用，后续可改 self-host）
+ * ──────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── v2 字体 / 主题变量 ──────────────────────────────────────── */
+@theme {
+  --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+  --font-din: 'DIN Alternate', 'DIN', 'Helvetica Neue', sans-serif;
+  --font-en: 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  /* v2 文字色阶（对齐 Figma 设计系统） */
+  --color-gray-950: #020617; /* 强调（数字、关键标题） */
+  --color-gray-900: #0A0A0A; /* 主文字 */
+  --color-gray-700: #334155; /* 次级文字（正文、ID、分组） */
+  --color-gray-600: #475569; /* 中等文字 */
+  --color-gray-500: #737373; /* 辅助文字（时间、描述） */
+  --color-gray-400: #A3A3A3; /* 极弱文字（占位、空状态） */
+  --color-gray-300: #D4D4D4; /* 描边强调 */
+  --color-gray-200: #E5E5E5; /* 描边、分割线 */
+  --color-gray-100: #F5F5F5; /* 浅背景（Tab 容器、卡片底） */
+  --color-gray-50: #FAFAFA;  /* 极浅背景 */
+}
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* v2 圆角：仅 2/3/4/full 四档，所有 shadcn 默认圆角都收敛到 ≤ 4px */
+  --radius-sm: 2px;   /* 状态徽章、内嵌活跃元素小尺寸 */
+  --radius-md: 3px;   /* Tab 活跃滑块、Slider 把手 */
+  --radius-lg: 4px;   /* shadcn 默认（Button/Input/Card/Dialog/Popover...） */
+  --radius-xl: 4px;   /* 上限，不再放大 */
+
+  /* ───────────────────────────────────────────────────────────
+   * v2 阴影系统：5 档语义化（单一真理源 Single Source of Truth）
+   * 业务层禁止再写 inline boxShadow / Tailwind shadow-md/lg/xl/2xl，
+   * 统一通过 <SurfaceCard> 等语义组件或 shadow-card / shadow-overlay 工具类。
+   * ─────────────────────────────────────────────────────────── */
+  /* L1 表层卡片：页面主区块、列表卡、统计卡、Agent 卡 */
+  --shadow-card: 0px 1px 4px rgba(0, 0, 0, 0.05), 0px 0px 2px rgba(0, 0, 0, 0.1);
+  /* L2 内嵌卡片：卡片内的子卡 / 表格容器（无阴影、靠浅描边） */
+  --shadow-inner: none;
+  /* L3 浮层：Dialog / Sheet / Drawer / Popover / DropdownMenu */
+  --shadow-overlay: 0px 4px 16px -2px rgba(0, 0, 0, 0.08), 0px 2px 6px rgba(0, 0, 0, 0.06);
+  /* L4 高亮配置卡：管理端"操作要点""引导卡"等需强调的卡 */
+  --shadow-config: 0px 2px 8px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px 2px rgba(0, 0, 0, 0.05);
+  /* L5 Tab 滑块 / Segmented 指示器：极轻 */
+  --shadow-segment: 0px 1.11px 2.22px rgba(0, 0, 0, 0.05);
+
+  /* shadcn 默认 shadow-* 类的兼容映射（确保历史代码 fallback 到 v2）：
+   * - shadow-2xs / xs / sm / shadow → L1 卡片（最常见）
+   * - shadow-md → L4 配置卡（兼容历史 hover:shadow-md 写法）
+   * - shadow-lg / xl / 2xl → L3 浮层
+   * 注意：业务层应优先使用语义类 shadow-card / shadow-overlay / shadow-config，本组只是兜底。 */
+  --shadow-2xs: var(--shadow-card);
+  --shadow-xs: var(--shadow-card);
+  --shadow-sm: var(--shadow-card);
+  --shadow: var(--shadow-card);
+  --shadow-md: var(--shadow-config);
+  --shadow-lg: var(--shadow-overlay);
+  --shadow-xl: var(--shadow-overlay);
+  --shadow-2xl: var(--shadow-overlay);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -44,34 +100,34 @@
 
 :root {
   /* Brand Colors */
-  --brand-blue: #007AFF;
-  --brand-purple: #5856D6;
+  --brand-blue: #1447E6;
+  --brand-purple: #1447E6;
 
   /* Primary */
-  --primary: oklch(0.546 0.245 262.881); /* #007AFF */
+  --primary: oklch(0.546 0.245 262.881); /* #1447E6 */
   --primary-foreground: oklch(0.985 0 0);
 
-  /* Radius */
-  --radius: 0.75rem;
+  /* Radius（v2：12px → 4px，作为各档的基准） */
+  --radius: 4px;
 
-  /* Light theme (Tenant side - bright white) */
-  --background: oklch(0.99 0.003 240);
-  --foreground: oklch(0.15 0.01 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.01 240);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.01 240);
-  --secondary: oklch(0.96 0.005 240);
-  --secondary-foreground: oklch(0.35 0.01 240);
-  --muted: oklch(0.96 0.005 240);
-  --muted-foreground: oklch(0.52 0.015 240);
-  --accent: oklch(0.94 0.01 240);
-  --accent-foreground: oklch(0.15 0.01 240);
+  /* v2 显式色值：让 shadcn 语义 token 直接落到 Figma 设计系统 */
+  --background: #FFFFFF;          /* 页面底色（用户端会被 .tenant-bg 覆盖为白→灰渐变） */
+  --foreground: #0A0A0A;          /* 主文字 */
+  --card: #FFFFFF;                /* 卡片底 */
+  --card-foreground: #0A0A0A;
+  --popover: #FFFFFF;             /* Popover/Dropdown/Tooltip 底 */
+  --popover-foreground: #0A0A0A;
+  --secondary: #F5F5F5;           /* 次级背景 */
+  --secondary-foreground: #334155;
+  --muted: #F5F5F5;               /* Tab 容器、Disabled 背景 */
+  --muted-foreground: #737373;    /* 辅助文字（v2 §1） */
+  --accent: #F5F5F5;              /* hover 浅灰 */
+  --accent-foreground: #0A0A0A;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.91 0.008 240);
-  --input: oklch(0.91 0.008 240);
-  --ring: oklch(0.546 0.245 262.881);
+  --border: #E5E5E5;              /* 描边、分割线 */
+  --input: #E5E5E5;               /* Input 描边 */
+  --ring: #1447E6;                /* focus 外环 */
 
   /* Charts */
   --chart-1: oklch(0.546 0.245 262.881);
@@ -80,22 +136,22 @@
   --chart-4: oklch(0.72 0.15 160);
   --chart-5: oklch(0.78 0.12 120);
 
-  /* Sidebar */
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.15 0.01 240);
-  --sidebar-primary: oklch(0.546 0.245 262.881);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.94 0.01 240);
-  --sidebar-accent-foreground: oklch(0.15 0.01 240);
-  --sidebar-border: oklch(0.91 0.008 240);
-  --sidebar-ring: oklch(0.546 0.245 262.881);
+  /* Sidebar（v2：白底 + #E5E5E5 分割线 + #1447E6 活跃） */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0A0A0A;
+  --sidebar-primary: #1447E6;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F5F5;
+  --sidebar-accent-foreground: #0A0A0A;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #1447E6;
 }
 
-/* Admin theme - slightly gray-blue background */
+/* Admin theme - v2：纯白背景（覆盖 :root） */
 .admin-theme {
-  --background: oklch(0.96 0.008 240);
-  --card: oklch(1 0 0);
-  --sidebar: oklch(1 0 0);
+  --background: #FFFFFF;
+  --card: #FFFFFF;
+  --sidebar: #FFFFFF;
 }
 
 @layer base {
@@ -108,7 +164,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -171,7 +227,7 @@
 
   /* Gradient orb decoration */
   .orb-blue {
-    background: radial-gradient(circle, rgba(0, 122, 255, 0.18) 0%, rgba(0, 122, 255, 0) 70%);
+    background: radial-gradient(circle, rgba(20, 71, 230, 0.18) 0%, rgba(20, 71, 230, 0) 70%);
     filter: blur(40px);
     border-radius: 50%;
     pointer-events: none;
@@ -184,41 +240,61 @@
     pointer-events: none;
   }
 
-  /* Status badges */
+  /* Status badges (v2: 2px 圆角 + 紧凑 padding) */
   .badge-running {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
     background: rgba(52, 199, 89, 0.12);
     color: #1a8c3a;
+    border-radius: 2px;
   }
   .badge-loading {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
-    background: rgba(0, 122, 255, 0.10);
-    color: #007AFF;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
+    background: rgba(20, 71, 230, 0.10);
+    color: #1447E6;
+    border-radius: 2px;
   }
   .badge-stopped {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
     background: rgba(255, 59, 48, 0.1);
     color: #c0392b;
+    border-radius: 2px;
   }
   .badge-pending {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
     background: rgba(255, 149, 0, 0.1);
     color: #b8640a;
+    border-radius: 2px;
   }
   .badge-shutdown {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
     background: rgba(142, 142, 147, 0.12);
     color: #6b7280;
+    border-radius: 2px;
   }
   .badge-purple {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
     background: rgba(147, 51, 234, 0.1);
     color: #7c3aed;
+    border-radius: 2px;
+  }
+  .badge-new {
+    @apply inline-flex items-center px-1.5 text-[10px] font-medium whitespace-nowrap;
+    font-family: var(--font-en);
+    background: #1447E6;
+    color: #ffffff;
+    border-radius: 2px;
+    padding-block: 1px;
+  }
+
+  /* 用户端全局背景（白→灰渐变） */
+  .tenant-bg {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+    min-height: 100vh;
   }
 
   /* Sidebar nav item */
   .nav-item {
-    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150;
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-[4px] text-sm font-medium transition-all duration-150;
     color: oklch(0.45 0.01 240);
   }
   .nav-item:hover {
@@ -226,9 +302,9 @@
     color: oklch(0.15 0.01 240);
   }
   .nav-item.active {
-    background: rgba(0, 122, 255, 0.1);
-    color: #007AFF;
-    border-left: 2px solid #007AFF;
+    background: rgba(20, 71, 230, 0.1);
+    color: #1447E6;
+    border-left: 2px solid #1447E6;
     padding-left: calc(0.75rem - 2px);
   }
 
@@ -249,11 +325,11 @@
 
   /* Primary button glow */
   .btn-primary-glow {
-    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0);
+    box-shadow: 0 0 0 0 rgba(20, 71, 230, 0);
     transition: box-shadow 0.2s ease;
   }
   .btn-primary-glow:hover {
-    box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 14px rgba(20, 71, 230, 0.3);
   }
 
   /* Scrollbar styling */
@@ -441,7 +517,7 @@
 }
 
 .md-preview a {
-  color: #007AFF;
+  color: #1447E6;
   text-decoration: none;
 }
 

@@ -6,7 +6,8 @@
  *   - 元信息组：column gap 4
  *     · 第 1 行：[角色徽章 #FFF→#F9FBFC 边 #DAE0E9 R2 padding 2x6] | 类型：xxx | ID：xxx [复制]
  *     · 第 2 行：分组：xxx
- *   - 底部行：左 创建时间 (#737373)；右 [详细配置 120x36] + [刷新 48x36]，按钮 borderRadius 4，描边 #E5E5E5
+ *   - 底部行：左 创建时间 (#737373)；右 [详细配置 120x36] + [刷新 48x36]
+ *     · 两个按钮统一使用 Figma「按钮」ComponentSet 317:1051 的 `claw-outline` 变体（详见 ui/button.tsx）
  *   - 无底部分隔线（依靠 column gap-24 留白即可）
  *
  * 所有业务逻辑（删除/重启/重装/移除角色/重试/打开终端/打开面板）通过 props 暴露。
@@ -379,46 +380,41 @@ export const AgentCard = ({
                 e.stopPropagation();
                 onRetry(claw.id, claw.name);
               }}
-              variant="outline"
-              className="h-9 px-6 text-sm font-normal rounded-[4px]"
-              style={{ borderColor: "#E5E5E5", color: "#020617" }}
+              variant="claw-outline"
+              size="claw"
             >
-              <RefreshCw className="w-3.5 h-3.5 mr-2" />
+              <RefreshCw className="w-3.5 h-3.5" />
               重试
             </Button>
           ) : isDisabled ? (
             <Button
-              variant="outline"
-              className="h-9 px-6 text-sm font-normal rounded-[4px] opacity-40 cursor-not-allowed"
-              style={{ borderColor: "#E5E5E5", color: "#020617" }}
+              variant="claw-outline"
+              size="claw"
+              className="opacity-40 cursor-not-allowed"
               disabled
             >
-              <Settings className="w-3.5 h-3.5 mr-2" />
+              <Settings className="w-3.5 h-3.5" />
               详细配置
             </Button>
           ) : (
             <Link href={`/openclaw/${claw.id}`} onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="outline"
-                className="h-9 px-6 text-sm font-normal rounded-[4px]"
-                style={{ borderColor: "#E5E5E5", color: "#020617" }}
-              >
-                <Settings className="w-3.5 h-3.5 mr-2" />
+              <Button variant="claw-outline" size="claw">
+                <Settings className="w-3.5 h-3.5" />
                 详细配置
               </Button>
             </Link>
           )}
-          {/* 第二个方形按钮：刷新（48x36） */}
+          {/* 第二个方形按钮：刷新（48x36，仅图标） */}
           <Button
-            variant="outline"
-            className="h-9 w-12 p-0 rounded-[4px]"
-            style={{ borderColor: "#E5E5E5", color: "#737373" }}
+            variant="claw-outline"
+            size="claw-square"
             onClick={(e) => onRefresh(e, claw.id, claw.name)}
             disabled={refreshing}
             aria-label="刷新状态"
           >
             <RefreshCw
               className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+              style={{ color: "#737373" }}
             />
           </Button>
         </div>

@@ -461,15 +461,14 @@ export function ScopePopover({
 
           {/* 底部按钮 */}
           <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+            <Button variant="claw-outline" className="h-7 text-xs px-3 gap-1" onClick={() => setOpen(false)}>
               取消
             </Button>
             <Button
-              size="sm"
-              className="h-7 text-xs px-3"
+              variant="claw-primary"
+              className="h-7 text-xs px-3 gap-1"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               确认
             </Button>

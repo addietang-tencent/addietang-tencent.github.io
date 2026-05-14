@@ -701,23 +701,22 @@ export default function FileSpace({
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => setShowNewFolder(true)} className="text-gray-600">
+                  <Button variant="claw-outline" size="claw-sm" onClick={() => setShowNewFolder(true)} className="text-xs">
                     <FolderPlus className="w-3.5 h-3.5 mr-1.5" />
                     新建文件夹
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs">在当前目录创建新文件夹</TooltipContent>
               </Tooltip>
-              <Button variant="outline" size="sm" onClick={handleRefresh} className="text-gray-600">
+              <Button variant="claw-outline" size="claw-sm" onClick={handleRefresh} className="text-xs">
                 <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                 刷新
               </Button>
               <Button
-                size="sm"
+                variant="claw-primary"
+                size="claw-sm"
                 onClick={handleUploadClick}
                 disabled={uploading}
-                className="text-white"
-                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 <Upload className="w-3.5 h-3.5 mr-1.5" />
                 上传文件
@@ -976,9 +975,9 @@ export default function FileSpace({
             确定要删除「{deleteConfirm?.name}」吗？{deleteConfirm?.type === "folder" ? "文件夹内的所有内容也将被删除，" : ""}此操作不可恢复。
           </p>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
+            <Button variant="claw-outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
             <Button
-              className="bg-red-600 hover:bg-red-700 text-white"
+              variant="destructive"
               onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
             >
               确认删除
@@ -1004,12 +1003,11 @@ export default function FileSpace({
             />
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => { setRenameTarget(null); setRenameValue(""); }}>取消</Button>
+            <Button variant="claw-outline" onClick={() => { setRenameTarget(null); setRenameValue(""); }}>取消</Button>
             <Button
+              variant="claw-primary"
               onClick={handleRename}
               disabled={!renameValue.trim() || renameValue === renameTarget?.name}
-              className="text-white"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               确认
             </Button>
@@ -1034,12 +1032,11 @@ export default function FileSpace({
             />
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }}>取消</Button>
+            <Button variant="claw-outline" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }}>取消</Button>
             <Button
+              variant="claw-primary"
               onClick={handleCreateFolder}
               disabled={!newFolderName.trim()}
-              className="text-white"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               创建
             </Button>
@@ -1138,11 +1135,10 @@ export default function FileSpace({
             </div>
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => { setMoveTarget(null); setMoveDestPath("/"); }}>取消</Button>
+            <Button variant="claw-outline" onClick={() => { setMoveTarget(null); setMoveDestPath("/"); }}>取消</Button>
             <Button
+              variant="claw-primary"
               onClick={handleMove}
-              className="text-white"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               移动到此处
             </Button>

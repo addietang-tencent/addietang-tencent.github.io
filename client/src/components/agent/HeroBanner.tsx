@@ -1,109 +1,156 @@
 /**
  * HeroBanner - 我的 Agent 页面顶部欢迎条幅
- * 严格对齐 Figma node 358:2325「页面引导语」：
- *   - 容器：固定 112px 高、padding 0 42px、column/center、gap 8px
- *   - 上下边线 #E2E8F0（strokeWeight: 0 1，对应仅上下边）
- *   - 大字标题：PingFang SC Medium 26/35.56，黑→蓝渐变文字（#0A0A0A → #1447E6）
- *   - 副文案：PingFang SC Regular 12/22.22，颜色 #737373
- *   - 右侧 640x112 装饰位（无外部图，使用与 Figma 一致的多层径向渐变 + 流体感装饰）
+ *
+ * 严格 1:1 对齐 Figma 节点 358:2325（默认态）/ 363:5079（QuickStart 关闭态）：
+ *
+ *   358:2325 「页面引导语」（默认态：QuickStart 展开）
+ *     ├ height 112 / padding 0 42px / column / center / gap 8
+ *     ├ stroke: 仅左右 1px #E2E8F0（strokeWeight: 0 1px）
+ *     ├ background: 透明（无底色）
+ *     ├─ 标题: PingFang SC Medium 26/35.56 / letter -4.27%
+ *     │       fill: linear-gradient(90deg, #0A0A0A → #1447E6)
+ *     └─ 副文案: PingFang SC Regular 12/22.22 / letter 1.5% / #737373
+ *
+ *   363:5079 「页面引导语」（QuickStart 关闭态）
+ *     ├ ...同上...
+ *     └─ Frame 2147227607 (row / align-center / gap 8 / hug × hug)
+ *         ├─ 副文案（同 358:2332）
+ *         └─ 363:5487 「查看步骤指引」按钮 - row / center / padding 2 8 / radius 2
+ *             ├ fill: linear-gradient(90deg, #FFFFFF 0% → #EFF3FF 100%)
+ *             ├ stroke 1px #E4E8F5
+ *             └ 文字: PingFang SC Regular 12/20 #020617
+ *
+ * NOTE:
+ *   1. HeroBanner 区域无任何底色/渐变背景，保持纯白。
+ *   2. 底部 1px 分割线左右各外延 80px 贯穿矩阵带，直达视口边缘。
+ *   3. HeroBanner 自身无 margin-bottom，与下方 QuickStartGuide 紧贴
+ *      （两者之间靠 HeroBanner 底部分割线作为视觉接缝）。
  */
-export const HeroBanner = () => {
+interface HeroBannerProps {
+  /**
+   * 当 QuickStartGuide 已关闭时传入此回调，HeroBanner 副文右侧会渲染
+   * 「查看步骤指引」按钮，点击重新唤起 QuickStartGuide。
+   * 不传则不渲染按钮（QuickStart 展开态）。
+   */
+  onShowQuickStart?: () => void;
+}
+
+export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
   return (
-    <div
-      className="relative overflow-hidden mb-5"
-      style={{
-        height: "112px",
-        padding: "0 42px",
-        borderTop: "1px solid #E2E8F0",
-        borderBottom: "1px solid #E2E8F0",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        gap: "8px",
-      }}
-    >
-      {/* 右侧 640x112 装饰区，对齐 Figma 358:2326 */}
+    // 外层包裹严格固定 112px，与下方紧贴；防止内部副文+按钮换行时把容器撑高
+    // 底部分割线由绝对定位的子元素实现「100vw」贯穿全视口
+    <div className="relative" style={{ height: "112px" }}>
+      {/* 358:2325 / 363:5079 - 页面引导语：高 112 / padding 0 42 / 左右竖线 / 无底色
+          overflow:hidden 兜底，防止副文/按钮意外换行撑高 */}
       <div
-        aria-hidden
-        className="absolute top-0 right-0 pointer-events-none"
         style={{
-          width: "640px",
           height: "112px",
-          background: [
-            // 主光晕：蓝色，从右上向左下扩散
-            "radial-gradient(circle at 80% 30%, rgba(20,71,230,0.20) 0%, rgba(20,71,230,0) 55%)",
-            // 副光晕：紫色，从右下向左上扩散
-            "radial-gradient(circle at 95% 75%, rgba(88,86,214,0.18) 0%, rgba(88,86,214,0) 50%)",
-            // 边缘高光：白色提亮
-            "radial-gradient(ellipse at 100% 50%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%)",
-          ].join(", "),
+          padding: "0 42px",
+          borderLeft: "1px solid #E2E8F0",
+          borderRight: "1px solid #E2E8F0",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: "8px",
+          overflow: "hidden",
         }}
-      />
-
-      {/* 装饰：右侧浮动小圆球（流体蓝图风格点缀） */}
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          right: "120px",
-          top: "30px",
-          width: "8px",
-          height: "8px",
-          borderRadius: "9999px",
-          background: "#1447E6",
-          opacity: 0.6,
-          boxShadow: "0 0 12px rgba(20,71,230,0.6)", // allow-shadow: 装饰圆球 glow，非卡片
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          right: "60px",
-          top: "70px",
-          width: "5px",
-          height: "5px",
-          borderRadius: "9999px",
-          background: "#5856D6",
-          opacity: 0.5,
-          boxShadow: "0 0 8px rgba(88,86,214,0.5)", // allow-shadow: 装饰圆球 glow，非卡片
-        }}
-      />
-
-      {/* 文案区 */}
-      <div className="relative z-10">
+      >
+        {/* 主标题：黑→蓝渐变文字 */}
         <h1
           style={{
-            fontFamily: 'PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif',
+            fontFamily:
+              "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
             fontWeight: 500,
             fontSize: "26px",
             lineHeight: "35.56px",
-            letterSpacing: "-1.11px",
-            backgroundImage: "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
+            letterSpacing: "-4.27%",
+            margin: 0,
+            backgroundImage:
+              "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
             color: "transparent",
-            margin: 0,
+            // 单行宽度自适应（hug），不强制断行
+            width: "fit-content",
           }}
         >
           快速创建你的专属 AI 助理
         </h1>
+
+        {/*
+          副文 + 「查看步骤指引」按钮 - Figma 363:5486 row gap 8 align-center hug
+          只有传入 onShowQuickStart 时才渲染按钮（即 QuickStart 已被关闭时）
+        */}
+        <div className="flex items-center" style={{ gap: "8px" }}>
+          {/* 副文案：muted-foreground */}
+          <p
+            style={{
+              fontFamily:
+                "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+              fontWeight: 400,
+              fontSize: "12px",
+              lineHeight: "22.22px",
+              letterSpacing: "1.5%",
+              color: "#737373",
+              margin: 0,
+            }}
+          >
+            对话即可完成各种工作任务，多模型接入、多平台链接，随时随地提升工作效率
+          </p>
+
+          {/*
+            363:5487 「查看步骤指引」按钮
+            row / center / padding 2px 8px / gap 10 / radius 2
+            fill 渐变 #FFFFFF→#EFF3FF / stroke 1px #E4E8F5
+          */}
+          {onShowQuickStart && (
+            <button
+              type="button"
+              onClick={onShowQuickStart}
+              className="inline-flex items-center justify-center transition-colors"
+              style={{
+                padding: "2px 8px",
+                gap: "10px",
+                borderRadius: "2px",
+                background:
+                  "linear-gradient(90deg, #FFFFFF 0%, #EFF3FF 100%)",
+                border: "1px solid #E4E8F5",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily:
+                    "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                  fontWeight: 400,
+                  fontSize: "12px",
+                  lineHeight: "20px",
+                  color: "#020617",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                查看步骤指引
+              </span>
+            </button>
+          )}
+        </div>
       </div>
-      <p
-        className="relative z-10"
+
+      {/*
+        贯穿底部分割线：用 100vw + calc(50% - 50vw) 让线横跨整个视口宽度，
+        在 >1920px 大屏下也能左右真正顶到视口边缘（页面外层有 overflow-x-clip 兜底防止水平滚动）。
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute"
         style={{
-          fontFamily: 'PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif',
-          fontWeight: 400,
-          fontSize: "12px",
-          lineHeight: "22.22px",
-          letterSpacing: "0.18px",
-          color: "#737373",
-          margin: 0,
+          left: "calc(50% - 50vw)",
+          width: "100vw",
+          bottom: 0,
+          height: "1px",
+          backgroundColor: "#E2E8F0",
         }}
-      >
-        对话即可完成各种工作任务，多模型接入、多平台链接，随时随地提升工作效率
-      </p>
+      />
     </div>
   );
 };

@@ -66,6 +66,7 @@ export function AgentCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
+        {/* allow-shadcn-outline: Combobox trigger 是 shadcn 内置交互模式，换 claw-outline 会破坏选择器外观（SKILL §8.1 白名单） */}
         <Button
           variant="outline"
           role="combobox"

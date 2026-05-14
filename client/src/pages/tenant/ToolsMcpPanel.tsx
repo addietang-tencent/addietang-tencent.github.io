@@ -1002,11 +1002,13 @@ export default function ToolsMcpPanel() {
             <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
-            <Button variant="claw-outline" onClick={() => handleSaveSource(false)}>
+            <Button variant="claw-outline" onClick={() => handleSaveSource(false)} className="text-sm">
               保存但不重启
             </Button>
             <Button
               onClick={() => handleSaveSource(true)}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white text-sm"
             >
               保存并重启实例
             </Button>

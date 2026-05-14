@@ -2572,7 +2572,7 @@ export default function MemberManagement() {
                 </th>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
@@ -2581,7 +2581,7 @@ export default function MemberManagement() {
                         </Tooltip>
                       </div>
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 160, maxWidth: 160 }}>分组</th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
                   </>
                 )}
                 {!hasOneid && (
@@ -2675,14 +2675,14 @@ export default function MemberManagement() {
                       </td>
                       {/* 分组列（OneID 模式：紧跟部门列） */}
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1 max-w-[160px]">
+                        <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
                             <span className="text-sm text-gray-300">—</span>
                           ) : (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                  <span className="badge-shutdown max-w-[120px] truncate inline-block align-middle">
+                                  <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle">
                                     {mmGroupItems[0].path}
                                   </span>
                                   {mmGroupItems.length > 1 && (

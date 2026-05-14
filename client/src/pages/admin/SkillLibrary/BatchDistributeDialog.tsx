@@ -448,7 +448,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">
                       {getScopeDisplayText()}
@@ -472,7 +472,7 @@ export default function BatchDistributeDialog({
               const showUngrouped = !scopeSearchQuery || '未分组'.includes(scopeSearchQuery);
 
               return (
-              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                 {/* 搜索框 */}
                 <div className="px-2 pb-1.5 pt-1.5">
                   <div className="relative">
@@ -481,7 +481,7 @@ export default function BatchDistributeDialog({
                       placeholder="搜索分组..."
                       value={scopeSearchQuery}
                       onChange={(e) => setScopeSearchQuery(e.target.value)}
-                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
                     />
@@ -646,7 +646,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setFilterDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">{getFilterDisplayText()}</span>
                     <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
@@ -657,7 +657,7 @@ export default function BatchDistributeDialog({
                 </TooltipContent>
               </Tooltip>
             {filterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                 {/* 全部状态选项 — toggle：点击全选，再次点击取消全部 */}
                 <button
                   type="button"
@@ -728,25 +728,18 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 实例列表 */}
-        <div className="border border-gray-200 rounded-lg max-h-[340px] overflow-y-auto">
-          {/* 全选复选框 — 当前页全选 */}
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                checked={isPageAllSelected}
-                // @ts-ignore – indeterminate prop
-                indeterminate={isPageIndeterminate}
-                onCheckedChange={handleSelectAll}
-              />
-              <span className="text-sm font-medium text-gray-900">
-                全选
-              </span>
-            </div>
-            {selectedInFilterCount > 0 && (
-              <span className="text-sm text-gray-500">
-                已选 {selectedInFilterCount} 条
-              </span>
-            )}
+        <div className="border border-gray-200 rounded-[4px] max-h-[340px] overflow-y-auto">
+          {/* 全选复选框 — 跨页全选 */}
+          <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+            <Checkbox
+              checked={isAllSelected}
+              // @ts-ignore – indeterminate prop
+              indeterminate={isIndeterminate}
+              onCheckedChange={handleSelectAll}
+            />
+            <span className="text-sm font-medium text-gray-900">
+              全选（{selectedInFilterCount}/{totalCount}）
+            </span>
           </div>
 
           {/* 实例项 */}
@@ -858,7 +851,7 @@ export default function BatchDistributeDialog({
             onClick={handleDistribute}
             disabled={selectedInstances.length === 0}
             className="btn-primary-glow text-white"
-            style={{ background: selectedInstances.length === 0 ? undefined : 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+            style={{ background: selectedInstances.length === 0 ? undefined : 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
           >
             确认下发（{selectedInstances.length}）
           </Button>
@@ -876,7 +869,7 @@ export default function BatchDistributeDialog({
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3">
                 <p className="text-sm text-amber-700 leading-relaxed">
                   配置 MCP 会修改 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">~/.openclaw/openclaw.json</code> 文件中的 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">mcp.servers</code> 相关配置，修改后需重启 gateway 生效，将会导致实例短暂不可用，可能影响正在运行的任务。
                 </p>
@@ -906,7 +899,7 @@ export default function BatchDistributeDialog({
             onClick={handleConfirmDistribute}
             disabled={confirmInput !== '确认下发'}
             className="text-white"
-            style={{ background: confirmInput === '确认下发' ? 'linear-gradient(135deg, #007AFF, #5856D6)' : undefined }}
+            style={{ background: confirmInput === '确认下发' ? 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' : undefined }}
           >
             确认下发
           </Button>

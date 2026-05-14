@@ -15,20 +15,51 @@ description: >
 
 ---
 
+## v2 升级日志（2026-05）
+
+本次升级基于最新典型页面（用户端官网首页 / 用户端「我的 Agent」/ 管理端「平台策略」）重写规范。**与 v1 不一致时以 v2 为准**。
+
+| 维度 | v1 | v2 |
+|---|---|---|
+| 主品牌蓝 | `#007AFF` | **`#1447E6`** |
+| 主 CTA 渐变 | `linear-gradient(135deg, #007AFF, #5856D6)` 蓝紫 | **`linear-gradient(90deg, #020617 70%, #1447E6 100%)` 黑→蓝** |
+| 用户端页面背景 | 纯白 / `#FAFBFF` | **`linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)`**（全用户端） |
+| 圆角最大值 | 16px (`rounded-2xl`) | **4px**（仅保留 `2 / 3 / 4 / full` 四档） |
+| 主卡片圆角 | 16px | **4px**（紧凑信息卡） |
+| 字体 | Inter + DM Mono | **PingFang SC + Menlo + DIN Alternate(替代 DIN Next LT Pro) + Open Sans** |
+| 文字色阶 | gray-900 / 700 / 500 / 400 | **`#0A0A0A` / `#020617` / `#334155` / `#737373` / `#A3A3A3`** |
+| 阴影 | 双层柔和 | **三档**：卡片轻量 / Tab 滑块极轻 / 管理端配置卡中等 |
+| 响应式 | 简单网格断点 | **新增 1200/1920 规则**（用户端「我的 Agent」） |
+
+> 历史代码若仍使用 v1 token，需在下次接触时同步迁移到 v2。所有现存原型按 v2 同步替换主色与渐变。
+
+---
+
 ## 1. 色彩系统
 
 ### 1.1 品牌色
 
 | 名称 | 值 | 用途 |
 |------|-----|------|
-| Brand Blue | `#007AFF` | 主色，活跃态，链接，主按钮 |
-| Brand Purple | `#5856D6` | 副色，渐变终点 |
+| Brand Blue | **`#1447E6`** | 主色、活跃态、链接、主按钮、Switch 开启 |
+| Brand Black | `#020617` | CTA 渐变起点、强调文字 |
+| Brand Blue Tint | `#EFF6FF` | 活跃菜单项底色起点 |
 
-**品牌渐变**（全局统一）：
+**主 CTA 渐变**（全局统一，inline style）：
 ```css
-background: linear-gradient(135deg, #007AFF, #5856D6);
+background: linear-gradient(90deg, #020617 70%, #1447E6 100%);
 ```
-用于：Logo 容器、Avatar fallback、主 CTA 按钮、活跃分页按钮。
+用于：主操作按钮、Hero 区主 CTA、活跃分页按钮。
+
+**活跃菜单项渐变**（管理端侧栏）：
+```css
+background: linear-gradient(90deg, #EFF6FF 0%, rgba(20,71,230,0.05) 100%);
+```
+
+**Logo 容器渐变**（保留蓝系，不再使用紫色）：
+```css
+background: linear-gradient(135deg, #1447E6, #2563EB);
+```
 
 ### 1.2 语义色
 
@@ -44,24 +75,33 @@ background: linear-gradient(135deg, #007AFF, #5856D6);
 
 | 区域 | 色值 | 说明 |
 |------|------|------|
-| Admin 主背景 | `#F0F2F8` | 通过 inline style 设置 |
-| Tenant 主背景 | `#FAFBFF` | 通过 inline style 设置 |
+| **用户端全局背景** | `linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)` | inline style 设置在最外层 |
+| **管理端全局背景** | `#FFFFFF` | 纯白，沿用现状 |
 | 卡片/面板 | `#FFFFFF` | 纯白 |
-| 表格斑马纹 | `bg-gray-50/50` | hover 态 |
-| 表头 | `bg-gray-50/50` | 极浅灰 |
+| 表格斑马纹 / 表头 | `bg-gray-50/50` | 极浅灰 |
+| Tab 容器底色 | `#F5F5F5` | 灰底白滑块 |
 
-### 1.4 文字层级
+### 1.4 文字层级（按色值）
 
-| 层级 | Tailwind 类 | 用途 |
-|------|-------------|------|
-| 一级 | `text-gray-900` | 标题、卡片标题、关键数据 |
-| 二级 | `text-gray-700` | 正文、表格内容 |
-| 三级 | `text-gray-500` | 描述、辅助文字 |
-| 四级 | `text-gray-400` | 占位符、极弱提示 |
-| 活跃 | `text-blue-600` | 活跃导航、链接 |
-| 危险 | `text-red-400 hover:text-red-600` | 删除按钮 |
+| 层级 | 色值 | Tailwind 近似 | 用途 |
+|------|------|---------------|------|
+| 主文字 | `#0A0A0A` | `text-neutral-950` | 标题、卡片标题、主内容 |
+| 强调文字 | `#020617` | `text-slate-950` | 数字、关键强调 |
+| 次级文字 | `#334155` | `text-slate-700` | 正文、ID、分组名 |
+| 辅助文字 | `#737373` | `text-neutral-500` | 时间、描述、分组标题 |
+| 极弱文字 | `#A3A3A3` | `text-neutral-400` | 占位符、极弱提示 |
+| 活跃 | `#1447E6` | — | 活跃导航、链接 |
+| 危险 | `#DC2626` | `text-red-600` | 删除按钮 |
 
-### 1.5 渐变 Icon 容器配色
+### 1.5 描边
+
+| 用途 | 色值 / 宽度 |
+|------|-------------|
+| 通用分割线 | `#E5E5E5` / 1px |
+| 管理端配置卡描边 | `#E5E5E5` / **0.5px** |
+| 卡片细描边 | `#E5E5E5` / 1px |
+
+### 1.6 渐变 Icon 容器配色
 
 每种功能使用固定渐变，不可混用：
 
@@ -79,33 +119,42 @@ background: linear-gradient(135deg, #007AFF, #5856D6);
 
 ## 2. 排版系统
 
-### 2.1 字体
+### 2.1 字体栈
 
 ```css
-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+/* 中文主字体（含正文、标题） */
+font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+
+/* 等宽 / 步骤标识（Step 1/2/3、代码片段） */
+font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+
+/* 大数字 / 计数（DIN Next LT Pro 商业授权未购，使用免费替代） */
+font-family: 'DIN Alternate', 'DIN', 'Helvetica Neue', sans-serif;
+
+/* 英文标签 / Badge（New / Beta） */
+font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
 ```
-- 正文字体：**Inter**（权重 400/500/600/700/800）
-- 等宽字体：**DM Mono**（用于 API Key、JSON、代码片段）
+
 - 渲染：开启 `antialiased`
+- PingFang SC 是 Apple 系统字体，无需引入；其余字体的 webfont 接入见 §14
 
-### 2.2 字号与字重
+### 2.2 文字 Token
 
-| 用途 | Tailwind 类 | 等效值 |
-|------|-------------|--------|
-| 页面标题 h1 | `text-2xl font-bold` | 24px / 700 |
-| 卡片标题 h2 | `font-semibold text-gray-900` | 16px / 600 |
-| 统计大数字 | `text-2xl font-bold` | 24px / 700 |
-| 正文/表格 | `text-sm` | 14px |
-| 标签 Label | `text-sm font-medium text-gray-700` | 14px / 500 |
-| 描述 | `text-sm text-gray-500` | 14px |
-| 分组标题 | `text-xs font-semibold text-gray-400 uppercase tracking-wider` | 12px / 600 |
-| 表头 | `text-xs font-medium text-gray-500 uppercase tracking-wide` | 12px / 500 |
-| Badge 文字 | `text-xs font-medium` | 12px / 500 |
-| Dialog 标题 | `text-lg leading-none font-semibold` | 18px / 600 |
+| Token | 字号 | 字重 | 行高 | Tailwind 等效 | 用途 |
+|---|---|---|---|---|---|
+| Heading L | 24px | Medium | 1.4 | `text-2xl font-medium` | 页面标题 h1 |
+| Heading M | 18px | Medium | 1.4 | `text-lg font-medium` | Dialog 标题、模块标题 |
+| Heading S | 16px | Semibold | 1.4 | `text-base font-semibold` | 卡片标题 h2 |
+| Paragraph M Medium | 14px | Medium | 1.5 | `text-sm font-medium` | 列表项标题、Label、Tab 文字 |
+| Paragraph M | 14px | Regular | 1.5 | `text-sm` | 正文、表格内容 |
+| Paragraph S | 13px | Regular | 1.5 | `text-[13px]` | 管理端菜单项、紧凑列表 |
+| Paragraph Mini | 12px | Regular | 1.5 | `text-xs` | ID、时间、分组标题、辅助说明 |
+| Number L | 24px | Bold | — | `text-2xl font-bold tabular-nums` | 统计大数字（用 DIN Alternate） |
+| Mono Step | 14px | Medium | — | `text-sm font-medium` | Step 1/2/3（用 Menlo） |
 
 ### 2.3 数字排版
 
-所有数字内容使用 `tabular-nums` 确保等宽对齐。
+所有数字内容使用 `tabular-nums` 确保等宽对齐。统计大数字额外应用 `font-din`（见 §14 Tailwind 配置）。
 
 ---
 
@@ -118,15 +167,17 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | Admin 内容区 padding | `p-8` (32px) |
 | Tenant 内容区 padding | `px-6 py-8` (24px/32px) |
 | 标题区到内容区 | `mb-6` 或 `mb-8` |
-| Admin max-width | `max-w-3xl`（表单页）/ `max-w-5xl`（列表页）/ 不限（监控页） |
-| Tenant max-width | `max-w-6xl` 或 `max-w-7xl` |
+| Admin max-width | 不限（铺满主内容区 1496px） |
+| Tenant 「我的 Agent」max-width | **`max-w-[1920px] mx-auto`** + 响应式（见 §7.4） |
+| Tenant 其他页面 max-width | `max-w-7xl` |
 
 ### 3.2 卡片内
 
 | 位置 | 间距 |
 |------|------|
 | 表单卡片 | `p-8` |
-| 普通卡片 | `p-5` 或 `p-6` |
+| 管理端配置卡 | `px-6 py-5` 或 `p-6` |
+| Agent 卡片 | `p-5` (20px) |
 | 卡片 header | `px-6 py-5` |
 | 表格 header cells | `px-6 py-3` |
 | 表格 body cells | `px-6 py-4` |
@@ -140,34 +191,98 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | 按钮组 gap | `gap-3` |
 | 图标与文字 | `gap-2` 或 `gap-2.5` |
 | 统计卡片 grid | `gap-4` |
+| Agent 卡片 grid | `gap-4` |
 | 导航项间 | `space-y-0.5` |
+| Tab 项间 | `gap-1` |
 
 ---
 
 ## 4. 圆角系统
 
-| 组件 | 圆角 |
-|------|------|
-| 主卡片/表格容器 | `rounded-2xl` (16px) |
-| 图标容器(大) | `rounded-xl` (12px) |
-| 导航项/输入框/Logo | `rounded-lg` (8px) |
-| 按钮/Badge | `rounded-md` (6px) |
-| 状态徽章/进度条 | `rounded-full` |
-| Dialog | `rounded-lg` (8px) |
+**最大圆角不超过 4px，仅保留 `2 / 3 / 4 / full` 四档。**
+
+| Token | 数值 | Tailwind | 适用场景 |
+|---|---|---|---|
+| `radius-xs` | **2px** | `rounded-[2px]` | 状态徽章（New / Beta）、小色块、状态标签 |
+| `radius-sm` | **3px** | `rounded-[3px]` | Tab 活跃滑块、Slider 把手 |
+| `radius-md` | **4px** | `rounded-[4px]` | 按钮、输入框、Tab/Switch 容器、Agent 卡片、管理端配置卡、Logo、侧栏菜单项、Dialog、Popover |
+| `radius-full` | `9999px / 50%` | `rounded-full` | 标签胶囊、Switch 轨道、头像、进度条、状态点 |
+
+### 选用原则
+
+1. **同一组件家族保持一致**：所有按钮统一 4px，所有主卡片统一 4px。
+2. **嵌套关系**：外层圆角 ≥ 内层圆角 + padding（实操中 4px 容器内的活跃元素用 3px）。
+3. **胶囊优先**：标签筛选、Switch 轨道、头像、状态点等"容器形态非矩形"元素用 `full`。
+4. **不要使用** `rounded-md` (6px) / `rounded-lg` (8px) / `rounded-xl` (12px) / `rounded-2xl` (16px)。所有 v1 中的这些圆角统一降级到 4px 或 full。
 
 ---
 
-## 5. 阴影系统
+## 5. 阴影系统（v2.1：Surface 组件强约束）
 
-| 场景 | 阴影值 |
-|------|--------|
-| **主卡片**（最常用） | `0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)` |
-| Glass card | `0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)` |
-| 强调卡片 | `0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06)` |
-| 主按钮 hover glow | `0 4px 14px rgba(0,122,255,0.3)` |
-| Sidebar | `1px 0 0 0 rgba(0,0,0,0.04)` |
+> **唯一真理源**：`client/src/index.css` 的 `--shadow-card / --shadow-inner / --shadow-overlay / --shadow-config / --shadow-segment` 五个 CSS 变量。
+> **唯一卡片 API**：`@/components/ui/Surface` 导出的 `SurfaceCard / SurfaceInner / SurfaceOverlay / SurfaceConfig`。
+> 业务页面**禁止**再写 inline `boxShadow:`，**禁止**用 Tailwind `shadow-md / shadow-lg / shadow-xl / shadow-2xl`。
 
-**注意**：通过 inline `style={{ boxShadow: "..." }}` 设置，不使用 Tailwind shadow 类。
+### 5.1 五档语义对照表
+
+| 档位 | 组件 | CSS 变量 | 阴影值 | 适用场景 |
+|------|------|---------|--------|---------|
+| **L1 表层卡片** | `<SurfaceCard>` | `--shadow-card` | `0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)` | 页面主区块、列表卡、统计卡、Agent 卡、技能广场卡 |
+| **L2 内嵌卡片** | `<SurfaceInner>` | `--shadow-inner` | `none`（仅 `border #F5F5F5`） | 卡片内的子卡 / 表格容器 / 分组面板 |
+| **L3 浮层** | `<SurfaceOverlay>` 或 shadcn 自带 | `--shadow-overlay` | `0px 4px 16px -2px rgba(0,0,0,0.08), 0px 2px 6px rgba(0,0,0,0.06)` | Dialog / Sheet / Drawer / Popover / DropdownMenu / 自定义浮层 |
+| **L4 高亮配置卡** | `<SurfaceConfig>` | `--shadow-config` | `0px 2px 8px -1px rgba(0,0,0,0.05), 0px 2px 4px 2px rgba(0,0,0,0.05)` | 管理端"操作要点""引导卡""Pro 推荐卡"等需要强调的卡 |
+| **L5 Segment 滑块** | 直接写 `boxShadow: var(--shadow-segment)` | `--shadow-segment` | `0px 1.11px 2.22px rgba(0,0,0,0.05)` | Tab 活跃滑块、Segmented Control 指示器 |
+| 主按钮 hover glow | inline | — | `0 4px 14px rgba(20,71,230,0.3)` | CTA 按钮 hover 发光 |
+
+### 5.2 用法示例
+
+```tsx
+import { SurfaceCard, SurfaceInner, SurfaceConfig } from "@/components/ui/Surface";
+
+// L1 表层卡片：页面常规列表卡 / 统计卡
+<SurfaceCard className="p-5">
+  <h3 className="text-sm font-medium text-[#0A0A0A]">总请求数</h3>
+  <p className="text-2xl font-semibold mt-1">2,186</p>
+</SurfaceCard>
+
+// L1 + hover 微抬：用于可点击的卡片
+<SurfaceCard hover className="p-5 cursor-pointer">…</SurfaceCard>
+
+// L2 内嵌卡：表格/列表容器（无阴影靠浅描边即可）
+<SurfaceInner className="overflow-hidden">
+  <header className="px-5 py-3 border-b border-[#E5E5E5] bg-[#FAFAFA]">模型使用汇总</header>
+  <table>…</table>
+</SurfaceInner>
+
+// L4 高亮卡：管理端引导/Pro 推荐
+<SurfaceConfig className="p-6">…</SurfaceConfig>
+
+// L5 Segment 滑块：直接 inline（很少见，仅 Tab/Segmented 实现内部）
+<button style={{ boxShadow: "var(--shadow-segment)" }}>全部</button>
+```
+
+### 5.3 禁用清单（CI 拦截）
+
+下列写法**全部禁止**出现在 `pages/**` 与 `components/**`（除 `components/ui/Surface.tsx` 本身和 shadcn 内部组件）：
+
+| ❌ 禁止 | ✅ 用什么替代 |
+|--------|--------------|
+| `style={{ boxShadow: "0px 1px 4px ..." }}` | `<SurfaceCard>` |
+| `className="shadow-md"` / `shadow-lg` / `shadow-xl` / `shadow-2xl` | `<SurfaceCard>` 或 `<SurfaceConfig>` |
+| `className="hover:shadow-md"`（hover 跳档） | 改用 `<SurfaceCard hover>`（仅微抬不变阴影） |
+| 「卡片只用 `border` 不带阴影」（除 L2 内嵌外） | `<SurfaceCard>` |
+| 自己手写浮层 `bg-white shadow-lg rounded-md` | `<SurfaceOverlay>` 或直接用 shadcn `<Dialog>` |
+
+**校验脚本**：项目根 `npm run lint:shadow`（见 §13 工具脚本）。
+
+### 5.4 批量修改（设计规范变更场景）
+
+| 需求 | 改动位置 | 影响范围 |
+|------|---------|---------|
+| L1 卡片阴影变深 10% | `index.css` 的 `--shadow-card` 一行 | 全站 L1 卡片 |
+| 卡片描边从 `#E5E5E5` 改 `#EAEAEA` | `Surface.tsx` 的 `border-[#E5E5E5]` 一行 | 全站 L1 卡片 |
+| 全部 L1 卡片默认带 hover 微抬 | `SurfaceCard` 的默认 `className` | 全站 L1 卡片 |
+| 增加新档位（例如 L6 强调卡） | `index.css` 加变量 + `Surface.tsx` 加组件 | 仅新组件影响 |
 
 ---
 
@@ -208,18 +323,20 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 ### 7.1 Admin 布局
 
 ```
-+--[ Sidebar w-64 fixed ]--+--[ Main ml-64 flex-1 p-8 ]--+
-|  Logo(h-16 px-5)         |  bg: #F0F2F8                |
-|  前往员工端链接            |  page-enter 内容区          |
-|  Nav Groups(可折叠)       |                              |
-|  User Footer(p-3)        |                              |
-+---------------------------+------------------------------+
++--[ Sidebar w-[232px] fixed ]--+--[ Main ml-[232px] flex-1 p-8 ]--+
+|  Logo (radius 4px)            |  bg: #FFFFFF                     |
+|  Nav Groups                   |  page-enter 内容区               |
+|    分组标题 12px #737373       |                                  |
+|    菜单项 13px #0A0A0A         |                                  |
+|    活跃项 渐变 + radius 4px    |                                  |
+|  User Footer                  |                                  |
++-------------------------------+----------------------------------+
 ```
 
-- Sidebar：`w-64`, `fixed`, `bg-white`, `border-r border-gray-100`
-- 导航项：`px-3 py-2 rounded-lg text-sm font-medium gap-2.5`
-- 活跃项：`text-blue-600 bg-blue-50` + `border-left: 2px solid #007AFF`
-- 分组标题：`text-xs font-semibold text-gray-400 uppercase tracking-wider`
+- Sidebar：`w-[232px]`, `fixed`, `bg-white`, `border-r border-[#E5E5E5]`
+- 分组标题：`text-xs text-[#737373]`（12px）
+- 菜单项：`px-3 py-2 rounded-[4px] text-[13px] gap-2.5 text-[#0A0A0A]`
+- 活跃项：`text-[#1447E6]` + 背景 `linear-gradient(90deg, #EFF6FF 0%, rgba(20,71,230,0.05) 100%)`
 - 导航 icon：`w-4 h-4`
 
 ### 7.2 Tenant 布局
@@ -229,22 +346,45 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 |  Logo  |  Nav Items  |  管理后台按钮 + User               |
 +-----------------------------------------------------------+
 |  pt-16 min-h-screen                                       |
-|  max-w-7xl mx-auto px-6 内容区                             |
+|  bg: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)    |
+|  内容区（依页面不同套不同 max-width）                       |
 +-----------------------------------------------------------+
 ```
 
-- Navbar：`h-16`, `fixed`, `z-50`, `bg-white/90`, `backdrop-blur-md`, `border-b border-gray-100`
-- 导航项：`px-4 py-2 rounded-lg text-sm font-medium`
-- 活跃：`text-blue-600 bg-blue-50`
-- 非活跃：`text-gray-600 hover:text-gray-900 hover:bg-gray-50`
+- Navbar：`h-16`, `fixed`, `z-50`, `bg-white/90`, `backdrop-blur-md`, `border-b border-[#E5E5E5]`
+- 导航项：`px-4 py-2 rounded-[4px] text-sm font-medium`
+- 活跃：`text-[#1447E6] bg-[#EFF6FF]`
+- 非活跃：`text-[#334155] hover:text-[#0A0A0A] hover:bg-gray-50`
 
 ### 7.3 响应式网格
 
 | 场景 | 列数 |
 |------|------|
-| OpenClaw 卡片 | `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` |
+| **Agent 卡片（我的 Agent 页）** | **`grid-cols-2`**（固定两列，不随断点变化） |
+| OpenClaw 卡片（其他页面） | `grid-cols-1 md:grid-cols-2 lg:grid-cols-3` |
 | 统计卡片 | `grid-cols-3` 或 `grid-cols-5` |
 | 帮助文档 | `grid-cols-1 md:grid-cols-2` |
+
+### 7.4 响应式规则（用户端「我的 Agent」专用）
+
+| 屏幕宽度 | 行为 |
+|---|---|
+| **> 1920px** | 内容区固定最大宽 `1920px`，两侧自动留白延展 |
+| **1200px – 1920px** | 内容区随屏幕宽度，两侧间距自动收窄；卡片网格保持每行 **2 列** |
+| **< 1200px** | 不降级、不重排，**整体横向滚动**（`min-w-[1200px]`） |
+
+实现：
+```jsx
+<div className="min-w-[1200px]">
+  <div className="max-w-[1920px] mx-auto px-6">
+    <div className="grid grid-cols-2 gap-4">
+      {/* Agent 卡片 */}
+    </div>
+  </div>
+</div>
+```
+
+**管理端响应式**：暂不做响应式适配，沿用固定布局（主内容区 1496px + 侧栏 232px）。
 
 ---
 
@@ -252,178 +392,250 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
 ### 8.1 按钮
 
-**主按钮 CTA**（品牌渐变）：
+**主按钮 CTA**（黑→蓝渐变）：
 ```jsx
-<Button style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} className="text-white btn-primary-glow">
+<Button
+  style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+  className="text-white rounded-[4px] btn-primary-glow"
+>
+  确认
+</Button>
 ```
 
 **尺寸**：
 | 尺寸 | 类 | 用途 |
 |------|-----|------|
-| default | `h-9 px-4 py-2` | 常规操作 |
-| sm | `h-8 px-3` | 表格行操作 |
-| lg | `h-10 px-6` | 突出 CTA |
-| icon | `size-9` | 纯图标按钮 |
+| default | `h-9 px-4 py-2 rounded-[4px]` | 常规操作 |
+| sm | `h-8 px-3 rounded-[4px]` | 表格行操作 |
+| lg | `h-10 px-6 rounded-[4px]` | 突出 CTA |
+| icon | `size-9 rounded-[4px]` | 纯图标按钮 |
 
 **变体使用规则**：
-- 主操作 → `default` + 品牌渐变 inline style
-- 次要操作 → `variant="outline"`
-- 危险操作 → `bg-red-500 hover:bg-red-600 text-white`
-- 辅助操作 → `variant="ghost"`
+- 主操作 → `default` + 黑→蓝渐变 inline style
+- 次要操作 → `variant="outline"` + `border-[#E5E5E5]` + `rounded-[4px]`
+- 危险操作 → `bg-red-500 hover:bg-red-600 text-white rounded-[4px]`
+- 辅助操作 → `variant="ghost"` + `rounded-[4px]`
 
 ### 8.2 状态徽章
 
-**必须使用自定义 class，不要自己发明新的状态样式**：
-
 ```jsx
-// 运行中
 <span className="badge-running">
   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
   运行中
 </span>
-
-// 已停止
-<span className="badge-stopped">...</span>
-
-// 待处理
-<span className="badge-pending">...</span>
 ```
 
-CSS 定义：
+CSS 定义（圆角调整为 2px）：
 ```css
-.badge-running { background: rgba(52,199,89,0.12); color: #1a8c3a; }
-.badge-stopped { background: rgba(255,59,48,0.1); color: #c0392b; }
-.badge-pending { background: rgba(255,149,0,0.1); color: #b8640a; }
+.badge-running { background: rgba(52,199,89,0.12); color: #1a8c3a; border-radius: 2px; padding: 2px 8px; }
+.badge-stopped { background: rgba(255,59,48,0.1); color: #c0392b; border-radius: 2px; padding: 2px 8px; }
+.badge-pending { background: rgba(255,149,0,0.1); color: #b8640a; border-radius: 2px; padding: 2px 8px; }
+.badge-new { background: #1447E6; color: #fff; border-radius: 2px; padding: 1px 6px; font-family: 'Open Sans', sans-serif; font-size: 10px; }
 ```
 
-### 8.3 卡片
+### 8.3 卡片（通用）
 
 **绝大多数卡片使用原生 div，不使用 shadcn Card**：
 
 ```jsx
 <div
-  className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+  className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden"
+  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
 >
-  {/* 可选 header */}
-  <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-    <h2 className="font-semibold text-gray-900">标题</h2>
+  <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E5E5]">
+    <h2 className="text-base font-semibold text-[#0A0A0A]">标题</h2>
   </div>
   {/* 内容 */}
 </div>
 ```
 
-### 8.4 表格
+### 8.4 Agent 卡片（用户端「我的 Agent」核心组件）
+
+```jsx
+<div
+  className="bg-white rounded-[4px] p-5"
+  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+>
+  <div className="flex items-start justify-between mb-3">
+    <h3 className="text-sm font-medium text-[#0A0A0A]">Agent 名称</h3>
+    <span className="badge-new">New</span>
+  </div>
+  <div className="space-y-1 text-xs">
+    <div className="text-[#334155]">ID: agent_xxx</div>
+    <div className="text-[#334155]">分组：默认分组</div>
+    <div className="text-[#737373]">更新于 2026-05-13 20:30</div>
+  </div>
+</div>
+```
+
+### 8.5 管理端配置卡（描边 0.5px，圆角 4px）
+
+```jsx
+<div
+  className="bg-white rounded-[4px] p-6"
+  style={{
+    border: "0.5px solid #E5E5E5",
+    boxShadow: "0px 2px 8px -1px rgba(0,0,0,0.05), 0px 2px 4px 2px rgba(0,0,0,0.05)"
+  }}
+>
+  <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">配置标题</h3>
+  <p className="text-xs text-[#737373] mb-5">配置说明</p>
+  {/* 配置项 */}
+</div>
+```
+
+### 8.6 Tab 切换
+
+```jsx
+<div className="inline-flex items-center gap-1 p-1 bg-[#F5F5F5] rounded-[4px]">
+  <button
+    className="px-3 py-1 text-sm font-medium rounded-[3px] bg-white text-[#0A0A0A]"
+    style={{ boxShadow: "0px 1.11px 2.22px rgba(0,0,0,0.05)" }}
+  >
+    全部
+  </button>
+  <button className="px-3 py-1 text-sm text-[#737373] hover:text-[#0A0A0A] rounded-[3px]">
+    我创建的
+  </button>
+</div>
+```
+
+### 8.7 Switch 开关
+
+```jsx
+<button
+  className="relative w-7 h-4 rounded-full transition-colors"
+  style={{ background: enabled ? "#1447E6" : "#E5E5E5" }}
+>
+  <span
+    className="absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform"
+    style={{ transform: enabled ? "translateX(14px)" : "translateX(2px)" }}
+  />
+</button>
+```
+- 容器：宽 28px × 高 16px，圆角 100px (`rounded-full`)
+- 开启色：`#1447E6`，关闭色：`#E5E5E5`
+
+### 8.8 标签胶囊（分类筛选）
+
+```jsx
+<button className="px-4 py-1.5 rounded-full text-sm font-medium border border-[#E5E5E5] text-[#334155] hover:border-[#1447E6] hover:text-[#1447E6]">
+  全部分类
+</button>
+<button className="px-4 py-1.5 rounded-full text-sm font-medium bg-[#1447E6] text-white">
+  营销
+</button>
+```
+
+### 8.9 表格
 
 **使用原生 `<table>`，不使用 shadcn Table**：
 
 ```jsx
 <table className="w-full">
   <thead>
-    <tr className="border-b border-gray-50 bg-gray-50/50">
-      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+    <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+      <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">
         列名
       </th>
     </tr>
   </thead>
-  <tbody className="divide-y divide-gray-50">
+  <tbody className="divide-y divide-[#E5E5E5]">
     <tr className="hover:bg-gray-50/50 transition-colors">
-      <td className="px-6 py-4 text-sm text-gray-700">内容</td>
+      <td className="px-6 py-4 text-sm text-[#334155]">内容</td>
     </tr>
   </tbody>
 </table>
 ```
 
-### 8.5 统计卡片
+### 8.10 统计卡片
 
 ```jsx
-<div className="bg-white rounded-2xl border border-gray-100 p-5"
-  style={{ boxShadow: "..." }}>
+<div
+  className="bg-white rounded-[4px] border border-[#E5E5E5] p-5"
+  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+>
   <div className="flex items-center gap-3 mb-3">
-    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+    <div className="w-9 h-9 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
       <IconName className="w-5 h-5 text-white" />
     </div>
-    <span className="text-sm text-gray-500">标签</span>
+    <span className="text-xs text-[#737373]">标签</span>
   </div>
-  <div className="text-2xl font-bold text-gray-900">数值</div>
+  <div className="text-2xl font-bold text-[#020617] tabular-nums font-din">数值</div>
 </div>
 ```
 
-### 8.6 搜索筛选栏
+### 8.11 搜索筛选栏
 
 ```jsx
 <div className="flex flex-wrap gap-3 mb-4 items-center">
-  {/* 搜索框 */}
   <div className="relative">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <Input placeholder="搜索..." className="pl-9 bg-white w-64" />
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+    <Input placeholder="搜索..." className="pl-9 bg-white w-64 rounded-[4px] border-[#E5E5E5]" />
   </div>
-  {/* 刷新按钮 */}
-  <button className="w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300">
+  <button className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6]">
     <RefreshCw className="w-4 h-4" />
   </button>
 </div>
 ```
 
-### 8.7 Dialog
+### 8.12 Dialog
 
+- 圆角统一 `rounded-[4px]`
 - 小确认框：`sm:max-w-sm`
 - 中表单：`sm:max-w-md`
 - 大表单：`sm:max-w-lg`
 - 详情查看：`sm:max-w-2xl`
 - 长表单加：`max-h-[90vh] overflow-y-auto`
 
-### 8.8 提示横幅
+### 8.13 提示横幅
 
 ```jsx
 {/* 信息提示 */}
-<div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6">
+<div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-4 py-3 mb-6">
   <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
   <p className="text-xs text-blue-600 leading-relaxed">提示文字</p>
 </div>
 
 {/* 警告提示 */}
-<div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
+<div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-3 py-2.5">
   <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
   <p className="text-xs text-amber-700 leading-relaxed">警告文字</p>
 </div>
 ```
 
-### 8.9 分页
+### 8.14 分页
 
-活跃页码使用品牌渐变：
+活跃页码使用黑→蓝渐变：
 ```jsx
 <button
-  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-  className="w-7 h-7 rounded-lg text-white text-xs font-medium"
+  style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+  className="w-7 h-7 rounded-[4px] text-white text-xs font-medium"
 >
   {page}
 </button>
 ```
-非活跃页码：`variant="ghost" size="sm"`, `w-7 h-7 text-xs text-gray-500`
+非活跃页码：`variant="ghost" size="sm"`, `w-7 h-7 text-xs text-[#737373] rounded-[4px]`
 
-### 8.10 进度条
+### 8.15 进度条
 
 ```jsx
 <div className="w-full bg-gray-100 rounded-full h-1.5">
   <div
     className={`h-1.5 rounded-full transition-all ${
-      pct > 80 ? "bg-red-500" : pct > 60 ? "bg-yellow-500" : "bg-blue-500"
+      pct > 80 ? "bg-red-500" : pct > 60 ? "bg-yellow-500" : "bg-[#1447E6]"
     }`}
     style={{ width: `${pct}%` }}
   />
 </div>
 ```
 
-### 8.11 毛玻璃卡片
+### 8.16 步骤标识（Step 1/2/3）
 
-```css
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-}
+```jsx
+<span className="font-mono text-sm font-medium text-[#1447E6]" style={{ fontFamily: "Menlo, monospace" }}>
+  Step 1
+</span>
 ```
 
 ---
@@ -438,7 +650,7 @@ CSS 定义：
 | 按钮内 | `w-4 h-4` |
 | 统计 icon 容器内 | `w-5 h-5` |
 | 表格行操作 | `w-3.5 h-3.5` |
-| 空状态 | `w-12 h-12 text-gray-200` |
+| 空状态 | `w-12 h-12 text-[#E5E5E5]` |
 
 ### 导航图标映射
 
@@ -464,15 +676,15 @@ CSS 定义：
 
 ```jsx
 <div className="text-center py-24">
-  <Bot className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-  <p className="text-gray-400 mb-4">暂无数据描述</p>
-  <Button variant="outline">操作按钮</Button>
+  <Bot className="w-12 h-12 text-[#E5E5E5] mx-auto mb-4" />
+  <p className="text-[#A3A3A3] mb-4">暂无数据描述</p>
+  <Button variant="outline" className="rounded-[4px]">操作按钮</Button>
 </div>
 ```
 
 表格空状态：
 ```jsx
-<td colSpan={N} className="px-6 py-12 text-center text-sm text-gray-400">
+<td colSpan={N} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
   暂无符合条件的记录
 </td>
 ```
@@ -488,13 +700,13 @@ CSS 定义：
 
 - 停用 OpenClaw：`opacity-40 cursor-not-allowed`
 - 不可操作按钮：`disabled` + Tooltip 说明原因
-- 只读输入：`bg-gray-100 cursor-not-allowed select-none text-gray-400`
+- 只读输入：`bg-gray-100 cursor-not-allowed select-none text-[#A3A3A3]`
 
 ### 10.4 危险操作确认
 
 使用 `AlertDialog`（非 `Dialog`），红色确认按钮：
 ```jsx
-<AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white">
+<AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white rounded-[4px]">
   确认删除
 </AlertDialogAction>
 ```
@@ -503,15 +715,15 @@ CSS 定义：
 
 ## 11. 图表规范
 
-统一使用 **recharts**（LineChart 为主）：
+统一使用 **recharts**（LineChart 为主），主色更新为 `#1447E6`：
 
 ```jsx
 <LineChart>
   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-  <XAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
-  <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
-  <Line stroke="#6366f1" strokeWidth={2} name="输入" />
-  <Line stroke="#8b5cf6" strokeWidth={2} name="输出" />
+  <XAxis tick={{ fontSize: 11, fill: "#737373" }} />
+  <YAxis tick={{ fontSize: 11, fill: "#737373" }} />
+  <Line stroke="#1447E6" strokeWidth={2} name="输入" />
+  <Line stroke="#020617" strokeWidth={2} name="输出" />
 </LineChart>
 ```
 
@@ -520,17 +732,19 @@ CSS 定义：
 ## 12. 关键约束（必须遵守）
 
 1. **不要引入新的 CSS 框架或 UI 库**。所有组件基于 Tailwind CSS + shadcn/ui + 自定义样式实现。
-2. **不要使用 shadcn Card 替代原生 div 卡片**。项目中卡片使用 `<div className="bg-white rounded-2xl border border-gray-100">` + inline boxShadow。
-3. **不要使用 shadcn Table 替代原生 table**。项目中表格使用原生 `<table>` + 自定义类。
+2. **不要使用 shadcn Card 替代原生 div 卡片**。卡片使用 `<div className="bg-white rounded-[4px]">` + inline boxShadow。
+3. **不要使用 shadcn Table 替代原生 table**。使用原生 `<table>` + 自定义类。
 4. **不要发明新的状态颜色**。运行/停止/待处理严格使用 `badge-running` / `badge-stopped` / `badge-pending`。
 5. **不要使用 emoji 作为图标**。统一使用 `lucide-react`。
 6. **所有页面根元素必须包含 `page-enter` class**。
 7. **品牌渐变通过 inline style 设置**，不要用 Tailwind gradient 类近似模拟。
-8. **卡片阴影通过 inline style 设置**，使用统一的双层阴影值。
+8. **卡片阴影通过 inline style 设置**，使用 §5 中三档阴影之一。
 9. **toast 通知统一使用 sonner**，不要使用 alert() 或自定义 notification。
 10. **每个页面组件自行包裹 Layout**（`<AdminLayout>` 或 `<TenantLayout>`），不要在路由层嵌套。
 11. **中文 UI**：所有界面文案使用简体中文。
 12. **数据操作通过 useState + mock 数据**，不直接调用后端 API。
+13. **圆角不得超过 4px**（`full` 除外）。禁止使用 `rounded-md/lg/xl/2xl/3xl`。
+14. **用户端页面背景必须是白→灰渐变**（最外层 inline style）。
 
 ---
 
@@ -539,14 +753,100 @@ CSS 定义：
 创建任何新页面前，逐项确认：
 
 - [ ] 选择正确的 Layout（Admin/Tenant）
+- [ ] 用户端页面最外层应用 `linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)` 背景
 - [ ] 根元素包含 `page-enter` class
-- [ ] 卡片使用 `rounded-2xl` + 统一 boxShadow
+- [ ] 卡片使用 `rounded-[4px]` + 对应 boxShadow（用户端轻量 / 管理端中等）
 - [ ] 表格使用原生 `<table>` + 规范的 thead/tbody 类
-- [ ] 按钮使用正确的 variant 和 size
-- [ ] 状态徽章使用 `badge-running/stopped/pending`
+- [ ] 按钮使用正确的 variant 和 size，主 CTA 使用黑→蓝渐变
+- [ ] 状态徽章使用 `badge-running/stopped/pending/new`
 - [ ] 图标来自 lucide-react，尺寸正确
 - [ ] 间距遵循系统（p-8/p-6/gap-4 等）
-- [ ] 页面标题使用 `text-2xl font-bold` + `text-sm text-gray-500` 描述
+- [ ] 文字色使用 `#0A0A0A / #334155 / #737373 / #A3A3A3` 阶梯
+- [ ] 主品牌色统一使用 `#1447E6`（不再使用 `#007AFF`）
+- [ ] 圆角不超过 4px（除 `rounded-full`）
+- [ ] 用户端「我的 Agent」类页面应用 1200/1920 响应式规则
 - [ ] 操作反馈使用 `toast.success/error`
 - [ ] 空状态有友好提示
 - [ ] 危险操作使用 AlertDialog 确认
+
+---
+
+## 14. Webfont 接入
+
+### 14.1 需要引入的字体
+
+| 字体 | 是否需引入 | 来源 | 备注 |
+|---|---|---|---|
+| PingFang SC | ❌ 不需要 | Apple 系统字体 | macOS/iOS 自带，Windows 用 fallback |
+| Menlo | ❌ 不需要 | macOS 系统字体 | Windows fallback：`Consolas, 'Courier New'` |
+| **DIN Alternate** | ⚠️ macOS 自带，Windows 需引入 | iOS/macOS 自带 | 替代未购授权的 DIN Next LT Pro |
+| **Open Sans** | ✅ 需要 | Google Fonts（免费） | 用于 New / Beta Badge |
+
+### 14.2 CSS @font-face（self-host 推荐）
+
+将字体文件放入 `public/fonts/`，在 `src/index.css` 顶部添加：
+
+```css
+/* Open Sans Regular & Medium */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/OpenSans-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/OpenSans-Medium.woff2') format('woff2');
+}
+
+/* DIN Alternate（仅 Windows fallback，macOS 自带） */
+/* 如需 Windows 端一致，可购买 DIN Alternate Bold 单字重并 self-host */
+```
+
+> CDN 替代方案（首版可用）：
+> ```html
+> <link rel="preconnect" href="https://fonts.googleapis.com">
+> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+> <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+> ```
+
+### 14.3 全局字体变量（src/index.css）
+
+```css
+:root {
+  --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+  --font-din: 'DIN Alternate', 'DIN', 'Helvetica Neue', sans-serif;
+  --font-en: 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+```
+
+### 14.4 Tailwind 配置（tailwind.config.js / @theme）
+
+Tailwind v4 使用 CSS `@theme`：
+
+```css
+@theme {
+  --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+  --font-din: 'DIN Alternate', 'DIN', 'Helvetica Neue', sans-serif;
+  --font-en: 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+```
+
+使用：
+```jsx
+<span className="font-din text-2xl tabular-nums">1,234</span>
+<span className="font-mono">Step 1</span>
+<span className="font-en">New</span>
+```

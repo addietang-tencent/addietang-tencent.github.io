@@ -315,7 +315,7 @@ export default function PluginListTab() {
           {sortedPlugins.map(plugin => {
             const dist = isDistributing(plugin.id);
             return (
-              <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-lg border border-gray-200 bg-white p-4 transition-all hover:shadow-md cursor-pointer flex flex-col">
+              <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-[4px] border border-gray-200 bg-white p-4 transition-all hover:shadow-md cursor-pointer flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900 flex-1 truncate">{plugin.name}</h3>
                   <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
@@ -347,7 +347,7 @@ export default function PluginListTab() {
 
       {/* 列表视图 */}
       {viewMode === 'list' && sortedPlugins.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-[4px] border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>

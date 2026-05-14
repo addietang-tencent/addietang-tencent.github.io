@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const CARD_SHADOW =
-  "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)";
+  "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)";
 
 // 云开发能力说明数据 — icon 背景色遵循蓝绿紫橙主题色规范
 const CLOUD_DEV_FEATURES: {
@@ -76,12 +76,12 @@ export default function CloudDevManagement() {
         {CLOUD_DEV_FEATURES.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-xl border border-gray-100 p-5"
+            className="bg-white rounded-[4px] border border-gray-100 p-5"
             style={{ boxShadow: CARD_SHADOW }}
           >
             <div className="flex items-start gap-4">
               <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[4px]"
                 style={{ background: feature.iconBg }}
               >
                 <feature.icon className="text-white" style={{ width: "22px", height: "22px" }} />

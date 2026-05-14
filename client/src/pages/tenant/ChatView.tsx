@@ -442,11 +442,11 @@ const STATUS_CONFIG: Record<OpenClawStatus, {
   isDisabled: boolean;
   isGrayAvatar: boolean;
 }> = {
-  creating: { label: "创建中", dotColor: "#007AFF", bgColor: "rgba(0,122,255,0.10)", textColor: "#0055cc", tooltipText: "正在创建中，请稍候", isDisabled: true, isGrayAvatar: false },
+  creating: { label: "创建中", dotColor: "#1447E6", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "正在创建中，请稍候", isDisabled: true, isGrayAvatar: false },
   createFail: { label: "创建失败", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "创建失败，可删除后重新创建", isDisabled: true, isGrayAvatar: true },
   running: { label: "运行中", dotColor: "#34C759", bgColor: "rgba(52,199,89,0.12)", textColor: "#1a8c3a", isDisabled: false, isGrayAvatar: false },
   shutdown: { label: "已关机", dotColor: "#9CA3AF", bgColor: "rgba(156,163,175,0.15)", textColor: "#4b5563", tooltipText: "已关机，如需恢复请联系管理员", isDisabled: true, isGrayAvatar: true },
-  loading: { label: "加载中", dotColor: "#007AFF", bgColor: "rgba(0,122,255,0.10)", textColor: "#0055cc", tooltipText: "加载中，请稍候", isDisabled: true, isGrayAvatar: false },
+  loading: { label: "加载中", dotColor: "#1447E6", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "加载中，请稍候", isDisabled: true, isGrayAvatar: false },
   loadFail: { label: "加载失败", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "加载失败，可点击重试恢复", isDisabled: true, isGrayAvatar: true },
   maintaining: { label: "维护中", dotColor: "#FF9500", bgColor: "rgba(255,149,0,0.10)", textColor: "#b8640a", tooltipText: "维护中，请稍候", isDisabled: true, isGrayAvatar: false },
   pending: { label: "待处理", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "已停用，请联系管理员处理", isDisabled: true, isGrayAvatar: true },
@@ -1924,7 +1924,7 @@ export default function ChatView({
                 className="h-full rounded-full transition-[width] duration-500 ease-out"
                 style={{
                   width: `${currentBrowserState.panelLoadProgress}%`,
-                  background: "linear-gradient(135deg, #007AFF, #5856D6)",
+                  background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
                 }}
               />
             </div>
@@ -1981,12 +1981,12 @@ export default function ChatView({
                 aria-label={cloudBrowserEntryTooltip}
                 aria-disabled={isCloudBrowserEntryDisabled}
                 data-disabled={isCloudBrowserEntryDisabled ? "true" : "false"}
-                className={`flex h-10 w-10 items-center justify-center rounded-xl border bg-white/95 backdrop-blur-sm transition-all duration-150 ${
+                className={`flex h-10 w-10 items-center justify-center rounded-[4px] border bg-white/95 backdrop-blur-sm transition-all duration-150 ${
                   isCloudBrowserEntryDisabled
                     ? "cursor-not-allowed border-gray-200 text-gray-300"
                     : "border-gray-200 text-gray-400 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                 }`}
-                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
               >
                 <Monitor className="w-4 h-4" />
               </button>
@@ -2003,12 +2003,12 @@ export default function ChatView({
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
         isWorkspaceFullscreen
           ? `fixed inset-0 ${workspaceTopClass} z-40 rounded-none border-none`
-          : "rounded-2xl border border-gray-100"
+          : "rounded-[4px] border border-gray-100"
       }`}
       style={
         workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen)
           ? { boxShadow: "none" }
-          : { boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "calc(100vh - 200px)", minHeight: "560px" }
+          : { boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "calc(100vh - 200px)", minHeight: "560px" }
       }
     >
 
@@ -2039,14 +2039,14 @@ export default function ChatView({
                     <Tooltip key={claw.id}>
                       <TooltipTrigger asChild>
                     <div
-                      className={`relative mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-xl ${
+                      className={`relative mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-[4px] ${
                         isDisabledForChat ? "cursor-default opacity-50" : "cursor-pointer"
                       } ${
                         isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
                       }`}
                       style={
                         isSelected
-                          ? { boxShadow: "0 2px 8px rgba(0,122,255,0.1)", border: "1px solid rgba(0,122,255,0.25)" }
+                          ? { boxShadow: "0 2px 8px rgba(20,71,230,0.1)", border: "1px solid rgba(20,71,230,0.25)" }
                           : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
                       }
                       onClick={() => { if (!isDisabledForChat) handleSelectClaw(claw.id); }}
@@ -2055,8 +2055,8 @@ export default function ChatView({
                       <span
                         className="absolute -top-px -right-px z-10 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap"
                         style={{
-                          background: isSelected ? "rgba(0,122,255,0.08)" : "#EAECF0",
-                          color: isSelected ? "rgba(0,122,255,0.5)" : "#9CA3AF",
+                          background: isSelected ? "rgba(20,71,230,0.08)" : "#EAECF0",
+                          color: isSelected ? "rgba(20,71,230,0.5)" : "#9CA3AF",
                           borderTopRightRadius: "0.75rem",
                           borderBottomLeftRadius: "0.75rem",
                           boxShadow: "none"
@@ -2072,7 +2072,7 @@ export default function ChatView({
                         {claw.roleName && (
                           <span
                             className="inline-flex items-center text-xs font-medium px-1.5 py-0.5 rounded-full flex-shrink-0"
-                            style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)", fontSize: "10px" }}
+                            style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(20,71,230,0.1)", fontSize: "10px" }}
                           >
                             {claw.roleName}
                           </span>
@@ -2086,7 +2086,7 @@ export default function ChatView({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
-                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-md transition-colors ${
+                              className={`flex items-center gap-1 text-xs h-6 px-0 rounded-[4px] transition-colors ${
                                 isConfigEnabled ? "text-blue-600 hover:bg-blue-100/60 cursor-pointer" : "text-gray-300 cursor-not-allowed"
                               }`}
                               disabled={!isConfigEnabled}
@@ -2108,7 +2108,7 @@ export default function ChatView({
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
-                              className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0 ${
+                              className={`w-6 h-6 rounded-[4px] flex items-center justify-center transition-colors flex-shrink-0 ${
                                 isSelected ? "text-blue-500 hover:text-blue-700 hover:bg-blue-100/60" : "text-gray-400 hover:text-gray-600 hover:bg-gray-200/60"
                               }`}
                               onClick={(e) => e.stopPropagation()}
@@ -2255,7 +2255,7 @@ export default function ChatView({
                     <button
                       onClick={handleNewChat}
                       disabled={currentIsTyping}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-40"
                     >
                       <MessageSquarePlus className="w-3.5 h-3.5" />
                       新建会话
@@ -2283,7 +2283,7 @@ export default function ChatView({
                           <button
                             key={command}
                             onClick={() => handleQuickCommand(command)}
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150 text-left group/cmd"
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-[4px] border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150 text-left group/cmd"
                             disabled={currentIsTyping}
                           >
                             <span className="text-blue-500 flex-shrink-0">
@@ -2312,7 +2312,7 @@ export default function ChatView({
                       ) : (
                         <button
                           onClick={(e) => onRefreshStatus(e, selectedClaw.id, selectedClaw.name)}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150"
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-[4px] border border-gray-200 bg-white text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150"
                         >
                           <RefreshCw className={`w-3.5 h-3.5 ${refreshingIds.has(selectedClaw.id) ? "animate-spin" : ""}`} />
                           刷新状态
@@ -2325,7 +2325,7 @@ export default function ChatView({
                     {currentMessages.map((message) => (
                       <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                         {message.role === "user" ? (
-                          <div className="max-w-[78%] px-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 leading-relaxed">
+                          <div className="max-w-[78%] px-4 py-2.5 rounded-[4px] bg-gray-100 text-sm text-gray-900 leading-relaxed">
                             {message.content}
                           </div>
                         ) : (
@@ -2347,7 +2347,7 @@ export default function ChatView({
 
               {isRunning && (
                 <div className={`flex-shrink-0 ${workspaceMode === "chat" ? "px-8 pb-4" : "px-4 pb-4"}`}>
-                  <div className="bg-white rounded-2xl border border-gray-200 relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                  <div className="bg-white rounded-[4px] border border-gray-200 relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                     <textarea
                       ref={textareaRef}
                       value={inputText}
@@ -2366,21 +2366,21 @@ export default function ChatView({
                     />
                     <div className="flex items-center justify-between px-2 pb-2">
                       <div className="flex items-center gap-0.5">
-                        <button className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <button className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                           <Plus className="w-4 h-4" />
                         </button>
                         <div className="w-px h-4 bg-gray-200 mx-1" />
                         <div className="relative" ref={commandsRef}>
                           <button
                             onClick={() => setShowCommands((prev) => !prev)}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xs font-medium"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xs font-medium"
                           >
                             <Sparkles className="w-3.5 h-3.5" />
                             指令库
                             {showCommands ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
                           </button>
                           {showCommands && (
-                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg border border-gray-200 py-1.5 z-50" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
+                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-[4px] border border-gray-200 py-1.5 z-50" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
                               {COMMAND_LIST.map((item) => (
                                 <button
                                   key={item.command}
@@ -2396,14 +2396,14 @@ export default function ChatView({
                         </div>
                       </div>
                       <div className="flex items-center gap-0.5">
-                        <button className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <button className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                           <Mic className="w-4 h-4" />
                         </button>
                         <button
                           onClick={handleSend}
                           disabled={!inputText.trim() || currentIsTyping}
                           className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all duration-150 disabled:opacity-30"
-                          style={{ background: inputText.trim() && !currentIsTyping ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#d1d5db" }}
+                          style={{ background: inputText.trim() && !currentIsTyping ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#d1d5db" }}
                         >
                           <Send className="w-3 h-3" />
                         </button>
@@ -2446,7 +2446,7 @@ export default function ChatView({
           {/* 产品规则：浏览器相关按钮全部归浏览器工具条 */}
           <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-[4px] bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                 <Monitor className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium text-gray-900">云桌面</span>
@@ -2455,7 +2455,7 @@ export default function ChatView({
               <button
                 onClick={handleToggleManualOperation}
                 disabled={isBrowserOperationButtonDisabled}
-                className={`h-8 rounded-lg px-3 text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                className={`h-8 rounded-[4px] px-3 text-xs font-medium transition-colors flex items-center gap-1.5 ${
                   isBrowserOperationButtonDisabled
                     ? "bg-gray-100 text-gray-300 cursor-not-allowed"
                     : isBrowserManualOperating
@@ -2472,7 +2472,7 @@ export default function ChatView({
                   <button
                     onClick={handleBrowserRefresh}
                     disabled={isBrowserPanelLoading || isManualRefreshLocked}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                    className="w-8 h-8 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     <RefreshCw className="w-4 h-4" />
                   </button>
@@ -2485,7 +2485,7 @@ export default function ChatView({
                   <button
                     onClick={handleToggleBrowserFullscreen}
                     disabled={isBrowserPanelLoading || isManualRefreshLocked}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                    className="w-8 h-8 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     {workspaceMode === "browser_fullscreen" ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
@@ -2500,7 +2500,7 @@ export default function ChatView({
                   <button
                     onClick={handleCollapseBrowser}
                     disabled={isManualRefreshLocked}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                    className="w-8 h-8 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-35 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -2563,7 +2563,7 @@ export default function ChatView({
                       type="button"
                       onClick={handleDismissUpgradePrompt}
                       aria-label="关闭升级提示"
-                      className="ml-auto w-6 h-6 rounded-md flex items-center justify-center text-blue-400/70 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                      className="ml-auto w-6 h-6 rounded-[4px] flex items-center justify-center text-blue-400/70 hover:text-blue-600 hover:bg-blue-100 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -2670,7 +2670,7 @@ export default function ChatView({
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
-            <div className="flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-700">
+            <div className="flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-700">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
               <span>您可通过云桌面查看 AI 的云端操作过程，并在需要时进入操作。</span>
             </div>
@@ -2768,7 +2768,7 @@ export default function ChatView({
               <Button
                 size="sm"
                 onClick={handleRetryBrowserStartup}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                 className="px-6 text-white hover:opacity-95"
               >
                 重试
@@ -2777,7 +2777,7 @@ export default function ChatView({
               <Button
                 size="sm"
                 onClick={handleConfirmBrowserStartup}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                 className="px-6 text-white hover:opacity-95"
               >
                 立即进入
@@ -2787,7 +2787,7 @@ export default function ChatView({
                 size="sm"
                 disabled
                 className="px-6 text-white"
-                style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.55), rgba(88,86,214,0.55))" }}
+                style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.55), rgba(88,86,214,0.55))" }}
               >
                 校验中...
               </Button>
@@ -2822,7 +2822,7 @@ export default function ChatView({
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmNewChat}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               className="text-white hover:opacity-90"
             >
               确认
@@ -2880,7 +2880,7 @@ export default function ChatView({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDesktopUpgrade}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               className="text-white btn-primary-glow"
             >
               确认

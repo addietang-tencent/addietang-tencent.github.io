@@ -114,7 +114,7 @@ function Pagination({ currentPage, totalPages, totalCount, onPageChange }: Pagin
     pages.push(totalPages);
   }
 
-  const btnBase = 'min-w-[28px] h-7 px-2 flex items-center justify-center rounded-lg text-xs font-medium transition-all';
+  const btnBase = 'min-w-[28px] h-7 px-2 flex items-center justify-center rounded-[4px] text-xs font-medium transition-all';
   const btnActive = 'text-white shadow-sm';
   const btnInactive = 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50';
   const btnArrow = `${btnBase} border border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed`;
@@ -143,7 +143,7 @@ function Pagination({ currentPage, totalPages, totalCount, onPageChange }: Pagin
               key={p}
               onClick={() => onPageChange(p as number)}
               className={`${btnBase} ${currentPage === p ? btnActive : btnInactive}`}
-              style={currentPage === p ? { backgroundColor: '#007AFF' } : undefined}
+              style={currentPage === p ? { backgroundColor: '#1447E6' } : undefined}
             >
               {p}
             </button>
@@ -216,7 +216,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-gray-100 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group flex flex-col"
+      className="relative bg-white rounded-[4px] border border-gray-100 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group flex flex-col"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >
@@ -249,7 +249,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleFavoriteClick}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+            className={`w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors ${
               isFavorited
                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
                 : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
@@ -383,7 +383,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       </button>
 
       {/* 技能信息头部 */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5"
+      <div className="bg-white rounded-[4px] border border-gray-100 p-5"
         style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -423,7 +423,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       </div>
 
       {/* 三列内容区 */}
-      <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
+      <div className="flex h-[47rem] border border-gray-200 rounded-[4px] overflow-hidden bg-white">
         {/* 左列：版本列表 */}
         <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
           <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
@@ -723,7 +723,7 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
             }, 250);
           }}
           title="刷新"
-          className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
+          className="flex items-center justify-center w-9 h-9 rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -735,12 +735,12 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
           <button
             key={cat.id}
             onClick={() => handleCategoryChange(cat.id)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+            className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
               activeCategory === cat.id
                 ? 'text-white border-transparent'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
-            style={activeCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+            style={activeCategory === cat.id ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
           >
             {cat.name}
           </button>

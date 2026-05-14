@@ -655,15 +655,15 @@ export default function FileSpace({
       />
 
       {/* Header Bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+      <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
 
         {/* Top Info + Actions */}
         <div className="px-5 py-4 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.12), rgba(88,86,214,0.12))" }}>
+              <div className="w-9 h-9 rounded-[4px] flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.12), rgba(88,86,214,0.12))" }}>
                 <HardDrive className="w-4.5 h-4.5 text-blue-600" />
               </div>
               <div>
@@ -685,7 +685,7 @@ export default function FileSpace({
                 </div>
               )}
               {/* 视图切换 */}
-              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+              <div className="flex rounded-[4px] border border-gray-200 overflow-hidden">
                 <button
                   onClick={() => setViewMode("list")}
                   className={`px-2.5 py-1.5 transition-colors ${viewMode === "list" ? "bg-blue-50 text-blue-600" : "bg-white text-gray-400 hover:bg-gray-50"}`}
@@ -717,7 +717,7 @@ export default function FileSpace({
                 onClick={handleUploadClick}
                 disabled={uploading}
                 className="text-white"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               >
                 <Upload className="w-3.5 h-3.5 mr-1.5" />
                 上传文件
@@ -735,7 +735,7 @@ export default function FileSpace({
                   {idx === 0 ? (
                     <button
                       onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
-                      className={`flex items-center gap-1 px-1.5 py-1 rounded-md transition-colors ${
+                      className={`flex items-center gap-1 px-1.5 py-1 rounded-[4px] transition-colors ${
                         idx === breadcrumbs.length - 1
                           ? "text-gray-700 font-medium"
                           : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
@@ -746,7 +746,7 @@ export default function FileSpace({
                   ) : (
                     <button
                       onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
-                      className={`px-1.5 py-1 rounded-md transition-colors ${
+                      className={`px-1.5 py-1 rounded-[4px] transition-colors ${
                         idx === breadcrumbs.length - 1
                           ? "text-gray-700 font-medium"
                           : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
@@ -783,7 +783,7 @@ export default function FileSpace({
                 <button
                   key={opt.field}
                   onClick={() => toggleSort(opt.field)}
-                  className={`px-2 py-1 rounded-md transition-colors ${
+                  className={`px-2 py-1 rounded-[4px] transition-colors ${
                     sortField === opt.field
                       ? "bg-blue-50 text-blue-600 font-medium"
                       : "hover:bg-gray-100 text-gray-500"
@@ -809,7 +809,7 @@ export default function FileSpace({
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-blue-50/80 border-2 border-dashed border-blue-300 rounded-lg m-2 pointer-events-none">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-blue-50/80 border-2 border-dashed border-blue-300 rounded-[4px] m-2 pointer-events-none">
               <div className="flex flex-col items-center gap-2">
                 <Upload className="w-8 h-8 text-blue-400" />
                 <p className="text-sm text-blue-600 font-medium">释放文件以上传</p>
@@ -914,7 +914,7 @@ export default function FileSpace({
                   {filteredFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-gray-100 hover:border-blue-200 rounded-xl p-4 transition-all cursor-pointer"
+                      className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-gray-100 hover:border-blue-200 rounded-[4px] p-4 transition-all cursor-pointer"
                       onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                       onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                     >
@@ -1009,7 +1009,7 @@ export default function FileSpace({
               onClick={handleRename}
               disabled={!renameValue.trim() || renameValue === renameTarget?.name}
               className="text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               确认
             </Button>
@@ -1039,7 +1039,7 @@ export default function FileSpace({
               onClick={handleCreateFolder}
               disabled={!newFolderName.trim()}
               className="text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               创建
             </Button>
@@ -1059,7 +1059,7 @@ export default function FileSpace({
             </p>
 
             {/* 当前浏览路径面包屑 */}
-            <div className="flex items-center gap-1 text-xs bg-gray-50 rounded-lg px-3 py-2 overflow-hidden flex-nowrap min-w-0">
+            <div className="flex items-center gap-1 text-xs bg-gray-50 rounded-[4px] px-3 py-2 overflow-hidden flex-nowrap min-w-0">
               <button
                 onClick={() => moveBrowseInto("/")}
                 className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors flex-shrink-0 ${
@@ -1090,7 +1090,7 @@ export default function FileSpace({
             </div>
 
             {/* 目录列表 */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden max-h-[240px] overflow-y-auto">
+            <div className="border border-gray-200 rounded-[4px] overflow-hidden max-h-[240px] overflow-y-auto">
               {/* 返回上级 */}
               {moveBrowsePath !== "/" && (
                 <button
@@ -1142,7 +1142,7 @@ export default function FileSpace({
             <Button
               onClick={handleMove}
               className="text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               移动到此处
             </Button>
@@ -1175,7 +1175,7 @@ function FileActions({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors mx-auto">
+        <button className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors mx-auto">
           <MoreVertical className="w-4 h-4" />
         </button>
       </DropdownMenuTrigger>

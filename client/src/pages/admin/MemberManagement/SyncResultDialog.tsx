@@ -59,14 +59,14 @@ export default function SyncResultDialog({
                 </span>
               </div>
 
-              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
+              <div className="bg-red-50 border border-red-100 rounded-[4px] px-4 py-3 mb-3">
                 <p className="text-xs text-red-700 leading-relaxed">
                   以下分组对应的部门已在腾讯统一身份管理平台被删除，分组内用户已被移出。由于分组仍有正在应用的配置，需管理员将配置与分组解绑后，分组才会被彻底删除。
                 </p>
               </div>
 
               {/* 分组异常表格 */}
-              <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="border border-gray-100 rounded-[4px] overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
@@ -98,7 +98,7 @@ export default function SyncResultDialog({
                             {group.boundConfigs.map((config) => (
                               <span
                                 key={config}
-                                className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-md border border-red-100"
+                                className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-[4px] border border-red-100"
                               >
                                 {config}
                               </span>
@@ -126,14 +126,14 @@ export default function SyncResultDialog({
                 </span>
               </div>
 
-              <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-3">
+              <div className="bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3 mb-3">
                 <p className="text-xs text-amber-700 leading-relaxed">
                   以下用户的主部门在腾讯统一身份管理平台已失效，需管理员关注其配置生效状态。
                 </p>
               </div>
 
               {/* 用户异常表格 */}
-              <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <div className="border border-gray-100 rounded-[4px] overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">

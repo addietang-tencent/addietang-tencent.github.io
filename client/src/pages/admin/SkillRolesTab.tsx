@@ -180,7 +180,7 @@ function EditRoleScopePopover({
             <div className="flex gap-1.5">
               <button
                 onClick={() => setDraftScope('public')}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === 'public'
                     ? 'border-blue-200 bg-blue-50 text-blue-600'
                     : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -190,7 +190,7 @@ function EditRoleScopePopover({
               </button>
               <button
                 onClick={() => setDraftScope('private')}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === 'private'
                     ? 'border-blue-200 bg-blue-50 text-blue-600'
                     : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -208,7 +208,7 @@ function EditRoleScopePopover({
                     placeholder="搜索分组…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                   />
                   {searchQuery && (
                     <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -226,7 +226,7 @@ function EditRoleScopePopover({
                         <button
                           key={group.id}
                           onClick={() => toggleGroup(group.id)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
                         >
                           <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
                             checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
@@ -257,7 +257,7 @@ function EditRoleScopePopover({
               className="h-7 text-xs px-3"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              style={isConfirmDisabled ? undefined : { background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
             >
               确认
             </Button>
@@ -400,7 +400,7 @@ function BatchUpdateDialog({
         ) : (
           <>
             {/* 列表容器 */}
-            <div className="border border-gray-200 rounded-lg max-h-[380px] overflow-y-auto">
+            <div className="border border-gray-200 rounded-[4px] max-h-[380px] overflow-y-auto">
               {/* 表头行 — sticky，左侧带全选 checkbox */}
               <div
                 className="grid items-center gap-2 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-20 cursor-pointer hover:bg-gray-100 transition-colors"
@@ -620,14 +620,14 @@ function SortableRoleRow({
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(role)}
-            className="p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="p-1.5 rounded-[4px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
             title="编辑"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(role)}
-            className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-1.5 rounded-[4px] text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
             title="删除"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -703,7 +703,7 @@ function RoleAddPublicSkillDialog({
                   <div
                     key={skill.id}
                     onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-                    className={`relative rounded-lg border p-3 transition-all ${
+                    className={`relative rounded-[4px] border p-3 transition-all ${
                       isAlreadyAdded
                         ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
                         : isSelected
@@ -886,7 +886,7 @@ function RoleAddEnterpriseSkillDialog({
       <div
         key={skill.id}
         onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-        className={`relative rounded-lg border p-3 transition-all ${
+        className={`relative rounded-[4px] border p-3 transition-all ${
           isAlreadyAdded
             ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
             : isSelected
@@ -957,7 +957,7 @@ function RoleAddEnterpriseSkillDialog({
                 placeholder="搜索技能名称或描述..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-[4px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
               />
             </div>
             {/* 应用范围多选下拉 */}
@@ -967,7 +967,7 @@ function RoleAddEnterpriseSkillDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-lg bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left text-xs">{getScopeFilterLabel()}</span>
                     <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
@@ -992,7 +992,7 @@ function RoleAddEnterpriseSkillDialog({
                 };
 
                 return (
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                     {/* 搜索框 */}
                     <div className="px-2 pb-1.5 pt-1">
                       <div className="relative">
@@ -1001,7 +1001,7 @@ function RoleAddEnterpriseSkillDialog({
                           placeholder="搜索..."
                           value={scopeSearchQuery}
                           onChange={(e) => setScopeSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
@@ -1099,7 +1099,7 @@ function RoleAddEnterpriseSkillDialog({
             </div>
             <button
               onClick={handleRefresh}
-              className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              className="p-2 rounded-[4px] border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
               title="刷新"
             >
               <RefreshCw className="w-4 h-4" />
@@ -1361,7 +1361,7 @@ function RoleEditModal({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => { setScope('public'); setGroupIds([]); }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                       scope === 'public'
                         ? 'border-blue-200 bg-blue-50 text-blue-600'
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -1371,7 +1371,7 @@ function RoleEditModal({
                   </button>
                   <button
                     onClick={() => setScope('private')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                       scope === 'private'
                         ? 'border-blue-200 bg-blue-50 text-blue-600'
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -1386,7 +1386,7 @@ function RoleEditModal({
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
                               <span className="truncate">
                                 {groupIds.length > 0
                                   ? `已选 ${groupIds.length} 个分组`
@@ -1412,7 +1412,7 @@ function RoleEditModal({
                               placeholder="搜索分组…"
                               value={groupSearchQuery}
                               onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                             />
                           </div>
                         </div>
@@ -1429,7 +1429,7 @@ function RoleEditModal({
                                       : [...prev, group.id]
                                   );
                                 }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
                               >
                                 <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
                                   checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
@@ -1470,7 +1470,7 @@ function RoleEditModal({
                 角色技能
                 <span className="text-gray-400 font-normal ml-1.5">— 赋予智能体专业执行能力的技能工具</span>
               </Label>
-              <div className="mt-1.5 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="mt-1.5 border border-gray-200 rounded-[4px] overflow-hidden">
                 <div className="px-4 border-b border-gray-100 flex items-center justify-between" style={{ minHeight: '48px' }}>
                   <span className="text-sm font-medium text-gray-700">
                     技能列表（共 {skills.length} 个）
@@ -1523,7 +1523,7 @@ function RoleEditModal({
                       const wasRefreshed = !!skill.previousVersion;
                       return (
                         <div key={`${skill.name}-${idx}`} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-[4px] bg-gray-100 flex items-center justify-center shrink-0">
                             <Package className="w-4 h-4 text-gray-500" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1558,7 +1558,7 @@ function RoleEditModal({
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => updateResult.hasUpdate ? handleRefreshSingleSkill(idx) : undefined}
-                                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                                className={`w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors ${
                                   updateResult.hasUpdate
                                     ? 'text-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer'
                                     : 'text-gray-300 cursor-default'
@@ -1577,7 +1577,7 @@ function RoleEditModal({
                           {/* 删除按钮 */}
                           <button
                             onClick={() => removeSkill(idx)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                             title="从角色中移除"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1615,7 +1615,7 @@ function RoleEditModal({
             <Button
               onClick={handleSave}
               className="text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               保存
             </Button>
@@ -1757,7 +1757,7 @@ export default function SkillRolesTab() {
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -1794,7 +1794,7 @@ export default function SkillRolesTab() {
               };
 
               return (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                   {/* 搜索框 */}
                   <div className="px-2 pb-1.5 pt-1">
                     <div className="relative">
@@ -1803,7 +1803,7 @@ export default function SkillRolesTab() {
                         placeholder="搜索..."
                         value={scopeSearchQuery}
                         onChange={(e) => setScopeSearchQuery(e.target.value)}
-                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -1901,7 +1901,7 @@ export default function SkillRolesTab() {
           <Button
             onClick={handleNew}
             className="text-white"
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
           >
             <Plus className="w-4 h-4 mr-1.5" />
             自定义角色
@@ -1911,8 +1911,8 @@ export default function SkillRolesTab() {
 
       {/* Table */}
       <div
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+        className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
       >
         <DndContext
           sensors={sensors}

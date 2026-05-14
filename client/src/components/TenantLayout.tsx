@@ -1,9 +1,9 @@
 /**
  * TenantLayout - 租户端布局
  * Design: 「流动蓝图」Fluid Blueprint
- * - 白色系背景 (#FAFBFF)
+ * - 用户端背景：linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%) (v2)
  * - 顶部固定导航栏 (64px)
- * - 主色 #007AFF
+ * - 主色 #1447E6
  */
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
@@ -17,17 +17,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  ArrowRight, Bell, Check, ChevronDown, Copy, KeyRound, LogOut, Settings, UserCog, X,
+  ArrowRight, Bell, Check, ChevronDown, Copy, HelpCircle, KeyRound, LogOut, Settings, UserCog, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
 
-const NAV_ITEMS = [
-  { label: "我的 Agent", path: "/my-openclaw", newTab: false },
-  { label: "技能广场", path: "/skill-square", newTab: false },
-  { label: "模型额度", path: "/model-quota", newTab: false },
-  { label: "帮助文档", path: "/help-docs", newTab: false },
+// 中央 Tab 导航（Figma 358:2322 中央 segmented：我的 Agent / 技能广场 / 模型额度）
+const CENTER_NAV_ITEMS = [
+  { label: "我的 Agent", path: "/my-openclaw" },
+  { label: "技能广场", path: "/skill-square" },
+  { label: "模型额度", path: "/model-quota" },
 ];
+
+// 右侧图标导航：帮助文档保留为右侧"使用指南"入口（对齐 Figma 358:2322 右侧）
+const HELP_DOC_PATH = "/help-docs";
 
 const CURRENT_USER = "alice@acompany.com";
 
@@ -252,7 +255,7 @@ function NotificationPanel({ isAdmin }: { isAdmin: boolean }) {
       {/* Bell 触发按钮 */}
       <button
         onClick={handleOpen}
-        className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
+        className="w-9 h-9 rounded-[4px] flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
       >
         <Bell style={{ width: "18px", height: "18px" }} />
         {hasUnread && (
@@ -264,7 +267,7 @@ function NotificationPanel({ isAdmin }: { isAdmin: boolean }) {
       {showPanel && (
         <div
           ref={panelRef}
-          className="fixed right-4 top-[68px] w-80 bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col z-[200]"
+          className="fixed right-4 top-[118px] w-80 bg-white rounded-[4px] shadow-xl border border-gray-100 flex flex-col z-[200]"
           style={{ maxHeight: filteredNotifs.length > 4 ? "400px" : undefined }}
         >
           {/* Header + Tabs */}
@@ -477,22 +480,55 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // 根据开关过滤导航项
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
+  // 根据开关过滤导航项（仅影响中央 Tab 的"模型额度"）
+  const visibleCenterNavItems = CENTER_NAV_ITEMS.filter((item) => {
     if (item.path === "/model-quota" && !modelQuotaEnabled) return false;
     return true;
   });
 
+  // 中央 Tab 当前激活索引（用于滑块定位）
+  const activeCenterIndex = visibleCenterNavItems.findIndex((item) =>
+    location.startsWith(item.path)
+  );
+
   return (
-    <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
-      {/* Top Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          {/* Logo & Brand */}
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}>
+      {/* [Figma 358:2320] 顶部深色客户端条 50px - #2C2C2C */}
+      <div
+        className="fixed top-0 left-0 right-0 z-[60] flex items-center"
+        style={{
+          height: "50px",
+          background: "#2C2C2C",
+          padding: "0 28px",
+        }}
+      >
+        <span
+          className="text-white"
+          style={{
+            fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+            fontWeight: 500,
+            fontSize: "20px",
+            lineHeight: 1,
+          }}
+        >
+          客户端界面
+        </span>
+      </div>
+
+      {/* [Figma 358:2322] Top Navigation 64px：左 Logo + 中央 Tab + 右图标 */}
+      <header
+        className="fixed left-0 right-0 z-50 h-16 bg-white/95 backdrop-blur-md"
+        style={{
+          top: "50px",
+          borderBottom: "1px solid #E2E8F0",
+        }}
+      >
+        <div className="h-full flex items-center justify-between px-7">
+          {/* Logo & Brand（左侧固定区） */}
           <Link href="/">
-            <div className="flex items-center gap-2.5 cursor-pointer group">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <div className="flex items-center gap-2.5 cursor-pointer group min-w-[200px]">
+              <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-lg"
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
                 🦞
               </div>
               <span className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
@@ -501,39 +537,53 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
             </div>
           </Link>
 
-          {/* Navigation */}
-          <nav className="flex items-center gap-1">
-            {visibleNavItems.map((item) => {
-              const isActive = !item.newTab && location.startsWith(item.path);
-              const btnClass = `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? "text-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`;
-              if (item.newTab) {
-                return (
-                  <a key={item.path} href={item.path} target="_blank" rel="noopener noreferrer">
-                    <button className={btnClass}>{item.label}</button>
-                  </a>
-                );
-              }
+          {/* 中央 Tab 导航（Figma 358:2322 中央 segmented） */}
+          <nav
+            className="flex items-center gap-1 p-1 rounded-[4px]"
+            style={{ background: "#F5F5F5" }}
+          >
+            {visibleCenterNavItems.map((item, idx) => {
+              const isActive = idx === activeCenterIndex;
               return (
                 <Link key={item.path} href={item.path}>
-                  <button className={btnClass}>{item.label}</button>
+                  <button
+                    className={`px-3 py-[7px] rounded-[3px] text-sm font-normal transition-all duration-150 ${
+                      isActive
+                        ? "bg-white text-[#020617]"
+                        : "text-[#334155] hover:text-[#020617]"
+                    }`}
+                    style={
+                      isActive
+                        ? { boxShadow: "0px 1.11px 2.22px rgba(0,0,0,0.05)" }
+                        : undefined
+                    }
+                  >
+                    {item.label}
+                  </button>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Right Side: Bell + Admin Button + User Menu */}
-          <div className="flex items-center gap-2">
+          {/* 右侧图标区：使用指南 + 消息通知 + 管理后台 + 用户菜单 */}
+          <div className="flex items-center gap-2 min-w-[200px] justify-end">
+            {/* 使用指南（=帮助文档，保留原型功能） */}
+            <Link href={HELP_DOC_PATH}>
+              <button
+                className="w-9 h-9 rounded-[4px] flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                title="使用指南"
+              >
+                <HelpCircle style={{ width: "18px", height: "18px" }} />
+              </button>
+            </Link>
+
             {/* 消息中心 */}
             <NotificationPanel isAdmin={isAdmin} />
 
             {/* 管理后台按钮：仅管理员可见 */}
             {isAdmin && (
               <Link href="/admin/basic-info">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-150">
                   <Settings className="w-3.5 h-3.5" />
                   管理后台
                 </button>
@@ -543,10 +593,10 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors">
                   <Avatar className="w-7 h-7">
                     <AvatarFallback className="text-xs font-medium text-white"
-                      style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                      style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
                       {CURRENT_USER.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -571,21 +621,21 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                     {groupMode === "multi-group" ? (
                       <>
                         <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}>
                           A公司 / 技术部 / 前端组
                         </span>
                         <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}>
                           A公司 / 技术部 / AI 组
                         </span>
                         <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                          style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                          style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}>
                           前端研发同学
                         </span>
                       </>
                     ) : (
                       <span className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#5856D6" }}>
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}>
                         默认
                       </span>
                     )}
@@ -615,8 +665,8 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="pt-16 min-h-screen">
+      {/* Main Content：上偏移 = 客户端条 50 + 导航 64 = 114px */}
+      <main className="pt-[114px] min-h-screen">
         {children}
       </main>
     </div>

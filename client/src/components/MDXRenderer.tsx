@@ -71,7 +71,7 @@ const components = {
 
     if (isCodeBlock) {
       return (
-        <div className="my-3 rounded-lg overflow-hidden">
+        <div className="my-3 rounded-[4px] overflow-hidden">
           <SyntaxHighlighter
             style={codeStyle}
             language={language || 'text'}
@@ -97,11 +97,11 @@ const components = {
   pre: ({ node, children, ...props }: any) => {
     // code 组件已返回 <div><SyntaxHighlighter>，直接透传 children，不再套 <pre> 避免双层包裹产生色差
     const child = React.Children.toArray(children)[0] as any;
-    if (child?.type === 'div' || child?.props?.className?.includes?.('rounded-lg')) {
+    if (child?.type === 'div' || child?.props?.className?.includes?.('rounded-[4px]')) {
       return <>{children}</>;
     }
     // 普通 pre（非代码块），保留基础样式但不设背景色
-    return <pre className="rounded-lg overflow-x-auto mb-3 text-xs" {...props}>{children}</pre>;
+    return <pre className="rounded-[4px] overflow-x-auto mb-3 text-xs" {...props}>{children}</pre>;
   },
   table: ({ node, ...props }: any) => (
     <div className="overflow-x-auto my-3">
@@ -127,7 +127,7 @@ const components = {
     <hr className="my-4 border-t border-gray-100" {...props} />
   ),
   img: ({ node, ...props }: any) => (
-    <img className="max-w-full h-auto rounded-lg my-4 shadow-md" {...props} />
+    <img className="max-w-full h-auto rounded-[4px] my-4 shadow-md" {...props} />
   ),
 };
 

@@ -3,7 +3,7 @@
  * 用于 Agent 详细配置页面，支持启用/禁用 Memory 功能
  * 
  * 遵循 Agent Enterprise 设计规范：
- * - 卡片圆角：rounded-2xl (16px)
+ * - 卡片圆角：rounded-[4px] (16px)
  * - 统一阴影：通过 inline style 设置
  * - 图标容器：使用品牌渐变
  * - 状态颜色：使用语义色
@@ -129,9 +129,9 @@ export default function MemoryCard({
   return (
     <>
       <div
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
+        className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col"
         style={{
-          boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+          boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
           height: "476px",
         }}
       >
@@ -139,8 +139,8 @@ export default function MemoryCard({
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
           <div className="flex items-center gap-2">
             <div 
-              className="w-6 h-6 rounded-md flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="w-6 h-6 rounded-[4px] flex items-center justify-center"
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               <Brain className="w-3.5 h-3.5 text-white" />
             </div>
@@ -154,7 +154,7 @@ export default function MemoryCard({
           <div>
             <div 
               className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white mb-3"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             >
               TDAI-Memory Free 版
             </div>
@@ -168,7 +168,7 @@ export default function MemoryCard({
 
           {/* Status Block - 使用设计规范的状态颜色 */}
           <div
-            className={`rounded-lg border p-4 flex items-center justify-between ${statusColor.bg} ${statusColor.border}`}
+            className={`rounded-[4px] border p-4 flex items-center justify-between ${statusColor.bg} ${statusColor.border}`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-2 h-2 rounded-full ${statusColor.indicator}`} />
@@ -188,7 +188,7 @@ export default function MemoryCard({
 
           {/* 信息提示 - 符合设计规范的提示横幅 */}
           {!isEnabled && (
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-4 py-3">
               <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-xs text-blue-600 leading-relaxed">
                 启用后，Agent 将自动记忆对话中的关键信息，为用户提供更个性化的服务体验。

@@ -12,7 +12,7 @@ interface OverviewStatsProps {
  * 记忆空间概览统计组件
  * 
  * 遵循 Agent Enterprise 设计规范：
- * - 卡片圆角：rounded-2xl
+ * - 卡片圆角：rounded-[4px]
  * - 统一阴影：通过 inline style 设置
  * - 图标容器：使用规范渐变色
  * - 图标：仅使用 lucide-react
@@ -36,10 +36,10 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
       label: '已开启记忆',
       value: enabledCount,
       icon: Zap,
-      gradient: 'linear-gradient(135deg, #007AFF, #5856D6)', // 品牌色
+      gradient: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)', // 品牌色
       subItems: [
         { label: 'Pro', value: proCount, color: '#16A34A' },
-        { label: 'Free', value: freeCount, color: '#007AFF' },
+        { label: 'Free', value: freeCount, color: '#1447E6' },
       ],
     },
     {
@@ -52,8 +52,8 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+      className="bg-white rounded-[4px] border border-gray-100 p-5"
+      style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
     >
       <div className="flex items-center gap-2 mb-4">
         <h3 className="font-semibold text-gray-900">记忆空间概览</h3>
@@ -65,12 +65,12 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
           return (
             <div
               key={stat.label}
-              className="bg-white rounded-2xl border border-gray-100 p-5"
-              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+              className="bg-white rounded-[4px] border border-gray-100 p-5"
+              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  className="w-9 h-9 rounded-[4px] flex items-center justify-center"
                   style={{ background: stat.gradient }}
                 >
                   <IconComponent className="w-5 h-5 text-white" />
@@ -100,7 +100,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
 
       {/* 当全部未开启时，显示引导提示 - 符合设计规范的信息横幅 */}
       {enabledCount === 0 && (
-        <div className="mt-4 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+        <div className="mt-4 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-4 py-3">
           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-600 leading-relaxed">
             当前暂无实例开启记忆功能。可在各 Agent 的「设置 → Memory」中开启 Free 或 Pro 版本。

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SurfaceCard, SurfaceInner } from '@/components/ui/Surface';
 import {
   Select,
   SelectContent,
@@ -329,16 +330,16 @@ export default function SkillSquare() {
           {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
-            className="w-9 h-9 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
+            className="w-9 h-9 rounded-[4px] border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-[4px] p-0.5">
             <button
               onClick={() => setViewMode('card')}
-              className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+              className={`w-8 h-8 rounded-[4px] flex items-center justify-center transition-colors ${
                 viewMode === 'card' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -346,7 +347,7 @@ export default function SkillSquare() {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+              className={`w-8 h-8 rounded-[4px] flex items-center justify-center transition-colors ${
                 viewMode === 'list' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -359,12 +360,12 @@ export default function SkillSquare() {
         <div className="flex items-center gap-1.5 mb-6 flex-wrap pl-1">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+            className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
               selectedCategory === 'all'
                 ? 'text-white border-transparent'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
-            style={selectedCategory === 'all' ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+            style={selectedCategory === 'all' ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
           >
             全部
           </button>
@@ -372,12 +373,12 @@ export default function SkillSquare() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
                 selectedCategory === cat.id
                   ? 'text-white border-transparent'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
               }`}
-              style={selectedCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+              style={selectedCategory === cat.id ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
             >
               {cat.name}
             </button>
@@ -405,10 +406,7 @@ export default function SkillSquare() {
           </div>
         ) : (
           /* 列表视图 — 紧凑横排布局 */
-          <div
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
-          >
+          <SurfaceCard className="overflow-hidden">
             <div className="divide-y divide-gray-50">
               {filteredSkills.map(skill => (
                 <SkillListRow
@@ -420,7 +418,7 @@ export default function SkillSquare() {
                 />
               ))}
             </div>
-          </div>
+          </SurfaceCard>
         )}
       </div>
     </TenantLayout>
@@ -480,9 +478,9 @@ function SkillCard({
 
   return (
     <>
-      <div
-        className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+      <SurfaceCard
+        hover
+        className="p-5 cursor-pointer"
         onClick={onClick}
       >
         {/* 顶部：图标(字母) + 名称 + 下发按钮 */}
@@ -490,7 +488,7 @@ function SkillCard({
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {initial && (
               <div
-                className={`w-9 h-9 rounded-xl bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
+                className={`w-9 h-9 rounded-[4px] bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
               >
                 <span className="text-white text-sm font-bold">{initial}</span>
               </div>
@@ -533,7 +531,7 @@ function SkillCard({
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <span
-                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
+                  className="w-8 h-8 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Plus className="w-4 h-4" />
@@ -544,7 +542,7 @@ function SkillCard({
           ) : (
             <button
               onClick={handleDistributeClick}
-              className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
+              className="w-8 h-8 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -562,7 +560,7 @@ function SkillCard({
             <span className="tabular-nums">{formatDownloadCount(downloadCount)}</span>
           </div>
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* 下发弹窗 */}
       <BatchDistributeDialog
@@ -648,7 +646,7 @@ function SkillListRow({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {initial && (
             <div
-              className={`w-9 h-9 rounded-lg bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
+              className={`w-9 h-9 rounded-[4px] bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
             >
               <span className="text-white text-sm font-bold">{initial}</span>
             </div>
@@ -716,7 +714,7 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span
-                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
+                className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -727,7 +725,7 @@ function SkillListRow({
         ) : (
           <button
             onClick={handleDistributeClick}
-            className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -1056,7 +1054,7 @@ function SkillSquareDetail({
       </button>
 
       {/* 技能基本信息 */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <SurfaceCard className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
@@ -1072,7 +1070,7 @@ function SkillSquareDetail({
             <Button
               onClick={() => setDistributeDialogOpen(true)}
               className="btn-primary-glow text-white"
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
               disabled={hasInProgress}
             >
               <Plus className="w-4 h-4 mr-1.5" />
@@ -1147,7 +1145,7 @@ function SkillSquareDetail({
         {skill.description && (
           <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
         )}
-      </div>
+      </SurfaceCard>
 
       {/* Tab 页面 */}
       <div>
@@ -1155,19 +1153,19 @@ function SkillSquareDetail({
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="overview"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -1175,7 +1173,7 @@ function SkillSquareDetail({
 
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-4 p-0">
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <SurfaceCard className="p-6">
               <MDXRenderer content={(() => {
                 if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
                   return skill.content || '';
@@ -1184,12 +1182,12 @@ function SkillSquareDetail({
                 const skillMdFile = versionFiles.find(f => f.name.toLowerCase() === 'skill.md' || f.name.toLowerCase().endsWith('/skill.md'));
                 return skillMdFile?.content || skill.content || '';
               })()} />
-            </div>
+            </SurfaceCard>
           </TabsContent>
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
-            <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <SurfaceCard className="flex h-[47rem] overflow-hidden">
               {/* 左列：版本选择 */}
               <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center">
@@ -1397,12 +1395,12 @@ function SkillSquareDetail({
                   </div>
                 )}
               </div>
-            </div>
+            </SurfaceCard>
           </TabsContent>
 
           {/* 下发记录 Tab */}
           <TabsContent value="distribution" className="mt-4 p-0">
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <SurfaceCard className="p-6">
               <div className="space-y-3">
                 <h3 className="font-semibold text-gray-900">下发记录</h3>
               </div>
@@ -1418,7 +1416,7 @@ function SkillSquareDetail({
                     {distributionRecords.map((record, idx) => {
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
-                        <div key={record.id} className="border border-gray-200 rounded-lg p-4">
+                        <div key={record.id} className="border border-gray-200 rounded-[4px] p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">
@@ -1465,7 +1463,7 @@ function SkillSquareDetail({
                   </div>
                 )}
               </div>
-            </div>
+            </SurfaceCard>
           </TabsContent>
         </Tabs>
       </div>
@@ -1515,7 +1513,7 @@ function SkillSquareDetail({
                 </Select>
               </div>
 
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-gray-200 rounded-[4px] overflow-hidden">
                 <div className="overflow-y-auto max-h-72">
                   <table className="w-full text-sm table-fixed">
                     <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">

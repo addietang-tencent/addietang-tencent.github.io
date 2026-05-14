@@ -40,10 +40,10 @@ export default function ResetPassword() {
   return (
     <TenantLayout>
       <div className="max-w-md mx-auto py-16 page-enter">
-        <div className="bg-white rounded-2xl border border-gray-100 p-8"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06)" }}>
+        <div className="bg-white rounded-[4px] border border-gray-100 p-8"
+          style={{ boxShadow: "0px 2px 8px -1px rgba(0,0,0,0.05), 0px 2px 4px 2px rgba(0,0,0,0.05)" }}>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <KeyRound className="w-5 h-5 text-white" />
             </div>
             <div>

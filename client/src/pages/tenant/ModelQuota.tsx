@@ -30,6 +30,7 @@ import {
   Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SurfaceCard } from "@/components/ui/Surface";
 import { cn } from "@/lib/utils";
 
 // ─── 多分组相关 ──────────────────────────────────────────────────────────────
@@ -171,16 +172,15 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl p-5"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+    <SurfaceCard className="p-5">
       <div className="flex items-center gap-2.5 mb-3">
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", iconColor)}>
+        <div className={cn("w-8 h-8 rounded-[4px] flex items-center justify-center", iconColor)}>
           <Icon className="w-4 h-4 text-white" />
         </div>
         <span className="text-sm text-gray-500">{label}</span>
       </div>
       <p className="text-2xl font-bold text-gray-900 tabular-nums leading-none">{value}</p>
-    </div>
+    </SurfaceCard>
   );
 }
 
@@ -324,7 +324,7 @@ export default function ModelQuota() {
             <div className="relative">
               <button
                 onClick={() => setShowGroupFilter(!showGroupFilter)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-[4px] border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
               >
                 <Filter className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-gray-700">{selectedGroup.name}</span>
@@ -332,7 +332,7 @@ export default function ModelQuota() {
               {showGroupFilter && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowGroupFilter(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[200px]">
+                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-[4px] shadow-lg py-1 min-w-[200px]">
                     {groupList.map((group) => (
                       <div key={group.id} className="relative group/item">
                         <button
@@ -350,7 +350,7 @@ export default function ModelQuota() {
                           {group.name}
                         </button>
                         {!group.allowViewQuota && (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-lg whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
+                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-[4px] whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
                             该分组不允许查看模型额度
                           </div>
                         )}
@@ -364,11 +364,11 @@ export default function ModelQuota() {
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex items-center gap-3 ml-auto flex-wrap">
               {/* Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1 gap-1">
+              <div className="flex items-center bg-gray-100 rounded-[4px] p-1 gap-1">
                 <button
                   onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 py-1.5 text-sm rounded-md transition-all",
+                    "px-3 py-1.5 text-sm rounded-[4px] transition-all",
                     dateMode === "single"
                       ? "bg-white text-gray-900 font-medium shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -379,7 +379,7 @@ export default function ModelQuota() {
                 <button
                   onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 py-1.5 text-sm rounded-md transition-all",
+                    "px-3 py-1.5 text-sm rounded-[4px] transition-all",
                     dateMode === "range"
                       ? "bg-white text-gray-900 font-medium shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -396,7 +396,7 @@ export default function ModelQuota() {
                   value={singleDate}
                   max={TODAY}
                   onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                  className="border border-gray-200 rounded-[4px] px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
                   style={{ colorScheme: 'light' }}
                 />
               ) : (
@@ -406,7 +406,7 @@ export default function ModelQuota() {
                     value={dateRange.start}
                     max={dateRange.end}
                     onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                    className="border border-gray-200 rounded-[4px] px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
                     style={{ colorScheme: 'light' }}
                   />
                   <span className="text-gray-400 text-sm">至</span>
@@ -416,7 +416,7 @@ export default function ModelQuota() {
                     min={dateRange.start}
                     max={TODAY}
                     onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
+                    className="border border-gray-200 rounded-[4px] px-3 py-1.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 cursor-pointer"
                     style={{ colorScheme: 'light' }}
                   />
                 </div>
@@ -463,10 +463,9 @@ export default function ModelQuota() {
             />
 
             {/* Today Quota Card — not affected by time filter */}
-            <div className="bg-white border border-gray-100 rounded-xl p-5 col-span-2 lg:col-span-1"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <SurfaceCard className="p-5 col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-[4px] bg-orange-500 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-sm text-gray-500 flex items-center gap-1">
@@ -505,12 +504,11 @@ export default function ModelQuota() {
                   {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
                 </TooltipContent>
               </Tooltip>
-            </div>
+            </SurfaceCard>
           </div>
 
           {/* Model Usage Summary */}
-          <div className="bg-white rounded-xl border border-gray-100 mb-5 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <SurfaceCard className="mb-5 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
             </div>
@@ -549,11 +547,10 @@ export default function ModelQuota() {
               pageSize={SUMMARY_PAGE_SIZE}
               onChange={setSummaryPage}
             />
-          </div>
+          </SurfaceCard>
 
           {/* Detail Usage Records */}
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)" }}>
+          <SurfaceCard className="overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
@@ -592,7 +589,7 @@ export default function ModelQuota() {
               pageSize={DETAIL_PAGE_SIZE}
               onChange={setDetailPage}
             />
-          </div>
+          </SurfaceCard>
 
           <p className="text-xs text-gray-400 text-center mt-6">
             额度由企业管理员统一配置，如需调整请联系管理员

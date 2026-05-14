@@ -78,7 +78,7 @@ const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   creating: {
     label: "创建中",
     badgeClass: "badge-loading",
-    dotColor: "#007AFF",
+    dotColor: "#1447E6",
     spinning: true,
     tooltipText: "正在创建中，请稍候",
   },
@@ -102,7 +102,7 @@ const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   loading: {
     label: "加载中",
     badgeClass: "badge-loading",
-    dotColor: "#007AFF",
+    dotColor: "#1447E6",
     spinning: true,
     tooltipText: "加载中，请稍候",
   },
@@ -1076,7 +1076,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       return (
         <div className="space-y-3">
           {/* 快捷/手动 Tab（快捷默认选中） */}
-          <div className="flex rounded-lg border border-gray-200">
+          <div className="flex rounded-[4px] border border-gray-200">
             <button
               className={`flex-1 py-2 text-sm font-medium transition-colors rounded-l-lg ${
                 weworkConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
@@ -1137,7 +1137,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       return (
         <div className="space-y-3">
           {/* 快捷配置在左，手动配置在右 */}
-          <div className="flex rounded-lg border border-gray-200">
+          <div className="flex rounded-[4px] border border-gray-200">
             <button
               className={`flex-1 py-2 text-sm font-medium transition-colors border-r border-gray-200 rounded-l-lg ${feishuConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
               onClick={() => setFeishuConfigMode("quick")}
@@ -1189,7 +1189,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
     if (currentChannelConfig.adminCustomMode) {
       if (!currentChannelConfig.fields || currentChannelConfig.fields.length === 0) {
         return (
-          <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-3">
+          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
             <p className="text-xs text-gray-400">该通道无需额外凭证信息</p>
           </div>
         );
@@ -1267,7 +1267,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       <div className="mx-2 mb-2 space-y-2">
         {isAdminCustom ? (
           /* 管控端自定义通道：展示字段 key，内容加密 */
-          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 space-y-2">
             {ch.fields.length === 0 ? (
               <p className="text-xs text-gray-400">无凭证字段</p>
             ) : (
@@ -1284,7 +1284,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             )}
           </div>
         ) : (
-          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 space-y-2">
+          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 space-y-2">
             {ch.fields.map((field) => {
               const val = ch.fieldValues[field.key] || "";
               const uniqueKey = `${chIdx}-${field.key}`;
@@ -1302,7 +1302,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         )}
          {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
-          <div className="rounded-lg bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">
+          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">
             <Input
               placeholder="（如需）请输入 pairing code"
               value={feishuPairingCode}
@@ -1350,8 +1350,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <div className="flex items-center justify-between gap-4 mb-8">
           {/* 左侧：图标 + 名称/ID/badge */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))" }}>
+            <div className="w-10 h-10 rounded-[4px] flex items-center justify-center text-xl flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.1), rgba(88,86,214,0.1))" }}>
               🦞
             </div>
             <div>
@@ -1387,8 +1387,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <span
                   className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 whitespace-nowrap flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, rgba(0,122,255,0.1), rgba(88,86,214,0.1))",
-                    color: "rgba(0,122,255,0.5)",
+                    background: "linear-gradient(135deg, rgba(20,71,230,0.1), rgba(88,86,214,0.1))",
+                    color: "rgba(20,71,230,0.5)",
                     borderRadius: "0.375rem",
                   }}
                 >
@@ -1400,7 +1400,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </span>
                 {claw.roleName && (
                   <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(0,122,255,0.1)" }}>
+                    style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.08), rgba(88,86,214,0.05))", color: "#5c6b7a", border: "1px solid rgba(20,71,230,0.1)" }}>
                     {claw.roleName}
                   </span>
                 )}
@@ -1437,7 +1437,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="relative flex items-center">
               {showUpdateBubble && !isUpdating && (
                 <div className="absolute bottom-full right-0 mb-2 z-50">
-                  <div className="relative bg-blue-600 text-white text-xs rounded-lg px-3 py-2 shadow-sm leading-none whitespace-nowrap">
+                  <div className="relative bg-blue-600 text-white text-xs rounded-[4px] px-3 py-2 shadow-sm leading-none whitespace-nowrap">
                     <button
                       onClick={() => setShowUpdateBubble(false)}
                       className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center text-white transition-colors"
@@ -1453,7 +1453,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               )}
               {isUpdating ? (
                 <button
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
                   title="查看更新进度"
                   onClick={() => setShowUpdateProgressDialog(true)}
                 >
@@ -1480,7 +1480,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <TooltipTrigger asChild>
                     <button
                       disabled
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white border border-gray-200 rounded-lg px-3 py-1.5 cursor-not-allowed opacity-50 leading-none"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 cursor-not-allowed opacity-50 leading-none"
                     >
                       <ArrowUpCircle className="w-3.5 h-3.5" />
                       一键更新
@@ -1521,7 +1521,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     }
                     setShowUpdateConfirmDialog(true);
                   }}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
                 >
                   <ArrowUpCircle className="w-3.5 h-3.5" />
                   一键更新
@@ -1534,7 +1534,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <button
                   onClick={handleOpenWebUI}
                   disabled={!allowPanelAccess}
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors leading-none ${
+                  className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-[4px] px-3 py-1.5 transition-colors leading-none ${
                     allowPanelAccess
                       ? "text-gray-600 bg-white border-gray-200 hover:bg-gray-50 cursor-pointer"
                       : "text-gray-400 bg-white border-gray-200 cursor-not-allowed opacity-60"
@@ -1553,7 +1553,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             {activeDetailTab === "basic" && (
               <button
                 onClick={() => { setMigrationOpen(true); setMigrationStep("export"); setMigrationCosUrl(""); setMigrationUploaded(false); setMigrationChecking(false); setMigrationCheckFailed(false); setMigrationCheckCount(0); setMigrationError(""); setMigrationCommandReady(false); setVerifyResults([]); setImportSteps([{ label: "下载数据包", status: "pending" }, { label: "备份当前配置", status: "pending" }, { label: "解压并覆盖", status: "pending" }, { label: "重启 Gateway", status: "pending" }, { label: "验证生效", status: "pending" }]); setTimeout(() => setMigrationCommandReady(true), 1800); }}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 hover:bg-gray-50 transition-colors cursor-pointer leading-none"
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 Agent 迁移
@@ -1596,10 +1596,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
-                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                   <Brain className="w-3.5 h-3.5 text-white" />
                 </div>
                 <h2 className="font-semibold text-gray-900">模型 (Models)</h2>
@@ -1652,7 +1652,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
               {selectedProvider === "custom" && (
                 <div className="space-y-3 pt-1">
-                  <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="flex rounded-[4px] border border-gray-200 overflow-hidden">
                     <button
                       className={`flex-1 py-2 text-sm font-medium transition-colors ${customInputMode === "json" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
                       onClick={() => setCustomInputMode("json")}
@@ -1696,7 +1696,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   )}
 
                   {/* 多模态开关 */}
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-200 px-3 py-2.5">
+                  <div className="flex items-center justify-between rounded-[4px] bg-gray-50 border border-gray-200 px-3 py-2.5">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-gray-700">多模态模型</span>
                       <span className="text-xs text-gray-400 mt-0.5">支持图片、文字多模态输入</span>
@@ -1718,7 +1718,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </button>
                   </div>
 
-                  <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
+                  <div className="rounded-[4px] bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
                     <a href="#" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
                       自定义模型配置指引 <ExternalLink className="w-3 h-3" />
@@ -1760,7 +1760,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {appliedModels.filter(m => m.primary).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-lg border transition-all bg-gray-50 border-gray-100 p-2.5"
+                          className="rounded-[4px] border transition-all bg-gray-50 border-gray-100 p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1817,7 +1817,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 {appliedModels.some(m => !m.primary) && (
                   <div>
                     <p className="text-xs text-gray-400 mb-1">备选模型</p>
-                    <div className="mb-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+                    <div className="mb-2 flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       <span>主模型不可用时会自动切换备选模型，此时备选模型消耗的token将统计到主模型下</span>
                     </div>
@@ -1825,7 +1825,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-lg border transition-all bg-white border-gray-100 hover:bg-gray-50 p-2.5"
+                          className="rounded-[4px] border transition-all bg-white border-gray-100 hover:bg-gray-50 p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1900,10 +1900,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
-                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                   <MessageSquare className="w-3.5 h-3.5 text-white" />
                 </div>
                 <h2 className="font-semibold text-gray-900">通道 (Channels)</h2>
@@ -1951,7 +1951,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       <img
                         src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/pasted_file_To1FVK_image_06b2d1cc.png"
                         alt="企业微信通道示意图"
-                        className="rounded-xl max-w-xs"
+                        className="rounded-[4px] max-w-xs"
                         style={{ width: 320 }}
                       />
                     </TooltipContent>
@@ -1983,7 +1983,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 {appliedChannels.length > 0 && (
                   <div className="space-y-1">
                     {appliedChannels.map((ch, chIdx) => (
-                      <div key={chIdx} className="rounded-lg bg-gray-50 border border-gray-100 overflow-hidden">
+                      <div key={chIdx} className="rounded-[4px] bg-gray-50 border border-gray-100 overflow-hidden">
                         {/* 折叠行 */}
                         <div className="flex items-center justify-between px-2.5 py-2">
                           {ch.channelValue === "wechat" ? (
@@ -2027,10 +2027,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Skills Column ===== */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
-                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
                   <Puzzle className="w-3.5 h-3.5 text-white" />
                 </div>
                 <h2 className="font-semibold text-gray-900">技能 (Skills)</h2>
@@ -2081,7 +2081,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               })()}
               
               {/* 不支持搜索时的提示信息 */}
-              <div className="flex items-start gap-3 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex items-start gap-3 px-4 py-3 rounded-[4px] bg-blue-50 border border-blue-200">
                 <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 text-xs text-blue-700 leading-relaxed">
                   管理员配置了
@@ -2102,7 +2102,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <div className="overflow-y-auto flex-1 space-y-1">
                   {(skillSearch ? filteredSkills : installedSkills).map((skill) => (
                     <div key={skill}
-                      className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      className="flex items-center px-3 py-2 rounded-[4px] hover:bg-gray-50 transition-colors">
                       <span className="text-sm text-gray-700">{skill}</span>
                     </div>
                   ))}
@@ -2149,7 +2149,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="overflow-y-auto flex-1 space-y-1">
                     {pendingSkills.map((skill) => (
                       <div key={skill.id}
-                        className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        className="flex items-center justify-between px-3 py-2 rounded-[4px] hover:bg-gray-50 transition-colors">
                         <span className="text-sm text-gray-700 truncate flex-1 mr-2">{skill.name}</span>
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {skill.status === "installing" && (
@@ -2188,14 +2188,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+              <div className="bg-white rounded-[4px] border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+                <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
               </div>
             ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-[4px] border border-gray-100 p-6" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <MemoryPreview 
                 memoryStatus={memoryStatus}
                 proQuotaAvailable={proQuotaAvailable}
@@ -2238,8 +2238,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                    "类型限制"反馈视觉一致，不显得是为这一块单独糊的提示。 */}
           {activeDetailTab === "doctor" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
-                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+              <div className="bg-white rounded-[4px] border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+                <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
@@ -2248,7 +2248,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="flex flex-col gap-5">
 
               {/* ===== 一键修复卡片 ===== */}
-              <div className="bg-white rounded-2xl border border-gray-100" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+              <div className="bg-white rounded-[4px] border border-gray-100" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <div className="p-6">
                   <h2 className="text-base font-semibold text-gray-900 mb-2">一键修复</h2>
                   <p className="text-sm text-gray-500 mb-4">适合龙虾配置文件中 API KEY、插件、通道等配置异常导致无法启动等常见问题，系统自动检测并尝试修复。</p>
@@ -2270,7 +2270,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="border-t border-gray-100 pt-4">
                     {quickFixState === "idle" && (
                       <Button
-                        style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                        style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                         className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
                         onClick={runQuickFixMock}
                       >
@@ -2278,14 +2278,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       </Button>
                     )}
                     {quickFixState === "loading" && (
-                      <div className="inline-flex items-center gap-2 px-3 h-8 rounded-md bg-gray-50 border border-gray-100 text-xs text-gray-500">
+                      <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-gray-100 text-xs text-gray-500">
                         <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                         正在执行修复
                       </div>
                     )}
                     {quickFixState === "success" && (
                       <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 leading-none">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 leading-none">
                           <CheckCircle2 className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
                           修复成功
                         </span>
@@ -2294,7 +2294,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     )}
                     {quickFixState === "failed" && (
                       <div className="flex items-center gap-2.5 flex-wrap">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 leading-none">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-[4px] px-3 py-1.5 leading-none">
                           <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
                           修复失败
                         </span>
@@ -2342,7 +2342,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   请使用飞书账号扫码登录，完成授权后将自动为您创建机器人。
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[240px] mt-1 mb-2">
+              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-[4px] min-h-[240px] mt-1 mb-2">
                 {feishuModalStage === "loading" ? (
                   <>
                     <Loader2 className="w-12 h-12 text-gray-300 animate-spin mb-4" />
@@ -2489,7 +2489,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   当前用户权限无法免审批发布飞书机器人，请联系管理员审批通过后再进行手动配置。
                 </DialogDescription>
               </DialogHeader>
-              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
                   <span className="text-gray-800 font-medium">Agent机器人-8791</span>
@@ -2537,7 +2537,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人授权配置成功</DialogTitle>
                 </div>
               </DialogHeader>
-              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-lg p-3 border border-gray-100">
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
                   <span className="text-gray-800 font-medium">Agent机器人-4598</span>
@@ -2555,7 +2555,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </div>
               </div>
               {/* 审批提示 */}
-              <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-100">
+              <div className="mt-4 p-3 bg-orange-50 rounded-[4px] border border-orange-100">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -2624,7 +2624,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启 Agent 面板</DialogTitle>
             <DialogDescription className="sr-only">开启 Agent 面板</DialogDescription>
-            <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+            <div className="mt-2 flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               <span>Hermes Agent 面板是官方提供的浏览器操作界面，加载完成后将自动跳转，请稍候等待。</span>
             </div>
@@ -2683,7 +2683,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-gray-900">开启Agent面板</DialogTitle>
             <DialogDescription className="sr-only">开启Agent面板</DialogDescription>
-            <div className="mt-2 flex items-start gap-2.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+            <div className="mt-2 flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               <span>Agent 面板（WebUI）是官方提供的浏览器操作界面，可直接在浏览器与 AI 对话，并且有查看会话记录、配置定时任务、监控系统日志等高级功能。</span>
             </div>
@@ -2766,13 +2766,13 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <DialogTitle className="text-base font-semibold text-gray-900">开启Agent面板</DialogTitle>
           </DialogHeader>
           {/* 警告文字 */}
-          <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-lg px-3 py-2.5 leading-relaxed break-all">
+          <div className="text-sm text-orange-600 font-medium bg-orange-50 border border-orange-100 rounded-[4px] px-3 py-2.5 leading-relaxed break-all">
             访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
           </div>
           {/* 链接和 Token - 根据 agentType 区分字段文案 */}
           {(claw as any).agentType === "lightclawace" ? (
             /* LightclawACE：面板链接 + 密码（初始密码提示） */
-            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-gray-100 px-4 py-3 w-full overflow-hidden">
               <div className="flex items-center gap-2 w-full min-w-0">
                 <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
                 <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
@@ -2816,7 +2816,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </div>
           ) : (
             /* OpenClaw： WebSocket URL + 网关令牌（保持原样） */
-            <div className="mt-2 space-y-2 bg-gray-50 rounded-xl border border-gray-100 px-4 py-3 w-full overflow-hidden">
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-gray-100 px-4 py-3 w-full overflow-hidden">
               <div className="flex items-center gap-2 w-full min-w-0">
                 <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
                 <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
@@ -2940,7 +2940,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               使用微信（需要 iOS、Android系统 8.0.70 以上版本）"扫一扫"完成接入
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl min-h-[220px] mt-1 mb-2">
+          <div className="flex flex-col items-center justify-center bg-gray-50 rounded-[4px] min-h-[220px] mt-1 mb-2">
             {wechatModalStage === "checking" && (
               <>
                 <Loader2 className="w-10 h-10 text-gray-300 animate-spin mb-3" />
@@ -3094,7 +3094,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               的技能？
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-200 mt-1">
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-[4px] bg-amber-50 border border-amber-200 mt-1">
             <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700 leading-relaxed">部分技能(Skills)可能存在安全风险，安装前请确认其安全性。</p>
           </div>
@@ -3141,7 +3141,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
           <div className="space-y-5 mt-2">
             {/* 注意事项 */}
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 space-y-1.5">
+            <div className="rounded-[4px] bg-amber-50 border border-amber-200 p-3 space-y-1.5">
               <p className="text-xs text-amber-800 font-semibold flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" /> 注意事项
               </p>
@@ -3167,16 +3167,16 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 请复制下方命令，在源 Agent 终端或 IM 机器人对话框中执行。
               </p>
               {!migrationCommandReady ? (
-                <div className="ml-7 bg-gray-50 border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center gap-2">
+                <div className="ml-7 bg-gray-50 border border-gray-200 rounded-[4px] p-6 flex flex-col items-center justify-center gap-2">
                   <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                   <p className="text-xs text-gray-500">正在生成迁移命令...</p>
                   <p className="text-xs text-gray-400">正在获取临时上传凭证和 COS 预签名链接</p>
                 </div>
               ) : (
-              <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="ml-7 relative bg-gray-50 border border-gray-200 rounded-[4px] p-3">
                 <button
                   onClick={() => { navigator.clipboard.writeText(migrationExportCommand); toast.success("命令已复制"); }}
-                  className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                  className="absolute top-2 right-2 p-1.5 rounded-[4px] bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
                   title="复制命令"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -3208,14 +3208,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <button
                     onClick={handleCheckUpload}
                     disabled={migrationChecking || !migrationCommandReady}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-lg px-3 py-1.5 transition-colors text-white border-blue-500 disabled:opacity-50"
-                    style={{ background: "#007AFF" }}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-[4px] px-3 py-1.5 transition-colors text-white border-blue-500 disabled:opacity-50"
+                    style={{ background: "#1447E6" }}
                   >
                     {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
                     {migrationChecking ? "检测中..." : migrationCheckFailed ? "重新检测" : "检测上传状态"}
                   </button>
                   {migrationCheckFailed && (
-                    <div className="rounded-lg bg-red-50 border border-red-200 p-2.5 space-y-1">
+                    <div className="rounded-[4px] bg-red-50 border border-red-200 p-2.5 space-y-1">
                       <p className="text-xs text-red-700 font-medium flex items-center gap-1">
                         <XCircle className="w-3.5 h-3.5" /> 未检测到数据包
                       </p>
@@ -3231,12 +3231,12 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
               {migrationStep === "import" && (
                 <div className="ml-7 space-y-3">
-                  <div className="rounded-lg bg-green-50 border border-green-200 p-2.5">
+                  <div className="rounded-[4px] bg-green-50 border border-green-200 p-2.5">
                     <p className="text-xs text-green-700 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> 已检测到上传的数据包
                     </p>
                   </div>
-                  <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                  <div className="rounded-[4px] bg-red-50 border border-red-200 p-3">
                     <p className="text-xs text-red-700 font-semibold flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5" /> 重要提醒
                     </p>
@@ -3247,7 +3247,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </div>
                   <button
                     onClick={handleStartMigration}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-4 py-2 transition-colors text-white bg-blue-600 hover:bg-blue-700"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-[4px] px-4 py-2 transition-colors text-white bg-blue-600 hover:bg-blue-700"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5" />
                     导入并重启 Agent
@@ -3262,7 +3262,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </p>
                   <div className="space-y-1.5">
                     {importSteps.map((step, i) => (
-                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${
+                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-xs ${
                         step.status === "done" ? "bg-green-50" :
                         step.status === "running" ? "bg-blue-50" :
                         step.status === "failed" ? "bg-red-50" : "bg-gray-50"
@@ -3304,7 +3304,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="ml-7 space-y-1.5">
                     <p className="text-xs text-gray-500 font-medium">导入后验证：</p>
                     {verifyResults.map((v, i) => (
-                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${v.passed ? "bg-green-50" : "bg-amber-50"}`}>
+                      <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-xs ${v.passed ? "bg-green-50" : "bg-amber-50"}`}>
                         {v.passed
                           ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                           : <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
@@ -3316,7 +3316,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </div>
                 )}
                 {!verifyResults.every((r) => r.passed) && verifyResults.some((r) => !r.passed) && (
-                  <div className="ml-7 rounded-lg bg-amber-50 border border-amber-200 p-2.5">
+                  <div className="ml-7 rounded-[4px] bg-amber-50 border border-amber-200 p-2.5">
                     <p className="text-xs text-amber-700">
                       <AlertTriangle className="w-3 h-3 inline mr-1" />
                       部分验证项未通过，Agent 核心功能已正常运行，未通过项可能需要手动处理（如重新登录 IM 通道）。
@@ -3343,7 +3343,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 {/* 显示步骤流转状态，方便定位失败在哪步 */}
                 <div className="ml-7 space-y-1.5">
                   {importSteps.map((step, i) => (
-                    <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs ${
+                    <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-xs ${
                       step.status === "done" ? "bg-green-50" :
                       step.status === "failed" ? "bg-red-50" : "bg-gray-50"
                     }`}>
@@ -3358,7 +3358,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </div>
                   ))}
                 </div>
-                <div className="ml-7 rounded-lg bg-red-50 border border-red-200 p-3 space-y-1.5">
+                <div className="ml-7 rounded-[4px] bg-red-50 border border-red-200 p-3 space-y-1.5">
                   <p className="text-xs text-red-700">{migrationError}</p>
                   <p className="text-xs text-red-600">已自动回滚至导入前状态，当前实例配置未受影响。</p>
                 </div>
@@ -3759,7 +3759,7 @@ type DiagOptionCardProps = {
 function DiagOptionCard({ checked, onChange, title, description }: DiagOptionCardProps) {
   return (
     <label
-      className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl px-3 py-2.5 transition-colors"
+      className="flex items-start gap-2.5 cursor-pointer select-none rounded-[4px] px-3 py-2.5 transition-colors"
       style={{ border: "1px solid #EDEFF5", background: "#FFFFFF" }}
     >
       <input
@@ -3774,7 +3774,7 @@ function DiagOptionCard({ checked, onChange, title, description }: DiagOptionCar
         style={{
           width: 16,
           height: 16,
-          background: checked ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#FFFFFF",
+          background: checked ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#FFFFFF",
           border: checked ? "1px solid transparent" : "1.5px solid #D5D8E0",
           boxShadow: checked ? "0 1px 2px rgba(88,86,214,0.25)" : "none",
         }}
@@ -3815,7 +3815,7 @@ function DiagOptionRow({ checked, onChange, title, description }: DiagOptionCard
         style={{
           width: 16,
           height: 16,
-          background: checked ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#FFFFFF",
+          background: checked ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#FFFFFF",
           border: checked ? "1px solid transparent" : "1.5px solid #D5D8E0",
           boxShadow: checked ? "0 1px 2px rgba(88,86,214,0.25)" : "none",
         }}
@@ -4715,10 +4715,10 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
       );
     }
     if (msg.kind === "user") {
-      // 与 ChatView 同款：max-w-[78%] px-4 py-2.5 rounded-2xl bg-gray-100
+      // 与 ChatView 同款：max-w-[78%] px-4 py-2.5 rounded-[4px] bg-gray-100
       return (
         <div key={idx} className="flex justify-end">
-          <div className="max-w-[78%] px-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
+          <div className="max-w-[78%] px-4 py-2.5 rounded-[4px] bg-gray-100 text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
             {msg.text}
           </div>
         </div>
@@ -4788,8 +4788,8 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 relative"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      className="bg-white rounded-[4px] border border-gray-100 relative"
+      style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
     >
       {/* ─── 开始诊断弹窗（仅承担渲染独立选项 + 启动按钮）─────────────────────
           授权 / 配置快照 在此完全独立、并列展示：
@@ -4822,7 +4822,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                 "同意使用龙虾医生功能"——对应后端 authorize 接口的真实语义：
                 首次创建诊断节点前的功能使用同意书。 */}
             <div
-              className="rounded-xl"
+              className="rounded-[4px]"
               style={{ border: "1px solid #EDEFF5", background: "#FFFFFF" }}
             >
               {!hasAskedAuth(instanceId) && (
@@ -4866,7 +4866,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   style={{
                     background: confirmDisabled
                       ? "#C7C9D1"
-                      : "linear-gradient(135deg, #007AFF, #5856D6)",
+                      : "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
                   }}
                   className="text-white text-xs h-8 px-4 transition-all hover:opacity-90 disabled:cursor-not-allowed"
                   onClick={handleStartConfirm}
@@ -4901,7 +4901,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
             </p>
             {snapshotCreated && (
               <label
-                className="flex items-start gap-2.5 cursor-pointer select-none rounded-xl px-3 py-2.5 transition-colors"
+                className="flex items-start gap-2.5 cursor-pointer select-none rounded-[4px] px-3 py-2.5 transition-colors"
                 style={{
                   border: "1px solid #EDEFF5",
                   background: "#FFFFFF",
@@ -4919,7 +4919,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   style={{
                     width: 16,
                     height: 16,
-                    background: rollbackChecked ? "linear-gradient(135deg, #007AFF, #5856D6)" : "#FFFFFF",
+                    background: rollbackChecked ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#FFFFFF",
                     border: rollbackChecked ? "1px solid transparent" : "1.5px solid #D5D8E0",
                     boxShadow: rollbackChecked ? "0 1px 2px rgba(88,86,214,0.25)" : "none",
                   }}
@@ -4940,7 +4940,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           <div className="flex gap-2 pt-1">
             <Button
               size="sm"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
               className="text-white text-xs h-8 px-4 transition-all hover:opacity-90"
               onClick={handleEndConfirm}
             >
@@ -4994,7 +4994,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           <AlertDialogFooter>
             <Button
               onClick={() => setConflictInfo(null)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "#fff" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)", color: "#fff" }}
             >
               我知道了
             </Button>
@@ -5029,7 +5029,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         </p>
         {showStartButton && (
           <Button
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
             onClick={handleStartDiagnosisClick}
           >
@@ -5037,14 +5037,14 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </Button>
         )}
         {isCreating && (
-          <div className="inline-flex items-center gap-2 px-3 h-8 rounded-md bg-gray-50 border border-gray-100 text-xs text-gray-500">
+          <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-gray-100 text-xs text-gray-500">
             <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
             正在为您创建龙虾医生 Agent…
           </div>
         )}
         {(isActive || isDestroying) && (
           <Button
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
             className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
             onClick={handleEndClick}
             disabled={isDestroying}
@@ -5057,7 +5057,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
       {/* ─── 空态：还没创建过任何实例且无历史 ─────────────────────────────── */}
       {instanceStatus === "none" && !historySession && (
         <div className="px-6 pb-8">
-          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-6 gap-1.5">
+          <div className="rounded-[4px] border border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center py-6 gap-1.5">
             <p className="text-sm font-medium text-gray-600">龙虾医生待命中</p>
             <p className="text-xs text-gray-400 text-center px-4">
               点击「开始诊断」后，将为您创建一台龙虾医生 Agent，对当前 Agent 进行全面检测和修复，初始化约需 3-5 分钟。诊断结束后该 Agent 会自动销毁。
@@ -5106,8 +5106,8 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
             <div className="px-5 pt-1 pb-2 flex items-center gap-2">
               <button
                 onClick={handleStartRepair}
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all hover:opacity-90"
+                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                className="px-3 py-1.5 rounded-[4px] text-xs font-medium text-white transition-all hover:opacity-90"
               >
                 开始修复
               </button>
@@ -5117,7 +5117,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           {/* 输入区（与 ChatView 同款样式）─────────────────────────────────── */}
           <div className="px-5 pb-5 pt-2">
             <div
-              className={`rounded-2xl border bg-white transition-colors ${
+              className={`rounded-[4px] border bg-white transition-colors ${
                 inputDisabled ? "border-gray-100 opacity-60" : "border-gray-200 focus-within:border-gray-300"
               }`}
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
@@ -5148,7 +5148,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   <button
                     type="button"
                     disabled={inputDisabled}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                    className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-400"
                     title="附件"
                   >
                     <Plus className="w-4 h-4" />
@@ -5159,7 +5159,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                       type="button"
                       disabled={inputDisabled}
                       onClick={() => setShowCommands((prev) => !prev)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xs font-medium disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xs font-medium disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-500"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       指令库
@@ -5167,7 +5167,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                     </button>
                     {showCommands && (
                       <div
-                        className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-lg border border-gray-200 py-1.5 z-50"
+                        className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-[4px] border border-gray-200 py-1.5 z-50"
                         style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
                       >
                         {DOCTOR_COMMAND_LIST.map((item) => (
@@ -5193,7 +5193,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   <button
                     type="button"
                     disabled={inputDisabled}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-400"
+                    className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-400"
                     title="语音输入"
                   >
                     <Mic className="w-4 h-4" />
@@ -5201,7 +5201,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   {isStreaming ? (
                     <button
                       onClick={handleStopStreaming}
-                      style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                      style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all hover:opacity-90"
                       title="暂停输出"
                     >
@@ -5217,7 +5217,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all duration-150 disabled:opacity-30"
                       style={{
                         background: input.trim() && !inputDisabled
-                          ? "linear-gradient(135deg, #007AFF, #5856D6)"
+                          ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)"
                           : "#d1d5db",
                       }}
                       title="发送（Enter）"

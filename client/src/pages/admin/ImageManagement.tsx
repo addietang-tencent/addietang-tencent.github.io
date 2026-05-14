@@ -330,7 +330,7 @@ function ImageScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
@@ -440,26 +440,8 @@ function ImageScopePopover({
         <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="end" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
             <div className="flex gap-1.5">
-              <button
-                onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  draftScope === "all"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                全部用户
-              </button>
-              <button
-                onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                  draftScope === "groups"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                按分组
-              </button>
+              <button onClick={() => setDraftScope("all")} className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${draftScope === "all" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>全部用户</button>
+              <button onClick={() => setDraftScope("groups")} className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${draftScope === "groups" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>按分组</button>
             </div>
             {draftScope === "groups" && (
               <div className="space-y-1.5">
@@ -479,12 +461,9 @@ function ImageScopePopover({
                   </div>
                 ) : (
                   <>
-                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
+                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
                       {selectedTags.map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-md border border-blue-100 shrink-0 max-w-[200px]"
-                        >
+                        <span key={tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]">
                           <span className="truncate">{tag.path}</span>
                           <button
                             onClick={() => {
@@ -551,18 +530,8 @@ function ImageScopePopover({
             )}
           </div>
           <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs px-3"
-              disabled={isConfirmDisabled}
-              onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-            >
-              确认
-            </Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
+            <Button size="sm" className="h-7 text-xs px-3" disabled={isConfirmDisabled} onClick={handleConfirm} style={isConfirmDisabled ? undefined : { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>确认</Button>
           </div>
         </PopoverContent>
       </Popover>
@@ -1089,104 +1058,485 @@ export default function ImageManagement() {
   return (
     <>
       <div className="page-enter flex gap-6">
-        <div className="flex-1 min-w-0">
-          {/* 页面标题 */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Agent 类型</h1>
+        {/* 右侧 sticky 锚点导航（DOM 上放在主内容之后通过 order 控制位置） */}
+        <aside className="hidden lg:block w-[180px] shrink-0 order-2">
+          <div className="sticky top-6">
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 px-3">Agent 类型</div>
+            <nav className="flex flex-col gap-0.5 max-h-[calc(100vh-120px)] overflow-y-auto pr-1">
+              {displayTypes.map((t) => {
+                const typeImages = images.filter((i) => i.agentType === t.value);
+                const count = typeImages.length;
+                const hasActive = typeImages.some((i) => i.active);
+                const isActive = activeAnchor === t.value;
+                const isDefault = defaultAgentType === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => scrollToType(t.value)}
+                    className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-[4px] text-left text-sm transition-colors ${
+                      isActive
+                        ? "bg-blue-50 text-blue-700 font-medium"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      {isDefault ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full shrink-0" style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
+                              <Star className="w-2.5 h-2.5 text-white" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="text-xs">用户端首选类型</TooltipContent>
+                        </Tooltip>
+                      ) : hasActive ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="text-xs">用户端可选</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center justify-center w-3.5 h-3.5 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="text-xs">用户端不可选</TooltipContent>
+                        </Tooltip>
+                      )}
+                      <span className="truncate">{t.label}</span>
+                    </span>
+                    <span className={`text-[10px] shrink-0 ${isActive ? "text-blue-500" : "text-gray-400"}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        {/* 主内容区 */}
+        <div className="flex-1 min-w-0 max-w-[1100px] order-1">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">镜像管理</h1>
             <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-              通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
+              管理不同 Agent 类型的运行环境镜像。启用镜像后该类型在用户端可选，未启用则不可选。
             </p>
           </div>
 
-          {/* 顶部总览 + 添加自定义类型按钮 */}
-          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-            <OverviewStats
-              typeCount={views.length}
-              enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
-              imageCount={images.length}
-            />
-            <Button
-              size="sm"
-              onClick={() => setShowCreateCustomDialog(true)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
-              className="text-xs h-8 shrink-0"
+        {/* 按 agentType 分组展示 */}
+        <div className="space-y-6">
+          {displayTypes.map((agentTypeObj) => {
+            const agentType = agentTypeObj.value;
+            // 公共镜像排在前面
+            const typeImages = images
+              .filter((i) => i.agentType === agentType)
+              .sort((a, b) => {
+                if (a.isPublic && !b.isPublic) return -1;
+                if (!a.isPublic && b.isPublic) return 1;
+                return 0;
+              });
+            const isDefault = defaultAgentType === agentType;
+            const isCollapsed = collapsedTypes.has(agentType);
+            const activeImg = typeImages.find((i) => i.active);
+            const isCustom = !agentTypeObj.isOfficial;
+            const isNativeKernel = agentTypeObj.kernel === "native";
+
+            return (
+              <div
+                key={agentType}
+                ref={(el) => { sectionRefs.current[agentType] = el; }}
+                data-anchor={agentType}
+                className={`rounded-[4px] border overflow-hidden transition-all scroll-mt-6 ${isDefault ? "border-blue-300 ring-1 ring-blue-200" : "border-gray-100"}`}
+                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+              >
+                {/* 标题栏 */}
+                <div className={`flex items-center justify-between px-6 py-4 ${isDefault ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100" : "bg-white border-b border-gray-50"}`}>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <button onClick={() => toggleCollapse(agentType)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                      {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
+                    <h2 className="font-semibold text-gray-900">{agentTypeObj.label}</h2>
+                    <span className="text-xs text-gray-400">{typeImages.length} 个镜像</span>
+
+                    {/* 自定义标签（官方不打） */}
+                    {isCustom && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default">
+                            自定义 Agent 类型
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行定义和维护的 Agent 类型</TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* 内核标签（仅自定义类型展示） */}
+                    {isCustom && (
+                      isNativeKernel ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600 border border-orange-100 cursor-default">
+                              <Layers className="w-3 h-3" /> 自定义内核
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
+                            该类型不基于任何已知 Agent 内核，部分管控台功能不可用
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100 cursor-default">
+                              <Layers className="w-3 h-3" /> 兼容 {getKernel(agentTypeObj.kernel).label} 内核
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                            该类型与 {getKernel(agentTypeObj.kernel).label} 完全兼容，管控台功能与 {getKernel(agentTypeObj.kernel).label} 保持一致。请务必先验证管控台功能可用性，排除不兼容问题
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    )}
+
+                    {/* 自定义内核：温馨提示图标 */}
+                    {isCustom && isNativeKernel && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center text-amber-500 cursor-help">
+                            <AlertTriangle className="w-4 h-4" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[320px] text-xs leading-relaxed">
+                          <div className="font-semibold mb-1">温馨提示</div>
+                          <div className="mb-1">{NATIVE_KERNEL_NOTICE_TITLE}：</div>
+                          {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (
+                            <div key={i} className="mt-0.5">{l}</div>
+                          ))}
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* 用户端可选状态 */}
+                    {activeImg ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-600 border border-green-100 cursor-default">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> 用户端可选
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          当前启用：{activeImg.name}（{activeImg.agentVersion || "未知版本"}），支持用户创建该类型 Agent；一键升级将此镜像版本作为升级目标版本
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-400 border border-gray-200 cursor-default">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300 inline-block" /> 用户端不可选
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[220px] text-xs leading-relaxed">
+                          未启用镜像，用户端无法选择此类型创建 Agent。启用一个镜像即可开放
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* 用户端首选标记 */}
+                    {isDefault && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-white cursor-default" style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
+                            <Star className="w-3 h-3" /> 用户端首选
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+                          用户创建 Agent 时会优先选此类型，也支持手动切换
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* 设为用户端首选按钮（移到左侧） */}
+                    {!isDefault && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-xs" onClick={() => handleSetDefaultType(agentType)}>
+                            <Star className="w-3 h-3 mr-1" /> 设为用户端首选
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[220px] text-xs leading-relaxed">设为用户端优先选择的 Agent 类型</TooltipContent>
+                      </Tooltip>
+                    )}
+
+                    {/* 自定义类型可移除 */}
+                    {isCustom && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => requestRemoveType(agentTypeObj)}
+                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                            title="移除此 Agent 类型"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>移除此 Agent 类型</TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+
+                  {/* 右侧：应用范围 */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <ImageScopePopover
+                      scopeData={getTypeScope(agentType)}
+                      groups={ALL_GROUPS}
+                      onSave={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
+                    />
+                  </div>
+                </div>
+
+                {/* 镜像列表 */}
+                {!isCollapsed && (
+                  <div className="bg-white">
+                    {typeImages.length > 0 ? (
+                      <>
+                        <table className="w-full" style={{ tableLayout: "fixed" }}>
+                          <colgroup>
+                            <col style={{ width: "26%" }} />
+                            <col style={{ width: "10%" }} />
+                            <col style={{ width: "8%" }} />
+                            <col style={{ width: "8%" }} />
+                            <col style={{ width: "14%" }} />
+                            <col style={{ width: "12%" }} />
+                            <col style={{ width: "22%" }} />
+                          </colgroup>
+                          <thead>
+                            <tr className="border-b border-gray-50 bg-gray-50/50">
+                              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">镜像名称 / ID</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 tracking-wide whitespace-nowrap">Agent 版本</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">镜像类型</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作系统</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">导入时间</th>
+                              <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {typeImages.map((img) => (
+                              <tr
+                                key={img.id}
+                                className={`hover:bg-gray-50/50 transition-colors ${img.isPublic ? "bg-blue-50/40" : ""}`}
+                                style={img.isPublic ? { borderLeft: "3px solid #3B82F6" } : { borderLeft: "3px solid transparent" }}
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="min-w-0 overflow-hidden">
+                                    <p className="text-sm font-medium text-gray-900 truncate" title={img.name}>{img.name}</p>
+                                    <p className="text-xs text-gray-400 font-mono truncate" title={img.id}>{img.id}</p>
+                                    {img.isPublic && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 border border-blue-200 whitespace-nowrap mt-1 cursor-default">腾讯云维护</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-[260px] text-xs leading-relaxed">由腾讯云维护，自动跟进平台程序版本更新，无需企业自行维护</TooltipContent>
+                                      </Tooltip>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-3 py-4">
+                                  {img.agentVersion ? (
+                                    <span className="text-sm text-gray-700 font-mono">{img.agentVersion}</span>
+                                  ) : img.active ? (
+                                    <div className="flex items-start gap-1.5">
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+                                        ⚠ 未填写版本
+                                      </span>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="cursor-help inline-flex">
+                                            <Info className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+                                          该镜像正在使用中但缺少版本信息，可能影响用户端版本显示。建议编辑填写版本
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-gray-400 leading-tight">
+                                      <span className="text-orange-500">未填写</span>
+                                      <br />
+                                      <span>请编辑版本信息</span>
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap">
+                                  {img.isPublic ? (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 cursor-default">公共</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由腾讯云维护，自动跟进平台程序版本更新，无需企业自行维护</TooltipContent>
+                                    </Tooltip>
+                                  ) : (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default">自定义</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-[240px] text-xs leading-relaxed">由企业自行制作和维护，腾讯云不负责版本更新和维护</TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap">
+                                  {(() => {
+                                    const s = IMAGE_STATE_MAP[img.state] ?? { label: img.state, color: "text-yellow-700", bg: "bg-yellow-50", dot: "bg-yellow-400" };
+                                    return (
+                                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${s.bg} ${s.color}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full inline-block ${s.dot} ${s.animate ? "animate-pulse" : ""}`} />
+                                        {s.label}
+                                      </span>
+                                    );
+                                  })()}
+                                </td>
+                                <td className="px-3 py-4 text-sm text-gray-600" title={img.os}>{img.os}</td>
+                                <td className="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                  {img.createTime ? (
+                                    <div className="leading-tight">
+                                      <span className="whitespace-nowrap">{img.createTime.split(" ")[0]}</span>
+                                    </div>
+                                  ) : "—"}
+                                </td>
+                                <td className="px-3 py-4 whitespace-nowrap">
+                                  <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-gray-400">启用</span>
+                                      {!img.agentVersion && !img.active ? (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex">
+                                              <Switch checked={false} disabled className="opacity-40 cursor-not-allowed" />
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+                                            缺少 Agent 版本信息，无法启用。请编辑填写版本
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      ) : !img.agentVersion && img.active ? (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex">
+                                              <Switch
+                                                checked={img.active}
+                                                onCheckedChange={() => handleToggleActive(img.id, agentType)}
+                                              />
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top" className="max-w-[260px] text-xs leading-relaxed">
+                                            <span className="text-amber-500 font-medium">⚠ 该镜像缺少版本信息</span>，建议编辑填写版本
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      ) : (
+                                        <Switch
+                                          checked={img.active}
+                                          onCheckedChange={() => handleToggleActive(img.id, agentType)}
+                                        />
+                                      )}
+                                    </div>
+
+                                    {/* 编辑按钮（仅自定义镜像） */}
+                                    {!img.isPublic && (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <button onClick={() => openEditDialog(img)} className="text-gray-400 hover:text-blue-500 transition-colors" title="编辑镜像信息">
+                                            <Pencil className="w-4 h-4" />
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>编辑 Agent 类型和版本</TooltipContent>
+                                      </Tooltip>
+                                    )}
+
+                                    {/* 删除按钮 */}
+                                    {img.isPublic ? (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-gray-200 cursor-not-allowed">
+                                            <Trash2 className="w-4 h-4" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">公共镜像不可删除</TooltipContent>
+                                      </Tooltip>
+                                    ) : img.active ? (
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-gray-200 cursor-not-allowed">
+                                            <Trash2 className="w-4 h-4" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">启用中的镜像无法删除</TooltipContent>
+                                      </Tooltip>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleDelete(img)}
+                                        className="text-gray-300 hover:text-red-500 transition-colors"
+                                        title="删除镜像"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        {/* 分组底部：导入镜像 */}
+                        <div className="px-6 py-3 border-t border-gray-50 flex justify-start">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-xs" onClick={() => openImportForType(agentType)}>
+                                <Plus className="w-3 h-3 mr-1" /> 导入镜像
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[240px] text-xs leading-relaxed">支持导入公共镜像（腾讯云维护）或自定义镜像（企业维护）</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="px-6 py-10 text-center">
+                        <p className="text-sm text-gray-400 mb-2">暂无镜像</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-xs" onClick={() => openImportForType(agentType)}>
+                              <Plus className="w-3 h-3 mr-1" /> 导入镜像
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[240px] text-xs leading-relaxed">支持导入公共镜像（腾讯云维护）或自定义镜像（企业维护）</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+            {/* 底部：添加自定义 Agent 类型 */}
+            <button
+              onClick={openAddTypeDialog}
+              className="w-full rounded-[4px] border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50/40 hover:bg-blue-50/70 transition-all py-6 flex flex-col items-center gap-2 group"
             >
-              <Plus className="w-3 h-3 mr-1" />
-              添加自定义 Agent 类型
-            </Button>
+              <div className="w-10 h-10 rounded-[4px] flex items-center justify-center transition-colors" style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-semibold transition-colors" style={{ color: "#1447E6" }}>添加自定义 Agent 类型</span>
+              <span className="text-xs text-gray-500">支持基于现有 Agent 内核扩展，或添加完全自定义的 Agent 类型</span>
+            </button>
           </div>
-
-          {/* 大表格 */}
-          <AgentTypesTable
-            rows={views.map(({ agentType, view }): AgentTypeRowData => {
-              const customType = getCustomType(agentType);
-              return {
-                agentType,
-                view,
-                label: getTypeLabel(agentType),
-                isDefault: defaultAgentType === agentType,
-                customType,
-                kernelBaseLabel:
-                  customType && customType.kernelBase !== "native"
-                    ? kernelBaseLabel(customType.kernelBase)
-                    : undefined,
-              };
-            })}
-            onSetDefaultType={handleSetDefaultType}
-            onRemoveCustomType={handleRemoveType}
-            onEnableImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
-            onDisableImage={handleDisableImage}
-            onSelectImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
-            onEditImage={openEditDialog}
-            onDeleteImage={handleDeleteImage}
-            onViewPublicHistory={openPublicHistoryByImage}
-            onImportCustom={(agentType) => openImportFor(agentType)}
-            renderScope={(agentType) => (
-              <ImageScopePopover
-                scopeData={getTypeScope(agentType)}
-                groups={ALL_GROUPS}
-                onSave={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
-              />
-            )}
-          />
-
-          {/* 表格底部：添加自定义 Agent 类型 大入口卡片 */}
-          <button
-            type="button"
-            onClick={() => setShowCreateCustomDialog(true)}
-            className="mt-4 w-full rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50/70 hover:border-blue-300 transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
-          >
-            <span
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow-sm group-hover:scale-105 transition-transform"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-            >
-              <Plus className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium text-blue-600">添加自定义 Agent 类型</span>
-            <span className="text-xs text-gray-500">
-              支持基于现有 Agent 内核拓展，或添加完全自定义的 Agent 类型
-            </span>
-          </button>
         </div>
-
-        {/* 右侧栏：Agent 类型锚点 + 镜像更新记录 + 推送更新按钮
-            内部 padding 让其视觉起点与左侧表格上沿对齐
-            （标题块 ≈ 80px + 顶部总览行 ≈ 56px = 约 136px） */}
-        <aside className="hidden lg:block w-[220px] shrink-0 pt-[136px]">
-          <div className="sticky top-6 max-h-[calc(100vh-32px)] overflow-y-auto pr-1">
-            <UpdateRecordSidebar
-              views={views.map(({ agentType, view }) => ({
-                agentType,
-                isEnabled: view.enabled.isEnabled,
-                version: view.enabled.version,
-              }))}
-              getTypeLabel={getTypeLabel}
-              defaultAgentType={defaultAgentType}
-              onPush={() => openPushDialog()}
-              onViewAll={() => setShowAllRecordsDrawer(true)}
-            />
-          </div>
-        </aside>
       </div>
 
       {/* ─── 导入自定义镜像弹窗 ─── */}
@@ -1204,27 +1554,7 @@ export default function ImageManagement() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="rounded-lg bg-purple-50/40 border border-purple-100 px-3 py-2.5 -mt-1">
-            <p className="text-xs text-purple-900/80 leading-relaxed mb-1.5">
-              自定义镜像由企业自行制作和维护：
-            </p>
-            <ul className="space-y-1 text-[11px]">
-              <li className="flex items-start gap-1.5 text-gray-700">
-                <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
-                <span>版本固定不变，便于合规审计与稳定性管理</span>
-              </li>
-              <li className="flex items-start gap-1.5 text-gray-700">
-                <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
-                <span>可基于业务需要预装技能、插件、企业内部依赖</span>
-              </li>
-              <li className="flex items-start gap-1.5 text-gray-500">
-                <XIcon className="w-3 h-3 mt-0.5 text-gray-400 shrink-0" />
-                <span>需要企业自行跟进版本更新与维护</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2">
+          <div className="flex items-start gap-2 bg-gray-50 rounded-[4px] px-3 py-2.5 -mt-1">
             <Info className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
             <p className="text-[11px] text-gray-500 leading-relaxed">
               以下镜像均为已在腾讯云创建好的镜像。若需要创建新镜像，请前往{" "}
@@ -1245,8 +1575,8 @@ export default function ImageManagement() {
               <Label>选择镜像 <span className="text-red-400">*</span></Label>
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <button
-                  onClick={() => setShowImageList(!showImageList)}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
+                  onClick={(e) => { e.stopPropagation(); setShowImageList(!showImageList); }}
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
                 >
                   <span>
                     {selectedImageId
@@ -1258,7 +1588,7 @@ export default function ImageManagement() {
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
                   title="刷新镜像列表"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -1266,11 +1596,7 @@ export default function ImageManagement() {
               </div>
               <p className="text-xs text-gray-400">镜像大小不允许超过 50 GiB</p>
               {showImageList && (
-                <div
-                  ref={imageListRef}
-                  className="border border-gray-200 rounded-lg bg-white overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div ref={imageListRef} className="border border-gray-200 rounded-[4px] bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}>
                   <div className="relative p-2 border-b border-gray-100">
                     <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -1278,7 +1604,7 @@ export default function ImageManagement() {
                       placeholder="搜索镜像 ID..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-[4px] bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -1316,60 +1642,71 @@ export default function ImageManagement() {
               )}
             </div>
 
-            <div className="space-y-2">
+            {/* 自定义镜像选中时的提示 */}
+            {isCustomImageSelected && (
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-[4px] px-3 py-2.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  请确认 Agent 类型选择正确，类型不匹配将导致管控台功能无法使用。
+                </p>
+              </div>
+            )}
+
+            {/* Step 2: Agent 类型 */}
+            <div className={`space-y-2 transition-opacity ${!selectedImageId ? "opacity-50 pointer-events-none" : ""}`}>
               <Label>Agent 类型 <span className="text-red-400">*</span></Label>
-              <Select
-                value={importAgentType}
-                onValueChange={(v) => {
-                  setImportAgentType(v);
-                  setImportAgentVersion("");
-                  setVersionError("");
-                }}
-              >
-                <SelectTrigger className="bg-gray-50 w-full">
-                  <SelectValue placeholder="请选择 Agent 类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SYSTEM_AGENT_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                  {customTypes.length > 0 && (
-                    <>
-                      <div className="px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">
-                        自定义类型
-                      </div>
-                      {customTypes.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          <span className="inline-flex items-center gap-1.5">
-                            {t.kernelBase === "native" ? (
-                              <Sparkles className="w-3 h-3 text-orange-500" />
-                            ) : (
-                              <span className="text-[10px] text-blue-500 font-medium">
-                                [兼容 {kernelBaseLabel(t.kernelBase)}]
-                              </span>
-                            )}
-                            {t.displayName}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+              {!selectedImageId ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-400">
+                  请先选择镜像
+                </div>
+              ) : isPublicSelected ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-500">
+                  {getTypeLabel(importAgentType)}
+                  <span className="text-xs text-gray-400 ml-2">（公共镜像自动匹配）</span>
+                </div>
+              ) : (
+                <Select value={importAgentType} onValueChange={(v) => { setImportAgentType(v); setImportAgentVersion(""); setVersionError(""); }}>
+                  <SelectTrigger className="bg-gray-50 w-full"><SelectValue placeholder="请选择 Agent 类型" /></SelectTrigger>
+                  <SelectContent>
+                    {allTypes.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        <span className="flex items-center gap-1.5">
+                          {t.label}
+                          {!t.isOfficial && <span className="text-[10px] text-purple-500">(自定义)</span>}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label>Agent 版本 <span className="text-red-400">*</span></Label>
-              <Input
-                value={importAgentVersion}
-                onChange={(e) => handleVersionChange(e.target.value)}
-                placeholder={getEffectiveTypeConfig(importAgentType)?.versionPlaceholder ?? "请先选择 Agent 类型"}
-                className={`bg-gray-50 ${versionError ? "border-red-300 focus-visible:ring-red-500" : ""}`}
-                disabled={!importAgentType}
-              />
-              {versionError && <p className="text-xs text-red-500">{versionError}</p>}
+              {!selectedImageId ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-400">
+                  请先选择镜像
+                </div>
+              ) : isPublicSelected ? (
+                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-500 font-mono">
+                  {importAgentVersion}
+                  <span className="text-xs text-gray-400 ml-2 font-normal">（公共镜像自动匹配）</span>
+                </div>
+              ) : (
+                <>
+                  <Input
+                    placeholder={importAgentType ? getKernel(importKernel).versionPlaceholder : "请先选择 Agent 类型"}
+                    value={importAgentVersion}
+                    onChange={(e) => handleVersionChange(e.target.value)}
+                    className={`bg-gray-50 font-mono ${versionError ? "border-red-300 focus-visible:ring-red-500" : ""}`}
+                    disabled={!importAgentType}
+                  />
+                  {versionError && <p className="text-xs text-red-500">{versionError}</p>}
+                  {importAgentType && !versionError && (
+                    <p className="text-xs text-gray-400">格式：{getKernel(importKernel).versionPlaceholder}</p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -1378,7 +1715,7 @@ export default function ImageManagement() {
             <Button
               onClick={handleImport}
               disabled={!canImport}
-              style={canImport ? { background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" } : {}}
+              style={canImport ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" } : {}}
             >
               导入并关联
             </Button>
@@ -1395,7 +1732,30 @@ export default function ImageManagement() {
               修改该自定义镜像所属的 Agent 类型和版本号
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-1">
+          <div className="space-y-4 py-2">
+            {(() => {
+              const editImg = images.find((i) => i.id === editingImageId);
+              return editImg ? (
+                <div className="rounded-[4px] border border-gray-200 overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-3">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">镜像名称 / ID</p>
+                    <p className="text-sm font-semibold text-gray-900">{editImg.name}</p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">{editImg.id}</p>
+                  </div>
+                  <div className="px-4 py-2.5 flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">当前类型</span>
+                      <span className="font-medium text-gray-700">{editImg.agentType ? getTypeLabel(editImg.agentType) : "未设置"}</span>
+                    </div>
+                    <div className="w-px h-3 bg-gray-200" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-gray-400">当前版本</span>
+                      <span className="font-medium text-gray-700 font-mono">{editImg.agentVersion || "未设置"}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : null;
+            })()}
             <div className="space-y-2">
               <Label>Agent 类型 <span className="text-red-400">*</span></Label>
               <Select
@@ -1437,7 +1797,8 @@ export default function ImageManagement() {
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>取消</Button>
             <Button
               onClick={handleEditSave}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
+              disabled={!editAgentType || !editAgentVersion.trim() || !!editVersionError}
+              style={editAgentType && editAgentVersion.trim() && !editVersionError ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" } : {}}
             >
               保存
             </Button>
@@ -1482,14 +1843,13 @@ export default function ImageManagement() {
                   const isSelected = newKernelBase === opt.value;
                   const isNative = opt.value === "native";
                   return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => { setNewKernelBase(opt.value); if (!isNative) setNativeAck(false); }}
-                      className={`w-full text-left rounded-xl border-2 p-3 transition-all ${
-                        isSelected
-                          ? (isNative ? "border-orange-400 bg-orange-50/60" : "border-blue-500 bg-blue-50/60")
-                          : "border-gray-200 hover:border-blue-300 bg-white"
+                    <label
+                      key={k.value}
+                      htmlFor={`kernel-${k.value}`}
+                      className={`flex items-start gap-3 px-3 py-2.5 rounded-[4px] border cursor-pointer transition-colors ${
+                        checked
+                          ? (isNative ? "border-orange-300 bg-orange-50/40" : "border-blue-300 bg-blue-50/40")
+                          : "border-gray-200 hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
@@ -1513,29 +1873,27 @@ export default function ImageManagement() {
               </div>
             </div>
 
-            {/* 兼容内核：温馨提示 */}
-            {newKernelBase && newKernelBase !== "native" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5 flex items-start gap-2">
-                <Check className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div className="text-xs text-blue-700 leading-relaxed">
-                  将直接复用
-                  <strong className="mx-1">{kernelBaseLabel(newKernelBase)}</strong>
-                  的全部管控能力，无需额外配置。创建后可直接导入镜像使用
-                </div>
+            {/* 兼容内核 - 强提醒 */}
+            {newTypeKernel !== "native" && (
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-[4px] px-3 py-2.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  自定义 Agent 请务必先验证管控台功能可用性，排除不兼容问题。
+                </p>
               </div>
             )}
 
             {/* 自研（native）：风险提示 + 必勾选确认 */}
             {newKernelBase === "native" && (
               <div className="space-y-2">
-                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-[4px] px-3 py-2.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" />
                   <div className="text-xs text-orange-700 leading-relaxed space-y-1">
                     <p className="font-semibold">{NATIVE_KERNEL_NOTICE_TITLE}：</p>
                     {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (<p key={i}>{l}</p>))}
                   </div>
                 </div>
-                <label className="flex items-start gap-2 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-gray-200 cursor-pointer hover:bg-gray-50">
                   <Checkbox
                     id="native-ack"
                     checked={nativeAck}
@@ -1555,9 +1913,13 @@ export default function ImageManagement() {
               取消
             </Button>
             <Button
-              onClick={handleCreateCustomType}
-              disabled={!canCreateCustom}
-              style={canCreateCustom ? { background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" } : {}}
+              onClick={handleAddType}
+              disabled={!newTypeLabel.trim() || (newTypeKernel === "native" && !nativeAck)}
+              style={
+                newTypeLabel.trim() && (newTypeKernel !== "native" || nativeAck)
+                  ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }
+                  : {}
+              }
             >
               添加
             </Button>

@@ -513,7 +513,7 @@ export default function MCPAddDialog({
                           key={cat}
                           type="button"
                           onClick={() => handleCategoryChange(cat)}
-                          className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border-2 transition-all ${
+                          className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-[4px] border-2 transition-all ${
                             isSelected
                               ? 'border-blue-500 bg-blue-50/60'
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
@@ -557,7 +557,7 @@ export default function MCPAddDialog({
                               key={proto}
                               type="button"
                               onClick={() => handleRemoteProtocolChange(proto)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border transition-all text-sm ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border transition-all text-sm ${
                                 isSelected
                                   ? 'border-blue-500 bg-blue-50/60 text-blue-700 font-medium'
                                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
@@ -606,7 +606,7 @@ export default function MCPAddDialog({
 
                 {/* 可折叠的配置参考 */}
                 {effectiveTransportType && (
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="border border-gray-200 rounded-[4px] overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setConfigRefExpanded(!configRefExpanded)}
@@ -630,7 +630,7 @@ export default function MCPAddDialog({
                 )}
 
                 {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
-                <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
+                <div className="border border-gray-200 rounded-[4px] overflow-hidden font-mono text-xs">
                   {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
                   <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
@@ -784,7 +784,7 @@ export default function MCPAddDialog({
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-[4px] p-4 max-h-[240px] overflow-y-auto bg-white">
                     {usageDoc.trim() ? (
                       <MDXRenderer content={usageDoc} />
                     ) : (
@@ -835,7 +835,7 @@ export default function MCPAddDialog({
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-[4px] p-4 max-h-[240px] overflow-y-auto bg-white">
                     {toolDoc.trim() ? (
                       <MDXRenderer content={toolDoc} />
                     ) : (

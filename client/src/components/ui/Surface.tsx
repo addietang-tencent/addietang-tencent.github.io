@@ -29,6 +29,8 @@ interface SurfaceBaseProps extends HTMLAttributes<HTMLDivElement> {
 
 /* ───────────── L1 SurfaceCard ─────────────
  * 用于：页面主区块、列表卡、统计卡、Agent 卡、技能广场卡等"表层信息单元"。
+ * 视觉规范（对齐 Figma 节点 358:2388）：白底 + 4px 圆角 + 双层柔和外阴影，
+ * 不带描边——靠 --shadow-card 的两层阴影自然勾出卡片边缘。
  */
 export const SurfaceCard = forwardRef<HTMLDivElement, SurfaceBaseProps>(
   ({ className, hover, bare, style, ...props }, ref) => {
@@ -37,7 +39,7 @@ export const SurfaceCard = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="card"
         className={cn(
-          "rounded-[4px] border border-[#E5E5E5]",
+          "rounded-[4px]",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:-translate-y-0.5",
           className,

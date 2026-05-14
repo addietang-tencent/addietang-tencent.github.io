@@ -656,7 +656,7 @@ export default function FileSpace({
 
       {/* Header Bar */}
       <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+        style={{ boxShadow: "var(--shadow-card)" }}>
 
         {/* Top Info + Actions */}
         <div className="px-5 py-4 border-b border-gray-100">

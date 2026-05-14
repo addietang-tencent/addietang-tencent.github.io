@@ -9,6 +9,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { SurfaceCard } from '@/components/ui/Surface';
 import { toast } from 'sonner';
 import { Zap, Info, AlertTriangle, AlertOctagon } from 'lucide-react';
 import {
@@ -77,10 +78,10 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
   return (
     <TooltipProvider>
       <>
-        <div
-          className={`bg-white rounded-[4px] border overflow-hidden transition-all duration-500 ${disabled ? 'opacity-60' : ''}`}
+        <SurfaceCard
+          className={`overflow-hidden transition-all duration-500 ${disabled ? 'opacity-60' : ''}`}
           style={{
-            boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)',
+            border: '1px solid',
             borderColor: isEnabled ? 'rgba(20,71,230,0.2)' : 'rgba(229,231,235,1)',
           }}
         >
@@ -142,7 +143,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               ))}
             </div>
           </div>
-        </div>
+        </SurfaceCard>
 
         {/* 确认弹窗 — 开启 */}
         <Dialog open={confirmType === 'enable'} onOpenChange={(o) => { if (!o) setConfirmType(null); }}>

@@ -52,7 +52,7 @@ export const HeroBanner = () => {
           borderRadius: "9999px",
           background: "#1447E6",
           opacity: 0.6,
-          boxShadow: "0 0 12px rgba(20,71,230,0.6)",
+          boxShadow: "0 0 12px rgba(20,71,230,0.6)", // allow-shadow: 装饰圆球 glow，非卡片
         }}
       />
       <div
@@ -66,7 +66,7 @@ export const HeroBanner = () => {
           borderRadius: "9999px",
           background: "#5856D6",
           opacity: 0.5,
-          boxShadow: "0 0 8px rgba(88,86,214,0.5)",
+          boxShadow: "0 0 8px rgba(88,86,214,0.5)", // allow-shadow: 装饰圆球 glow，非卡片
         }}
       />
 

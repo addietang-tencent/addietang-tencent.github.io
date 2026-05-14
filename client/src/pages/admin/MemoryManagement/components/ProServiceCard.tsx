@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SurfaceCard } from '@/components/ui/Surface';
 import {
   Tooltip,
   TooltipContent,
@@ -290,7 +291,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           style={{
             background: '#ffffff',
             border: '1.5px solid rgba(59,130,246,0.15)',
-            boxShadow: '0 1px 3px rgba(59,130,246,0.06), 0 4px 16px rgba(59,130,246,0.08)',
+            boxShadow: '0 1px 3px rgba(59,130,246,0.06), 0 4px 16px rgba(59,130,246,0.08)', // allow-shadow: Pro 版未开通态促销卡，强调蓝色阴影
           }}
         >
           {/* ====== 头部：蓝色渐变背景 + 左侧文案 + 右侧即刻开通按钮 ====== */}
@@ -570,10 +571,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
   // ==================== 已开通状态 ====================
   return (
     <TooltipProvider>
-      <div
-        className="bg-white rounded-[4px] border border-gray-100 px-6 py-6 mb-5"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-      >
+      <SurfaceCard className="px-6 py-6 mb-5">
         {/* 状态提示条 */}
         {isInitializing && (
           <div className="bg-blue-50 border border-blue-200 rounded-[4px] px-4 py-2.5 flex items-center gap-3 mb-4">
@@ -736,7 +734,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           ocCount={proUsedCount}
           onGoToInstanceList={onGoToInstanceList}
         />
-      </div>
+      </SurfaceCard>
     </TooltipProvider>
   );
 };

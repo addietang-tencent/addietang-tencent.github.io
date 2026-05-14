@@ -5,6 +5,7 @@ import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SurfaceConfig } from "@/components/ui/Surface";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -40,8 +41,7 @@ export default function ResetPassword() {
   return (
     <TenantLayout>
       <div className="max-w-md mx-auto py-16 page-enter">
-        <div className="bg-white rounded-[4px] border border-gray-100 p-8"
-          style={{ boxShadow: "0px 2px 8px -1px rgba(0,0,0,0.05), 0px 2px 4px 2px rgba(0,0,0,0.05)" }}>
+        <SurfaceConfig className="p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <KeyRound className="w-5 h-5 text-white" />
@@ -113,7 +113,7 @@ export default function ResetPassword() {
               </Button>
             </div>
           </form>
-        </div>
+        </SurfaceConfig>
       </div>
     </TenantLayout>
   );

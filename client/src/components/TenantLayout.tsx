@@ -493,33 +493,11 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}>
-      {/* [Figma 358:2320] 顶部深色客户端条 50px - #2C2C2C */}
-      <div
-        className="fixed top-0 left-0 right-0 z-[60] flex items-center"
-        style={{
-          height: "50px",
-          background: "#2C2C2C",
-          padding: "0 28px",
-        }}
-      >
-        <span
-          className="text-white"
-          style={{
-            fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-            fontWeight: 500,
-            fontSize: "20px",
-            lineHeight: 1,
-          }}
-        >
-          客户端界面
-        </span>
-      </div>
-
       {/* [Figma 358:2322] Top Navigation 64px：左 Logo + 中央 Tab + 右图标 */}
       <header
         className="fixed left-0 right-0 z-50 h-16 bg-white/95 backdrop-blur-md"
         style={{
-          top: "50px",
+          top: 0,
           borderBottom: "1px solid #E2E8F0",
         }}
       >
@@ -665,8 +643,8 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      {/* Main Content：上偏移 = 客户端条 50 + 导航 64 = 114px */}
-      <main className="pt-[114px] min-h-screen">
+      {/* Main Content：上偏移 = 顶部导航 64px */}
+      <main className="pt-16 min-h-screen">
         {children}
       </main>
     </div>

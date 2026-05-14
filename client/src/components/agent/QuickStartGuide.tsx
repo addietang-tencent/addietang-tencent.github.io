@@ -113,7 +113,7 @@ export const QuickStartGuide = ({ onClose }: QuickStartGuideProps) => {
                 style={{
                   background: "#FFFFFF",
                   border: "1px solid rgba(20,71,230,0.20)",
-                  boxShadow: "0 1px 2px rgba(20,71,230,0.10)",
+                  boxShadow: "0 1px 2px rgba(20,71,230,0.10)", // allow-shadow: 24x24 步骤图标内描边阴影，非卡片
                 }}
               >
                 <Icon className="w-3.5 h-3.5" style={{ color: "#1447E6" }} />

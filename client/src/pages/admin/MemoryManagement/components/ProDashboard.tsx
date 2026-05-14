@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SurfaceCard } from '@/components/ui/Surface';
 import { toast } from 'sonner';
 import { ProCloseDialog } from './ProCloseDialog';
 import {
@@ -315,7 +316,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
       {/* 资源卡片 */}
       <div className="grid grid-cols-1 gap-5">
         {/* Memory 分配情况 */}
-        <div className="bg-white rounded-[4px] border border-gray-100 p-6 relative" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <SurfaceCard className="p-6 relative">
           {/* 初始化遮罩 */}
           {isInitializing && (
             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-[4px] z-10 flex items-center justify-center">
@@ -412,11 +413,11 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               )}
             </>
           )}
-        </div>
+        </SurfaceCard>
       </div>
 
       {/* OC 列表 - 只读查看 */}
-      <div className="bg-white rounded-[4px] border border-gray-100 relative" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+      <SurfaceCard className="relative">
         {/* 初始化遮罩 */}
         {isInitializing && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-[4px] z-10 flex items-center justify-center">
@@ -630,7 +631,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
             </>
           )}
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Pro 版关闭弹窗 */}
       <ProCloseDialog 

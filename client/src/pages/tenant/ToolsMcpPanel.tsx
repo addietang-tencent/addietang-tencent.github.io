@@ -1058,8 +1058,8 @@ export default function ToolsMcpPanel() {
               <p className="text-xs text-red-500">{sourceJsonError}</p>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
             <Button variant="outline" onClick={() => handleSaveSource(false)} className="text-sm">

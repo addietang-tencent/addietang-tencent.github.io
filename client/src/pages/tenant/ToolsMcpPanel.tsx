@@ -886,7 +886,7 @@ export default function ToolsMcpPanel() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setParamTemplate(null)}>
+            <Button variant="claw-outline" onClick={() => setParamTemplate(null)}>
               取消
             </Button>
             <Button
@@ -959,7 +959,7 @@ export default function ToolsMcpPanel() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSourceDialogOpen(false)}>
+            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)}>
               取消
             </Button>
             <Button
@@ -1005,11 +1005,11 @@ export default function ToolsMcpPanel() {
           </DialogHeader>
           <DialogFooter className="flex gap-2">
             {restartAction === "toggle" && (
-              <Button variant="outline" onClick={handleRestartCancel} className="text-xs">
+              <Button variant="claw-outline" onClick={handleRestartCancel} className="text-xs">
                 取消修改
               </Button>
             )}
-            <Button variant="outline" onClick={handleRestartLater} className="text-xs">
+            <Button variant="claw-outline" onClick={handleRestartLater} className="text-xs">
               暂不重启
             </Button>
             <Button

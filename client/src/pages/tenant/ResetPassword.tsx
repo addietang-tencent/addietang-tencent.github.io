@@ -108,7 +108,7 @@ export default function ResetPassword() {
               <Button type="submit" className="flex-1 bg-blue-500 hover:bg-blue-600 text-white">
                 确认重置
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate("/my-openclaw")}>
+              <Button type="button" variant="claw-outline" onClick={() => navigate("/my-openclaw")}>
                 取消
               </Button>
             </div>

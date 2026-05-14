@@ -432,31 +432,99 @@ import { SurfaceCard, SurfaceInner, SurfaceConfig } from "@/components/ui/Surfac
 
 ## 8. 组件规范
 
-### 8.1 按钮
+### 8.1 按钮（Button）— **唯一真理源：`@/components/ui/button` 的 `claw-*` 变体**
 
-**主按钮 CTA**（黑→蓝渐变）：
-```jsx
-<Button
-  style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-  className="text-white rounded-[4px] btn-primary-glow"
->
+> 与 Figma「按钮」ComponentSet `317:1051` 严格对齐。详细 token 表 + 调用示例见 `docs/DESIGN_SYSTEM_BUTTON.md`。
+> **铁律**（业务层 = `pages/**` 与 `components/**`，**不含** `components/ui/**`）：
+> 1. **禁止** inline `style={{ background: "linear-gradient(...)" }}` 模拟主按钮 —— 用 `variant="claw-primary"`。
+> 2. **禁止** `variant="outline" + className="border-[#E5E5E5]"` 拼装次级按钮 —— 用 `variant="claw-outline"`。
+> 3. **禁止**直接用 shadcn `variant="outline"` 表达 ClawPro 业务次级按钮（取消/刷新/下载/重试恢复/全宽表单按钮等）—— 一律换成 `variant="claw-outline"`。`outline` 仅保留给 shadcn 内部模式（如 Combobox/Popover trigger），且必须加 `// allow-shadcn-outline: <理由>` 行级注释。
+> 4. **禁止**手写 `bg-orange-500 / bg-red-600 text-white` 之类破坏性按钮 —— 用 `variant="destructive"`。
+
+#### 变体（variant）
+
+| variant | 用途 | 视觉 |
+|---|---|---|
+| `claw-primary` | 主操作（创建/确认/提交/重试/进入终端） | 黑→蓝渐变 + 白字；hover 加深 |
+| `claw-outline` | 次级操作（详细配置/取消/刷新） | 白底 + `#E5E5E5` 边 + `#020617` 字；hover 浅蓝渐变 + 蓝边 |
+
+shadcn 自带的 `default / outline / destructive / secondary / ghost / link` 仍保留，但**新代码不要再用它们承载 Figma 设计稿里的主按钮 / 次级按钮**——请直接 `claw-primary` / `claw-outline`。
+
+#### 尺寸（size）
+
+| size | 维度 | 用途 |
+|---|---|---|
+| `claw` | h36 / px24 / py8 / gap8 | 默认尺寸，卡片底部「详细配置」「重试」 |
+| `claw-sm` | h32 / px16 / py4 / gap6 | 紧凑场景，Dialog footer / 行内主按钮 |
+| `claw-square` | 48×36 / p0 | 仅图标的方形次级按钮（卡片角落「刷新」） |
+| `claw-lg` | h40 / px18 / py4 / gap16 | 深色主按钮（页面顶部「创建 Agent」） |
+
+#### 调用示例
+
+```tsx
+// 卡片底部：详细配置（次级 + 文字 icon）
+<Button variant="claw-outline" size="claw">
+  <Settings className="w-3.5 h-3.5" />
+  详细配置
+</Button>
+
+// 卡片角落：刷新（次级 + 仅图标）
+<Button variant="claw-outline" size="claw-square" aria-label="刷新">
+  <RefreshCw className="w-3.5 h-3.5" />
+</Button>
+
+// Dialog 主操作（紧凑）
+<Button variant="claw-primary" size="claw-sm" onClick={handleConfirm}>
   确认
+</Button>
+
+// 页面顶部主按钮（深色填充）
+<Button variant="claw-primary" size="claw-lg">
+  <Plus />
+  创建 Agent
 </Button>
 ```
 
-**尺寸**：
-| 尺寸 | 类 | 用途 |
-|------|-----|------|
-| default | `h-9 px-4 py-2 rounded-[4px]` | 常规操作 |
-| sm | `h-8 px-3 rounded-[4px]` | 表格行操作 |
-| lg | `h-10 px-6 rounded-[4px]` | 突出 CTA |
-| icon | `size-9 rounded-[4px]` | 纯图标按钮 |
+#### 触达即同步：禁止 / 正确 对照
 
-**变体使用规则**：
-- 主操作 → `default` + 黑→蓝渐变 inline style
-- 次要操作 → `variant="outline"` + `border-[#E5E5E5]` + `rounded-[4px]`
-- 危险操作 → `bg-red-500 hover:bg-red-600 text-white rounded-[4px]`
-- 辅助操作 → `variant="ghost"` + `rounded-[4px]`
+| 场景 | ❌ 旧写法 | ✅ 新写法 |
+|---|---|---|
+| 主操作 | `<Button style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} className="text-white">` | `<Button variant="claw-primary" size="claw">` |
+| 紧凑主操作（h-8） | `<Button size="sm" style={{ background: "linear-gradient(...)" }} className="text-white px-4">` | `<Button variant="claw-primary" size="claw-sm">` |
+| 详细配置按钮 | `<Button variant="outline" className="h-9 px-6 rounded-[4px]" style={{ borderColor: "#E5E5E5" }}>` | `<Button variant="claw-outline" size="claw">` |
+| 仅图标方按钮 | `<Button variant="outline" className="h-9 w-12 p-0" style={{ borderColor: "#E5E5E5" }}>` | `<Button variant="claw-outline" size="claw-square">` |
+| 创建 Agent 主按钮 | 自己手写 `<button className="bg-gradient-to-r from-black ...">` | `<Button variant="claw-primary" size="claw-lg">` |
+| icon 与文字间距 | `<Icon className="mr-2" />` | 不需要 `mr-2`，size 已自动配 `gap` |
+
+#### 配合 `<Link>` 跳转
+
+```tsx
+<Link href="/somewhere">
+  <Button variant="claw-outline" size="claw">…</Button>
+</Link>
+```
+
+#### 仍然需要 inline `style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}` 的合法场景
+
+只有以下场景**不属于按钮**，可以保留 inline 渐变（不在禁用范围内）：
+- **Logo / 头像底色容器**（如 `TenantLayout` 顶部 🦞 logo、`AvatarFallback`）
+- **进度条填充**（如 ChatView 浏览器加载条）
+- **小色块装饰**（如 MemoryCard 的徽标胶囊、icon 容器）
+- **自定义 Checkbox / 勾选框小方块**（如 OpenClawDetail 内联 checkbox）
+- **圆形发送按钮**（聊天输入栏 27×27 圆形）——这是产品特有形态，规范里没有对应 size，可以继续 inline，但**应在该行加 `// allow-inline-gradient: <理由>` 注释**
+
+#### 仍然需要保留 shadcn `variant="outline"` 的合法场景
+
+只有以下场景**不是业务次级按钮**，可以继续用 shadcn `outline`，但**必须在该行加 `// allow-shadcn-outline: <理由>` 注释**：
+- **Combobox / Popover trigger**（`<Button variant="outline" role="combobox">...</Button>`，shadcn 内置交互模式，换成 `claw-outline` 会破坏选择器外观与 hover 行为）
+- **DatePicker / Select trigger**（同上，属于表单控件外壳，不是业务按钮）
+
+> 判定原则：**只要是用户会理解为"按钮 = 一个操作"的元素**（取消/刷新/下载/取消修改/暂不重启/上一步/返回列表/前往授权/重试恢复 等），全部走 `claw-outline`，没有例外。
+
+#### 自检（CI）
+
+> 自检脚本 `scripts/check-card-shadow.cjs` 后续会增加按钮规则维度（计划项），届时违规以 BASELINE 兜底机制处理。当前阶段靠 PR Review + 触达即同步。
+
 
 ### 8.2 状态徽章
 

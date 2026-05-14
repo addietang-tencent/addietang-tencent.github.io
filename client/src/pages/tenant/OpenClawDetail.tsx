@@ -1265,9 +1265,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               onKeyDown={(e) => e.key === "Enter" && handleFeishuPairing()}
             />
             <Button
-              size="sm"
-              variant="outline"
-              className="shrink-0 h-8 px-3 text-sm"
+              variant="claw-outline"
+              size="claw-sm"
+              className="shrink-0 text-sm"
               onClick={handleFeishuPairing}
             >
               匹配
@@ -1647,7 +1647,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <TooltipTrigger asChild>
                   <Button 
                     className="w-full text-sm" 
-                    variant="outline" 
+                    variant="claw-outline" 
                     onClick={handleApplyModel}
                     disabled={isConfiguring}
                   >
@@ -1879,7 +1879,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {renderChannelInputs()}
 
               {/* 操作按钮 */}
-              <Button className="w-full text-sm" variant="outline" onClick={handleAddChannel}>
+              <Button className="w-full text-sm" variant="claw-outline" onClick={handleAddChannel}>
                 {(currentChannelConfig?.feishuMode && feishuConfigMode === "quick") || (currentChannelConfig?.weworkMode && weworkConfigMode === "quick") || currentChannelConfig?.wechatMode ? "前往授权" : "添加并应用"}
               </Button>
 
@@ -1973,7 +1973,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       <span className="w-full block" tabIndex={hasQueueing ? 0 : -1}>
                         <Button
                           className="w-full text-sm"
-                          variant="outline"
+                          variant="claw-outline"
                           disabled={hasQueueing}
                           onClick={hasQueueing ? undefined : () => {
                             if (!skillSearch.trim()) {
@@ -2186,8 +2186,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="border-t border-gray-100 pt-4">
                     {quickFixState === "idle" && (
                       <Button
-                        style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-                        className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
+                        variant="claw-primary"
+                        size="claw-sm"
+                        className="text-xs"
                         onClick={runQuickFixMock}
                       >
                         <span>一键修复</span>
@@ -2580,10 +2581,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-center pt-1">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={() => setShowHermesPanelDialog(false)}
-              className="text-gray-600 px-6"
+              className="px-6"
             >
               取消
             </Button>
@@ -2654,10 +2655,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-center gap-3 pt-1">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={() => setShowWebUIProgressDialog(false)}
-              className="text-gray-600 px-6"
+              className="px-6"
             >
               取消
             </Button>
@@ -2791,10 +2792,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={() => setShowUpdateConfirmDialog(false)}
-              className="text-gray-600 px-5"
+              className="px-5"
             >
               取消
             </Button>
@@ -2957,8 +2958,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
             >
               取消
@@ -3016,8 +3017,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button
-              variant="outline"
-              size="sm"
+              variant="claw-outline"
+              size="claw-sm"
               onClick={() => setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
             >
               取消
@@ -3684,6 +3685,7 @@ function DiagOptionCard({ checked, onChange, title, description }: DiagOptionCar
         onChange={(e) => onChange(e.target.checked)}
         className="sr-only"
       />
+      {/* allow-inline-gradient: 16×16 自定义 Checkbox 选中态色块（非按钮，SKILL §8.1 白名单） */}
       <span
         aria-hidden
         className="mt-0.5 flex-shrink-0 inline-flex items-center justify-center rounded-[5px] transition-all"
@@ -3725,6 +3727,7 @@ function DiagOptionRow({ checked, onChange, title, description }: DiagOptionCard
         onChange={(e) => onChange(e.target.checked)}
         className="sr-only"
       />
+      {/* allow-inline-gradient: 16×16 自定义 Checkbox 选中态色块（非按钮，SKILL §8.1 白名单） */}
       <span
         aria-hidden
         className="mt-0.5 flex-shrink-0 inline-flex items-center justify-center rounded-[5px] transition-all"
@@ -4778,13 +4781,9 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               const confirmDisabled = needAuth && !diagOptions.authorize;
               return (
                 <Button
-                  size="sm"
-                  style={{
-                    background: confirmDisabled
-                      ? "#C7C9D1"
-                      : "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
-                  }}
-                  className="text-white text-xs h-8 px-4 transition-all hover:opacity-90 disabled:cursor-not-allowed"
+                  variant="claw-primary"
+                  size="claw-sm"
+                  className="text-xs"
                   onClick={handleStartConfirm}
                   disabled={confirmDisabled}
                   title={confirmDisabled ? "请先勾选「同意使用龙虾医生功能」" : undefined}
@@ -4794,9 +4793,9 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               );
             })()}
             <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 px-4"
+              variant="claw-outline"
+              size="claw-sm"
+              className="text-xs"
               onClick={() => setShowStartModal(false)}
             >
               取消
@@ -4835,6 +4834,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   style={{
                     width: 16,
                     height: 16,
+                    // allow-inline-gradient: 16×16 自定义 Checkbox 选中态色块（非按钮，SKILL §8.1 白名单）
                     background: rollbackChecked ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)" : "#FFFFFF",
                     border: rollbackChecked ? "1px solid transparent" : "1.5px solid #D5D8E0",
                     boxShadow: rollbackChecked ? "0 1px 2px rgba(88,86,214,0.25)" : "none",
@@ -4855,17 +4855,17 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </div>
           <div className="flex gap-2 pt-1">
             <Button
-              size="sm"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-              className="text-white text-xs h-8 px-4 transition-all hover:opacity-90"
+              variant="claw-primary"
+              size="claw-sm"
+              className="text-xs"
               onClick={handleEndConfirm}
             >
               确认结束
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              className="text-xs h-8 px-4"
+              variant="claw-outline"
+              size="claw-sm"
+              className="text-xs"
               onClick={() => setShowEndModal(false)}
             >
               取消
@@ -4909,8 +4909,8 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button
+              variant="claw-primary"
               onClick={() => setConflictInfo(null)}
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)", color: "#fff" }}
             >
               我知道了
             </Button>
@@ -4945,8 +4945,9 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         </p>
         {showStartButton && (
           <Button
-            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-            className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
+            variant="claw-primary"
+            size="claw-sm"
+            className="text-xs"
             onClick={handleStartDiagnosisClick}
           >
             <span>{startButtonLabel}</span>
@@ -4960,8 +4961,9 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         )}
         {(isActive || isDestroying) && (
           <Button
-            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-            className="flex items-center gap-1.5 text-xs h-8 px-3 text-white transition-all hover:opacity-90"
+            variant="claw-primary"
+            size="claw-sm"
+            className="text-xs"
             onClick={handleEndClick}
             disabled={isDestroying}
           >
@@ -5020,13 +5022,13 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               会让会话已死时按钮仍可点 → 触发无效修复请求。 */}
           {diagPhase === "summary_ready" && instanceStatus === "active" && (
             <div className="px-5 pt-1 pb-2 flex items-center gap-2">
-              <button
+              <Button
+                variant="claw-primary"
                 onClick={handleStartRepair}
-                style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-                className="px-3 py-1.5 rounded-[4px] text-xs font-medium text-white transition-all hover:opacity-90"
+                className="h-7 text-xs px-3 gap-1"
               >
                 开始修复
-              </button>
+              </Button>
             </div>
           )}
 
@@ -5117,6 +5119,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                   {isStreaming ? (
                     <button
                       onClick={handleStopStreaming}
+                      // allow-inline-gradient: 圆形停止按钮（27×27 rounded-full，非标准矩形按钮，SKILL §8.1 白名单）
                       style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all hover:opacity-90"
                       title="暂停输出"
@@ -5131,6 +5134,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                       onClick={handleSend}
                       disabled={inputDisabled || !input.trim()}
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white transition-all duration-150 disabled:opacity-30"
+                      // allow-inline-gradient: 圆形发送按钮（27×27 rounded-full，非标准矩形按钮，SKILL §8.1 白名单）
                       style={{
                         background: input.trim() && !inputDisabled
                           ? "linear-gradient(90deg, #020617 70%, #1447E6 100%)"

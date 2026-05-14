@@ -174,6 +174,23 @@ const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
   manual: "自定义分组",
 };
 
+/** 获取某 agent creator 的所有部门路径（OneID 模式，主部门排首位） */
+function getCreatorDeptPaths(creator: string): Array<{ path: string; isPrimary: boolean }> {
+  const user = MOCK_USERS.find((u) => u.userId === creator);
+  if (!user) return [];
+  const deptGroupIds = user.groupIds.filter((gid) => {
+    const g = MOCK_GROUPS.find((g) => g.id === gid);
+    return g?.source === "oneid-dept";
+  });
+  if (deptGroupIds.length === 0) return [];
+  return deptGroupIds
+    .map((gid) => ({
+      path: getGroupPath(gid, MOCK_GROUPS),
+      isPrimary: gid === user.primaryGroupId,
+    }))
+    .sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
+}
+
 /** 获取某 agent creator 对应的分组信息（OneID 模式，只返回一个） */
 function getCreatorGroupItemOneid(creator: string): { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null {
   const user = MOCK_USERS.find((u) => u.userId === creator);
@@ -2016,9 +2033,9 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建人</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
                 {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2037,7 +2054,7 @@ export default function AgentMonitor() {
                     </Popover>
                   </th>
                 )}
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '150px' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2174,20 +2191,55 @@ export default function AgentMonitor() {
                         </span>
                       </td>
                       {/* 创建人 */}
-                      <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
+                      <td className="px-4 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="block truncate cursor-default">{claw.creator}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" align="start">
+                            <span className="text-xs">{claw.creator}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      </td>
                       {/* 部门 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-4 py-4 text-sm text-gray-600">
-                          {claw.department ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="block truncate max-w-[120px] cursor-default">{claw.department.replace(/\//g, " / ")}</span>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start">
-                                <span className="text-xs">{claw.department.replace(/\//g, " / ")}</span>
-                              </TooltipContent>
-                            </Tooltip>
-                          ) : <span className="text-gray-300">—</span>}
+                        <td className="px-4 py-4">
+                          {(() => {
+                            const deptPaths = getCreatorDeptPaths(claw.creator);
+                            if (deptPaths.length === 0) return <span className="text-sm text-gray-300">—</span>;
+                            if (deptPaths.length === 1) {
+                              return (
+                                <span className="text-sm text-gray-600 truncate block max-w-[200px]" title={deptPaths[0].path}>
+                                  {deptPaths[0].path}
+                                </span>
+                              );
+                            }
+                            return (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
+                                    <span className="text-sm text-gray-600 truncate">{deptPaths[0].path}</span>
+                                    <span className="text-xs text-gray-400 tabular-nums shrink-0">+{deptPaths.length - 1}</span>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
+                                  <div className="py-2">
+                                    {deptPaths.map((dp, idx) => (
+                                      <div key={idx} className="px-3 py-1.5 text-sm">
+                                        <span className="text-gray-200 mr-1">{idx + 1}.</span>
+                                        <span className="text-white">{dp.path}</span>
+                                        {dp.isPrimary && (
+                                          <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
+                                            主部门
+                                          </span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
                         </td>
                       )}
                       {/* 分组 */}
@@ -2197,36 +2249,50 @@ export default function AgentMonitor() {
                             const item = getCreatorGroupItemOneid(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center gap-1.5 max-w-[200px] cursor-default">
-                                    <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                      item.kind === "oneid-dept"
-                                        ? "text-blue-600 bg-blue-50"
-                                        : "text-purple-600 bg-purple-50"
-                                    }`}>
-                                      {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                              <div className="flex items-center gap-1 max-w-[200px]">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
+                                      {item.path}
                                     </span>
-                                    <span className="text-sm text-gray-700 truncate max-w-[120px]">{item.path}</span>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start">
-                                  <span className="text-xs">{item.path}</span>
-                                </TooltipContent>
-                              </Tooltip>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                                    <div className="py-2">
+                                      <div className="px-3 py-1.5 text-sm flex items-center gap-2">
+                                        <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                          item.kind === "oneid-dept"
+                                            ? "text-blue-400 bg-blue-500/20"
+                                            : "text-purple-400 bg-purple-500/20"
+                                        }`}>
+                                          {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                        </span>
+                                        <span className="text-white">{item.path}</span>
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
                             );
                           } else {
                             const item = getCreatorGroupItemManual(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="text-sm text-gray-700 truncate max-w-[160px] block cursor-default">{item.path}</span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start">
-                                  <span className="text-xs">{item.path}</span>
-                                </TooltipContent>
-                              </Tooltip>
+                              <div className="flex items-center gap-1 max-w-[200px]">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
+                                      {item.path}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
+                                    <div className="py-2">
+                                      <div className="px-3 py-1.5 text-sm">
+                                        <span className="text-white">{item.path}</span>
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
                             );
                           }
                         })()}

@@ -354,8 +354,9 @@ export default function ToolsMcpPanel() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteMcpId, setDeleteMcpId] = useState<string | null>(null);
 
-  // ── 重启确认（仅切换开关后弹出） ──
+  // ── 重启确认（删除/保存源码/切换开关后弹出） ──
   const [restartDialogOpen, setRestartDialogOpen] = useState(false);
+  const [restartAction, setRestartAction] = useState<"delete" | "save" | "toggle">("save");
   /** 切换开关时记录的 MCP id，取消修改时需要回退 */
   const [toggleRevertId, setToggleRevertId] = useState<string | null>(null);
 
@@ -555,12 +556,13 @@ export default function ToolsMcpPanel() {
       })
     );
     setToggleRevertId(mcpId);
+    setRestartAction("toggle");
     setRestartDialogOpen(true);
   };
 
   const handleRestartCancel = () => {
-    // 「取消修改」回退开关状态
-    if (toggleRevertId) {
+    // 「取消修改」仅在 toggle 时回退
+    if (restartAction === "toggle" && toggleRevertId) {
       setMcpList((prev) =>
         prev.map((m) => {
           if (m.id !== toggleRevertId) return m;
@@ -1005,13 +1007,13 @@ export default function ToolsMcpPanel() {
             <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
-            <Button variant="outline" onClick={() => handleSaveSource(false)} className="text-sm">
+            <Button variant="claw-outline" onClick={() => handleSaveSource(false)}>
               保存但不重启
             </Button>
             <Button
               onClick={() => handleSaveSource(true)}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-sm"
+              className="text-white"
             >
               保存并重启实例
             </Button>

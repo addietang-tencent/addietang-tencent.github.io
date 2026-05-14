@@ -35,6 +35,47 @@ description: >
 
 ---
 
+## 0. 协作机制：触达即同步（Touch-and-Sync）
+
+> **核心约定**：本仓库存量页面规模大，不依赖一次性的全量重构来对齐设计系统；而是约定"**改到哪个文件、就把那个文件按当前 SKILL 同步刷新一遍**"，让规范升级靠日常迭代自然消化。
+
+### 0.1 AI 行为约定（你——本 skill 的执行者——必须遵守）
+
+每当用户要求你修改 / 审查 / 新增任何 `client/src/**` 下的页面或组件文件，**在动手实现需求之前**，你必须先做以下检查：
+
+1. **读完目标文件**，识别该文件中是否存在与当前 SKILL.md 不一致的写法，重点扫这几类：
+   - **卡片层级**：是否仍有手写 `box-shadow` / `border` 的 div 假装是卡片？应改为 `<SurfaceCard>` / `<SurfaceInner>` / `<SurfaceOverlay>` / `<SurfaceConfig>` 语义组件（详见 §4.x 卡片系统）。
+   - **阴影 token**：inline `boxShadow` 是否改用 `var(--shadow-card)` / `var(--shadow-inner)` / `var(--shadow-overlay)` / `var(--shadow-config)` / `var(--shadow-segment)` CSS 变量？
+   - **色值**：是否仍残留 v1 主色 `#007AFF` / 老 CTA 渐变 `135deg, #007AFF, #5856D6`？应替换为 v2 的 `#1447E6` / `90deg, #020617 70%, #1447E6 100%`。
+   - **圆角**：是否还有 `rounded-2xl` / `rounded-xl` ≥ 8px？v2 仅保留 `2 / 3 / 4 / full`。
+   - **字体**：是否仍写 `font-mono` / Inter？应使用 `font-din`（数字）/ `font-mono`（已重定向到 Menlo）/ 默认 PingFang SC。
+   - **文字色阶**：是否仍用 `text-gray-900/700/500/400`？应使用 v2 五档新色阶。
+
+2. **顺手刷新**：如发现违规，**在完成用户主诉需求的同一次提交中**把违规一起刷掉，不必额外征求许可（这是机制本身已授权的动作）。
+
+3. **遇到合理浮层 / 装饰阴影 / 特殊场景需要保留 inline boxShadow**，加行级豁免注释 `// allow-shadow: <理由>`，自检脚本会放行。
+
+4. **特殊情况下需要拆开做**（例如刷新动作工作量远大于主诉本身、或会引入语义上不安全的改动），**先告知用户**：列出本文件违规清单 + 预估改动量，让用户决定"本次只做主诉 / 一起刷 / 单独排期"。
+
+### 0.2 多人协作约定（人类同学）
+
+- 任何人在改某个页面前，先在 IDE 里加载本 skill（CodeBuddy 会自动加载），AI 会按 §0.1 的检查清单工作。
+- 如果是**手工编辑**（不走 AI），改完前最好用 `node scripts/check-card-shadow.cjs` 自检一下当前文件，确保没引入新违规。
+- **不要主动发起"全仓批量刷新"PR**——存量违规靠日常迭代分散消化更安全；除非有专门的设计系统升级排期。
+
+### 0.3 自检脚本与豁免
+
+- 脚本位置：`scripts/check-card-shadow.mjs`
+- 放行规则：`components/ui/**` 路径白名单 / `var(--shadow-*)` token 引用 / 行级 `// allow-shadow:` 注释
+- 当前存量违规快照（v2026.05.14）：**196 处 / ~50 文件**，按本机制随日常迭代消化，不再做集中清理。
+- **基线兜底机制**：脚本内置 `BASELINE = 196` 阈值——
+  - 违规数 ≤ BASELINE：`exit 0`（CI 通过、允许存量逐步消化）
+  - 违规数 > BASELINE：`exit 1`（防止新增违规倒退，必须清理）
+  - 任何"触达即同步"刷新清掉一批违规后，**必须同步把脚本内 `BASELINE` 数字往下调**（例如 196 → 190），否则下次新增违规会被误判为"还在基线内"。
+  - 严格模式：`STRICT=1 node scripts/check-card-shadow.mjs`，任何违规即报错（用于专项清理时查全量违规）。
+
+---
+
 ## 1. 色彩系统
 
 ### 1.1 品牌色
@@ -98,8 +139,9 @@ background: linear-gradient(135deg, #1447E6, #2563EB);
 | 用途 | 色值 / 宽度 |
 |------|-------------|
 | 通用分割线 | `#E5E5E5` / 1px |
-| 管理端配置卡描边 | `#E5E5E5` / **0.5px** |
-| 卡片细描边 | `#E5E5E5` / 1px |
+| 管理端配置卡描边（L4 SurfaceConfig）| `#E5E5E5` / **0.5px** |
+| L2 内嵌卡描边（SurfaceInner）| `#F5F5F5` / 1px |
+| **L1 表层卡片**（SurfaceCard）| **无描边**，仅靠 `--shadow-card` 双层柔阴影勾勒（v2026.05 起对齐 Figma 节点 358:2388 调整）|
 
 ### 1.6 渐变 Icon 容器配色
 
@@ -273,14 +315,14 @@ import { SurfaceCard, SurfaceInner, SurfaceConfig } from "@/components/ui/Surfac
 | 「卡片只用 `border` 不带阴影」（除 L2 内嵌外） | `<SurfaceCard>` |
 | 自己手写浮层 `bg-white shadow-lg rounded-md` | `<SurfaceOverlay>` 或直接用 shadcn `<Dialog>` |
 
-**校验脚本**：项目根 `npm run lint:shadow`（见 §13 工具脚本）。
+**校验脚本**：项目根 `npm run check:shadow`（也已接入 `npm run check`）。该脚本会扫描 `client/src/{components,pages}/**`，发现 inline `boxShadow:` 或 `shadow-md|lg|xl|2xl` 即报错并阻断 CI。如确属浮层/Tab 滑块等合理场景，可在该行末尾或上一行添加注释 `// allow-shadow: <理由>` 进行豁免。
 
 ### 5.4 批量修改（设计规范变更场景）
 
 | 需求 | 改动位置 | 影响范围 |
 |------|---------|---------|
 | L1 卡片阴影变深 10% | `index.css` 的 `--shadow-card` 一行 | 全站 L1 卡片 |
-| 卡片描边从 `#E5E5E5` 改 `#EAEAEA` | `Surface.tsx` 的 `border-[#E5E5E5]` 一行 | 全站 L1 卡片 |
+| L1 卡片重新加上描边 | `Surface.tsx` 的 `SurfaceCard` 增加 `border` 一行 | 全站 L1 卡片 |
 | 全部 L1 卡片默认带 hover 微抬 | `SurfaceCard` 的默认 `className` | 全站 L1 卡片 |
 | 增加新档位（例如 L6 强调卡） | `index.css` 加变量 + `Surface.tsx` 加组件 | 仅新组件影响 |
 
@@ -435,27 +477,25 @@ CSS 定义（圆角调整为 2px）：
 
 ### 8.3 卡片（通用）
 
-**绝大多数卡片使用原生 div，不使用 shadcn Card**：
+> ⚠️ **铁律**：业务层一律用 `<SurfaceCard>`，禁止手写 `<div className="bg-white rounded-[4px] ...">` + inline boxShadow。详见 §5。
 
 ```jsx
-<div
-  className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden"
-  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
->
+import { SurfaceCard } from "@/components/ui/Surface";
+
+<SurfaceCard className="overflow-hidden">
   <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E5E5]">
     <h2 className="text-base font-semibold text-[#0A0A0A]">标题</h2>
   </div>
   {/* 内容 */}
-</div>
+</SurfaceCard>
 ```
 
 ### 8.4 Agent 卡片（用户端「我的 Agent」核心组件）
 
 ```jsx
-<div
-  className="bg-white rounded-[4px] p-5"
-  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
->
+import { SurfaceCard } from "@/components/ui/Surface";
+
+<SurfaceCard hover className="p-5 cursor-pointer">
   <div className="flex items-start justify-between mb-3">
     <h3 className="text-sm font-medium text-[#0A0A0A]">Agent 名称</h3>
     <span className="badge-new">New</span>
@@ -465,23 +505,19 @@ CSS 定义（圆角调整为 2px）：
     <div className="text-[#334155]">分组：默认分组</div>
     <div className="text-[#737373]">更新于 2026-05-13 20:30</div>
   </div>
-</div>
+</SurfaceCard>
 ```
 
 ### 8.5 管理端配置卡（描边 0.5px，圆角 4px）
 
 ```jsx
-<div
-  className="bg-white rounded-[4px] p-6"
-  style={{
-    border: "0.5px solid #E5E5E5",
-    boxShadow: "0px 2px 8px -1px rgba(0,0,0,0.05), 0px 2px 4px 2px rgba(0,0,0,0.05)"
-  }}
->
+import { SurfaceConfig } from "@/components/ui/Surface";
+
+<SurfaceConfig className="p-6">
   <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">配置标题</h3>
   <p className="text-xs text-[#737373] mb-5">配置说明</p>
   {/* 配置项 */}
-</div>
+</SurfaceConfig>
 ```
 
 ### 8.6 Tab 切换
@@ -551,10 +587,9 @@ CSS 定义（圆角调整为 2px）：
 ### 8.10 统计卡片
 
 ```jsx
-<div
-  className="bg-white rounded-[4px] border border-[#E5E5E5] p-5"
-  style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
->
+import { SurfaceCard } from "@/components/ui/Surface";
+
+<SurfaceCard className="p-5">
   <div className="flex items-center gap-3 mb-3">
     <div className="w-9 h-9 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
       <IconName className="w-5 h-5 text-white" />
@@ -562,7 +597,7 @@ CSS 定义（圆角调整为 2px）：
     <span className="text-xs text-[#737373]">标签</span>
   </div>
   <div className="text-2xl font-bold text-[#020617] tabular-nums font-din">数值</div>
-</div>
+</SurfaceCard>
 ```
 
 ### 8.11 搜索筛选栏
@@ -732,13 +767,13 @@ CSS 定义（圆角调整为 2px）：
 ## 12. 关键约束（必须遵守）
 
 1. **不要引入新的 CSS 框架或 UI 库**。所有组件基于 Tailwind CSS + shadcn/ui + 自定义样式实现。
-2. **不要使用 shadcn Card 替代原生 div 卡片**。卡片使用 `<div className="bg-white rounded-[4px]">` + inline boxShadow。
+2. **不要使用 shadcn Card 替代原生 div 卡片**。卡片**必须**使用 `<SurfaceCard>`（from `@/components/ui/Surface`），禁止手写 `<div className="bg-white rounded-[4px] ...">` + inline boxShadow。
 3. **不要使用 shadcn Table 替代原生 table**。使用原生 `<table>` + 自定义类。
 4. **不要发明新的状态颜色**。运行/停止/待处理严格使用 `badge-running` / `badge-stopped` / `badge-pending`。
 5. **不要使用 emoji 作为图标**。统一使用 `lucide-react`。
 6. **所有页面根元素必须包含 `page-enter` class**。
 7. **品牌渐变通过 inline style 设置**，不要用 Tailwind gradient 类近似模拟。
-8. **卡片阴影通过 inline style 设置**，使用 §5 中三档阴影之一。
+8. **卡片阴影由 `<SurfaceCard>` 等 Surface 组件统一提供**，业务层禁止 inline `boxShadow:` 与 Tailwind `shadow-md/lg/xl/2xl`。CI 通过 `npm run check:shadow` 拦截违规。
 9. **toast 通知统一使用 sonner**，不要使用 alert() 或自定义 notification。
 10. **每个页面组件自行包裹 Layout**（`<AdminLayout>` 或 `<TenantLayout>`），不要在路由层嵌套。
 11. **中文 UI**：所有界面文案使用简体中文。
@@ -755,7 +790,7 @@ CSS 定义（圆角调整为 2px）：
 - [ ] 选择正确的 Layout（Admin/Tenant）
 - [ ] 用户端页面最外层应用 `linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)` 背景
 - [ ] 根元素包含 `page-enter` class
-- [ ] 卡片使用 `rounded-[4px]` + 对应 boxShadow（用户端轻量 / 管理端中等）
+- [ ] 卡片**必须**使用 `<SurfaceCard>` / `<SurfaceConfig>`（from `@/components/ui/Surface`），禁止手写 `bg-white rounded-[4px] border` + inline boxShadow（CI 会拦截）
 - [ ] 表格使用原生 `<table>` + 规范的 thead/tbody 类
 - [ ] 按钮使用正确的 variant 和 size，主 CTA 使用黑→蓝渐变
 - [ ] 状态徽章使用 `badge-running/stopped/pending/new`

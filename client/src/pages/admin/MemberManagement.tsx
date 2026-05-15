@@ -2583,7 +2583,7 @@ export default function MemberManagement() {
           <table className="text-sm" style={{ width: "max-content", minWidth: hasOneid ? "1320px" : "100%" }}>
             <thead>
               <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2594,7 +2594,7 @@ export default function MemberManagement() {
                 </th>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
@@ -2603,7 +2603,7 @@ export default function MemberManagement() {
                         </Tooltip>
                       </div>
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                   </>
                 )}
                 {!hasOneid && (
@@ -2701,7 +2701,7 @@ export default function MemberManagement() {
                         )}
                       </td>
                       {/* 分组列（OneID 模式：紧跟部门列） */}
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
                             <span className="text-sm text-gray-300">—</span>

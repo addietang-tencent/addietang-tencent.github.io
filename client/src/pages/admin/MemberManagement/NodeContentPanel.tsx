@@ -580,7 +580,7 @@ export default function NodeContentPanel({
                 <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
                   <thead>
                     <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
                         用户 ID
                       </th>
                       {hasOneid && (

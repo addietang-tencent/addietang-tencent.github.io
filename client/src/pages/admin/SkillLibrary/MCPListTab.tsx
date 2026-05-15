@@ -37,13 +37,13 @@ const MOCK_MCPS: MCPService[] = [
     description: '通过 MCP 协议连接工蜂代码仓库，支持代码搜索、文件浏览、PR 管理、Issue 查询等操作，让 AI 智能体能够直接与工蜂平台交互。',
     version: '1.0.0',
     versions: ['1.0.0'],
-    transportType: 'sse',
+    transport: 'sse',
     configJson: JSON.stringify({
       mcp: {
         servers: {
           gongfeng: {
             url: 'https://gongfeng.example.com/mcp/sse',
-            transportType: 'sse',
+            transport: 'sse',
             headers: { 'Authorization': '<your-gongfeng-token>' },
             timeout: 60,
           },
@@ -61,13 +61,13 @@ const MOCK_MCPS: MCPService[] = [
     description: '连接 iWiki 知识库平台，支持文档搜索、内容获取、评论管理等操作，帮助 AI 智能体快速获取企业知识。',
     version: '2.1.0',
     versions: ['1.0.0', '2.0.0', '2.1.0'],
-    transportType: 'streamable-http',
+    transport: 'streamable-http',
     configJson: JSON.stringify({
       mcp: {
         servers: {
           iwiki: {
             url: 'https://iwiki.example.com/mcp',
-            transportType: 'streamable-http',
+            transport: 'streamable-http',
             headers: { 'Authorization': '<your-iwiki-token>' },
             timeout: 60,
           },
@@ -84,14 +84,14 @@ const MOCK_MCPS: MCPService[] = [
     description: '通过 STDIO 方式连接本地文件系统 MCP 服务，支持文件读写、目录浏览等基础操作。',
     version: '1.2.0',
     versions: ['1.0.0', '1.1.0', '1.2.0'],
-    transportType: 'stdio',
+    transport: 'stdio',
     configJson: JSON.stringify({
       mcp: {
         servers: {
           filesystem: {
             command: 'npx',
             args: ['-y', '@anthropic-ai/mcp-filesystem'],
-            transportType: 'stdio',
+            transport: 'stdio',
             env: { HOME: '/home/user' },
             timeout: 30,
           },
@@ -107,13 +107,13 @@ const MOCK_MCPS: MCPService[] = [
     description: '连接 TAPD 项目管理平台，支持需求查询、缺陷管理、迭代跟踪、任务操作等功能，让 AI 智能体可以直接参与项目管理流程。支持按语义搜索需求和缺陷，自动创建和更新工作项。',
     version: '1.0.0',
     versions: ['0.9.0', '1.0.0'],
-    transportType: 'sse',
+    transport: 'sse',
     configJson: JSON.stringify({
       mcp: {
         servers: {
           tapd: {
             url: 'https://tapd.example.com/mcp/sse',
-            transportType: 'sse',
+            transport: 'sse',
             headers: { 'Authorization': 'Bearer <your-tapd-token>' },
             timeout: 90,
           },
@@ -130,7 +130,7 @@ const MOCK_MCPS: MCPService[] = [
 // ── 缓存相关 ────────────────────────────────────────────
 const MCP_CACHE_KEY = 'mcphub_enterprise_mcps_cache';
 const MCP_CACHE_VERSION_KEY = 'mcphub_enterprise_mcps_cache_version';
-const MCP_CACHE_VERSION = '8';
+const MCP_CACHE_VERSION = '9';
 
 const loadCachedMCPs = (): MCPService[] => {
   try {
@@ -483,7 +483,7 @@ export default function MCPListTab() {
                         v{mcp.version}
                       </span>
                       <div className="text-xs text-gray-400 mt-0.5">
-                        {mcp.transportType === 'stdio' ? '本地命令' : '远程服务'}
+                        {mcp.transport === 'stdio' ? '本地命令' : '远程服务'}
                       </div>
                     </td>
                     {/* 描述 */}

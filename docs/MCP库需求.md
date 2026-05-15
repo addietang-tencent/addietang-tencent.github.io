@@ -186,7 +186,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 ```json
 "your-server-name": {
-    "transportType": "sse",
+    "transport": "sse",
     "url": "MCP服务的URL",
     "headers": {
         "Authorization": "<your-token>"
@@ -199,7 +199,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 ```json
 "your-server-name": {
-    "transportType": "streamable-http",
+    "transport": "streamable-http",
     "url": "MCP服务的URL",
     "headers": {
         "Authorization": "<your-token>"
@@ -212,7 +212,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 ```json
 "your-server-name": {
-    "transportType": "stdio",
+    "transport": "stdio",
     "command": "python3",
     "args": ["/opt/mcp/your-server.py"],
     "env": {
@@ -231,7 +231,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `transportType` | ✅ | 固定值 `"sse"` |
+| `transport` | ✅ | 固定值 `"sse"` |
 | `url` | ✅ | 必须以 http 或 https 开头（常见以 `/sse` 结尾） |
 | `headers` | — | 如 MCP Server 要求 Token 认证，在此填写；否则可删除 |
 | `security_zone` | — | 如 MCP 部署在 DevCloud，填写 `"devnet"` |
@@ -242,7 +242,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `transportType` | ✅ | 固定值 `"streamable-http"` |
+| `transport` | ✅ | 固定值 `"streamable-http"` |
 | `url` | ✅ | 必须以 http 或 https 开头（常见以 `/mcp` 结尾） |
 | `headers` | — | 如 MCP Server 要求 Token 认证，在此填写；否则可删除 |
 | `security_zone` | — | 如 MCP 部署在 DevCloud，填写 `"devnet"` |
@@ -253,7 +253,7 @@ MCP 配置下发到实例时，按以下流程操作实例上的 `openclaw.json`
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| `transportType` | ✅ | 固定值 `"stdio"` |
+| `transport` | ✅ | 固定值 `"stdio"` |
 | `command` | ✅ | 可执行文件路径（支持绝对/相对路径） |
 | `args` | — | 传给命令的参数数组，没有可留空 `[]` |
 | `env` | — | 启动时的环境变量，没有可整段删除 |
@@ -287,7 +287,7 @@ Markdown 编辑/预览切换使用圆角分段控件（编辑 / 预览），预�
   "mcp": {
     "servers": {
       "your-server-name": {
-        "transportType": "streamable-http",
+        "transport": "streamable-http",
         "url": "MCP服务的URL",
         "headers": {
           "Authorization": "<your-token>"
@@ -303,7 +303,7 @@ Markdown 编辑/预览切换使用圆角分段控件（编辑 / 预览），预�
   "mcp": {
     "servers": {
       "your-server-name": {
-        "transportType": "stdio",
+        "transport": "stdio",
         "command": "python3",
         "args": ["/opt/mcp/your-server.py"],
         "env": {
@@ -349,7 +349,7 @@ Markdown 编辑/预览切换使用圆角分段控件（编辑 / 预览），预�
 | 连接方式 | 必须选择一项 | 请选择连接方式 |
 | JSON 格式 | 必须是合法 JSON | JSON 格式错误，请检查 |
 | 服务器配置 | 至少配置一个服务器 | 请至少配置一个服务器 |
-| `transportType` | 必须与所选连接方式匹配 | transportType 与连接方式不一致（期望 "{选择的方式}"，实际 "{配置中的方式}"） |
+| `transport` | 必须与所选连接方式匹配 | transport 与连接方式不一致（期望 "{选择的方式}"，实际 "{配置中的方式}"） |
 | `url`（SSE / Streamable HTTP） | 必须以 http 或 https 开头 | URL 必须以 http 或 https 开头 |
 | `command`（STDIO） | 不能为空 | 请输入可执行命令 |
 
@@ -411,8 +411,8 @@ client/src/pages/admin/
 | 协议版本 | MCP 2024-11-05（旧版兼容） | MCP 2025-06-18（推荐） | - |
 | 适用场景 | 远程服务（兼容旧版，新接入建议用 Streamable HTTP） | 远程服务（新版标准） | 本地命令 |
 | 连接方式 | 通过 SSE URL 连接 | 通过 HTTP URL 连接 | 启动本地进程，通过标准输入输出通信 |
-| `transportType` 值 | `"sse"` | `"streamable-http"` | `"stdio"` |
-| 必填字段 | `url` · `transportType` | `url` · `transportType` | `command` · `transportType` |
+| `transport` 值 | `"sse"` | `"streamable-http"` | `"stdio"` |
+| 必填字段 | `url` · `transport` | `url` · `transport` | `command` · `transport` |
 
 ---
 
@@ -422,7 +422,7 @@ client/src/pages/admin/
 
 | 字段 | 必填 | 类型 | 说明 |
 |------|------|------|------|
-| `transportType` | ✅ | `string` | 固定值 `"sse"` |
+| `transport` | ✅ | `string` | 固定值 `"sse"` |
 | `url` | ✅ | `string` | MCP 服务端点 URL，必须以 http 或 https 开头（常见以 `/sse` 结尾） |
 | `headers` | — | `object` | 请求头键值对。如 MCP Server 要求 Token 认证，在此填写（如 `"Authorization": "<your-token>"`）；否则可删除整段 |
 | `security_zone` | — | `string` | 安全区域标识。如 MCP 部署在 DevCloud 环境，填写 `"devnet"` |
@@ -433,7 +433,7 @@ client/src/pages/admin/
 
 | 字段 | 必填 | 类型 | 说明 |
 |------|------|------|------|
-| `transportType` | ✅ | `string` | 固定值 `"streamable-http"` |
+| `transport` | ✅ | `string` | 固定值 `"streamable-http"` |
 | `url` | ✅ | `string` | MCP 服务端点 URL，必须以 http 或 https 开头（常见以 `/mcp` 结尾） |
 | `headers` | — | `object` | 请求头键值对。如 MCP Server 要求 Token 认证，在此填写（如 `"Authorization": "<your-token>"`）；否则可删除整段 |
 | `security_zone` | — | `string` | 安全区域标识。如 MCP 部署在 DevCloud 环境，填写 `"devnet"` |
@@ -444,7 +444,7 @@ client/src/pages/admin/
 
 | 字段 | 必填 | 类型 | 说明 |
 |------|------|------|------|
-| `transportType` | ✅ | `string` | 固定值 `"stdio"` |
+| `transport` | ✅ | `string` | 固定值 `"stdio"` |
 | `command` | ✅ | `string` | 可执行文件路径，支持绝对路径（如 `/usr/bin/python3`）或相对路径（如 `uvx`，需在 PATH 中） |
 | `args` | — | `string[]` | 传给命令的参数数组，没有可留空 `[]` |
 | `env` | — | `object` | 启动时的环境变量键值对（如 `"PYTHONUNBUFFERED": "1"`），没有可整段删除 |

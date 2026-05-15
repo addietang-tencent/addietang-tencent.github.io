@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Sea
 import { toast } from 'sonner';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
+import BatchDeleteDialog from './BatchDeleteDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import MDXRenderer from '@/components/MDXRenderer';
@@ -124,6 +125,7 @@ const hljsStyle: Record<string, React.CSSProperties> = {
 
 export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete, securityServiceActive = false }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -135,6 +137,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   const [detailSearchQuery, setDetailSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
+  /** 记录类型筛选：全部 / 下发记录 / 卸载记录 */
+  const [recordTypeFilter, setRecordTypeFilter] = useState<'all' | 'distribute' | 'delete'>('all');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
 
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
@@ -155,8 +159,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     return () => window.removeEventListener('distribution-cache-updated', handler);
   }, [refreshRecords]);
 
-  // 是否有进行中的下发任务
-  const hasInProgress = distributionRecords.some(r => r.status === 'distributing');
+  // 是否有进行中的下发或卸载任务
+  const hasInProgress = distributionRecords.some(r => r.status === 'distributing' || r.status === 'deleting');
   
   // 先从 props 传入的 skills 中查找，找不到再从 localStorage 缓存中查找
   const skill = useMemo(() => {
@@ -450,6 +454,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
       failedCount: 0,
       inProgressCount: selectedInstanceIds.length,
       status: 'distributing',
+      operator: 'yequanzheng',
       instances: selectedInstancesData.map(inst => ({
         id: inst.id,
         name: inst.name,
@@ -520,6 +525,108 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     
     simulateDistribution(recordId, failedInstances.length);
   };
+
+  // ========== 批量卸载实例 ==========
+
+  /** 从下发记录中聚合已下发成功的实例列表（用于卸载弹窗） */
+  const distributedInstancesForDelete = useMemo(() => {
+    // 从所有下发记录中找出成功下发的实例，去重
+    const instanceMap = new Map<string, any>();
+    distributionRecords
+      .filter(r => (r.type || 'distribute') === 'distribute') // 只看下发记录
+      .forEach(r => {
+        r.instances.forEach(inst => {
+          if (inst.distributionStatus === 'success' && !instanceMap.has(inst.id)) {
+            // 尝试从 MOCK_OPENCLAW_INSTANCES 获取更多信息
+            const fullInst = MOCK_OPENCLAW_INSTANCES.find(i => i.id === inst.id);
+            const groupName = fullInst?.groupIds?.[0]
+              ? MOCK_GROUPS.find(g => g.id === fullInst.groupIds[0])?.name
+              : undefined;
+            instanceMap.set(inst.id, {
+              id: inst.id,
+              name: inst.name,
+              createdBy: inst.createdBy || 'admin',
+              groupName: groupName || '全部用户',
+              distributedVersion: skill?.version,
+              distributedTime: r.timestamp,
+              deleteStatus: 'not_deleted' as const,
+            });
+          }
+        });
+      });
+    return Array.from(instanceMap.values());
+  }, [distributionRecords, skill?.version]);
+
+  const handleDeleteStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'deleting',
+      type: 'delete',
+      operator: 'yequanzheng',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as DistributionStatus, // 复用状态表示进行中
+      })),
+    };
+
+    addDistributionRecord(newRecord);
+    setActiveDistributionId(recordId);
+    setBatchDeleteDialogOpen(false);
+
+    // 模拟卸载进度
+    simulateDeletion(recordId, selectedInstanceIds.length);
+  };
+
+  const simulateDeletion = (recordId: string, totalCount: number) => {
+    let completed = 0;
+    const failReasons = ['实例离线', '权限不足', '技能被占用', '网络超时', '实例已停止'];
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+
+        // 90% 成功，10% 失败
+        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
+        const successCount = results.filter(Boolean).length;
+        const failedCount = totalCount - successCount;
+
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: 'success' as DistributionStatus,
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (results[idx] ? 'success' : 'failed') as DistributionStatus,
+            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
+          })),
+        }));
+      } else {
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
+      }
+    }, 800);
+  };
+
+  /** 根据记录类型筛选后的记录列表 */
+  const filteredRecords = useMemo(() => {
+    if (recordTypeFilter === 'all') return distributionRecords;
+    return distributionRecords.filter(r => (r.type || 'distribute') === recordTypeFilter);
+  }, [distributionRecords, recordTypeFilter]);
 
   // 下载 Skill
   const handleDownload = async () => {
@@ -855,7 +962,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               value="distribution"
               className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
-              下发记录
+              下发和卸载记录
             </TabsTrigger>
           </TabsList>
 
@@ -1102,49 +1209,102 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               </div>
           </TabsContent>
 
-          {/* 下发记录 Tab */}
+          {/* 下发和卸载记录 Tab */}
           <TabsContent value="distribution" className="mt-4 p-0">
             <div className="bg-white rounded-xl p-6 border border-gray-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">下发记录</h3>
-                <Button
-                  onClick={() => setDistributeDialogOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                  disabled={hasInProgress}
-                  title={hasInProgress ? '有下发任务进行中，请等待完成' : ''}
-                >
-                  {hasInProgress ? '下发中...' : '批量下发'}
-                </Button>
+                <h3 className="font-semibold text-gray-900">下发和卸载记录</h3>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setBatchDeleteDialogOpen(true)}
+                    disabled={hasInProgress || distributedInstancesForDelete.length === 0}
+                    variant="outline"
+                    className={`border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 ${hasInProgress || distributedInstancesForDelete.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title={hasInProgress ? '有任务进行中，请等待完成' : distributedInstancesForDelete.length === 0 ? '暂无已下发的实例' : ''}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1.5" />
+                    {distributionRecords.some(r => r.status === 'deleting') ? '卸载中...' : '批量卸载'}
+                  </Button>
+                  <Button
+                    onClick={() => setDistributeDialogOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={hasInProgress}
+                    title={hasInProgress ? '有任务进行中，请等待完成' : ''}
+                  >
+                    {distributionRecords.some(r => r.status === 'distributing') ? '下发中...' : '批量下发'}
+                  </Button>
+                </div>
+              </div>
+
+              {/* 记录类型筛选 */}
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit">
+                {([
+                  { key: 'all', label: '全部' },
+                  { key: 'distribute', label: '下发记录' },
+                  { key: 'delete', label: '卸载记录' },
+                ] as const).map(item => (
+                  <button
+                    key={item.key}
+                    onClick={() => setRecordTypeFilter(item.key)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                      recordTypeFilter === item.key
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="space-y-3 mt-4">
-              {distributionRecords.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-xl">
-                  <p className="text-gray-500">还没有下发记录</p>
+              {filteredRecords.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-[4px]">
+                  <p className="text-gray-500">
+                    {recordTypeFilter === 'all' ? '还没有记录' : recordTypeFilter === 'distribute' ? '还没有下发记录' : '还没有卸载记录'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {distributionRecords.map((record, idx) => {
+                  {filteredRecords.map((record, idx) => {
                     const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
+                    const isDeleteRecord = (record.type || 'distribute') === 'delete';
+                    const isInProgress = record.status === 'distributing' || record.status === 'deleting';
+
                     return (
                       <div key={record.id} className="border border-gray-200 rounded-xl p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">
-                              #{idx + 1} · v{skill.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
+                              #{idx + 1} · {(record.type || 'distribute') === 'distribute' ? `v${skill.version} ` : ''}{new Date(record.timestamp).toLocaleString('zh-CN')}
                             </p>
+                            {record.operator && (
+                              <p className="text-xs text-green-600 mt-0.5">操作人：{record.operator}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                              record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
-                              record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
-                              'bg-yellow-50 text-yellow-700'
+                              isDeleteRecord
+                                ? (record.status === 'deleting'
+                                  ? 'bg-red-100 text-red-700'
+                                  : record.failedCount === 0
+                                    ? 'bg-green-50 text-green-700'
+                                    : 'bg-yellow-50 text-yellow-700')
+                                : (record.status === 'distributing'
+                                  ? 'bg-blue-50 text-blue-700'
+                                  : record.successCount === record.totalCount
+                                    ? 'bg-green-50 text-green-700'
+                                    : 'bg-yellow-50 text-yellow-700')
                             }`}>
-                              {record.status === 'distributing'
-                                ? `下发中 ${progress}%`
-                                : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`}
+                              {isDeleteRecord
+                                ? (record.status === 'deleting'
+                                  ? `卸载中 ${progress}%`
+                                  : `卸载完成，${record.successCount}个成功，${record.failedCount}个失败`)
+                                : (record.status === 'distributing'
+                                  ? `下发中 ${progress}%`
+                                  : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`)}
                             </span>
                             <Button 
                               size="sm" 
@@ -1162,12 +1322,14 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                           </div>
                         </div>
                         
-                        {record.status === 'distributing' && (
+                        {isInProgress && (
                           <>
                             <div className="mb-2">
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
-                                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    isDeleteRecord ? 'bg-red-500' : 'bg-blue-600'
+                                  }`}
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
@@ -1200,6 +1362,17 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         groups={MOCK_GROUPS}
       />
 
+      {/* 批量卸载实例对话框 */}
+      <BatchDeleteDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        skillName={skill.name}
+        skillVersion={skill.version}
+        distributedInstances={distributedInstancesForDelete}
+        groups={MOCK_GROUPS}
+        onDeleteStart={handleDeleteStart}
+      />
+
       {/* 更新对话框 */}
       {skill && (
         <SkillUpdateDialog
@@ -1223,11 +1396,11 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         onConfirm={handleSkillDelete}
       />
 
-      {/* 分发详情对话框 */}
+      {/* 分发/卸载详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-3xl max-h-96">
           <DialogHeader>
-            <DialogTitle>下发详情</DialogTitle>
+            <DialogTitle>{activeDistribution && (activeDistribution.type || 'distribute') === 'delete' ? '卸载详情' : '下发详情'}</DialogTitle>
           </DialogHeader>
           
           {activeDistribution && (
@@ -1251,7 +1424,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="success">成功</SelectItem>
                     <SelectItem value="failed">失败</SelectItem>
-                    <SelectItem value="distributing">下发中</SelectItem>
+                    <SelectItem value="distributing">{activeDistribution && (activeDistribution.type || 'distribute') === 'delete' ? '卸载中' : '下发中'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

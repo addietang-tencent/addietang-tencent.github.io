@@ -586,7 +586,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     }
   };
 
-  /** 检查某个 skill 是否有进行中的下发（用于禁用按钮） */
+  /** 检查某个 skill 是否有进行中的下发或删除（用于禁用按钮） */
   const isDistributing = (skillId: string): boolean => {
     const summary = distributionSummaries[skillId];
     return summary?.hasInProgress || false;
@@ -1045,7 +1045,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Send className="w-3 h-3 mr-1" />
-                    {distributing ? '下发中' : '下发'}
+                    {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
                   </Button>
                   <Button
                     variant="outline"
@@ -1130,7 +1130,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   const summary = distributionSummaries[skill.id];
                   const distributing = isDistributing(skill.id);
                   
-                  // 下发状态显示：两行结构
+                  // 下发/删除状态显示：两行结构
                   const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
                   let statusLine1 = '正常'; // 第一行：状态
                   let statusLine2 = '未下发'; // 第二行：下发进度
@@ -1139,7 +1139,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   let statusLine2Bg = ''; // 底色
                   let statusLine2HoverBg = ''; // hover 加深底色
                   if (summary) {
-                    if (summary.lastDistributionStatus === 'distributing') {
+                    if (summary.lastDistributionStatus === 'deleting' as any) {
+                      statusLine1 = '卸载中';
+                      statusLine1Color = 'text-red-600';
+                      statusLine2 = `${summary.lastDistributionProgress || 0}%`;
+                      statusLine2Color = 'text-red-600';
+                      statusLine2Bg = 'bg-red-50';
+                      statusLine2HoverBg = 'hover:bg-red-100';
+                    } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
                       statusLine1Color = 'text-blue-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
@@ -1382,7 +1389,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             className={`h-7 text-xs min-w-[62px] ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
                             <Send className="w-3 h-3 mr-1" />
-                            {distributing ? '下发中' : '下发'}
+                            {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
                           </Button>
                           {/* 更新按钮 */}
                           <Button

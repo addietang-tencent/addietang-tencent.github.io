@@ -378,7 +378,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
-                {mcp.transportType === 'stdio' ? '本地命令' : '远程服务'}
+                {mcp.transport === 'stdio' ? '本地命令' : '远程服务'}
               </span>
               <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                 v{mcp.version}

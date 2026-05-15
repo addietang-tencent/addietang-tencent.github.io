@@ -57,7 +57,7 @@ interface UserMCP {
   displayName: string;
   description: string;
   /** 连接类型：stdio=本地命令，sse/streamable-http=远程服务 */
-  transportType: "stdio" | "sse" | "streamable-http";
+  transport: "stdio" | "sse" | "streamable-http";
   /** 连接状态 */
   status: "connected" | "failed";
   /** 是否启用 */
@@ -98,7 +98,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           gongfeng: {
             url: "https://gongfeng.example.com/mcp/sse",
-            transportType: "sse",
+            transport: "sse",
             headers: { Authorization: "<your-gongfeng-token>" },
             timeout: 60,
           },
@@ -117,7 +117,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           iwiki: {
             url: "https://iwiki.example.com/mcp",
-            transportType: "streamable-http",
+            transport: "streamable-http",
             headers: { Authorization: "<your-iwiki-token>" },
             timeout: 60,
           },
@@ -136,7 +136,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           tapd: {
             url: "https://tapd.example.com/mcp/sse",
-            transportType: "sse",
+            transport: "sse",
             headers: { Authorization: "Bearer <your-tapd-token>" },
             timeout: 90,
           },
@@ -155,7 +155,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           "cos-storage": {
             url: "https://cos-mcp.example.com/sse",
-            transportType: "sse",
+            transport: "sse",
             headers: {
               "X-Secret-Id": "<secret-id>",
               "X-Secret-Key": "<secret-key>",
@@ -177,7 +177,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           wedata: {
             url: "https://wedata-mcp.example.com/mcp",
-            transportType: "streamable-http",
+            transport: "streamable-http",
             timeout: 60,
           },
         },
@@ -192,7 +192,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "iwiki",
     displayName: "iWiki 文档服务",
     description: "连接 iWiki 知识库平台，支持文档搜索、内容获取等操作",
-    transportType: "streamable-http",
+    transport: "streamable-http",
     status: "connected",
     enabled: true,
     tools: ["tool_1", "tool_2", "tool_3"],
@@ -201,7 +201,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           iwiki: {
             url: "https://iwiki.example.com/mcp",
-            transportType: "streamable-http",
+            transport: "streamable-http",
             headers: { Authorization: "iwiki_token_xxx" },
             timeout: 60,
           },
@@ -215,7 +215,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "gongfeng",
     displayName: "工蜂 MCP 服务",
     description: "通过 MCP 协议连接工蜂代码仓库，支持代码搜索、文件浏览、PR 管理等操作",
-    transportType: "sse",
+    transport: "sse",
     status: "connected",
     enabled: true,
     tools: ["search_projects", "get_blob_content", "create_merge_request", "list_branches", "get_commit_info", "get_file_tree", "compare_branches", "list_merge_requests", "get_pipeline_status", "trigger_build"],
@@ -224,7 +224,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           gongfeng: {
             url: "https://gongfeng.example.com/mcp/sse",
-            transportType: "sse",
+            transport: "sse",
             headers: { Authorization: "ghp_abc123456789" },
             timeout: 60,
           },
@@ -238,7 +238,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "tapd",
     displayName: "TAPD 项目管理",
     description: "连接 TAPD 项目管理平台，支持需求查询、缺陷管理、迭代跟踪等功能",
-    transportType: "sse",
+    transport: "sse",
     status: "failed",
     enabled: true,
     tools: [],
@@ -248,7 +248,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           tapd: {
             url: "https://tapd.example.com/mcp/sse",
-            transportType: "sse",
+            transport: "sse",
             headers: { Authorization: "Bearer invalid_token_xxx" },
             timeout: 90,
           },
@@ -262,7 +262,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "your-mcp",
     displayName: "",
     description: "用户自定义的本地 MCP 服务",
-    transportType: "stdio",
+    transport: "stdio",
     status: "connected",
     enabled: true,
     tools: ["custom_tool_a", "custom_tool_b"],
@@ -272,7 +272,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
           "your-mcp": {
             command: "npx",
             args: ["-y", "your-mcp-server"],
-            transportType: "stdio",
+            transport: "stdio",
             timeout: 30,
           },
         },
@@ -475,11 +475,11 @@ export default function ToolsMcpPanel() {
       serverName: tpl.serverName,
       displayName: tpl.displayName,
       description: tpl.description,
-      transportType: (() => {
+      transport: (() => {
         try {
           const parsed = JSON.parse(configJson);
           const server = parsed?.mcp?.servers?.[tpl.serverName];
-          return server?.transportType || (server?.command ? "stdio" : "sse");
+          return server?.transport || (server?.command ? "stdio" : "sse");
         } catch { return "sse"; }
       })() as "stdio" | "sse" | "streamable-http",
       status: "connected",
@@ -694,14 +694,14 @@ export default function ToolsMcpPanel() {
                         <TooltipProvider delayDuration={200}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              {mcp.transportType === "stdio" ? (
+                              {mcp.transport === "stdio" ? (
                                 <Terminal className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                               ) : (
                                 <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                               )}
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              {mcp.transportType === "stdio" ? "本地命令" : "远程服务"}
+                              {mcp.transport === "stdio" ? "本地命令" : "远程服务"}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

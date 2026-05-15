@@ -45,7 +45,7 @@ const DEFAULT_USAGE_DOC = `# 功能特点
     "mcp": {
         "servers": {
             "your-server-name": {
-                "transportType": "streamable-http",
+                "transport": "streamable-http",
                 "url": "MCP服务的URL",
                 "headers": {
                     "Authorization": "<your-token>"
@@ -63,7 +63,7 @@ const DEFAULT_USAGE_DOC = `# 功能特点
     "mcp": {
         "servers": {
             "your-server-name": {
-                "transportType": "stdio",
+                "transport": "stdio",
                 "command": "python3",
                 "args": ["/opt/mcp/your-server.py"],
                 "env": {
@@ -98,7 +98,7 @@ const DEFAULT_TOOL_DOC = `# 工具1：工具1的名称
 const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
   sse: `| 字段 | 必填 | 说明 |
 |------|------|------|
-| \`transportType\` | ✅ | 固定值 \`"sse"\` |
+| \`transport\` | ✅ | 固定值 \`"sse"\` |
 | \`url\` | ✅ | 必须以 http 或 https 开头（常见以 \`/sse\` 结尾） |
 | \`headers\` | — | 如 MCP Server 要求 Token 认证，在此填写；否则可删除 |
 | \`security_zone\` | — | 如 MCP 部署在 DevCloud，填写 \`"devnet"\` |
@@ -106,7 +106,7 @@ const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
 | \`username\` | — | 用户标识 |`,
   'streamable-http': `| 字段 | 必填 | 说明 |
 |------|------|------|
-| \`transportType\` | ✅ | 固定值 \`"streamable-http"\` |
+| \`transport\` | ✅ | 固定值 \`"streamable-http"\` |
 | \`url\` | ✅ | 必须以 http 或 https 开头（常见以 \`/mcp\` 结尾） |
 | \`headers\` | — | 如 MCP Server 要求 Token 认证，在此填写；否则可删除 |
 | \`security_zone\` | — | 如 MCP 部署在 DevCloud，填写 \`"devnet"\` |
@@ -114,7 +114,7 @@ const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
 | \`username\` | — | 用户标识 |`,
   stdio: `| 字段 | 必填 | 说明 |
 |------|------|------|
-| \`transportType\` | ✅ | 固定值 \`"stdio"\` |
+| \`transport\` | ✅ | 固定值 \`"stdio"\` |
 | \`command\` | ✅ | 可执行文件路径（支持绝对/相对路径） |
 | \`args\` | — | 传给命令的参数数组，没有可留空 \`[]\` |
 | \`env\` | — | 启动时的环境变量，没有可整段删除 |
@@ -126,7 +126,7 @@ const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
 // 用户只编辑 server 对象的内部字段，外层 { "mcp": { "servers": { "{name}": { ... } } } } 由系统固化
 const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
   sse: [
-    `"transportType": "sse",`,
+    `"transport": "sse",`,
     `"url": "MCP服务的URL",`,
     `"headers": {`,
     `  "Authorization": "<your-token>"`,
@@ -134,7 +134,7 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
     `"timeout": 60`,
   ].join('\n'),
   'streamable-http': [
-    `"transportType": "streamable-http",`,
+    `"transport": "streamable-http",`,
     `"url": "MCP服务的URL",`,
     `"headers": {`,
     `  "Authorization": "<your-token>"`,
@@ -142,7 +142,7 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
     `"timeout": 60`,
   ].join('\n'),
   stdio: [
-    `"transportType": "stdio",`,
+    `"transport": "stdio",`,
     `"command": "python3",`,
     `"args": ["/opt/mcp/your-server.py"],`,
     `"env": {`,
@@ -208,7 +208,7 @@ interface FormErrors {
   name?: string;
   displayName?: string;
   connectionCategory?: string;
-  transportType?: string;
+  transport?: string;
   configJson?: string;
 }
 
@@ -328,10 +328,10 @@ export default function MCPAddDialog({
         if (!server || typeof server !== 'object') {
           newErrors.configJson = '配置格式错误，请检查 JSON 语法';
         } else {
-          // transportType 匹配校验
+          // transport 匹配校验
           if (!newErrors.configJson && transport) {
-            if (server.transportType && server.transportType !== transport) {
-              newErrors.configJson = `transportType 与连接方式不一致（期望 "${transport}"，实际 "${server.transportType}"）`;
+            if (server.transport && server.transport !== transport) {
+              newErrors.configJson = `transport 与连接方式不一致（期望 "${transport}"，实际 "${server.transport}"）`;
             }
           }
           // URL / command 校验
@@ -375,7 +375,7 @@ export default function MCPAddDialog({
       description: description.trim(),
       version: '1.0.0',
       versions: ['1.0.0'],
-      transportType: effectiveTransportType as MCPTransportType,
+      transport: effectiveTransportType as MCPTransportType,
       configJson: fullJson,
       usageDoc: usageDoc.trim() || undefined,
       toolDoc: toolDoc.trim() || undefined,

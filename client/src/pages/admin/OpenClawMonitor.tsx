@@ -24,6 +24,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -53,6 +54,7 @@ import {
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
   Pencil, Plus,
+  TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -71,6 +73,7 @@ import { useAdminMode } from "@/contexts/AdminModeContext";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -770,6 +773,11 @@ export default function AgentMonitor() {
   // 批量升级失败结果弹窗
   const [showUpgradeResultDialog, setShowUpgradeResultDialog] = useState(false);
   const [upgradeFailedAgents, setUpgradeFailedAgents] = useState<{ name: string; instanceId: string; agentType: string; reason: string }[]>([]);
+
+  // 命令下发弹窗（取代旧抽屉）
+  // dispatchPresetIds = null 表示 Dialog 关闭；非 null（即使是空数组）表示打开。
+  // 通过工具栏「命令下发」按钮触发：勾选了实例则预填，否则为空，进入「先选命令再选实例」流程。
+  const [dispatchPresetIds, setDispatchPresetIds] = useState<string[] | null>(null);
 
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
@@ -1934,6 +1942,86 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
               )}
             </Tooltip>
+            {/* 命令下发：
+              * - 勾选实例时：变为主按钮，点击直接打开下发弹窗（预填实例 → 让用户挑命令）
+              * - 未勾选时：保持二级菜单，命令列表/执行记录跳转到独立页 /admin/agent-commands
+              */}
+            {selectedCount > 0 ? (
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      // 仅取运行中的实例，过滤掉异常状态
+                      const runningIds = selectedClaws
+                        .filter((c) => c.status === "running")
+                        .map((c) => c.instanceId);
+                      if (runningIds.length === 0) {
+                        toast.error("所选实例中没有运行中的 Agent，无法下发命令");
+                        return;
+                      }
+                      if (runningIds.length < selectedCount) {
+                        toast.info(`已自动跳过 ${selectedCount - runningIds.length} 台非运行中实例`);
+                      }
+                      setDispatchPresetIds(runningIds);
+                    }}
+                    className="rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all text-white"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                  >
+                    <TerminalSquare className="w-3.5 h-3.5" />
+                    命令下发
+                    <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  对已选 {selectedCount} 台实例下发命令
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  >
+                    <TerminalSquare className="w-3.5 h-3.5" />
+                    命令下发
+                    <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                    onClick={() => setDispatchPresetIds([])}
+                  >
+                    <TerminalSquare className="w-3.5 h-3.5 text-blue-500" />
+                    <div>
+                      <div>立即下发命令</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">挑选命令模板并选择目标实例</div>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                    onClick={() => setLocation("/admin/agent-commands?tab=list")}
+                  >
+                    <ListChecks className="w-3.5 h-3.5 text-blue-500" />
+                    <div>
+                      <div>命令列表</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">管理命令模板（沉淀团队 SOP）</div>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-sm cursor-pointer flex items-center gap-2"
+                    onClick={() => setLocation("/admin/agent-commands?tab=history")}
+                  >
+                    <HistoryIcon className="w-3.5 h-3.5 text-gray-500" />
+                    <div>
+                      <div>执行记录</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">查看历史下发任务与单机输出</div>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
@@ -3637,6 +3725,21 @@ export default function AgentMonitor() {
           animation: breathing 2s ease-in-out infinite;
         }
       `}</style>
+
+      {/* 命令下发弹窗（取代旧抽屉）：
+        * - 从工具栏「命令下发」主按钮触发，预填已选实例
+        * - 用户在弹窗内选择命令模板 → 选执行策略 → 提交
+        */}
+      <DispatchCommandDialog
+        open={dispatchPresetIds !== null}
+        onOpenChange={(v) => !v && setDispatchPresetIds(null)}
+        command={null}
+        presetInstanceIds={dispatchPresetIds ?? undefined}
+        onDispatched={() => {
+          // 下发成功后清空选中状态，便于用户继续操作
+          setSelectedIds(new Set());
+        }}
+      />
     </TooltipProvider>
   );
 }

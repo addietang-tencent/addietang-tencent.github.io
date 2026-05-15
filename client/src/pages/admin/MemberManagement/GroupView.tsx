@@ -114,8 +114,8 @@ export default function GroupView({
   const [deptSynced, setDeptSynced] = useState(false);
   const [isSyncingDepts, setIsSyncingDepts] = useState(false);
 
-  // OneID 模式下，用户组初始也未同步
-  const [ogSynced, setOgSynced] = useState(false);
+  // OneID 模式下，用户组初始已加载
+  const [ogSynced, setOgSynced] = useState(hasOneid);
   const [isRefreshingOg, setIsRefreshingOg] = useState(false);
 
   // ─── 同步异常分组 ────────────────────────────────────────
@@ -129,11 +129,11 @@ export default function GroupView({
     }
   }, [externalAnomalousGroups]);
 
-  // 分组集合：OneID 模式初始为空（组织架构和用户组都需要手动同步），组织架构需要同步后才加入
+  // 分组集合：OneID 模式初始加载自定义分组（用户组），组织架构需要同步后才加入
   const [groups, setGroups] = useState<UserGroup[]>(() => {
     if (hasOneid) {
-      // 初始为空，组织架构和用户组都需要手动触发
-      return [];
+      // 初始加载自定义分组（oneid-group），组织架构仍需手动同步
+      return MOCK_GROUPS.filter((g) => g.source === "oneid-group");
     }
     return MOCK_MANUAL_GROUPS;
   });
@@ -216,10 +216,10 @@ export default function GroupView({
   // OneID 切换时切换分组集合
   React.useEffect(() => {
     if (hasOneid) {
-      // 重置为初始状态：空
-      setGroups([]);
+      // 加载自定义分组（oneid-group），组织架构需手动同步
+      setGroups(MOCK_GROUPS.filter((g) => g.source === "oneid-group"));
       setDeptSynced(false);
-      setOgSynced(false);
+      setOgSynced(true);
     } else {
       setGroups(MOCK_MANUAL_GROUPS);
       setDeptSynced(false);
@@ -745,7 +745,7 @@ export default function GroupView({
               nodePath={selectedNode?.path ?? selectedGroup.name}
               users={groupUsers}
               hasOneid={hasOneid}
-              isManualMode={!hasOneid}
+              isManualMode={!selectedGroup.readonly}
               allUsers={effectiveUsers}
               onAddUsersToGroup={handleAddUsersToGroup}
               onRemoveFromGroup={handleRemoveFromGroup}

@@ -10,7 +10,8 @@ import { UserRoleProvider } from "./contexts/UserRoleContext";
 import SsoLoginDemo from "./pages/SsoLoginDemo";
 
 // Landing
-import LandingPage from "./pages/LandingPage";
+import LandingPageV2 from "./pages/landing";
+import PreviewIndex from "./pages/PreviewIndex";
 
 // Tenant
 import MyAgent from "./pages/tenant/MyOpenClaw";
@@ -52,7 +53,10 @@ function Router() {
   return (
     <Switch>
       {/* Landing Page */}
-      <Route path="/" component={LandingPage} />
+      <Route path="/" component={LandingPageV2} />
+
+      {/* Preview - 全站页面索引，方便 demo */}
+      <Route path="/preview" component={PreviewIndex} />
 
        {/* Demo */}
       <Route path="/demo/sso-login" component={SsoLoginDemo} />

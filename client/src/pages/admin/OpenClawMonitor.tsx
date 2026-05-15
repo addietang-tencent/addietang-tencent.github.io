@@ -2100,7 +2100,7 @@ export default function AgentMonitor() {
                   </div>
                 </th>
                 <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -2161,9 +2161,9 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
                 {hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2182,7 +2182,7 @@ export default function AgentMonitor() {
                     </Popover>
                   </th>
                 )}
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2201,8 +2201,8 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
                   <Popover open={typeColFilterOpen} onOpenChange={(open) => {
                     setTypeColFilterOpen(open);
                     if (open) setTempTypeFilter(new Set(agentTypeFilter));
@@ -2247,9 +2247,9 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
                   <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
@@ -2324,14 +2324,14 @@ export default function AgentMonitor() {
                         </div>
                       </td>
                       {/* 状态列 */}
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
                           {statusConfig.label}
                         </span>
                       </td>
                       {/* 创建人 */}
-                      <td className="px-4 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
+                      <td className="px-3 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="block truncate cursor-default">{claw.creator}</span>
@@ -2343,7 +2343,7 @@ export default function AgentMonitor() {
                       </td>
                       {/* 部门 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-4 py-4">
+                        <td className="px-3 py-4">
                           {(() => {
                             const deptPaths = getCreatorDeptPaths(claw.creator);
                             if (deptPaths.length === 0) return <span className="text-sm text-gray-300">—</span>;
@@ -2383,7 +2383,7 @@ export default function AgentMonitor() {
                         </td>
                       )}
                       {/* 分组 */}
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap">
                         {(() => {
                           if (hasOneid) {
                             const item = getCreatorGroupItemOneid(claw.creator);
@@ -2438,17 +2438,17 @@ export default function AgentMonitor() {
                         })()}
                       </td>
                       {/* 创建时间 */}
-                      <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-4">
                         <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
                       </td>
                       {/* Agent 版本 */}
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-4">
                         <span className="text-xs font-mono text-gray-500">{claw.version}</span>
                       </td>
                       {/* 标签 */}
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
                           <HoverCard openDelay={100} closeDelay={150}>
                             <HoverCardTrigger asChild>
@@ -2486,7 +2486,7 @@ export default function AgentMonitor() {
                         )}
                       </td>
                       {/* 操作 */}
-                      <td className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                      <td className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                         <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">

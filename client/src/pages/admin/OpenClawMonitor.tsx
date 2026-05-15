@@ -53,7 +53,7 @@ import {
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
-  Pencil, Plus, Bell,
+  Pencil, Plus,
   TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
@@ -75,10 +75,6 @@ import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
-import BatchUpdateNotice, {
-  useOutdatedTypes,
-  HasOutdatedIndicator,
-} from "./BatchUpdateNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -792,6 +788,7 @@ export default function AgentMonitor() {
 
   // 命令下发弹窗（取代旧抽屉）
   // dispatchPresetIds = null 表示 Dialog 关闭；非 null（即使是空数组）表示打开。
+  // 通过工具栏「命令下发」按钮触发：勾选了实例则预填，否则为空，进入「先选命令再选实例」流程。
   const [dispatchPresetIds, setDispatchPresetIds] = useState<string[] | null>(null);
 
   // 配置默认标签
@@ -1988,12 +1985,16 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
               )}
             </Tooltip>
-            {/* 命令下发：勾选实例时为主按钮，未勾选时为下拉菜单 */}
+            {/* 命令下发：
+              * - 勾选实例时：变为主按钮，点击直接打开下发弹窗（预填实例 → 让用户挑命令）
+              * - 未勾选时：保持二级菜单，命令列表/执行记录跳转到独立页 /admin/agent-commands
+              */}
             {selectedCount > 0 ? (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
+                      // 仅取运行中的实例，过滤掉异常状态
                       const runningIds = selectedClaws
                         .filter((c) => c.status === "running")
                         .map((c) => c.instanceId);
@@ -2021,7 +2022,9 @@ export default function AgentMonitor() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  >
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
                     <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
@@ -3778,13 +3781,17 @@ export default function AgentMonitor() {
         }
       `}</style>
 
-      {/* 命令下发弹窗 */}
+      {/* 命令下发弹窗（取代旧抽屉）：
+        * - 从工具栏「命令下发」主按钮触发，预填已选实例
+        * - 用户在弹窗内选择命令模板 → 选执行策略 → 提交
+        */}
       <DispatchCommandDialog
         open={dispatchPresetIds !== null}
         onOpenChange={(v) => !v && setDispatchPresetIds(null)}
         command={null}
         presetInstanceIds={dispatchPresetIds ?? undefined}
         onDispatched={() => {
+          // 下发成功后清空选中状态，便于用户继续操作
           setSelectedIds(new Set());
         }}
       />

@@ -4,7 +4,7 @@
  * 在 IA 重构后（2026-05），路由布局：
  *   /admin/agent-types       Agent 类型（已并入「Agent 配置」分组）
  *   /admin/agent-versions    Agent 版本（含 [版本更新][更新记录] 两 Tab）
- *   /admin/agent-commands    执行命令（含 [命令列表][执行记录] 两 Tab）
+ *   /admin/agent-commands    执行命令（含 [命令模板][执行记录] 两 Tab）
  *   /admin/agent-history     已下线，仅作兼容重定向
  *
  * 这些页面不再挂在侧边栏，仅作为「Agent 列表」入口的延展。

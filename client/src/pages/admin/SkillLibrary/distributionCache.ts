@@ -16,6 +16,9 @@ export interface CachedDistributionInstance {
   failReason?: string;
 }
 
+/** 记录操作类型 */
+export type RecordType = 'distribute' | 'delete';
+
 export interface CachedDistributionRecord {
   id: string;
   skillId: string;
@@ -24,13 +27,17 @@ export interface CachedDistributionRecord {
   successCount: number;
   failedCount: number;
   inProgressCount: number;
-  status: DistributionStatus;
+  status: DistributionStatus | 'deleting';
+  /** 记录类型：下发 or 删除，默认 distribute（兼容旧数据） */
+  type?: RecordType;
+  /** 操作人 */
+  operator?: string;
   instances: CachedDistributionInstance[];
 }
 
 /** 每个 skill 的下发摘要（用于列表页展示） */
 export interface SkillDistributionSummary {
-  lastDistributionStatus: DistributionStatus;
+  lastDistributionStatus: DistributionStatus | 'deleting';
   lastDistributionProgress: number;
   lastDistributionTime: string; // ISO string
   lastDistributionInstanceCount: number;
@@ -95,7 +102,7 @@ export function getSkillDistributionSummary(skillId: string): SkillDistributionS
 
   // 最新一条记录
   const latest = records[0];
-  const hasInProgress = records.some(r => r.status === 'distributing');
+  const hasInProgress = records.some(r => r.status === 'distributing' || r.status === 'deleting');
 
   const progress = latest.totalCount > 0
     ? Math.round((latest.successCount / latest.totalCount) * 100)
@@ -111,10 +118,10 @@ export function getSkillDistributionSummary(skillId: string): SkillDistributionS
   };
 }
 
-/** 检查某个 skill 是否有进行中的下发任务 */
+/** 检查某个 skill 是否有进行中的下发或删除任务 */
 export function hasInProgressDistribution(skillId: string): boolean {
   const records = getDistributionRecords(skillId);
-  return records.some(r => r.status === 'distributing');
+  return records.some(r => r.status === 'distributing' || r.status === 'deleting');
 }
 
 /** 创建一个新的下发记录 ID */
@@ -143,6 +150,7 @@ export function initMockDistributionRecords() {
       failedCount: 0,
       inProgressCount: 0,
       status: 'success',
+      operator: 'yequanzheng',
       instances: [
         { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'success' },
         { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'success' },
@@ -159,6 +167,7 @@ export function initMockDistributionRecords() {
       failedCount: 2,
       inProgressCount: 0,
       status: 'failed',
+      operator: 'yequanzheng',
       instances: [
         { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '实例不可用' },
         { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '网络超时' },
@@ -173,7 +182,8 @@ export function initMockDistributionRecords() {
       successCount: 1,
       failedCount: 1,
       inProgressCount: 0,
-      status: 'partial',
+      status: 'failed',
+      operator: 'yequanzheng',
       instances: [
         { id: 'inst-1', name: '产品助手', createdBy: 'admin', distributionStatus: 'success' },
         { id: 'inst-2', name: '研发助手', createdBy: 'admin', distributionStatus: 'failed', failReason: '版本冲突' },

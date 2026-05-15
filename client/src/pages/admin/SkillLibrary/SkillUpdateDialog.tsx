@@ -30,6 +30,7 @@ interface SkillUpdateDialogProps {
   onConfirm: (updatedSkill: Skill, changeLog: string) => void;
   defaultSecurityScan?: boolean;
   onDefaultSecurityScanChange?: (value: boolean) => void;
+  securityServiceActive?: boolean;
 }
 
 interface UploadedFile {
@@ -115,7 +116,7 @@ const parseZipFile = async (file: File): Promise<{
   }
 };
 
-export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm, defaultSecurityScan = true, onDefaultSecurityScanChange = () => {} }: SkillUpdateDialogProps) {
+export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm, defaultSecurityScan = false, onDefaultSecurityScanChange = () => {}, securityServiceActive = true }: SkillUpdateDialogProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -131,7 +132,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [enableSecurityScan, setEnableSecurityScan] = useState(defaultSecurityScan);
+  const [enableSecurityScan, setEnableSecurityScan] = useState(securityServiceActive ? defaultSecurityScan : false);
 
   // 初始化 - 回显已有文件和当前 Skill 信息
   useEffect(() => {
@@ -146,7 +147,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         groupIds: [...(skill.groupIds || [])],
       });
       setGroupSearchQuery('');
-      setEnableSecurityScan(defaultSecurityScan);
+      setEnableSecurityScan(securityServiceActive ? defaultSecurityScan : false);
       // 回显已有文件
       if (skill.files && skill.files.length > 0) {
         setUploadedFiles([{
@@ -384,12 +385,6 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         </DialogHeader>
 
         <div className="space-y-5">
-          {/* 更新提示 */}
-          <div className="text-xs text-gray-900 leading-relaxed space-y-0.5">
-            <p>仅更新企业技能库中的技能版本。</p>
-            <p>已下发至 agent 实例的技能不会同步升级，需手动重新下发。</p>
-          </div>
-
           {/* 文件替换 */}
           <div className="space-y-3">
             <Label className="text-base font-semibold">文件（可选替换）</Label>
@@ -724,10 +719,10 @@ description: this is a skill creator.
             </div>
           </div>
 
-          {/* ChangeLog — 放最下面 */}
+          {/* 更新说明 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <Label htmlFor="update-changelog" className="text-sm">更新说明</Label>
+              <Label htmlFor="update-changelog" className="text-base font-semibold">更新说明</Label>
               <Button
                 type="button"
                 variant="ghost"
@@ -752,16 +747,28 @@ description: this is a skill creator.
           {/* 安全检测 */}
           <div className="border-t border-[#e5e5e5] pt-4">
             <div className="flex items-start gap-3">
-              <Checkbox
-                id="update-security-scan"
-                checked={enableSecurityScan}
-                onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
-                className="mt-0.5"
-              />
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <span className="mt-0.5">
+                    <Checkbox
+                      id="update-security-scan"
+                      checked={enableSecurityScan}
+                      onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
+                      disabled={!securityServiceActive}
+                      className="mt-0"
+                    />
+                  </span>
+                </TooltipTrigger>
+                {!securityServiceActive && (
+                  <TooltipContent side="top" className="text-xs max-w-[280px]">
+                    安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                  </TooltipContent>
+                )}
+              </Tooltip>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="update-security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
-                    <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                  <label htmlFor="update-security-scan" className={`flex items-center gap-1.5 text-sm font-medium cursor-pointer ${!securityServiceActive ? 'text-gray-400' : 'text-gray-700'}`}>
+                    <ShieldCheck className={`w-3.5 h-3.5 ${!securityServiceActive ? 'text-gray-400' : 'text-green-600'}`} />
                     提交安全检测
                     <span className="relative group">
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
@@ -769,43 +776,60 @@ description: this is a skill creator.
                         限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                       </span>
                     </span>
+                    {!securityServiceActive && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">未开通</span>
+                    )} - 安全检测默认不勾选，上传/更新行为统一 - 简化AgentToolLibrary/EnterpriseSkillLibrary组件层级)
                   </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Settings className="w-3.5 h-3.5" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-3" align="end" side="top">
-                      <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-600">上传/更新时默认</span>
-                        <div className="flex items-center gap-2 ml-3 shrink-0">
-                          <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
-                          <Switch
-                            checked={defaultSecurityScan}
-                            onCheckedChange={(checked) => {
-                              onDefaultSecurityScanChange(checked);
-                              // 同步当前勾选状态
-                              setEnableSecurityScan(checked);
-                            }}
-                            className="scale-90"
-                          />
-                          <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
+                  {securityServiceActive && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Settings className="w-3.5 h-3.5" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[280px] p-3" align="end" side="top">
+                        <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600">上传/更新时默认</span>
+                          <div className="flex items-center gap-2 ml-3 shrink-0">
+                            <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
+                            <Switch
+                              checked={defaultSecurityScan}
+                              onCheckedChange={(checked) => {
+                                onDefaultSecurityScanChange(checked);
+                                // 同步当前勾选状态
+                                setEnableSecurityScan(checked);
+                              }}
+                              className="scale-90"
+                            />
+                            <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
+                          </div>
                         </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
-                <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                  开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
-                </p>
+                {!securityServiceActive ? (
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
+                  </p>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* 更新提示 */}
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 space-y-1">
+            <p className="text-xs text-gray-500 leading-relaxed">提示：仅更新企业技能库中的技能版本。</p>
+            <p className="text-xs text-gray-500 leading-relaxed">已下发至 Agent 实例的技能不会同步升级，需手动重新下发。</p>
           </div>
 
         </div>

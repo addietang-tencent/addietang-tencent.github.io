@@ -3,9 +3,10 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 import {
   AlertDialog,
@@ -87,6 +88,7 @@ const saveCachedSkills = (skills: Skill[]) => {
 
 interface SkillListTabProps {
   onSelectSkill?: (skillId: string) => void;
+  securityServiceActive?: boolean;
 }
 
 /** 仅当子元素文本溢出（出现 ...）时，hover 1s 后才显示 Tooltip */
@@ -118,7 +120,7 @@ function OverflowTooltip({ content, children }: { content: React.ReactNode; chil
   );
 }
 
-export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
+export default function SkillListTab({ onSelectSkill, securityServiceActive: securityServiceActiveProp }: SkillListTabProps) {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -141,10 +143,23 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
   // 安全检测确认弹窗
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
   const [securityScanSkillId, setSecurityScanSkillId] = useState<string | null>(null);
-  // 默认行为设置
+  // 安全检测服务开通状态：优先使用 prop，否则从 localStorage 读取
+  const [securityServiceActiveLocal, setSecurityServiceActiveLocal] = useState<boolean>(() => {
+    const saved = localStorage.getItem('skill_security_service_active');
+    return saved === 'true';
+  });
+  const securityServiceActive = securityServiceActiveProp !== undefined ? securityServiceActiveProp : securityServiceActiveLocal;
+  const setSecurityServiceActive = (val: boolean) => {
+    setSecurityServiceActiveLocal(val);
+    localStorage.setItem('skill_security_service_active', String(val));
+  };
+  const [securityApplyDialogOpen, setSecurityApplyDialogOpen] = useState(false);
+  const [securitySuccessDialogOpen, setSecuritySuccessDialogOpen] = useState(false);
+  const [securityServiceUsed, setSecurityServiceUsed] = useState(156); // mock 已用额度
+  // 默认行为设置（默认不勾选）
   const [defaultSecurityScan, setDefaultSecurityScan] = useState<boolean>(() => {
     const saved = localStorage.getItem('skill_default_security_scan');
-    return saved !== null ? saved === 'true' : true;
+    return saved !== null ? saved === 'true' : false;
   });
   // 应用范围筛选：含 'public'=全部用户, 含 'grp-xxx'=特定分组（多选）
   // 空 Set = 未选任何范围（按钮显示"选择应用范围"）；全选时包含 public + 所有 groupId
@@ -229,24 +244,34 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
         const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
         const engine2Status = result as 'safe' | 'suspicious' | 'malicious';
 
-        setSkills(prev => prev.map(sk =>
-          sk.id === s.id && sk.securityInfo?.overallStatus === 'scanning'
-            ? {
-                ...sk,
-                securityInfo: {
-                  overallStatus: result,
-                  contentHash: Math.random().toString(36).slice(2, 18),
-                  engines: [
-                    { engineName: '科恩实验室', status: 'safe' as const, reportUrl: '#', score: 92, dimensions: safeDims },
-                    { engineName: '云鼎实验室', status: engine2Status, reportUrl: '#', score: score2, dimensions: dims },
-                  ],
-                },
-              }
-            : sk
-        ));
+        setSkills(prev => {
+          const target = prev.find(sk => sk.id === s.id);
+          // 如果已不是 scanning（已被其他地方完成），跳过
+          if (!target || target.securityInfo?.overallStatus !== 'scanning') {
+            scanTimersRef.current.delete(s.id);
+            return prev;
+          }
+          const updated = prev.map(sk =>
+            sk.id === s.id
+              ? {
+                  ...sk,
+                  securityInfo: {
+                    overallStatus: result,
+                    contentHash: Math.random().toString(36).slice(2, 18),
+                    engines: [
+                      { engineName: '科恩实验室', status: 'safe' as const, reportUrl: '#', score: 92, dimensions: safeDims },
+                      { engineName: '云鼎实验室', status: engine2Status, reportUrl: '#', score: score2, dimensions: dims },
+                    ],
+                  },
+                }
+              : sk
+          );
+          saveCachedSkills(updated);
+          const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
+          toast.info(`「${s.name}」安全检测完成：${resultLabel}`);
+          return updated;
+        });
         scanTimersRef.current.delete(s.id);
-        const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
-        toast.info(`「${s.name}」安全检测完成：${resultLabel}`);
       }, 10000);
     });
 
@@ -593,6 +618,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           });
           setSelectedSkillId(null);
         }}
+        securityServiceActive={securityServiceActive}
       />
     );
   }
@@ -769,7 +795,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           })()}
         </div>
 
-        {/* 视图切换、发布按钮 */}
+        {/* 视图切换 + 发布按钮 */}
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
@@ -1430,6 +1456,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
           localStorage.setItem('skill_default_security_scan', String(value));
           toast.success('默认行为已保存');
         }}
+        securityServiceActive={securityServiceActive}
       />
 
       {distributeSkillId && (
@@ -1464,6 +1491,7 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               localStorage.setItem('skill_default_security_scan', String(value));
               toast.success('默认行为已保存');
             }}
+            securityServiceActive={securityServiceActive}
           />
         ) : null;
       })()}
@@ -1539,26 +1567,120 @@ export default function SkillListTab({ onSelectSkill }: SkillListTabProps) {
               提交安全检测
               <span className="relative group">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                   限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                 </span>
               </span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              确认对技能「{securityScanSkillId ? skills.find(s => s.id === securityScanSkillId)?.name : ''}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。
+              {securityServiceUsed >= 1000 ? (
+                '免费试用额度已用完，请前往官网提交工单提额，产品可选择 云安全中心。'
+              ) : (
+                <>确认对技能「{securityScanSkillId ? skills.find(s => s.id === securityScanSkillId)?.name : ''}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setSecurityScanDialogOpen(false); setSecurityScanSkillId(null); }}>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSecurityScanConfirm}
-              className="text-white"
+              disabled={securityServiceUsed >= 1000}
+              className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
             >
-              提交检测
+              确认检测
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 安全检测服务 — 申请开通弹窗 */}
+      <Dialog open={securityApplyDialogOpen} onOpenChange={setSecurityApplyDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">申请免费试用（Skills 风险检测 API）</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-[5rem_1fr] gap-y-3 text-sm">
+              <span className="text-gray-500">试用有效期</span>
+              <span className="text-gray-900">有效期至 2026年6月30日</span>
+              <span className="text-gray-500">调用额度</span>
+              <span className="text-gray-900">1000次<span className="text-gray-400 text-xs ml-1">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
+              <span className="text-gray-500">操作指引</span>
+              <a
+                href="https://cloud.tencent.com/document/api/664/131590"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-600 flex items-center gap-1"
+              >
+                说明文档
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setSecurityApplyDialogOpen(false)} className="text-sm">
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                setSecurityServiceActive(true);
+                localStorage.setItem('skill_security_service_active', 'true');
+                setSecurityApplyDialogOpen(false);
+                setSecuritySuccessDialogOpen(true);
+              }}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              className="text-white text-sm"
+            >
+              立即领取
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 安全检测服务 — 开通成功弹窗 */}
+      <Dialog open={securitySuccessDialogOpen} onOpenChange={setSecuritySuccessDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <span className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                <Check className="w-4 h-4 text-green-600" />
+              </span>
+              试用额度已开通
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              1000次调用额度，有效期至 2026-06-30
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <p className="text-sm font-medium text-gray-900 mb-1">使用 API</p>
+              <p className="text-sm text-gray-600">
+                您可以前往查看{' '}
+                <a
+                  href="https://cloud.tencent.com/document/api/664/131590"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
+                >
+                  说明文档
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                ，基于说明文档调用并测试 API。
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setSecuritySuccessDialogOpen(false)}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              className="text-white text-sm"
+            >
+              我知道了
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

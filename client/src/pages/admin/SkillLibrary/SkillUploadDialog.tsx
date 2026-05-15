@@ -22,6 +22,7 @@ interface SkillUploadDialogProps {
   existingSlugs?: string[];
   defaultSecurityScan?: boolean;
   onDefaultSecurityScanChange?: (value: boolean) => void;
+  securityServiceActive?: boolean;
 }
 
 interface UploadedFile {
@@ -158,7 +159,7 @@ const parseZipFile = async (file: File): Promise<{
   }
 };
 
-export default function SkillUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [], defaultSecurityScan = true, onDefaultSecurityScanChange = () => {} }: SkillUploadDialogProps) {
+export default function SkillUploadDialog({ open, onOpenChange, onConfirm, existingSlugs = [], defaultSecurityScan = false, onDefaultSecurityScanChange = () => {}, securityServiceActive = true }: SkillUploadDialogProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -178,7 +179,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
         groupIds: [],
       });
       setGroupSearchQuery('');
-      setEnableSecurityScan(defaultSecurityScan);
+      setEnableSecurityScan(securityServiceActive ? defaultSecurityScan : false);
     }
     onOpenChange(newOpen);
   };
@@ -193,7 +194,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
     groupIds: [] as string[],
   });
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [enableSecurityScan, setEnableSecurityScan] = useState(defaultSecurityScan);
+  const [enableSecurityScan, setEnableSecurityScan] = useState(securityServiceActive ? defaultSecurityScan : false);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -924,59 +925,75 @@ description: this is a skill creator.
             {/* 安全检测 */}
             <div className="border-t border-gray-100 pt-4">
               <div className="flex items-start gap-3">
-                <Checkbox
-                  id="security-scan"
-                  checked={enableSecurityScan}
-                  onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
-                  disabled={!hasSuccessfulUpload}
-                  className="mt-0.5"
-                />
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="mt-0.5">
+                      <Checkbox
+                        id="security-scan"
+                        checked={enableSecurityScan}
+                        onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
+                        disabled={!hasSuccessfulUpload || !securityServiceActive}
+                        className="mt-0"
+                      />
+                    </span>
+                  </TooltipTrigger>
+                  {!securityServiceActive && (
+                    <TooltipContent side="top" className="text-xs max-w-[280px]">
+                      安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                    </TooltipContent>
+                  )}
+                </Tooltip>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="security-scan" className="flex items-center gap-1.5 text-sm font-medium text-gray-700 cursor-pointer">
-                      <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                    <label htmlFor="security-scan" className={`flex items-center gap-1.5 text-sm font-medium cursor-pointer ${!securityServiceActive ? 'text-gray-400' : 'text-gray-700'}`}>
+                      <ShieldCheck className={`w-3.5 h-3.5 ${!securityServiceActive ? 'text-gray-400' : 'text-green-600'}`} />
                       提交安全检测
-                      <span className="relative group">
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                          限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                        </span>
-                      </span>
+                      {!securityServiceActive && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">未开通</span>
+                      )}
                     </label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Settings className="w-3.5 h-3.5" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[280px] p-3" align="end" side="top">
-                        <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-600">上传/更新时默认</span>
-                          <div className="flex items-center gap-2 ml-3 shrink-0">
-                            <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
-                            <Switch
-                              checked={defaultSecurityScan}
-                              onCheckedChange={(checked) => {
-                                onDefaultSecurityScanChange(checked);
-                                // 同步当前勾选状态
-                                setEnableSecurityScan(checked);
-                              }}
-                              className="scale-90"
-                            />
-                            <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
+                    {securityServiceActive && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Settings className="w-3.5 h-3.5" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[280px] p-3" align="end" side="top">
+                          <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">上传/更新时默认</span>
+                            <div className="flex items-center gap-2 ml-3 shrink-0">
+                              <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
+                              <Switch
+                                checked={defaultSecurityScan}
+                                onCheckedChange={(checked) => {
+                                  onDefaultSecurityScanChange(checked);
+                                  // 同步当前勾选状态
+                                  setEnableSecurityScan(checked);
+                                }}
+                                className="scale-90"
+                              />
+                              <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
+                            </div>
                           </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                    开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
-                  </p>
+                  {!securityServiceActive ? (
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                      开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

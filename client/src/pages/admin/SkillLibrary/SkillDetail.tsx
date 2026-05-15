@@ -86,6 +86,7 @@ interface SkillDetailProps {
   defaultTab?: string;
   onSkillUpdate?: (updatedSkill: Skill) => void;
   onSkillDelete?: (skillId: string) => void;
+  securityServiceActive?: boolean;
 }
 
 // hljs 亮色主题样式
@@ -121,7 +122,7 @@ const hljsStyle: Record<string, React.CSSProperties> = {
   'hljs-strong': { fontWeight: 'bold' },
 };
 
-export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete }: SkillDetailProps) {
+export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete, securityServiceActive = false }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -180,6 +181,22 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     }
     return found;
   }, [skillId, skillsArray]);
+
+  // 本地安全检测状态覆盖（点击检测后立即生效，不依赖父组件 re-render）
+  const [localSecurityOverride, setLocalSecurityOverride] = useState<Skill['securityInfo'] | null>(null);
+  // 当 skillId 变化时重置本地覆盖
+  useEffect(() => {
+    setLocalSecurityOverride(null);
+  }, [skillId]);
+
+  // 合并后的 skill（本地覆盖优先）
+  const effectiveSkill = useMemo(() => {
+    if (!skill) return skill;
+    if (localSecurityOverride) {
+      return { ...skill, securityInfo: localSecurityOverride };
+    }
+    return skill;
+  }, [skill, localSecurityOverride]);
   
   useEffect(() => {
     if (skill?.versions && skill.versions.length > 0 && !selectedVersion) {
@@ -518,21 +535,88 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     }
   };
 
-  // 提交安全检测（只更新状态为 scanning，由父组件 SkillListTab 的 useEffect 统一管理自动完成）
+  // 提交安全检测（更新本地状态立即生效 + 通知父组件 + 10s后mock完成）
   const handleSecurityScan = () => {
     if (!skill) return;
     setSecurityScanDialogOpen(false);
     toast.success('已提交安全检测，预计 5 分钟后完成');
 
-    // 立即变为 scanning，通过 onSkillUpdate 同步给父组件
+    const newSecurityInfo = {
+      overallStatus: 'scanning' as const,
+      engines: [],
+    };
+    // 本地立即生效
+    setLocalSecurityOverride(newSecurityInfo);
+
+    // 同步给父组件（如果传了 onSkillUpdate）
     const updatedSkill: Skill = {
       ...skill,
-      securityInfo: {
-        overallStatus: 'scanning',
-        engines: [],
-      },
+      securityInfo: newSecurityInfo,
     };
     if (onSkillUpdate) onSkillUpdate(updatedSkill);
+
+    // 10s 后 mock 完成检测，随机生成结果
+    setTimeout(() => {
+      const rand = Math.random();
+      let result: 'safe' | 'suspicious' | 'malicious';
+      if (rand < 0.5) result = 'safe';
+      else if (rand < 0.8) result = 'suspicious';
+      else result = 'malicious';
+
+      const safeDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'safe' as const, detail: '未检测到危险的系统命令调用或子进程执行操作' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'safe' as const, detail: '未发现可疑的代码编码混淆或加密逃逸技术' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+      const suspiciousDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'suspicious' as const, detail: '检测到潜在的系统命令调用，存在一定风险' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'suspicious' as const, detail: '发现部分代码使用了 Base64 编码包裹，需人工确认' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+      const maliciousDims = [
+        { name: '供应链风险', status: 'malicious' as const, detail: '发现恶意第三方依赖注入，存在供应链污染' },
+        { name: '命令执行风险', status: 'malicious' as const, detail: '检测到危险的系统命令调用，执行反弹 shell' },
+        { name: '网络请求与数据外传', status: 'malicious' as const, detail: '发现向外部 C2 服务器发送敏感数据' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'suspicious' as const, detail: '发现可能篡改 AI Agent 行为的指令片段' },
+        { name: '远程脚本下载执行', status: 'malicious' as const, detail: '检测到从远程服务器下载并执行恶意脚本' },
+        { name: '可疑编码/混淆', status: 'malicious' as const, detail: '发现大量代码使用多层编码混淆，隐藏恶意逻辑' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+
+      const dims = result === 'safe' ? safeDims : result === 'suspicious' ? suspiciousDims : maliciousDims;
+      const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
+
+      const completedSecurityInfo = {
+        overallStatus: result,
+        contentHash: Math.random().toString(36).slice(2, 18),
+        engines: [
+          { engineName: '科恩实验室', status: 'safe' as const, reportUrl: '#', score: 92, dimensions: safeDims },
+          { engineName: '云鼎实验室', status: result, reportUrl: '#', score: score2, dimensions: dims },
+        ],
+      };
+
+      // 本地更新
+      setLocalSecurityOverride(completedSecurityInfo);
+
+      // 同步给父组件
+      if (onSkillUpdate) {
+        onSkillUpdate({ ...skill, securityInfo: completedSecurityInfo });
+      }
+
+      const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
+      toast.info(`「${skill.name}」安全检测完成：${resultLabel}`);
+    }, 10000);
   };
 
   // 更新 Skill 回调
@@ -656,7 +740,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           </span>
           {/* 安全检测状态徽章 */}
           {(() => {
-            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+            const secStatus = effectiveSkill.securityInfo?.overallStatus || 'not_scanned';
             const statusInfo = SECURITY_STATUS_MAP[secStatus];
             if (secStatus === 'not_scanned') {
               return (
@@ -664,13 +748,27 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
                     未检测
                   </span>
-                  <button
-                    onClick={() => setSecurityScanDialogOpen(true)}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
-                  >
-                    <ScanSearch className="w-3 h-3" />
-                    检测
-                  </button>
+                  {securityServiceActive ? (
+                    <button
+                      onClick={() => setSecurityScanDialogOpen(true)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                    >
+                      <ScanSearch className="w-3 h-3" />
+                      检测
+                    </button>
+                  ) : (
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-gray-400 bg-gray-100 rounded-full cursor-not-allowed">
+                          <ScanSearch className="w-3 h-3" />
+                          检测
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs max-w-[280px]">
+                        安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </span>
               );
             }
@@ -683,7 +781,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               );
             }
             const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-            const reportUrl = skill.securityInfo?.engines?.[0]?.reportUrl;
+            const reportUrl = effectiveSkill.securityInfo?.engines?.[0]?.reportUrl;
             return (
               <span className="inline-flex items-center gap-1.5">
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
@@ -797,7 +895,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         return `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
                       })();
                       // 安全检测图标：仅最新版本显示当前 skill 的安全状态
-                      const secStatus = isLatest ? (skill.securityInfo?.overallStatus || 'not_scanned') : null;
+                      const secStatus = isLatest ? (effectiveSkill.securityInfo?.overallStatus || 'not_scanned') : null;
                       return (
                         <button
                           key={ver}
@@ -1113,6 +1211,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           onDefaultSecurityScanChange={(value) => {
             localStorage.setItem('skill_default_security_scan', String(value));
           }}
+          securityServiceActive={securityServiceActive}
         />
       )}
 
@@ -1208,12 +1307,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
-              <span className="relative group">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-md bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                </span>
-              </span>
             </AlertDialogTitle>
             <AlertDialogDescription>
               确认对技能「{skill.name}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。

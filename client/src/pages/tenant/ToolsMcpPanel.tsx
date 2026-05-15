@@ -450,17 +450,20 @@ export default function ToolsMcpPanel() {
         t.description.toLowerCase().includes(addSearchQuery.toLowerCase()))
   );
 
+  // ── 无参数模板确认弹窗 ──
+  const [confirmAddTemplate, setConfirmAddTemplate] = useState<EnterpriseMCPTemplate | null>(null);
+
   const handleSelectTemplate = (tpl: EnterpriseMCPTemplate) => {
     if (tpl.userRequiredParams.length > 0) {
       setParamTemplate(tpl);
       setParamValues({});
     } else {
-      // 无需填参数，直接添加
-      doAddMCP(tpl, {});
+      // 无需填参数，弹出确认弹窗
+      setConfirmAddTemplate(tpl);
     }
   };
 
-  const doAddMCP = (tpl: EnterpriseMCPTemplate, params: Record<string, string>) => {
+  const doAddMCP = (tpl: EnterpriseMCPTemplate, params: Record<string, string>, restart: boolean = true) => {
     // 替换模板中的 <xxx> 占位符
     let configJson = tpl.configJsonTemplate;
     Object.entries(params).forEach(([key, value]) => {
@@ -487,9 +490,15 @@ export default function ToolsMcpPanel() {
     };
     setMcpList((prev) => [newMCP, ...prev]);
     setParamTemplate(null);
+    setConfirmAddTemplate(null);
     setAddDialogOpen(false);
     setAddSearchQuery("");
-    toast.success(`MCP「${tpl.displayName}」已添加`);
+    if (restart) {
+      toast.success(`MCP「${tpl.displayName}」已添加，正在重启实例…`);
+      setTimeout(() => toast.success("重启完成"), 2000);
+    } else {
+      toast.success(`MCP「${tpl.displayName}」已添加，可稍后手动重启生效`);
+    }
   };
 
   // ── 查看源码 ──
@@ -928,9 +937,26 @@ export default function ToolsMcpPanel() {
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setParamTemplate(null)}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setParamTemplate(null)} className="text-sm">
               取消
+            </Button>
+            <Button
+              variant="outline"
+              className="text-sm"
+              onClick={() => {
+                if (!paramTemplate) return;
+                const allFilled = paramTemplate.userRequiredParams.every(
+                  (p) => (paramValues[p] || "").trim().length > 0
+                );
+                if (!allFilled) {
+                  toast.error("请填写所有必填参数");
+                  return;
+                }
+                doAddMCP(paramTemplate, paramValues, false);
+              }}
+            >
+              确认但不重启
             </Button>
             <Button
               onClick={() => {
@@ -942,16 +968,47 @@ export default function ToolsMcpPanel() {
                   toast.error("请填写所有必填参数");
                   return;
                 }
-                doAddMCP(paramTemplate, paramValues);
+                doAddMCP(paramTemplate, paramValues, true);
               }}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white"
+              className="text-white text-sm"
             >
-              确认
+              确认并重启实例
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ===== 添加 MCP 弹窗 — 无参数确认 ===== */}
+      <AlertDialog
+        open={!!confirmAddTemplate}
+        onOpenChange={(open) => { if (!open) setConfirmAddTemplate(null); }}
+      >
+        <AlertDialogContent className="sm:max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认添加</AlertDialogTitle>
+            <AlertDialogDescription>
+              确认添加「{confirmAddTemplate?.displayName}」MCP 配置？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel className="text-sm">取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
+              onClick={() => { if (confirmAddTemplate) doAddMCP(confirmAddTemplate, {}, false); }}
+            >
+              确认但不重启
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="text-white text-sm"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              onClick={() => { if (confirmAddTemplate) doAddMCP(confirmAddTemplate, {}, true); }}
+            >
+              确认并重启实例
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ===== 查看源码弹窗 ===== */}
       <Dialog open={sourceDialogOpen} onOpenChange={setSourceDialogOpen}>

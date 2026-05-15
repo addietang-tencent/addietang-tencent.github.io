@@ -655,7 +655,7 @@ export default function GroupList({
           </>
         )}
 
-        {/* 自定义分组桶 —— OneID 模式下显示 manual 分组，支持 CRUD */}
+        {/* 自定义分组桶 —— OneID 模式下显示 oneid-group + manual 分组，支持 CRUD */}
         {hasOneid && (
           <>
             <div
@@ -674,8 +674,8 @@ export default function GroupList({
               </span>
             </div>
             {!ogSectionCollapsed && (
-              buckets.manual.length > 0 ? (
-                buckets.manual.map((n) => (
+              [...buckets.og, ...buckets.manual].length > 0 ? (
+                [...buckets.og, ...buckets.manual].map((n) => (
                   <GroupRow
                     key={n.id}
                     node={n}

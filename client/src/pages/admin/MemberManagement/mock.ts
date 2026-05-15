@@ -48,7 +48,7 @@ export const MOCK_GROUPS: UserGroup[] = [
     createdAt: "2025-01-01",
   },
   { id: "dept-tech", name: "技术部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-tech", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
-  { id: "dept-fe", name: "前端组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-fe", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
+  { id: "dept-fe", name: "前端架构与跨平台体验设计组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-fe", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-be", name: "后端组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-be", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-ai", name: "AI 组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-ai", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-product", name: "产品部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-product", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
@@ -61,7 +61,7 @@ export const MOCK_GROUPS: UserGroup[] = [
   { id: "dept-finance", name: "财务部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-finance", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
 
   // ── OneID 用户组（管理员自建，多层级） ──
-  { id: "og-frontend", name: "前端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
+  { id: "og-frontend", name: "前端基础架构与工程效能研发协作组", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
   { id: "og-fe-web", name: "Web 端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
   { id: "og-fe-mobile", name: "移动端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
   { id: "og-backend", name: "后端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },

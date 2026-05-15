@@ -517,21 +517,26 @@ export default function MyOpenClaw() {
               {/* 视图切换：管理视图 / 对话视图 */}
               <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
 
-              {/* 双模式 Segmented：保留 OneID / 普通模式逻辑（视觉弱化） */}
+              {/* 双模式 Segmented：保留 OneID / 普通模式逻辑
+                  字号/内边距/图标尺寸与左侧 ViewModeSegmented 保持一致 */}
               <div
                 className="hidden md:inline-flex items-center gap-1 rounded-[4px] p-1"
                 style={{ background: "#F5F5F5" }}
+                role="tablist"
+                aria-label="用户分组模式切换"
               >
                 <button
+                  role="tab"
+                  aria-selected={groupMode === "normal"}
                   onClick={() => handleGroupModeChange("normal")}
-                  className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition-all duration-150 ${
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-[3px] text-sm font-medium transition-all duration-150 ${
                     groupMode === "normal"
                       ? "bg-white text-[#0A0A0A]"
                       : "text-[#737373] hover:text-[#0A0A0A]"
                   }`}
                   style={
                     groupMode === "normal"
-                      ? { boxShadow: "0px 1.11px 2.22px rgba(0,0,0,0.05)" }
+                      ? { boxShadow: "var(--shadow-segment)" }
                       : undefined
                   }
                   title="切换到普通用户模式"
@@ -539,20 +544,22 @@ export default function MyOpenClaw() {
                   普通
                 </button>
                 <button
+                  role="tab"
+                  aria-selected={groupMode === "multi-group"}
                   onClick={() => handleGroupModeChange("multi-group")}
-                  className={`px-2.5 py-1 rounded-[3px] text-[11px] font-medium transition-all duration-150 inline-flex items-center gap-1 ${
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-[3px] text-sm font-medium transition-all duration-150 ${
                     groupMode === "multi-group"
                       ? "bg-white text-[#0A0A0A]"
                       : "text-[#737373] hover:text-[#0A0A0A]"
                   }`}
                   style={
                     groupMode === "multi-group"
-                      ? { boxShadow: "0px 1.11px 2.22px rgba(0,0,0,0.05)" }
+                      ? { boxShadow: "var(--shadow-segment)" }
                       : undefined
                   }
                   title="切换到多分组用户模式"
                 >
-                  <Users className="w-3 h-3" />
+                  <Users className="w-4 h-4" />
                   多分组
                 </button>
               </div>

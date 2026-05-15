@@ -1483,7 +1483,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                   限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                 </span>
-              </span>
+              </span> - 安全检测默认不勾选，上传/更新行为统一 - 简化AgentToolLibrary/EnterpriseSkillLibrary组件层级)
             </AlertDialogTitle>
             <AlertDialogDescription>
               确认对技能「{skill.name}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。

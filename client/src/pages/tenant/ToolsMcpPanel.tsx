@@ -936,8 +936,8 @@ export default function ToolsMcpPanel() {
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button variant="claw-outline" onClick={() => setParamTemplate(null)}>
+          <DialogFooter className="flex gap-2">
+            <Button variant="claw-outline" onClick={() => setParamTemplate(null)} className="text-sm">
               取消
             </Button>
             <Button
@@ -969,6 +969,8 @@ export default function ToolsMcpPanel() {
                 }
                 doAddMCP(paramTemplate, paramValues, true);
               }}
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white text-sm"
             >
               确认并重启实例
             </Button>

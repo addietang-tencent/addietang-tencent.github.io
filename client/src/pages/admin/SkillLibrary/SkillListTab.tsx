@@ -1735,7 +1735,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               提交安全检测
               <span className="relative group">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                   限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                 </span>
               </span>
@@ -1752,7 +1752,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             <AlertDialogCancel onClick={() => { setSecurityScanDialogOpen(false); setSecurityScanSkillId(null); }}>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSecurityScanConfirm}
-              className="text-white"
+              disabled={securityServiceUsed >= 1000}
+              className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
             >
               确认检测
             </AlertDialogAction>

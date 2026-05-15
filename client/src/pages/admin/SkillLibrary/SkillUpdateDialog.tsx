@@ -776,6 +776,9 @@ description: this is a skill creator.
                         限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                       </span>
                     </span>
+                    {!securityServiceActive && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">未开通</span>
+                    )} - 安全检测默认不勾选，上传/更新行为统一 - 简化AgentToolLibrary/EnterpriseSkillLibrary组件层级)
                   </label>
                   {securityServiceActive && (
                     <Popover>

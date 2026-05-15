@@ -2,7 +2,7 @@
  * MemberManagement - 管控端用户管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1850,6 +1850,24 @@ export default function MemberManagement() {
   const [editMemberId, setEditMemberId] = useState<string | null>(null);
   const [addBtnHovered, setAddBtnHovered] = useState(false);
 
+  // 用户列表表格横向滚动检测（操作列 sticky right 阴影）
+  const memberTableScrollRef = useRef<HTMLDivElement>(null);
+  const [memberTableCanScrollRight, setMemberTableCanScrollRight] = useState(false);
+  useEffect(() => {
+    const el = memberTableScrollRef.current;
+    if (!el) return;
+    const check = () => {
+      const canScroll = el.scrollWidth > el.clientWidth;
+      const isAtRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      setMemberTableCanScrollRight(canScroll && !isAtRight);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
+  }, []);
+
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
   const [resetForm, setResetForm] = useState({ ...emptyResetForm });
@@ -2289,7 +2307,7 @@ export default function MemberManagement() {
 
   return (
     <>
-      <div className="page-enter">
+      <div className="page-enter min-w-0 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
@@ -2431,13 +2449,19 @@ export default function MemberManagement() {
                 value={roleFilter}
                 onValueChange={(v) => { setRoleFilter(v as "all" | "admin" | "member"); setPage(1); }}
               >
-                <SelectTrigger className="w-[130px] bg-white border-gray-200 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 [&_svg:last-child]:transition-transform [&_svg:last-child]:duration-200 data-[state=open]:[&_svg:last-child]:rotate-180">
+                <SelectTrigger className={`w-[130px] bg-white border-gray-200 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 [&_svg:last-child]:transition-transform [&_svg:last-child]:duration-200 data-[state=open]:[&_svg:last-child]:rotate-180 ${roleFilter === "all" ? "text-muted-foreground" : "text-gray-900"}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">全部角色</SelectItem>
-                  <SelectItem value="admin">管理员</SelectItem>
-                  <SelectItem value="member">用户</SelectItem>
+                  {["all", "admin", "member"].map((v) => (
+                    <SelectItem
+                      key={v}
+                      value={v}
+                      className="data-[state=checked]:bg-blue-50 data-[state=checked]:text-blue-600 data-[state=checked]:font-medium data-[state=checked]:[&_svg]:!text-blue-600"
+                    >
+                      {v === "all" ? "全部角色" : v === "admin" ? "管理员" : "用户"}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
@@ -2489,8 +2513,7 @@ export default function MemberManagement() {
 
         {/* Table - 全部视图 */}
         {viewMode === "all" && (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <div className="bg-white rounded-2xl border border-gray-100" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)", overflow: "clip" }}>
           {/* 卡片 header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <h2 className="font-semibold text-gray-900">全部用户</h2>
@@ -2557,11 +2580,11 @@ export default function MemberManagement() {
               </div>
             )}
           </div>
-          <div className="overflow-x-auto">
-          <table className="w-full">
+          <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
+          <table className="text-sm" style={{ width: "max-content", minWidth: hasOneid ? "1320px" : "100%" }}>
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+              <tr className="border-b border-gray-50 bg-gray-50/50">
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2572,7 +2595,7 @@ export default function MemberManagement() {
                 </th>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
@@ -2581,15 +2604,15 @@ export default function MemberManagement() {
                         </Tooltip>
                       </div>
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
+                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                   </>
                 )}
                 {!hasOneid && (
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>分组</th>
+                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                 )}
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">角色</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">状态</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>角色</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>状态</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "120px" }}>
                   <div className="flex items-center gap-1.5">
                     Agent 上限
                     <Tooltip>
@@ -2598,7 +2621,7 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
                     每日 Tokens 上限
                     <Tooltip>
@@ -2607,8 +2630,13 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">加入时间</th>
-                <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%]" style={{ backgroundColor: "#fbfbfd" }}>操作</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
+                <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                  {memberTableCanScrollRight && (
+                    <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                  )}
+                  操作
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -2622,7 +2650,7 @@ export default function MemberManagement() {
                 const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
                 <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                  <td className="px-4 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="text-sm font-medium text-gray-900 truncate block max-w-[180px]">{member.id}</span>
@@ -2633,7 +2661,7 @@ export default function MemberManagement() {
                   {hasOneid && (
                     <>
                       {/* 部门列 */}
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-4" style={{ minWidth: "200px" }}>
                         {mmDeptPaths.length === 0 ? (
                           <span className="text-sm text-gray-300">—</span>
                         ) : mmDeptPaths.length === 1 ? (
@@ -2674,7 +2702,7 @@ export default function MemberManagement() {
                         )}
                       </td>
                       {/* 分组列（OneID 模式：紧跟部门列） */}
-                      <td className="px-4 py-4 whitespace-nowrap">
+                      <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
                             <span className="text-sm text-gray-300">—</span>
@@ -2718,7 +2746,7 @@ export default function MemberManagement() {
                   )}
                   {!hasOneid && (
                     /* 普通模式分组列：紧跟用户ID，完整路径 + hover tooltip */
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1 max-w-[200px]">
                         {manualGroupPaths.length === 0 ? (
                           <span className="text-sm text-gray-300">—</span>
@@ -2750,19 +2778,19 @@ export default function MemberManagement() {
                       </div>
                     </td>
                   )}
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-3 py-4 whitespace-nowrap">
                     <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
                       {member.role === "admin" ? "管理员" : "用户"}
                     </Badge>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-3 py-4 whitespace-nowrap">
                     {member.status === "active" ? (
                       <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
                     ) : (
                       <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
                     )}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-3 py-4">
                     {(() => {
                       const quotas = getMemberGroupQuotas(member.id, hasOneid);
                       if (quotas.length > 0) {
@@ -2787,7 +2815,7 @@ export default function MemberManagement() {
                       return <span className="text-sm text-gray-700">{member.clawLimit}</span>;
                     })()}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-3 py-4">
                     {(() => {
                       const quotas = getMemberGroupQuotas(member.id, hasOneid);
                       if (quotas.length > 0) {
@@ -2812,10 +2840,13 @@ export default function MemberManagement() {
                       return <span className="text-sm text-gray-700">{member.tokenLimit.toLocaleString()}</span>;
                     })()}
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
+                  <td className="px-3 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
                   </td>
-                  <td className="px-4 py-4 sticky right-0 bg-white z-10 w-[1%]">
+                  <td className="px-4 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
+                    {memberTableCanScrollRight && (
+                      <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                    )}
                     <div className="flex items-center justify-center gap-0.5">
                     {hasOneid ? (
                       <Tooltip>

@@ -358,6 +358,24 @@ export default function NodeContentPanel({
   const [tab, setTab] = useState<Tab>(isAnomalous ? "config" : "members");
   const [page, setPage] = useState(1);
 
+  // 用户列表表格横向滚动检测（操作列 sticky right 阴影）
+  const ncpTableScrollRef = useRef<HTMLDivElement>(null);
+  const [ncpTableCanScrollRight, setNcpTableCanScrollRight] = useState(false);
+  useEffect(() => {
+    const el = ncpTableScrollRef.current;
+    if (!el) return;
+    const check = () => {
+      const canScroll = el.scrollWidth > el.clientWidth;
+      const isAtRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      setNcpTableCanScrollRight(canScroll && !isAtRight);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
+  }, []);
+
   // 切换节点时根据是否异常重置默认 tab
   useEffect(() => {
     setTab(isAnomalous ? "config" : "members");
@@ -539,35 +557,39 @@ export default function NodeContentPanel({
           <>
             {/* 卡片 */}
             <div
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              className="bg-white rounded-2xl border border-gray-100"
               style={{
                 boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                overflow: "clip",
               }}
             >
               {/* 表格 */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={ncpTableScrollRef}>
+                <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
                   <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                    <tr className="border-b border-gray-50 bg-gray-50/50">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
                         用户 ID
                       </th>
                       {hasOneid && (
-                        <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                        <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                           部门
                         </th>
                       )}
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                         分组
                       </th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         角色
                       </th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         状态
                       </th>
                       {isManualMode && nodeId !== "__unassigned__" && (
-                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                          {ncpTableCanScrollRight && (
+                            <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                          )}
                           操作
                         </th>
                       )}
@@ -599,7 +621,7 @@ export default function NodeContentPanel({
                             className="hover:bg-gray-50/50 transition-colors"
                           >
                             {/* 用户 ID */}
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 py-4 whitespace-nowrap">
                               <span className="text-sm font-medium text-gray-900">
                                 {u.userId}
                               </span>
@@ -607,7 +629,7 @@ export default function NodeContentPanel({
 
                             {/* 部门（仅 OneID 模式） */}
                             {hasOneid && (
-                              <td className="px-4 py-4">
+                              <td className="px-3 py-4">
                                 {deptPaths.length === 0 ? (
                                   <span className="text-sm text-gray-300">—</span>
                                 ) : deptPaths.length === 1 ? (
@@ -659,7 +681,7 @@ export default function NodeContentPanel({
                             )}
 
                             {/* 分组 */}
-                            <td className="px-4 py-4">
+                            <td className="px-3 py-4">
                               {(() => {
                                 // OneID 模式：显示部门 + 用户组；普通模式：只显示自建分组
                                 const displayGroups = hasOneid
@@ -675,7 +697,7 @@ export default function NodeContentPanel({
                                 const firstName = getDisplayName(displayGroups[0]);
 
                                 return (
-                                  <div className="flex items-center gap-1 max-w-[260px]">
+                                  <div className="flex items-center gap-1 max-w-[180px]">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span className="inline-flex items-center gap-1 cursor-default max-w-full">
@@ -716,7 +738,7 @@ export default function NodeContentPanel({
                             </td>
 
                             {/* 角色 */}
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <Badge
                                 variant="outline"
                                 className={
@@ -730,7 +752,7 @@ export default function NodeContentPanel({
                             </td>
 
                             {/* 状态 */}
-                            <td className="px-5 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               {u.status === "active" ? (
                                 <span className="badge-running text-xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -746,7 +768,10 @@ export default function NodeContentPanel({
 
                             {/* 操作（仅普通模式且非未分组） */}
                             {isManualMode && nodeId !== "__unassigned__" && (
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
+                                {ncpTableCanScrollRight && (
+                                  <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                                )}
                                 <div className="flex items-center justify-center gap-1">
                                   {nodeId !== "__unassigned__" && (
                                     <Tooltip>

@@ -29,8 +29,7 @@ const GROUPS: RouteGroup[] = [
     title: "Landing / 入口",
     color: "violet",
     items: [
-      { path: "/", name: "Landing 页", desc: "ClawPro 官网首页" },
-      { path: "/demo/sso-login", name: "SSO 登录 Demo" },
+      { path: "/", name: "Landing 页", desc: "ClawPro 官网首页（点击「登录」直接弹出 SSO 弹窗）" },
     ],
   },
   {

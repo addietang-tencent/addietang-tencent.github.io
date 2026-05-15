@@ -1260,9 +1260,11 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
             </div>
 
             <div className="space-y-3 mt-4">
-              {distributionRecords.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-xl">
-                  <p className="text-gray-500">还没有下发记录</p>
+              {filteredRecords.length === 0 ? (
+                <div className="text-center py-8 bg-gray-50 rounded-[4px]">
+                  <p className="text-gray-500">
+                    {recordTypeFilter === 'all' ? '还没有记录' : recordTypeFilter === 'distribute' ? '还没有下发记录' : '还没有卸载记录'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1299,7 +1301,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                               {isDeleteRecord
                                 ? (record.status === 'deleting'
                                   ? `卸载中 ${progress}%`
-                                  : `卸载完成，${record.successCount}个卸载成功，${record.failedCount}个失败`)
+                                  : `卸载完成，${record.successCount}个成功，${record.failedCount}个失败`)
                                 : (record.status === 'distributing'
                                   ? `下发中 ${progress}%`
                                   : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`)}

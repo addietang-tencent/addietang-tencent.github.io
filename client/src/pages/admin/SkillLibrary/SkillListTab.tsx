@@ -1275,11 +1275,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   if (summary) {
                     if (summary.lastDistributionStatus === 'deleting' as any) {
                       statusLine1 = '卸载中';
-                      statusLine1Color = 'text-blue-600';
+                      statusLine1Color = 'text-red-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-blue-600';
-                      statusLine2Bg = 'bg-blue-50';
-                      statusLine2HoverBg = 'hover:bg-blue-100';
+                      statusLine2Color = 'text-red-600';
+                      statusLine2Bg = 'bg-red-50';
+                      statusLine2HoverBg = 'hover:bg-red-100';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
                       statusLine1Color = 'text-blue-600';

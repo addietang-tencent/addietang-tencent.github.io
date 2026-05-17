@@ -83,6 +83,8 @@ interface GroupListProps {
   uninitializedGroupIds?: Set<string>;
   /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡；用于 Tooltip 区分文案） */
   directUninitializedGroupIds?: Set<string>;
+  /** 网络配置待更新分组 id 集合（橙色点标记：仅命中分组自身，不冒泡父子） */
+  networkOutdatedGroupIds?: Set<string>;
   /** 异常分组详情 Map（groupId -> AnomalousGroup），用于动态 Tooltip 文案 */
   anomalousGroupDetails?: Map<string, AnomalousGroup>;
 }
@@ -112,6 +114,8 @@ interface RowProps {
   uninitializedGroupIds?: Set<string>;
   /** 直接初始化未完成分组 id 集合（自身，不含父分组冒泡） */
   directUninitializedGroupIds?: Set<string>;
+  /** 网络配置待更新分组 id 集合（橙色点：仅命中分组自身，不冒泡父子） */
+  networkOutdatedGroupIds?: Set<string>;
   /** 筛选函数：判断节点是否匹配当前筛选条件 */
   filterFn?: (node: GroupTreeNode) => boolean;
   /** 异常分组详情 Map（groupId -> AnomalousGroup），用于动态 Tooltip 文案 */
@@ -137,6 +141,7 @@ function GroupRow(props: RowProps) {
     directAnomalousGroupIds,
     uninitializedGroupIds,
     directUninitializedGroupIds,
+    networkOutdatedGroupIds,
     filterFn,
     anomalousGroupDetails,
   } = props;
@@ -243,8 +248,10 @@ function GroupRow(props: RowProps) {
         )}
 
         {/* 初始化未完成橙色点标记（不与异常红点同时显示）
-            方案D：父分组的冒泡标记仅在收起状态下显示，展开后隐藏（子分组自己标记了） */}
+            方案D：父分组的冒泡标记仅在收起状态下显示，展开后隐藏（子分组自己标记了）
+            互斥优化：若本节点同时命中"网络配置待更新"，让位给后者，避免同一分组出现两个橙点。 */}
         {!anomalousGroupIds?.has(node.id) &&
+          !networkOutdatedGroupIds?.has(node.id) &&
           uninitializedGroupIds?.has(node.id) &&
           // 如果是冒泡节点（非直接未初始化），仅在收起时显示
           (directUninitializedGroupIds?.has(node.id) || !isExpanded) && (
@@ -258,6 +265,25 @@ function GroupRow(props: RowProps) {
               {directUninitializedGroupIds?.has(node.id)
                 ? "该分组未完成初始化配置"
                 : "该分组下有子分组未完成初始化配置，展开查看"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {/* 网络配置待更新橙色点标记（VPC / 子网被云端删除）
+            - 仅命中分组自身展示，不冒泡父分组、不下发子分组、不影响兄弟分组
+            - 与异常红点互斥（异常红点优先级最高）
+            - 与「初始化未完成橙点」共同命中时，本橙点优先（更具体可定位），
+              初始化橙点会通过 networkOutdatedGroupIds 让位条件主动隐藏。 */}
+        {!anomalousGroupIds?.has(node.id) &&
+          networkOutdatedGroupIds?.has(node.id) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="relative shrink-0 ml-1">
+                <span className="block w-2 h-2 rounded-full bg-amber-500" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs max-w-[260px]">
+              该分组的网络配置待更新
             </TooltipContent>
           </Tooltip>
         )}
@@ -385,6 +411,7 @@ export default function GroupList({
   onRefreshSync,
   uninitializedGroupIds,
   directUninitializedGroupIds,
+  networkOutdatedGroupIds,
   anomalousGroupDetails,
 }: GroupListProps) {
   const [keyword, setKeyword] = useState("");
@@ -606,6 +633,7 @@ export default function GroupList({
                     directAnomalousGroupIds={directAnomalousGroupIds}
                     uninitializedGroupIds={uninitializedGroupIds}
                     directUninitializedGroupIds={directUninitializedGroupIds}
+                    networkOutdatedGroupIds={networkOutdatedGroupIds}
                     filterFn={matchFilter}
                     anomalousGroupDetails={anomalousGroupDetails}
                   />
@@ -695,6 +723,7 @@ export default function GroupList({
                     directAnomalousGroupIds={directAnomalousGroupIds}
                     uninitializedGroupIds={uninitializedGroupIds}
                     directUninitializedGroupIds={directUninitializedGroupIds}
+                    networkOutdatedGroupIds={networkOutdatedGroupIds}
                     filterFn={matchFilter}
                     anomalousGroupDetails={anomalousGroupDetails}
                   />
@@ -741,6 +770,7 @@ export default function GroupList({
                 directAnomalousGroupIds={directAnomalousGroupIds}
                 uninitializedGroupIds={uninitializedGroupIds}
                 directUninitializedGroupIds={directUninitializedGroupIds}
+                networkOutdatedGroupIds={networkOutdatedGroupIds}
                 filterFn={matchFilter}
                 anomalousGroupDetails={anomalousGroupDetails}
               />

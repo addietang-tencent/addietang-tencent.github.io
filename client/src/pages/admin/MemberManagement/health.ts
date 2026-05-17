@@ -240,3 +240,44 @@ export const INIT_MISSING_TO_CATEGORY: Record<
   image: "image",
   network: "network",
 };
+
+// ─── 网络配置「待更新」判定 ──────────────────────────────
+/**
+ * 判定某分组当前生效的网络配置中是否存在影响实例创建的「待更新」状况。
+ *
+ * 触发条件（任一命中即视为存在待更新）：
+ *   1) VPC 整个被删除：VPC ID 存在，但 vpcName / vpcCidr 缺失；
+ *   2) 某个可用区下所有子网均被删除：meta.zonesAllDeleted 非空。
+ *
+ * 不触发的场景（用户管理页静默处理，不展示已删除子网，也不提示）：
+ *   - 部分子网删除但该可用区仍有可用子网。
+ *
+ * 范围与边界：
+ *   - 仅判定该分组当前条目（不冒泡到父分组、不下发到子分组、不影响兄弟分组）。
+ *   - 来源为「预设策略」（presetPolicy）的 VPC 由平台自动重建，永不视为待更新。
+ *   - 与 SecurityGroupManagement 中网络明细页保持同源判定。
+ */
+export function hasNetworkOutdated(
+  groupId: string,
+  groups: UserGroup[]
+): boolean {
+  const entries = getConfigEntries(groupId, groups);
+  for (const entry of entries) {
+    if (entry.category !== "network") continue;
+    if (entry.subLabel !== "私有网络与子网" || !entry.meta) continue;
+    // 预设策略由平台自动重建，永不进入"待更新"
+    if (entry.source.type === "presetPolicy") continue;
+    const meta = entry.meta as Record<string, unknown>;
+    // ① VPC 整个被删除
+    const vpcId = meta.vpcId ? String(meta.vpcId) : "";
+    const vpcName = meta.vpcName ? String(meta.vpcName) : "";
+    const vpcCidr = meta.vpcCidr ? String(meta.vpcCidr) : "";
+    if (vpcId && (!vpcName || !vpcCidr)) return true;
+    // ② 某个可用区下所有子网均被删除
+    const zonesAllDeleted = Array.isArray(meta.zonesAllDeleted)
+      ? (meta.zonesAllDeleted as string[])
+      : [];
+    if (zonesAllDeleted.length > 0) return true;
+  }
+  return false;
+}

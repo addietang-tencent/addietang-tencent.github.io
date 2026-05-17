@@ -324,8 +324,23 @@ const MOCK_SUBNETS: Record<string, SubnetEntity[]> = {
     { id: "subnet-gaclgbzu", name: "带外管理", cidr: "192.168.20.0/24", totalIp: 254, remainingIp: 200 },
   ],
   "vpc-ri7mmw6n": [
+    // 广州五区：1 个正常子网
     { id: "subnet-mn3op5qr", name: "部署子网A", cidr: "192.168.1.0/24", totalIp: 254, remainingIp: 120 },
-    { id: "subnet-st6uv7wx", name: "部署子网B", cidr: "192.168.2.0/24", totalIp: 254, remainingIp: 8 },
+    // 广州六区：1 个正常子网（演示"部分异常、部分可用"混合场景）
+    { id: "subnet-q47nb3hv", name: "部署子网B", cidr: "192.168.2.0/24", totalIp: 254, remainingIp: 80 },
+    // 广州七区：1 个正常子网（演示"部分异常、部分可用"混合场景）
+    { id: "subnet-x82ab1c", name: "部署子网C", cidr: "192.168.3.0/24", totalIp: 254, remainingIp: 60 },
+    // [Mock] 异常态演示：以下子网均被管理员在腾讯云控制台直接删除，
+    // 保留 id 但 name/cidr 置空，触发"配置异常"策略级提示与"异常子网"治理列表。
+    // 广州六区：3 个异常子网
+    { id: "subnet-st6uv7wx", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    { id: "subnet-k91vax2m", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    { id: "subnet-p3r8nq6t", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    // 广州七区：4 个异常子网
+    { id: "subnet-7dk29plx", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    { id: "subnet-92mx8qa", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    { id: "subnet-88avpl2", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+    { id: "subnet-x91ab2d", name: "", cidr: "", totalIp: 0, remainingIp: 0 },
   ],
   "vpc-ab3cd4ef": [
     { id: "subnet-yz9ab1cd", name: "企业内网子网", cidr: "172.16.1.0/24", totalIp: 254, remainingIp: 90 },
@@ -581,8 +596,8 @@ const VPC_ZONE_SUBNETS: Record<string, Record<string, string[]>> = {
   },
   "vpc-ri7mmw6n": {
     "广州五区": ["subnet-mn3op5qr"],
-    "广州六区": ["subnet-st6uv7wx"],
-    "广州七区": [],
+    "广州六区": ["subnet-q47nb3hv", "subnet-st6uv7wx", "subnet-k91vax2m", "subnet-p3r8nq6t"],
+    "广州七区": ["subnet-x82ab1c", "subnet-7dk29plx", "subnet-92mx8qa", "subnet-88avpl2", "subnet-x91ab2d"],
   },
   "vpc-ab3cd4ef": {
     "广州五区": ["subnet-yz9ab1cd", "subnet-cd1ef2gh", "subnet-ab1cd2ef", "subnet-gh3ij4kl", "subnet-mn5op6qr"],
@@ -619,13 +634,37 @@ const INITIAL_VPC_LIST: VpcListItem[] = [
   {
     id: "vpc-row-003",
     vpcId: "vpc-ri7mmw6n",
+    // [Mock] 异常态演示：VPC 自身正常，但其下部分子网被云控制台删除，
+    // 用于在列表展开行验证「⚠ 配置待更新」徽章 + 子网明细「另有 N 个已删除子网」收敛展示。
     vpcName: "产品组网络",
     cidr: "10.2.0.0/16",
     type: "group",
     associatedGroups: ["产品组"],
     subnetStrategy: "specified",
-    zoneSubnets: { "广州五区": ["subnet-mn3op5qr"], "广州六区": ["subnet-st6uv7wx"], "广州七区": [] },
+    zoneSubnets: {
+      "广州五区": ["subnet-mn3op5qr"],
+      "广州六区": ["subnet-q47nb3hv", "subnet-st6uv7wx", "subnet-k91vax2m", "subnet-p3r8nq6t"],
+      "广州七区": ["subnet-x82ab1c", "subnet-7dk29plx", "subnet-92mx8qa", "subnet-88avpl2", "subnet-x91ab2d"],
+    },
     instanceCount: 8,
+  },
+  {
+    // [Mock] 异常态演示：VPC 自身在腾讯云控制台被直接删除，仅保留 vpcId；
+    // 历史子网配置仍存于策略中，但实际资源已不存在，编辑弹窗应自动清空 VPC 与所有子网，
+    // 用于验证"VPC 已删除"场景下的清理逻辑与橙色顶部提示。
+    id: "vpc-row-004",
+    vpcId: "vpc-x7ab29cd",
+    vpcName: "",
+    cidr: "",
+    type: "group",
+    associatedGroups: ["设计组"],
+    subnetStrategy: "specified",
+    zoneSubnets: {
+      "广州五区": ["subnet-a91bc2d1"],
+      "广州六区": ["subnet-b72kd8f2"],
+      "广州七区": ["subnet-c81mn3q7"],
+    },
+    instanceCount: 0,
   },
 ];
 
@@ -1042,9 +1081,10 @@ function getSubnetsByVpcZone(vpcId: string, zone: string): SubnetEntity[] {
   if (!mapping) return [];
   const subnetIds = mapping[zone] ?? [];
   const allSubnets = MOCK_SUBNETS[vpcId] ?? [];
+  // 仅返回腾讯云上仍存在的"健康"子网：name/cidr 为空视为已被外部删除，不进入可选/已选编辑区。
   return subnetIds
     .map((id) => allSubnets.find((s) => s.id === id))
-    .filter((s): s is SubnetEntity => !!s);
+    .filter((s): s is SubnetEntity => !!s && !!s.name && !!s.cidr);
 }
 
 // 根据 VPC 行的当前配置，计算每个可用区实际承接的子网列表
@@ -1057,9 +1097,12 @@ function getEffectiveZoneSubnets(row: VpcListItem): Record<string, SubnetEntity[
     for (const zone of AVAILABLE_ZONES) {
       const ids = row.zoneSubnets[zone] ?? [];
       const all = MOCK_SUBNETS[row.vpcId] ?? [];
-      result[zone] = ids
-        .map((id) => all.find((s) => s.id === id))
-        .filter((s): s is SubnetEntity => !!s);
+      // 找不到对应子网实体时，仍返回一个 id-only 占位（name/cidr 置空），
+      // 用于在 UI 中识别为"资源已被外部删除"的异常态，避免直接吞掉条目。
+      result[zone] = ids.map(
+        (id): SubnetEntity =>
+          all.find((s) => s.id === id) ?? { id, name: "", cidr: "", totalIp: 0, remainingIp: 0 },
+      );
     }
     return result;
   }
@@ -1076,6 +1119,41 @@ function getEffectiveZoneSubnets(row: VpcListItem): Record<string, SubnetEntity[
     }
   }
   return result;
+}
+
+// ─── 异常判定 helper ────────────────────────────────────────────────────────
+// 统一判定逻辑：仅基于"id 存在但 name/cidr 缺失"识别已被云控制台删除的资源，
+// 不引入额外 status 字段，便于后续接入真实数据。
+
+// 子网是否已被外部删除
+function isSubnetResourceDeleted(s: SubnetEntity | undefined | null): boolean {
+  if (!s) return false;
+  return !!s.id && (!s.name || !s.cidr);
+}
+
+// VPC 是否已被外部删除（自动分配策略不参与判定）
+function isVpcResourceDeleted(row: VpcListItem): boolean {
+  if (row.subnetStrategy === "auto") return false;
+  return !!row.vpcId && (!row.vpcName || !row.cidr);
+}
+
+// 某可用区下原配置的子网是否「全部已被删除」（即该可用区已无任何可用子网，
+// 影响实例创建）。原配置为空（未分配）不算异常。
+function isZoneAllSubnetsDeleted(list: SubnetEntity[]): boolean {
+  if (list.length === 0) return false;
+  return list.every(isSubnetResourceDeleted);
+}
+
+// 该 VPC 行是否需要展示「⚠ 配置待更新」：
+// 触发条件收敛为 ── VPC 自身被删 OR 任一可用区下"原配置全部子网均被删除"。
+// 部分删除但仍至少保留 1 个可用子网，不视为异常（不影响实例创建）。
+function hasVpcRowAnomaly(row: VpcListItem): boolean {
+  if (isVpcResourceDeleted(row)) return true;
+  const zoneSubnets = getEffectiveZoneSubnets(row);
+  for (const zone of AVAILABLE_ZONES) {
+    if (isZoneAllSubnetsDeleted(zoneSubnets[zone] ?? [])) return true;
+  }
+  return false;
 }
 
 function CreateSecurityGroupDialog({
@@ -1908,84 +1986,55 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
 
 // ─── 子网胶囊行（列表展开"子网配置明细"，每个可用区一行） ──────────────────
 //
-// 视觉：每个子网包成浅灰胶囊（id | name | cidr），容器宽度自适应；
-//       超出可视宽度时按"放得下几个就显几个 + …共 N 个子网"折叠，hover 列出全部。
-// 参考实现：与列表行 GroupBadges 同款 ResizeObserver + 隐藏测量区方案。
+// 视觉规则（信息分层 + 降噪）：
+//   · 主信息：正常子网灰色胶囊（id | name | cidr）
+//   · 次级信息：已删除子网统一收进 1 个浅灰胶囊
+//     「已删除子网：subnet-a、subnet-b、…」；不带 icon、不带 warning 色
+//   · 全删场景：单行展示「无可用子网」+ 已删除胶囊（紧凑表达"状态 + 原因"）
+//   · 「⚠ 配置待更新」不在子网明细中重复，仅由列表策略行（VPC 主行）展示一次
 function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const moreRef = useRef<HTMLSpanElement>(null);
-  const [visibleCount, setVisibleCount] = useState(subnets.length);
+  const allDeleted = isZoneAllSubnetsDeleted(subnets);
+  const healthy = subnets.filter((s) => !isSubnetResourceDeleted(s));
+  const deleted = subnets.filter(isSubnetResourceDeleted);
 
-  useLayoutEffect(() => {
-    if (subnets.length === 0) return;
-    const container = containerRef.current;
-    if (!container) return;
+  // 已删除子网聚合行（全删 / 部分删 共用）
+  // 结构：subnetId 在前（资源主体）、状态说明在后（轻量 warning 文案）
+  // 颜色：全删（影响实例创建）→ 弱橙色 amber-600，与 VPC 行「配置待更新」呼应；
+  //       部分删（仍有可用子网）→ 中性灰色，避免对仍可工作的可用区做无谓告警。
+  const tone = allDeleted ? "text-amber-600" : "text-gray-400";
+  const sepTone = allDeleted ? "text-amber-300" : "text-gray-300";
+  const deletedPill = deleted.length > 0 && (
+    <span className={`inline-flex items-start gap-2 text-xs ${tone} leading-relaxed max-w-full break-all`}>
+      <span className="min-w-0">
+        {deleted.map((s, i) => (
+          <Fragment key={s.id}>
+            {i > 0 && <span className={sepTone}>、</span>}
+            <span className={`font-mono ${tone}`}>{s.id}</span>
+          </Fragment>
+        ))}
+      </span>
+      <span className="shrink-0">已从腾讯云控制台被删除</span>
+    </span>
+  );
 
-    const computeVisible = () => {
-      const available = container.clientWidth;
-      if (available <= 0) return;
-      const gap = 6; // gap-1.5
-      let totalW = 0;
-      let fitCount = 0;
-      for (let i = 0; i < subnets.length; i++) {
-        const el = tagRefs.current[i];
-        if (!el) break;
-        const w = el.offsetWidth;
-        const add = totalW === 0 ? w : w + gap;
-        if (totalW + add <= available) {
-          totalW += add;
-          fitCount = i + 1;
-        } else {
-          break;
-        }
-      }
-      if (fitCount === subnets.length) {
-        setVisibleCount(subnets.length);
-        return;
-      }
-      const moreEl = moreRef.current;
-      if (!moreEl) {
-        setVisibleCount(Math.max(1, fitCount));
-        return;
-      }
-      for (let n = fitCount; n >= 1; n--) {
-        let w = 0;
-        for (let i = 0; i < n; i++) {
-          const el = tagRefs.current[i];
-          if (!el) continue;
-          w += el.offsetWidth + (i === 0 ? 0 : gap);
-        }
-        moreEl.textContent = `…共 ${subnets.length} 个子网`;
-        const moreW = moreEl.offsetWidth;
-        if (w + gap + moreW <= available) {
-          setVisibleCount(n);
-          return;
-        }
-      }
-      setVisibleCount(1);
-    };
+  // 全删：单行表达「状态 + 原因」
+  if (allDeleted) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0 cursor-default">
+        <span className="text-xs text-gray-500 shrink-0">无可用子网</span>
+        {deletedPill}
+      </div>
+    );
+  }
 
-    computeVisible();
-    const observer = new ResizeObserver(computeVisible);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [subnets]);
-
-  const omitted = subnets.length - visibleCount;
-
+  // 部分删 / 全部正常
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          ref={containerRef}
-          className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden cursor-default"
-        >
-          {/* 可见胶囊 */}
-          {subnets.slice(0, visibleCount).map((s, i) => (
+    <div className="flex flex-col gap-1 flex-1 min-w-0 cursor-default">
+      {healthy.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+          {healthy.map((s) => (
             <span
               key={s.id}
-              ref={(el) => { tagRefs.current[i] = el; }}
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-xs whitespace-nowrap shrink-0"
             >
               <span className="font-mono text-gray-500">{s.id}</span>
@@ -1995,41 +2044,10 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
               <span className="font-mono text-gray-400">{s.cidr}</span>
             </span>
           ))}
-          {/* 折叠提示 */}
-          {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap shrink-0">
-              …共 {subnets.length} 个子网
-            </span>
-          )}
-          {/* 隐藏测量区 */}
-          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
-            {subnets.map((s, i) => (
-              <span
-                key={`m-${s.id}`}
-                ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 text-xs whitespace-nowrap"
-              >
-                <span className="font-mono text-gray-500">{s.id}</span>
-                <span className="text-gray-300">|</span>
-                <span className="text-gray-700">{s.name}</span>
-                <span className="text-gray-300">|</span>
-                <span className="font-mono text-gray-400">{s.cidr}</span>
-              </span>
-            ))}
-            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap" />
-          </div>
         </div>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[480px] text-xs leading-relaxed">
-        <div className="space-y-1">
-          {subnets.map((s) => (
-            <div key={s.id} className="font-mono whitespace-nowrap">
-              {s.id} | <span className="not-italic font-sans">{s.name}</span> | {s.cidr}
-            </div>
-          ))}
-        </div>
-      </TooltipContent>
-    </Tooltip>
+      )}
+      {deletedPill && <div className="min-w-0">{deletedPill}</div>}
+    </div>
   );
 }
 
@@ -2086,6 +2104,13 @@ export default function SecurityGroupManagement() {
   const [zoneSubnetPickerOpen, setZoneSubnetPickerOpen] = useState<Record<string, boolean>>({});
   // 编辑弹窗中「VPC」选择器浮层开关
   const [editVpcPickerOpen, setEditVpcPickerOpen] = useState(false);
+  // 进入编辑弹窗时若自动清理过失效资源，记录被删除的具体资源 ID 用于在 DialogHeader 顶部提示文案：
+  // - vpcId   : 被删除的 VPC ID（仅 VPC 已删时填）
+  // - subnetIds: 被删除的子网 ID 列表（VPC 仍可用时填）
+  // - null    : 无清理动作
+  const [editAutoCleaned, setEditAutoCleaned] = useState<
+    null | { vpcId: string | null; subnetIds: string[] }
+  >(null);
   // 列表中展开查看子网配置详情的 VPC id 集合
   const [expandedVpcIds, setExpandedVpcIds] = useState<Set<string>>(() => new Set());
   const toggleVpcExpanded = (id: string) => {
@@ -3537,13 +3562,42 @@ export default function SecurityGroupManagement() {
                               )}
                             </button>
                             <div className="flex flex-col gap-0.5 min-w-0">
-                              <span className="text-sm font-medium text-gray-900 truncate">{row.vpcName}</span>
-                              {row.subnetStrategy === "auto" ? (
-                                // 自动分配 VPC：与子网保持一致的端到端语义，不展示具体 vpc-id/cidr
-                                <span className="text-xs text-gray-400">自动分配</span>
-                              ) : (
-                                <span className="text-xs text-gray-400 font-mono">{row.vpcId} · {row.cidr}</span>
-                              )}
+                              {(() => {
+                                const vpcDeleted = isVpcResourceDeleted(row);
+                                const hasAnomaly = hasVpcRowAnomaly(row);
+                                // VPC 自身已删除时，云端不再返回 vpcName，主标题以 "—" 占位；
+                                // 副信息行仍保留 vpcId（用于资源治理与排查）。
+                                const displayName = vpcDeleted ? "" : row.vpcName;
+                                return (
+                                  <>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="text-sm font-medium text-gray-900 truncate">{displayName || "—"}</span>
+                                      {hasAnomaly && (
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex items-center gap-0.5 text-sm text-amber-600 whitespace-nowrap shrink-0 cursor-default">
+                                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                                              <span>配置待更新</span>
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top" className="max-w-[300px] text-xs leading-relaxed">
+                                            当前配置中的部分 VPC / 子网已在云端删除，请重新配置。
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      )}
+                                    </div>
+                                    {row.subnetStrategy === "auto" ? (
+                                      // 自动分配 VPC：与子网保持一致的端到端语义，不展示具体 vpc-id/cidr
+                                      <span className="text-xs text-gray-400">自动分配</span>
+                                    ) : vpcDeleted ? (
+                                      // VPC 已被删除：保留 vpcId 作为治理信息，cidr 占位为短横
+                                      <span className="text-xs text-gray-400 font-mono">{row.vpcId} · —</span>
+                                    ) : (
+                                      <span className="text-xs text-gray-400 font-mono">{row.vpcId} · {row.cidr}</span>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
                         </td>
@@ -3588,17 +3642,47 @@ export default function SecurityGroupManagement() {
                               onClick={() => {
                                 const isSystemDefault =
                                   row.type === "enterprise" && row.vpcId === AUTO_ASSIGNED_VPC.id;
+                                // 进入编辑前，先剔除原配置中已被云控制台删除的 VPC / 子网，
+                                // 避免在表单中回显失效资源；同时记录失效资源 ID 用于顶部提示文案。
+                                const vpcDeleted = isVpcResourceDeleted(row);
+                                const allSubnetsForVpc = MOCK_SUBNETS[row.vpcId] ?? [];
+                                const removedSubnetIds: string[] = [];
+                                const sanitizedZoneSubnets = AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => {
+                                  const original = row.zoneSubnets[z] ?? [];
+                                  if (vpcDeleted) {
+                                    // VPC 已删除：连带清空所有可用区子网（必须重新选择 VPC）
+                                    acc[z] = [];
+                                    return acc;
+                                  }
+                                  // VPC 仍可用：仅过滤掉已删除子网，保留正常子网回显
+                                  const filtered = original.filter((id) => {
+                                    const s = allSubnetsForVpc.find((x) => x.id === id);
+                                    if (!s || isSubnetResourceDeleted(s)) {
+                                      if (id) removedSubnetIds.push(id);
+                                      return false;
+                                    }
+                                    return true;
+                                  });
+                                  acc[z] = filtered;
+                                  return acc;
+                                }, {});
                                 setEditVpcDraft({
-                                  vpcId: row.vpcId,
+                                  // VPC 已删除：vpcId 置空，强制用户重新选择
+                                  vpcId: vpcDeleted ? "" : row.vpcId,
                                   // 仅系统默认企业级 VPC 保留原策略（可能是 auto）；
                                   // 其他场景强制为 specified
                                   subnetStrategy: isSystemDefault ? row.subnetStrategy : "specified",
-                                  zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => {
-                                    acc[z] = [...(row.zoneSubnets[z] ?? [])];
-                                    return acc;
-                                  }, {}),
+                                  zoneSubnets: sanitizedZoneSubnets,
                                   associatedGroups: [...(row.associatedGroups ?? [])],
                                 });
+                                if (vpcDeleted || removedSubnetIds.length > 0) {
+                                  setEditAutoCleaned({
+                                    vpcId: vpcDeleted ? row.vpcId : null,
+                                    subnetIds: removedSubnetIds,
+                                  });
+                                } else {
+                                  setEditAutoCleaned(null);
+                                }
                                 setZoneSubnetPickerOpen({});
                                 setShowEditVpcDialog(row);
                               }}
@@ -3636,10 +3720,10 @@ export default function SecurityGroupManagement() {
                                   const rowIsAutoAssigned = row.subnetStrategy === "auto";
                                   return (
                                     <div key={zone} className="flex items-start gap-2 min-w-0">
-                                      <span className="text-xs font-medium shrink-0 w-16 text-gray-600">
+                                      <span className="text-xs font-medium shrink-0 w-16 text-gray-600 leading-6">
                                         {zone}
                                       </span>
-                                      <span className="text-xs text-gray-300 shrink-0">:</span>
+                                      <span className="text-xs text-gray-300 shrink-0 leading-6">:</span>
                                       {rowIsAutoAssigned ? (
                                         <span className="text-xs text-gray-400">自动分配</span>
                                       ) : isAssigned ? (
@@ -3681,6 +3765,7 @@ export default function SecurityGroupManagement() {
                           zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
                           associatedGroups: [],
                         });
+                        setEditAutoCleaned(null);
                         setZoneSubnetPickerOpen({});
                         setShowEditVpcDialog(placeholder);
                       }}
@@ -3728,6 +3813,7 @@ export default function SecurityGroupManagement() {
               setShowEditVpcDialog(null);
               // 重置草稿，避免上次选择的用户组 / VPC / 子网在下次新增时残留
               setEditVpcDraft({ vpcId: "", subnetStrategy: "auto", zoneSubnets: {}, associatedGroups: [] });
+              setEditAutoCleaned(null);
               setZoneSubnetPickerOpen({});
             }
           }}>
@@ -3786,6 +3872,25 @@ export default function SecurityGroupManagement() {
                         <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
                       </li>
                     </ul>
+                  </div>
+                )}
+                {editAutoCleaned && showEditVpcDialog?.id !== NEW_GROUP_VPC_ID && (
+                  <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mt-3">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <span className="text-xs text-amber-700 leading-relaxed break-all">
+                      {(() => {
+                        const segs: string[] = [];
+                        if (editAutoCleaned.vpcId) {
+                          // 英文头 VPC 与前文衔接需要空格分隔，可读性更好
+                          segs.push(` VPC ${editAutoCleaned.vpcId}`);
+                        }
+                        if (editAutoCleaned.subnetIds.length > 0) {
+                          // 中文头"子网"与前文中文紧贴，不加空格
+                          segs.push(`子网 ${editAutoCleaned.subnetIds.join("、")}`);
+                        }
+                        return `检测到原配置中的${segs.join("、")} 已从腾讯云控制台被删除，已自动从本次编辑中移除。`;
+                      })()}
+                    </span>
                   </div>
                 )}
               </DialogHeader>
@@ -3972,8 +4077,12 @@ export default function SecurityGroupManagement() {
                         })()}
                       </div>
 
-                      {/* ── 可用区子网配置（新增模式下默认展开；其他场景：自动分配或已选 VPC 时展示） ── */}
-                      {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID) && (
+                      {/* ── 可用区子网配置 ──
+                            正常展示条件：自动分配 / 已选 VPC / 新增分组场景；
+                            额外：VPC 已删除（editAutoCleaned.vpcId 非空）且尚未重选时也展示，
+                                  保持与"添加分组"一致：可用区固定，列出广州五/六/七区，
+                                  「+ 添加子网」按钮在 vpcId 为空时自带"请先选择 VPC"提示。 */}
+                      {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID || !!editAutoCleaned?.vpcId) && (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">可用区及子网配置</div>

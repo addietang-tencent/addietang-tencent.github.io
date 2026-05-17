@@ -29,6 +29,7 @@ import {
   buildGroupTree,
   findGroupNode,
   getGroupInitHealth,
+  hasNetworkOutdated,
 } from "./health";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL, MOCK_SYNC_RESULT, MOCK_USER_GROUP_AGENTS, getPrimaryDeptPath } from "./mock";
 
@@ -212,6 +213,22 @@ export default function GroupView({
 
     return ids;
   }, [directUninitializedGroupIds, groups]);
+
+  /**
+   * 网络配置待更新分组 id 集合（橙色小圆点）
+   *
+   * 仅命中分组自身（不冒泡到父分组、不下发到子分组、不影响兄弟分组）。
+   * 用于：左侧分组树该分组行的橙点提示。
+   */
+  const networkOutdatedGroupIds = useMemo(() => {
+    const ids = new Set<string>();
+    groups.forEach((g) => {
+      if (hasNetworkOutdated(g.id, groups)) {
+        ids.add(g.id);
+      }
+    });
+    return ids;
+  }, [groups]);
 
   // OneID 切换时切换分组集合
   React.useEffect(() => {
@@ -662,6 +679,7 @@ export default function GroupView({
                 onRefreshSync={handleRefreshSync}
                 uninitializedGroupIds={uninitializedGroupIds}
                 directUninitializedGroupIds={directUninitializedGroupIds}
+                networkOutdatedGroupIds={networkOutdatedGroupIds}
                 anomalousGroupDetails={anomalousGroupDetails}
               />
             </div>

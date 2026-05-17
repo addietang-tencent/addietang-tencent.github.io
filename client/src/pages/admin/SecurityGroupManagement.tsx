@@ -1994,8 +1994,72 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
 //   · 「⚠ 配置待更新」不在子网明细中重复，仅由列表策略行（VPC 主行）展示一次
 function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   const allDeleted = isZoneAllSubnetsDeleted(subnets);
-  const healthy = subnets.filter((s) => !isSubnetResourceDeleted(s));
-  const deleted = subnets.filter(isSubnetResourceDeleted);
+  const healthy = useMemo(() => subnets.filter((s) => !isSubnetResourceDeleted(s)), [subnets]);
+  const deleted = useMemo(() => subnets.filter(isSubnetResourceDeleted), [subnets]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const moreRef = useRef<HTMLSpanElement>(null);
+  const [visibleCount, setVisibleCount] = useState(healthy.length);
+
+  useLayoutEffect(() => {
+    if (healthy.length === 0) {
+      setVisibleCount(0);
+      return;
+    }
+    const container = containerRef.current;
+    if (!container) return;
+
+    const computeVisible = () => {
+      const available = container.clientWidth;
+      if (available <= 0) return;
+      const gap = 6;
+      let totalW = 0;
+      let fitCount = 0;
+      for (let i = 0; i < healthy.length; i++) {
+        const el = tagRefs.current[i];
+        if (!el) break;
+        const w = el.offsetWidth;
+        const add = totalW === 0 ? w : w + gap;
+        if (totalW + add <= available) {
+          totalW += add;
+          fitCount = i + 1;
+        } else {
+          break;
+        }
+      }
+      if (fitCount === healthy.length) {
+        setVisibleCount(healthy.length);
+        return;
+      }
+      const moreEl = moreRef.current;
+      if (!moreEl) {
+        setVisibleCount(Math.max(1, fitCount));
+        return;
+      }
+      for (let n = fitCount; n >= 1; n--) {
+        let w = 0;
+        for (let i = 0; i < n; i++) {
+          const el = tagRefs.current[i];
+          if (!el) continue;
+          w += el.offsetWidth + (i === 0 ? 0 : gap);
+        }
+        moreEl.textContent = `…共 ${healthy.length} 个可用子网`;
+        const moreW = moreEl.offsetWidth;
+        if (w + gap + moreW <= available) {
+          setVisibleCount(n);
+          return;
+        }
+      }
+      setVisibleCount(1);
+    };
+
+    computeVisible();
+    const observer = new ResizeObserver(computeVisible);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [healthy]);
+
+  const omitted = healthy.length - visibleCount;
 
   // 已删除子网聚合行（全删 / 部分删 共用）
   // 结构：subnetId 在前（资源主体）、状态说明在后（轻量 warning 文案）
@@ -2031,8 +2095,8 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   return (
     <div className="flex flex-col gap-1 flex-1 min-w-0 cursor-default">
       {healthy.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-          {healthy.map((s) => (
+        <div ref={containerRef} className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+          {healthy.slice(0, visibleCount).map((s, i) => (
             <span
               key={s.id}
               ref={(el) => { tagRefs.current[i] = el; }}
@@ -2048,12 +2112,12 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
           {/* 折叠提示 */}
           {omitted > 0 && (
             <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap shrink-0">
-              …共 {subnets.length} 个子网
+              …共 {healthy.length} 个可用子网
             </span>
           )}
           {/* 隐藏测量区 */}
           <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
-            {subnets.map((s, i) => (
+            {healthy.map((s, i) => (
               <span
                 key={`m-${s.id}`}
                 ref={(el) => { tagRefs.current[i] = el; }}

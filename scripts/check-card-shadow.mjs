@@ -56,7 +56,7 @@ const SCAN_ROOTS = [
  *     避免下次新增违规又被误判为"还在基线内"。
  *   - 目标是让这个数字最终降到 0，届时整个仓库进入零违规模式。
  */
-const BASELINE = 196;
+const BASELINE = 187;
 
 const STRICT_MODE = process.env.STRICT === "1";
 

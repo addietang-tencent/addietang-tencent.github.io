@@ -145,7 +145,7 @@ export const AgentCard = ({
               className={`truncate transition-colors ${
                 isGrayAvatar
                   ? "text-muted-foreground"
-                  : "text-[#0A0A0A] group-hover:text-primary"
+                  : "text-[#0A0A0A] group-hover:text-[#1447e6]"
               }`}
               style={{
                 fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
@@ -434,7 +434,6 @@ export const AgentCard = ({
           >
             <MessageSquare
               className="w-3.5 h-3.5"
-            />
             />
           </Button>
         </div>

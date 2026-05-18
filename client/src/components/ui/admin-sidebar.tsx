@@ -161,7 +161,7 @@ const AdminSidebarHeaderAction = React.forwardRef<HTMLButtonElement, React.Compo
         ref={ref}
         data-slot="admin-sidebar-header-action"
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:bg-gray-50 hover:text-[var(--brand-blue)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
+          "flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:text-[#1447e6] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
           className
         )}
         {...props}

@@ -1968,7 +1968,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   placeholder="请输入准确 Skill 名称"
                   value={skillSearch}
                   onChange={(e) => setSkillSearch(e.target.value)}
-                  className="pl-9 bg-gray-50 border-gray-200 text-xs"
+                  className="pl-9 text-xs"
                 />
               </div>
 

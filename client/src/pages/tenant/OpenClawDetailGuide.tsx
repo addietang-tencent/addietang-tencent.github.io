@@ -752,7 +752,7 @@ export default function OpenClawDetailGuide() {
                 </div>
 
                 {/* 右：操作按钮 */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="claw-outline"
                     size="claw"
@@ -884,13 +884,14 @@ export default function OpenClawDetailGuide() {
                     )}
 
                     {/* 添加备用模型按钮 */}
-                    <button
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[4px] text-sm font-medium transition-colors hover:bg-[#F0F0F0]"
-                      style={{ border: "1px dashed #D4D4D8", color: "#0A0A0A" }}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full border-dashed"
                       onClick={handleApplyModel}
                     >
                       添加备用模型
-                    </button>
+                    </Button>
 
                     {/* 分割线 + 已应用模型 */}
                     <div className="pt-2 border-t border-[#E5E5E5]">
@@ -1016,13 +1017,14 @@ export default function OpenClawDetailGuide() {
                     </Select>
 
                     {/* 前往授权按钮 */}
-                    <button
-                      className="w-full py-2.5 rounded-[4px] text-sm font-medium transition-colors hover:bg-[#F9F9F9]"
-                      style={{ border: "1px solid #E5E5E5", color: "#0A0A0A" }}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
                       onClick={() => toast.info("前往授权（demo）")}
                     >
                       前往授权
-                    </button>
+                    </Button>
 
                     {/* 说明文字（动态跟随选中通道） */}
                     <p className="text-xs leading-relaxed" style={{ color: "#737373" }}>
@@ -1067,18 +1069,17 @@ export default function OpenClawDetailGuide() {
                       <Input
                         placeholder="请输入准确 Skill 名称"
                         className="h-9 pl-9 rounded-[4px] text-sm"
-                        style={{ background: "#FFFFFF", borderColor: "#E6E9EF" }}
                       />
                     </div>
 
                     {/* 安装技能按钮 */}
-                    <button
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-[4px] py-2 text-sm font-medium hover:opacity-90 transition-opacity"
-                      style={{ background: "#0A0A0A", color: "#FFFFFF" }}
+                    <Button
+                      size="lg"
+                      className="w-full"
                       onClick={() => setSkillModalOpen(true)}
                     >
                       安装技能
-                    </button>
+                    </Button>
 
                     {/* 管理员配置提示 */}
                     <div

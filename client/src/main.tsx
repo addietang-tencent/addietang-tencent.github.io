@@ -10,6 +10,7 @@ import "./index.css";
 if (typeof window !== "undefined") {
   try {
     localStorage.removeItem("admin_default_security_group_snapshot");
+    localStorage.removeItem("openclaw_list");
   } catch {
     // 静默忽略（无痕模式、隐私限制等场景）
   }

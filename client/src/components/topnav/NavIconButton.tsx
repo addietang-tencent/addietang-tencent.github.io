@@ -43,7 +43,7 @@ const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
         className={[
           "relative inline-flex items-center gap-2 rounded-[4px]",
           "px-2 py-[6px] text-[14px] leading-[22px]",
-          "text-[#020617]/90 hover:text-[#1447e6]",
+          "text-[#020617]/90 hover:bg-[#F5F5F5] hover:text-[#020617]",
           "transition-colors flex-shrink-0",
           className,
         ].join(" ")}

@@ -25,13 +25,15 @@ export interface NavIconButtonProps
   title?: string;
   /** 是否显示右上红点 */
   showDot?: boolean;
+  /** 文字后的徽章插槽（如未读数）— 与 label 同处按钮内部，hover 背景一并覆盖 */
+  badge?: React.ReactNode;
   /** 内部 className */
   className?: string;
 }
 
 const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
   function NavIconButton(
-    { icon, label, title, showDot, className = "", ...rest },
+    { icon, label, title, showDot, badge, className = "", ...rest },
     ref
   ) {
     return (
@@ -52,6 +54,11 @@ const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
           {icon}
         </span>
         {label && <span className="whitespace-nowrap">{label}</span>}
+        {badge && (
+          <span className="inline-flex items-center flex-shrink-0">
+            {badge}
+          </span>
+        )}
         {showDot && (
           <span
             aria-hidden

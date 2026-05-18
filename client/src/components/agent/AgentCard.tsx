@@ -25,6 +25,7 @@ import {
   UserMinus,
   Copy,
   Check,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/Surface";
@@ -65,6 +66,8 @@ export interface AgentCardCallbacks {
   onDelete: (claw: AgentCardItem) => void;
   onRemoveRole: (claw: AgentCardItem) => void;
   onRetry: (id: string, name: string) => void;
+  /** 点击对话按钮进入对话视图 */
+  onChat: (claw: AgentCardItem) => void;
   /** 打开终端权限（综合双模式逻辑） */
   canOpenTerminal: (claw: AgentCardItem) => boolean;
   /** 当前是否在刷新中 */
@@ -92,6 +95,7 @@ export const AgentCard = ({
   onDelete,
   onRemoveRole,
   onRetry,
+  onChat,
   canOpenTerminal,
   refreshing,
   groupMode,
@@ -127,7 +131,7 @@ export const AgentCard = ({
         if (!isDisabled) onClickCard(claw);
       }}
     >
-      {/* ===== 头部行：头像 + 名称/状态 + 三点菜单 ===== */}
+      {/* ===== 头部行：头像 + 名称/状态 + 右上角操作（刷新+更多） ===== */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <AgentAvatar
@@ -157,7 +161,21 @@ export const AgentCard = ({
           </div>
         </div>
 
-        <DropdownMenu>
+        {/* 右上角：刷新 + 更多菜单 */}
+        <div className="flex items-center gap-1">
+          <button
+            className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRefresh(e, claw.id, claw.name);
+            }}
+            disabled={refreshing}
+            aria-label="刷新状态"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </button>
+
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
@@ -288,11 +306,14 @@ export const AgentCard = ({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
 
       {/* ===== 元信息组：column gap 4，含两行 ===== */}
       <div className="flex flex-col" style={{ gap: "4px" }}>
-        {/* 元信息第 1 行：角色徽章 | 类型 | ID + 复制 */}
+        {/* 元信息第 1 行：Agent 标签徽章 | 类型 | ID + 复制
+            Agent 标签徽章 = roleName（如「设计师」「开发工程师」「通用助手」），
+            对齐 Figma 358:2392，徽章常驻显示（默认「通用助手」），不会因 roleName 缺省而隐藏 */}
         <div
           className="flex items-center flex-wrap"
           style={{
@@ -304,24 +325,20 @@ export const AgentCard = ({
             color: "#334155",
           }}
         >
-          {claw.roleName && (
-            <span
-              className="inline-flex items-center"
-              style={{
-                padding: "2px 6px",
-                borderRadius: "2px",
-                border: "1px solid #DAE0E9",
-                background:
-                  "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
-                color: "#334155",
-              }}
-            >
-              {claw.roleName}
-            </span>
-          )}
-          {claw.roleName && (
-            <span style={{ color: "#E2E8F0" }}>｜</span>
-          )}
+          <span
+            className="inline-flex items-center"
+            style={{
+              padding: "2px 6px",
+              borderRadius: "2px",
+              border: "1px solid #DAE0E9",
+              background:
+                "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
+              color: "#334155",
+            }}
+          >
+            {claw.roleName || "通用助手"}
+          </span>
+          <span style={{ color: "#E2E8F0" }}>｜</span>
           <span>类型：{typeLabel}</span>
           <span style={{ color: "#E2E8F0" }}>｜</span>
           <span className="inline-flex items-center" style={{ gap: "6px" }}>
@@ -404,16 +421,19 @@ export const AgentCard = ({
               </Button>
             </Link>
           )}
-          {/* 第二个方形按钮：刷新（48x36，仅图标） */}
+          {/* 第二个方形按钮：对话（48x36，仅图标） */}
           <Button
             variant="claw-outline"
             size="claw-square"
-            onClick={(e) => onRefresh(e, claw.id, claw.name)}
-            disabled={refreshing}
-            aria-label="刷新状态"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChat(claw);
+            }}
+            disabled={isDisabled}
+            aria-label="开始对话"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`}
+            <MessageSquare
+              className="w-3.5 h-3.5"
               style={{ color: "#737373" }}
             />
           </Button>

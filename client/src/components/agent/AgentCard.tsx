@@ -164,7 +164,7 @@ export const AgentCard = ({
         {/* 右上角：刷新 + 更多菜单 */}
         <div className="flex items-center gap-1">
           <button
-            className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#F5F5F5] transition-colors flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
               onRefresh(e, claw.id, claw.name);
@@ -178,7 +178,7 @@ export const AgentCard = ({
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+              className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#F5F5F5] transition-colors flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
               aria-label="更多操作"
             >

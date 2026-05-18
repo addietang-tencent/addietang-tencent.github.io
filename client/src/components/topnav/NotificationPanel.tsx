@@ -1,20 +1,48 @@
 /**
- * NotificationPanel - 顶部导航的消息通知面板
+ * NotificationPanel - 顶部导航的消息通知（右侧抽屉，非模态）
  *
- * 设计来源：Figma 「公共组件/导航」-> 「图标文本」（节点 297:3275 消息通知）
- *           面板内部样式沿用原 TenantLayout 内的设计语言（保留原有体验）
+ * 组件结构严格遵循 shadcn/ui Sheet 规范（https://ui.shadcn.com/docs/components/sheet）：
+ *   Sheet
+ *   ├── SheetTrigger（铃铛按钮）
+ *   └── SheetContent
+ *       ├── SheetHeader
+ *       │   ├── SheetTitle + 全局操作（全部已读 / 全部删除）
+ *       │   └── SheetDescription (sr-only)
+ *       └── （主体内容：Tabs + 列表）
  *
- * 用法：
- *   <NotificationPanel isAdmin={isAdmin} mockNotifications={MOCK} />
- *
- * 说明：
- *   - 触发按钮：铃铛 + 未读红点
- *   - 弹层：定位 fixed right-4 top-[72px]（顶部导航 64 + 8 间距）
- *   - 通知数据完全由 props 提供；组件本身只管面板状态
+ * 项目设计系统对齐：
+ *   - §5.1 L3 浮层（Sheet 内部已使用 var(--shadow-overlay)）
+ *   - §8.6 Tab 切换（Tabs + Segmented Control 灰底白滑块）
+ *   - §8.1 按钮（Button claw-* / ghost 变体）
+ *   - §1.4 五档文字色阶
  */
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "wouter";
-import { ArrowRight, Check, Copy, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import {
+  Check,
+  CheckCircle2,
+  Copy,
+  Info,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { SurfaceCard } from "@/components/ui/Surface";
 import NavIconButton from "./NavIconButton";
 import { BellIcon } from "./NavIcons";
 
@@ -32,28 +60,26 @@ export interface Notification {
 
 const CATEGORY_CONFIG: Record<
   NotificationCategory,
-  { label: string; icon: React.ReactNode; bgColor: string; textColor: string }
+  { label: string; Icon: React.ComponentType<{ className?: string }>; iconColor: string; bgColor: string; textColor: string }
 > = {
   success: {
-    label: "成功",
-    icon: <span style={{ fontFamily: '"微软雅黑", "Microsoft YaHei", sans-serif' }}>✓</span>,
+    label: "操作成功",
+    Icon: CheckCircle2,
+    iconColor: "text-green-600",
     bgColor: "bg-green-50",
     textColor: "text-green-700",
   },
   failure: {
-    label: "错误",
-    icon: (
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "inline-block", verticalAlign: "middle" }}>
-        <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" />
-        <line x1="8.5" y1="1.5" x2="1.5" y2="8.5" stroke="#dc2626" strokeWidth="1.2" strokeLinecap="round" />
-      </svg>
-    ),
+    label: "操作报错",
+    Icon: XCircle,
+    iconColor: "text-red-600",
     bgColor: "bg-red-50",
     textColor: "text-red-700",
   },
   notice: {
-    label: "通知",
-    icon: <span style={{ fontFamily: '"微软雅黑", "Microsoft YaHei", sans-serif' }}>ℹ</span>,
+    label: "通知公告",
+    Icon: Info,
+    iconColor: "text-blue-600",
     bgColor: "bg-blue-50",
     textColor: "text-blue-700",
   },
@@ -64,38 +90,26 @@ export interface NotificationPanelProps {
   notifications: Notification[];
   /** 是否管理员（保留对外参数，便于上层根据角色决定推送哪些通知） */
   isAdmin?: boolean;
-  /** 自定义触发按钮位置（默认 fixed 右上偏移） */
-  panelOffsetTop?: number;
 }
+
+type TabKey = "all" | NotificationCategory;
 
 export default function NotificationPanel({
   notifications: initialNotifications,
-  panelOffsetTop = 72,
 }: NotificationPanelProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [showPanel, setShowPanel] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | NotificationCategory>("all");
+  const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setNotifications(initialNotifications);
   }, [initialNotifications]);
 
   const hasUnread = notifications.some((n) => !n.read);
-
-  // 点击弹窗外部关闭
-  useEffect(() => {
-    if (!showPanel) return;
-    const handleMouseDown = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        setShowPanel(false);
-      }
-    };
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [showPanel]);
+  const totalUnread = notifications.filter((n) => !n.read).length;
+  const unreadDisplay = totalUnread > 99 ? "99+" : String(totalUnread);
 
   const handleMarkRead = (id: string) =>
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -116,193 +130,241 @@ export default function NotificationPanel({
     });
   };
 
-  const tabs: { key: "all" | NotificationCategory; label: string }[] = [
+  const tabs: { key: TabKey; label: string }[] = [
     { key: "all", label: "全部" },
-    { key: "success", label: "成功" },
-    { key: "failure", label: "错误" },
+    { key: "success", label: "操作成功" },
+    { key: "failure", label: "操作报错" },
+    { key: "notice", label: "通知公告" },
   ];
 
-  const filteredNotifs = activeTab === "all"
-    ? notifications
-    : notifications.filter((n) => n.category === activeTab);
-
-  const unreadCountFor = (key: "all" | NotificationCategory) =>
+  const unreadCountFor = (key: TabKey) =>
     key === "all"
       ? notifications.filter((n) => !n.read).length
       : notifications.filter((n) => n.category === key && !n.read).length;
 
-  return (
-    <div className="relative">
-      <NavIconButton
-        icon={<BellIcon />}
-        title="消息通知"
-        showDot={hasUnread}
-        onClick={() => setShowPanel((p) => !p)}
-      />
+  const listFor = (key: TabKey) =>
+    key === "all" ? notifications : notifications.filter((n) => n.category === key);
 
-      {showPanel && (
-        <div
-          ref={panelRef}
-          className="fixed right-4 w-80 bg-white rounded-[4px] shadow-xl border border-gray-100 flex flex-col z-[200]"
-          style={{
-            top: panelOffsetTop,
-            maxHeight: filteredNotifs.length > 4 ? "400px" : undefined,
-          }}
-        >
-          {/* Header + Tabs */}
-          <div className="px-3 pt-3 pb-0 flex-shrink-0">
-            <div className="flex items-center justify-between mb-2.5">
-              <h3 className="font-semibold text-gray-900 text-xs">消息通知</h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleClearAll}
-                  className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                >全部删除</button>
-                <span className="text-gray-200 text-xs">|</span>
-                <button
-                  onClick={handleMarkAllRead}
-                  className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                >全部已读</button>
+  // ─── 单条通知渲染（被各 Tab 复用） ──────────────────────────────────────
+  const renderList = (list: Notification[]) => {
+    if (list.length === 0) {
+      return (
+        <div className="py-24 text-center">
+          <BellIcon size={48} style={{ color: "#E5E5E5", margin: "0 auto" }} />
+          <p className="text-xs text-[#A3A3A3] mt-3">暂无消息</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-2 p-3">
+        {list.map((notif) => {
+          const catCfg = CATEGORY_CONFIG[notif.category];
+          const isCopied = copiedId === notif.id;
+          return (
+            <SurfaceCard
+              key={notif.id}
+              className="bg-white px-3 py-2.5 border border-[#F4F5F8] transition-colors hover:bg-[#F5F5F5]"
+              style={{ boxShadow: "none" }}
+              onMouseEnter={() => setHoveredId(notif.id)}
+              onMouseLeave={() => setHoveredId(null)}
+            >
+              <div>
+                <p
+                  className={[
+                    "text-xs leading-relaxed line-clamp-2 transition-colors",
+                    notif.read ? "text-[#A3A3A3]" : "text-[#334155]",
+                  ].join(" ")}
+                  title={notif.message}
+                >
+                  {notif.message}
+                </p>
               </div>
+              <div className="flex items-center justify-between mt-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={[
+                      "inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium",
+                      catCfg.bgColor,
+                      catCfg.textColor,
+                    ].join(" ")}
+                  >
+                    {catCfg.label}
+                  </span>
+                  <span className="text-[#A3A3A3] text-[11px]">{notif.timestamp}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {!notif.read && hoveredId === notif.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMarkRead(notif.id)}
+                      className="h-6 px-1.5 gap-1 text-xs text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3"
+                      title="标为已读"
+                    >
+                      <Check />
+                      已读
+                    </Button>
+                  )}
+                  {hoveredId === notif.id && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(notif.id)}
+                      className="h-6 px-1.5 gap-1 text-xs text-[#A3A3A3] hover:text-red-600 hover:bg-transparent [&_svg]:size-3"
+                      title="删除"
+                      aria-label="删除"
+                    >
+                      <Trash2 />
+                      删除
+                    </Button>
+                  )}
+                  {notif.category === "failure" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopy(notif)}
+                      className={[
+                        "h-6 px-1.5 gap-1 text-xs [&_svg]:size-3",
+                        isCopied
+                          ? "text-green-600 bg-green-50 hover:bg-green-50 hover:text-green-600"
+                          : "text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5]",
+                      ].join(" ")}
+                      title="复制详情"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check />
+                          已复制
+                        </>
+                      ) : (
+                        <>
+                          <Copy />
+                          复制
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </SurfaceCard>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <Sheet open={showPanel} onOpenChange={setShowPanel} modal={false}>
+      <SheetTrigger asChild>
+        <NavIconButton
+          icon={<BellIcon />}
+          label="消息通知"
+          title="消息通知"
+          badge={
+            hasUnread ? (
+              <span
+                aria-label={`${totalUnread} 条未读通知`}
+                className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-[#E85C5C] text-white leading-none"
+              >
+                {unreadDisplay}
+              </span>
+            ) : null
+          }
+        />
+      </SheetTrigger>
+
+      <SheetContent
+        side="right"
+        showOverlay={false}
+        className="!w-[420px] !max-w-none !top-16 !h-[calc(100vh-4rem)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
+      >
+        {/* ───── shadcn 规范：SheetHeader > SheetTitle + SheetDescription ───── */}
+        <SheetHeader className="px-5 pt-5 pb-4 border-b border-[#E5E5E5] gap-0 space-y-0">
+          <div className="flex items-center justify-between">
+            <SheetTitle className="text-base font-semibold text-[#0A0A0A]">
+              消息通知
+            </SheetTitle>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllRead}
+                disabled={!hasUnread}
+                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
+              >
+                <Check className="w-3.5 h-3.5" />
+                全部已读
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                disabled={notifications.length === 0}
+                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                全部删除
+              </Button>
+              <SheetClose asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="关闭"
+                  className="h-7 w-7 text-[#737373] hover:text-[#0A0A0A]"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </SheetClose>
             </div>
-            <div className="flex gap-0.5 border-b border-gray-100">
+          </div>
+          <SheetDescription className="sr-only">
+            查看与管理您的系统通知，包括操作成功、操作报错、通知公告三大类。
+          </SheetDescription>
+        </SheetHeader>
+
+        {/* ───── 主体内容：Tabs（Segmented Control）+ 滚动列表 ───── */}
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as TabKey)}
+          className="flex flex-col flex-1 min-h-0 gap-0"
+        >
+          {/* §8.6 Tab 切换（Segmented Control） */}
+          <div className="px-3 pt-3 pb-1">
+            <TabsList
+              className="flex items-center gap-1 p-1 h-auto rounded-[4px] w-full"
+              style={{ background: "#F5F5F5" }}
+            >
               {tabs.map((tab) => {
                 const count = unreadCountFor(tab.key);
-                const isActive = activeTab === tab.key;
                 return (
-                  <button
+                  <TabsTrigger
                     key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={[
-                      "flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-t-md transition-colors relative",
-                      isActive
-                        ? "text-blue-600 bg-blue-50/60"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50",
-                    ].join(" ")}
+                    value={tab.key}
+                    className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
                   >
                     {tab.label}
                     {count > 0 && (
-                      <span
-                        className={[
-                          "inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-semibold",
-                          isActive
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-gray-100 text-gray-500",
-                        ].join(" ")}
-                      >{count}</span>
+                      <span className="text-[#737373]">({count})</span>
                     )}
-                    {isActive && (
-                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 rounded-full" />
-                    )}
-                  </button>
+                  </TabsTrigger>
                 );
               })}
-            </div>
+            </TabsList>
           </div>
 
           <div
-            className="overflow-y-auto flex-1"
+            className="overflow-y-auto flex-1 min-h-0"
             style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db #f3f4f6" }}
           >
-            {filteredNotifs.length === 0 ? (
-              <div className="p-6 text-center">
-                <BellIcon size={32} style={{ color: "#d1d5db", margin: "0 auto" }} />
-                <p className="text-xs text-gray-400 mt-2">暂无消息</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-50">
-                {filteredNotifs.map((notif) => {
-                  const catCfg = CATEGORY_CONFIG[notif.category];
-                  const isCopied = copiedId === notif.id;
-                  return (
-                    <div
-                      key={notif.id}
-                      className="px-3 py-2.5 hover:bg-gray-50/70 transition-colors relative"
-                      onMouseEnter={() => setHoveredId(notif.id)}
-                      onMouseLeave={() => setHoveredId(null)}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p
-                          className={[
-                            "text-xs flex-1 leading-relaxed line-clamp-2 transition-colors",
-                            notif.read ? "text-gray-400" : "text-gray-700",
-                          ].join(" ")}
-                          title={notif.message}
-                        >{notif.message}</p>
-                        <button
-                          onClick={() => handleDelete(notif.id)}
-                          className="text-gray-300 hover:text-gray-600 transition-colors flex-shrink-0 mt-0.5"
-                        ><X className="w-3.5 h-3.5" /></button>
-                      </div>
-                      <div className="flex items-center justify-between mt-1.5">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={[
-                              "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium",
-                              catCfg.bgColor,
-                              catCfg.textColor,
-                            ].join(" ")}
-                          >
-                            {catCfg.icon}
-                            {catCfg.label}
-                          </span>
-                          <span className="text-gray-400" style={{ fontSize: "11px" }}>
-                            {notif.timestamp}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          {notif.actionHref && hoveredId === notif.id && (
-                            <Link href={notif.actionHref}>
-                              <button
-                                onClick={() => {
-                                  handleMarkRead(notif.id);
-                                  setShowPanel(false);
-                                }}
-                                className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
-                                title="前往查看"
-                              >
-                                {notif.actionLabel || "前往查看"}
-                                <ArrowRight className="w-3 h-3" />
-                              </button>
-                            </Link>
-                          )}
-                          {!notif.read && hoveredId === notif.id && (
-                            <button
-                              onClick={() => handleMarkRead(notif.id)}
-                              className="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                              title="标为已读"
-                            >
-                              <Check className="w-3 h-3" />已读
-                            </button>
-                          )}
-                          {notif.category === "failure" && (
-                            <button
-                              onClick={() => handleCopy(notif)}
-                              className={[
-                                "flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded transition-colors",
-                                isCopied
-                                  ? "text-green-600 bg-green-50"
-                                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
-                              ].join(" ")}
-                              title="复制详情"
-                            >
-                              {isCopied ? (
-                                <><Check className="w-3 h-3" />已复制</>
-                              ) : (
-                                <><Copy className="w-3 h-3" />复制</>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            {tabs.map((tab) => (
+              <TabsContent key={tab.key} value={tab.key} className="m-0">
+                {renderList(listFor(tab.key))}
+              </TabsContent>
+            ))}
           </div>
-        </div>
-      )}
-    </div>
+        </Tabs>
+      </SheetContent>
+    </Sheet>
   );
 }

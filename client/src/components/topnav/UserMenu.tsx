@@ -54,7 +54,7 @@ export default function UserMenu({
           type="button"
           className={[
             "inline-flex items-center gap-[9px] rounded-[4px]",
-            "px-[9px] py-[4px] hover:bg-[#F1F5F9] transition-colors",
+            "px-[9px] py-[4px] hover:text-[#1447e6] transition-colors",
             className,
           ].join(" ")}
         >

@@ -221,7 +221,7 @@ function InlineQuotaField({
 
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-medium text-gray-600">
+      <Label className="text-xs font-medium ">
         {label}
         {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
       </Label>
@@ -291,7 +291,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={() => setEditing(false)}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               取消
             </Button>
@@ -299,7 +299,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={handleSave}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               保存
             </Button>
@@ -378,7 +378,7 @@ export default function BasicInfo() {
           >
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="siteName" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="siteName" className="text-xs font-medium ">
                   网站名称
                   <span className="text-gray-400 font-normal ml-1">将展示在用户端左上角常驻和首页</span>
                 </Label>
@@ -391,7 +391,7 @@ export default function BasicInfo() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-600">
+                <Label className="text-xs font-medium ">
                   网站 Logo
                   <span className="text-gray-400 font-normal ml-1">
                     建议尺寸 200×200px，不超过 512KB
@@ -437,7 +437,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="text-xs text-gray-600"
+                className="text-xs "
               >
                 保存
               </Button>
@@ -480,7 +480,7 @@ export default function BasicInfo() {
               size="sm"
               variant="outline"
               onClick={() => navigate("/admin/members")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
+              className="text-xs flex items-center gap-1.5 "
             >
               前往用户管理
               <ChevronRight className="w-3.5 h-3.5" />
@@ -499,7 +499,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/model-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/channel-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -541,7 +541,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/image-management")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -562,7 +562,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/security-group?tab=vpc")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -582,7 +582,7 @@ export default function BasicInfo() {
               size="sm"
               variant="outline"
               onClick={() => navigate("/admin/security-group")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
+              className="text-xs flex items-center gap-1.5 "
             >
               前往安全组管理
               <ChevronRight className="w-3.5 h-3.5" />

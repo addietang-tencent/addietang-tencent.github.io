@@ -65,7 +65,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </AdminSidebarBrand>
 
               <AdminSidebarHeaderAction asChild title="前往用户端">
-                <Link href="/my-openclaw" aria-label="前往用户端">
+                <Link href="/my-openclaw" aria-label="前往用户端" className="!border !border-[#e3e3e3] !rounded-[4px] !bg-white hover:!text-[#1447e6]">
                   <ExternalLink />
                 </Link>
               </AdminSidebarHeaderAction>

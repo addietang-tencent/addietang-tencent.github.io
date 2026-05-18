@@ -518,19 +518,15 @@ export default function MyOpenClaw() {
             <QuickStartGuide onClose={() => setShowQuickStart(false)} />
           )}
 
-          {/* Section Header - Figma 358:2373，左右 42px 段落内边距对齐 446:2976
+          {/* Section Header - 标题 + 视图切换（左） + 分组模式 + 创建按钮（右），合并为一行
               QuickStart 展开时，由 QuickStartGuide 自带的 mb-5 提供与 hero 之间的段间距；
               QuickStart 关闭时，QuickStartGuide 不渲染，需在此补 mt-5 让 hero 与 section 之间保持一致段间距 */}
-          {/* 标题独占一行 */}
-          <div className={`px-[42px] ${!showQuickStart ? "mt-5" : ""}`}>
-            <h2 className="text-base font-medium text-foreground mb-3">
-              我的 Agent
-              <span className="text-muted-foreground font-normal">（{claws.length}）</span>
-            </h2>
-          </div>
-          {/* 操作栏：视图切换（左） + 分组模式 + 创建按钮（右） */}
-          <div className="flex items-center justify-between mb-4 px-[42px]">
+          <div className={`flex items-center justify-between mb-4 px-[42px] ${!showQuickStart ? "mt-5" : ""}`}>
             <div className="flex items-center gap-3">
+              <h2 className="text-base font-medium text-foreground">
+                我的 Agent
+                <span className="text-muted-foreground font-normal">（{claws.length}）</span>
+              </h2>
               {/* 视图切换：管理视图 / 对话视图 */}
               <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
             </div>

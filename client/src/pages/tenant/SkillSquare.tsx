@@ -389,30 +389,22 @@ export default function SkillSquare() {
 
         {/* 分类横排按钮 */}
         <div className="flex items-center gap-1.5 mb-6 flex-wrap pl-1">
-          <button
+          <Button
             onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-colors border ${
-              selectedCategory === 'all'
-                ? 'text-white border-transparent'
-                : 'bg-white text-[#334155] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
-            }`}
-            style={selectedCategory === 'all' ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
+            variant={selectedCategory === 'all' ? 'default' : 'outline'}
+            size="sm"
           >
             全部
-          </button>
+          </Button>
           {DEFAULT_CATEGORIES.map(cat => (
-            <button
+            <Button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-colors border ${
-                selectedCategory === cat.id
-                  ? 'text-white border-transparent'
-                  : 'bg-white text-[#334155] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
-              }`}
-              style={selectedCategory === cat.id ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
+              variant={selectedCategory === cat.id ? 'default' : 'outline'}
+              size="sm"
             >
               {cat.name}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -540,8 +532,7 @@ function SkillCard({
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <span
-                  className="w-8 h-8 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center cursor-not-allowed flex-shrink-0"
-                  style={{ color: "#A3A3A3" }}
+                  className="inline-flex items-center justify-center size-8 rounded-[4px] border border-[#e5e5e5] text-[rgba(2,6,23,0.3)] cursor-not-allowed flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Plus className="w-4 h-4" />
@@ -550,12 +541,14 @@ function SkillCard({
               <TooltipContent><span className="text-xs">请等待下发完成</span></TooltipContent>
             </Tooltip>
           ) : (
-            <button
+            <Button
+              variant="outline"
+              size="icon-sm"
               onClick={handleDistributeClick}
-              className="w-8 h-8 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
+              className="flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 

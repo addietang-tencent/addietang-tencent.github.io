@@ -52,5 +52,7 @@ export type {
   NotificationPanelProps,
 } from "./NotificationPanel";
 
+export { default as HelpPanel } from "./HelpPanel";
+
 export { default as UserMenu } from "./UserMenu";
 export type { UserMenuProps } from "./UserMenu";

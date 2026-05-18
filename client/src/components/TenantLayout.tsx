@@ -27,9 +27,9 @@ import {
   NavDivider,
   CenterTabs,
   NavIconButton,
-  HelpIcon,
   SwitchAdminIcon,
   NotificationPanel,
+  HelpPanel,
   UserMenu,
   type Notification,
 } from "@/components/topnav";
@@ -40,9 +40,6 @@ const CENTER_NAV_ITEMS = [
   { label: "技能广场", value: "/skill-square" },
   { label: "模型额度", value: "/model-quota" },
 ];
-
-// 右侧图标导航：帮助文档保留为右侧"使用指南"入口（对齐 Figma 358:2322 右侧）
-const HELP_DOC_PATH = "/help-docs";
 
 const CURRENT_USER = "alice@acompany.com";
 
@@ -146,9 +143,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
         right={
           <>
             {/* 使用指南 */}
-            <Link href={HELP_DOC_PATH}>
-              <NavIconButton icon={<HelpIcon />} title="使用指南" />
-            </Link>
+            <HelpPanel />
 
             <NavDivider />
 

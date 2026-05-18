@@ -316,28 +316,33 @@ export default function SkillSquare() {
           <div className="flex-1 min-w-0 px-[42px] py-8">
         {/* 页面标题 */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">企业技能</h1>
-          <p className="text-sm text-gray-500 mt-1">一键选装企业内的优质技能。</p>
+          <h1
+            className="text-[26px] font-semibold leading-8"
+            style={{ color: "#0A0A0A", letterSpacing: "-0.0385em" }}
+          >
+            企业技能
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "#737373" }}>一键选装企业内的优质技能。</p>
         </div>
 
         {/* 搜索栏 + 筛选 */}
         <div className="flex flex-wrap gap-3 mb-4 items-center">
           {/* 搜索框 — 加长 */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#A3A3A3" }} />
             <Input
               placeholder="搜索技能名称或描述..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white"
+              className="pl-9 bg-white border-[#E5E5E5] rounded-[4px]"
             />
           </div>
 
           {/* 排序 */}
           <Select value={sortType} onValueChange={(v) => setSortType(v as SortType)}>
-            <SelectTrigger className="w-32 bg-white">
+            <SelectTrigger className="w-32 bg-white border-[#E5E5E5] rounded-[4px]">
               <div className="flex items-center gap-1.5">
-                <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+                <ArrowUpDown className="w-3.5 h-3.5" style={{ color: "#A3A3A3" }} />
                 <SelectValue />
               </div>
             </SelectTrigger>
@@ -350,26 +355,35 @@ export default function SkillSquare() {
           {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
-            className="w-9 h-9 rounded-[4px] border border-gray-200 bg-white flex items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors"
+            className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
 
-          {/* 视图切换 */}
-          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-[4px] p-0.5">
+          {/* 视图切换 — 对齐 §8.6 Segmented Control */}
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-[4px]"
+            style={{ background: "#F5F5F5" }}
+          >
             <button
               onClick={() => setViewMode('card')}
-              className={`w-8 h-8 rounded-[4px] flex items-center justify-center transition-colors ${
-                viewMode === 'card' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
+              className={`w-8 h-8 rounded-[3px] flex items-center justify-center transition-colors ${
+                viewMode === 'card'
+                  ? 'bg-white text-[#0A0A0A]'
+                  : 'text-[#737373] hover:text-[#0A0A0A]'
               }`}
+              style={viewMode === 'card' ? { boxShadow: "var(--shadow-segment)" } : undefined}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`w-8 h-8 rounded-[4px] flex items-center justify-center transition-colors ${
-                viewMode === 'list' ? 'bg-blue-50 text-blue-600' : 'text-gray-400 hover:text-gray-600'
+              className={`w-8 h-8 rounded-[3px] flex items-center justify-center transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-[#0A0A0A]'
+                  : 'text-[#737373] hover:text-[#0A0A0A]'
               }`}
+              style={viewMode === 'list' ? { boxShadow: "var(--shadow-segment)" } : undefined}
             >
               <List className="w-4 h-4" />
             </button>
@@ -380,10 +394,10 @@ export default function SkillSquare() {
         <div className="flex items-center gap-1.5 mb-6 flex-wrap pl-1">
           <button
             onClick={() => setSelectedCategory('all')}
-            className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
+            className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-colors border ${
               selectedCategory === 'all'
                 ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                : 'bg-white text-[#334155] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
             }`}
             style={selectedCategory === 'all' ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
           >
@@ -393,10 +407,10 @@ export default function SkillSquare() {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-all border ${
+              className={`px-3 py-1.5 rounded-[4px] text-sm font-medium transition-colors border ${
                 selectedCategory === cat.id
                   ? 'text-white border-transparent'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  : 'bg-white text-[#334155] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
               }`}
               style={selectedCategory === cat.id ? { backgroundColor: '#1447E6', borderColor: '#1447E6' } : undefined}
             >
@@ -408,8 +422,8 @@ export default function SkillSquare() {
         {/* 技能列表 */}
         {filteredSkills.length === 0 ? (
           <div className="text-center py-24">
-            <Puzzle className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-            <p className="text-gray-400 mb-4">暂无符合条件的技能</p>
+            <Puzzle className="w-12 h-12 mx-auto mb-4" style={{ color: "#E5E5E5" }} />
+            <p className="mb-4" style={{ color: "#A3A3A3" }}>暂无符合条件的技能</p>
           </div>
         ) : viewMode === 'card' ? (
           /* 卡片视图：常规 3 列 / 超大屏 4 列（>1600px 时启用，配合 §7.4 三档容器） */
@@ -427,7 +441,7 @@ export default function SkillSquare() {
         ) : (
           /* 列表视图 — 紧凑横排布局 */
           <SurfaceCard className="overflow-hidden">
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-[#F5F5F5]">
               {filteredSkills.map(skill => (
                 <SkillListRow
                   key={skill.id}
@@ -518,43 +532,19 @@ function SkillCard({
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900 truncate">{skill.name}</h3>
-                {/* 安全检测小图标 */}
-                {(() => {
-                  const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                  if (secStatus === 'not_scanned') return null;
-                  if (secStatus === 'scanning') {
-                    return (
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex flex-shrink-0 cursor-default"><Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" /></span>
-                        </TooltipTrigger>
-                        <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-                  const statusInfo = SECURITY_STATUS_MAP[secStatus];
-                  const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                  return (
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex flex-shrink-0 cursor-default"><IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} /></span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top"><span className="text-xs">安全检测：{statusInfo.label}</span></TooltipContent>
-                    </Tooltip>
-                  );
-                })()}
+                <h3 className="font-semibold truncate" style={{ color: "#0A0A0A" }}>{skill.name}</h3>
                 {/* 下发状态图标 */}
                 {distStatus && <DistributionStatusIcon status={distStatus} latestRecord={latestRecord} onClick={() => onDistStatusClick?.()} />}
               </div>
-              <span className="text-xs text-gray-400">v{skill.version}</span>
+              <span className="text-xs" style={{ color: "#A3A3A3" }}>v{skill.version}</span>
             </div>
           </div>
           {isDistributing ? (
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <span
-                  className="w-8 h-8 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
+                  className="w-8 h-8 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center cursor-not-allowed flex-shrink-0"
+                  style={{ color: "#A3A3A3" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Plus className="w-4 h-4" />
@@ -565,7 +555,7 @@ function SkillCard({
           ) : (
             <button
               onClick={handleDistributeClick}
-              className="w-8 h-8 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
+              className="w-8 h-8 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -573,12 +563,12 @@ function SkillCard({
         </div>
 
         {/* 描述 — 支持展示三行 */}
-        <p className="text-sm text-gray-500 line-clamp-3 mb-3">{skill.description}</p>
+        <p className="text-sm line-clamp-3 mb-3" style={{ color: "#737373" }}>{skill.description}</p>
 
-        {/* 底部：发布时间 + 下载量图标 */}
+        {/* 底部:发布时间 + 下载量图标 */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{formatDate(skill.uploadTime)}</span>
-          <div className="flex items-center gap-1 text-xs text-gray-400">
+          <span className="text-xs" style={{ color: "#A3A3A3" }}>{formatDate(skill.uploadTime)}</span>
+          <div className="flex items-center gap-1 text-xs" style={{ color: "#A3A3A3" }}>
             <Download className="w-3 h-3" />
             <span className="tabular-nums">{formatDownloadCount(downloadCount)}</span>
           </div>
@@ -662,7 +652,7 @@ function SkillListRow({
   return (
     <>
       <div
-        className="flex items-center px-5 py-5 hover:bg-gray-100/60 transition-colors cursor-pointer gap-4"
+        className="flex items-center px-5 py-5 hover:bg-gray-50/50 transition-colors cursor-pointer gap-4"
         onClick={onClick}
       >
         {/* 左：图标(字母) + 名称 + 描述 */}
@@ -676,45 +666,20 @@ function SkillListRow({
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900 truncate">{skill.name}</span>
-              {/* 安全检测小图标 */}
-              {(() => {
-                const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                if (secStatus === 'not_scanned') return null;
-                if (secStatus === 'scanning') {
-                  return (
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex flex-shrink-0 cursor-default"><Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" /></span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
-                    </Tooltip>
-                  );
-                }
-                const statusInfo = SECURITY_STATUS_MAP[secStatus];
-                const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                return (
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex flex-shrink-0 cursor-default"><IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} /></span>
-                    </TooltipTrigger>
-                    <TooltipContent side="top"><span className="text-xs">安全检测：{statusInfo.label}</span></TooltipContent>
-                  </Tooltip>
-                );
-              })()}
+              <span className="font-semibold truncate" style={{ color: "#0A0A0A" }}>{skill.name}</span>
             </div>
-            <p className="text-sm text-gray-400 truncate mt-1">{skill.description}</p>
+            <p className="text-sm truncate mt-1" style={{ color: "#737373" }}>{skill.description}</p>
           </div>
         </div>
 
         {/* 下载量 */}
-        <div className="flex items-center gap-1 flex-shrink-0 text-xs text-gray-400 tabular-nums whitespace-nowrap">
+        <div className="flex items-center gap-1 flex-shrink-0 text-xs tabular-nums whitespace-nowrap" style={{ color: "#A3A3A3" }}>
           <Download className="w-3 h-3" />
           {formatDownloadCount(downloadCount)}
         </div>
 
         {/* 版本+日期 */}
-        <div className="flex-shrink-0 text-xs text-gray-400 tabular-nums whitespace-nowrap">
+        <div className="flex-shrink-0 text-xs tabular-nums whitespace-nowrap" style={{ color: "#A3A3A3" }}>
           v{skill.version}({shortDate})
         </div>
 
@@ -725,7 +690,7 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span className="inline-flex cursor-default" onClick={(e) => e.stopPropagation()}>
-                <Circle className="w-3.5 h-3.5 text-gray-300 hover:text-blue-400 transition-colors" />
+                <Circle className="w-3.5 h-3.5 hover:text-[#1447E6] transition-colors" style={{ color: "#E5E5E5" }} />
               </span>
             </TooltipTrigger>
             <TooltipContent><span className="text-xs">还没下发过</span></TooltipContent>
@@ -737,7 +702,8 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span
-                className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-300 cursor-not-allowed flex-shrink-0"
+                className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center cursor-not-allowed flex-shrink-0"
+                style={{ color: "#A3A3A3" }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -748,7 +714,7 @@ function SkillListRow({
         ) : (
           <button
             onClick={handleDistributeClick}
-            className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -959,14 +925,14 @@ function SkillSquareDetail({
               <button
                 key={`dir-${dirPath}`}
                 onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 px-2 py-2 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
+                className="w-full flex items-center gap-1.5 px-2 py-2 text-xs text-[#334155] hover:bg-gray-50/50 rounded-[3px] transition-colors cursor-pointer"
                 style={{ paddingLeft: `${8 + depth * 16}px` }}
               >
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />}
                 <span className="truncate font-medium">{parts[i - 1]}</span>
                 {isExpanded
-                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
-                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                  ? <ChevronDown className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
+                  : <ChevronRight className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
                 }
               </button>
             );
@@ -986,14 +952,14 @@ function SkillSquareDetail({
           key={file.name}
           onClick={() => canView && setExpandedFile(expandedFile === file.name ? null : file.name)}
           disabled={!canView}
-          className={`w-full flex items-center gap-1.5 px-2 py-2 text-xs rounded transition-colors ${
+          className={`w-full flex items-center gap-1.5 px-2 py-2 text-xs rounded-[3px] transition-colors ${
             expandedFile === file.name
-              ? 'bg-blue-50 text-blue-700'
-              : canView ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-500 cursor-not-allowed opacity-60'
+              ? 'bg-[#EFF6FF] text-[#1447E6]'
+              : canView ? 'hover:bg-gray-50/50 text-[#334155] cursor-pointer' : 'text-[#A3A3A3] cursor-not-allowed opacity-60'
           }`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
         >
-          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
           <span className="truncate">{parts[parts.length - 1]}</span>
         </button>
       );
@@ -1059,7 +1025,7 @@ function SkillSquareDetail({
   if (!skill) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">技能未找到</p>
+        <p style={{ color: "#737373" }}>技能未找到</p>
         <Button onClick={onBack} className="mt-4" variant="claw-outline">返回列表</Button>
       </div>
     );
@@ -1070,7 +1036,8 @@ function SkillSquareDetail({
       {/* 返回按钮 */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+        className="flex items-center gap-2 transition-colors"
+        style={{ color: "#1447E6" }}
       >
         <ArrowLeft className="w-4 h-4" />
         返回列表
@@ -1080,8 +1047,8 @@ function SkillSquareDetail({
       <SurfaceCard className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
-            <p className="text-sm text-gray-500">slug: {skill.slug}</p>
+            <h1 className="text-2xl font-medium mb-1" style={{ color: "#0A0A0A" }}>{skill.name}</h1>
+            <p className="text-sm" style={{ color: "#737373" }}>slug: {skill.slug}</p>
           </div>
           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
             {/* 下载按钮 */}
@@ -1103,7 +1070,10 @@ function SkillSquareDetail({
 
         {/* 标签行 */}
         <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+          <span
+            className="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full"
+            style={{ background: "#F5F5F5", color: "#334155" }}
+          >
             v{skill.version}
           </span>
           {/* 安全检测状态徽章 — 用户端不显示检测按钮 */}
@@ -1150,44 +1120,52 @@ function SkillSquareDetail({
           })()}
           <div className="flex gap-1 flex-wrap">
             {skill.categories.map(catId => (
-              <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+              <span
+                key={catId}
+                className="inline-block px-2.5 py-0.5 text-xs rounded-full"
+                style={{ background: "#F5F5F5", color: "#334155" }}
+              >
                 {getCategoryName(catId)}
               </span>
             ))}
           </div>
-          <span className="text-xs text-gray-400 tabular-nums ml-2 flex items-center gap-1">
+          <span className="text-xs tabular-nums ml-2 flex items-center gap-1" style={{ color: "#A3A3A3" }}>
             <Download className="w-3 h-3" />
             {formatDownloadCount(MOCK_DOWNLOAD_COUNTS[skill.id] || 0)}
           </span>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs" style={{ color: "#A3A3A3" }}>
             {formatDate(skill.uploadTime)} 发布
           </span>
         </div>
 
         {skill.description && (
-          <p className="text-sm text-gray-600 mt-3">{skill.description}</p>
+          <p className="text-sm mt-3" style={{ color: "#334155" }}>{skill.description}</p>
         )}
       </SurfaceCard>
 
       {/* Tab 页面 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
+          {/* §8.6 Segmented Control：灰底容器 + 白滑块 + var(--shadow-segment) */}
+          <TabsList
+            className="inline-flex items-center gap-1 p-1 h-auto rounded-[4px]"
+            style={{ background: "#F5F5F5" }}
+          >
             <TabsTrigger
               value="overview"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -1211,9 +1189,9 @@ function SkillSquareDetail({
           <TabsContent value="files" className="mt-4 p-0">
             <SurfaceCard className="flex h-[47rem] overflow-hidden">
               {/* 左列：版本选择 */}
-              <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-gray-900">版本</p>
+              <div className="w-[14%] min-w-[120px] border-r border-[#E5E5E5] flex flex-col">
+                <div className="bg-gray-50/50 px-3 py-4 border-b border-[#E5E5E5] flex items-center">
+                  <p className="text-xs font-medium" style={{ color: "#0A0A0A" }}>版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {skill.versions?.map((ver: string, idx: number) => {
@@ -1227,70 +1205,37 @@ function SkillSquareDetail({
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-3.5 border-b border-gray-100 transition-colors ${
-                          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'
+                        className={`w-full text-left px-3 py-3.5 border-b border-[#F5F5F5] transition-colors ${
+                          isSelected ? 'bg-[#EFF6FF]' : 'hover:bg-gray-50/50 cursor-pointer'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          {/* 安全检测状态图标 */}
-                          {secStatus && (() => {
-                            if (secStatus === 'not_scanned') {
-                              return (
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex flex-shrink-0">
-                                      <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
-                                </Tooltip>
-                              );
-                            }
-                            if (secStatus === 'scanning') {
-                              return (
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex flex-shrink-0">
-                                      <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
-                                </Tooltip>
-                              );
-                            }
-                            const secInfo = SECURITY_STATUS_MAP[secStatus];
-                            const SecIcon = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                            return (
-                              <Tooltip delayDuration={300}>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex flex-shrink-0">
-                                    <SecIcon className={`w-3.5 h-3.5 ${secInfo.color}`} />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top"><span className="text-xs">安全检测：{secInfo.label}</span></TooltipContent>
-                              </Tooltip>
-                            );
-                          })()}
-                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                          <span
+                            className="text-[11px] font-semibold"
+                            style={{ color: isSelected ? "#0A0A0A" : "#334155" }}
+                          >
                             {ver}
                           </span>
                           {isLatest && (
-                            <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                            <span
+                              className="text-[10px] font-medium px-1.5 py-0.5 rounded-[2px]"
+                              style={{ background: "#EFF6FF", color: "#1447E6" }}
+                            >
                               最新
                             </span>
                           )}
                         </div>
                         <div className="flex items-center gap-1 mt-1.5">
-                          <p className="text-[10px] text-gray-400">{dateStr}</p>
+                          <p className="text-[10px]" style={{ color: "#A3A3A3" }}>{dateStr}</p>
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <span className="ml-auto cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                                <Info className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                                <Info className="w-3 h-3 text-[#A3A3A3] hover:text-[#334155]" />
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-[260px] p-3 bg-white text-gray-900 border border-gray-200 shadow-lg text-xs">
-                              <p className="font-medium mb-1.5 text-gray-900 text-xs">更新说明</p>
-                              <p className="whitespace-pre-line leading-relaxed text-gray-700 text-xs">{versionRecord?.changeLog || '暂无更新说明'}</p>
+                            <TooltipContent side="right" className="max-w-[260px] p-3 bg-white border border-[#E5E5E5] text-xs" style={{ color: "#0A0A0A" }}>
+                              <p className="font-medium mb-1.5 text-xs" style={{ color: "#0A0A0A" }}>更新说明</p>
+                              <p className="whitespace-pre-line leading-relaxed text-xs" style={{ color: "#334155" }}>{versionRecord?.changeLog || '暂无更新说明'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -1301,13 +1246,13 @@ function SkillSquareDetail({
               </div>
 
               {/* 中列：文件列表 */}
-              <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center justify-between">
-                  <p className="text-xs font-medium text-gray-900">{selectedVersion || skill.version}</p>
+              <div className="w-[22%] min-w-[160px] border-r border-[#E5E5E5] flex flex-col">
+                <div className="bg-gray-50/50 px-3 py-4 border-b border-[#E5E5E5] flex items-center justify-between">
+                  <p className="text-xs font-medium" style={{ color: "#0A0A0A" }}>{selectedVersion || skill.version}</p>
                   <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="text-gray-400 hover:text-blue-600 transition-colors"
+                    className="text-[#737373] hover:text-[#1447E6] transition-colors"
                     title="下载此版本 ZIP"
                   >
                     {isDownloading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -1322,27 +1267,41 @@ function SkillSquareDetail({
               <div className="flex-1 flex flex-col bg-white">
                 {expandedFile ? (
                   <>
-                    <div className="bg-gray-50/50 px-3 py-2.5 border-b border-gray-200 flex items-center justify-between min-h-[44px]">
-                      <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
-                      <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
+                    <div className="bg-gray-50/50 px-3 py-2.5 border-b border-[#E5E5E5] flex items-center justify-between min-h-[44px]">
+                      <p className="text-xs font-medium" style={{ color: "#0A0A0A" }}>{expandedFile}</p>
+                      {/* 内嵌 Segmented Control（预览/源码） */}
+                      <div
+                        className="flex items-center gap-0.5 rounded-[3px] p-0.5"
+                        style={{ background: "#F5F5F5" }}
+                      >
                         <button
                           onClick={() => setFileViewMode('preview')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                          className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-xs transition-colors ${
                             fileViewMode === 'preview'
-                              ? 'bg-white text-gray-900 shadow-sm font-medium'
-                              : 'text-gray-500 hover:text-gray-700'
+                              ? 'bg-white font-medium'
+                              : 'text-[#737373] hover:text-[#0A0A0A]'
                           }`}
+                          style={
+                            fileViewMode === 'preview'
+                              ? { color: "#0A0A0A", boxShadow: "var(--shadow-segment)" }
+                              : undefined
+                          }
                         >
                           <Eye className="w-3 h-3" />
                           预览
                         </button>
                         <button
                           onClick={() => setFileViewMode('source')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                          className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-xs transition-colors ${
                             fileViewMode === 'source'
-                              ? 'bg-white text-gray-900 shadow-sm font-medium'
-                              : 'text-gray-500 hover:text-gray-700'
+                              ? 'bg-white font-medium'
+                              : 'text-[#737373] hover:text-[#0A0A0A]'
                           }`}
+                          style={
+                            fileViewMode === 'source'
+                              ? { color: "#0A0A0A", boxShadow: "var(--shadow-segment)" }
+                              : undefined
+                          }
                         >
                           <Code className="w-3 h-3" />
                           源码
@@ -1354,7 +1313,7 @@ function SkillSquareDetail({
                         const content = getFileContent(expandedFile);
                         if (!content) {
                           return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
+                            <div className="flex items-center justify-center h-full" style={{ color: "#A3A3A3" }}>
                               <p className="text-sm">文件内容暂无</p>
                             </div>
                           );
@@ -1364,7 +1323,7 @@ function SkillSquareDetail({
                           registerLanguage(lang);
                           return (
                             <Suspense fallback={
-                              <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                              <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50/50 p-3 m-0" style={{ color: "#334155" }}>
                                 {content}
                               </pre>
                             }>
@@ -1372,7 +1331,7 @@ function SkillSquareDetail({
                                 language={lang}
                                 style={hljsStyle}
                                 showLineNumbers
-                                lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                                lineNumberStyle={{ color: '#A3A3A3', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
                                 customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
                                 wrapLongLines
                               >
@@ -1392,7 +1351,7 @@ function SkillSquareDetail({
                         registerLanguage(previewLang);
                         return (
                           <Suspense fallback={
-                            <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                            <pre className="text-xs overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50/50 p-3 m-0" style={{ color: "#334155" }}>
                               {content}
                             </pre>
                           }>
@@ -1400,7 +1359,7 @@ function SkillSquareDetail({
                               language={previewLang}
                               style={hljsStyle}
                               showLineNumbers
-                              lineNumberStyle={{ color: '#b0b0b0', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
+                              lineNumberStyle={{ color: '#A3A3A3', fontSize: '11px', minWidth: '2.5em', paddingRight: '1em', userSelect: 'none' }}
                               customStyle={{ margin: 0, padding: '12px 0', fontSize: '12px', lineHeight: '1.6', background: '#ffffff', borderRadius: 0 }}
                               wrapLongLines
                             >
@@ -1412,7 +1371,7 @@ function SkillSquareDetail({
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="flex items-center justify-center h-full" style={{ color: "#737373" }}>
                     <p className="text-sm">选择一个文件查看内容</p>
                   </div>
                 )}
@@ -1424,33 +1383,38 @@ function SkillSquareDetail({
           <TabsContent value="distribution" className="mt-4 p-0">
             <SurfaceCard className="p-6">
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900">下发记录</h3>
+                <h3 className="font-semibold" style={{ color: "#0A0A0A" }}>下发记录</h3>
               </div>
 
               <div className="space-y-3 mt-4">
                 {distributionRecords.length === 0 ? (
                   <div className="text-center py-12">
-                    <Puzzle className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-                    <p className="text-gray-400">还没有下发记录</p>
+                    <Puzzle className="w-12 h-12 mx-auto mb-4" style={{ color: "#E5E5E5" }} />
+                    <p style={{ color: "#A3A3A3" }}>还没有下发记录</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {distributionRecords.map((record, idx) => {
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
-                        <div key={record.id} className="border border-gray-200 rounded-[4px] p-4">
+                        <div key={record.id} className="border border-[#E5E5E5] rounded-[4px] p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="text-sm font-semibold text-gray-900">
+                              <p className="text-sm font-semibold" style={{ color: "#0A0A0A" }}>
                                 #{idx + 1} · v{skill.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                                record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
-                                record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
-                                'bg-yellow-50 text-yellow-700'
-                              }`}>
+                              <span
+                                className="inline-block px-3 py-1 rounded-[3px] text-xs font-medium"
+                                style={
+                                  record.status === 'distributing'
+                                    ? { background: "#EFF6FF", color: "#1447E6" }
+                                    : record.successCount === record.totalCount
+                                      ? { background: "#F0FDF4", color: "#166534" }
+                                      : { background: "#FEFCE8", color: "#854D0E" }
+                                }
+                              >
                                 {record.status === 'distributing'
                                   ? `下发中 ${progress}%`
                                   : `下发完成，${record.successCount}个成功，${record.failedCount}个失败`}
@@ -1464,7 +1428,8 @@ function SkillSquareDetail({
                                   setDetailSearchQuery('');
                                   setDetailsOpen(true);
                                 }}
-                                className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
+                                className="h-auto py-1 px-2"
+                                style={{ color: "#1447E6" }}
                               >
                                 查看详情
                               </Button>
@@ -1472,10 +1437,10 @@ function SkillSquareDetail({
                           </div>
 
                           {record.status === 'distributing' && (
-                            <div className="w-full bg-gray-100 rounded-full h-1.5">
+                            <div className="w-full rounded-full h-1.5" style={{ background: "#F5F5F5" }}>
                               <div
-                                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                                style={{ width: `${progress}%` }}
+                                className="h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${progress}%`, background: "#1447E6" }}
                               />
                             </div>
                           )}
@@ -1514,7 +1479,7 @@ function SkillSquareDetail({
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#A3A3A3" }} />
                   <Input
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
@@ -1535,40 +1500,43 @@ function SkillSquareDetail({
                 </Select>
               </div>
 
-              <div className="border border-gray-200 rounded-[4px] overflow-hidden">
+              <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
                 <div className="overflow-y-auto max-h-72">
                   <table className="w-full text-sm table-fixed">
-                    <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                    <thead className="bg-gray-50/50 border-b border-[#E5E5E5] sticky top-0 z-10">
                       <tr>
-                        <th className="w-[25%] px-4 py-2.5 text-left text-xs font-medium text-gray-500">实例名称</th>
-                        <th className="w-[30%] px-4 py-2.5 text-left text-xs font-medium text-gray-500">实例ID</th>
-                        <th className="w-[18%] px-4 py-2.5 text-left text-xs font-medium text-gray-500">状态</th>
-                        <th className="w-[27%] px-4 py-2.5 text-left text-xs font-medium text-gray-500">失败原因</th>
+                        <th className="w-[25%] px-4 py-2.5 text-left text-xs font-medium" style={{ color: "#737373" }}>实例名称</th>
+                        <th className="w-[30%] px-4 py-2.5 text-left text-xs font-medium" style={{ color: "#737373" }}>实例ID</th>
+                        <th className="w-[18%] px-4 py-2.5 text-left text-xs font-medium" style={{ color: "#737373" }}>状态</th>
+                        <th className="w-[27%] px-4 py-2.5 text-left text-xs font-medium" style={{ color: "#737373" }}>失败原因</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredInstances.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-10 text-center text-sm text-gray-400">
+                          <td colSpan={4} className="px-4 py-10 text-center text-sm" style={{ color: "#A3A3A3" }}>
                             暂无符合条件的记录
                           </td>
                         </tr>
                       ) : (
                         filteredInstances.map(instance => (
-                          <tr key={instance.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/50 transition-colors">
-                            <td className="px-4 py-2.5 text-sm text-gray-900 truncate">{instance.name}</td>
-                            <td className="px-4 py-2.5 text-sm text-gray-500 font-mono truncate">{instance.id}</td>
+                          <tr key={instance.id} className="border-b border-[#F5F5F5] last:border-b-0 hover:bg-gray-50/50 transition-colors">
+                            <td className="px-4 py-2.5 text-sm truncate" style={{ color: "#0A0A0A" }}>{instance.name}</td>
+                            <td className="px-4 py-2.5 text-sm font-mono truncate" style={{ color: "#737373" }}>{instance.id}</td>
                             <td className="px-4 py-2.5">
-                              <span className={`text-xs font-medium ${
-                                instance.distributionStatus === 'success' ? 'text-green-600' :
-                                instance.distributionStatus === 'failed' ? 'text-red-600' :
-                                instance.distributionStatus === 'distributing' ? 'text-blue-600' :
-                                'text-gray-500'
-                              }`}>
+                              <span
+                                className="text-xs font-medium"
+                                style={
+                                  instance.distributionStatus === 'success' ? { color: "#16A34A" } :
+                                  instance.distributionStatus === 'failed' ? { color: "#DC2626" } :
+                                  instance.distributionStatus === 'distributing' ? { color: "#1447E6" } :
+                                  { color: "#A3A3A3" }
+                                }
+                              >
                                 {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                               </span>
                             </td>
-                            <td className="px-4 py-2.5 text-sm text-gray-400 truncate">
+                            <td className="px-4 py-2.5 text-sm truncate" style={{ color: "#A3A3A3" }}>
                               {instance.distributionStatus === 'failed'
                                 ? (instance.failReason || '连接超时')
                                 : '-'}

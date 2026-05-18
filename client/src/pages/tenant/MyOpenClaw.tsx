@@ -25,12 +25,23 @@ import {
 } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SurfaceInner } from "@/components/ui/Surface";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Plus,
-  Bot, Bell, X, AlertCircle, ChevronDown, ChevronUp,
+  Bot, Bell, X, AlertCircle, ChevronUp,
   Copy, Users, Check, ArrowRight, ArrowLeft,
   ChevronLeft, ChevronRight,
+  Sparkles, Heart,
 } from "lucide-react";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
@@ -93,6 +104,10 @@ interface UserGroup {
 }
 
 // Alice 所属的 3 个分组
+// 注：permissions.roles 的角色名必须与 MOCK_ROLES（lib/mockData.ts）中的 role.name 完全一致，
+// 否则创建弹窗里的角色身份过滤 (selectedGroup.permissions.roles.includes(role.name)) 会全部 miss。
+// MOCK_ROLES 当前 visible:true 的角色：行业分析师 / 开发工程师 / 设计师 / 项目经理 / 内容创作者。
+// "通用助手" 是兜底选项，不通过 permissions.roles 控制（弹窗中始终展示）。
 const MOCK_USER_GROUPS: UserGroup[] = [
   {
     id: "grp-fe",
@@ -104,7 +119,7 @@ const MOCK_USER_GROUPS: UserGroup[] = [
       allowTerminal: true,
       allowChatView: true,
       agentTypes: ["openclaw", "hermes", "lightclawace"],
-      roles: ["通用助手", "客服助手", "技术顾问", "运营助手", "数据分析师", "产品经理", "文案创作"],
+      roles: ["行业分析师", "开发工程师", "设计师", "项目经理", "内容创作者"],
       panelAccess: "full",
     },
   },
@@ -118,7 +133,7 @@ const MOCK_USER_GROUPS: UserGroup[] = [
       allowTerminal: true,
       allowChatView: true,
       agentTypes: ["openclaw", "hermes", "lightclawace"],
-      roles: ["通用助手", "技术顾问", "数据分析师"],
+      roles: ["行业分析师", "开发工程师", "项目经理"],
       panelAccess: "partial",
     },
   },
@@ -132,7 +147,7 @@ const MOCK_USER_GROUPS: UserGroup[] = [
       allowTerminal: false,
       allowChatView: false,
       agentTypes: ["openclaw"],
-      roles: ["通用助手", "客服助手"],
+      roles: ["开发工程师", "设计师"],
       panelAccess: "limited",
     },
   },
@@ -973,277 +988,187 @@ export default function MyOpenClaw() {
           </DialogContent>
         </Dialog>
 
-        {/* Create Dialog */}
+        {/* Create Dialog —— 单弹窗：分组 / 名称 / 类型 / 角色（角色介绍内联展示） */}
         <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) { setTypeExpanded(false); setRoleExpanded(false); setSelectedRole(null); setAgentType("openclaw"); setCreateStep(1); } }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[640px]">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <div
-                  className="w-7 h-7 rounded-[4px] flex items-center justify-center text-base text-white"
-                  // allow-inline-gradient: Logo 图标容器（非按钮，SKILL §8.1 白名单）
-                  style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
-                >
-                  🦞
-                </div>
+              <DialogTitle>
                 创建 Agent
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                创建 Agent：选择所属分组、填写名称、选择类型与角色身份
+              </DialogDescription>
             </DialogHeader>
 
-            {/* ===== 多分组模式 Step 1: 选择分组 ===== */}
-            {groupMode === "multi-group" && createStep === 1 && (
-              <div className="py-4 space-y-2.5">
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                  您属于多个分组，不同分组对应不同的 Agent 配置和权限，请先选择要使用的分组：
-                </p>
-                {MOCK_USER_GROUPS.map((group) => {
-                  const isSelected = selectedGroup.id === group.id;
-                  return (
-                    <button
-                      key={group.id}
-                      type="button"
-                      onClick={() => setSelectedGroup(group)}
-                      className={`w-full text-left px-3.5 py-3 rounded-[4px] border transition-all duration-150 ${
-                        isSelected
-                          ? "border-primary bg-primary/5"
-                          : "border-border bg-card hover:border-border/80 hover:bg-muted/40"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${isSelected ? "font-medium text-primary" : "text-foreground/70"}`}>
-                          {group.name}
-                        </span>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-primary" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* ===== 单步表单：所属分组 + 名称 + 类型 + 角色（含介绍卡） ===== */}
+            <div className="py-2 space-y-5">
+              {/* 所属分组下拉框（仅多分组模式显示） */}
+              {groupMode === "multi-group" && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-foreground">所属分组</Label>
+                  <p className="text-xs text-muted-foreground">
+                    您属于多个分组，不同分组对应不同的 Agent 配置和权限，请确认要使用的分组
+                  </p>
+                  <Select
+                    value={selectedGroup.id}
+                    onValueChange={(value) => {
+                      const group = MOCK_USER_GROUPS.find(g => g.id === value);
+                      if (group) {
+                        setSelectedGroup(group);
+                        // 重置 agent 类型为该分组允许的第一个（如果当前类型不被允许）
+                        if (!group.permissions.agentTypes.includes(agentType)) {
+                          setAgentType(group.permissions.agentTypes[0]);
+                        }
+                        // 重置角色（如果当前角色不被新分组允许）
+                        if (selectedRole && !group.permissions.roles.includes(selectedRole.name)) {
+                          setSelectedRole(null);
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full bg-white border-[#E5E5E5] rounded-[4px]">
+                      <SelectValue placeholder="选择所属分组" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MOCK_USER_GROUPS.map((group) => (
+                        <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-            {/* ===== Step 2 (多分组模式) 或 普通模式: 填写信息 ===== */}
-            {(groupMode === "normal" || (groupMode === "multi-group" && createStep === 2)) && (
-            <div className="py-4 space-y-4">
               {/* Name Input */}
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="claw-name" className="text-sm font-medium text-foreground">
                   Agent 名称
                 </Label>
                 <Input
                   id="claw-name"
-                  placeholder="例如：工作助手、代码助手..."
+                  placeholder="请输入文本内容"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="mt-2"
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                  className="bg-white border-[#E5E5E5] rounded-[4px]"
                   autoFocus
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  创建后可在详细配置页中配置模型、通道和技能
-                </p>
               </div>
 
-              {/* Agent Type - Collapsible Row */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setTypeExpanded(!typeExpanded)}
-                  className="w-full flex items-center justify-between py-1 group/type"
+              {/* Agent Type —— 始终内联展示 */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Agent 类型</Label>
+                <RadioGroup
+                  value={agentType}
+                  onValueChange={(value) => {
+                    setAgentType(value as "openclaw" | "hermes" | "lightclawace");
+                    if (value !== "openclaw") {
+                      setSelectedRole(null);
+                    }
+                  }}
+                  className="flex flex-wrap gap-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Agent 类型</span>
-                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">可选</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      {agentType === "openclaw" ? "OpenClaw" : agentType === "hermes" ? "Hermes Agent" : "Lightclaw ACE"}
-                    </span>
-                    {typeExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/60" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/60" />
-                    )}
-                  </div>
-                </button>
-                {typeExpanded && (
-                  <div className="flex flex-wrap gap-2 pt-2 pb-1">
-                    {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const)
-                      .filter(([value]) => groupMode !== "multi-group" || selectedGroup.permissions.agentTypes.includes(value))
-                      .map(([value, label]) => {
-                      const isSelected = agentType === value;
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => {
-                            setAgentType(value as "openclaw" | "hermes" | "lightclawace");
-                            if (value !== "openclaw") {
-                              setRoleExpanded(false);
-                              setSelectedRole(null);
-                            }
-                          }}
-                          className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-all duration-150 ${
-                            isSelected
-                              ? "bg-foreground/10 text-foreground"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-                          }`}
+                  {([["openclaw", "OpenClaw"], ["hermes", "Hermes Agent"], ["lightclawace", "Lightclaw ACE"]] as const)
+                    .filter(([value]) => groupMode !== "multi-group" || selectedGroup.permissions.agentTypes.includes(value))
+                    .map(([value, label]) => (
+                      <div key={value} className="flex items-center">
+                        <RadioGroupItem value={value} id={`agent-type-${value}`} className="peer sr-only" />
+                        <Label
+                          htmlFor={`agent-type-${value}`}
+                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
                         >
                           {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Role Selection - Collapsible Row */}
-              {(
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setRoleExpanded(!roleExpanded)}
-                  className="w-full flex items-center justify-between py-1 group/role"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">角色身份</span>
-                    <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">可选</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      {selectedRole ? selectedRole.name : "通用助手"}
-                    </span>
-                    {roleExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-muted-foreground/60" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/60" />
-                    )}
-                  </div>
-                </button>
-
-                {roleExpanded && (
-                  <div className="pt-2 pb-1">
-                    <div className="overflow-y-auto" style={{ maxHeight: "220px" }}>
-                      <div className="flex flex-wrap gap-2">
-                        {visibleRoles
-                          .filter((role) => groupMode !== "multi-group" || selectedGroup.permissions.roles.includes(role.name))
-                          .map((role) => {
-                          const isSelected = selectedRole?.id === role.id;
-                          return (
-                            <button
-                              key={role.id}
-                              type="button"
-                              onClick={() => { setSelectedRole(isSelected ? null : role); }}
-                              className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-all duration-150 ${
-                                isSelected
-                                  ? "bg-foreground/10 text-foreground"
-                                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-                              }`}
-                            >
-                              {role.name}
-                            </button>
-                          );
-                        })}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedRole(null)}
-                          className={`px-3 py-1.5 rounded-[4px] text-xs font-medium transition-all duration-150 ${
-                            !selectedRole
-                              ? "bg-foreground/10 text-foreground"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-                          }`}
-                        >
-                          通用助手（默认）
-                        </button>
+                        </Label>
                       </div>
+                    ))}
+                </RadioGroup>
+              </div>
 
-                      {/* Role Detail */}
-                      {selectedRole && (
-                        <div className="mt-3 rounded-[4px] overflow-hidden border border-primary/20 bg-primary/5">
-                          <div className="px-3.5 py-3 space-y-3">
-                            <div>
-                              <p className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">
-                                <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-                                角色技能
-                              </p>
-                              <div className="flex flex-wrap gap-1.5">
-                                {selectedRole.skills.map((skill, idx) => (
-                                  <span
-                                    key={idx}
-                                    className="inline-flex items-center text-xs px-2 py-1 rounded-[4px] bg-card text-foreground/70 border border-border"
-                                  >
-                                    {skill.name}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-primary mb-1.5 flex items-center gap-1">
-                                <span className="w-1 h-1 rounded-full bg-primary inline-block" />
-                                角色灵魂
-                              </p>
-                              <p className="text-sm text-foreground/70 leading-relaxed">
-                                {selectedRole.soul}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+              {/* Role Selection —— 始终内联展示 + 选中后展示介绍卡 */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">角色身份</Label>
+                <RadioGroup
+                  value={selectedRole?.id ?? "__general__"}
+                  onValueChange={(value) => {
+                    if (value === "__general__") {
+                      setSelectedRole(null);
+                      return;
+                    }
+                    const role = visibleRoles.find((r) => r.id === value);
+                    setSelectedRole(role ?? null);
+                  }}
+                  className="flex flex-wrap gap-2"
+                >
+                  <div className="flex items-center">
+                    <RadioGroupItem value="__general__" id="role-general" className="peer sr-only" />
+                    <Label
+                      htmlFor="role-general"
+                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                    >
+                      通用助手
+                    </Label>
                   </div>
+                  {visibleRoles
+                    .filter((role) => groupMode !== "multi-group" || selectedGroup.permissions.roles.includes(role.name))
+                    .map((role) => (
+                      <div key={role.id} className="flex items-center">
+                        <RadioGroupItem value={role.id} id={`role-${role.id}`} className="peer sr-only" />
+                        <Label
+                          htmlFor={`role-${role.id}`}
+                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                        >
+                          {role.name}
+                        </Label>
+                      </div>
+                    ))}
+                </RadioGroup>
+
+                {/* Role Detail —— 选中具体角色后展示介绍卡片 */}
+                {selectedRole && (
+                  <SurfaceInner className="mt-3 overflow-hidden">
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0"
+                          style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                        >
+                          <Bot className="w-4 h-4 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-[#0A0A0A]">
+                          {selectedRole.name}角色介绍
+                        </p>
+                      </div>
+                      <Separator />
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold text-[#1447E6] flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3" />
+                          角色技能
+                        </p>
+                        <p className="text-xs text-[#334155] leading-relaxed">
+                          {selectedRole.skills.map((s) => s.name).join("、")}
+                        </p>
+                      </div>
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold text-[#1447E6] flex items-center gap-1.5">
+                          <Heart className="w-3 h-3" />
+                          角色风格
+                        </p>
+                        <p className="text-xs text-[#334155] leading-relaxed">
+                          {selectedRole.soul}
+                        </p>
+                      </div>
+                    </div>
+                  </SurfaceInner>
                 )}
               </div>
-              )}
             </div>
-            )}
 
             <DialogFooter>
-              {/* 多分组模式 Step 1: 下一步按钮 */}
-              {groupMode === "multi-group" && createStep === 1 && (
-                <>
-                  <Button variant="claw-outline" onClick={() => setShowCreate(false)}>取消</Button>
-                  <Button
-                    variant="claw-primary"
-                    onClick={() => {
-                      setCreateStep(2);
-                      // 重置 agent 类型为该分组允许的第一个
-                      if (!selectedGroup.permissions.agentTypes.includes(agentType)) {
-                        setAgentType(selectedGroup.permissions.agentTypes[0]);
-                      }
-                    }}
-                  >
-                    下一步
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </>
-              )}
-              {/* 多分组模式 Step 2: 返回 + 创建 */}
-              {groupMode === "multi-group" && createStep === 2 && (
-                <>
-                  <Button variant="claw-outline" onClick={() => setCreateStep(1)}>
-                    <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-                    上一步
-                  </Button>
-                  <Button
-                    variant="claw-primary"
-                    onClick={handleCreate}
-                  >
-                    创建
-                  </Button>
-                </>
-              )}
-              {/* 普通模式: 取消 + 创建 */}
-              {groupMode === "normal" && (
-                <>
-                  <Button variant="claw-outline" onClick={() => setShowCreate(false)}>取消</Button>
-                  <Button
-                    variant="claw-primary"
-                    onClick={handleCreate}
-                  >
-                    创建
-                  </Button>
-                </>
-              )}
+              <Button
+                variant="claw-primary"
+                onClick={handleCreate}
+              >
+                确认创建
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

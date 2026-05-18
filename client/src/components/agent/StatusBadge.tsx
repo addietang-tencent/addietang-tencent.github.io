@@ -187,6 +187,7 @@ const STATUS_ICONS: Record<OpenClawStatus, (p: IconProps) => ReactElement> = {
  */
 export const StatusIcon = ({ status }: { status: OpenClawStatus }) => {
   const Icon = STATUS_ICONS[status];
+  if (!Icon) return null;
   // loading：自旋；creating：保留呼吸感
   if (status === "loading") {
     return (
@@ -227,7 +228,7 @@ export const StatusIcon = ({ status }: { status: OpenClawStatus }) => {
 export const StatusDot = StatusIcon;
 
 export const StatusBadge = ({ status }: { status: OpenClawStatus }) => {
-  const cfg = STATUS_VISUAL[status];
+  const cfg = STATUS_VISUAL[status] ?? { label: status || "未知" };
 
   // Figma 358:877: 透明底 + 黑字 + 16px icon + 4px gap
   const badge = (

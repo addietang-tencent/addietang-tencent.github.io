@@ -522,7 +522,7 @@ function ScopePopover({
               className="h-7 text-xs px-3"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+             
             >
               确认
             </Button>
@@ -571,7 +571,7 @@ function EditQuotaDialog({
           <Button variant="outline" onClick={onClose}>取消</Button>
           <Button
             onClick={() => { onSave(model.id, limit); onClose(); }}
-            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+           
           >
             保存
           </Button>
@@ -736,7 +736,7 @@ export default function ModelConfig() {
               <h2 className="font-semibold text-gray-900">模型列表</h2>
             </div>
             <Button size="sm" onClick={openAddDialog}
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}>
+             >
               <Plus className="w-3.5 h-3.5 mr-1.5" />
               添加模型
             </Button>
@@ -1020,7 +1020,7 @@ export default function ModelConfig() {
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
             <Button
               onClick={handleAddModel}
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+             
             >
               确认添加
             </Button>
@@ -1051,7 +1051,7 @@ export default function ModelConfig() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>取消</Button>
             <Button
-              className="bg-red-500 hover:bg-red-600 text-white"
+              variant="destructive"
               onClick={() => {
                 if (deleteConfirmModel?.isDefault) {
                   localStorage.removeItem(DEFAULT_MODEL_STORAGE_KEY);

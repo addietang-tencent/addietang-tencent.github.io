@@ -1753,7 +1753,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             <AlertDialogAction
               onClick={handleSecurityScanConfirm}
               className="text-white"
-              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
+             
             >
               确认检测
             </AlertDialogAction>

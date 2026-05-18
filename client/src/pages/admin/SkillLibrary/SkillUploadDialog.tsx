@@ -1010,7 +1010,6 @@ description: this is a skill creator.
           <Button 
             onClick={handlePublish} 
             disabled={!hasSuccessfulUpload}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             发布 Skill
           </Button>

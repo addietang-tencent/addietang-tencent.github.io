@@ -409,7 +409,7 @@ function InstanceGroupFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} onClick={handleConfirm}>确认</Button>
+              onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -538,7 +538,7 @@ function InstanceDepartmentFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} onClick={handleConfirm}>确认</Button>
+              onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -612,7 +612,7 @@ function DepartmentColumnFilter({
       </div>
       <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -688,7 +688,7 @@ function GroupColumnFilter({
       </div>
       <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
+        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -1945,10 +1945,7 @@ export default function AgentMonitor() {
                   <Button
                     onClick={() => !batchDisabled && setShowBatchUpgradeDialog(true)}
                     disabled={batchDisabled}
-                    style={!batchDisabled ? { background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" } : {}}
-                    className={`text-white rounded-[4px] text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
-                      batchDisabled ? "bg-gray-300 cursor-not-allowed" : "btn-primary-glow"
-                    }`}
+                    className="px-3 gap-1.5"
                   >
                     <CircleArrowUp className="w-3.5 h-3.5" />
                     批量更新
@@ -2245,7 +2242,7 @@ export default function AgentMonitor() {
                           setPage(1);
                           setTypeColFilterOpen(false);
                         }}>重置</Button>
-                        <Button size="sm" className="flex-1" style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)', color: 'white' }} onClick={() => {
+                        <Button size="sm" className="flex-1" onClick={() => {
                           setAgentTypeFilter(new Set(tempTypeFilter));
                           setPage(1);
                           setTypeColFilterOpen(false);
@@ -2699,7 +2696,7 @@ export default function AgentMonitor() {
             <Button
               onClick={confirmReinstall}
               disabled={reinstallInput !== "重装"}
-              className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
+              className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               确认重新安装
             </Button>
@@ -2734,7 +2731,7 @@ export default function AgentMonitor() {
             <Button
               onClick={confirmDelete}
               disabled={claws.find(c => c.id === deleteTarget)?.status === "running" && deleteInput !== "删除"}
-              className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               确认删除
             </Button>
@@ -2809,7 +2806,7 @@ export default function AgentMonitor() {
           </div>
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
-            <Button onClick={confirmBatchUpgrade} className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Button onClick={confirmBatchUpgrade}>
               确认更新
             </Button>
           </DialogFooter>
@@ -2863,7 +2860,7 @@ export default function AgentMonitor() {
             </table>
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button onClick={() => setShowUpgradeResultDialog(false)} className="bg-blue-500 hover:bg-blue-600 text-white">
+            <Button onClick={() => setShowUpgradeResultDialog(false)}>
               我知道了
             </Button>
           </DialogFooter>
@@ -3064,8 +3061,6 @@ export default function AgentMonitor() {
                     : '已清空默认标签配置'
                 );
               }}
-              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
-              className="text-white"
             >
               确认
             </Button>
@@ -3193,8 +3188,7 @@ export default function AgentMonitor() {
                         </Button>
                         <Button
                           size="sm"
-                          className="h-8 px-3 text-xs text-white"
-                          style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                          className="h-8 px-3 text-xs"
                           onClick={saveEditModel}
                           disabled={!modelDraftProvider || !modelDraftModelId}
                         >
@@ -3454,8 +3448,7 @@ export default function AgentMonitor() {
                                         </Button>
                                         <Button
                                           size="sm"
-                                          className="h-8 px-3 text-xs text-white"
-                                          style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                                          className="h-8 px-3 text-xs"
                                           onClick={() => saveEditChannel(channel)}
                                         >
                                           保存
@@ -3557,8 +3550,7 @@ export default function AgentMonitor() {
                             </Button>
                             <Button
                               size="sm"
-                              className="h-8 px-3 text-xs text-white"
-                              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                              className="h-8 px-3 text-xs"
                               onClick={confirmAddChannel}
                               disabled={!channelDraft}
                             >
@@ -3599,7 +3591,7 @@ export default function AgentMonitor() {
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-destructive text-white hover:bg-destructive/90"
               onClick={confirmRemoveChannel}
             >
               确认移除
@@ -3609,54 +3601,47 @@ export default function AgentMonitor() {
       </AlertDialog>
 
       {/* 模型操作二次确认（设为主/删主/删备）—— 与用户端 OpenClawDetail 保持一致 */}
-      {(() => {
-        // 单模型模式（Hermes / LightclawACE）下不区分主/备文案
-        const isSingle = !!selectedClaw && isSingleModelAgentType(selectedClaw.agentType);
-        const dialogTitle = modelConfirmDialog.type === "delete"
-          ? "确认删除主模型"
-          : modelConfirmDialog.type === "delete-backup"
-          ? (isSingle ? "确认删除模型" : "确认删除备选模型")
-          : "切换主模型";
-        const dialogDesc = modelConfirmDialog.type === "delete"
-          ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
-          : modelConfirmDialog.type === "delete-backup"
-          ? (isSingle
-              ? "删除后该 Agent 将无法使用大模型，相关的 Gateway 服务将重启，确认删除么"
-              : "删除后将导致相关的 Gateway 服务重启，确认删除么")
-          : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？";
-        return (
-          <Dialog
-            open={modelConfirmDialog.open}
-            onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-          >
-            <DialogContent className="max-w-sm">
-              <DialogHeader>
-                <DialogTitle className="text-blue-600">{dialogTitle}</DialogTitle>
-                <DialogDescription className="text-gray-600 leading-relaxed pt-1">{dialogDesc}</DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-                >
-                  取消
-                </Button>
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={runModelConfirm}
-                >
-                  {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
-                    ? "确认删除"
-                    : "确认设置"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        );
-      })()}
+      <Dialog
+        open={modelConfirmDialog.open}
+        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-blue-600">
+              {modelConfirmDialog.type === "delete"
+                ? "确认删除主模型"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "确认删除备选模型"
+                : "切换主模型"}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
+              {modelConfirmDialog.type === "delete"
+                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+                : modelConfirmDialog.type === "delete-backup"
+                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
+                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+            >
+              取消
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={runModelConfirm}
+            >
+              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
+                ? "确认删除"
+                : "确认设置"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (

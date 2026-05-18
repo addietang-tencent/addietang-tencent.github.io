@@ -629,13 +629,12 @@ export default function ToolsMcpPanel() {
                 className="pl-8 h-8 text-xs bg-white"
               />
             </div>
-            <button
+            <Button
               onClick={() => setAddDialogOpen(true)}
-              className="w-8 h-8 rounded-lg text-white flex items-center justify-center shrink-0 transition-all hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              size="icon-sm"
             >
               <Plus className="w-4 h-4" />
-            </button>
+            </Button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
@@ -970,8 +969,6 @@ export default function ToolsMcpPanel() {
                 }
                 doAddMCP(paramTemplate, paramValues, true);
               }}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-sm"
             >
               确认并重启实例
             </Button>
@@ -1067,8 +1064,6 @@ export default function ToolsMcpPanel() {
             </Button>
             <Button
               onClick={() => handleSaveSource(true)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white"
             >
               保存并重启实例
             </Button>
@@ -1094,7 +1089,7 @@ export default function ToolsMcpPanel() {
               删除但不重启
             </AlertDialogAction>
             <AlertDialogAction
-              className="bg-red-500 hover:bg-red-600 text-white text-sm"
+              className="text-sm"
               onClick={() => handleConfirmDelete(true)}
             >
               删除并重启实例
@@ -1123,8 +1118,7 @@ export default function ToolsMcpPanel() {
             </Button>
             <Button
               onClick={handleRestartNow}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-xs"
+              size="sm"
             >
               重启
             </Button>

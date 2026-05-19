@@ -232,7 +232,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+          className="w-full flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -247,10 +247,10 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 无限制
@@ -260,10 +260,10 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 自定义
@@ -400,7 +400,7 @@ export default function BasicInfo() {
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
                     A
                   </div>
-                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-xl text-xs text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition-colors bg-gray-50">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#d3d6db] rounded-[4px] text-xs text-[#020617] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer transition-colors bg-white">
                     <Upload className="w-3.5 h-3.5" />
                     更换 Logo
                     <input

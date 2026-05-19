@@ -15,6 +15,20 @@ description: >
 
 ---
 
+## ⚠️ 全局组件样式规范（强制引用）
+
+**所有 UI 组件的颜色、描边、圆角、阴影、交互状态必须遵循独立的全局组件规范文件：**
+
+📄 **[SKILL-GLOBAL-COMPONENTS.md](./SKILL-GLOBAL-COMPONENTS.md)**
+
+该文件由 **addietang** 维护，优先级最高。任何人写页面时：
+1. 组件样式以该文件为唯一标准
+2. 不允许通过 className 覆盖组件定义的颜色/边框/圆角
+3. 不允许修改 `client/src/components/ui/*.tsx` 组件源文件（除 addietang 外）
+4. rebase 后如组件样式被改，以 addietang 版本为准强制恢复
+
+---
+
 ## 1. 色彩系统
 
 ### 1.1 品牌色

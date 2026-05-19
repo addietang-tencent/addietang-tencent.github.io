@@ -21,6 +21,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search, AlertTriangle, ChevronDown, Check } from 'lucide-react';
 import type { Group } from './types';
 
@@ -31,6 +38,8 @@ const UNINSTALL_FILTER_OPTIONS: { key: UninstallFilterOption; label: string }[] 
   { key: 'not_deleted', label: '未卸载' },
   { key: 'delete_failed', label: '卸载失败' },
 ];
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
 
 interface BatchDeleteDialogProps {
   open: boolean;
@@ -64,11 +73,15 @@ export default function BatchDeleteDialog({
 }: BatchDeleteDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
+  /** 是否处于"选择全部"模式（跨页全选） */
+  const [selectAllMode, setSelectAllMode] = useState(false);
   /** 状态多选筛选 */
   const [statusFilters, setStatusFilters] = useState<UninstallFilterOption[]>([]);
   /** 分组筛选：空数组=全部, 否则为选中的分组名列表（多选） */
   const [scopeFilters, setScopeFilters] = useState<string[]>([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   /** 多选下拉展开状态 */
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
@@ -96,12 +109,15 @@ export default function BatchDeleteDialog({
     if (open) {
       setSearchQuery('');
       setSelectedInstances([]);
+      setSelectAllMode(false);
       setStatusFilters([]);
       setScopeFilters([]);
       setConfirmDialogOpen(false);
       setStatusDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
+      setCurrentPage(1);
+      setPageSize(20);
     }
   }, [open]);
 
@@ -146,23 +162,54 @@ export default function BatchDeleteDialog({
     });
   }, [distributedInstances, searchQuery, scopeFilters, statusFilters]);
 
-  // 全选/取消全选
-  const isAllSelected = filteredInstances.length > 0 && filteredInstances.every(inst => selectedInstances.includes(inst.id));
-  const isSomeSelected = filteredInstances.some(inst => selectedInstances.includes(inst.id)) && !isAllSelected;
+  // 分页计算
+  const totalCount = filteredInstances.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const startIndex = (safeCurrentPage - 1) * pageSize;
+  const pagedInstances = filteredInstances.slice(startIndex, startIndex + pageSize);
+
+  // 全选判断：当前页级别
+  const pageIds = pagedInstances.map(inst => inst.id);
+  const selectedInPageCount = pageIds.filter(id => selectedInstances.includes(id)).length;
+  const isPageAllSelected = pageIds.length > 0 && selectedInPageCount === pageIds.length;
+  const isPageIndeterminate = selectedInPageCount > 0 && selectedInPageCount < pageIds.length;
+  // 跨页全选判断
+  const allFilteredIds = filteredInstances.map(inst => inst.id);
+  const isAllFilteredSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedInstances.includes(id));
 
   const toggleAll = () => {
-    if (isAllSelected) {
-      setSelectedInstances(prev => prev.filter(id => !filteredInstances.some(inst => inst.id === id)));
+    if (isPageAllSelected || selectAllMode) {
+      // 已全选状态（包括跨页全选）→ 清空所有
+      setSelectedInstances([]);
+      setSelectAllMode(false);
     } else {
-      const newIds = filteredInstances.map(inst => inst.id);
-      setSelectedInstances(prev => Array.from(new Set([...prev, ...newIds])));
+      // 选中当前页所有
+      setSelectedInstances(prev => Array.from(new Set([...prev, ...pageIds])));
+      setSelectAllMode(false);
     }
   };
 
+  /** 选择全部（跨页）—— 选中所有筛选后的实例 */
+  const handleSelectAllFiltered = () => {
+    setSelectedInstances(prev => Array.from(new Set([...prev, ...allFilteredIds])));
+    setSelectAllMode(true);
+  };
+
+  /** 取消选择全部 */
+  const handleDeselectAll = () => {
+    setSelectedInstances([]);
+    setSelectAllMode(false);
+  };
+
   const toggleInstance = (id: string) => {
-    setSelectedInstances(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setSelectedInstances(prev => {
+      if (prev.includes(id)) {
+        setSelectAllMode(false);
+        return prev.filter(x => x !== id);
+      }
+      return [...prev, id];
+    });
   };
 
   const handleDelete = () => {
@@ -178,7 +225,7 @@ export default function BatchDeleteDialog({
   };
 
   // 选中数量（在筛选范围内）
-  const selectedInFilterCount = filteredInstances.filter(inst => selectedInstances.includes(inst.id)).length;
+  const selectedInFilterCount = allFilteredIds.filter(id => selectedInstances.includes(id)).length;
 
   /** 是否为全部状态 */
   const isAllStatusSelected = statusFilters.length === 0 || statusFilters.length === UNINSTALL_FILTER_OPTIONS.length;
@@ -474,26 +521,62 @@ export default function BatchDeleteDialog({
 
           {/* 实例列表 — 卡片式布局，参考下发弹窗 */}
           <div className="border border-gray-200 rounded-lg max-h-[340px] overflow-y-auto">
-            {/* 全选复选框 */}
-            <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-              <Checkbox
-                checked={isAllSelected}
-                // @ts-ignore – indeterminate prop
-                indeterminate={isSomeSelected}
-                onCheckedChange={toggleAll}
-              />
-              <span className="text-sm font-medium text-gray-900">
-                全选（{selectedInFilterCount}/{filteredInstances.length}）
-              </span>
+            {/* 全选复选框 — 当前页全选 */}
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={isPageAllSelected || isAllFilteredSelected}
+                  // @ts-ignore – indeterminate prop
+                  indeterminate={isPageIndeterminate && !isAllFilteredSelected}
+                  onCheckedChange={toggleAll}
+                />
+                <span className="text-sm font-medium text-gray-900">
+                  全选
+                </span>
+              </div>
+              {selectedInFilterCount > 0 && (
+                <span className="text-sm text-blue-600 font-medium">
+                  已选 {selectedInFilterCount} 条
+                </span>
+              )}
             </div>
 
+            {/* 跨页全选提示条 */}
+            {isPageAllSelected && totalCount > pageSize && (
+              <div className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 border-b border-blue-100 text-sm">
+                {selectAllMode || isAllFilteredSelected ? (
+                  <>
+                    <span className="text-gray-700">已选择全部 <span className="font-semibold">{totalCount}</span> 个实例。</span>
+                    <button
+                      type="button"
+                      onClick={handleDeselectAll}
+                      className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                    >
+                      取消选择
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-gray-700">已选择此页 <span className="font-semibold">{pagedInstances.length}</span> 个实例。</span>
+                    <button
+                      type="button"
+                      onClick={handleSelectAllFiltered}
+                      className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                    >
+                      选择全部 {totalCount} 个实例
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* 实例项 */}
-            {filteredInstances.length === 0 ? (
+            {pagedInstances.length === 0 ? (
               <div className="flex items-center justify-center py-8 text-sm text-gray-400">
                 暂无已下发的实例
               </div>
             ) : (
-              filteredInstances.map(inst => {
+              pagedInstances.map(inst => {
                 const isSelected = selectedInstances.includes(inst.id);
                 const deleteStatus = inst.deleteStatus || 'not_deleted';
                 return (
@@ -544,6 +627,45 @@ export default function BatchDeleteDialog({
                 );
               })
             )}
+          </div>
+
+          {/* 分页控件 */}
+          <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
+            <div className="flex items-center gap-1.5">
+              <span>共 {totalCount} 条，每页</span>
+              <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); setSelectedInstances([]); setSelectAllMode(false); }}>
+                <SelectTrigger className="w-16 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map(size => (
+                    <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span>条</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                disabled={safeCurrentPage <= 1}
+                onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); setSelectedInstances([]); setSelectAllMode(false); }}
+              >
+                上一页
+              </Button>
+              <span className="px-2 text-gray-600">{safeCurrentPage} / {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                disabled={safeCurrentPage >= totalPages}
+                onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); setSelectedInstances([]); setSelectAllMode(false); }}
+              >
+                下一页
+              </Button>
+            </div>
           </div>
 
           {/* 底部操作 */}

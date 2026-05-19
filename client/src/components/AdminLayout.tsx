@@ -58,14 +58,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Link href="/" aria-label="返回首页" className="group">
                   <AdminSidebarLogo className="shrink-0" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] group-hover:text-[#1447e6]">管控端</p>
-                    <p className="truncate text-xs font-normal leading-5 tracking-[0.015em] text-[var(--admin-sidebar-muted)] group-hover:text-[#1447e6]">ClawPro Admin</p>
+                    <p className="truncate text-sm font-medium leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] group-hover:text-[#355EF1]">管控端</p>
+                    <p className="truncate text-xs font-normal leading-5 tracking-[0.015em] text-[var(--admin-sidebar-muted)] group-hover:text-[#355EF1]">ClawPro Admin</p>
                   </div>
                 </Link>
               </AdminSidebarBrand>
 
               <AdminSidebarHeaderAction asChild title="前往用户端">
-                <Link href="/my-openclaw" aria-label="前往用户端" className="!border !border-[#e3e3e3] !rounded-[4px] !bg-white hover:!text-[#1447e6]">
+                <Link href="/my-openclaw" aria-label="前往用户端" className="!border !border-[#e3e3e3] !rounded-[4px] !bg-white hover:!text-[#355EF1]">
                   <ExternalLink />
                 </Link>
               </AdminSidebarHeaderAction>

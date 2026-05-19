@@ -39,12 +39,12 @@ export const SurfaceCard = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="card"
         className={cn(
-          "rounded-[4px]",
+          "rounded-xl border border-[#e5e5e5]",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:-translate-y-0.5",
           className,
         )}
-        style={{ boxShadow: "var(--shadow-card)", ...style }}
+        style={style}
         {...props}
       />
     );
@@ -63,11 +63,11 @@ export const SurfaceInner = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="inner"
         className={cn(
-          "rounded-[4px] border border-[#F5F5F5]",
+          "rounded-xl border border-[#e5e5e5]",
           !bare && "bg-white",
           className,
         )}
-        style={{ boxShadow: "var(--shadow-inner)", ...style }}
+        style={style}
         {...props}
       />
     );
@@ -87,7 +87,7 @@ export const SurfaceOverlay = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="overlay"
         className={cn(
-          "rounded-[4px] border border-[#E5E5E5]",
+          "rounded-xl border border-[#E5E5E5]",
           !bare && "bg-white",
           className,
         )}
@@ -110,16 +110,12 @@ export const SurfaceConfig = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="config"
         className={cn(
-          "rounded-[4px]",
+          "rounded-xl border border-[#e5e5e5]",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:-translate-y-0.5",
           className,
         )}
-        style={{
-          border: "0.5px solid #E5E5E5",
-          boxShadow: "var(--shadow-config)",
-          ...style,
-        }}
+        style={style}
         {...props}
       />
     );

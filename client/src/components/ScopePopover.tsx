@@ -460,7 +460,7 @@ export function ScopePopover({
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5] shrink-0">
             <Button variant="claw-outline" className="h-7 text-xs px-3 gap-1" onClick={() => setOpen(false)}>
               取消
             </Button>

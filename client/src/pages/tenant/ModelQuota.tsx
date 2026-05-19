@@ -198,7 +198,7 @@ function Pagination({
   const totalPages = Math.ceil(total / pageSize);
   if (totalPages <= 1) return null;
   return (
-    <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-gray-100">
+    <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-[#e5e5e5]">
       <span className="text-xs text-gray-400">
         第 {page}/{totalPages} 页，共 {total} 条
       </span>
@@ -496,7 +496,7 @@ export default function ModelQuota() {
                   value={singleDate}
                   max={TODAY}
                   onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#1447e6] cursor-pointer"
+                  className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
                   style={{ colorScheme: 'light' }}
                 />
               ) : (
@@ -506,7 +506,7 @@ export default function ModelQuota() {
                     value={dateRange.start}
                     max={dateRange.end}
                     onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#1447e6] cursor-pointer"
+                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
                     style={{ colorScheme: 'light' }}
                   />
                   <span className="text-gray-400 text-sm">至</span>
@@ -516,7 +516,7 @@ export default function ModelQuota() {
                     min={dateRange.start}
                     max={TODAY}
                     onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#1447e6] cursor-pointer"
+                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
                     style={{ colorScheme: 'light' }}
                   />
                 </div>
@@ -609,7 +609,7 @@ export default function ModelQuota() {
 
           {/* Model Usage Summary */}
           <SurfaceCard className="mb-5 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
+            <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
             </div>
             <div className="overflow-x-auto">
@@ -651,7 +651,7 @@ export default function ModelQuota() {
 
           {/* Detail Usage Records */}
           <SurfaceCard className="overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
+            <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
             <div className="overflow-x-auto" style={{ maxHeight: 360, overflowY: "auto" }}>

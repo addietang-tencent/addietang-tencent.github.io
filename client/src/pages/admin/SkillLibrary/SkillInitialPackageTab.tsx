@@ -81,7 +81,7 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
       <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
           <DialogTitle>从公共技能库添加</DialogTitle>
         </DialogHeader>
 
@@ -109,7 +109,7 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
                   <div
                     key={skill.id}
                     onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-                    className={`relative rounded-[4px] border p-3 transition-all ${
+                    className={`relative rounded-xl border p-3 transition-all ${
                       isAlreadyAdded
                         ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
                         : isSelected
@@ -139,7 +139,7 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
           )}
         </div>
 
-        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -292,7 +292,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
       <div
         key={skill.id}
         onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-        className={`relative rounded-[4px] border p-3 transition-all ${
+        className={`relative rounded-xl border p-3 transition-all ${
           isAlreadyAdded
             ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
             : isSelected
@@ -348,7 +348,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
       <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-gray-100 shrink-0">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -361,7 +361,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                 placeholder="搜索技能名称或描述..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-[4px] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
               />
             </div>
             {/* 应用范围多选下拉 — 层级结构：全部应用范围 / 全部用户 / 按分组 */}
@@ -371,7 +371,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left text-xs">
                       {(() => {
@@ -412,7 +412,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                 };
 
                 return (
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
                     {/* 搜索框 */}
                     <div className="px-2 pb-1.5 pt-1">
                       <div className="relative">
@@ -421,7 +421,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                           placeholder="搜索..."
                           value={scopeSearchQuery}
                           onChange={(e) => setScopeSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
@@ -501,7 +501,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                     )}
                     {/* 底部已选信息 + 清除 */}
                     {scopeFilters.length > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 mt-1">
+                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5] mt-1">
                         <span className="text-xs text-gray-500">
                           已选 {scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项
                         </span>
@@ -519,7 +519,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
             </div>
             <button
               onClick={handleRefresh}
-              className="p-2 rounded-[4px] border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
               title="刷新"
             >
               <RefreshCw className="w-4 h-4" />
@@ -567,7 +567,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
             )}
           </div>
         </div>
-        <DialogFooter className="px-5 py-3 border-t border-gray-100 shrink-0">
+        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -643,7 +643,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => { setScopeType('public'); setGroupIds([]); }}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                     scopeType === 'public'
                       ? 'border-blue-200 bg-blue-50 text-blue-600'
                       : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -653,7 +653,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                 </button>
                 <button
                   onClick={() => setScopeType('private')}
-                  className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                     scopeType === 'private'
                       ? 'border-blue-200 bg-blue-50 text-blue-600'
                       : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -668,7 +668,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                     <Tooltip delayDuration={1000}>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
                             <span className="truncate">
                               {groupIds.length > 0
                                 ? `已选 ${groupIds.length} 个分组`
@@ -687,14 +687,14 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                       )}
                     </Tooltip>
                     <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                      <div className="p-2 border-b border-gray-100">
+                      <div className="p-2 border-b border-[#e5e5e5]">
                         <div className="relative">
                           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                           <input
                             placeholder="搜索分组…"
                             value={groupSearchQuery}
                             onChange={(e) => setGroupSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                           />
                         </div>
                       </div>
@@ -713,7 +713,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                                       : [...prev, group.id]
                                   );
                                 }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
                               >
                                 <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
                                   checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
@@ -728,7 +728,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                           <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
                         )}
                       </div>
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
+                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5]">
                         <p className="text-[11px] text-gray-400">
                           已选 {groupIds.length} 个分组
                         </p>
@@ -963,7 +963,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
         ) : (
           <>
             {/* 列表容器 */}
-            <div className="border border-gray-200 rounded-[4px] max-h-[380px] overflow-y-auto">
+            <div className="border border-gray-200 rounded-xl max-h-[380px] overflow-y-auto">
               {/* 表头行 — sticky，左侧带全选 checkbox */}
               <div
                 className="grid items-center gap-2 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-20 cursor-pointer hover:bg-gray-100 transition-colors"
@@ -998,7 +998,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                     <div
                       key={skill.skillId}
                       onClick={() => toggleOne(skill.skillId)}
-                      className={`grid items-center gap-2 px-3 py-3 border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors ${checked ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
+                      className={`grid items-center gap-2 px-3 py-3 border-b border-[#e5e5e5] last:border-b-0 cursor-pointer transition-colors ${checked ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
                       style={{ gridTemplateColumns: '28px 1.3fr 52px 60px 60px 1.8fr' }}
                     >
                       {/* 勾选框 */}
@@ -1221,10 +1221,10 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       </div>
 
       {/* 技能包信息 */}
-      <div className="bg-white rounded-[4px] border border-gray-100 p-5"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: '#1447E6' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#355EF1' }}>
             <Package className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
@@ -1248,9 +1248,9 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       </div>
 
       {/* 技能列表 */}
-      <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <div className="px-4 border-b border-gray-100 flex items-center justify-between" style={{ minHeight: '48px' }}>
+      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+       >
+        <div className="px-4 border-b border-[#e5e5e5] flex items-center justify-between" style={{ minHeight: '48px' }}>
           <span className="text-sm font-medium text-gray-700">
             技能列表（共 {localSkills.length} 个）
           </span>
@@ -1306,7 +1306,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
               const wasRefreshed = !!skill.originalVersion;
               return (
                 <div key={skill.skillId} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 rounded-[4px] bg-gray-100 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
                     <Package className="w-4 h-4 text-gray-500" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1341,7 +1341,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => canUpdate ? handleRefreshSingle(skill.skillId) : undefined}
-                        className={`w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors ${
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
                           canUpdate
                             ? 'text-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer'
                             : 'text-gray-300 cursor-default'
@@ -1360,7 +1360,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                   {/* 删除按钮 */}
                   <button
                     onClick={() => handleRemoveLocal(skill.skillId)}
-                    className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                     title="从技能包中移除"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1377,7 +1377,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
           </div>
         )}
 
-        <div className="px-4 py-3 border-t border-gray-100 flex items-center gap-2">
+        <div className="px-4 py-3 border-t border-[#e5e5e5] flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddPublicDialog(true)}>
             <Plus className="w-3.5 h-3.5" />
             从公共技能库添加
@@ -1590,7 +1590,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <h3 style={{ fontSize: '16px' }} className="font-medium text-gray-700 shrink-0">初始技能包列表</h3>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-[4px] whitespace-nowrap">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-xl whitespace-nowrap">
             <Sparkles className="w-3 h-3 text-blue-500 shrink-0" />
             <span className="text-xs text-blue-600">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
           </div>
@@ -1603,7 +1603,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -1640,7 +1640,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
               };
 
               return (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
                   {/* 搜索框 */}
                   <div className="px-2 pb-1.5 pt-1">
                     <div className="relative">
@@ -1649,7 +1649,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                         placeholder="搜索..."
                         value={scopeSearchQuery}
                         onChange={(e) => setScopeSearchQuery(e.target.value)}
-                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -1726,7 +1726,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   )}
                   {/* 底部：已选数量 + 清除筛选 */}
                   {selectedScopes.size > 0 && (
-                    <div className="border-t border-gray-100 mt-1 px-3 py-2 flex items-center justify-between">
+                    <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
                       <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                       <button
                         type="button"
@@ -1761,13 +1761,13 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
             return (
               <div
                 key={pkg.id}
-                className="bg-white rounded-[4px] border border-gray-100 p-4 transition-all cursor-pointer group hover:shadow-md"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-all cursor-pointer group"
+               
                 onClick={() => setSelectedPackageId(pkg.id)}
               >
                 <div className="flex items-center gap-3">
                   {/* 图标 */}
-                  <div className="w-10 h-10 rounded-[4px] flex items-center justify-center shrink-0" style={{ background: '#1447E6' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#355EF1' }}>
                     <Package className="w-5 h-5 text-white" />
                   </div>
 
@@ -1821,7 +1821,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           <TooltipTrigger asChild>
                             <button
                               onClick={() => {}}
-                              className="w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
+                              className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1833,7 +1833,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                     ) : (
                       <button
                         onClick={() => setDeleteTarget(pkg.id)}
-                        className="w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
+                        className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1845,8 +1845,8 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           })}
         </div>
       ) : (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-[4px] border border-gray-100"
-          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#e5e5e5]"
+         >
           <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm font-medium">
             {selectedScopes.size > 0 ? '没有匹配的初始技能包' : '还没有初始技能包'}

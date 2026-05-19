@@ -262,7 +262,7 @@ function GroupTreeNodeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
           isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -370,13 +370,13 @@ function InstanceGroupFilter({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索分组"
-              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
         </div>
         <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
           {/* 全部分组 */}
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
@@ -401,7 +401,7 @@ function InstanceGroupFilter({
             </div>
           ))}
         </div>
-        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs text-gray-500 truncate">
             {selectedGroup ? getGroupPath(selectedGroup.id, groups) : "全部分组"}
           </div>
@@ -431,7 +431,7 @@ function InstanceDepartmentTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
           isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -506,7 +506,7 @@ function InstanceDepartmentFilter({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
@@ -517,7 +517,7 @@ function InstanceDepartmentFilter({
               selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
           ))}
         </div>
-        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-blue-600 font-medium truncate">全部部门</span>
@@ -575,7 +575,7 @@ function DepartmentColumnFilter({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setTempValue(node.id)}
         >
@@ -600,17 +600,17 @@ function DepartmentColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索部门"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
           <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
           {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
         </div>
         {departments.map((d) => renderNode(d, 0))}
       </div>
-      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
         <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
@@ -660,11 +660,11 @@ function GroupColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索分组"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
           <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
           {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
         </div>
@@ -686,7 +686,7 @@ function GroupColumnFilter({
           </div>
         ))}
       </div>
-      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
+      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
         <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
@@ -1785,7 +1785,7 @@ export default function AgentMonitor() {
               type="date"
               value={dateFrom}
               onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
@@ -1793,13 +1793,13 @@ export default function AgentMonitor() {
               type="date"
               value={dateTo}
               onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             {(dateFrom || dateTo) && (
               <button
                 onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:text-blue-500 hover:border-blue-300 transition-colors whitespace-nowrap"
+                className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-500 hover:border-blue-300 transition-colors whitespace-nowrap"
               >
                 清除筛选
               </button>
@@ -1807,7 +1807,7 @@ export default function AgentMonitor() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 shrink-0"
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 shrink-0"
               title="刷新列表"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -1820,15 +1820,14 @@ export default function AgentMonitor() {
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
-            className={`bg-white rounded-[4px] border p-4 transition-all text-left ${
+            className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "all"
                 ? "border-blue-300 ring-1 ring-blue-200"
-                : "border-gray-100 hover:border-gray-200"
+                : "border-[#e5e5e5] hover:border-gray-200"
             }`}
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                 <Layers className="w-3.5 h-3.5 text-white" />
               </div>
               <p className="text-xs text-gray-400">总数</p>
@@ -1839,15 +1838,14 @@ export default function AgentMonitor() {
           {/* 运行中 */}
           <button
             onClick={() => handleCardFilterChange("running")}
-            className={`bg-white rounded-[4px] border p-4 transition-all text-left ${
+            className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "running"
                 ? "border-green-300 ring-1 ring-green-200"
-                : "border-gray-100 hover:border-gray-200"
+                : "border-[#e5e5e5] hover:border-gray-200"
             }`}
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                 <CheckCircle2 className="w-3.5 h-3.5 text-white" />
               </div>
               <p className="text-xs text-gray-400">运行中</p>
@@ -1858,15 +1856,14 @@ export default function AgentMonitor() {
           {/* 已关机 */}
           <button
             onClick={() => handleCardFilterChange("shutdown")}
-            className={`bg-white rounded-[4px] border p-4 transition-all text-left ${
+            className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "shutdown"
                 ? "border-gray-400 ring-1 ring-gray-200"
-                : "border-gray-100 hover:border-gray-200"
+                : "border-[#e5e5e5] hover:border-gray-200"
             }`}
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
                 <PowerOff className="w-3.5 h-3.5 text-white" />
               </div>
               <p className="text-xs text-gray-400">已关机</p>
@@ -1879,15 +1876,14 @@ export default function AgentMonitor() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
-                className={`bg-white rounded-[4px] border p-4 transition-all text-left ${
+                className={`bg-white rounded-xl border p-4 transition-all text-left ${
                   activeCardFilter === "other"
                     ? "border-orange-300 ring-1 ring-orange-200"
-                    : "border-gray-100 hover:border-gray-200"
+                    : "border-[#e5e5e5] hover:border-gray-200"
                 }`}
-                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
                     <HelpCircle className="w-3.5 h-3.5 text-white" />
                   </div>
                   <p className="text-xs text-gray-400">其他</p>
@@ -1895,7 +1891,7 @@ export default function AgentMonitor() {
                 <p className="text-xl font-bold text-gray-900">{otherCount}</p>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-gray-100 shadow-lg" style={{ color: 'inherit' }}>
+            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>
               <div className="space-y-2.5">
                 <div>
                   <p className="text-xs font-semibold text-orange-500 mb-1.5">⚠ 需关注</p>
@@ -1919,8 +1915,8 @@ export default function AgentMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+         >
 
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
@@ -1976,7 +1972,7 @@ export default function AgentMonitor() {
                     }}
                     disabled={batchDeleteDisabled}
                     variant="outline"
-                    className={`rounded-[4px] text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                    className={`rounded-xl text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
                       batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
                     }`}
                   >
@@ -2068,14 +2064,14 @@ export default function AgentMonitor() {
             )}
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-[4px] hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors"
             >
               <Tag className="w-3.5 h-3.5" />
               配置默认标签
             </button>
             {/* 智能体迁移按鈕 */}
             <Link href="/admin/agent-migration">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-[4px] hover:bg-gray-50 hover:border-gray-300 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 智能体迁移
               </button>
@@ -2131,7 +2127,7 @@ export default function AgentMonitor() {
                           style={{ pointerEvents: 'auto' }}
                         />
                         <div 
-                          className="fixed w-56 bg-white border border-gray-200 rounded-[4px] shadow-2xl z-50 will-change-transform" 
+                          className="fixed w-56 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 will-change-transform" 
                           style={{
                             top: `${filterPosition.top}px`,
                             left: `${filterPosition.left}px`,
@@ -2152,7 +2148,7 @@ export default function AgentMonitor() {
                               </label>
                             ))}
                           </div>
-                          <div className="border-t border-gray-100 p-2 flex gap-2">
+                          <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
                             <Button variant="outline" size="sm" onClick={handleStatusFilterReset} className="flex-1">
                               重置
                             </Button>
@@ -2235,7 +2231,7 @@ export default function AgentMonitor() {
                           </label>
                         ))}
                       </div>
-                      <div className="border-t border-gray-100 p-2 flex gap-2">
+                      <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
                         <Button variant="outline" size="sm" className="flex-1" onClick={() => {
                           setTempTypeFilter(new Set(ALL_AGENT_TYPES));
                           setAgentTypeFilter(new Set(ALL_AGENT_TYPES));
@@ -2296,7 +2292,7 @@ export default function AgentMonitor() {
                       {/* 名称/ID */}
                       <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
                           <div>
@@ -2460,8 +2456,8 @@ export default function AgentMonitor() {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                               </button>
                             </HoverCardTrigger>
-                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-[4px] overflow-hidden">
-                              <div className="grid grid-cols-2 bg-gray-50 border-b border-gray-100 px-3 py-2">
+                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
+                              <div className="grid grid-cols-2 bg-gray-50 border-b border-[#e5e5e5] px-3 py-2">
                                 <span className="text-xs font-semibold text-gray-600">标签键</span>
                                 <span className="text-xs font-semibold text-gray-600">标签値</span>
                               </div>
@@ -2613,7 +2609,7 @@ export default function AgentMonitor() {
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <button disabled={safePage === 1} onClick={() => setPage(safePage - 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 {(() => {
@@ -2633,15 +2629,15 @@ export default function AgentMonitor() {
                     ) : (
                       <button
                         key={p}
-                        className={`h-7 w-7 rounded-[4px] text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
-                        style={p === safePage ? { background: "#1447E6" } : undefined}
+                        className={`h-7 w-7 rounded-xl text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
+                        style={p === safePage ? { background: "#355EF1" } : undefined}
                         onClick={() => setPage(p as number)}
                       >{p}</button>
                     )
                   );
                 })()}
                 <button disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -2745,16 +2741,16 @@ export default function AgentMonitor() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900">批量更新</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-[4px] px-4 py-3">
+          <div className="space-y-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
             <p>1. 更新版本预计需要 5～10 分钟不等，期间 Agent 实例不可使用。</p>
             <p>2. Agent 版本将会升级至当前生效镜像对应的版本，请先将目标镜像指定为生效状态再执行升级操作。</p>
             <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
           </div>
           <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
-          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-[4px]">
+          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/60">
+                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent 版本</th>
@@ -2769,7 +2765,7 @@ export default function AgentMonitor() {
                     <tr key={c.id} className="hover:bg-gray-50/50">
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <span className="text-white" style={{ fontSize: '10px' }}>C</span>
                           </div>
                           <div className="min-w-0">
@@ -2820,15 +2816,15 @@ export default function AgentMonitor() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-gray-900">下发失败提醒</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-[4px] px-4 py-3">
+          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
             <p>当前没有生效的 OpenClaw 镜像，以下 agent 无法升级。</p>
             <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
           </div>
           <p className="text-sm text-gray-600">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
-          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-[4px]">
+          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/60">
+                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">下发失败原因</th>
@@ -2839,7 +2835,7 @@ export default function AgentMonitor() {
                   <tr key={idx} className="hover:bg-gray-50/50">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
                           <span className="text-white" style={{ fontSize: '10px' }}>C</span>
                         </div>
                         <div className="min-w-0">
@@ -2878,7 +2874,7 @@ export default function AgentMonitor() {
           </DialogHeader>
 
           {/* 提示语 */}
-          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-[4px] text-xs text-gray-600">
+          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-gray-600">
             <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
             <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
               <li>当前仅支持使用<a href="https://console.cloud.tencent.com/tag/taglist" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5" onClick={(e) => e.stopPropagation()}>腾讯云控制台</a>已创建的标签。</li>
@@ -2913,7 +2909,7 @@ export default function AgentMonitor() {
           )}
 
           {/* 添加标签区域 */}
-          <div className="border border-gray-200 rounded-[4px] p-4 space-y-3">
+          <div className="border border-gray-200 rounded-xl p-4 space-y-3">
             <div className="text-sm font-medium text-gray-700">添加标签</div>
             <div className="flex items-center gap-2">
               {/* 标签键下拉 */}
@@ -2923,7 +2919,7 @@ export default function AgentMonitor() {
                     <TooltipTrigger asChild>
                       <PopoverTrigger asChild>
                         <button
-                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-[4px] bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
                           onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
                         >
                           <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-gray-800' : 'text-gray-400'}`}>{addingKey || '选择标签键'}</span>
@@ -2939,7 +2935,7 @@ export default function AgentMonitor() {
                   </Tooltip>
                   <PopoverContent className="w-72 p-0" align="start" side="bottom">
                     {/* 搜索框 */}
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-[#e5e5e5]">
                       <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                       <input
                         autoFocus
@@ -2969,7 +2965,7 @@ export default function AgentMonitor() {
                         <div className="px-4 py-3 text-sm text-gray-400 text-center">无匹配结果</div>
                       )}
                     </div>
-                    <div className="px-3 py-1.5 border-t border-gray-100 text-xs text-gray-400">共 {DEMO_TAG_KEYS.length} 条</div>
+                    <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-gray-400">共 {DEMO_TAG_KEYS.length} 条</div>
                   </PopoverContent>
                 </Popover>
               </div>
@@ -2984,7 +2980,7 @@ export default function AgentMonitor() {
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
                           <button
-                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-[4px] bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
                             onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
                           >
                             <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-gray-800' : 'text-gray-400'}`}>{addingValue || '选择标签値'}</span>
@@ -3015,7 +3011,7 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <div className="w-full px-3 py-2 text-sm border border-gray-100 rounded-[4px] bg-gray-50 text-gray-400 cursor-not-allowed truncate">
+                  <div className="w-full px-3 py-2 text-sm border border-[#e5e5e5] rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed truncate">
                     请先选择标签键
                   </div>
                 )}
@@ -3024,7 +3020,7 @@ export default function AgentMonitor() {
               {/* 添加按鈕 */}
               <button
                 disabled={!addingKey || !addingValue}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 onClick={() => {
                   if (!addingKey || !addingValue) return;
                   // 检查标签键是否已存在
@@ -3077,7 +3073,7 @@ export default function AgentMonitor() {
           />
           <div className="w-[593px] bg-white shadow-lg flex flex-col">
             {/* 抽屉头 */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] bg-white">
               <h2 className="text-lg font-semibold text-gray-900">Agent 详情</h2>
               <div className="flex items-center gap-2">
                 <Button
@@ -3141,7 +3137,7 @@ export default function AgentMonitor() {
                   const renderInlineEditForm = () => (
                     <div className="space-y-3">
                       {providerGroups.length === 0 ? (
-                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-3 py-2.5">
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
                           <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-amber-700 leading-relaxed">
                             当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
@@ -3204,7 +3200,7 @@ export default function AgentMonitor() {
                     return (
                       <div
                         key={model.id}
-                        className={`px-4 py-3 bg-white rounded-[4px] border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
+                        className={`px-4 py-3 bg-white rounded-xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
                       >
                         {isReplacingThis ? (
                           renderInlineEditForm()
@@ -3308,7 +3304,7 @@ export default function AgentMonitor() {
 
                       {/* 空态（无模型且不在新增态） */}
                       {models.length === 0 && !isAdding && (
-                        <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                        <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
                           暂未配置模型
                         </div>
                       )}
@@ -3331,7 +3327,7 @@ export default function AgentMonitor() {
 
                       {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
                       {isAdding && (
-                        <div className="mt-2 px-4 py-3 bg-white rounded-[4px] border border-blue-200">
+                        <div className="mt-2 px-4 py-3 bg-white rounded-xl border border-blue-200">
                           {renderInlineEditForm()}
                         </div>
                       )}
@@ -3359,7 +3355,7 @@ export default function AgentMonitor() {
                       const isExpanded = expandedChannel === channel.name;
                       const isEditingThis = isExpanded && channelEditDraft !== null;
                       return (
-                        <div key={channel.name} className="bg-white rounded-[4px] border border-gray-200 overflow-hidden">
+                        <div key={channel.name} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                           {/* 行头：通道名 + 展开/折叠按钮 */}
                           <div className="group px-4 py-3 flex items-center gap-3">
                             <button
@@ -3381,9 +3377,9 @@ export default function AgentMonitor() {
 
                           {/* 展开区域：凭证查看 / 编辑 */}
                           {isExpanded && (
-                            <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50 space-y-2">
+                            <div className="border-t border-[#e5e5e5] px-4 py-3 bg-gray-50/50 space-y-2">
                               {fields.length === 0 ? (
-                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
+                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
                                   <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                                   <p className="text-xs text-blue-600 leading-relaxed">
                                     该通道无需凭证配置（由租户在用户端完成扫码授权）。
@@ -3469,7 +3465,7 @@ export default function AgentMonitor() {
                       );
                     })}
                     {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
-                      <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                      <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
                         暂未接入通道
                       </div>
                     )}
@@ -3480,7 +3476,7 @@ export default function AgentMonitor() {
                       const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
                       const isWechatLike = currentCh?.wechatMode;
                       return (
-                        <div className="px-4 py-3 bg-white rounded-[4px] border border-gray-200 space-y-3">
+                        <div className="px-4 py-3 bg-white rounded-xl border border-gray-200 space-y-3">
                           {/* 通道选择 */}
                           <div className="space-y-2">
                             <label className="text-xs font-medium text-gray-600">通道类型</label>
@@ -3504,7 +3500,7 @@ export default function AgentMonitor() {
 
                           {/* 无凭证字段的通道（微信）：提示框 */}
                           {currentCh && isWechatLike && (
-                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
+                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
                               <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                               <p className="text-xs text-blue-600 leading-relaxed">
                                 微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
@@ -3567,7 +3563,7 @@ export default function AgentMonitor() {
                   <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw).installedSkills.length}）</div>
                   <div className="space-y-2">
                     {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
-                      <div key={skill} className="px-4 py-3 bg-white rounded-[4px] border border-gray-200 text-sm text-gray-800">
+                      <div key={skill} className="px-4 py-3 bg-white rounded-xl border border-gray-200 text-sm text-gray-800">
                         {skill}
                       </div>
                     ))}
@@ -3651,7 +3647,7 @@ export default function AgentMonitor() {
             onClick={() => setShowMonitorDrawer(false)}
           />
           <div className="absolute right-0 top-0 bottom-0 w-[640px] bg-white shadow-lg overflow-y-auto">
-            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] bg-white">
               <h2 className="text-lg font-semibold text-gray-900">{selectedClaw.name} - 监控</h2>
               <button
                 onClick={() => setShowMonitorDrawer(false)}
@@ -3672,11 +3668,10 @@ export default function AgentMonitor() {
                     { label: "总 Tokens",   value: "6,912", icon: Zap,         color: "from-blue-600 to-purple-600" },
                   ].map((stat) => (
                     <div key={stat.label}
-                      className="bg-white rounded-[4px] border border-gray-100 p-4"
-                      style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+                      className="bg-white rounded-xl border border-[#e5e5e5] p-4"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-7 h-7 rounded-[4px] bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                           <stat.icon className="w-3.5 h-3.5 text-white" />
                         </div>
                         <p className="text-xs text-gray-400">{stat.label}</p>
@@ -3694,7 +3689,7 @@ export default function AgentMonitor() {
               </div>
 
               {/* 分隔线 */}
-              {clsEnabled && <div className="border-t border-gray-100" />}
+              {clsEnabled && <div className="border-t border-[#e5e5e5]" />}
 
               {/* 会话记录区 - 仅当 CLS 日志服务开启时显示 */}
               {clsEnabled && (
@@ -3706,11 +3701,10 @@ export default function AgentMonitor() {
                       { label: "平均轮次", value: "8.5", icon: RotateCw,     color: "from-cyan-500 to-cyan-600" },
                     ].map((stat) => (
                       <div key={stat.label}
-                        className="bg-white rounded-[4px] border border-gray-100 p-4"
-                        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+                        className="bg-white rounded-xl border border-[#e5e5e5] p-4"
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-7 h-7 rounded-[4px] bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                          <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                             <stat.icon className="w-3.5 h-3.5 text-white" />
                           </div>
                           <p className="text-xs text-gray-400">{stat.label}</p>
@@ -3721,8 +3715,7 @@ export default function AgentMonitor() {
                   </div>
 
                   {/* 会话摘要表格 */}
-                  <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-                    style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+                  <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
                   >
                     <table className="w-full text-sm table-fixed">
                       <colgroup>
@@ -3740,13 +3733,13 @@ export default function AgentMonitor() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
                           <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">c3b2ac3c</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">Feishu Dm</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>
                           <td className="px-4 py-3 text-gray-500 text-xs">2026-03-09 17:49</td>
                         </tr>
-                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
                           <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">81c87c7b</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">QQ Dm</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>

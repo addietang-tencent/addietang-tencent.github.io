@@ -369,7 +369,7 @@ export default function MCPListTab() {
           {sortedMCPs.map(mcp => {
             const dist = isDistributing(mcp.name);
             return (
-              <div key={mcp.name} onClick={() => setSelectedMCPId(mcp.name)} className="rounded-[4px] border border-gray-200 bg-white p-4 transition-all hover:shadow-md cursor-pointer flex flex-col">
+              <div key={mcp.name} onClick={() => setSelectedMCPId(mcp.name)} className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900 flex-1 truncate">{mcp.displayName || mcp.name}</h3>
                   <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full shrink-0">
@@ -406,7 +406,7 @@ export default function MCPListTab() {
 
       {/* 列表视图 */}
       {viewMode === 'list' && sortedMCPs.length > 0 && (
-        <div className="bg-white rounded-[4px] border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -459,7 +459,7 @@ export default function MCPListTab() {
                 }
 
                 return (
-                  <tr key={mcp.name} onClick={() => setSelectedMCPId(mcp.name)} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
+                  <tr key={mcp.name} onClick={() => setSelectedMCPId(mcp.name)} className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group">
                     {/* 名称 / 标识 */}
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900 truncate">{mcp.displayName || mcp.name}</div>

@@ -239,7 +239,7 @@ export default function AuditLog() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               title="开始日期"
               style={{ colorScheme: 'light' }}
             />
@@ -248,7 +248,7 @@ export default function AuditLog() {
               type="date"
               value={dateTo}
               onChange={(e) => handleDateTo(e.target.value)}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               title="结束日期"
               style={{ colorScheme: 'light' }}
             />
@@ -261,7 +261,7 @@ export default function AuditLog() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
             title="刷新列表"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -320,7 +320,7 @@ export default function AuditLog() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-[4px] border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
@@ -328,7 +328,7 @@ export default function AuditLog() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-7 h-7 flex items-center justify-center rounded-[4px] text-xs font-medium transition-colors ${
+                    className={`w-7 h-7 flex items-center justify-center rounded-xl text-xs font-medium transition-colors ${
                       p === safePage
                         ? "bg-blue-500 text-white border border-blue-500"
                         : "border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500"
@@ -340,7 +340,7 @@ export default function AuditLog() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded-[4px] border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -360,7 +360,7 @@ export default function AuditLog() {
             </DialogTitle>
           </DialogHeader>
           {selectedLog && (
-            <div className="bg-gray-950 rounded-[4px] p-5 font-mono text-sm overflow-auto max-h-96">
+            <div className="bg-gray-950 rounded-xl p-5 font-mono text-sm overflow-auto max-h-96">
               <div className="text-gray-400 mb-3">{"{"} <span className="text-gray-500 text-xs">{Object.keys(selectedLog.detail).length} items</span></div>
               {Object.entries(selectedLog.detail).map(([key, value]) => (
                 <div key={key} className="ml-4 mb-1.5">

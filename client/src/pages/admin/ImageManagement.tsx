@@ -330,7 +330,7 @@ function ImageScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
@@ -440,8 +440,8 @@ function ImageScopePopover({
         <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="end" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
             <div className="flex gap-1.5">
-              <button onClick={() => setDraftScope("all")} className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${draftScope === "all" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>全部用户</button>
-              <button onClick={() => setDraftScope("groups")} className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${draftScope === "groups" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>按分组</button>
+              <button onClick={() => setDraftScope("all")} className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${draftScope === "all" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>全部用户</button>
+              <button onClick={() => setDraftScope("groups")} className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${draftScope === "groups" ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>按分组</button>
             </div>
             {draftScope === "groups" && (
               <div className="space-y-1.5">
@@ -461,9 +461,9 @@ function ImageScopePopover({
                   </div>
                 ) : (
                   <>
-                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
+                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-xl bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
                       {selectedTags.map((tag) => (
-                        <span key={tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]">
+                        <span key={tag.id} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-xl border border-blue-100 shrink-0 max-w-[200px]">
                           <span className="truncate">{tag.path}</span>
                           <button
                             onClick={() => {
@@ -529,7 +529,7 @@ function ImageScopePopover({
               </div>
             )}
           </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5] shrink-0">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
             <Button size="sm" className="h-7 text-xs px-3" disabled={isConfirmDisabled} onClick={handleConfirm}>确认</Button>
           </div>
@@ -1073,7 +1073,7 @@ export default function ImageManagement() {
                   <button
                     key={t.value}
                     onClick={() => scrollToType(t.value)}
-                    className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-[4px] text-left text-sm transition-colors ${
+                    className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left text-sm transition-colors ${
                       isActive
                         ? "bg-blue-50 text-blue-700 font-medium"
                         : "text-gray-600 hover:bg-gray-50"
@@ -1152,8 +1152,7 @@ export default function ImageManagement() {
                 key={agentType}
                 ref={(el) => { sectionRefs.current[agentType] = el; }}
                 data-anchor={agentType}
-                className={`rounded-[4px] border overflow-hidden transition-all scroll-mt-6 ${isDefault ? "border-blue-300 ring-1 ring-blue-200" : "border-gray-100"}`}
-                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+                className={`rounded-xl border overflow-hidden transition-all scroll-mt-6 ${isDefault ? "border-blue-300 ring-1 ring-blue-200" : "border-[#e5e5e5]"}`}
               >
                 {/* 标题栏 */}
                 <div className={`flex items-center justify-between px-6 py-4 ${isDefault ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100" : "bg-white border-b border-gray-50"}`}>
@@ -1527,12 +1526,12 @@ export default function ImageManagement() {
             {/* 底部：添加自定义 Agent 类型 */}
             <button
               onClick={openAddTypeDialog}
-              className="w-full rounded-[4px] border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50/40 hover:bg-blue-50/70 transition-all py-6 flex flex-col items-center gap-2 group"
+              className="w-full rounded-xl border-2 border-dashed border-blue-300 hover:border-blue-400 bg-blue-50/40 hover:bg-blue-50/70 transition-all py-6 flex flex-col items-center gap-2 group"
             >
-              <div className="w-10 h-10 rounded-[4px] flex items-center justify-center transition-colors">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors">
                 <Plus className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-semibold transition-colors" style={{ color: "#1447E6" }}>添加自定义 Agent 类型</span>
+              <span className="text-sm font-semibold transition-colors" style={{ color: "#355EF1" }}>添加自定义 Agent 类型</span>
               <span className="text-xs text-gray-500">支持基于现有 Agent 内核扩展，或添加完全自定义的 Agent 类型</span>
             </button>
           </div>
@@ -1554,7 +1553,7 @@ export default function ImageManagement() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex items-start gap-2 bg-gray-50 rounded-[4px] px-3 py-2.5 -mt-1">
+          <div className="flex items-start gap-2 bg-gray-50 rounded-xl px-3 py-2.5 -mt-1">
             <Info className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
             <p className="text-[11px] text-gray-500 leading-relaxed">
               以下镜像均为已在腾讯云创建好的镜像。若需要创建新镜像，请前往{" "}
@@ -1576,7 +1575,7 @@ export default function ImageManagement() {
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowImageList(!showImageList); }}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
                 >
                   <span>
                     {selectedImageId
@@ -1588,7 +1587,7 @@ export default function ImageManagement() {
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
                   title="刷新镜像列表"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -1596,15 +1595,15 @@ export default function ImageManagement() {
               </div>
               <p className="text-xs text-gray-400">镜像大小不允许超过 50 GiB</p>
               {showImageList && (
-                <div ref={imageListRef} className="border border-gray-200 rounded-[4px] bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                  <div className="relative p-2 border-b border-gray-100">
+                <div ref={imageListRef} className="border border-gray-200 rounded-xl bg-white overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  <div className="relative p-2 border-b border-[#e5e5e5]">
                     <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
                       placeholder="搜索镜像 ID..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-[4px] bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -1644,7 +1643,7 @@ export default function ImageManagement() {
 
             {/* 自定义镜像选中时的提示 */}
             {isCustomImageSelected && (
-              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-[4px] px-3 py-2.5">
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-amber-700 leading-relaxed">
                   请确认 Agent 类型选择正确，类型不匹配将导致管控台功能无法使用。
@@ -1656,11 +1655,11 @@ export default function ImageManagement() {
             <div className={`space-y-2 transition-opacity ${!selectedImageId ? "opacity-50 pointer-events-none" : ""}`}>
               <Label>Agent 类型 <span className="text-red-400">*</span></Label>
               {!selectedImageId ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-400">
+                <div className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm text-gray-400">
                   请先选择镜像
                 </div>
               ) : isPublicSelected ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-500">
+                <div className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm text-gray-500">
                   {getTypeLabel(importAgentType)}
                   <span className="text-xs text-gray-400 ml-2">（公共镜像自动匹配）</span>
                 </div>
@@ -1684,11 +1683,11 @@ export default function ImageManagement() {
             <div className="space-y-2">
               <Label>Agent 版本 <span className="text-red-400">*</span></Label>
               {!selectedImageId ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-400">
+                <div className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm text-gray-400">
                   请先选择镜像
                 </div>
               ) : isPublicSelected ? (
-                <div className="px-3 py-2 border border-gray-200 rounded-[4px] bg-gray-100 text-sm text-gray-500 font-mono">
+                <div className="px-3 py-2 border border-gray-200 rounded-xl bg-gray-100 text-sm text-gray-500 font-mono">
                   {importAgentVersion}
                   <span className="text-xs text-gray-400 ml-2 font-normal">（公共镜像自动匹配）</span>
                 </div>
@@ -1735,13 +1734,13 @@ export default function ImageManagement() {
             {(() => {
               const editImg = images.find((i) => i.id === editingImageId);
               return editImg ? (
-                <div className="rounded-[4px] border border-gray-200 overflow-hidden">
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
                   <div className="bg-gray-50 px-4 py-3">
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">镜像名称 / ID</p>
                     <p className="text-sm font-semibold text-gray-900">{editImg.name}</p>
                     <p className="text-xs text-gray-400 font-mono mt-0.5">{editImg.id}</p>
                   </div>
-                  <div className="px-4 py-2.5 flex items-center gap-4 text-xs text-gray-500 border-t border-gray-100">
+                  <div className="px-4 py-2.5 flex items-center gap-4 text-xs text-gray-500 border-t border-[#e5e5e5]">
                     <div className="flex items-center gap-1.5">
                       <span className="text-gray-400">当前类型</span>
                       <span className="font-medium text-gray-700">{editImg.agentType ? getTypeLabel(editImg.agentType) : "未设置"}</span>
@@ -1844,7 +1843,7 @@ export default function ImageManagement() {
                     <label
                       key={k.value}
                       htmlFor={`kernel-${k.value}`}
-                      className={`flex items-start gap-3 px-3 py-2.5 rounded-[4px] border cursor-pointer transition-colors ${
+                      className={`flex items-start gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors ${
                         checked
                           ? (isNative ? "border-orange-300 bg-orange-50/40" : "border-blue-300 bg-blue-50/40")
                           : "border-gray-200 hover:bg-gray-50"
@@ -1873,7 +1872,7 @@ export default function ImageManagement() {
 
             {/* 兼容内核 - 强提醒 */}
             {newTypeKernel !== "native" && (
-              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-[4px] px-3 py-2.5">
+              <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-amber-700 leading-relaxed">
                   自定义 Agent 请务必先验证管控台功能可用性，排除不兼容问题。
@@ -1884,14 +1883,14 @@ export default function ImageManagement() {
             {/* 自研（native）：风险提示 + 必勾选确认 */}
             {newKernelBase === "native" && (
               <div className="space-y-2">
-                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-[4px] px-3 py-2.5">
+                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" />
                   <div className="text-xs text-orange-700 leading-relaxed space-y-1">
                     <p className="font-semibold">{NATIVE_KERNEL_NOTICE_TITLE}：</p>
                     {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (<p key={i}>{l}</p>))}
                   </div>
                 </div>
-                <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label className="flex items-start gap-2 px-3 py-2 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50">
                   <Checkbox
                     id="native-ack"
                     checked={nativeAck}

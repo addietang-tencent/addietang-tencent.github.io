@@ -1,7 +1,7 @@
 /**
  * RadarWidget — Agent Design System (Light theme)
  * Adapted from Deep Space Tech radar with idle/hover progressive reveal
- * Colors: Brand Blue #1447E6 / Purple #1447E6 for TDAI, Gray for Agent
+ * Colors: Brand Blue #355EF1 / Purple #355EF1 for TDAI, Gray for Agent
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,8 +112,8 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
             <stop offset="100%" stopColor="rgba(0,0,0,0)" />
           </radialGradient>
           <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#1447E6" />
-            <stop offset="100%" stopColor="#1447E6" />
+            <stop offset="0%" stopColor="#355EF1" />
+            <stop offset="100%" stopColor="#355EF1" />
           </linearGradient>
           <filter id="blueGlow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -201,7 +201,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
                   cx={td.x}
                   cy={td.y}
                   r={3}
-                  fill="#1447E6"
+                  fill="#355EF1"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: i * 0.04, type: 'spring' }}
@@ -230,7 +230,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               <div className="text-[10px] text-blue-500 font-medium mb-0.5">Memory Pro 版</div>
               <div
                 className="text-lg font-bold font-mono"
-                style={{ color: '#1447E6', textShadow: '0 0 12px rgba(20,71,230,0.25)' }}
+                style={{ color: '#355EF1', textShadow: '0 0 12px rgba(20,71,230,0.25)' }}
               >
                 {TOTAL.tdaiMemory}%
               </div>
@@ -261,7 +261,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
           <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
-            <path d="M4 8L10 3L16 8" stroke="#1447E6" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+            <path d="M4 8L10 3L16 8" stroke="#355EF1" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
           </svg>
         </motion.div>
       )}

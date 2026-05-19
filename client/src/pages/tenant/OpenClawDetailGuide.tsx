@@ -195,7 +195,7 @@ function ModelRow({
       </div>
       {showEdit && (
         <button
-          className="text-[#737373] hover:text-[#1447E6] transition-colors"
+          className="text-[#737373] hover:text-[#355EF1] transition-colors"
           aria-label="编辑模型"
           onClick={() => toast.info("编辑模型（demo）")}
         >
@@ -281,31 +281,23 @@ function SkillInstallModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[680px] p-0 overflow-hidden" showCloseButton={false}>
+      <DialogContent className="sm:max-w-[680px] p-0 overflow-hidden">
         {/* 弹窗头部 */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4">
-          <DialogHeader className="p-0 gap-0">
-            <DialogTitle className="text-base font-semibold" style={{ color: "#0A0A0A" }}>
-              安装新技能
-            </DialogTitle>
-          </DialogHeader>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="text-[#737373] hover:text-[#0A0A0A] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <DialogHeader className="mx-0 px-6 pt-6 pb-3">
+          <DialogTitle className="text-base font-semibold" style={{ color: "#0A0A0A" }}>
+            安装新技能
+          </DialogTitle>
+        </DialogHeader>
 
         {/* 统计 + 技能库跳转 */}
         <div className="px-6 pb-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm" style={{ color: "#1447E6" }}>
+          <div className="flex items-center gap-2 text-sm" style={{ color: "#355EF1" }}>
             <Plus className="w-4 h-4" />
             <span>当前添加：{addedSkills.length}个</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
-              <Plus className="w-4 h-4" style={{ color: "#1447E6" }} />
+              <Plus className="w-4 h-4" style={{ color: "#355EF1" }} />
               <span className="text-sm" style={{ color: "#0A0A0A" }}>技能库</span>
               <span className="text-xs" style={{ color: "#737373" }}>
                 详情可查看
@@ -442,7 +434,6 @@ function SkillInstallModal({
         {/* 底部操作栏 */}
         <div
           className="flex items-center justify-end gap-3 px-6 py-4"
-          style={{ borderTop: "1px solid #EAEBED" }}
         >
           <Button
             variant="claw-outline"
@@ -455,7 +446,7 @@ function SkillInstallModal({
             onClick={handleInstall}
             className="inline-flex items-center px-5 py-2 text-sm font-medium rounded-[4px] text-white hover:opacity-90 transition-opacity"
             style={{
-              background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
+              background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)",
             }}
           >
             开始安装
@@ -839,7 +830,7 @@ export default function OpenClawDetailGuide() {
                         <div className="flex items-end gap-2">
                           <span
                             className="text-xl leading-6"
-                            style={{ fontFamily: "Menlo, Consolas, 'Courier New', monospace", color: "#1447E6" }}
+                            style={{ fontFamily: "Menlo, Consolas, 'Courier New', monospace", color: "#355EF1" }}
                           >
                             01/
                           </span>
@@ -895,7 +886,7 @@ export default function OpenClawDetailGuide() {
 
                     {/* 分割线 + 已应用模型 */}
                     <div className="pt-2 border-t border-[#E5E5E5]">
-                      <div className="text-xs mb-2" style={{ color: "#1447E6" }}>
+                      <div className="text-xs mb-2" style={{ color: "#355EF1" }}>
                         已应用模型（{appliedModels.length}）
                       </div>
                       {/* 主模型 */}
@@ -984,7 +975,7 @@ export default function OpenClawDetailGuide() {
                         <div className="flex items-end gap-2">
                           <span
                             className="text-xl leading-6"
-                            style={{ fontFamily: "Menlo, Consolas, 'Courier New', monospace", color: "#1447E6" }}
+                            style={{ fontFamily: "Menlo, Consolas, 'Courier New', monospace", color: "#355EF1" }}
                           >
                             02/
                           </span>
@@ -1086,8 +1077,8 @@ export default function OpenClawDetailGuide() {
                       className="flex items-start gap-2 p-3 rounded-[4px]"
                       style={{ background: "#EBF5FF", border: "1px solid #BFDBFE" }}
                     >
-                      <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#1447E6" }} />
-                      <span className="text-xs leading-4" style={{ color: "#1447E6" }}>
+                      <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#355EF1" }} />
+                      <span className="text-xs leading-4" style={{ color: "#355EF1" }}>
                         管理员配置了
                         <a href="#" className="underline font-medium" onClick={(e) => { e.preventDefault(); toast.info("SkillHub 模型（demo）"); }}>
                           SkillHub模型
@@ -1133,7 +1124,7 @@ export default function OpenClawDetailGuide() {
                         <div className="flex items-center gap-2">
                           <button
                             className="text-xs hover:opacity-80"
-                            style={{ color: "#1447E6" }}
+                            style={{ color: "#355EF1" }}
                             onClick={() => toast.info("重试安装（demo）")}
                           >
                             <RefreshCw className="w-3.5 h-3.5 inline mr-1" />

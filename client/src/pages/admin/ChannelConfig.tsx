@@ -37,7 +37,7 @@ const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
 
 function WeworkIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: "#1EB955" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1EB955" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M8.5 10.5c-.83 0-1.5-.67-1.5-1.5S7.67 7.5 8.5 7.5 10 8.17 10 9s-.67 1.5-1.5 1.5zm7 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.07-1.36C8.44 21.51 10.18 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.67 0-3.22-.49-4.53-1.33l-.32-.2-3.01.81.82-2.95-.21-.33A7.94 7.94 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/>
       </svg>
@@ -47,7 +47,7 @@ function WeworkIcon() {
 
 function WeworkAppIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: "#1EB955" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1EB955" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M9.5 6.5c-.83 0-1.5-.67-1.5-1.5S8.67 3.5 9.5 3.5 11 4.17 11 5s-.67 1.5-1.5 1.5zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 3.5 14.5 3.5 16 4.17 16 5s-.67 1.5-1.5 1.5zM12 1C5.93 1 1 5.93 1 12c0 2.05.55 3.97 1.52 5.62L1 23l5.52-1.5A10.94 10.94 0 0 0 12 23c6.07 0 11-4.93 11-11S18.07 1 12 1zm0 20c-1.84 0-3.56-.54-5-1.46l-.36-.22-3.28.88.9-3.22-.23-.37A8.96 8.96 0 0 1 3 12c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9zm4.5-6.5H16v-1h.5c.83 0 1.5-.67 1.5-1.5S17.33 10.5 16.5 10.5H16v-1h.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5zM8 10.5h-.5C6.12 10.5 5 11.62 5 13s1.12 2.5 2.5 2.5H8v-1h-.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5H8v-1zm1-1v5h1.5v-1.75h1V14H12v-1.25h1.5v1.75H15v-5h-1.5v1.75H12V10.5h-1.5V12.25H9V9.5H8z"/>
       </svg>
@@ -57,7 +57,7 @@ function WeworkAppIcon() {
 
 function QQIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: "#12B7F5" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#12B7F5" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
       </svg>
@@ -67,7 +67,7 @@ function QQIcon() {
 
 function FeishuIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: "#3370FF" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#3370FF" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 2.18L18 8v8l-6 3.75L6 16V8l6-3.82z"/>
         <path d="M12 7l-4 2.5v5L12 17l4-2.5v-5L12 7zm0 2.18l2 1.25v2.5L12 14.32l-2-1.25v-2.5L12 9.18z"/>
@@ -78,7 +78,7 @@ function FeishuIcon() {
 
 function DingtalkIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ background: "#1677FF" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#1677FF" }}>
       <svg viewBox="0 0 24 24" className="w-6 h-6" fill="white">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.5 14H7.5c-.83 0-1.5-.67-1.5-1.5v-5C6 8.67 6.67 8 7.5 8h9c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5zm-7-6v4h1.5v-1.5H12V16h1.5v-4H12v1.5h-1v-1.5H9.5z"/>
       </svg>
@@ -88,7 +88,7 @@ function DingtalkIcon() {
 
 function WechatIcon() {
   return (
-    <div className="w-10 h-10 rounded-[4px] flex items-center justify-center p-1.5" style={{ background: "#07C160" }}>
+    <div className="w-10 h-10 rounded-xl flex items-center justify-center p-1.5" style={{ background: "#07C160" }}>
       <img
         src="https://d2xsxph8kpxj0f.cloudfront.net/310519663415970324/bygiZj33T3TUvGMBPvApKE/wechat_logo_transparent_11985bb7.png"
         alt="微信"
@@ -103,7 +103,7 @@ function CustomChannelIcon({ name, color }: { name: string; color: string }) {
   const letter = name ? name.charAt(0).toUpperCase() : "C";
   return (
     <div
-      className="w-10 h-10 rounded-[4px] flex items-center justify-center text-white font-bold text-base select-none"
+      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base select-none"
       style={{ background: color }}
     >
       {letter}
@@ -311,11 +311,10 @@ export default function ChannelConfig() {
 
       {/* ── 内置通道 ── */}
       <div
-        className="bg-white rounded-[4px] border border-gray-100 overflow-hidden mb-6"
-        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden mb-6"
       >
         <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
-          <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
             <MessageSquare className="w-4 h-4 text-white" />
           </div>
           <h2 className="font-semibold text-gray-900">内置通道</h2>
@@ -363,12 +362,11 @@ export default function ChannelConfig() {
 
       {/* ── 自定义通道 ── */}
       <div
-        className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
               <Settings2 className="w-4 h-4 text-white" />
             </div>
             <h2 className="font-semibold text-gray-900">自定义通道</h2>
@@ -400,7 +398,7 @@ export default function ChannelConfig() {
 
         {customChannels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-12 h-12 rounded-[4px] bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+            <div className="w-12 h-12 rounded-xl bg-gray-50 border border-[#e5e5e5] flex items-center justify-center mb-3">
               <Settings2 className="w-6 h-6 text-gray-300" />
             </div>
             <p className="text-sm text-gray-500 mb-1">暂无自定义通道</p>
@@ -467,7 +465,7 @@ export default function ChannelConfig() {
                   <div className="px-6 pb-4">
                     <div className="ml-14 space-y-3">
                       {/* IM 服务器地址 */}
-                      <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
+                      <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
                         <p className="text-xs font-medium text-gray-500 mb-2">IM 服务器地址</p>
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2 text-xs">
@@ -481,7 +479,7 @@ export default function ChannelConfig() {
                         </div>
                       </div>
                       {/* 用户凭证字段 */}
-                      <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
+                      <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
                         <p className="text-xs font-medium text-gray-500 mb-2">用户凭证字段</p>
                         {ch.credentialFields.length === 0 ? (
                           <p className="text-xs text-gray-400">无凭证字段</p>
@@ -522,7 +520,7 @@ export default function ChannelConfig() {
 
           <div className="space-y-5 pt-1">
             {/* ② 修改2：顶部提醒条 */}
-            <div className="flex items-start gap-3 rounded-[4px] bg-amber-50 border border-amber-200 px-4 py-3">
+            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <p className="text-xs text-amber-700 leading-relaxed">
                 使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
@@ -532,7 +530,7 @@ export default function ChannelConfig() {
             {/* ── 第一部分：通道基础信息 ── */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-[4px] bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">1</div>
+                <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">1</div>
                 <h3 className="text-sm font-semibold text-gray-800">通道基础信息</h3>
               </div>
               <div className="space-y-2 pl-7">
@@ -561,7 +559,7 @@ export default function ChannelConfig() {
             {/* ── 第二部分：IM 服务器地址 ── */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-[4px] bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">2</div>
+                <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">2</div>
                 <h3 className="text-sm font-semibold text-gray-800">IM 服务器地址</h3>
               </div>
               <div className="space-y-2 pl-7">
@@ -592,7 +590,7 @@ export default function ChannelConfig() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-[4px] bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">3</div>
+                  <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">3</div>
                   <h3 className="text-sm font-semibold text-gray-800">用户凭证字段</h3>
                 </div>
                 <Button
@@ -608,7 +606,7 @@ export default function ChannelConfig() {
 
               <div className="pl-7 space-y-2">
                 {form.credentialFields.length === 0 ? (
-                  <div className="rounded-[4px] bg-gray-50 border border-dashed border-gray-200 px-4 py-3 text-center">
+                  <div className="rounded-xl bg-gray-50 border border-dashed border-gray-200 px-4 py-3 text-center">
                     <p className="text-xs text-gray-400">暂未添加凭证字段</p>
                   </div>
                 ) : (

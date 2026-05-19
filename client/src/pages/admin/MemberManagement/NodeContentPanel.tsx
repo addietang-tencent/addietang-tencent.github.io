@@ -224,7 +224,7 @@ function GroupTagSelect({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative w-full min-h-[36px] px-2 py-1.5 rounded-[4px] border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7">
+        <div className="relative w-full min-h-[36px] px-2 py-1.5 rounded-xl border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7">
           {selectedIds.length === 0 ? (
             <span className="text-xs text-gray-400 px-1">选择分组…</span>
           ) : (
@@ -268,7 +268,7 @@ function GroupTagSelect({
         align="start"
         sideOffset={4}
       >
-        <div className="p-2.5 border-b border-gray-100">
+        <div className="p-2.5 border-b border-[#e5e5e5]">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
@@ -276,7 +276,7 @@ function GroupTagSelect({
               placeholder="搜索分组…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+              className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -296,7 +296,7 @@ function GroupTagSelect({
                   key={g.id}
                   type="button"
                   onClick={() => toggleGroup(g.id)}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[4px] text-left text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left text-xs transition-colors ${
                     isSelected ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50 text-gray-700"
                   }`}
                 >
@@ -486,7 +486,7 @@ export default function NodeContentPanel({
   return (
     <div className="flex flex-col h-full">
       {/* 节点头：名称 + 人数 + 分组名称路径 + 添加按钮 */}
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[#e5e5e5]">
         <div>
           <div className="flex items-center gap-3 mb-1 flex-wrap">
             <h2 className="text-lg font-semibold text-gray-900">{nodeName}</h2>
@@ -530,11 +530,11 @@ export default function NodeContentPanel({
 
       {/* Tab 切换 */}
       <div className="px-6 pt-3">
-        <div className="inline-flex items-center rounded-[4px] p-1 gap-0.5 bg-white border border-gray-200 h-9">
+        <div className="inline-flex items-center rounded-xl p-1 gap-0.5 bg-white border border-gray-200 h-9">
           <button
             type="button"
             onClick={() => setTab("members")}
-            className={`h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${
+            className={`h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${
               tab === "members"
                 ? "font-semibold text-gray-900 bg-gray-100"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -545,7 +545,7 @@ export default function NodeContentPanel({
           <button
             type="button"
             onClick={() => setTab("config")}
-            className={`relative h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${
+            className={`relative h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${
               tab === "config"
                 ? "font-semibold text-gray-900 bg-gray-100"
                 : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -573,17 +573,14 @@ export default function NodeContentPanel({
           <>
             {/* 卡片 */}
             <div
-              className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-              style={{
-                boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-              }}
+              className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
             >
               {/* 表格 */}
               <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={ncpTableScrollRef}>
                 <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
                   <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
+                    <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
+                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         用户 ID
                       </th>
                       {hasOneid && (
@@ -841,7 +838,7 @@ export default function NodeContentPanel({
                           key={p}
                           type="button"
                           onClick={() => setPage(() => p)}
-                          className={`w-7 h-7 rounded-[4px] text-xs font-medium transition-colors ${
+                          className={`w-7 h-7 rounded-xl text-xs font-medium transition-colors ${
                             isActive
                               ? "text-white"
                               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
@@ -901,7 +898,7 @@ export default function NodeContentPanel({
             </DialogTitle>
           </DialogHeader>
           {/* 多分组规则提示 */}
-          <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-[4px]">
+          <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-xl">
             <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
             <span className="text-xs text-blue-600">
               一个用户支持加入多个分组，可按分组设置不同的配置与权限
@@ -918,7 +915,7 @@ export default function NodeContentPanel({
                 autoFocus
               />
             </div>
-            <div className="max-h-[420px] overflow-y-auto border border-gray-100 rounded-[4px] divide-y divide-gray-50 bg-white">
+            <div className="max-h-[420px] overflow-y-auto border border-[#e5e5e5] rounded-xl divide-y divide-gray-50 bg-white">
               {addFilteredUsers.length === 0 ? (
                 <p className="text-xs text-gray-400 text-center py-6">
                   没有可添加的用户
@@ -1077,7 +1074,7 @@ export default function NodeContentPanel({
             <DialogTitle>从分组中移除</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3 space-y-2">
+            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">用户 ID</span>
                 <span className="text-sm font-medium text-gray-900">
@@ -1091,7 +1088,7 @@ export default function NodeContentPanel({
                 </span>
               </div>
             </div>
-            <div className="rounded-[4px] bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 leading-relaxed">
+            <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 leading-relaxed">
               移除后，该用户在此分组下的可见范围和权限将被收回。用户不会被删除，仅解除与该分组的关联。
             </div>
           </div>
@@ -1119,7 +1116,7 @@ export default function NodeContentPanel({
             <p className="text-sm text-gray-700">
               用户在该分组下创建了 Agent 实例，用户已从该分组中移除，请选择如何处理存量实例：
             </p>
-            <div className="rounded-[4px] border border-gray-100 overflow-hidden">
+            <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50">
@@ -1148,7 +1145,7 @@ export default function NodeContentPanel({
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
                 onClick={() => setAgentInstanceChoice(opt.value as "keep" | "delete")}
               >
                 <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
@@ -1199,7 +1196,7 @@ export default function NodeContentPanel({
             <DialogTitle>编辑用户分组</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
+            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">用户 ID</span>
                 <span className="text-sm font-medium text-gray-900">
@@ -1478,7 +1475,7 @@ function ConfigOverviewTab({
   return (
     <div className="relative">
       {/* 锚点导航条 — 时间轴风格 */}
-      <div ref={navRef} className="sticky top-0 z-10 bg-white -mx-6 px-6 pt-3 pb-3 border-b border-gray-100">
+      <div ref={navRef} className="sticky top-0 z-10 bg-white -mx-6 px-6 pt-3 pb-3 border-b border-[#e5e5e5]">
         <div className="flex items-center w-full">
           {CATEGORY_ORDER.map((cat, idx) => {
             const isActive = activeCat === cat;
@@ -1546,7 +1543,7 @@ function ConfigOverviewTab({
 
       {/* 异常分组告警条 */}
       {isAnomalous && (
-        <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-[4px] px-4 py-3 mt-3">
+        <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mt-3">
           <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-xs font-medium text-red-800">
@@ -1561,7 +1558,7 @@ function ConfigOverviewTab({
 
       {/* 初始化未完成黄色告警条（优先级低于异常分组，不同时展示） */}
       {!isAnomalous && isUninitialized && (
-        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3 mt-3">
+        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mt-3">
           <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-xs font-medium text-amber-800">
@@ -1585,11 +1582,7 @@ function ConfigOverviewTab({
             <div
               key={cat}
               ref={(el) => setSectionRef(cat, el)}
-              className="bg-white rounded-[4px] border border-gray-100 overflow-hidden scroll-mt-[3.75rem]"
-              style={{
-                boxShadow:
-                  "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-              }}
+              className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden scroll-mt-[3.75rem]"
             >
               {/* 配置项 header */}
               <div
@@ -1597,7 +1590,7 @@ function ConfigOverviewTab({
                 onClick={() => toggleCollapse(cat)}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-7 h-7 rounded-[4px] ${catMeta.bg} flex items-center justify-center`}>
+                  <div className={`w-7 h-7 rounded-xl ${catMeta.bg} flex items-center justify-center`}>
                     <IconComp className={`w-3.5 h-3.5 ${catMeta.color}`} />
                   </div>
                   <div>

@@ -442,11 +442,11 @@ const STATUS_CONFIG: Record<OpenClawStatus, {
   isDisabled: boolean;
   isGrayAvatar: boolean;
 }> = {
-  creating: { label: "创建中", dotColor: "#1447E6", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "正在创建中，请稍候", isDisabled: true, isGrayAvatar: false },
+  creating: { label: "创建中", dotColor: "#355EF1", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "正在创建中，请稍候", isDisabled: true, isGrayAvatar: false },
   createFail: { label: "创建失败", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "创建失败，可删除后重新创建", isDisabled: true, isGrayAvatar: true },
   running: { label: "运行中", dotColor: "#34C759", bgColor: "rgba(52,199,89,0.12)", textColor: "#1a8c3a", isDisabled: false, isGrayAvatar: false },
   shutdown: { label: "已关机", dotColor: "#9CA3AF", bgColor: "rgba(156,163,175,0.15)", textColor: "#4b5563", tooltipText: "已关机，如需恢复请联系管理员", isDisabled: true, isGrayAvatar: true },
-  loading: { label: "加载中", dotColor: "#1447E6", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "加载中，请稍候", isDisabled: true, isGrayAvatar: false },
+  loading: { label: "加载中", dotColor: "#355EF1", bgColor: "rgba(20,71,230,0.10)", textColor: "#0055cc", tooltipText: "加载中，请稍候", isDisabled: true, isGrayAvatar: false },
   loadFail: { label: "加载失败", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "加载失败，可点击重试恢复", isDisabled: true, isGrayAvatar: true },
   maintaining: { label: "维护中", dotColor: "#FF9500", bgColor: "rgba(255,149,0,0.10)", textColor: "#b8640a", tooltipText: "维护中，请稍候", isDisabled: true, isGrayAvatar: false },
   pending: { label: "待处理", dotColor: "#FF3B30", bgColor: "rgba(255,59,48,0.10)", textColor: "#c0392b", tooltipText: "已停用，请联系管理员处理", isDisabled: true, isGrayAvatar: true },
@@ -1925,7 +1925,7 @@ export default function ChatView({
                 style={{
                   width: `${currentBrowserState.panelLoadProgress}%`,
                   // allow-inline-gradient: 进度条填充色（非按钮，SKILL §8.1 白名单）
-                  background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
+                  background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)",
                 }}
               />
             </div>
@@ -2004,7 +2004,7 @@ export default function ChatView({
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
         isWorkspaceFullscreen
           ? `fixed inset-0 ${workspaceTopClass} z-40 rounded-none border-none`
-          : "rounded-[4px] border border-gray-100"
+          : "rounded-[4px] border border-[#e5e5e5]"
       }`}
       style={
         workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen)
@@ -2014,7 +2014,7 @@ export default function ChatView({
     >
 
       {showFullListSidebar && (
-        <div className="w-64 flex-shrink-0 border-r border-gray-100 flex flex-col bg-white">
+        <div className="w-64 flex-shrink-0 border-r border-[#e5e5e5] flex flex-col bg-white">
           <div className="px-3 h-10 flex items-center">
             <span className="text-xs font-medium text-gray-700">选择 Agent</span>
           </div>
@@ -2241,7 +2241,7 @@ export default function ChatView({
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between px-4 h-12 border-b border-gray-100 flex-shrink-0 bg-white/90 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 h-12 border-b border-[#e5e5e5] flex-shrink-0 bg-white/90 backdrop-blur-sm">
                 <div className="min-w-0 flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold text-gray-900 truncate">{selectedClaw.name}</h3>
@@ -2445,7 +2445,7 @@ export default function ChatView({
           style={workspaceMode === "chat_with_browser" ? { minWidth: `${BROWSER_PANE_MIN_WIDTH}px` } : undefined}
         >
           {/* 产品规则：浏览器相关按钮全部归浏览器工具条 */}
-          <div className="h-12 border-b border-gray-100 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
+          <div className="h-12 border-b border-[#e5e5e5] flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-[4px] bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                 <Monitor className="w-4 h-4" />

@@ -78,7 +78,7 @@ const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   creating: {
     label: "创建中",
     badgeClass: "badge-loading",
-    dotColor: "#1447E6",
+    dotColor: "#355EF1",
     spinning: true,
     tooltipText: "正在创建中，请稍候",
   },
@@ -102,7 +102,7 @@ const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   loading: {
     label: "加载中",
     badgeClass: "badge-loading",
-    dotColor: "#1447E6",
+    dotColor: "#355EF1",
     spinning: true,
     tooltipText: "加载中，请稍候",
   },
@@ -1189,7 +1189,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
     if (currentChannelConfig.adminCustomMode) {
       if (!currentChannelConfig.fields || currentChannelConfig.fields.length === 0) {
         return (
-          <div className="rounded-[4px] bg-gray-50 border border-gray-100 px-4 py-3">
+          <div className="rounded-[4px] bg-gray-50 border border-[#e5e5e5] px-4 py-3">
             <p className="text-xs text-gray-400">该通道无需额外凭证信息</p>
           </div>
         );
@@ -1267,7 +1267,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       <div className="mx-2 mb-2 space-y-2">
         {isAdminCustom ? (
           /* 管控端自定义通道：展示字段 key，内容加密 */
-          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 space-y-2">
+          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
             {ch.fields.length === 0 ? (
               <p className="text-xs text-gray-400">无凭证字段</p>
             ) : (
@@ -1284,7 +1284,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             )}
           </div>
         ) : (
-          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 space-y-2">
+          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
             {ch.fields.map((field) => {
               const val = ch.fieldValues[field.key] || "";
               const uniqueKey = `${chIdx}-${field.key}`;
@@ -1302,7 +1302,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         )}
          {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
-          <div className="rounded-[4px] bg-white border border-gray-100 px-4 py-3 flex items-center gap-2">
+          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 flex items-center gap-2">
             <Input
               placeholder="（如需）请输入 pairing code"
               value={feishuPairingCode}
@@ -1603,7 +1603,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1767,7 +1767,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {appliedModels.filter(m => m.primary).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-[4px] border transition-all bg-gray-50 border-gray-100 p-2.5"
+                          className="rounded-[4px] border transition-all bg-gray-50 border-[#e5e5e5] p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1832,7 +1832,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-[4px] border transition-all bg-white border-gray-100 hover:bg-gray-50 p-2.5"
+                          className="rounded-[4px] border transition-all bg-white border-[#e5e5e5] hover:bg-gray-50 p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1907,7 +1907,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1939,7 +1939,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     ))}
                     {visibleCustomChannels.length > 0 && (
                       <>
-                        <div className="px-2 py-1.5 text-xs text-gray-400 font-medium border-t border-gray-100 mt-1 pt-2">自定义通道</div>
+                        <div className="px-2 py-1.5 text-xs text-gray-400 font-medium border-t border-[#e5e5e5] mt-1 pt-2">自定义通道</div>
                         {visibleCustomChannels.map((cc) => (
                           <SelectItem key={`admin_custom_${cc.id}`} value={`admin_custom_${cc.id}`}>{cc.name}</SelectItem>
                         ))}
@@ -1990,7 +1990,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 {appliedChannels.length > 0 && (
                   <div className="space-y-1">
                     {appliedChannels.map((ch, chIdx) => (
-                      <div key={chIdx} className="rounded-[4px] bg-gray-50 border border-gray-100 overflow-hidden">
+                      <div key={chIdx} className="rounded-[4px] bg-gray-50 border border-[#e5e5e5] overflow-hidden">
                         {/* 折叠行 */}
                         <div className="flex items-center justify-between px-2.5 py-2">
                           {ch.channelValue === "wechat" ? (
@@ -2034,7 +2034,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Skills Column ===== */}
-          <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden flex flex-col" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -2195,14 +2195,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-[4px] border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
               </div>
             ) : (
-            <div className="bg-white rounded-[4px] border border-gray-100 p-6" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
               <MemoryPreview 
                 memoryStatus={memoryStatus}
                 proQuotaAvailable={proQuotaAvailable}
@@ -2245,7 +2245,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                    "类型限制"反馈视觉一致，不显得是为这一块单独糊的提示。 */}
           {activeDetailTab === "doctor" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-[4px] border border-gray-100 p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
@@ -2255,7 +2255,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="flex flex-col gap-5">
 
               {/* ===== 一键修复卡片 ===== */}
-              <div className="bg-white rounded-[4px] border border-gray-100" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[4px] border border-[#e5e5e5]" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
                 <div className="p-6">
                   <h2 className="text-base font-semibold text-gray-900 mb-2">一键修复</h2>
                   <p className="text-sm text-gray-500 mb-4">适合龙虾配置文件中 API KEY、插件、通道等配置异常导致无法启动等常见问题，系统自动检测并尝试修复。</p>
@@ -2274,7 +2274,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       恢复前会将配置文件备份
                     </li>
                   </ul>
-                  <div className="border-t border-gray-100 pt-4">
+                  <div className="border-t border-[#e5e5e5] pt-4">
                     {quickFixState === "idle" && (
                       <Button
                         variant="claw-primary"
@@ -2286,7 +2286,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       </Button>
                     )}
                     {quickFixState === "loading" && (
-                      <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-gray-100 text-xs text-gray-500">
+                      <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-[#e5e5e5] text-xs text-gray-500">
                         <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                         正在执行修复
                       </div>
@@ -2500,7 +2500,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   当前用户权限无法免审批发布飞书机器人，请联系管理员审批通过后再进行手动配置。
                 </DialogDescription>
               </DialogHeader>
-              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-gray-100">
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-[#e5e5e5]">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
                   <span className="text-gray-800 font-medium">Agent机器人-8791</span>
@@ -2548,7 +2548,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <DialogTitle className="text-base font-semibold text-gray-900">飞书机器人授权配置成功</DialogTitle>
                 </div>
               </DialogHeader>
-              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-gray-100">
+              <div className="mt-3 space-y-1.5 text-sm bg-gray-50 rounded-[4px] p-3 border border-[#e5e5e5]">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 shrink-0">机器人名称：</span>
                   <span className="text-gray-800 font-medium">Agent机器人-4598</span>
@@ -2783,7 +2783,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           {/* 链接和 Token - 根据 agentType 区分字段文案 */}
           {(claw as any).agentType === "lightclawace" ? (
             /* LightclawACE：面板链接 + 密码（初始密码提示） */
-            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-gray-100 px-4 py-3 w-full overflow-hidden">
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-[#e5e5e5] px-4 py-3 w-full overflow-hidden">
               <div className="flex items-center gap-2 w-full min-w-0">
                 <span className="text-xs text-gray-500 shrink-0 w-16">面板链接</span>
                 <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
@@ -2827,7 +2827,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </div>
           ) : (
             /* OpenClaw： WebSocket URL + 网关令牌（保持原样） */
-            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-gray-100 px-4 py-3 w-full overflow-hidden">
+            <div className="mt-2 space-y-2 bg-gray-50 rounded-[4px] border border-[#e5e5e5] px-4 py-3 w-full overflow-hidden">
               <div className="flex items-center gap-2 w-full min-w-0">
                 <span className="text-xs text-gray-500 shrink-0 w-16">WebSocket URL</span>
                 <span className="text-xs text-gray-700 flex-1 truncate font-mono min-w-0">{webUIUrl}</span>
@@ -3218,7 +3218,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     onClick={handleCheckUpload}
                     disabled={migrationChecking || !migrationCommandReady}
                     className="inline-flex items-center gap-1.5 text-xs font-medium border rounded-[4px] px-3 py-1.5 transition-colors text-white border-blue-500 disabled:opacity-50"
-                    style={{ background: "#1447E6" }}
+                    style={{ background: "#355EF1" }}
                   >
                     {migrationChecking ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
                     {migrationChecking ? "检测中..." : migrationCheckFailed ? "重新检测" : "检测上传状态"}
@@ -4785,7 +4785,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
 
   return (
     <div
-      className="bg-white rounded-[4px] border border-gray-100 relative"
+      className="bg-white rounded-[4px] border border-[#e5e5e5] relative"
       style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
     >
       {/* ─── 开始诊断弹窗（仅承担渲染独立选项 + 启动按钮）─────────────────────
@@ -5024,7 +5024,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </Button>
         )}
         {isCreating && (
-          <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-gray-100 text-xs text-gray-500">
+          <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] bg-gray-50 border border-[#e5e5e5] text-xs text-gray-500">
             <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
             正在为您创建龙虾医生 Agent…
           </div>
@@ -5106,7 +5106,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           <div className="px-5 pb-5 pt-2">
             <div
               className={`rounded-[4px] border bg-white transition-colors ${
-                inputDisabled ? "border-gray-100 opacity-60" : "border-gray-200 focus-within:border-gray-300"
+                inputDisabled ? "border-[#e5e5e5] opacity-60" : "border-gray-200 focus-within:border-gray-300"
               }`}
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
             >

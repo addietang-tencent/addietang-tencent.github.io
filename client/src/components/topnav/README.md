@@ -86,7 +86,7 @@ function MyLayout({ children }: { children: React.ReactNode }) {
 ## 视觉规范
 
 - **容器**：高 64px、`padding 12px 28px`、`bg #FFFFFF/95%` + backdrop-blur、底边 `1px solid #E2E8F0`
-- **Logo**：viewBox 0..120，宽 120px、高 25px；蓝色 `#1447E6` 爪图标 + 黑色字标
+- **Logo**：viewBox 0..120，宽 120px、高 25px；蓝色 `#355EF1` 爪图标 + 黑色字标
 - **中央 Tabs**：容器高 39 / `bg #F5F5F5` / radius 4，胶囊项 padding `4px 12px`、radius 3
   - Active：`bg #FFF / color #020617 / shadow 0 1px 2px rgba(0,0,0,.05)`
   - Normal：`color #334155`，hover `#020617`

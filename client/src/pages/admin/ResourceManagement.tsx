@@ -9,7 +9,7 @@ export default function ResourceManagement() {
     <div className="p-8 max-w-4xl">
       {/* 页面标题区 */}
       <div className="flex items-start gap-4 mb-8">
-        <div className="w-10 h-10 rounded-[4px] bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
           <LayoutTemplate className="w-5 h-5 text-blue-600" />
         </div>
         <div>

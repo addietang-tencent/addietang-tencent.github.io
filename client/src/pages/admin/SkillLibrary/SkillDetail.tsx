@@ -784,7 +784,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
       </button>
 
       {/* 技能基本信息 */}
-      <div className="bg-white rounded-[4px] border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{skill.name}</h1>
@@ -948,19 +948,19 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="overview"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-[4px] px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               下发和卸载记录
             </TabsTrigger>
@@ -968,7 +968,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-4 p-0">
-            <div className="bg-white rounded-[4px] p-6 border border-gray-200">
+            <div className="bg-white rounded-xl p-6 border border-gray-200">
               <MDXRenderer content={(() => {
                 // 如果选中的是最新版本或未选中，用 skill.content
                 if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
@@ -984,7 +984,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
-              <div className="flex h-[47rem] border border-gray-200 rounded-[4px] overflow-hidden bg-white">
+              <div className="flex h-[47rem] border border-gray-200 rounded-xl overflow-hidden bg-white">
                 {/* 左列：版本号选择 */}
                 <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
                   <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center">
@@ -1007,7 +1007,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         <button
                           key={ver}
                           onClick={() => setSelectedVersion(ver)}
-                          className={`w-full text-left px-3 py-3.5 border-b border-gray-100 transition-colors ${
+                          className={`w-full text-left px-3 py-3.5 border-b border-[#e5e5e5] transition-colors ${
                             isSelected
                               ? 'bg-blue-50'
                               : 'hover:bg-gray-50 cursor-pointer'
@@ -1211,7 +1211,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
           {/* 下发和卸载记录 Tab */}
           <TabsContent value="distribution" className="mt-4 p-0">
-            <div className="bg-white rounded-[4px] p-6 border border-gray-200">
+            <div className="bg-white rounded-xl p-6 border border-gray-200">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-gray-900">下发和卸载记录</h3>
@@ -1261,7 +1261,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
             <div className="space-y-3 mt-4">
               {distributionRecords.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-[4px]">
+                <div className="text-center py-8 bg-gray-50 rounded-xl">
                   <p className="text-gray-500">还没有下发记录</p>
                 </div>
               ) : (
@@ -1272,7 +1272,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                     const isInProgress = record.status === 'distributing' || record.status === 'deleting';
 
                     return (
-                      <div key={record.id} className="border border-gray-200 rounded-[4px] p-4">
+                      <div key={record.id} className="border border-gray-200 rounded-xl p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">
@@ -1428,7 +1428,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               </div>
 
               {/* 实例列表 */}
-              <div className="border border-gray-200 rounded-[4px] overflow-y-auto max-h-64">
+              <div className="border border-gray-200 rounded-xl overflow-y-auto max-h-64">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
@@ -1447,7 +1447,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       </tr>
                     ) : (
                       filteredInstances.map((instance) => (
-                        <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <tr key={instance.id} className="border-b border-[#e5e5e5] hover:bg-gray-50">
                           <td className="px-4 py-2 text-gray-900">{instance.name}</td>
                           <td className="px-4 py-2 text-gray-600 font-mono whitespace-nowrap">{instance.id}</td>
                           <td className="px-4 py-2">
@@ -1480,7 +1480,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               提交安全检测
               <span className="relative group">
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                   限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                 </span>
               </span>

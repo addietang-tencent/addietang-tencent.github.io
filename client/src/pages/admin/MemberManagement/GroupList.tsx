@@ -4,7 +4,7 @@
  * 视觉规范（流动蓝图）：
  *   - 行高 32~36，每一层左缩进 16px
  *   - 右侧：人数（text-xs gray-400）
- *   - 活跃行：borderLeft: 2px solid #1447E6 + bg-blue-50 text-blue-700
+ *   - 活跃行：borderLeft: 2px solid #355EF1 + bg-blue-50 text-blue-700
  *   - 按来源分桶：组织架构 / 用户组 / 自建分组，段头用一个极简小标题
  *   - 底部固定「未分组」项
  */
@@ -172,7 +172,7 @@ function GroupRow(props: RowProps) {
   return (
     <>
       <div
-        className={`group flex items-center gap-1.5 h-9 pr-3 text-sm cursor-pointer rounded-[4px] mx-1 mb-0.5 transition-colors ${
+        className={`group flex items-center gap-1.5 h-9 pr-3 text-sm cursor-pointer rounded-xl mx-1 mb-0.5 transition-colors ${
           isActive
             ? "bg-blue-50 text-blue-600"
             : "text-gray-700 hover:bg-gray-50"
@@ -518,7 +518,7 @@ export default function GroupList({
         <span className="text-lg font-semibold text-gray-900">分组</span>
         <button
           type="button"
-          className="inline-flex items-center gap-1 px-2.5 h-7 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-[4px] transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 h-7 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
           onClick={onCreateGroup}
         >
           <Plus className="w-3.5 h-3.5" />
@@ -534,7 +534,7 @@ export default function GroupList({
             <input
               type="text"
               placeholder="搜索分组..."
-              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-gray-200 rounded-[4px] outline-none transition-colors focus:border-blue-300 focus:ring-2 focus:ring-blue-50 placeholder:text-gray-400"
+              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-gray-200 rounded-xl outline-none transition-colors focus:border-blue-300 focus:ring-2 focus:ring-blue-50 placeholder:text-gray-400"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -544,7 +544,7 @@ export default function GroupList({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={`w-8 h-8 flex items-center justify-center rounded-[4px] border bg-white transition-colors shrink-0 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-xl border bg-white transition-colors shrink-0 ${
                   filter !== "all"
                     ? "border-blue-300 text-blue-600 bg-blue-50"
                     : "border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
@@ -580,7 +580,7 @@ export default function GroupList({
           {/* 刷新按钮 */}
           <button
             type="button"
-            className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors shrink-0"
             onClick={() => {
               if (onRefreshSync) {
                 onRefreshSync();
@@ -801,7 +801,7 @@ export default function GroupList({
       </div>
 
       {/* 底部固定：未分组 */}
-      <div className="border-t border-gray-100 shrink-0">
+      <div className="border-t border-[#e5e5e5] shrink-0">
         <div
           className={`group flex items-center gap-1.5 h-9 px-4 text-sm cursor-pointer transition-colors ${
             isUnassignedActive

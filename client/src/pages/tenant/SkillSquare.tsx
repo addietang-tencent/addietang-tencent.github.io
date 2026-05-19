@@ -464,7 +464,7 @@ export default function SkillSquare() {
           {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
-            className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] transition-colors"
+            className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white flex items-center justify-center text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -865,7 +865,7 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span className="inline-flex cursor-default" onClick={(e) => e.stopPropagation()}>
-                <Circle className="w-3.5 h-3.5 hover:text-[#1447E6] transition-colors" style={{ color: "#E5E5E5" }} />
+                <Circle className="w-3.5 h-3.5 hover:text-[#355EF1] transition-colors" style={{ color: "#E5E5E5" }} />
               </span>
             </TooltipTrigger>
             <TooltipContent><span className="text-xs">还没下发过</span></TooltipContent>
@@ -889,7 +889,7 @@ function SkillListRow({
         ) : (
           <button
             onClick={handleDistributeClick}
-            className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -1129,7 +1129,7 @@ function SkillSquareDetail({
           disabled={!canView}
           className={`w-full flex items-center gap-1.5 px-2 py-2 text-xs rounded-[3px] transition-colors ${
             expandedFile === file.name
-              ? 'bg-[#EFF6FF] text-[#1447E6]'
+              ? 'bg-[#EFF6FF] text-[#355EF1]'
               : canView ? 'hover:bg-gray-50/50 text-[#334155] cursor-pointer' : 'text-[#A3A3A3] cursor-not-allowed opacity-60'
           }`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
@@ -1212,7 +1212,7 @@ function SkillSquareDetail({
       <button
         onClick={onBack}
         className="flex items-center gap-2 transition-colors"
-        style={{ color: "#1447E6" }}
+        style={{ color: "#355EF1" }}
       >
         <ArrowLeft className="w-4 h-4" />
         返回列表
@@ -1380,7 +1380,7 @@ function SkillSquareDetail({
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-3.5 border-b border-[#F5F5F5] transition-colors ${
+                        className={`w-full text-left px-3 py-3.5 border-b border-[#e5e5e5] transition-colors ${
                           isSelected ? 'bg-[#EFF6FF]' : 'hover:bg-gray-50/50 cursor-pointer'
                         }`}
                       >
@@ -1394,7 +1394,7 @@ function SkillSquareDetail({
                           {isLatest && (
                             <span
                               className="text-[10px] font-medium px-1.5 py-0.5 rounded-[2px]"
-                              style={{ background: "#EFF6FF", color: "#1447E6" }}
+                              style={{ background: "#EFF6FF", color: "#355EF1" }}
                             >
                               最新
                             </span>
@@ -1427,7 +1427,7 @@ function SkillSquareDetail({
                   <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="text-[#737373] hover:text-[#1447E6] transition-colors"
+                    className="text-[#737373] hover:text-[#355EF1] transition-colors"
                     title="下载此版本 ZIP"
                   >
                     {isDownloading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -1584,7 +1584,7 @@ function SkillSquareDetail({
                                 className="inline-block px-3 py-1 rounded-[3px] text-xs font-medium"
                                 style={
                                   record.status === 'distributing'
-                                    ? { background: "#EFF6FF", color: "#1447E6" }
+                                    ? { background: "#EFF6FF", color: "#355EF1" }
                                     : record.successCount === record.totalCount
                                       ? { background: "#F0FDF4", color: "#166534" }
                                       : { background: "#FEFCE8", color: "#854D0E" }
@@ -1604,7 +1604,7 @@ function SkillSquareDetail({
                                   setDetailsOpen(true);
                                 }}
                                 className="h-auto py-1 px-2"
-                                style={{ color: "#1447E6" }}
+                                style={{ color: "#355EF1" }}
                               >
                                 查看详情
                               </Button>
@@ -1615,7 +1615,7 @@ function SkillSquareDetail({
                             <div className="w-full rounded-full h-1.5" style={{ background: "#F5F5F5" }}>
                               <div
                                 className="h-1.5 rounded-full transition-all duration-300"
-                                style={{ width: `${progress}%`, background: "#1447E6" }}
+                                style={{ width: `${progress}%`, background: "#355EF1" }}
                               />
                             </div>
                           )}
@@ -1695,7 +1695,7 @@ function SkillSquareDetail({
                         </tr>
                       ) : (
                         filteredInstances.map(instance => (
-                          <tr key={instance.id} className="border-b border-[#F5F5F5] last:border-b-0 hover:bg-gray-50/50 transition-colors">
+                          <tr key={instance.id} className="border-b border-[#e5e5e5] last:border-b-0 hover:bg-gray-50/50 transition-colors">
                             <td className="px-4 py-2.5 text-sm truncate" style={{ color: "#0A0A0A" }}>{instance.name}</td>
                             <td className="px-4 py-2.5 text-sm font-mono truncate" style={{ color: "#737373" }}>{instance.id}</td>
                             <td className="px-4 py-2.5">
@@ -1704,7 +1704,7 @@ function SkillSquareDetail({
                                 style={
                                   instance.distributionStatus === 'success' ? { color: "#16A34A" } :
                                   instance.distributionStatus === 'failed' ? { color: "#DC2626" } :
-                                  instance.distributionStatus === 'distributing' ? { color: "#1447E6" } :
+                                  instance.distributionStatus === 'distributing' ? { color: "#355EF1" } :
                                   { color: "#A3A3A3" }
                                 }
                               >

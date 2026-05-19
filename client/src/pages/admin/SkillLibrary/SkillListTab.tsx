@@ -33,12 +33,14 @@ import EditCategoriesDialog from './EditCategoriesDialog';
 import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
-import { Skill, type SkillScope, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
+import { Skill, type SkillScope, type DistributionStatus, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
+import BatchDeleteDialog from './BatchDeleteDialog';
 import {
   getSkillDistributionSummary,
   addDistributionRecord,
   updateDistributionRecord,
   createDistributionRecordId,
+  getAllDistributionRecords,
   type CachedDistributionRecord,
   type SkillDistributionSummary,
 } from './distributionCache';
@@ -139,6 +141,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const [updateSkillId, setUpdateSkillId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
+  const [uninstallDialogOpen, setUninstallDialogOpen] = useState(false);
+  const [uninstallSkillId, setUninstallSkillId] = useState<string | null>(null);
   const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
   // 安全检测确认弹窗
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
@@ -306,6 +310,32 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     window.addEventListener('distribution-cache-updated', handler);
     return () => window.removeEventListener('distribution-cache-updated', handler);
   }, [refreshDistributionSummaries]);
+
+  // Mock 种子：为 skill-3 创建一条"已卸载(3/3成功)"的历史记录
+  useEffect(() => {
+    const allRecords = getAllDistributionRecords();
+    const hasDeleteSeed = allRecords.some(r => r.skillId === 'skill-3' && r.type === 'delete');
+    if (!hasDeleteSeed) {
+      const seedRecord: CachedDistributionRecord = {
+        id: 'mock-delete-seed-001',
+        skillId: 'skill-3',
+        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
+        totalCount: 3,
+        successCount: 3,
+        failedCount: 0,
+        inProgressCount: 0,
+        status: 'success',
+        type: 'delete',
+        operator: 'admin',
+        instances: [
+          { id: 'inst-1', name: '实例-北京-01', createdBy: 'admin', distributionStatus: 'success' },
+          { id: 'inst-2', name: '实例-上海-02', createdBy: 'admin', distributionStatus: 'success' },
+          { id: 'inst-3', name: '实例-广州-03', createdBy: 'admin', distributionStatus: 'success' },
+        ],
+      };
+      addDistributionRecord(seedRecord);
+    }
+  }, []);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -571,6 +601,102 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     toast.success(`Skill「${skillName}」已删除`);
     setDeleteDialogOpen(false);
     setDeleteSkillId(null);
+  };
+
+  // 卸载 Skill（从实例上移除）
+  const handleUninstall = (skillId: string) => {
+    setUninstallSkillId(skillId);
+    setUninstallDialogOpen(true);
+  };
+
+  /** 从下发记录中聚合某 Skill 已下发成功的实例列表（用于卸载弹窗） */
+  const distributedInstancesForUninstall = useMemo(() => {
+    if (!uninstallSkillId) return [];
+    const allRecords = getAllDistributionRecords();
+    const instanceMap = new Map<string, any>();
+    allRecords
+      .filter(r => r.skillId === uninstallSkillId && (r.type || 'distribute') === 'distribute')
+      .forEach(r => {
+        r.instances.forEach(inst => {
+          if (inst.distributionStatus === 'success' && !instanceMap.has(inst.id)) {
+            const fullInst = MOCK_OPENCLAW_INSTANCES.find(i => i.id === inst.id);
+            const groupName = fullInst?.groupIds?.[0]
+              ? MOCK_GROUPS.find(g => g.id === fullInst.groupIds[0])?.name
+              : undefined;
+            const skill = skills.find(s => s.id === uninstallSkillId);
+            instanceMap.set(inst.id, {
+              id: inst.id,
+              name: inst.name,
+              createdBy: inst.createdBy || 'admin',
+              groupName: groupName || '全部用户',
+              distributedVersion: skill?.version,
+              distributedTime: r.timestamp,
+              deleteStatus: 'not_deleted' as const,
+            });
+          }
+        });
+      });
+    return Array.from(instanceMap.values());
+  }, [uninstallSkillId, skills]);
+
+  const handleUninstallStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    if (!uninstallSkillId) return;
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId: uninstallSkillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'distributing' as DistributionStatus,
+      type: 'delete',
+      operator: 'admin',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as DistributionStatus,
+      })),
+    };
+    addDistributionRecord(newRecord);
+    setUninstallDialogOpen(false);
+    toast.success('已开始卸载流程');
+
+    // 模拟卸载进度
+    const totalCount = selectedInstanceIds.length;
+    let completed = 0;
+    const failReasons = ['实例离线', '权限不足', '技能被占用', '网络超时', '实例已停止'];
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
+        const successCount = results.filter(Boolean).length;
+        const failedCount = totalCount - successCount;
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: 'success' as DistributionStatus,
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (results[idx] ? 'success' : 'failed') as DistributionStatus,
+            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
+          })),
+        }));
+        toast.success('卸载完成');
+      } else {
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
+      }
+    }, 800);
   };
 
   // 下载 Skill
@@ -1074,6 +1200,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         下载
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onClick={() => handleUninstall(skill.id)}
+                        disabled={distributing}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2 text-red-500" />
+                        卸载
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={() => handleDelete(skill.id)}
                         disabled={distributing}
                         className="text-red-600 focus:text-red-600"
@@ -1109,7 +1243,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/操作动态</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
@@ -1141,11 +1275,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   if (summary) {
                     if (summary.lastDistributionStatus === 'deleting' as any) {
                       statusLine1 = '卸载中';
-                      statusLine1Color = 'text-red-600';
+                      statusLine1Color = 'text-blue-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-red-600';
-                      statusLine2Bg = 'bg-red-50';
-                      statusLine2HoverBg = 'hover:bg-red-100';
+                      statusLine2Color = 'text-blue-600';
+                      statusLine2Bg = 'bg-blue-50';
+                      statusLine2HoverBg = 'hover:bg-blue-100';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
                       statusLine1Color = 'text-blue-600';
@@ -1158,7 +1292,10 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       statusLine1Color = 'text-gray-700';
                       const total = summary.lastDistributionInstanceCount || 0;
                       const success = summary.lastDistributionSuccessCount ?? total;
-                      statusLine2 = `已下发（${success}/${total}成功）`;
+                      const isDeleteType = summary.lastRecordType === 'delete';
+                      statusLine2 = isDeleteType
+                        ? `已卸载(${success}/${total}成功)`
+                        : `已下发(${success}/${total}成功)`;
                       if (success === total) {
                         statusLine2Color = 'text-green-600';
                         statusLine2Bg = 'bg-green-50';
@@ -1432,6 +1569,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                 下载
                               </DropdownMenuItem>
                               <DropdownMenuItem
+                                onClick={() => handleUninstall(skill.id)}
+                                disabled={distributing}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2 text-red-500" />
+                                卸载
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
                                 onClick={() => handleDelete(skill.id)}
                                 disabled={distributing}
                                 className="text-red-600 focus:text-red-600"
@@ -1477,6 +1622,22 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           onDistributionStart={handleDistributeStart}
           instances={MOCK_OPENCLAW_INSTANCES}
           groups={MOCK_GROUPS}
+        />
+      )}
+
+      {/* 批量卸载对话框 */}
+      {uninstallSkillId && (
+        <BatchDeleteDialog
+          open={uninstallDialogOpen}
+          onOpenChange={(open) => {
+            setUninstallDialogOpen(open);
+            if (!open) setUninstallSkillId(null);
+          }}
+          skillName={skills.find(s => s.id === uninstallSkillId)?.name || ''}
+          skillVersion={skills.find(s => s.id === uninstallSkillId)?.version}
+          distributedInstances={distributedInstancesForUninstall}
+          groups={MOCK_GROUPS}
+          onDeleteStart={handleUninstallStart}
         />
       )}
 

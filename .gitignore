@@ -99,6 +99,7 @@ jspm_packages/
 # Temporary folders
 tmp/
 temp/
+.preview/
 
 # Database
 *.db

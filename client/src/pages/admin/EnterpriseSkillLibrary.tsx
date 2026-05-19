@@ -1,22 +1,13 @@
-import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import SkillListTab from './SkillLibrary/SkillListTab';
 import CategoryManagementTab from './SkillLibrary/CategoryManagementTab';
-import SkillDetail from './SkillLibrary/SkillDetail';
 
 interface EnterpriseSkillLibraryProps {
-  onSelectSkill?: (skillId: string) => void;
+  securityServiceActive?: boolean;
 }
 
-export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkillLibraryProps) {
-  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
-
-  // 当返回到列表时，清空 selectedSkillId
-  const handleBackFromDetail = () => {
-    setSelectedSkillId(null);
-  };
-
+export default function EnterpriseSkillLibrary({ securityServiceActive }: EnterpriseSkillLibraryProps) {
   return (
     <div className="page-enter">
 
@@ -27,7 +18,7 @@ export default function EnterpriseSkillLibrary({ onSelectSkill }: EnterpriseSkil
         </TabsList>
 
         <TabsContent value="skills">
-          <SkillListTab onSelectSkill={onSelectSkill || setSelectedSkillId} />
+          <SkillListTab securityServiceActive={securityServiceActive} />
         </TabsContent>
 
         <TabsContent value="categories">

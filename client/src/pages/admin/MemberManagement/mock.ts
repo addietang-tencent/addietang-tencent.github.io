@@ -48,7 +48,7 @@ export const MOCK_GROUPS: UserGroup[] = [
     createdAt: "2025-01-01",
   },
   { id: "dept-tech", name: "技术部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-tech", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
-  { id: "dept-fe", name: "前端组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-fe", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
+  { id: "dept-fe", name: "前端架构与跨平台体验设计组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-fe", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-be", name: "后端组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-be", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-ai", name: "AI 组", parentId: "dept-tech", source: "oneid-dept", readonly: true, externalId: "dept-ai", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
   { id: "dept-product", name: "产品部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-product", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
@@ -61,7 +61,7 @@ export const MOCK_GROUPS: UserGroup[] = [
   { id: "dept-finance", name: "财务部", parentId: "dept-root", source: "oneid-dept", readonly: true, externalId: "dept-finance", syncBatchId: "oneid-org", createdAt: "2025-01-01" },
 
   // ── OneID 用户组（管理员自建，多层级） ──
-  { id: "og-frontend", name: "前端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
+  { id: "og-frontend", name: "前端基础架构与工程效能研发协作组", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
   { id: "og-fe-web", name: "Web 端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
   { id: "og-fe-mobile", name: "移动端", parentId: "og-frontend", source: "oneid-group", readonly: false, createdAt: "2025-03-05" },
   { id: "og-backend", name: "后端研发同学", parentId: null, source: "oneid-group", readonly: false, createdAt: "2025-03-01" },
@@ -713,74 +713,161 @@ export function getConfigEntries(
     });
   }
 
-  // ──── 9. 私有网络与子网（永远只有一条） ────
-  if (["og-ai-core"].includes(groupId)) {
+  // ──── 9. 私有网络与子网（永远只有一条；按"网络管理"真实配置匹配） ────
+  //
+  // 数据流：
+  //   分组配置总览 是消费方，从「网络管理 > 私有网络与子网配置」(SecurityGroupManagement.tsx
+  //   里的 INITIAL_VPC_LIST) 单向读取真实配置；下面这份 NETWORK_BINDINGS 是同源精简映射，
+  //   仅供本页渲染用，不影响网络管理页本身。
+  //
+  // 网络管理真实绑定关系（来自 SecurityGroupManagement.tsx INITIAL_VPC_LIST）：
+  //   - 企业默认（type: "enterprise"，即「预设策略」兜底）：vpc-jp7fjg13 / 企业默认网络 / 10.0.0.0/16
+  //   - 研发组：vpc-9lyx5t8h / 研发组网络 / 10.1.0.0/16，子网 subnet-gaclgbzu（广州五区, 带外管理, 192.168.20.0/24）
+  //   - 产品组：vpc-ri7mmw6n / 产品组网络 / 10.2.0.0/16，子网 subnet-mn3op5qr（广州五区, 部署子网A, 192.168.1.0/24）
+  //                                                       + subnet-st6uv7wx（广州六区, 部署子网B, 192.168.2.0/24）
+  //
+  // 匹配链（自底向上，取第一个命中）：
+  //   ① 当前分组在网络管理里被单独绑定（type: "group"，associatedGroups 含当前分组）
+  //        → source = local，标签：本分组
+  //   ② 沿 parentId 向上找到最近一个被绑定的祖先分组
+  //        → source = inherited，标签：继承自 {祖先分组名}（仅继承真实配置，不继承 demo 删除态）
+  //   ③ 都没有 → 回退企业默认
+  //        → source = presetPolicy，标签：预设策略
+  //          展示约定：VPC ID / 子网 ID 都不展示真实 ID，统一展示「自动分配」（由 NodeContentPanel 渲染层处理）
+  //
+  // 「⚠ 配置待更新」适用范围：
+  //   - 仅 ① 的 local 来源（真实绑定 type: "group"）的 VPC / 子网，可能因云端删除触发；
+  //   - 预设策略（③）的 VPC 由平台自动重建，永不进入"待更新"；
+  //   - ② 的继承也只继承真实部分，子分组不会因父分组的 demo 删除态而被误标。
+
+  type RealSubnet = { zone: string; subnetId: string; subnetName: string; subnetCidr: string };
+  type RealVpcBinding = {
+    vpcId: string;
+    vpcName: string;
+    vpcCidr: string;
+    subnets: RealSubnet[];
+  };
+  // 已在网络管理被单独绑定的分组 → 真实 VPC/子网（仅真实部分，不含 demo 删除态）
+  const NETWORK_BINDINGS: Record<string, RealVpcBinding> = {
+    "mgrp-rd": {
+      vpcId: "vpc-9lyx5t8h",
+      vpcName: "研发组网络",
+      vpcCidr: "10.1.0.0/16",
+      subnets: [
+        { zone: "广州五区", subnetId: "subnet-gaclgbzu", subnetName: "带外管理", subnetCidr: "192.168.20.0/24" },
+      ],
+    },
+    "mgrp-product": {
+      vpcId: "vpc-ri7mmw6n",
+      vpcName: "产品组网络",
+      vpcCidr: "10.2.0.0/16",
+      subnets: [
+        { zone: "广州五区", subnetId: "subnet-mn3op5qr", subnetName: "部署子网A", subnetCidr: "192.168.1.0/24" },
+        { zone: "广州六区", subnetId: "subnet-st6uv7wx", subnetName: "部署子网B", subnetCidr: "192.168.2.0/24" },
+      ],
+    },
+  };
+  // Demo 专属：研发组的网络配置存在 已被云端删除 的资源
+  //
+  // 用户管理页只展示可用资源，并在以下两种情况下提示「配置待更新」：
+  //   1) VPC 整个被删除（vpcDeleted）
+  //   2) 某个可用区下所有子网均被删除（zonesAllDeleted）
+  //
+  // 部分子网删除但该可用区仍有可用子网时，本页静默处理（不展示已删除项、不提示）。
+  //
+  // 当前 demo 选择「VPC 健在 + 演示两类区状态」：
+  //   - 广州五区：仍有 1 条可用子网 subnet-gaclgbzu（正常展示）
+  //   - 广州六区：原有的子网都被删了 → 该区无可用子网，提示「配置待更新」
+  //   - 广州七区：原有的子网都被删了 → 该区无可用子网，提示「配置待更新」
+  //   （注：研发组在「网络管理」原本只在广州五区指定了 subnet-gaclgbzu，广州六/七区
+  //    的演示属于"曾经配过、后来都被删了"的扩展场景，仅在 demo 数据上模拟）
+  const RD_DEMO_OUTDATED: {
+    vpcDeleted: boolean;
+    zonesAllDeleted: string[];
+  } = {
+    vpcDeleted: false,
+    zonesAllDeleted: ["广州六区", "广州七区"],
+  };
+
+  // 在 groupId 自身或祖先链上，查找第一个在 NETWORK_BINDINGS 里命中的分组 id
+  const findBoundAncestor = (gid: string): string | null => {
+    let cur: UserGroup | undefined = groupMap.get(gid);
+    while (cur) {
+      if (NETWORK_BINDINGS[cur.id]) return cur.id;
+      cur = cur.parentId ? groupMap.get(cur.parentId) : undefined;
+    }
+    return null;
+  };
+
+  // 构造一个分组对应的真实 VPC meta：
+  //   - 仅展示可用资源；已删除子网不进入 subnets 列表；
+  //   - VPC 整体删除时：vpcName / vpcCidr 留空 + vpcDeleted: true；
+  //   - 某可用区所有子网均被删除：通过 zonesAllDeleted 字段透传给渲染层。
+  const buildVpcMeta = (boundGroupId: string): Record<string, unknown> => {
+    const bind = NETWORK_BINDINGS[boundGroupId];
+    const isRd = boundGroupId === "mgrp-rd";
+    const vpcDeleted = isRd && RD_DEMO_OUTDATED.vpcDeleted;
+    const zonesAllDeleted = isRd ? [...RD_DEMO_OUTDATED.zonesAllDeleted] : [];
+    return {
+      vpcId: bind.vpcId,
+      vpcName: vpcDeleted ? "" : bind.vpcName,
+      vpcCidr: vpcDeleted ? "" : bind.vpcCidr,
+      ...(vpcDeleted ? { vpcDeleted: true } : {}),
+      // 仅可用子网（VPC 删除时不再展示子网，由渲染层据 vpcDeleted 隐藏整个子网区域）
+      subnets: bind.subnets.map((s) => ({
+        zone: s.zone,
+        subnetId: s.subnetId,
+        subnetName: s.subnetName,
+        subnetCidr: s.subnetCidr,
+      })),
+      // 该 VPC 下哪些可用区已无可用子网（导致该区无法用于实例创建）
+      ...(zonesAllDeleted.length > 0 ? { zonesAllDeleted } : {}),
+    };
+  };
+
+  if (NETWORK_BINDINGS[groupId]) {
+    // ① 自己被单独绑定 → local 本分组
     entries.push({
-      id: "vpc-ai",
+      id: `vpc-${groupId}`,
       category: "network",
       label: "",
       subLabel: "私有网络与子网",
-      source: local(getGroupFullPath("og-ai-core")),
-      meta: {
-        vpcId: "vpc-ai8k2m3p",
-        vpcName: "clawpro/ai-vpc-core",
-        vpcCidr: "10.1.0.0/16",
-        subnets: [
-          { zone: "广州三区", subnetId: "subnet-ai7n4w2q", subnetCidr: "10.1.0.0/19" },
-          { zone: "广州四区", subnetId: "subnet-ai9p3x1k", subnetCidr: "10.1.32.0/19" },
-        ],
-      },
-    });
-  } else if (["og-frontend"].includes(groupId)) {
-    entries.push({
-      id: "vpc-fe",
-      category: "network",
-      label: "",
-      subLabel: "私有网络与子网",
-      source: local(getGroupFullPath("og-frontend")),
-      meta: {
-        vpcId: "vpc-fe6j9r1s",
-        vpcName: "clawpro/fe-vpc-team",
-        vpcCidr: "10.2.0.0/16",
-        subnets: [
-          { zone: "广州四区", subnetId: "subnet-fe3x8d5v", subnetCidr: "10.2.0.0/19" },
-        ],
-      },
-    });
-  } else if (groupId === "mgrp-rd-fe") {
-    entries.push({
-      id: "vpc-preset-fe",
-      category: "network",
-      label: "",
-      subLabel: "私有网络与子网",
-      source: { type: "presetPolicy" },
-      meta: {
-        vpcId: "vpc-rd-fe9x2k",
-        vpcName: "clawpro/rd-frontend-vpc",
-        vpcCidr: "10.3.0.0/16",
-        subnets: [
-          { zone: "广州三区", subnetId: "subnet-rdfe4m7p", subnetCidr: "10.3.0.0/19" },
-        ],
-      },
+      source: local(getGroupFullPath(groupId)),
+      meta: buildVpcMeta(groupId),
     });
   } else {
-    entries.push({
-      id: "vpc-default",
-      category: "network",
-      label: "",
-      subLabel: "私有网络与子网",
-      source: { type: "presetPolicy" },
-      meta: {
-        vpcId: "vpc-cwu34v7p",
-        vpcName: "clawpro/default-vpc-pk878am5",
-        vpcCidr: "10.0.0.0/16",
-        subnets: [
-          { zone: "广州六区", subnetId: "subnet-dssdbbpw", subnetCidr: "10.0.0.0/19" },
-          { zone: "广州三区", subnetId: "subnet-k8w2m4pq", subnetCidr: "10.0.32.0/19" },
-          { zone: "广州四区", subnetId: "subnet-r7n5v3xa", subnetCidr: "10.0.64.0/19" },
-        ],
-      },
-    });
+    const ancestorId = findBoundAncestor(groupId);
+    if (ancestorId) {
+      // ② 继承自最近的已绑定祖先分组（完整继承所有字段，包括 demo 待更新态）
+      //    业务上：父级 VPC 删除会同时影响所有继承该配置的子分组。
+      entries.push({
+        id: `vpc-${groupId}`,
+        category: "network",
+        label: "",
+        subLabel: "私有网络与子网",
+        source: inherited(getGroupFullPath(ancestorId)),
+        meta: buildVpcMeta(ancestorId),
+      });
+    } else {
+      // ③ 回退预设策略 → 企业默认网络（vpc-jp7fjg13）
+      //    展示层会把 source.type === "presetPolicy" 的 VPC ID / 子网 ID 渲染为「自动分配」；
+      //    子网按可用区逐条展示，可用区与「网络管理 > AVAILABLE_ZONES」保持同源（广州 5/6/7 区）。
+      entries.push({
+        id: `vpc-${groupId}`,
+        category: "network",
+        label: "",
+        subLabel: "私有网络与子网",
+        source: { type: "presetPolicy" },
+        meta: {
+          vpcId: "vpc-jp7fjg13",
+          vpcName: "企业默认网络",
+          vpcCidr: "10.0.0.0/16",
+          // 预设策略子网按可用区逐条展示，故不再使用 subnets 列表，改用 zones
+          zones: ["广州五区", "广州六区", "广州七区"],
+          subnets: [],
+        },
+      });
+    }
   }
 
   // ──── 9b. 安全组（永远只有一条） ────

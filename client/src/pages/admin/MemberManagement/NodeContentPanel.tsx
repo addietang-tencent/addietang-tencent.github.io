@@ -70,6 +70,7 @@ import {
   MISSING_LABEL,
   INIT_MISSING_LABEL,
   INIT_MISSING_TO_CATEGORY,
+  hasNetworkOutdated,
 } from "./health";
 
 const PAGE_SIZE = 10;
@@ -358,11 +359,39 @@ export default function NodeContentPanel({
   const [tab, setTab] = useState<Tab>(isAnomalous ? "config" : "members");
   const [page, setPage] = useState(1);
 
+  // 用户列表表格横向滚动检测（操作列 sticky right 阴影）
+  const ncpTableScrollRef = useRef<HTMLDivElement>(null);
+  const [ncpTableCanScrollRight, setNcpTableCanScrollRight] = useState(false);
+  useEffect(() => {
+    const el = ncpTableScrollRef.current;
+    if (!el) return;
+    const check = () => {
+      const canScroll = el.scrollWidth > el.clientWidth;
+      const isAtRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      setNcpTableCanScrollRight(canScroll && !isAtRight);
+    };
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
+  }, []);
+
   // 切换节点时根据是否异常重置默认 tab
   useEffect(() => {
     setTab(isAnomalous ? "config" : "members");
     setPage(1);
   }, [nodeId, isAnomalous]);
+
+  /**
+   * 网络配置待更新（VPC 整删 / 某可用区所有子网均被删除）
+   * 用于「配置总览」Tab 旁的橙色小圆点提示。
+   * 与各资源行的逐项「配置已失效，请及时更新」保持同源判定。
+   */
+  const networkOutdatedForTab = useMemo(
+    () => hasNetworkOutdated(nodeId, groups),
+    [nodeId, groups]
+  );
 
   // 添加用户到分组弹窗
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -526,7 +555,12 @@ export default function NodeContentPanel({
             {isAnomalous && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
             )}
-            {!isAnomalous && isUninitialized && (
+            {!isAnomalous && isUninitialized && !networkOutdatedForTab && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
+            )}
+            {/* 网络配置待更新（VPC 整删 / 某可用区所有子网删除）：橙色小圆点
+                优先级：异常红点 > 网络待更新橙点 > 初始化未完成橙点 */}
+            {!isAnomalous && networkOutdatedForTab && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
             )}
           </button>
@@ -542,29 +576,32 @@ export default function NodeContentPanel({
               className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
             >
               {/* 表格 */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={ncpTableScrollRef}>
+                <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
                   <thead>
                     <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
                         用户 ID
                       </th>
                       {hasOneid && (
-                        <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                        <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                           部门
                         </th>
                       )}
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                         分组
                       </th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         角色
                       </th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         状态
                       </th>
                       {isManualMode && nodeId !== "__unassigned__" && (
-                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                          {ncpTableCanScrollRight && (
+                            <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                          )}
                           操作
                         </th>
                       )}
@@ -596,7 +633,7 @@ export default function NodeContentPanel({
                             className="hover:bg-gray-50/50 transition-colors"
                           >
                             {/* 用户 ID */}
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-4 py-4 whitespace-nowrap">
                               <span className="text-sm font-medium text-gray-900">
                                 {u.userId}
                               </span>
@@ -604,7 +641,7 @@ export default function NodeContentPanel({
 
                             {/* 部门（仅 OneID 模式） */}
                             {hasOneid && (
-                              <td className="px-4 py-4">
+                              <td className="px-3 py-4">
                                 {deptPaths.length === 0 ? (
                                   <span className="text-sm text-gray-300">—</span>
                                 ) : deptPaths.length === 1 ? (
@@ -656,7 +693,7 @@ export default function NodeContentPanel({
                             )}
 
                             {/* 分组 */}
-                            <td className="px-4 py-4">
+                            <td className="px-3 py-4">
                               {(() => {
                                 // OneID 模式：显示部门 + 用户组；普通模式：只显示自建分组
                                 const displayGroups = hasOneid
@@ -672,7 +709,7 @@ export default function NodeContentPanel({
                                 const firstName = getDisplayName(displayGroups[0]);
 
                                 return (
-                                  <div className="flex items-center gap-1 max-w-[260px]">
+                                  <div className="flex items-center gap-1 max-w-[180px]">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span className="inline-flex items-center gap-1 cursor-default max-w-full">
@@ -713,7 +750,7 @@ export default function NodeContentPanel({
                             </td>
 
                             {/* 角色 */}
-                            <td className="px-4 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               <Badge
                                 variant="outline"
                                 className={
@@ -727,7 +764,7 @@ export default function NodeContentPanel({
                             </td>
 
                             {/* 状态 */}
-                            <td className="px-5 py-4 whitespace-nowrap">
+                            <td className="px-3 py-4 whitespace-nowrap">
                               {u.status === "active" ? (
                                 <span className="badge-running text-xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
@@ -743,7 +780,10 @@ export default function NodeContentPanel({
 
                             {/* 操作（仅普通模式且非未分组） */}
                             {isManualMode && nodeId !== "__unassigned__" && (
-                              <td className="px-5 py-4">
+                              <td className="px-3 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
+                                {ncpTableCanScrollRight && (
+                                  <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+                                )}
                                 <div className="flex items-center justify-center gap-1">
                                   {nodeId !== "__unassigned__" && (
                                     <Tooltip>
@@ -1251,6 +1291,20 @@ function LocalAnomalyHint() {
   );
 }
 
+/**
+ * VPC / 子网被云端删除时的「请前往网络管理页面更新配置」轻量提示。
+ * 胶囊形态（与同模块红色 LocalAnomalyHint 同款结构），改用黄色（amber）配色，
+ * 用于表达「需要前往更新」的待处理状态，与「请前往对应配置页解绑或删除」的红色异常胶囊形成色阶区分。
+ */
+function ConfigOutdatedHint() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 shrink-0">
+      <span className="w-1 h-1 rounded-full bg-amber-500" />
+      请前往网络管理更新配置
+    </span>
+  );
+}
+
 /** 公网配置项的特殊展示（三项信息 + 来源标签跟在后面） */
 function PublicNetworkDetail({ meta, source }: { meta: Record<string, string | number | boolean>; source: ConfigEntry["source"] }) {
   return (
@@ -1336,6 +1390,18 @@ function ConfigOverviewTab({
     });
     return set;
   }, [nodeId, groups, isUninitialized, isAnomalous]);
+
+  /**
+   * 网络配置待更新（VPC / 子网被云端删除）
+   *
+   * 当前分组的网络配置中存在任意一个 VPC 或子网待更新时为 true，
+   * 用于：顶部配置总览条「网络」节点 + 网络卡片标题旁的橙色小圆点。
+   * 与各资源行的逐项「⚠ 配置待更新」保持同源判定。
+   */
+  const networkOutdated = useMemo(
+    () => hasNetworkOutdated(nodeId, groups),
+    [nodeId, groups]
+  );
 
   // 折叠状态：默认全部展开
   const [collapsed, setCollapsed] = useState<Set<ConfigCategory>>(new Set());
@@ -1454,6 +1520,11 @@ function ConfigOverviewTab({
                     {!hasAnomaly && hasUninitWarning && (
                       <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
                     )}
+                    {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」节点展示橙色小圆点，
+                        与异常红点 / 初始化未完成橙点互斥 */}
+                    {!hasAnomaly && !hasUninitWarning && cat === "network" && networkOutdated && (
+                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    )}
                   </span>
                 </button>
                 {/* 连接线 */}
@@ -1532,6 +1603,10 @@ function ConfigOverviewTab({
                         {!hasAnomaly && hasUninitWarning && (
                           <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-amber-500" />
                         )}
+                        {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」卡片标题旁展示橙色小圆点 */}
+                        {!hasAnomaly && !hasUninitWarning && cat === "network" && networkOutdated && (
+                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        )}
                       </span>
                       {/* 仅模型、通道、镜像在标题旁显示数量；技能/Agent工具在子类别显示；其余不显示 */}
                       {(cat === "model" || cat === "channel" || cat === "image") && (
@@ -1599,27 +1674,89 @@ function ConfigOverviewTab({
                             {entry.subLabel === "公网" && entry.meta ? (
                               <PublicNetworkDetail meta={entry.meta} source={entry.source} />
                             ) : entry.subLabel === "私有网络与子网" && entry.meta ? (
-                              /* VPC + 子网结构化展示 */
+                              /* VPC + 子网结构化展示
+                               * 用户管理页只展示「可用」的 VPC / 子网，不展示已删除资源；
+                               * 仅在以下两种场景提示「⚠ 配置待更新」：
+                               *   1) VPC 整个被删除
+                               *   2) 某个可用区下所有子网均被删除（无法用于实例创建）
+                               */
                               <div className="space-y-2">
-                                {/* 私有网络 */}
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-xs text-gray-500 shrink-0">私有网络：</span>
-                                  <span className="text-xs font-semibold text-gray-700">
-                                    {String(entry.meta.vpcId)} | {String(entry.meta.vpcName)} | {String(entry.meta.vpcCidr)}
-                                  </span>
-                                  <SourceBadge source={entry.source} />
-                                  {isAnomalous && entry.source.type === "local" && <LocalAnomalyHint />}
-                                </div>
-                                {/* 子网列表 */}
-                                {Array.isArray(entry.meta.subnets) && (entry.meta.subnets as Array<{ zone: string; subnetId: string; subnetCidr: string }>).map((subnet) => (
-                                  <div key={subnet.subnetId} className="flex items-center gap-2 flex-wrap pl-4">
-                                    <span className="text-xs text-gray-500 shrink-0">子网：</span>
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{subnet.zone}</span>
-                                    <span className="text-xs font-semibold text-gray-700">
-                                      {subnet.subnetId} | {subnet.subnetCidr}
-                                    </span>
-                                  </div>
-                                ))}
+                                {/* 私有网络
+                                 * 与线上保持一致：仅展示 VPC ID（不展示名称 / CIDR）。
+                                 * 触发条件：vpcId 存在，但 vpcName / vpcCidr 缺失 → 视为 VPC 已被云端删除。
+                                 * 预设策略来源：VPC 由平台自动重建，不展示真实 ID，统一展示「自动分配」。 */}
+                                {(() => {
+                                  const vpcId = entry.meta.vpcId ? String(entry.meta.vpcId) : "";
+                                  const vpcName = entry.meta.vpcName ? String(entry.meta.vpcName) : "";
+                                  const vpcCidr = entry.meta.vpcCidr ? String(entry.meta.vpcCidr) : "";
+                                  const vpcOutdated = !!vpcId && (!vpcName || !vpcCidr);
+                                  const isPreset = entry.source.type === "presetPolicy";
+                                  return (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-xs text-gray-500 shrink-0">私有网络：</span>
+                                      <span className="text-xs font-semibold text-gray-700">
+                                        {isPreset ? <>自动分配</> : <>{vpcId}</>}
+                                      </span>
+                                      <SourceBadge source={entry.source} />
+                                      {isAnomalous && entry.source.type === "local" && <LocalAnomalyHint />}
+                                      {!isPreset && vpcOutdated && <ConfigOutdatedHint />}
+                                    </div>
+                                  );
+                                })()}
+                                {/* 子网列表
+                                 * - 预设策略来源：按可用区逐条展示「子网：[可用区] 自动分配」
+                                 * - VPC 已整体删除：不展示任何子网行（已无意义）
+                                 * - VPC 健在：
+                                 *     · 仅展示可用子网（已删除子网不进入此列表）
+                                 *     · 某可用区下所有子网均被删除时（zonesAllDeleted），
+                                 *       追加一行「子网：[可用区] 无可用子网 ⚠ 配置待更新」 */}
+                                {(() => {
+                                  const isPreset = entry.source.type === "presetPolicy";
+                                  if (isPreset) {
+                                    const zones = Array.isArray(entry.meta.zones) ? (entry.meta.zones as string[]) : [];
+                                    return zones.map((zone, idx) => (
+                                      <div key={`preset-zone-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
+                                        <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                        <span className="text-xs font-semibold text-gray-700">自动分配</span>
+                                      </div>
+                                    ));
+                                  }
+                                  const vpcId = entry.meta.vpcId ? String(entry.meta.vpcId) : "";
+                                  const vpcName = entry.meta.vpcName ? String(entry.meta.vpcName) : "";
+                                  const vpcCidr = entry.meta.vpcCidr ? String(entry.meta.vpcCidr) : "";
+                                  const vpcOutdated = !!vpcId && (!vpcName || !vpcCidr);
+                                  // VPC 整体删除时，隐藏所有子网行
+                                  if (vpcOutdated) return null;
+                                  const subnets = Array.isArray(entry.meta.subnets)
+                                    ? (entry.meta.subnets as Array<{ zone: string; subnetId: string; subnetName?: string; subnetCidr: string }>)
+                                    : [];
+                                  const zonesAllDeleted = Array.isArray(entry.meta.zonesAllDeleted)
+                                    ? (entry.meta.zonesAllDeleted as string[])
+                                    : [];
+                                  return (
+                                    <>
+                                      {subnets.map((subnet, idx) => (
+                                        <div key={`${subnet.subnetId}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
+                                          <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{subnet.zone}</span>
+                                          {/* 与线上保持一致：仅展示 subnetId（不展示子网名 / CIDR） */}
+                                          <span className="text-xs font-semibold text-gray-700">
+                                            {subnet.subnetId}
+                                          </span>
+                                        </div>
+                                      ))}
+                                      {zonesAllDeleted.map((zone, idx) => (
+                                        <div key={`zone-empty-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
+                                          <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                          <span className="text-xs text-gray-400">无可用子网</span>
+                                          <ConfigOutdatedHint />
+                                        </div>
+                                      ))}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             ) : (
                               <div className="flex items-center justify-between gap-3">

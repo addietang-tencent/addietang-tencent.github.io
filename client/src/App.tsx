@@ -48,6 +48,7 @@ import FileManagement from "./pages/admin/FileManagement";
 import SkillDetailPage from "./pages/admin/SkillDetailPage";
 import AgentToolLibrary from "./pages/admin/AgentToolLibrary";
 import ApiDocs from "./pages/admin/ApiDocs";
+import AgentCommandsPage from "./pages/admin/agentOps/AgentCommandsPage";
 import ModeAwareRoute from "./components/ModeAwareRoute";
 import StandardBasicInfo from "./pages/admin/standard/StandardBasicInfo";
 
@@ -86,6 +87,7 @@ function Router() {
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />
       <Route path="/admin/cloud-dev" component={() => <AdminLayout><CloudDevManagement /></AdminLayout>} />
       <Route path="/admin/openclaw-monitor" component={() => <AdminLayout><AgentMonitor /></AdminLayout>} />
+      <Route path="/admin/agent-commands" component={() => <AdminLayout><AgentCommandsPage /></AdminLayout>} />
       <Route path="/admin/agent-migration" component={() => <AdminLayout><AgentMigration /></AdminLayout>} />
       <Route path="/admin/tokens-monitor" component={() => <AdminLayout><TokensMonitor /></AdminLayout>} />
       <Route path="/admin/security-management" component={() => <AdminLayout><SecurityManagement /></AdminLayout>} />

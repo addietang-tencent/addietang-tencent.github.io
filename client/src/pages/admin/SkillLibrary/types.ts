@@ -157,7 +157,7 @@ export interface MCPService {
   version: string;
   /** 版本历史列表（从旧到新排列） */
   versions?: string[];
-  transportType: MCPTransportType;
+  transport: MCPTransportType;
   /** JSON 格式的服务配置 */
   configJson: string;
   /** 使用说明 (Markdown) */

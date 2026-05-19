@@ -124,7 +124,7 @@ const components = {
     <td className="px-4 py-2 text-gray-700 border border-gray-300" {...props} />
   ),
   hr: ({ node, ...props }: any) => (
-    <hr className="my-4 border-t border-gray-100" {...props} />
+    <hr className="my-4 border-t border-[#e5e5e5]" {...props} />
   ),
   img: ({ node, ...props }: any) => (
     <img className="max-w-full h-auto rounded-[4px] my-4 shadow-md" {...props} />

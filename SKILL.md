@@ -290,11 +290,11 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
 | 变体 | 用途 | normal | hover | active | disabled |
 |------|------|--------|-------|--------|----------|
-| `default` / `claw-primary` | 主操作 | 黑蓝渐变 #020617→#1447E6 | 渐变加深→#0A226F | 叠加白20% | 叠加白30%+文字50% |
+| `default` / `claw-primary` | 主操作 | 黑蓝渐变 #020617→#355EF1 | 渐变加深→#0A226F | 叠加白20% | 叠加白30%+文字50% |
 | `outline` / `claw-outline` | 次要操作 | 白底+#e5e5e5边 | #f5f5f5底+#e3e3e3边 | 白底+#e3e3e3边 | 文字rgba(2,6,23,0.3) |
 | `destructive` | 危险操作 | #d42a1e | #b91c1c | #991b1b | 40%透明度 |
 | `ghost` | 辅助操作 | 无背景 | #f5f5f5底 | #ebebeb底 | 文字30%透明 |
-| `link` | 链接样式 | #1447e6 | 加下划线 | #0a226f | 40%透明 |
+| `link` | 链接样式 | #355EF1 | 加下划线 | #0a226f | 40%透明 |
 
 **尺寸（size）**：
 
@@ -334,8 +334,8 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | 高度 | `h-9`（36px） | 与同行组件保持一致 |
 | 圆角 | `rounded-[4px]` | 4px |
 | 边框 | `border-[#d3d6db]` | 默认态 |
-| hover 边框 | `border-[#1447e6]` | 蓝色 |
-| focus 边框 | `border-[#1447e6]` | 蓝色，无 ring/shadow |
+| hover 边框 | `border-[#355EF1]` | 蓝色 |
+| focus 边框 | `border-[#355EF1]` | 蓝色，无 ring/shadow |
 | 报错边框 | `border-[#d42a1e]` | 红色 |
 | placeholder | `text-[#b0b6c3]` | 浅灰 |
 | 文字色 | `text-[#020617]` | 近黑 |
@@ -368,7 +368,7 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | 高度 | `h-9`（36px） | 与 Input 一致 |
 | 圆角 | `rounded-[4px]` | 4px |
 | 边框 | `border-[#d3d6db]` | 默认态 |
-| hover/展开 边框 | `border-[#1447e6]` | 蓝色 |
+| hover/展开 边框 | `border-[#355EF1]` | 蓝色 |
 | placeholder | `text-[#b0b6c3]` | 未选择时 |
 | 已选值 | `text-black` | 选中后 |
 | disabled | `bg-[#f3f3f4] border-[#d3d6db] text-[#b0b6c3]` | |
@@ -393,7 +393,7 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | 内边距 | `px-3 py-[9px]` |
 | hover 背景 | `bg-[#f3f3f4]` |
 | 字号 | 14px，PingFang SC |
-| 选中态 | `text-[#1447e6] font-medium` + 蓝色勾号 |
+| 选中态 | `text-[#355EF1] font-medium` + 蓝色勾号 |
 
 ```jsx
 <Select>

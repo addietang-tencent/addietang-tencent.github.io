@@ -145,7 +145,7 @@ export const AgentCard = ({
               className={`truncate transition-colors ${
                 isGrayAvatar
                   ? "text-muted-foreground"
-                  : "text-[#0A0A0A] group-hover:text-[#1447e6]"
+                  : "text-[#0A0A0A] group-hover:text-[#355EF1]"
               }`}
               style={{
                 fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",

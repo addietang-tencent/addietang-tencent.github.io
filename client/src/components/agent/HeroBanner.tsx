@@ -8,7 +8,7 @@
  *     ├ stroke: 仅左右 1px #E2E8F0（strokeWeight: 0 1px）
  *     ├ background: 透明（无底色）
  *     ├─ 标题: PingFang SC Medium 26/35.56 / letter -4.27%
- *     │       fill: linear-gradient(90deg, #0A0A0A → #1447E6)
+ *     │       fill: linear-gradient(90deg, #0A0A0A → #355EF1)
  *     └─ 副文案: PingFang SC Regular 12/22.22 / letter 1.5% / #737373
  *
  *   363:5079 「页面引导语」（QuickStart 关闭态）
@@ -66,7 +66,7 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
             letterSpacing: "-4.27%",
             margin: 0,
             backgroundImage:
-              "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
+              "linear-gradient(90deg, #0A0A0A 0%, #355EF1 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",

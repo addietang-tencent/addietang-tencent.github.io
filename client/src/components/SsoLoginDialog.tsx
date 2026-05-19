@@ -43,7 +43,7 @@ function DialogHeaderSection({ siteName }: { siteName: string }) {
     <DialogHeader className="items-center mb-6">
       <div
         className="w-14 h-14 rounded-[4px] flex items-center justify-center shadow-lg mb-4"
-        style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
+        style={{ background: 'linear-gradient(90deg, #020617 70%, #355EF1 100%)' }}
       >
         <span className="text-2xl">🦞</span>
       </div>

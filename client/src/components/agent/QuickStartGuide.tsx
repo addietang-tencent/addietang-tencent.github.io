@@ -14,7 +14,7 @@
  *     ├─ 358:2343 Step1 行 (layout_Y70E8S: row gap 16 fill x hug)
  *     │     ├─ 358:2344 icons (24×24, 步骤一图标)
  *     │     └─ 358:2345 文案块 (column gap 2)
- *     │           ├─ Frame (row gap 8) [Step1 (Menlo Bold 13/24 #1447E6) + 标题(PingFang SC Medium 14/22)]
+ *     │           ├─ Frame (row gap 8) [Step1 (Menlo Bold 13/24 #355EF1) + 标题(PingFang SC Medium 14/22)]
  *     │           └─ 副文 (paragraph mini/regular: pingfangsc 12/20 #737373)
  *     │
  *     ├─ 358:2350 箭头 (16×16 vector, #BBC0CA)
@@ -199,7 +199,7 @@ export const QuickStartGuide = ({ onClose }: QuickStartGuideProps) => {
                       fontWeight: 700,
                       fontSize: "13px",
                       lineHeight: "24px",
-                      color: "#1447E6",
+                      color: "#355EF1",
                     }}
                   >
                     Step{step.index}

@@ -667,9 +667,9 @@ export default function ToolsMcpPanel() {
                     key={mcp.id}
                     className={`rounded-xl border transition-all ${
                       !mcp.enabled
-                        ? "border-gray-100 bg-gray-50/50 opacity-60"
+                        ? "border-[#e5e5e5] bg-gray-50/50 opacity-60"
                         : mcp.status === "connected"
-                          ? "border-gray-100 bg-white hover:border-blue-300 hover:shadow-[0_0_0_1px_rgba(59,130,246,0.1)]"
+                          ? "border-[#e5e5e5] bg-white hover:border-blue-300 hover:shadow-[0_0_0_1px_rgba(59,130,246,0.1)]"
                           : "border-red-100 bg-red-50/30 hover:border-red-200"
                     }`}
                     style={{
@@ -874,7 +874,7 @@ export default function ToolsMcpPanel() {
                 availableTemplates.map((tpl) => (
                   <div
                     key={tpl.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-[#e5e5e5] hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
@@ -963,7 +963,7 @@ export default function ToolsMcpPanel() {
             {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
             <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
               {/* 固定前缀行（不可编辑）— 灰色背景，只显示 "server-name": { */}
-              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
+              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
                 <div><span className="text-gray-500">{`"${sourceServerName}"`}</span>{': {'}</div>
               </div>
               {/* 可编辑区域 */}
@@ -990,7 +990,7 @@ export default function ToolsMcpPanel() {
                 />
               </div>
               {/* 固定后缀行（不可编辑）— 灰色背景 */}
-              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
+              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
                 <div>{'}'}</div>
               </div>
             </div>

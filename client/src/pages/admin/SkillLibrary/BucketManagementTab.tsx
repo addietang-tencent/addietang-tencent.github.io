@@ -17,7 +17,7 @@ export default function BucketManagementTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-[4px] border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">存储桶信息</h3>
 
         <div className="space-y-4">

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  *   │ claw-outline / border   │ 1px solid #E5E5E5                                             │
  *   │ claw-outline / hover    │ 1px solid #D8E1FF                                             │
  *   │ claw-outline / text     │ #020617                                                       │
- *   │ claw-primary / bg       │ linear-gradient(90deg, #020617 70%, #1447E6 100%)             │
+ *   │ claw-primary / bg       │ linear-gradient(90deg, #020617 70%, #355EF1 100%)             │
  *   │ claw-primary / hover bg │ linear-gradient(90deg, #020617 70%, #0A226F 100%)             │
  *   │ claw-primary / text     │ #FFFFFF                                                       │
  *   │ 圆角                     │ 4px（已由基类提供）                                            │
@@ -46,7 +46,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "[background:linear-gradient(90deg,#020617_70%,#1447E6_110%)] text-white font-normal border-0 " +
+          "[background:linear-gradient(90deg,#020617_70%,#355EF1_110%)] text-white font-normal border-0 " +
           "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
@@ -71,7 +71,7 @@ const buttonVariants = cva(
           "active:bg-[#ebebeb] " +
           "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
         link:
-          "text-[#1447e6] font-normal underline-offset-4 " +
+          "text-[#355EF1] font-normal underline-offset-4 " +
           "hover:underline " +
           "active:text-[#0a226f] " +
           "disabled:text-[rgba(20,71,230,0.4)] disabled:opacity-100 disabled:no-underline",
@@ -101,7 +101,7 @@ const buttonVariants = cva(
          * - disabled: 叠加 rgba(255,255,255,0.3) + 半透明白字
          */
         "claw-primary":
-          "[background:linear-gradient(90deg,#020617_70%,#1447E6_110%)] text-white font-normal border-0 " +
+          "[background:linear-gradient(90deg,#020617_70%,#355EF1_110%)] text-white font-normal border-0 " +
           "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",

@@ -1083,7 +1083,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={value} id={`agent-type-${value}`} className="peer sr-only" />
                         <Label
                           htmlFor={`agent-type-${value}`}
-                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
                         >
                           {label}
                         </Label>
@@ -1111,7 +1111,7 @@ export default function MyOpenClaw() {
                     <RadioGroupItem value="__general__" id="role-general" className="peer sr-only" />
                     <Label
                       htmlFor="role-general"
-                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
                     >
                       通用助手
                     </Label>
@@ -1123,7 +1123,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={role.id} id={`role-${role.id}`} className="peer sr-only" />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
                         >
                           {role.name}
                         </Label>
@@ -1138,7 +1138,7 @@ export default function MyOpenClaw() {
                       <div className="flex items-center gap-2">
                         <div
                           className="w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0"
-                          style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+                          style={{ background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)" }}
                         >
                           <Bot className="w-4 h-4 text-white" />
                         </div>
@@ -1148,7 +1148,7 @@ export default function MyOpenClaw() {
                       </div>
                       <Separator />
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#1447E6] flex items-center gap-1.5">
+                        <p className="text-xs font-semibold text-[#355EF1] flex items-center gap-1.5">
                           <Sparkles className="w-3 h-3" />
                           角色技能
                         </p>
@@ -1157,7 +1157,7 @@ export default function MyOpenClaw() {
                         </p>
                       </div>
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#1447E6] flex items-center gap-1.5">
+                        <p className="text-xs font-semibold text-[#355EF1] flex items-center gap-1.5">
                           <Heart className="w-3 h-3" />
                           角色风格
                         </p>

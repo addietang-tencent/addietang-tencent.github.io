@@ -143,7 +143,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       <div className="flex items-center gap-2">
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-1 px-3 py-2 rounded-[4px] border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">返回</span>
@@ -156,12 +156,11 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id} • Agent名称: {sessionInfo.openClawName}</p>
       </div>      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-3 gap-4">       <div
-          className="bg-white rounded-[4px] border border-gray-100 px-4 py-4"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">TOKEN 总量</span>
-            <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -170,12 +169,11 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         </div>
 
         <div
-          className="bg-white rounded-[4px] border border-gray-100 px-4 py-4"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">成本总量</span>
-            <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -184,12 +182,11 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         </div>
 
         <div
-          className="bg-white rounded-[4px] border border-gray-100 px-4 py-4"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs text-gray-500">会话轮次</span>
-            <div className="w-8 h-8 rounded-[4px] bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
           </div>
@@ -205,8 +202,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
         {/* Token 流量 */}
         <div
-          className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-gray-700">Token 流量</span>
@@ -231,8 +227,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
         {/* 成本趋势 */}
         <div
-          className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-gray-700">成本趋势</span>
@@ -259,8 +254,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       {/* ══ 交互链 ═════════════════════════════════════════════════════════════ */}
       <div>
         <p className="text-sm font-medium text-gray-700 mb-4">交互链</p>
-        <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

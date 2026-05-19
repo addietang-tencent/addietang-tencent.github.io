@@ -251,7 +251,7 @@ function ScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {/* 展开/折叠 */}
@@ -395,7 +395,7 @@ function ScopePopover({
             <div className="flex gap-1.5">
               <button
                 onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === "all"
                     ? "border-blue-200 bg-blue-50 text-blue-600"
                     : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
@@ -405,7 +405,7 @@ function ScopePopover({
               </button>
               <button
                 onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === "groups"
                     ? "border-blue-200 bg-blue-50 text-blue-600"
                     : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
@@ -437,12 +437,12 @@ function ScopePopover({
                   <>
                     {/* 合并搜索框 + 已选标签 */}
                     <div
-                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
+                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-xl bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
                     >
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-xl border border-blue-100 shrink-0 max-w-[200px]"
                         >
                           <span className="truncate">{tag.path}</span>
                           <button
@@ -513,7 +513,7 @@ function ScopePopover({
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5] shrink-0">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
               取消
             </Button>
@@ -522,7 +522,6 @@ function ScopePopover({
               className="h-7 text-xs px-3"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-             
             >
               确认
             </Button>
@@ -571,7 +570,6 @@ function EditQuotaDialog({
           <Button variant="outline" onClick={onClose}>取消</Button>
           <Button
             onClick={() => { onSave(model.id, limit); onClose(); }}
-           
           >
             保存
           </Button>
@@ -701,7 +699,7 @@ export default function ModelConfig() {
       <div className="page-enter space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
-          <div className="mt-2 flex items-start gap-2 rounded-[4px] bg-blue-50 border border-blue-100 px-3 py-2.5">
+          <div className="mt-2 flex items-start gap-2 rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5">
             <svg className="mt-0.5 shrink-0 w-3.5 h-3.5 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
             <div className="space-y-1">
               <p className="text-xs text-blue-600 leading-relaxed">
@@ -715,11 +713,11 @@ export default function ModelConfig() {
         </div>
 
         {/* Part 1: Model List */}
-        <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+         >
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                 <Brain className="w-4 h-4 text-white" />
               </div>
               <h2 className="font-semibold text-gray-900">模型列表</h2>
@@ -888,7 +886,7 @@ export default function ModelConfig() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="bg-gray-50 w-full px-3 py-2 rounded-[4px] border border-gray-200 text-gray-500 text-sm">
+                    <div className="bg-gray-50 w-full px-3 py-2 rounded-xl border border-gray-200 text-gray-500 text-sm">
                       暂无可用的模型版本
                     </div>
                   )}
@@ -958,7 +956,7 @@ export default function ModelConfig() {
                     className="bg-gray-50"
                   />
                 </div>
-                <div className="rounded-[4px] border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between">
+                <div className="rounded-xl border border-[#e5e5e5] bg-gray-50 px-4 py-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">多模态模型</p>
                     <p className="text-xs text-gray-400 mt-0.5">支持图片、文字多模态输入</p>
@@ -975,7 +973,6 @@ export default function ModelConfig() {
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
             <Button
               onClick={handleAddModel}
-             
             >
               确认添加
             </Button>

@@ -113,7 +113,7 @@ export default function MemoryCard({
       indicator: "bg-gray-400",
       text: "text-gray-600",
       bg: "bg-gray-50",
-      border: "border-gray-100",
+      border: "border-[#e5e5e5]",
     };
   };
 
@@ -138,7 +138,7 @@ export default function MemoryCard({
           <div className="flex items-center gap-2">
             <div 
               className="w-6 h-6 rounded-[4px] flex items-center justify-center"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)" }}
             >
               <Brain className="w-3.5 h-3.5 text-white" />
             </div>
@@ -152,7 +152,7 @@ export default function MemoryCard({
           <div>
             <div 
               className="inline-block px-3 py-1 rounded-full text-xs font-medium text-white mb-3"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }}
+              style={{ background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)" }}
             >
               TDAI-Memory Free 版
             </div>

@@ -197,7 +197,7 @@ export default function HelpDocs() {
                 </Button>
 
                 <SurfaceCard className="p-8">
-                  <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+                  <div className="flex items-center gap-3 mb-6 pb-6 border-b border-[#e5e5e5]">
                     <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${currentDoc.color} flex items-center justify-center`}>
                       <currentDoc.icon className="w-5 h-5 text-white" />
                     </div>

@@ -506,7 +506,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
             <div
               onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
               onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
-              className={`border-2 border-dashed rounded-[4px] p-8 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                 uploadedFiles.length > 0
                   ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
                   : 'border-gray-300 hover:border-blue-400'
@@ -540,7 +540,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
                       <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
                       <li className="leading-relaxed">
                         SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
-                        <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-[4px] px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">
+                        <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">
 {`---
 name: skill-creator
 description: this is a skill creator.
@@ -603,7 +603,7 @@ description: this is a skill creator.
               <Label className="text-base font-semibold">已上传文件</Label>
               <div className="space-y-2">
                 {uploadedFiles.map((file) => (
-                  <div key={file.name} className="border border-gray-200 rounded-[4px] overflow-hidden">
+                  <div key={file.name} className="border border-gray-200 rounded-xl overflow-hidden">
                     {/* 文件项头部 */}
                     <div className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex items-center gap-3 flex-1">
@@ -702,7 +702,7 @@ description: this is a skill creator.
 
           {/* 提示文字 - 只有在没有上传文件时显示 */}
           {uploadedFiles.length === 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-[4px]">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
               <p className="text-sm text-blue-600 font-medium">请先上传 Skill 文件，然后填写技能信息</p>
             </div>
           )}
@@ -787,7 +787,7 @@ description: this is a skill creator.
                           : [...prev.categories, cat.id]
                       }));
                     }}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                       formData.categories.includes(cat.id)
                         ? 'border-blue-200 bg-blue-50 text-blue-600'
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -811,7 +811,7 @@ description: this is a skill creator.
                       if (!hasSuccessfulUpload) return;
                       setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }));
                     }}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                       formData.scope === 'public'
                         ? 'border-blue-200 bg-blue-50 text-blue-600'
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -825,7 +825,7 @@ description: this is a skill creator.
                       if (!hasSuccessfulUpload) return;
                       setFormData(prev => ({ ...prev, scope: 'private' }));
                     }}
-                    className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                       formData.scope === 'private'
                         ? 'border-blue-200 bg-blue-50 text-blue-600'
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -840,7 +840,7 @@ description: this is a skill creator.
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
                               <span className="truncate">
                                 {formData.groupIds.length > 0
                                   ? `已选 ${formData.groupIds.length} 个分组`
@@ -859,14 +859,14 @@ description: this is a skill creator.
                         )}
                       </Tooltip>
                       <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                        <div className="p-2 border-b border-gray-100">
+                        <div className="p-2 border-b border-[#e5e5e5]">
                           <div className="relative">
                             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                             <input
                               placeholder="搜索分组…"
                               value={groupSearchQuery}
                               onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                             />
                           </div>
                         </div>
@@ -886,7 +886,7 @@ description: this is a skill creator.
                                         : [...prev.groupIds, group.id]
                                     }));
                                   }}
-                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-gray-50 transition-colors text-left"
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
                                 >
                                   <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
                                     checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
@@ -901,7 +901,7 @@ description: this is a skill creator.
                             <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
                           )}
                         </div>
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5]">
                           <p className="text-[11px] text-gray-400">
                             已选 {formData.groupIds.length} 个分组
                           </p>
@@ -922,7 +922,7 @@ description: this is a skill creator.
             </div>
 
             {/* 安全检测 */}
-            <div className="border-t border-gray-100 pt-4">
+            <div className="border-t border-[#e5e5e5] pt-4">
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="security-scan"
@@ -938,7 +938,7 @@ description: this is a skill creator.
                       提交安全检测
                       <span className="relative group">
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                           限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                         </span>
                       </span>

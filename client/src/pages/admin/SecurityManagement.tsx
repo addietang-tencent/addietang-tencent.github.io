@@ -12,7 +12,7 @@ const SECURITY_CARDS = [
     description:
       "自动发现并清点企业内所有 AI Agent 资产，实时侵测大模型调用与敏感凭证泄露，实现安全风险动态可视",
     icon: Shield,
-    color: "#1447E6",
+    color: "#355EF1",
   },
   {
     id: "audit-tracing",
@@ -67,15 +67,11 @@ export default function SecurityManagement() {
             return (
               <div
                 key={card.id}
-                className="bg-white rounded-[4px] border border-gray-100 p-6 hover:shadow-md transition-shadow"
-                style={{
-                  boxShadow:
-                    "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-                }}
+                className="bg-white rounded-xl border border-[#e5e5e5] p-6 transition-shadow"
               >
                 <div className="flex items-start gap-4">
                   <div
-                    className="w-12 h-12 rounded-[4px] flex items-center justify-center flex-shrink-0"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: card.color }}
                   >
                     <Icon className="w-6 h-6 text-white" />

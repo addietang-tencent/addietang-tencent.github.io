@@ -36,8 +36,8 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         "flex w-fit items-center justify-between gap-2 rounded-[4px] border border-[#d3d6db] bg-transparent px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
-        "hover:border-[#1447e6]",
-        "data-[state=open]:border-[#1447e6]",
+        "hover:border-[#355EF1]",
+        "data-[state=open]:border-[#355EF1]",
         "data-[placeholder]:text-[#b0b6c3]",
         "disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#d3d6db] disabled:text-[#b0b6c3]",
         "aria-invalid:border-[#d42a1e]",
@@ -131,7 +131,7 @@ function SelectItem({
         "relative flex w-full cursor-default items-center gap-2 rounded-[6px] h-8 px-3 py-[9px] text-sm font-normal text-[color:var(--wm-color-text-primary,black)] outline-hidden select-none",
         "hover:bg-[#f3f3f4]",
         "focus:bg-[#f3f3f4]",
-        "data-[state=checked]:text-[#1447e6] data-[state=checked]:font-medium",
+        "data-[state=checked]:text-[#355EF1] data-[state=checked]:font-medium",
         "data-[disabled]:pointer-events-none data-[disabled]:text-[#b0b6c3]",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
@@ -141,7 +141,7 @@ function SelectItem({
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <span className="absolute right-3 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-[#1447e6]" />
+          <CheckIcon className="size-4 text-[#355EF1]" />
         </SelectPrimitive.ItemIndicator>
       </span>
     </SelectPrimitive.Item>

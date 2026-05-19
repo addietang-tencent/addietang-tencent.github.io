@@ -91,18 +91,14 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div
-        className="bg-white rounded-[4px] w-[520px] max-w-[92vw] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
-        style={{
-          boxShadow:
-            '0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.12)',
-        }}
+        className="bg-white rounded-xl w-[520px] max-w-[92vw] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
       >
         {/* 头部 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5]">
           <h3 className="text-lg font-semibold text-gray-900">一键启用</h3>
           <button
             onClick={handleClose}
-            className="p-1 rounded-[4px] hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-xl hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -141,7 +137,7 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
               </p>
 
               {/* 影响说明 —— 只讲操作本身的副作用与边界 */}
-              <div className="p-3.5 bg-amber-50 rounded-[4px] border border-amber-100">
+              <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-100">
                 <div className="flex items-start gap-2 mb-2">
                   <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                   <span className="text-sm font-medium text-amber-800">升级影响说明</span>
@@ -158,18 +154,18 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
         </div>
 
         {/* 底部按钮 */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e5e5e5] bg-gray-50/50">
           {status === 'has-upgradable' && (
             <>
               <button
                 onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-[4px] hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleConfirm}
-                className="px-4 py-2 text-sm font-medium text-white rounded-[4px] transition-colors bg-blue-500 hover:bg-blue-600"
+                className="px-4 py-2 text-sm font-medium text-white rounded-xl transition-colors bg-blue-500 hover:bg-blue-600"
               >
                 确认启用
               </button>
@@ -178,7 +174,7 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           {status === 'all-latest' && (
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-white rounded-[4px] transition-colors bg-blue-500 hover:bg-blue-600"
+              className="px-4 py-2 text-sm font-medium text-white rounded-xl transition-colors bg-blue-500 hover:bg-blue-600"
             >
               我知道了
             </button>
@@ -186,7 +182,7 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           {status === 'detecting' && (
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-[4px] hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
             >
               取消
             </button>

@@ -76,12 +76,12 @@ export default function UserMenu({
           >
             {letter}
           </span>
-          {/* 用户名（溢出省略） */}
-          <span className="text-[14px] leading-[22px] text-[#020617]/90 group-hover:text-[#020617] truncate min-w-0 nav-btn-label">
+          {/* 用户名（单行居中） */}
+          <span className="text-[14px] leading-[22px] text-[#020617] group-hover:text-[#355EF1] max-w-[160px] truncate">
             {username}
           </span>
           {/* 下拉箭头 */}
-          <span className="inline-flex items-center justify-center flex-shrink-0 text-[#020617]/70 group-hover:text-[#020617] nav-btn-label">
+          <span className="inline-flex items-center justify-center flex-shrink-0 text-[#020617]/70 group-hover:text-[#355EF1]">
             <ChevronDownIcon size={14} />
           </span>
         </button>

@@ -1,0 +1,20 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="model_acceleration_clip"><rect width="36" height="36" rx="8"/></clipPath>
+  <linearGradient id="model_acceleration_br" x1="18" y1="18" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="model_acceleration_bl" x1="18" y1="18" x2="0" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="model_acceleration_tl" x1="18" y1="18" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="model_acceleration_tr" x1="18" y1="18" x2="36" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+</defs>
+<g clip-path="url(#model_acceleration_clip)">
+  <rect width="36" height="36" fill="white"/>
+  <rect x="18" y="18" width="18" height="18" fill="url(#model_acceleration_br)"/>
+  <rect x="0" y="18" width="18" height="18" fill="url(#model_acceleration_bl)"/>
+  <rect x="0" y="0" width="18" height="18" fill="url(#model_acceleration_tl)"/>
+  <rect x="18" y="0" width="18" height="18" fill="url(#model_acceleration_tr)"/>
+  <g transform="translate(9 9)" stroke="#202020" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.5 2.5L4.5 10.2H9L7.5 15.5L13.8 7.7H9.2L10.5 2.5Z" fill="#0080FF" stroke="#1447E6"/>
+    <path d="M3 15.5H14.8" opacity="0.9"/>
+  </g>
+</g>
+</svg>

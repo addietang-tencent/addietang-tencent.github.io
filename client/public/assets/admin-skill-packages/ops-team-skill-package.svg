@@ -1,0 +1,21 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="ops_team_skill_package_clip"><rect width="36" height="36" rx="8"/></clipPath>
+  <linearGradient id="ops_team_skill_package_br" x1="18" y1="18" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="ops_team_skill_package_bl" x1="18" y1="18" x2="0" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="ops_team_skill_package_tl" x1="18" y1="18" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="ops_team_skill_package_tr" x1="18" y1="18" x2="36" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+</defs>
+<g clip-path="url(#ops_team_skill_package_clip)">
+  <rect width="36" height="36" fill="white"/>
+  <rect x="18" y="18" width="18" height="18" fill="url(#ops_team_skill_package_br)"/>
+  <rect x="0" y="18" width="18" height="18" fill="url(#ops_team_skill_package_bl)"/>
+  <rect x="0" y="0" width="18" height="18" fill="url(#ops_team_skill_package_tl)"/>
+  <rect x="18" y="0" width="18" height="18" fill="url(#ops_team_skill_package_tr)"/>
+  <g transform="translate(9 9)" stroke="#202020" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.5" y="3" width="13" height="4.6" rx="1.2" fill="none"/>
+    <rect x="2.5" y="10.4" width="13" height="4.6" rx="1.2" fill="none"/>
+    <path d="M5.2 5.3h.1M5.2 12.7h.1M8 5.3h5M8 12.7h5" stroke="#18B265"/>
+  </g>
+</g>
+</svg>

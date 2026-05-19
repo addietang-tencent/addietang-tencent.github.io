@@ -17,7 +17,7 @@ import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Info, Zap, Globe, Link, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -705,6 +705,24 @@ const TABS = [
     id: "coming",
     label: "更多功能",
     description: "更多功能即将上线。",
+  },
+];
+
+const MORE_FEATURE_CARDS = [
+  {
+    title: "模型加速服务",
+    description: "为 Agent 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验",
+    iconSrc: "/assets/admin-network-features/model-acceleration.svg",
+  },
+  {
+    title: "公网极速接入",
+    description: "提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 Agent 各场景下极速、灵活、稳定的网络接入体验",
+    iconSrc: "/assets/admin-network-features/public-fast-access.svg",
+  },
+  {
+    title: "企业网络环境互通",
+    description: "为 Agent 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同",
+    iconSrc: "/assets/admin-network-features/enterprise-network-interconnect.svg",
   },
 ];
 
@@ -4734,58 +4752,26 @@ export default function SecurityGroupManagement() {
         )}
 
         {activeTab === "coming" && (
-        <div className="grid grid-cols-3 gap-6">
-          {/* 模型加速服务 */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6 transition-shadow"
-           >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "#355EF1" }}>
-                <Zap className="w-6 h-6 text-white" />
+          <div className="grid grid-cols-3 items-stretch gap-5">
+            {MORE_FEATURE_CARDS.map((card) => (
+              <div
+                key={card.title}
+                className="min-h-[102px] rounded-[4px] border-[0.5px] border-[#E5E5E5] bg-white px-6 py-5"
+              >
+                <div className="flex items-start gap-[14px]">
+                  <img src={card.iconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
+                      {card.title}
+                    </h3>
+                    <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-1">模型加速服务</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  为 Agent 调用海外模型或国内模型提供专属优化链路，实现跨境/跨网访问的低延迟、高稳定传输，显著提升大模型交互体验
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
-
-          {/* 公网高效接入 */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6 transition-shadow"
-           >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "#34C759" }}>
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-1">公网极速接入</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  提供全球范围内广覆盖、大带宽、低延时的公网出口和高性能接入网关，保障 Agent 各场景下极速、灵活、稳定的网络接入体验
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 企业网络环境互通 */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6 transition-shadow"
-           >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "#FF9500" }}>
-                <Link className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-1">企业网络环境互通</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  为 Agent 平台与企业 IDC 之间提供大带宽、高速、安全的互通能力，保障云上云下协同
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
         )}
 
       </div>

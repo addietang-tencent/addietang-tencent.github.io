@@ -835,6 +835,16 @@ function isPublicScope(pkg: SkillInitialPackage): boolean {
   return pkg.scopeType === 'public' || !pkg.groupIds || pkg.groupIds.length === 0;
 }
 
+const SKILL_PACKAGE_ICON_BY_ID: Record<string, string> = {
+  'pkg-1': '/assets/admin-skill-packages/general-skill-package.svg',
+  'pkg-2': '/assets/admin-skill-packages/advanced-dev-skill-package.svg',
+  'pkg-3': '/assets/admin-skill-packages/ops-team-skill-package.svg',
+};
+
+function getSkillPackageIconSrc(pkg: SkillInitialPackage): string | null {
+  return SKILL_PACKAGE_ICON_BY_ID[pkg.id] ?? null;
+}
+
 // ─── 版本比对辅助函数 ─────────────────────────────────────────────────────────
 
 /** 获取源库中技能的最新版本 */
@@ -1758,6 +1768,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
             const scopeLabels = getScopeLabels(pkg);
             const isPub = isPublicScope(pkg);
             const isPinned = pkg.isActive && isPub;
+            const packageIconSrc = getSkillPackageIconSrc(pkg);
             return (
               <div
                 key={pkg.id}
@@ -1767,9 +1778,13 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
               >
                 <div className="flex items-center gap-3">
                   {/* 图标 */}
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#355EF1' }}>
-                    <Package className="w-5 h-5 text-white" />
-                  </div>
+                  {packageIconSrc ? (
+                    <img src={packageIconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#355EF1' }}>
+                      <Package className="w-5 h-5 text-white" />
+                    </div>
+                  )}
 
                   {/* 信息 */}
                   <div className="flex-1 min-w-0">

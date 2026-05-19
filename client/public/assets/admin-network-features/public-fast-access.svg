@@ -1,0 +1,21 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="public_fast_access_clip"><rect width="36" height="36" rx="8"/></clipPath>
+  <linearGradient id="public_fast_access_br" x1="18" y1="18" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="public_fast_access_bl" x1="18" y1="18" x2="0" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="public_fast_access_tl" x1="18" y1="18" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="public_fast_access_tr" x1="18" y1="18" x2="36" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(24, 178, 101)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+</defs>
+<g clip-path="url(#public_fast_access_clip)">
+  <rect width="36" height="36" fill="white"/>
+  <rect x="18" y="18" width="18" height="18" fill="url(#public_fast_access_br)"/>
+  <rect x="0" y="18" width="18" height="18" fill="url(#public_fast_access_bl)"/>
+  <rect x="0" y="0" width="18" height="18" fill="url(#public_fast_access_tl)"/>
+  <rect x="18" y="0" width="18" height="18" fill="url(#public_fast_access_tr)"/>
+  <g transform="translate(9 9)" stroke="#202020" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8.4" cy="8.4" r="5.9" fill="none"/>
+    <path d="M2.6 8.4h11.6M8.4 2.5c1.6 1.7 2.4 3.7 2.4 5.9s-.8 4.2-2.4 5.9M8.4 2.5C6.8 4.2 6 6.2 6 8.4s.8 4.2 2.4 5.9"/>
+    <path d="M12.2 12.2h4.2m-1.7-1.7l1.7 1.7-1.7 1.7" stroke="#18B265"/>
+  </g>
+</g>
+</svg>

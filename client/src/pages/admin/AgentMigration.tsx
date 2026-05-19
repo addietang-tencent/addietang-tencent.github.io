@@ -436,7 +436,7 @@ rm -f /tmp/openclaw-state.tgz`;
           <span className="text-xs text-gray-400">— 选择源端类型，配置密钥和迁移选项</span>
         </div>
 
-        <div className="flex items-start gap-4">
+        <div className="flex items-end gap-4">
           {/* Source Type */}
           <div className="w-48 flex-shrink-0">
             <Label className="text-xs text-gray-500 mb-1 block">源端类型</Label>
@@ -469,7 +469,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <Label className="text-xs text-gray-500 mb-1 block">SecretKey</Label>
                 <SecretInput value={srcSk} onChange={setSrcSk} placeholder="源端 SecretKey" />
               </div>
-              <div className="flex-shrink-0 pt-5">
+              <div className="flex-shrink-0">
                 <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading} className="h-8">
                   {srcLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Search className="w-3.5 h-3.5 mr-1" />}
                   获取实例
@@ -559,9 +559,9 @@ rm -f /tmp/openclaw-state.tgz`;
             <span className="text-xs text-gray-400 ml-auto mr-2">{validRows.length} / {rows.length} 有效</span>
           </div>
           <Tabs value={editMode} onValueChange={(v) => setEditMode(v as EditMode)}>
-            <TabsList className="h-7">
-              <TabsTrigger value="table" className="text-xs px-3 h-5">在线编辑</TabsTrigger>
-              <TabsTrigger value="csv" className="text-xs px-3 h-5">CSV 批量导入</TabsTrigger>
+            <TabsList className="h-8 bg-[#F5F5F5] p-1 rounded-[4px]">
+              <TabsTrigger value="table" className="text-xs px-3 h-6 rounded-[3px] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)]">在线编辑</TabsTrigger>
+              <TabsTrigger value="csv" className="text-xs px-3 h-6 rounded-[3px] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)]">CSV 批量导入</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

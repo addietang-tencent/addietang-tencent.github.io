@@ -771,7 +771,7 @@ function TimeDimensionIndicator({ mode, onSave }: { mode: "daily" | "monthly"; o
 // ─── 统一的行容器 ─────────────────────────────────────────────────────────────
 const ROW_CLASS = "flex items-center gap-3 px-3 h-10";
 // 编辑行：允许分组标签撑开高度（多标签时换行）
-const EDIT_ROW_CLASS = "flex items-start gap-3 px-3 min-h-10 py-1.5";
+const EDIT_ROW_CLASS = "flex items-center gap-3 px-3 min-h-10 py-1.5";
 
 // ─── 子组件：配额策略卡片 ────────────────────────────────────────────────────
 
@@ -900,7 +900,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
             <div key={rule.id}>
               {editingId === rule.id ? (
                 <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex-1 min-w-0">
                     <GroupTagSelector
                       selectedIds={draftGroupIds}
                       disabledIds={getDisabledIds(rule.id)}
@@ -1121,7 +1121,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
             <div key={rule.id}>
               {editingId === rule.id ? (
                 <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex-1 min-w-0">
                     <GroupTagSelector
                       selectedIds={draftGroupIds}
                       disabledIds={getDisabledIds(rule.id)}

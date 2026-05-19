@@ -448,7 +448,7 @@ const AdminSidebarInset = React.forwardRef<HTMLElement, React.ComponentProps<"ma
         ref={ref}
         data-slot="admin-sidebar-inset"
         data-state={collapsed ? "collapsed" : "expanded"}
-        className={cn("min-h-screen flex-1 transition-[margin-left] duration-300", className)}
+        className={cn("min-h-screen flex-1 min-w-0 overflow-x-hidden transition-[margin-left] duration-300", className)}
         style={{ marginLeft: collapsed ? "var(--admin-sidebar-width-collapsed)" : "var(--admin-sidebar-width)", ...style }}
         {...props}
       />

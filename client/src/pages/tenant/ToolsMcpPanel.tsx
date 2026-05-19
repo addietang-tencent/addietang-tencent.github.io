@@ -58,7 +58,7 @@ interface UserMCP {
   displayName: string;
   description: string;
   /** 连接类型：stdio=本地命令，sse/streamable-http=远程服务 */
-  transport: "stdio" | "sse" | "streamable-http";
+  transportType: "stdio" | "sse" | "streamable-http";
   /** 连接状态 */
   status: "connected" | "failed";
   /** 是否启用 */
@@ -99,7 +99,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           gongfeng: {
             url: "https://gongfeng.example.com/mcp/sse",
-            transport: "sse",
+            transportType: "sse",
             headers: { Authorization: "<your-gongfeng-token>" },
             timeout: 60,
           },
@@ -118,7 +118,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           iwiki: {
             url: "https://iwiki.example.com/mcp",
-            transport: "streamable-http",
+            transportType: "streamable-http",
             headers: { Authorization: "<your-iwiki-token>" },
             timeout: 60,
           },
@@ -137,7 +137,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           tapd: {
             url: "https://tapd.example.com/mcp/sse",
-            transport: "sse",
+            transportType: "sse",
             headers: { Authorization: "Bearer <your-tapd-token>" },
             timeout: 90,
           },
@@ -156,7 +156,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           "cos-storage": {
             url: "https://cos-mcp.example.com/sse",
-            transport: "sse",
+            transportType: "sse",
             headers: {
               "X-Secret-Id": "<secret-id>",
               "X-Secret-Key": "<secret-key>",
@@ -178,7 +178,7 @@ const MOCK_ENTERPRISE_MCP_TEMPLATES: EnterpriseMCPTemplate[] = [
         servers: {
           wedata: {
             url: "https://wedata-mcp.example.com/mcp",
-            transport: "streamable-http",
+            transportType: "streamable-http",
             timeout: 60,
           },
         },
@@ -193,7 +193,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "iwiki",
     displayName: "iWiki 文档服务",
     description: "连接 iWiki 知识库平台，支持文档搜索、内容获取等操作",
-    transport: "streamable-http",
+    transportType: "streamable-http",
     status: "connected",
     enabled: true,
     tools: ["tool_1", "tool_2", "tool_3"],
@@ -202,7 +202,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           iwiki: {
             url: "https://iwiki.example.com/mcp",
-            transport: "streamable-http",
+            transportType: "streamable-http",
             headers: { Authorization: "iwiki_token_xxx" },
             timeout: 60,
           },
@@ -216,7 +216,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "gongfeng",
     displayName: "工蜂 MCP 服务",
     description: "通过 MCP 协议连接工蜂代码仓库，支持代码搜索、文件浏览、PR 管理等操作",
-    transport: "sse",
+    transportType: "sse",
     status: "connected",
     enabled: true,
     tools: ["search_projects", "get_blob_content", "create_merge_request", "list_branches", "get_commit_info", "get_file_tree", "compare_branches", "list_merge_requests", "get_pipeline_status", "trigger_build"],
@@ -225,7 +225,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           gongfeng: {
             url: "https://gongfeng.example.com/mcp/sse",
-            transport: "sse",
+            transportType: "sse",
             headers: { Authorization: "ghp_abc123456789" },
             timeout: 60,
           },
@@ -239,7 +239,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "tapd",
     displayName: "TAPD 项目管理",
     description: "连接 TAPD 项目管理平台，支持需求查询、缺陷管理、迭代跟踪等功能",
-    transport: "sse",
+    transportType: "sse",
     status: "failed",
     enabled: true,
     tools: [],
@@ -249,7 +249,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
         servers: {
           tapd: {
             url: "https://tapd.example.com/mcp/sse",
-            transport: "sse",
+            transportType: "sse",
             headers: { Authorization: "Bearer invalid_token_xxx" },
             timeout: 90,
           },
@@ -263,7 +263,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
     serverName: "your-mcp",
     displayName: "",
     description: "用户自定义的本地 MCP 服务",
-    transport: "stdio",
+    transportType: "stdio",
     status: "connected",
     enabled: true,
     tools: ["custom_tool_a", "custom_tool_b"],
@@ -273,7 +273,7 @@ const INITIAL_USER_MCPS: UserMCP[] = [
           "your-mcp": {
             command: "npx",
             args: ["-y", "your-mcp-server"],
-            transport: "stdio",
+            transportType: "stdio",
             timeout: 30,
           },
         },
@@ -452,20 +452,17 @@ export default function ToolsMcpPanel() {
         t.description.toLowerCase().includes(addSearchQuery.toLowerCase()))
   );
 
-  // ── 无参数模板确认弹窗 ──
-  const [confirmAddTemplate, setConfirmAddTemplate] = useState<EnterpriseMCPTemplate | null>(null);
-
   const handleSelectTemplate = (tpl: EnterpriseMCPTemplate) => {
     if (tpl.userRequiredParams.length > 0) {
       setParamTemplate(tpl);
       setParamValues({});
     } else {
-      // 无需填参数，弹出确认弹窗
-      setConfirmAddTemplate(tpl);
+      // 无需填参数，直接添加
+      doAddMCP(tpl, {});
     }
   };
 
-  const doAddMCP = (tpl: EnterpriseMCPTemplate, params: Record<string, string>, restart: boolean = true) => {
+  const doAddMCP = (tpl: EnterpriseMCPTemplate, params: Record<string, string>) => {
     // 替换模板中的 <xxx> 占位符
     let configJson = tpl.configJsonTemplate;
     Object.entries(params).forEach(([key, value]) => {
@@ -477,11 +474,11 @@ export default function ToolsMcpPanel() {
       serverName: tpl.serverName,
       displayName: tpl.displayName,
       description: tpl.description,
-      transport: (() => {
+      transportType: (() => {
         try {
           const parsed = JSON.parse(configJson);
           const server = parsed?.mcp?.servers?.[tpl.serverName];
-          return server?.transport || (server?.command ? "stdio" : "sse");
+          return server?.transportType || (server?.command ? "stdio" : "sse");
         } catch { return "sse"; }
       })() as "stdio" | "sse" | "streamable-http",
       status: "connected",
@@ -492,15 +489,9 @@ export default function ToolsMcpPanel() {
     };
     setMcpList((prev) => [newMCP, ...prev]);
     setParamTemplate(null);
-    setConfirmAddTemplate(null);
     setAddDialogOpen(false);
     setAddSearchQuery("");
-    if (restart) {
-      toast.success(`MCP「${tpl.displayName}」已添加，正在重启实例…`);
-      setTimeout(() => toast.success("重启完成"), 2000);
-    } else {
-      toast.success(`MCP「${tpl.displayName}」已添加，可稍后手动重启生效`);
-    }
+    toast.success(`MCP「${tpl.displayName}」已添加`);
   };
 
   // ── 查看源码 ──
@@ -601,37 +592,30 @@ export default function ToolsMcpPanel() {
 
   // ── 渲染 ──
   return (
-    <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
-      {/* ===== 第一列：MCP 配置 ===== */}
-      <SurfaceCard
-        className="overflow-hidden flex flex-col"
-        style={{ height: "749px" }}
-      >
+    <div>
+      {/* ===== MCP 配置 ===== */}
+      <SurfaceCard className="flex flex-col p-0">
         {/* Header */}
-        <div className="p-5 border-b border-gray-50">
-          <div className="flex items-center gap-2 justify-center">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
-              <Wrench className="w-3.5 h-3.5 text-white" />
-            </div>
-            <h2 className="font-semibold text-gray-900">MCP 配置</h2>
-          </div>
+        <div className="px-6 pt-6 pb-4 border-b border-[#E5E5E5]">
+          <h2 className="text-base font-semibold" style={{ color: "#0A0A0A" }}>MCP 配置</h2>
         </div>
 
         {/* 操作栏 */}
-        <div className="px-4 pt-4 pb-2 space-y-2.5">
-          <div className="flex items-center gap-2">
+        <div className="px-6 pt-4 pb-3 space-y-3">
+          <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#b0b6c3" }} />
               <Input
                 placeholder="搜索 MCP..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-8 text-xs bg-white"
+                className="pl-9 h-9 text-sm rounded-[4px]"
               />
             </div>
             <Button
               onClick={() => setAddDialogOpen(true)}
-              size="icon-sm"
+              size="icon"
+              className="h-9 w-9"
             >
               <Plus className="w-4 h-4" />
             </Button>
@@ -640,15 +624,15 @@ export default function ToolsMcpPanel() {
               size="icon"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-8 h-8"
+              className="h-9 w-9"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
-          {/* 提示 */}
-          <div className="flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-2">
-            <Info className="w-3 h-3 text-blue-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-blue-600 leading-relaxed">
+          {/* 提示（§8.8 规范） */}
+          <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
+            <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+            <p className="text-xs text-blue-600 leading-relaxed">
               状态验证仅支持公网访问的 MCP。
               <br />
               本地命令或者内网访问的MCP，需登录实例校验状态。
@@ -657,7 +641,7 @@ export default function ToolsMcpPanel() {
         </div>
 
         {/* 列表区域 */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
           {filteredList.length === 0 ? (
             <div className="text-center py-16">
               <Wrench className="w-10 h-10 text-gray-200 mx-auto mb-3" />
@@ -670,7 +654,7 @@ export default function ToolsMcpPanel() {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
               {filteredList.map((mcp) => {
                 const isExpanded = expandedToolsId === mcp.id;
                 return (
@@ -678,9 +662,9 @@ export default function ToolsMcpPanel() {
                     key={mcp.id}
                     className={`rounded-xl border transition-all ${
                       !mcp.enabled
-                        ? "border-[#e5e5e5] bg-gray-50/50 opacity-60"
+                        ? "border-gray-100 bg-gray-50/50 opacity-60"
                         : mcp.status === "connected"
-                          ? "border-[#e5e5e5] bg-white hover:border-blue-300 hover:shadow-[0_0_0_1px_rgba(59,130,246,0.1)]"
+                          ? "border-gray-100 bg-white hover:border-blue-300 hover:shadow-[0_0_0_1px_rgba(59,130,246,0.1)]"
                           : "border-red-100 bg-red-50/30 hover:border-red-200"
                     }`}
                     style={{
@@ -695,14 +679,16 @@ export default function ToolsMcpPanel() {
                         <TooltipProvider delayDuration={200}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              {mcp.transport === "stdio" ? (
-                                <Terminal className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                              ) : (
-                                <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                              )}
+                              <div className="w-7 h-7 rounded-full bg-[#F5F5F5] flex items-center justify-center shrink-0">
+                                {mcp.transportType === "stdio" ? (
+                                  <Terminal className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                                ) : (
+                                  <Globe className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                                )}
+                              </div>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              {mcp.transport === "stdio" ? "本地命令" : "远程服务"}
+                              {mcp.transportType === "stdio" ? "本地命令" : "远程服务"}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -729,14 +715,53 @@ export default function ToolsMcpPanel() {
                           checked={mcp.enabled}
                           onCheckedChange={() => handleToggle(mcp.id)}
                         />
+                        {/* 操作按钮 */}
+                        <TooltipProvider delayDuration={200}>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleRefreshSingle(mcp.id)}
+                                  disabled={refreshingSingleId === mcp.id}
+                                  className="w-6 h-6 rounded-md text-[#737373] hover:text-[#1447E6] hover:bg-[#EFF6FF] flex items-center justify-center transition-colors disabled:opacity-50"
+                                >
+                                  <RefreshCw className={`w-3.5 h-3.5 ${refreshingSingleId === mcp.id ? "animate-spin" : ""}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>刷新连接</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleOpenSource(mcp)}
+                                  className="w-6 h-6 rounded-md text-[#737373] hover:text-[#1447E6] hover:bg-[#EFF6FF] flex items-center justify-center transition-colors"
+                                >
+                                  <Code2 className="w-3.5 h-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>查看源码</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => handleDelete(mcp.id)}
+                                  className="w-6 h-6 rounded-md text-[#737373] hover:text-[#DC2626] hover:bg-red-50 flex items-center justify-center transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>删除</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
                       </div>
 
-                      {/* 第二行：描述（左）+ 源码/删除按钮（右） */}
-                      <div className="flex items-center gap-1.5 mt-1">
+                      {/* 第二行：描述 */}
+                      <div className="mt-1">
                         <TooltipProvider delayDuration={300}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <p className="text-xs text-gray-500 truncate flex-1 min-w-0 leading-relaxed cursor-default">
+                              <p className="text-xs text-gray-500 truncate min-w-0 leading-relaxed cursor-default">
                                 {mcp.description || "用户自定义 MCP"}
                               </p>
                             </TooltipTrigger>
@@ -745,37 +770,6 @@ export default function ToolsMcpPanel() {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        {/* 刷新技能连接状态 */}
-                        <TooltipProvider delayDuration={1000}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => handleRefreshSingle(mcp.id)}
-                                disabled={refreshingSingleId === mcp.id}
-                                className="w-6 h-6 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center transition-colors shrink-0 disabled:opacity-50"
-                              >
-                                <RefreshCw className={`w-3.5 h-3.5 ${refreshingSingleId === mcp.id ? "animate-spin" : ""}`} />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs">刷新技能连接状态</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        {/* 查看源码 */}
-                        <button
-                          onClick={() => handleOpenSource(mcp)}
-                          className="w-6 h-6 rounded-md text-gray-400 hover:text-blue-500 hover:bg-blue-50 flex items-center justify-center transition-colors shrink-0"
-                          title="查看源码"
-                        >
-                          <Code2 className="w-3.5 h-3.5" />
-                        </button>
-                        {/* 删除 */}
-                        <button
-                          onClick={() => handleDelete(mcp.id)}
-                          className="w-6 h-6 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors shrink-0"
-                          title="删除"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
                       </div>
 
                       {/* 第三行：工具列表（已连接时显示，收起时限高两行+右下角展开按钮） */}
@@ -851,12 +845,6 @@ export default function ToolsMcpPanel() {
         </div>
       </SurfaceCard>
 
-      {/* ===== 第二列：留空 ===== */}
-      <div />
-
-      {/* ===== 第三列：留空 ===== */}
-      <div />
-
       {/* ===== 添加 MCP 弹窗 — 步骤1：选择 ===== */}
       <Dialog open={addDialogOpen && !paramTemplate} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -885,7 +873,7 @@ export default function ToolsMcpPanel() {
                 availableTemplates.map((tpl) => (
                   <div
                     key={tpl.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-[#e5e5e5] hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
@@ -938,13 +926,11 @@ export default function ToolsMcpPanel() {
               </div>
             ))}
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button variant="claw-outline" onClick={() => setParamTemplate(null)} className="text-sm">
+          <DialogFooter>
+            <Button variant="claw-outline" onClick={() => setParamTemplate(null)}>
               取消
             </Button>
             <Button
-              variant="outline"
-              className="text-sm"
               onClick={() => {
                 if (!paramTemplate) return;
                 const allFilled = paramTemplate.userRequiredParams.every(
@@ -954,62 +940,14 @@ export default function ToolsMcpPanel() {
                   toast.error("请填写所有必填参数");
                   return;
                 }
-                doAddMCP(paramTemplate, paramValues, false);
+                doAddMCP(paramTemplate, paramValues);
               }}
             >
-              确认但不重启
-            </Button>
-            <Button
-              onClick={() => {
-                if (!paramTemplate) return;
-                const allFilled = paramTemplate.userRequiredParams.every(
-                  (p) => (paramValues[p] || "").trim().length > 0
-                );
-                if (!allFilled) {
-                  toast.error("请填写所有必填参数");
-                  return;
-                }
-                doAddMCP(paramTemplate, paramValues, true);
-              }}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-sm"
-            >
-              确认并重启实例
+              确认
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* ===== 添加 MCP 弹窗 — 无参数确认 ===== */}
-      <AlertDialog
-        open={!!confirmAddTemplate}
-        onOpenChange={(open) => { if (!open) setConfirmAddTemplate(null); }}
-      >
-        <AlertDialogContent className="sm:max-w-sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认添加</AlertDialogTitle>
-            <AlertDialogDescription>
-              确认添加「{confirmAddTemplate?.displayName}」MCP 配置？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <AlertDialogCancel className="text-sm">取消</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm"
-              onClick={() => { if (confirmAddTemplate) doAddMCP(confirmAddTemplate, {}, false); }}
-            >
-              确认但不重启
-            </AlertDialogAction>
-            <AlertDialogAction
-              className="text-white text-sm"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              onClick={() => { if (confirmAddTemplate) doAddMCP(confirmAddTemplate, {}, true); }}
-            >
-              确认并重启实例
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* ===== 查看源码弹窗 ===== */}
       <Dialog open={sourceDialogOpen} onOpenChange={setSourceDialogOpen}>
@@ -1024,7 +962,7 @@ export default function ToolsMcpPanel() {
             {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
             <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
               {/* 固定前缀行（不可编辑）— 灰色背景，只显示 "server-name": { */}
-              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                 <div><span className="text-gray-500">{`"${sourceServerName}"`}</span>{': {'}</div>
               </div>
               {/* 可编辑区域 */}
@@ -1051,7 +989,7 @@ export default function ToolsMcpPanel() {
                 />
               </div>
               {/* 固定后缀行（不可编辑）— 灰色背景 */}
-              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+              <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                 <div>{'}'}</div>
               </div>
             </div>
@@ -1063,13 +1001,11 @@ export default function ToolsMcpPanel() {
             <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
-            <Button variant="claw-outline" onClick={() => handleSaveSource(false)} className="text-sm">
+            <Button variant="claw-outline" onClick={() => handleSaveSource(false)}>
               保存但不重启
             </Button>
             <Button
               onClick={() => handleSaveSource(true)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white text-sm"
             >
               保存并重启实例
             </Button>

@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import TenantLayout from '@/components/TenantLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SurfaceCard, SurfaceInner } from '@/components/ui/Surface';
 import {
   Select,
@@ -279,19 +279,14 @@ export default function SkillSquare() {
   if (selectedSkillId) {
     return (
       <TenantLayout>
-        {/* 与「我的 Agent」(MyOpenClaw) 完全一致的外壳骨架：
-              · min-w-[1200px] 兜底小屏（整体横滚不重排）
-              · max-w-[1920px] mx-auto 大屏限宽（两侧自动均分留白）
-              · 内层 flex：左右 w-20 (80px) 占位带 + 中间 flex-1 内容区，
-                内容区内部用 px-[42px] py-8，与「我的 Agent」段落内边距对齐 */}
+        {/* 标准骨架：min-w-[1200px] + max-w-[1920px] + 左右 80px 占位带
+              · min-h-[calc(100vh-64px)] 放在外层 flex 上，让中间 + 两侧占位带共同撑满视口
+              · 中间内容区仅 flex-1 min-w-0 relative，不带 px/py，由内部各分段（header/tab/内容/底部分隔栏）自管理 */}
         <div className="min-w-[1200px] overflow-x-clip">
-          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
+          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter min-h-[calc(100vh-64px)]">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div
-              className="flex-1 min-w-0 px-[42px] py-8 relative min-h-[calc(100vh-64px)]"
-              style={{ paddingBottom: "75px" }}
-            >
-              {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
+            <div className="flex-1 min-w-0 relative flex flex-col" style={{ paddingBottom: "75px" }}>
+              {/* 中间内容区左右贯穿竖线 */}
               <div
                 aria-hidden
                 className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
@@ -302,7 +297,7 @@ export default function SkillSquare() {
                 className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
                 style={{ width: "1px", backgroundColor: "#E2E8F0" }}
               />
-              <div className="relative">
+              <div className="relative flex-1 flex flex-col">
                 <SkillSquareDetail
                   skillId={selectedSkillId}
                   skills={visibleSkills}
@@ -464,7 +459,7 @@ export default function SkillSquare() {
           {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
-            className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white flex items-center justify-center text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors"
+            className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] bg-white flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -865,7 +860,7 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span className="inline-flex cursor-default" onClick={(e) => e.stopPropagation()}>
-                <Circle className="w-3.5 h-3.5 hover:text-[#355EF1] transition-colors" style={{ color: "#E5E5E5" }} />
+                <Circle className="w-3.5 h-3.5 hover:text-[#1447E6] transition-colors" style={{ color: "#E5E5E5" }} />
               </span>
             </TooltipTrigger>
             <TooltipContent><span className="text-xs">还没下发过</span></TooltipContent>
@@ -889,7 +884,7 @@ function SkillListRow({
         ) : (
           <button
             onClick={handleDistributeClick}
-            className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] hover:bg-[#EFF6FF] transition-colors flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -930,6 +925,62 @@ function SkillSquareDetail({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
+
+  // ========== 点阵装饰层动态测量（参照 OpenClawDetailGuide）==========
+  // 点阵从 Header 底部横线开始，到底部分隔栏顶部横线结束
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const headerElRef = useRef<HTMLElement | null>(null);
+  const bottomBarElRef = useRef<HTMLDivElement | null>(null);
+  const roRef = useRef<ResizeObserver | null>(null);
+  const [dotsTop, setDotsTop] = useState(112);
+  const [dotsBottom, setDotsBottom] = useState(75);
+
+  const recomputeDots = useCallback(() => {
+    const root = rootRef.current;
+    const header = headerElRef.current;
+    const bottomBar = bottomBarElRef.current;
+    if (!root) return;
+    if (header) {
+      const rootRect = root.getBoundingClientRect();
+      const headerRect = header.getBoundingClientRect();
+      setDotsTop(headerRect.bottom - rootRect.top);
+    }
+    if (bottomBar) {
+      const rootRect = root.getBoundingClientRect();
+      const barRect = bottomBar.getBoundingClientRect();
+      const barTopInRoot = barRect.top - rootRect.top;
+      setDotsBottom(root.offsetHeight - barTopInRoot);
+    }
+  }, []);
+
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    rootRef.current = node;
+    if (!node) return;
+    recomputeDots();
+    if (roRef.current) roRef.current.disconnect();
+    const ro = new ResizeObserver(recomputeDots);
+    ro.observe(node);
+    if (headerElRef.current) ro.observe(headerElRef.current);
+    if (bottomBarElRef.current) ro.observe(bottomBarElRef.current);
+    roRef.current = ro;
+  }, [recomputeDots]);
+
+  const setHeaderRef = useCallback((node: HTMLElement | null) => {
+    headerElRef.current = node;
+    recomputeDots();
+    if (node && roRef.current) roRef.current.observe(node);
+  }, [recomputeDots]);
+
+  const setBottomBarRef = useCallback((node: HTMLDivElement | null) => {
+    bottomBarElRef.current = node;
+    recomputeDots();
+    if (node && roRef.current) roRef.current.observe(node);
+  }, [recomputeDots]);
+
+  useEffect(() => {
+    window.addEventListener("resize", recomputeDots);
+    return () => window.removeEventListener("resize", recomputeDots);
+  }, [recomputeDots]);
 
   // 下发记录
   const [distributionRecords, setDistributionRecords] = useState<CachedDistributionRecord[]>([]);
@@ -1129,7 +1180,7 @@ function SkillSquareDetail({
           disabled={!canView}
           className={`w-full flex items-center gap-1.5 px-2 py-2 text-xs rounded-[3px] transition-colors ${
             expandedFile === file.name
-              ? 'bg-[#EFF6FF] text-[#355EF1]'
+              ? 'bg-[#EFF6FF] text-[#1447E6]'
               : canView ? 'hover:bg-gray-50/50 text-[#334155] cursor-pointer' : 'text-[#A3A3A3] cursor-not-allowed opacity-60'
           }`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
@@ -1207,120 +1258,168 @@ function SkillSquareDetail({
   }
 
   return (
-    <div className="space-y-6">
-      {/* 返回按钮 */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 transition-colors"
-        style={{ color: "#355EF1" }}
-      >
-        <ArrowLeft className="w-4 h-4" />
-        返回列表
-      </button>
+    <div ref={setRootRef} className="flex-1 flex flex-col relative">
+      {/* ======== 左右两侧点阵装饰层（覆盖到视口左右边缘的占位带）======== */}
+      {/* 左侧点阵：从 root 左边 - 100vw 起，到 root 左边止 → 覆盖左侧 80px 占位带及外侧 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-0"
+        style={{
+          top: `${dotsTop}px`,
+          bottom: `${dotsBottom}px`,
+          left: "calc((100% - 100vw) / 2)",
+          right: "100%",
+          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+          backgroundSize: "12px 12px",
+        }}
+      />
+      {/* 右侧点阵 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute z-0"
+        style={{
+          top: `${dotsTop}px`,
+          bottom: `${dotsBottom}px`,
+          left: "100%",
+          right: "calc((100% - 100vw) / 2)",
+          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+          backgroundSize: "12px 12px",
+        }}
+      />
 
-      {/* 技能基本信息 */}
-      <SurfaceCard className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h1 className="text-2xl font-medium mb-1" style={{ color: "#0A0A0A" }}>{skill.name}</h1>
-            <p className="text-sm" style={{ color: "#737373" }}>slug: {skill.slug}</p>
-          </div>
-          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-            {/* 下载按钮 */}
-            <Button variant="claw-outline" onClick={handleDownload} disabled={isDownloading}>
-              {isDownloading ? <Loader className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
-              下载
-            </Button>
-            {/* 下发按钮 */}
-            <Button
-              variant="claw-primary"
-              onClick={() => setDistributeDialogOpen(true)}
-              disabled={hasInProgress}
-            >
-              <Plus className="w-4 h-4 mr-1.5" />
-              {hasInProgress ? '下发中...' : '下发'}
-            </Button>
-          </div>
-        </div>
+      {/* ======== Header（参照 Agent 详情页风格）======== */}
+      {/* 与 Agent 详情页一致：外层 items-end（按钮底对齐）、py-6、左侧整组 items-center */}
+      <header ref={setHeaderRef} className="relative flex items-end justify-between gap-6 px-[42px] py-6">
+        {/* Header 底部横线（贯穿全视口，与下方点阵装饰区边线对齐） */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            left: "calc(50% - 50vw)",
+            width: "100vw",
+            bottom: 0,
+            height: "1px",
+            backgroundColor: "#E2E8F0",
+          }}
+        />
 
-        {/* 标签行 */}
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <span
-            className="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full"
-            style={{ background: "#F5F5F5", color: "#334155" }}
-          >
-            v{skill.version}
-          </span>
-          {/* 安全检测状态徽章 — 用户端不显示检测按钮 */}
+        <div className="flex items-center gap-3">
+          {/* 返回按钮 */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onBack}
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-[4px] hover:bg-[#f5f5f5] transition-colors shrink-0"
+                  style={{ color: "#525252" }}
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>返回列表</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* 技能图标（首字母渐变圆形） */}
           {(() => {
-            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-            const statusInfo = SECURITY_STATUS_MAP[secStatus];
-            if (secStatus === 'not_scanned') {
-              return (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  未检测
-                </span>
-              );
-            }
-            if (secStatus === 'scanning') {
-              return (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
-                  <Loader className="w-3 h-3 animate-spin" />
-                  安全检测中
-                </span>
-              );
-            }
-            const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-            const reportUrl = skill.securityInfo?.engines?.[0]?.reportUrl;
+            const initial = getSkillInitial(skill.name) || 'A';
+            const gradient = getLetterGradient(initial);
             return (
-              <span className="inline-flex items-center gap-1.5">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
-                  <IconComp className="w-3.5 h-3.5" />
-                  {secStatus === 'safe' ? '通过安全检测' : secStatus === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
-                </span>
-                {reportUrl && (
-                  <a
-                    href={reportUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    查看报告
-                  </a>
-                )}
-              </span>
+              <div
+                className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-semibold shrink-0 bg-gradient-to-br ${gradient}`}
+              >
+                {initial}
+              </div>
             );
           })()}
-          <div className="flex gap-1 flex-wrap">
-            {skill.categories.map(catId => (
-              <span
-                key={catId}
-                className="inline-block px-2.5 py-0.5 text-xs rounded-full"
-                style={{ background: "#F5F5F5", color: "#334155" }}
+
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <h1
+                className="text-[26px] font-semibold leading-8"
+                style={{ color: "#0A0A0A", letterSpacing: "-0.0385em" }}
               >
-                {getCategoryName(catId)}
+                {skill.name}
+              </h1>
+            </div>
+            {/* 元信息行 */}
+            <div
+              className="flex items-center flex-wrap"
+              style={{
+                gap: "4px",
+                fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                fontWeight: 400,
+                fontSize: "12px",
+                lineHeight: "20px",
+                color: "#334155",
+              }}
+            >
+              <span
+                className="inline-flex items-center"
+                style={{
+                  padding: "2px 6px",
+                  borderRadius: "2px",
+                  border: "1px solid #DAE0E9",
+                  background: "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
+                  color: "#334155",
+                }}
+              >
+                v{skill.version}
               </span>
-            ))}
+              <span style={{ color: "#E2E8F0" }}>｜</span>
+              <span>slug: {skill.slug}</span>
+              {skill.categories && skill.categories.length > 0 && (
+                <>
+                  <span style={{ color: "#E2E8F0" }}>｜</span>
+                  <span>分类：{skill.categories.map((catId: string) => getCategoryName(catId)).join('、')}</span>
+                </>
+              )}
+              <span style={{ color: "#E2E8F0" }}>｜</span>
+              <span className="inline-flex items-center gap-1">
+                <Download className="w-3 h-3" style={{ color: "#A3A3A3" }} />
+                {formatDownloadCount(MOCK_DOWNLOAD_COUNTS[skill.id] || 0)}
+              </span>
+              <span style={{ color: "#E2E8F0" }}>｜</span>
+              <span style={{ color: "#737373" }}>{formatDate(skill.uploadTime)} 发布</span>
+            </div>
+            {skill.description && (
+              <p
+                className="mt-0.5"
+                style={{
+                  fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                  fontSize: "12px",
+                  lineHeight: "18px",
+                  color: "#737373",
+                }}
+              >
+                {skill.description}
+              </p>
+            )}
           </div>
-          <span className="text-xs tabular-nums ml-2 flex items-center gap-1" style={{ color: "#A3A3A3" }}>
-            <Download className="w-3 h-3" />
-            {formatDownloadCount(MOCK_DOWNLOAD_COUNTS[skill.id] || 0)}
-          </span>
-          <span className="text-xs" style={{ color: "#A3A3A3" }}>
-            {formatDate(skill.uploadTime)} 发布
-          </span>
         </div>
 
-        {skill.description && (
-          <p className="text-sm mt-3" style={{ color: "#334155" }}>{skill.description}</p>
-        )}
-      </SurfaceCard>
+        {/* 右：操作按钮组（底对齐到 header 底部） */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="claw-outline" size="claw" onClick={handleDownload} disabled={isDownloading}>
+            {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            下载
+          </Button>
+          <Button
+            variant="claw-primary"
+            size="claw"
+            onClick={() => setDistributeDialogOpen(true)}
+            disabled={hasInProgress}
+          >
+            <Plus className="w-4 h-4" />
+            {hasInProgress ? '下发中...' : '下发'}
+          </Button>
+        </div>
+      </header>
 
-      {/* Tab 页面 */}
-      <div>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      {/* ======== Tab 导航 + 主要内容（标准骨架分段：Tab 区 px-[42px] py-4；内容区 px-[42px] py-0）======== */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
+        {/* Tab 导航段 */}
+        <div className="relative px-[42px] py-4">
           {/* §8.6 Segmented Control：灰底容器 + 白滑块 + var(--shadow-segment) */}
           <TabsList
             className="inline-flex items-center gap-1 p-1 h-auto rounded-[4px]"
@@ -1345,9 +1444,12 @@ function SkillSquareDetail({
               下发记录
             </TabsTrigger>
           </TabsList>
+        </div>
 
+        {/* 主要内容段（flex-1：内容不足一屏时撑开，把底部分隔栏顶到底部） */}
+        <div className="px-[42px] py-0 flex-1">
           {/* 概述 Tab */}
-          <TabsContent value="overview" className="mt-4 p-0">
+          <TabsContent value="overview" className="mt-0 p-0">
             <SurfaceCard className="p-6">
               <MDXRenderer content={(() => {
                 if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
@@ -1361,7 +1463,7 @@ function SkillSquareDetail({
           </TabsContent>
 
           {/* 文件列表 Tab */}
-          <TabsContent value="files" className="mt-4 p-0">
+          <TabsContent value="files" className="mt-0 p-0">
             <SurfaceCard className="flex h-[47rem] overflow-hidden">
               {/* 左列：版本选择 */}
               <div className="w-[14%] min-w-[120px] border-r border-[#E5E5E5] flex flex-col">
@@ -1380,7 +1482,7 @@ function SkillSquareDetail({
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-3.5 border-b border-[#e5e5e5] transition-colors ${
+                        className={`w-full text-left px-3 py-3.5 border-b border-[#F5F5F5] transition-colors ${
                           isSelected ? 'bg-[#EFF6FF]' : 'hover:bg-gray-50/50 cursor-pointer'
                         }`}
                       >
@@ -1394,7 +1496,7 @@ function SkillSquareDetail({
                           {isLatest && (
                             <span
                               className="text-[10px] font-medium px-1.5 py-0.5 rounded-[2px]"
-                              style={{ background: "#EFF6FF", color: "#355EF1" }}
+                              style={{ background: "#EFF6FF", color: "#1447E6" }}
                             >
                               最新
                             </span>
@@ -1427,7 +1529,7 @@ function SkillSquareDetail({
                   <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="text-[#737373] hover:text-[#355EF1] transition-colors"
+                    className="text-[#737373] hover:text-[#1447E6] transition-colors"
                     title="下载此版本 ZIP"
                   >
                     {isDownloading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -1555,7 +1657,7 @@ function SkillSquareDetail({
           </TabsContent>
 
           {/* 下发记录 Tab */}
-          <TabsContent value="distribution" className="mt-4 p-0">
+          <TabsContent value="distribution" className="mt-0 p-0">
             <SurfaceCard className="p-6">
               <div className="space-y-3">
                 <h3 className="font-semibold" style={{ color: "#0A0A0A" }}>下发记录</h3>
@@ -1584,7 +1686,7 @@ function SkillSquareDetail({
                                 className="inline-block px-3 py-1 rounded-[3px] text-xs font-medium"
                                 style={
                                   record.status === 'distributing'
-                                    ? { background: "#EFF6FF", color: "#355EF1" }
+                                    ? { background: "#EFF6FF", color: "#1447E6" }
                                     : record.successCount === record.totalCount
                                       ? { background: "#F0FDF4", color: "#166534" }
                                       : { background: "#FEFCE8", color: "#854D0E" }
@@ -1604,7 +1706,7 @@ function SkillSquareDetail({
                                   setDetailsOpen(true);
                                 }}
                                 className="h-auto py-1 px-2"
-                                style={{ color: "#355EF1" }}
+                                style={{ color: "#1447E6" }}
                               >
                                 查看详情
                               </Button>
@@ -1615,7 +1717,7 @@ function SkillSquareDetail({
                             <div className="w-full rounded-full h-1.5" style={{ background: "#F5F5F5" }}>
                               <div
                                 className="h-1.5 rounded-full transition-all duration-300"
-                                style={{ width: `${progress}%`, background: "#355EF1" }}
+                                style={{ width: `${progress}%`, background: "#1447E6" }}
                               />
                             </div>
                           )}
@@ -1627,7 +1729,22 @@ function SkillSquareDetail({
               </div>
             </SurfaceCard>
           </TabsContent>
-        </Tabs>
+        </div>
+      </Tabs>
+
+      {/* ======== 底部分隔栏（标准骨架）======== */}
+      <div ref={setBottomBarRef} className="relative mt-6 px-6 py-3 h-9">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute"
+          style={{
+            left: "calc(50% - 50vw)",
+            width: "100vw",
+            top: 0,
+            height: "1px",
+            backgroundColor: "#E2E8F0",
+          }}
+        />
       </div>
 
       {/* 下发弹窗 — 用户端简化版 */}
@@ -1695,7 +1812,7 @@ function SkillSquareDetail({
                         </tr>
                       ) : (
                         filteredInstances.map(instance => (
-                          <tr key={instance.id} className="border-b border-[#e5e5e5] last:border-b-0 hover:bg-gray-50/50 transition-colors">
+                          <tr key={instance.id} className="border-b border-[#F5F5F5] last:border-b-0 hover:bg-gray-50/50 transition-colors">
                             <td className="px-4 py-2.5 text-sm truncate" style={{ color: "#0A0A0A" }}>{instance.name}</td>
                             <td className="px-4 py-2.5 text-sm font-mono truncate" style={{ color: "#737373" }}>{instance.id}</td>
                             <td className="px-4 py-2.5">
@@ -1704,7 +1821,7 @@ function SkillSquareDetail({
                                 style={
                                   instance.distributionStatus === 'success' ? { color: "#16A34A" } :
                                   instance.distributionStatus === 'failed' ? { color: "#DC2626" } :
-                                  instance.distributionStatus === 'distributing' ? { color: "#355EF1" } :
+                                  instance.distributionStatus === 'distributing' ? { color: "#1447E6" } :
                                   { color: "#A3A3A3" }
                                 }
                               >

@@ -124,12 +124,14 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
+  /** 是否处于"选择全部"模式（跨页全选） */
+  const [selectAllMode, setSelectAllMode] = useState(false);
   /** 状态多选筛选 */
   const [statusFilters, setStatusFilters] = useState<FilterOption[]>([]);
   /** 应用范围筛选：空数组=全部, 否则为选中的分组 ID 列表（多选） */
   const [scopeFilters, setScopeFilters] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   /** 多选下拉的展开状态 */
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
@@ -160,11 +162,12 @@ export default function BatchDistributeDialog({
   // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
   useEffect(() => {
     if (open) {
-      // MCP 和 Skill 场景默认选中「未下发」+「下发失败」
-      setStatusFilters(['not_distributed', 'failed']);
+      // MCP 场景默认显示全部下发状态；Skill 场景默认选中「未下发」+「下发失败」
+      setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
       setSearchQuery('');
       setCurrentPage(1);
-      setPageSize(20);
+      setPageSize(10);
+      setSelectAllMode(false);
       setFilterDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
@@ -190,6 +193,8 @@ export default function BatchDistributeDialog({
           })
           .map(i => i.id);
         setSelectedInstances(validIds);
+        // 如果预选了所有符合条件的实例，标记为全选模式
+        setSelectAllMode(validIds.length > 0);
       } else {
         setScopeFilters([]);
         setSelectedInstances([]);
@@ -304,23 +309,42 @@ export default function BatchDistributeDialog({
   const startIndex = (safeCurrentPage - 1) * pageSize;
   const pagedInstances = allFilteredInstances.slice(startIndex, startIndex + pageSize);
 
-  /** 全选 / 取消全选 —— 操作所有筛选后的实例（跨页） */
+  /** 全选 / 取消全选 */
   const handleSelectAll = () => {
-    const allIds = allFilteredInstances.map(i => i.id);
-    const allSelected = allIds.length > 0 && allIds.every(id => selectedInstances.includes(id));
-    if (allSelected) {
-      // 取消全选：移除所有筛选结果中的 id
-      setSelectedInstances(prev => prev.filter(id => !allIds.includes(id)));
+    const pageIds = pagedInstances.map(i => i.id);
+    const allPageSelected = pageIds.length > 0 && pageIds.every(id => selectedInstances.includes(id));
+    if (allPageSelected || selectAllMode) {
+      // 已全选状态（包括跨页全选）→ 清空所有
+      setSelectedInstances([]);
+      setSelectAllMode(false);
     } else {
-      // 全选：合并所有筛选结果的 id
-      setSelectedInstances(prev => [...new Set([...prev, ...allIds])]);
+      // 选中当前页所有
+      setSelectedInstances(prev => [...new Set([...prev, ...pageIds])]);
+      setSelectAllMode(false);
     }
   };
 
+  /** 选择全部（跨页）—— 选中所有筛选后的实例 */
+  const handleSelectAllFiltered = () => {
+    const allIds = allFilteredInstances.map(i => i.id);
+    setSelectedInstances(prev => [...new Set([...prev, ...allIds])]);
+    setSelectAllMode(true);
+  };
+
+  /** 取消选择全部 */
+  const handleDeselectAll = () => {
+    setSelectedInstances([]);
+    setSelectAllMode(false);
+  };
+
   const handleSelectInstance = (id: string) => {
-    setSelectedInstances(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+    setSelectedInstances(prev => {
+      if (prev.includes(id)) {
+        setSelectAllMode(false);
+        return prev.filter(i => i !== id);
+      }
+      return [...prev, id];
+    });
   };
 
   const handleDistribute = () => {
@@ -341,11 +365,12 @@ export default function BatchDistributeDialog({
     }
     
     setSelectedInstances([]);
+    setSelectAllMode(false);
     setSearchQuery('');
-    setStatusFilters(['not_distributed', 'failed']);
+    setStatusFilters(singleStatusFilter ? [] : ['not_distributed', 'failed']);
     setScopeFilters([]);
     setCurrentPage(1);
-    setPageSize(20);
+    setPageSize(10);
     setConfirmDialogOpen(false);
     setConfirmInput('');
     onOpenChange(false);
@@ -372,11 +397,15 @@ export default function BatchDistributeDialog({
     return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>{label}</span>;
   };
 
-  // 全选判断：跨所有页
+  // 全选判断：当前页级别
+  const pageIds = pagedInstances.map(i => i.id);
+  const selectedInPageCount = pageIds.filter(id => selectedInstances.includes(id)).length;
+  const isPageAllSelected = pageIds.length > 0 && selectedInPageCount === pageIds.length;
+  const isPageIndeterminate = selectedInPageCount > 0 && selectedInPageCount < pageIds.length;
+  // 跨页全选判断
   const allIds = allFilteredInstances.map(i => i.id);
   const selectedInFilterCount = allIds.filter(id => selectedInstances.includes(id)).length;
-  const isAllSelected = allIds.length > 0 && selectedInFilterCount === allIds.length;
-  const isIndeterminate = selectedInFilterCount > 0 && selectedInFilterCount < allIds.length;
+  const isAllFilteredSelected = allIds.length > 0 && selectedInFilterCount === allIds.length;
 
   return (
     <>
@@ -598,22 +627,18 @@ export default function BatchDistributeDialog({
           </div>
           )}
           {singleStatusFilter ? (
-            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」「待更新」 ── */
+            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」 ── */
             <Select
               value={
                 statusFilters.length === 0
                   ? '__all__'
                   : statusFilters.length === 1
                     ? statusFilters[0]
-                    : statusFilters.length === 2 && statusFilters.includes('not_distributed') && statusFilters.includes('failed')
-                      ? '__default__'
-                      : '__all__'
+                    : '__all__'
               }
               onValueChange={(value) => {
                 if (value === '__all__') {
                   setStatusFilters([]);
-                } else if (value === '__default__') {
-                  setStatusFilters(['not_distributed', 'failed']);
                 } else {
                   setStatusFilters([value as FilterOption]);
                 }
@@ -625,10 +650,8 @@ export default function BatchDistributeDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">全部下发状态</SelectItem>
-                <SelectItem value="__default__">未下发+下发失败</SelectItem>
                 <SelectItem value="not_distributed">未下发</SelectItem>
                 <SelectItem value="failed">下发失败</SelectItem>
-                <SelectItem value="pending_update">待更新</SelectItem>
               </SelectContent>
             </Select>
           ) : (
@@ -721,18 +744,54 @@ export default function BatchDistributeDialog({
 
         {/* 实例列表 */}
         <div className="border border-gray-200 rounded-lg max-h-[340px] overflow-y-auto">
-          {/* 全选复选框 — 跨页全选 */}
-          <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-            <Checkbox
-              checked={isAllSelected}
-              // @ts-ignore – indeterminate prop
-              indeterminate={isIndeterminate}
-              onCheckedChange={handleSelectAll}
-            />
-            <span className="text-sm font-medium text-gray-900">
-              全选（{selectedInFilterCount}/{totalCount}）
-            </span>
+          {/* 全选复选框 — 当前页全选 */}
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={isPageAllSelected || isAllFilteredSelected}
+                // @ts-ignore – indeterminate prop
+                indeterminate={isPageIndeterminate && !isAllFilteredSelected}
+                onCheckedChange={handleSelectAll}
+              />
+              <span className="text-sm font-medium text-gray-900">
+                全选
+              </span>
+            </div>
+            {selectedInFilterCount > 0 && (
+              <span className="text-sm text-blue-600 font-medium">
+                已选 {selectedInFilterCount} 条
+              </span>
+            )}
           </div>
+
+          {/* 跨页全选提示条 */}
+          {isPageAllSelected && totalCount > pageSize && (
+            <div className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 border-b border-blue-100 text-sm">
+              {selectAllMode || isAllFilteredSelected ? (
+                <>
+                  <span className="text-gray-700">已选择全部 <span className="font-semibold">{totalCount}</span> 个实例。</span>
+                  <button
+                    type="button"
+                    onClick={handleDeselectAll}
+                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                  >
+                    取消选择
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-gray-700">已选择此页 <span className="font-semibold">{pagedInstances.length}</span> 个实例。</span>
+                  <button
+                    type="button"
+                    onClick={handleSelectAllFiltered}
+                    className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                  >
+                    选择全部 {totalCount} 个实例
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           {/* 实例项 */}
           {pagedInstances.length === 0 ? (
@@ -800,7 +859,7 @@ export default function BatchDistributeDialog({
         <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
           <div className="flex items-center gap-1.5">
             <span>共 {totalCount} 条，每页</span>
-            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); setSelectedInstances([]); setSelectAllMode(false); }}>
               <SelectTrigger className="w-16 h-7 text-xs">
                 <SelectValue />
               </SelectTrigger>
@@ -818,7 +877,7 @@ export default function BatchDistributeDialog({
               size="sm"
               className="h-7 px-2 text-xs"
               disabled={safeCurrentPage <= 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); setSelectedInstances([]); setSelectAllMode(false); }}
             >
               上一页
             </Button>
@@ -828,7 +887,7 @@ export default function BatchDistributeDialog({
               size="sm"
               className="h-7 px-2 text-xs"
               disabled={safeCurrentPage >= totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); setSelectedInstances([]); setSelectAllMode(false); }}
             >
               下一页
             </Button>

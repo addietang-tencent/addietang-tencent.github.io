@@ -94,12 +94,15 @@ import {
   Circle,
   Clock,
   Info,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // 复用管控端数据和组件
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from '../admin/SkillLibrary/mockData';
-import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from '../admin/SkillLibrary/types';
+import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP, SECURITY_STATUS_MAP, type SecurityStatus } from '../admin/SkillLibrary/types';
 import {
   getDistributionRecords,
   addDistributionRecord,
@@ -495,6 +498,31 @@ function SkillCard({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-900 truncate">{skill.name}</h3>
+                {/* 安全检测小图标 */}
+                {(() => {
+                  const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                  if (secStatus === 'not_scanned') return null;
+                  if (secStatus === 'scanning') {
+                    return (
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex flex-shrink-0 cursor-default"><Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+                  const statusInfo = SECURITY_STATUS_MAP[secStatus];
+                  const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                  return (
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex flex-shrink-0 cursor-default"><IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} /></span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top"><span className="text-xs">安全检测：{statusInfo.label}</span></TooltipContent>
+                    </Tooltip>
+                  );
+                })()}
                 {/* 下发状态图标 */}
                 {distStatus && <DistributionStatusIcon status={distStatus} latestRecord={latestRecord} onClick={() => onDistStatusClick?.()} />}
               </div>
@@ -628,6 +656,31 @@ function SkillListRow({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900 truncate">{skill.name}</span>
+              {/* 安全检测小图标 */}
+              {(() => {
+                const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                if (secStatus === 'not_scanned') return null;
+                if (secStatus === 'scanning') {
+                  return (
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex flex-shrink-0 cursor-default"><Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
+                    </Tooltip>
+                  );
+                }
+                const statusInfo = SECURITY_STATUS_MAP[secStatus];
+                const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                return (
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex flex-shrink-0 cursor-default"><IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} /></span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top"><span className="text-xs">安全检测：{statusInfo.label}</span></TooltipContent>
+                  </Tooltip>
+                );
+              })()}
             </div>
             <p className="text-sm text-gray-400 truncate mt-1">{skill.description}</p>
           </div>
@@ -1033,6 +1086,48 @@ function SkillSquareDetail({
           <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
             v{skill.version}
           </span>
+          {/* 安全检测状态徽章 — 用户端不显示检测按钮 */}
+          {(() => {
+            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+            const statusInfo = SECURITY_STATUS_MAP[secStatus];
+            if (secStatus === 'not_scanned') {
+              return (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  未检测
+                </span>
+              );
+            }
+            if (secStatus === 'scanning') {
+              return (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                  <Loader className="w-3 h-3 animate-spin" />
+                  安全检测中
+                </span>
+              );
+            }
+            const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+            const reportUrl = skill.securityInfo?.engines?.[0]?.reportUrl;
+            return (
+              <span className="inline-flex items-center gap-1.5">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
+                  <IconComp className="w-3.5 h-3.5" />
+                  {secStatus === 'safe' ? '通过安全检测' : secStatus === 'suspicious' ? '存在可疑行为' : '存在恶意行为'}
+                </span>
+                {reportUrl && (
+                  <a
+                    href={reportUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-0.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    查看报告
+                  </a>
+                )}
+              </span>
+            );
+          })()}
           <div className="flex gap-1 flex-wrap">
             {skill.categories.map(catId => (
               <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
@@ -1106,6 +1201,8 @@ function SkillSquareDetail({
                     const isSelected = selectedVersion === ver;
                     const versionRecord = skill.versionHistory?.find(v => v.version === ver);
                     const dateStr = versionRecord?.date || '';
+                    // 安全检测图标：仅最新版本显示当前 skill 的安全状态
+                    const secStatus = isLatest ? (skill.securityInfo?.overallStatus || 'not_scanned') : null;
                     return (
                       <button
                         key={ver}
@@ -1115,6 +1212,45 @@ function SkillSquareDetail({
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
+                          {/* 安全检测状态图标 */}
+                          {secStatus && (() => {
+                            if (secStatus === 'not_scanned') {
+                              return (
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex flex-shrink-0">
+                                      <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
+                                </Tooltip>
+                              );
+                            }
+                            if (secStatus === 'scanning') {
+                              return (
+                                <Tooltip delayDuration={300}>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex flex-shrink-0">
+                                      <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
+                                </Tooltip>
+                              );
+                            }
+                            const secInfo = SECURITY_STATUS_MAP[secStatus];
+                            const SecIcon = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
+                            return (
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex flex-shrink-0">
+                                    <SecIcon className={`w-3.5 h-3.5 ${secInfo.color}`} />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top"><span className="text-xs">安全检测：{secInfo.label}</span></TooltipContent>
+                              </Tooltip>
+                            );
+                          })()}
                           <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
                             {ver}
                           </span>

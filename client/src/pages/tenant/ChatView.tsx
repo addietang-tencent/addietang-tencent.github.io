@@ -2034,25 +2034,19 @@ export default function ChatView({
                       className={`relative mx-2 my-2 px-3 py-2.5 transition-all duration-150 group/item rounded-[4px] ${
                         isDisabledForChat ? "cursor-default opacity-50" : "cursor-pointer"
                       } ${
-                        isSelected ? "bg-blue-50" : "bg-gray-100/70 hover:bg-gray-100"
-                      }`}
-                      style={
                         isSelected
-                          ? { boxShadow: "0 2px 8px rgba(20,71,230,0.1)", border: "1px solid rgba(20,71,230,0.25)" }
-                          : { boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid transparent" }
-                      }
+                          ? "bg-[#EFF6FF] border border-[#1447E6]/25"
+                          : "bg-white border border-[#e5e5e5] hover:bg-gray-50"
+                      }`}
                       onClick={() => { if (!isDisabledForChat) handleSelectClaw(claw.id); }}
                     >
                       {/* Agent Type Tag - 右上角融合卡片内 */}
                       <span
-                        className="absolute -top-px -right-px z-10 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap"
-                        style={{
-                          background: isSelected ? "rgba(20,71,230,0.08)" : "#EAECF0",
-                          color: isSelected ? "rgba(20,71,230,0.5)" : "#9CA3AF",
-                          borderTopRightRadius: "0.75rem",
-                          borderBottomLeftRadius: "0.75rem",
-                          boxShadow: "none"
-                        }}
+                        className={`absolute -top-px -right-px z-10 text-[9px] font-semibold px-2 py-0.5 whitespace-nowrap rounded-bl-[4px] rounded-tr-[4px] ${
+                          isSelected
+                            ? "bg-[#1447E6]/[0.08] text-[#1447E6]/50"
+                            : "bg-[#EAECF0] text-[#9CA3AF]"
+                        }`}
                       >
                         {claw.agentType === "hermes" ? "Hermes Agent" : claw.agentType === "lightclawace" ? "Lightclaw ACE" : "OpenClaw"}
                       </span>

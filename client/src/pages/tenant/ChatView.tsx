@@ -706,7 +706,7 @@ export default function ChatView({
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
   const [browserVncAccessErrorModal, setBrowserVncAccessErrorModal] = useState<{ visible: boolean; targetClawId: string | null }>({ visible: false, targetClawId: null });
   const [isCloudBrowserPolicyEnabled, setIsCloudBrowserPolicyEnabled] = useState(getAdminAllowCloudBrowserEnabled);
-  const [cloudBrowserEntryPosition, setCloudBrowserEntryPosition] = useState<{ top: number; left: number } | null>(null);
+
   const [cloudBrowserRefreshTracker, setCloudBrowserRefreshTracker] = useState<CloudBrowserRefreshTracker | null>(null);
   // 主动刷新锁：按钮点击后短暂禁用按钮，防止重复触发；不触发全屏 loading 占位
   const [manualRefreshLockedClawId, setManualRefreshLockedClawId] = useState<string | null>(null);
@@ -1268,43 +1268,7 @@ export default function ChatView({
     });
   }, [currentBrowserState?.isManualOperating, currentBrowserState?.mode, currentBrowserState?.taskState, selectedClawId, updateBrowserState]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
 
-    if (!canShowCloudBrowserEntry || isFullscreen) {
-      setCloudBrowserEntryPosition(null);
-      return;
-    }
-
-    const updateCloudBrowserEntryPosition = () => {
-      const rect = workspaceRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      setCloudBrowserEntryPosition({
-        top: rect.top,
-        left: Math.min(rect.right + 12, window.innerWidth - 56),
-      });
-    };
-
-    updateCloudBrowserEntryPosition();
-
-    const resizeObserver = typeof ResizeObserver !== "undefined" && workspaceRef.current
-      ? new ResizeObserver(() => updateCloudBrowserEntryPosition())
-      : null;
-
-    if (resizeObserver && workspaceRef.current) {
-      resizeObserver.observe(workspaceRef.current);
-    }
-
-    window.addEventListener("resize", updateCloudBrowserEntryPosition);
-    window.addEventListener("scroll", updateCloudBrowserEntryPosition, true);
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", updateCloudBrowserEntryPosition);
-      window.removeEventListener("scroll", updateCloudBrowserEntryPosition, true);
-    };
-  }, [isFullscreen, shouldShowCloudBrowserEntry]);
 
   const closeBrowserStartupModal = useCallback(() => {
     clearBrowserStartupTimers();
@@ -1954,41 +1918,7 @@ export default function ChatView({
         </div>
       )}
 
-      {shouldShowCloudBrowserEntry && (isFullscreen || cloudBrowserEntryPosition) && (
-        <div
-          className={isFullscreen ? `fixed right-4 ${workspaceTopClass} z-50` : "fixed z-20"}
-          style={
-            isFullscreen
-              ? undefined
-              : cloudBrowserEntryPosition
-                ? { top: cloudBrowserEntryPosition.top, left: cloudBrowserEntryPosition.left }
-                : undefined
-          }
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={isCloudBrowserEntryDisabled ? undefined : handleOpenBrowser}
-                aria-label={cloudBrowserEntryTooltip}
-                aria-disabled={isCloudBrowserEntryDisabled}
-                data-disabled={isCloudBrowserEntryDisabled ? "true" : "false"}
-                className={`flex h-10 w-10 items-center justify-center rounded-[4px] border bg-white/95 backdrop-blur-sm transition-all duration-150 ${
-                  isCloudBrowserEntryDisabled
-                    ? "cursor-not-allowed border-gray-200 text-gray-300"
-                    : "border-gray-200 text-gray-400 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                }`}
-                style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
-              >
-                <Monitor className="w-4 h-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" align="start" className="text-xs">
-              {cloudBrowserEntryTooltip}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      )}
+
 
       <div
       ref={workspaceRef}
@@ -2006,8 +1936,31 @@ export default function ChatView({
 
       {showFullListSidebar && (
         <div className="w-64 flex-shrink-0 border-r border-[#e5e5e5] flex flex-col bg-white">
-          <div className="px-3 h-10 flex items-center">
+          <div className="px-3 h-10 flex items-center justify-between">
             <span className="text-xs font-medium text-gray-700">选择 Agent</span>
+            {shouldShowCloudBrowserEntry && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={isCloudBrowserEntryDisabled ? undefined : handleOpenBrowser}
+                    aria-label={cloudBrowserEntryTooltip}
+                    aria-disabled={isCloudBrowserEntryDisabled}
+                    data-disabled={isCloudBrowserEntryDisabled ? "true" : "false"}
+                    className={`flex h-7 w-7 items-center justify-center rounded-[4px] border transition-all duration-150 ${
+                      isCloudBrowserEntryDisabled
+                        ? "cursor-not-allowed border-gray-200 text-gray-300"
+                        : "border-gray-200 text-gray-400 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                    }`}
+                  >
+                    <Monitor className="w-3.5 h-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="start" className="text-xs">
+                  {cloudBrowserEntryTooltip}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#e5e7eb transparent" }}>
             {effectiveClaws.length === 0 ? (

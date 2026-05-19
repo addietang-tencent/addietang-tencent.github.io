@@ -608,3 +608,51 @@ section[aria-label="Notifications alt+T"] {
 section[aria-label="Notifications alt+T"] > ol {
   pointer-events: auto;
 }
+
+/* ─── 导航栏中央 Tab：>=1200px 绝对居中，<1200px 回到 flex 流 ─── */
+@media (min-width: 1200px) {
+  .nav-center-tabs {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    flex-shrink: 0;
+    overflow: visible;
+    min-width: auto;
+  }
+}
+
+/* ─── 导航栏按钮文字：基础过渡动画 ─── */
+.nav-btn-label {
+  transition: max-width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+
+/* ─── 导航栏按钮：1201-1400px 文字折叠溢出省略 ─── */
+@media (min-width: 1201px) and (max-width: 1400px) {
+  .nav-btn-label {
+    max-width: 3em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ─── 导航栏按钮：<=1200px 仅展示图标，隐藏文字和徽章 ─── */
+@media (max-width: 1200px) {
+  .nav-btn-label {
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding: 0;
+  }
+  .nav-icon-btn {
+    gap: 0;
+    padding-left: 6px;
+    padding-right: 6px;
+    justify-content: center;
+  }
+  .nav-user-btn {
+    gap: 0;
+    padding: 4px 0;
+  }
+}

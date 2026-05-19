@@ -69,13 +69,11 @@ export default function TopNav({
         borderBottom: "1px solid #E2E8F0",
       }}
     >
-      <div className="h-full flex items-center justify-between px-10 relative">
-        {/* 左：Logo —— 与 Landing 页 navbar-brand 完全一致：
-            28×28 图标 + 22.12px Be Vietnam Pro 600 文字 + gap 8px。
-            资源直接复用 landing 的 /landing-assets/60.svg，避免重复资产。 */}
+      <div className="h-full flex items-center px-10 relative" style={{ gap: "24px" }}>
+        {/* 左：Logo — 永不压缩 */}
         <Link href={logoHref}>
           <div
-            className="flex items-center cursor-pointer transition-opacity hover:opacity-90"
+            className="flex items-center cursor-pointer transition-opacity hover:opacity-90 flex-shrink-0 whitespace-nowrap"
             style={{ gap: 8 }}
           >
             <img
@@ -101,20 +99,22 @@ export default function TopNav({
           </div>
         </Link>
 
+        {/* 占位弹簧，把右侧推到最右 */}
+        <div className="flex-1" />
+
         {/* 中：Segmented Tabs
-            用绝对定位钉在 header 水平正中，避免左右两侧宽度差异（如管理员多一个"切换管控端"按钮、
-            用户名长短差异）把中央 Tab 推离视觉中心。外壳 pointer-events-none，
-            仅交互子元素 pointer-events-auto，防止遮挡两侧点击。 */}
+            >=1400px: 绝对定位，屏幕水平正中
+            <1400px: 回到 flex 流，可压缩，文字溢出省略 */}
         {center && (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            <div className="pointer-events-auto">
+          <div className="min-w-0 shrink whitespace-nowrap pointer-events-none nav-center-tabs">
+            <div className="pointer-events-auto min-w-0">
               {center}
             </div>
           </div>
         )}
 
-        {/* 右：功能图标 + 用户菜单 */}
-        <div className="flex items-center gap-3">
+        {/* 右：功能图标 + 用户菜单，等比例压缩文字 */}
+        <div className="flex items-center gap-3 min-w-0 shrink">
           {right}
         </div>
       </div>

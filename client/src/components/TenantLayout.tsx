@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { KeyRound, LogOut, UserCog, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useUserRole } from "@/contexts/UserRoleContext";
 import {
@@ -155,13 +160,19 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
             {/* 切换管控端：管理员可见 */}
             {isAdmin && (
               <>
-                <Link href="/admin/basic-info">
-                  <NavIconButton
-                    icon={<SwitchAdminIcon />}
-                    label="切换管控端"
-                    title="切换至管控端"
-                  />
-                </Link>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href="/admin/basic-info" className="flex min-w-0 shrink overflow-hidden">
+                      <NavIconButton
+                        icon={<SwitchAdminIcon />}
+                        label="切换管控端"
+                      />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={6}>
+                    切换至管控端
+                  </TooltipContent>
+                </Tooltip>
                 <NavDivider />
               </>
             )}

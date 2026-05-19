@@ -41,6 +41,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/Surface";
 import NavIconButton from "./NavIconButton";
@@ -126,7 +132,7 @@ export default function NotificationPanel({
     navigator.clipboard.writeText(notif.message).then(() => {
       setCopiedId(notif.id);
       handleMarkRead(notif.id);
-      setTimeout(() => setCopiedId(null), 2000);
+      setTimeout(() => setCopiedId(null), 1000);
     });
   };
 
@@ -184,7 +190,7 @@ export default function NotificationPanel({
                 <div className="flex items-center gap-1.5">
                   <span
                     className={[
-                      "inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium",
+                      "inline-flex items-center px-1.5 py-0.5 rounded-[2px] text-[10px] font-medium whitespace-nowrap",
                       catCfg.bgColor,
                       catCfg.textColor,
                     ].join(" ")}
@@ -193,58 +199,57 @@ export default function NotificationPanel({
                   </span>
                   <span className="text-[#A3A3A3] text-[11px]">{notif.timestamp}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
+                  <TooltipProvider>
                   {!notif.read && hoveredId === notif.id && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleMarkRead(notif.id)}
-                      className="h-6 px-1.5 gap-1 text-xs text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3"
-                      title="标为已读"
-                    >
-                      <Check />
-                      已读
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleMarkRead(notif.id)}
+                          className="h-6 w-6 p-0 text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3.5"
+                          aria-label="标为已读"
+                        >
+                          <Check />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>已读</TooltipContent>
+                    </Tooltip>
                   )}
                   {hoveredId === notif.id && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(notif.id)}
-                      className="h-6 px-1.5 gap-1 text-xs text-[#A3A3A3] hover:text-red-600 hover:bg-transparent [&_svg]:size-3"
-                      title="删除"
-                      aria-label="删除"
-                    >
-                      <Trash2 />
-                      删除
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(notif.id)}
+                          className="h-6 w-6 p-0 text-[#A3A3A3] hover:text-red-600 hover:bg-transparent [&_svg]:size-3.5"
+                          aria-label="删除"
+                        >
+                          <Trash2 />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>删除</TooltipContent>
+                    </Tooltip>
                   )}
                   {notif.category === "failure" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopy(notif)}
-                      className={[
-                        "h-6 px-1.5 gap-1 text-xs [&_svg]:size-3",
-                        isCopied
-                          ? "text-green-600 bg-green-50 hover:bg-green-50 hover:text-green-600"
-                          : "text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5]",
-                      ].join(" ")}
-                      title="复制详情"
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check />
-                          已复制
-                        </>
-                      ) : (
-                        <>
+                    <Tooltip open={isCopied || undefined}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopy(notif)}
+                          className="h-6 w-6 p-0 text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3.5"
+                          aria-label="复制"
+                        >
                           <Copy />
-                          复制
-                        </>
-                      )}
-                    </Button>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{isCopied ? "复制成功" : "复制"}</TooltipContent>
+                    </Tooltip>
                   )}
+                  </TooltipProvider>
                 </div>
               </div>
             </SurfaceCard>
@@ -256,28 +261,34 @@ export default function NotificationPanel({
 
   return (
     <Sheet open={showPanel} onOpenChange={setShowPanel} modal={false}>
-      <SheetTrigger asChild>
-        <NavIconButton
-          icon={<BellIcon />}
-          label="消息通知"
-          title="消息通知"
-          badge={
-            hasUnread ? (
-              <span
-                aria-label={`${totalUnread} 条未读通知`}
-                className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-[#E85C5C] text-white leading-none"
-              >
-                {unreadDisplay}
-              </span>
-            ) : null
-          }
-        />
-      </SheetTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SheetTrigger asChild>
+            <NavIconButton
+              icon={<BellIcon />}
+              label="消息通知"
+              badge={
+                hasUnread ? (
+                  <span
+                    aria-label={`${totalUnread} 条未读通知`}
+                    className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-[#F5F5F5] text-[#0A0A0A] leading-none"
+                  >
+                    {unreadDisplay}
+                  </span>
+                ) : null
+              }
+            />
+          </SheetTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={6}>
+          消息通知
+        </TooltipContent>
+      </Tooltip>
 
       <SheetContent
         side="right"
         showOverlay={false}
-        className="!w-[420px] !max-w-none !top-16 !h-[calc(100vh-4rem)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
+        className="!w-[420px] !max-w-none !top-[64px] !bottom-0 !h-[calc(100vh-64px)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
       >
         {/* ───── shadcn 规范：SheetHeader > SheetTitle + SheetDescription ───── */}
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-[#E5E5E5] gap-0 space-y-0">
@@ -341,7 +352,7 @@ export default function NotificationPanel({
                   <TabsTrigger
                     key={tab.key}
                     value={tab.key}
-                    className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal whitespace-nowrap text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
                   >
                     {tab.label}
                     {count > 0 && (

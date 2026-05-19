@@ -82,21 +82,21 @@ const METRIC_CARDS = [
   { title: "卡死会话", value: "4", unit: "", icon: AlertCircle, color: "#EF4444" },
 ];
 
+const SESSION_MGMT_ICON_BASE = "/assets/admin-session-management";
+
 // 现有观测功能卡片
 const EXISTING_OBSERVATION_CARDS = [
   {
     id: "health-monitoring",
     title: "业务运行健康度实时监控",
     description: "聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行",
-    icon: Activity,
-    color: "#10B981",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/business-health-monitoring.svg`,
   },
   {
     id: "log-metrics-insight",
     title: "应用日志与 OTEL 指标全景洞察",
     description: "多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时",
-    icon: BarChart3,
-    color: "#3B82F6",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/app-log-otel-insight.svg`,
   },
 ];
 
@@ -106,29 +106,25 @@ const CLS_NEW_CARDS = [
     id: "high-cost-session",
     title: "高Token会话实时分析与管控",
     description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率",
-    icon: TrendingUp,
-    color: "#F59E0B",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/high-token-session-control.svg`,
   },
   {
     id: "single-session-cost",
     title: "单会话全链路Token透视",
     description: "拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
-    icon: Zap,
-    color: "#AF52DE",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/single-session-token-insight.svg`,
   },
   {
     id: "session-global-monitoring",
     title: "会话全局运行态势监控",
     description: "聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析",
-    icon: Activity,
-    color: "#34C759",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/session-global-monitoring.svg`,
   },
   {
     id: "session-efficiency",
     title: "会话详情与交互效率精细化分析",
     description: "聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率",
-    icon: BarChart3,
-    color: "#FF9500",
+    iconSrc: `${SESSION_MGMT_ICON_BASE}/session-detail-analysis.svg`,
   },
 ];
 
@@ -537,24 +533,18 @@ export default function OpsObservation() {
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
-                  const Icon = card.icon;
                   return (
                     <div
                       key={card.id}
                       className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
                     >
                       <div className="flex items-start gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: card.color }}
-                        >
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
+                        <img src={card.iconSrc} alt="" className="shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-xs font-bold text-gray-900 mb-1">
+                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
                             {card.title}
                           </h5>
-                          <p className="text-xs text-gray-500 leading-relaxed">
+                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
                             {card.description}
                           </p>
                         </div>
@@ -573,24 +563,18 @@ export default function OpsObservation() {
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
                 {CLS_NEW_CARDS.map((card) => {
-                  const Icon = card.icon;
                   return (
                     <div
                       key={card.id}
                       className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
                     >
                       <div className="flex items-start gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                          style={{ background: card.color }}
-                        >
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
+                        <img src={card.iconSrc} alt="" className="shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-xs font-bold text-gray-900 mb-1">
+                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
                             {card.title}
                           </h5>
-                          <p className="text-xs text-gray-500 leading-relaxed">
+                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
                             {card.description}
                           </p>
                         </div>

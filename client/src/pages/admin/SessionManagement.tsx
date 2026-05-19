@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, BarChart3, Activity, TrendingUp, AlertTriangle, Info } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, AlertTriangle, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -528,23 +528,19 @@ export default function SessionManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
-                      <Activity className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/session-global-monitoring.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话全局运行态势监控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话全局运行态势监控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#FF9500" }}>
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/session-detail-analysis.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话详情与交互效率精细化分析</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话详情与交互效率精细化分析</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
                     </div>
                   </div>
                 </div>
@@ -560,45 +556,37 @@ export default function SessionManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#F59E0B" }}>
-                      <TrendingUp className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/high-token-session-control.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">高Token会话实时分析与管控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">高Token会话实时分析与管控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#AF52DE" }}>
-                      <Zap className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/single-session-token-insight.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">单会话全链路Token透视</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">单会话全链路Token透视</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
-                      <Activity className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/business-health-monitoring.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">业务运行健康度实时监控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">业务运行健康度实时监控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/app-log-otel-insight.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">应用日志与 OTEL 指标全景洞察</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">应用日志与 OTEL 指标全景洞察</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
                     </div>
                   </div>
                 </div>

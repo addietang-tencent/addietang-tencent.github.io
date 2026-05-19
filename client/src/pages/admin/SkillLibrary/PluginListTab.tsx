@@ -386,7 +386,7 @@ export default function PluginListTab() {
                     statusLine1Color = 'text-gray-700';
                     const total = summary.lastDistributionInstanceCount || 0;
                     const success = summary.lastDistributionSuccessCount ?? total;
-                    statusLine2 = `已下发（${success}/${total}成功）`;
+                    statusLine2 = `已下发(${success}/${total}成功)`;
                     if (success === total) {
                       statusLine2Color = 'text-green-600';
                       statusLine2Bg = 'bg-green-50';

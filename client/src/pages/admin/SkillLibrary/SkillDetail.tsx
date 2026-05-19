@@ -1304,7 +1304,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                               {isDeleteRecord
                                 ? (record.status === 'deleting'
                                   ? `卸载中 ${progress}%`
-                                  : `卸载完成，${record.successCount}个成功，${record.failedCount}个失败`)
+                                  : `卸载完成，${record.successCount}个卸载成功，${record.failedCount}个失败`)
                                 : (record.status === 'distributing'
                                   ? `下发中 ${progress}%`
                                   : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`)}

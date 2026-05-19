@@ -630,7 +630,7 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-blue-200 transition-colors"
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-[#355EF1] transition-colors"
            
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >

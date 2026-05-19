@@ -10,6 +10,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SurfaceCard, SurfaceInner } from "@/components/ui/Surface";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -173,7 +174,7 @@ function getFileIcon(type: FileItem["type"], large = false) {
     case "archive": return <FileArchive className={`${cls} text-orange-500`} />;
     case "video": return <FileVideo className={`${cls} text-purple-500`} />;
     case "audio": return <FileAudio className={`${cls} text-indigo-500`} />;
-    default: return <File className={`${cls} text-gray-400`} />;
+    default: return <File className={`${cls} text-[#A3A3A3]`} />;
   }
 }
 
@@ -655,20 +656,15 @@ export default function FileSpace({
       />
 
       {/* Header Bar */}
-      <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-        style={{ boxShadow: "var(--shadow-card)" }}>
+      <SurfaceCard className="overflow-hidden rounded-[4px]">
 
         {/* Top Info + Actions */}
-        <div className="px-5 py-4 border-b border-[#e5e5e5]">
+        <div className="px-5 py-4 border-b border-[#E5E5E5]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-[4px] flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, rgba(20,71,230,0.12), rgba(88,86,214,0.12))" }}>
-                <HardDrive className="w-4.5 h-4.5 text-blue-600" />
-              </div>
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">{clawName} · 网盘管理</h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <h3 className="text-[16px] font-semibold text-[#0A0A0A] leading-5 whitespace-nowrap">{clawName} · 网盘管理</h3>
+                <p className="text-xs text-[#A3A3A3] mt-0.5">
                   {spaceUsage
                     ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`
                     : `共 ${totalFileCount} 个文件`
@@ -679,24 +675,38 @@ export default function FileSpace({
             <div className="flex items-center gap-2">
               {/* 上传进度 */}
               {uploading && (
-                <div className="flex items-center gap-2 text-xs text-blue-600 mr-2">
+                <div className="flex items-center gap-2 text-xs text-[#1447E6] mr-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>上传中 {uploadProgress}%</span>
                 </div>
               )}
               {/* 视图切换 */}
-              <div className="flex rounded-[4px] border border-gray-200 overflow-hidden">
+              <div className="inline-flex items-center gap-1 p-1 rounded-[4px]" style={{ background: "#F5F5F5" }}>
                 <button
+                  type="button"
                   onClick={() => setViewMode("list")}
-                  className={`px-2.5 py-1.5 transition-colors ${viewMode === "list" ? "bg-blue-50 text-blue-600" : "bg-white text-gray-400 hover:bg-gray-50"}`}
+                  aria-label="列表视图"
+                  className={`flex items-center justify-center w-7 h-7 rounded-[3px] transition-all duration-150 ${
+                    viewMode === "list"
+                      ? "bg-white text-[#0A0A0A]"
+                      : "text-[#737373] hover:text-[#0A0A0A]"
+                  }`}
+                  style={viewMode === "list" ? { boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : undefined}
                 >
-                  <List className="w-3.5 h-3.5" />
+                  <List className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`px-2.5 py-1.5 border-l border-gray-200 transition-colors ${viewMode === "grid" ? "bg-blue-50 text-blue-600" : "bg-white text-gray-400 hover:bg-gray-50"}`}
+                  aria-label="网格视图"
+                  className={`flex items-center justify-center w-7 h-7 rounded-[3px] transition-all duration-150 ${
+                    viewMode === "grid"
+                      ? "bg-white text-[#0A0A0A]"
+                      : "text-[#737373] hover:text-[#0A0A0A]"
+                  }`}
+                  style={viewMode === "grid" ? { boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : undefined}
                 >
-                  <Grid3X3 className="w-3.5 h-3.5" />
+                  <Grid3X3 className="w-4 h-4" />
                 </button>
               </div>
               <Tooltip>
@@ -730,25 +740,27 @@ export default function FileSpace({
             <nav className="flex items-center gap-1 text-xs flex-shrink-0">
               {breadcrumbs.map((crumb, idx) => (
                 <span key={crumb.path} className="flex items-center gap-1">
-                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300" />}
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-[#A3A3A3]" />}
                   {idx === 0 ? (
                     <button
+                      type="button"
                       onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
                       className={`flex items-center gap-1 px-1.5 py-1 rounded-[4px] transition-colors ${
                         idx === breadcrumbs.length - 1
-                          ? "text-gray-700 font-medium"
-                          : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                          ? "text-[#334155] font-medium"
+                          : "text-[#A3A3A3] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
                       }`}
                     >
-                      <Home className="w-3 h-3" />
+                      <Home className="w-4 h-4" />
                     </button>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => { setCurrentPath(crumb.path); setSearch(""); }}
                       className={`px-1.5 py-1 rounded-[4px] transition-colors ${
                         idx === breadcrumbs.length - 1
-                          ? "text-gray-700 font-medium"
-                          : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                          ? "text-[#334155] font-medium"
+                          : "text-[#A3A3A3] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
                       }`}
                     >
                       {crumb.label}
@@ -758,22 +770,21 @@ export default function FileSpace({
               ))}
             </nav>
 
-            <div className="w-px h-4 bg-gray-200" />
+            <div className="w-px h-4 bg-[#E5E5E5]" />
 
             {/* Search */}
             <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
               <Input
                 placeholder="搜索文件名..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 bg-gray-50 border-gray-200 text-xs h-8"
+                className="pl-8 bg-white border-[#E5E5E5] text-xs h-8"
               />
             </div>
 
             {/* Sort */}
-            <div className="flex items-center gap-1 text-xs text-gray-400 ml-auto flex-shrink-0">
-              <ArrowUpDown className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-xs text-[#A3A3A3] ml-auto flex-shrink-0">
               {([
                 { field: "modifiedAt" as SortField, label: "时间" },
                 { field: "name" as SortField, label: "名称" },
@@ -781,11 +792,12 @@ export default function FileSpace({
               ]).map((opt) => (
                 <button
                   key={opt.field}
+                  type="button"
                   onClick={() => toggleSort(opt.field)}
                   className={`px-2 py-1 rounded-[4px] transition-colors ${
                     sortField === opt.field
-                      ? "bg-blue-50 text-blue-600 font-medium"
-                      : "hover:bg-gray-100 text-gray-500"
+                      ? "bg-[#EFF6FF] text-[#1447E6] font-medium"
+                      : "hover:bg-[#F5F5F5] text-[#737373]"
                   }`}
                 >
                   {opt.label}
@@ -800,7 +812,7 @@ export default function FileSpace({
 
         {/* File List / Grid */}
         <div
-          className={`relative transition-colors ${isDragOver ? "bg-blue-50/60" : ""}`}
+          className={`relative transition-colors ${isDragOver ? "bg-[#EFF6FF]/70" : ""}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
@@ -808,10 +820,10 @@ export default function FileSpace({
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-blue-50/80 border-2 border-dashed border-blue-300 rounded-[4px] m-2 pointer-events-none">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#EFF6FF]/80 border-2 border-dashed border-[#1447E6]/40 rounded-[4px] m-2 pointer-events-none">
               <div className="flex flex-col items-center gap-2">
-                <Upload className="w-8 h-8 text-blue-400" />
-                <p className="text-sm text-blue-600 font-medium">释放文件以上传</p>
+                <Upload className="w-8 h-8 text-[#1447E6]" />
+                <p className="text-sm text-[#1447E6] font-medium">释放文件以上传</p>
               </div>
             </div>
           )}
@@ -819,8 +831,8 @@ export default function FileSpace({
           {/* Loading 状态 */}
           {loading && (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 text-blue-400 animate-spin mr-2" />
-              <span className="text-sm text-gray-400">加载中...</span>
+              <Loader2 className="w-6 h-6 text-[#1447E6] animate-spin mr-2" />
+              <span className="text-sm text-[#A3A3A3]">加载中...</span>
             </div>
           )}
 
@@ -829,7 +841,7 @@ export default function FileSpace({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50/80 text-gray-400 text-xs tracking-wide">
+                  <tr className="bg-[#F5F5F5]/80 text-[#A3A3A3] text-xs tracking-wide">
                     <th className="text-left px-5 py-2.5 font-medium">文件名</th>
                     <th className="text-left px-5 py-2.5 font-medium w-20">类型</th>
                     <th className="text-right px-5 py-2.5 font-medium w-24">大小</th>
@@ -837,16 +849,16 @@ export default function FileSpace({
                     <th className="text-center px-5 py-2.5 font-medium w-16">操作</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-[#F5F5F5]">
                   {filteredFiles.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-5 py-16 text-center">
-                        <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                        <p className="text-sm text-gray-400">
+                        <FolderOpen className="w-10 h-10 text-[#E5E5E5] mx-auto mb-3" />
+                        <p className="text-sm text-[#A3A3A3]">
                           {search ? "未找到匹配的文件" : "当前目录为空"}
                         </p>
                         {!search && (
-                          <p className="text-xs text-gray-300 mt-1">拖拽文件到此处或点击上传按钮添加文件</p>
+                          <p className="text-xs text-[#A3A3A3] mt-1">拖拽文件到此处或点击上传按钮添加文件</p>
                         )}
                       </td>
                     </tr>
@@ -854,17 +866,18 @@ export default function FileSpace({
                     filteredFiles.map((file) => (
                       <tr
                         key={file.id}
-                        className="hover:bg-gray-50/60 transition-colors group"
+                        className="hover:bg-[#F5F5F5]/70 transition-colors group"
                         onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                       >
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-3">
                             {getFileIcon(file.type)}
                             <button
+                              type="button"
                               className={`text-sm font-medium truncate max-w-[320px] text-left ${
                                 file.type === "folder"
-                                  ? "text-gray-900 hover:text-blue-600 cursor-pointer"
-                                  : "text-gray-700 group-hover:text-blue-600 cursor-default"
+                                  ? "text-[#0A0A0A] hover:text-[#1447E6] cursor-pointer"
+                                  : "text-[#334155] group-hover:text-[#1447E6] cursor-default"
                               } transition-colors`}
                               onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                             >
@@ -873,13 +886,13 @@ export default function FileSpace({
                           </div>
                         </td>
                         <td className="px-5 py-2.5">
-                          <span className="text-xs text-gray-400">{getFileTypeName(file.type)}</span>
+                          <span className="text-xs text-[#A3A3A3]">{getFileTypeName(file.type)}</span>
                         </td>
                         <td className="px-5 py-2.5 text-right">
-                          <span className="text-xs tabular-nums text-gray-500">{file.size}</span>
+                          <span className="text-xs tabular-nums text-[#737373]">{file.size}</span>
                         </td>
                         <td className="px-5 py-2.5 text-right">
-                          <span className="text-xs text-gray-400 tabular-nums whitespace-nowrap">{file.modifiedAt}</span>
+                          <span className="text-xs text-[#A3A3A3] tabular-nums whitespace-nowrap">{file.modifiedAt}</span>
                         </td>
                         <td className="px-5 py-2.5 text-center">
                           <FileActions
@@ -903,17 +916,17 @@ export default function FileSpace({
             <div className="p-5">
               {filteredFiles.length === 0 ? (
                 <div className="py-16 text-center">
-                  <FolderOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-                  <p className="text-sm text-gray-400">
+                  <FolderOpen className="w-10 h-10 text-[#E5E5E5] mx-auto mb-3" />
+                  <p className="text-sm text-[#A3A3A3]">
                     {search ? "未找到匹配的文件" : "当前目录为空"}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-5 gap-3">
                   {filteredFiles.map((file) => (
-                    <div
+                    <SurfaceInner
                       key={file.id}
-                      className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-[#e5e5e5] hover:border-blue-200 rounded-[4px] p-4 transition-all cursor-pointer"
+                      className="group relative rounded-[4px] p-4 transition-colors cursor-pointer hover:bg-[#F5F5F5]"
                       onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                       onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                     >
@@ -930,14 +943,14 @@ export default function FileSpace({
                       </div>
                       <div className="flex flex-col items-center text-center">
                         <div className="mb-3">{getFileIcon(file.type, true)}</div>
-                        <p className="text-xs font-medium text-gray-700 group-hover:text-blue-600 truncate w-full transition-colors">
+                        <p className="text-xs font-medium text-[#334155] group-hover:text-[#1447E6] truncate w-full transition-colors">
                           {file.name}
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-1">
+                        <p className="text-[10px] text-[#A3A3A3] mt-1">
                           {file.type === "folder" ? "文件夹" : file.size}
                         </p>
                       </div>
-                    </div>
+                    </SurfaceInner>
                   ))}
                 </div>
               )}
@@ -946,8 +959,8 @@ export default function FileSpace({
 
           {/* Footer Stats */}
           {!loading && filteredFiles.length > 0 && (
-            <div className="px-5 py-2.5 border-t border-[#e5e5e5] flex items-center justify-between">
-              <div className="flex items-center gap-4 text-xs text-gray-400">
+            <div className="px-5 py-2.5 border-t border-[#E5E5E5] flex items-center justify-between">
+              <div className="flex items-center gap-4 text-xs text-[#A3A3A3]">
                 <span className="flex items-center gap-1">
                   <HardDrive className="w-3 h-3" />
                   {folderCount > 0 && `${folderCount} 个文件夹，`}{fileCount} 个文件
@@ -957,21 +970,21 @@ export default function FileSpace({
                   最近更新于 {files[0]?.modifiedAt ?? "—"}
                 </span>
               </div>
-              <span className="text-xs text-gray-300">
+              <span className="text-xs text-[#A3A3A3]">
                 {currentPath === "/" ? "根目录" : currentPath}
               </span>
             </div>
           )}
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Delete Confirm Dialog */}
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
         <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">确认删除</DialogTitle>
+            <DialogTitle className="text-base font-bold text-[#0A0A0A]">确认删除</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-sm text-[#334155] leading-relaxed">
             确定要删除「{deleteConfirm?.name}」吗？{deleteConfirm?.type === "folder" ? "文件夹内的所有内容也将被删除，" : ""}此操作不可恢复。
           </p>
           <DialogFooter className="gap-2 pt-2">
@@ -990,7 +1003,7 @@ export default function FileSpace({
       <Dialog open={!!renameTarget} onOpenChange={(open) => { if (!open) { setRenameTarget(null); setRenameValue(""); } }}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">重命名</DialogTitle>
+            <DialogTitle className="text-base font-bold text-[#0A0A0A]">重命名</DialogTitle>
           </DialogHeader>
           <div className="py-2">
             <Input
@@ -1019,7 +1032,7 @@ export default function FileSpace({
       <Dialog open={showNewFolder} onOpenChange={(open) => { if (!open) { setShowNewFolder(false); setNewFolderName(""); } }}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">新建文件夹</DialogTitle>
+            <DialogTitle className="text-base font-bold text-[#0A0A0A]">新建文件夹</DialogTitle>
           </DialogHeader>
           <div className="py-2">
             <Input
@@ -1048,19 +1061,20 @@ export default function FileSpace({
       <Dialog open={!!moveTarget} onOpenChange={(open) => { if (!open) { setMoveTarget(null); setMoveDestPath("/"); } }}>
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">移动到</DialogTitle>
+            <DialogTitle className="text-base font-bold text-[#0A0A0A]">移动到</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#737373]">
               将「{moveTarget?.name}」移动到选定目录
             </p>
 
             {/* 当前浏览路径面包屑 */}
-            <div className="flex items-center gap-1 text-xs bg-gray-50 rounded-[4px] px-3 py-2 overflow-hidden flex-nowrap min-w-0">
+            <div className="flex items-center gap-1 text-xs bg-[#F5F5F5] rounded-[4px] px-3 py-2 overflow-hidden flex-nowrap min-w-0">
               <button
+                type="button"
                 onClick={() => moveBrowseInto("/")}
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors flex-shrink-0 ${
-                  moveBrowsePath === "/" ? "text-blue-600 font-medium bg-blue-50" : "text-gray-400 hover:text-blue-600"
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] transition-colors flex-shrink-0 ${
+                  moveBrowsePath === "/" ? "text-[#1447E6] font-medium bg-[#EFF6FF]" : "text-[#A3A3A3] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
                 }`}
               >
                 <Home className="w-3 h-3" />
@@ -1071,11 +1085,12 @@ export default function FileSpace({
                 const isLast = idx === arr.length - 1;
                 return (
                   <span key={segPath} className="flex items-center gap-1 flex-shrink-0 min-w-0">
-                    <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                    <ChevronRight className="w-3 h-3 text-[#A3A3A3] flex-shrink-0" />
                     <button
+                      type="button"
                       onClick={() => moveBrowseInto(segPath)}
-                      className={`px-1.5 py-0.5 rounded transition-colors truncate max-w-[100px] ${
-                        isLast ? "text-blue-600 font-medium bg-blue-50" : "text-gray-400 hover:text-blue-600"
+                      className={`px-1.5 py-0.5 rounded-[4px] transition-colors truncate max-w-[100px] ${
+                        isLast ? "text-[#1447E6] font-medium bg-[#EFF6FF]" : "text-[#A3A3A3] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
                       }`}
                       title={seg}
                     >
@@ -1087,27 +1102,28 @@ export default function FileSpace({
             </div>
 
             {/* 目录列表 */}
-            <div className="border border-gray-200 rounded-[4px] overflow-hidden max-h-[240px] overflow-y-auto">
+            <SurfaceInner className="rounded-[4px] overflow-hidden max-h-[240px] overflow-y-auto">
               {/* 返回上级 */}
               {moveBrowsePath !== "/" && (
                 <button
+                  type="button"
                   onClick={moveBrowseUp}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 border-b border-[#e5e5e5] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[#737373] hover:bg-[#F5F5F5] border-b border-[#E5E5E5] transition-colors"
                 >
-                  <ChevronRight className="w-3.5 h-3.5 rotate-180 text-gray-400" />
+                  <ChevronRight className="w-3.5 h-3.5 rotate-180 text-[#A3A3A3]" />
                   <span>返回上级目录</span>
                 </button>
               )}
 
               {moveLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-4 h-4 text-blue-400 animate-spin mr-2" />
-                  <span className="text-xs text-gray-400">加载中...</span>
+                  <Loader2 className="w-4 h-4 text-[#1447E6] animate-spin mr-2" />
+                  <span className="text-xs text-[#A3A3A3]">加载中...</span>
                 </div>
               ) : moveFolders.length === 0 ? (
                 <div className="py-8 text-center">
-                  <Folder className="w-6 h-6 text-gray-200 mx-auto mb-2" />
-                  <p className="text-xs text-gray-400">当前目录下没有子文件夹</p>
+                  <Folder className="w-6 h-6 text-[#E5E5E5] mx-auto mb-2" />
+                  <p className="text-xs text-[#A3A3A3]">当前目录下没有子文件夹</p>
                 </div>
               ) : (
                 moveFolders
@@ -1115,21 +1131,22 @@ export default function FileSpace({
                   .map((folder) => (
                   <button
                     key={folder.path}
+                    type="button"
                     onClick={() => moveBrowseInto(folder.path)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-blue-50 border-b border-gray-50 last:border-b-0 transition-colors group min-w-0 overflow-hidden"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-[#EFF6FF] border-b border-[#F5F5F5] last:border-b-0 transition-colors group min-w-0 overflow-hidden"
                   >
                     <Folder className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                    <span className="text-gray-700 group-hover:text-blue-600 truncate text-left flex-1 min-w-0 w-[100px]" title={folder.name}>{folder.name}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-blue-400 flex-shrink-0" />
+                    <span className="text-[#334155] group-hover:text-[#1447E6] truncate text-left flex-1 min-w-0 w-[100px]" title={folder.name}>{folder.name}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3] group-hover:text-[#1447E6] flex-shrink-0" />
                   </button>
                 ))
               )}
-            </div>
+            </SurfaceInner>
 
             {/* 选中的目标路径 */}
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-gray-400">目标位置：</span>
-              <span className="text-blue-600 font-medium">
+              <span className="text-[#A3A3A3]">目标位置：</span>
+              <span className="text-[#1447E6] font-medium">
                 {moveDestPath === "/" ? "/ 根目录" : moveDestPath}
               </span>
             </div>
@@ -1171,35 +1188,41 @@ function FileActions({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="w-7 h-7 rounded-[4px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors mx-auto">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="更多操作"
+          className="w-7 h-7 rounded-[4px] mx-auto text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5]"
+        >
           <MoreVertical className="w-4 h-4" />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         {file.type === "folder" ? (
           <DropdownMenuItem onClick={onOpenFolder}>
-            <FolderOpen className="w-4 h-4 mr-2 text-gray-500" />
+            <FolderOpen className="w-4 h-4 mr-2 text-[#737373]" />
             打开
           </DropdownMenuItem>
         ) : (
           <>
             <DropdownMenuItem onClick={onPreview}>
-              <Eye className="w-4 h-4 mr-2 text-gray-500" />
+              <Eye className="w-4 h-4 mr-2 text-[#737373]" />
               预览
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDownload}>
-              <Download className="w-4 h-4 mr-2 text-gray-500" />
+              <Download className="w-4 h-4 mr-2 text-[#737373]" />
               下载
             </DropdownMenuItem>
           </>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onRename}>
-          <Edit3 className="w-4 h-4 mr-2 text-gray-500" />
+          <Edit3 className="w-4 h-4 mr-2 text-[#737373]" />
           重命名
         </DropdownMenuItem>
         <DropdownMenuItem onClick={onMove}>
-          <FolderInput className="w-4 h-4 mr-2 text-gray-500" />
+          <FolderInput className="w-4 h-4 mr-2 text-[#737373]" />
           移动到
         </DropdownMenuItem>
         <DropdownMenuSeparator />

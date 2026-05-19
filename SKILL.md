@@ -257,15 +257,15 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 | 屏幕宽度 | 中央 Tabs | 右侧按钮文字 | 用户账号 |
 |----------|-----------|-------------|---------|
 | > 1400px | 绝对定位屏幕水平正中心 | 图标 + 完整文字 + 徽章 | 头像 + 完整用户名 + 箭头 |
-| 1201–1400px | 仍然绝对居中 | 图标不变，文字 `max-width: 3em` 溢出省略 | 用户名溢出省略 |
-| ≤ 1200px | 回到 flex 流（弹簧后面） | 文字和徽章隐藏（`max-width: 0` + `opacity: 0`），仅保留图标 | 仅保留头像 |
+| 1070–1400px | 仍然绝对居中 | 图标不变，文字 `max-width: 3em` 溢出省略，与中央 Tab 保持至少 24px 距离 | 用户名溢出省略 |
+| < 1070px | 回到 flex 流（弹簧后面） | 文字和徽章隐藏（`max-width: 0` + `opacity: 0`），仅保留图标 | 仅保留头像 |
 
 **实现方式**：
 
-- 中央 Tabs 通过 CSS class `.nav-center-tabs` 控制，`@media (min-width: 1200px)` 时 `position: absolute; left: 50%; transform: translate(-50%, -50%)`
+- 中央 Tabs 通过 CSS class `.nav-center-tabs` 控制，`@media (min-width: 1070px)` 时 `position: absolute; left: 50%; transform: translate(-50%, -50%)`
 - 右侧按钮文字通过 CSS class `.nav-btn-label` 控制断点隐藏
-- 按钮容器通过 `.nav-icon-btn` 在 ≤1200px 时 `gap: 0; padding: 6px` 让图标居中于分隔线之间
-- 用户菜单通过 `.nav-user-btn` 在 ≤1200px 时 `gap: 0; padding: 0` 去掉多余空白
+- 按钮容器通过 `.nav-icon-btn` 在 <1070px 时 `gap: 0; padding: 6px` 让图标居中于分隔线之间
+- 用户菜单通过 `.nav-user-btn` 在 <1070px 时 `gap: 0; padding: 0` 去掉多余空白
 - 过渡动画：`.nav-btn-label` 设置 `transition: max-width 0.3s ease, opacity 0.3s ease, padding 0.3s ease`，无垂直位移
 
 **hover 样式统一**：所有导航栏按钮（含用户账号）hover 为 `hover:bg-[#F5F5F5]` + 文字变深 `#020617`

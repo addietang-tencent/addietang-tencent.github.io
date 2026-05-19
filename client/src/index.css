@@ -252,6 +252,11 @@
     border-color: var(--admin-sidebar-action-hover-border) !important;
   }
 
+  /* 选中态：左侧导航 SVG 图标渲染为纯黑（覆盖图标自带渐变色） */
+  [data-slot="admin-sidebar-menu-button"][data-active="true"] > img {
+    filter: brightness(0) saturate(100%);
+  }
+
   [data-slot="admin-sidebar-header-action"]:hover {
     background: var(--admin-sidebar-action-hover-bg);
     border-color: var(--admin-sidebar-action-hover-border);

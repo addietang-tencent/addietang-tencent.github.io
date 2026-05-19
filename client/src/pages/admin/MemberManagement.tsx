@@ -45,7 +45,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
   if (names.length === 0) {
     return (
       <div className="w-full overflow-hidden">
-        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50">
+        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-[4px] border border-[#d3d6db] bg-white text-sm font-normal hover:border-[#355EF1] transition-colors">
           <span className="text-muted-foreground truncate">请选择分组</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
         </button>
@@ -55,7 +55,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
 
   return (
     <div className="w-full overflow-hidden" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-normal hover:bg-gray-50 relative pr-7">
+      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-[4px] border border-[#d3d6db] bg-white text-sm font-normal hover:border-[#355EF1] transition-colors relative pr-7">
         {names.map((name) => (
           <span
             key={name}
@@ -2421,13 +2421,13 @@ export default function MemberManagement() {
               className="inline-flex items-center rounded-xl p-1 gap-0.5 bg-white border border-gray-200 h-9"
             >
               <button
-                className={`h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${viewMode === "all" ? "font-semibold text-gray-900 bg-gray-100" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}
+                className={`h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${viewMode === "all" ? "font-semibold text-[#020617] bg-[#F5F5F5]" : "text-[#020617] hover:bg-[#F5F5F5]"}`}
                 onClick={() => { setViewMode("all"); setPage(1); }}
               >
                 全部
               </button>
               <button
-                className={`h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${viewMode === "group" ? "font-semibold text-gray-900 bg-gray-100" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}
+                className={`h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${viewMode === "group" ? "font-semibold text-[#020617] bg-[#F5F5F5]" : "text-[#020617] hover:bg-[#F5F5F5]"}`}
                 onClick={() => { setViewMode("group"); setGroupPage(1); }}
               >
                 分组

@@ -143,7 +143,7 @@ const AdminSidebarBrand = React.forwardRef<HTMLDivElement, React.ComponentProps<
         ref={ref}
         data-slot="admin-sidebar-brand"
         className={cn(
-          "flex min-w-0 items-center gap-2.5 rounded-[4px] text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
+          "group flex min-w-0 items-center gap-2.5 rounded-[4px] text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
           className
         )}
         {...props}
@@ -161,7 +161,7 @@ const AdminSidebarHeaderAction = React.forwardRef<HTMLButtonElement, React.Compo
         ref={ref}
         data-slot="admin-sidebar-header-action"
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-[4px] border border-[var(--admin-sidebar-action-border)] bg-[var(--admin-sidebar-action-bg)] text-[var(--admin-sidebar-foreground)] outline-none transition-[background,border-color,color,box-shadow] duration-150 hover:text-[var(--admin-sidebar-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
+          "flex size-8 shrink-0 items-center justify-center rounded-[4px] border border-[var(--admin-sidebar-action-border)] bg-[var(--admin-sidebar-action-bg)] text-[var(--admin-sidebar-foreground)] outline-none transition-[background,border-color,color,box-shadow] duration-150 hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:text-[var(--admin-sidebar-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
           className
         )}
         {...props}

@@ -418,7 +418,7 @@ rm -f /tmp/openclaw-state.tgz`;
   const failedCount = tasks.filter((t) => t.status === "failed").length;
 
   return (
-    <div className="page-enter max-w-5xl">
+    <div className="page-enter">
       {/* Header */}
       <div className="mb-6">
         <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 mb-2 transition-colors">

@@ -298,31 +298,125 @@ export default function ModelQuota() {
         <div className="min-w-[1200px] overflow-x-clip">
           <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 px-[42px] py-8">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">模型额度</h1>
+            <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)]" style={{ paddingBottom: "75px" }}>
+          {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
+            style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
+            style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+          />
+          {/* 左右两侧点阵装饰层 — 对齐「我的 Agent」
+              覆盖范围：hero 底线(112px) ~ 底部分割线(bottom 75px = paddingBottom)
+              点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              top: "112px",
+              bottom: "75px",
+              left: "calc((100% - 100vw) / 2)",
+              right: "100%",
+              backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+              backgroundSize: "12px 12px",
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              top: "112px",
+              bottom: "75px",
+              left: "100%",
+              right: "calc((100% - 100vw) / 2)",
+              backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+              backgroundSize: "12px 12px",
+            }}
+          />
+          {/* Hero 段 — 对齐「我的 Agent」HeroBanner 样式（112px / 渐变标题 / 底部贯穿分割线） */}
+          <div className="relative" style={{ height: "112px" }}>
+            <div
+              style={{
+                height: "112px",
+                padding: "0 42px",
+                borderLeft: "1px solid #E2E8F0",
+                borderRight: "1px solid #E2E8F0",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: "8px",
+                overflow: "hidden",
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                  fontWeight: 500,
+                  fontSize: "26px",
+                  lineHeight: "35.56px",
+                  letterSpacing: "-4.27%",
+                  margin: 0,
+                  backgroundImage: "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  color: "transparent",
+                  width: "fit-content",
+                }}
+              >
+                模型额度
+              </h1>
+              <div className="flex items-center" style={{ gap: "8px" }}>
+                <p
+                  style={{
+                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontWeight: 400,
+                    fontSize: "12px",
+                    lineHeight: "22.22px",
+                    letterSpacing: "1.5%",
+                    color: "#737373",
+                    margin: 0,
+                  }}
+                >
+                  查看所选时间范围内的模型 Token 使用情况。
+                </p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors whitespace-nowrap">
+                      查看Token使用规则
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-sm text-xs">
+                    <div className="space-y-1.5">
+                      <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
+                      <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
+                      <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
+                      <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            {/* 贯穿底部分割线 */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
+              style={{
+                left: "calc(50% - 50vw)",
+                width: "100vw",
+                bottom: 0,
+                height: "1px",
+                backgroundColor: "#E2E8F0",
+              }}
+            />
           </div>
 
-          {/* 提示语区域 - 简化版本，第一行 + hover 显示详细文案 */}
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-xs text-gray-700">查看所选时间范围内的模型 Token 使用情况。</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
-                  查看Token使用规则
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-sm text-xs">
-                <div className="space-y-1.5">
-                  <p>统计数据为模型 API 处理的全量 Token，包含输入 Token(缓存未命中)、输入 Token(缓存命中)、输出 Token。</p>
-                  <p>缓存命中 Token 的实际计费价格通常远低于缓存未命中 Token。</p>
-                  <p>因此页面展示的总 Token 数不等于等额的实际计费成本。</p>
-                  <p>如需了解各模型的缓存输入 Token 定价，请参考对应模型提供商的官方计费文档。</p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          {/* 内容区 */}
+          <div className="px-[42px] py-6">
 
           {/* Filter Bar */}
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
@@ -597,10 +691,26 @@ export default function ModelQuota() {
             />
           </SurfaceCard>
 
-          <p className="text-xs text-gray-400 text-center mt-6">
+          </div>{/* end 内容区 px-[42px] py-6 */}
+
+          {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px（paddingBottom 区域上方），吸底 */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute"
+            style={{
+              left: "calc(50% - 50vw)",
+              width: "100vw",
+              bottom: "75px",
+              height: "1px",
+              backgroundColor: "#E2E8F0",
+            }}
+          />
+
+          {/* 底部提示语 — 位于分割线下方的 paddingBottom 区域内 */}
+          <p className="absolute bottom-7 left-0 right-0 text-xs text-gray-400 text-center">
             额度由企业管理员统一配置，如需调整请联系管理员
           </p>
-            </div>{/* end 中间内容区 */}
+            </div>{/* end flex-1 min-w-0 relative */}
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
           </div>{/* end max-w-[1920px] flex */}
         </div>{/* end min-w-[1200px] overflow-x-clip */}

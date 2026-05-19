@@ -655,11 +655,11 @@ export default function FileSpace({
       />
 
       {/* Header Bar */}
-      <div className="bg-white rounded-[4px] border border-gray-100 overflow-hidden"
+      <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         style={{ boxShadow: "var(--shadow-card)" }}>
 
         {/* Top Info + Actions */}
-        <div className="px-5 py-4 border-b border-gray-100">
+        <div className="px-5 py-4 border-b border-[#e5e5e5]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-[4px] flex items-center justify-center"
@@ -913,7 +913,7 @@ export default function FileSpace({
                   {filteredFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-gray-100 hover:border-blue-200 rounded-[4px] p-4 transition-all cursor-pointer"
+                      className="group relative bg-gray-50/50 hover:bg-blue-50/50 border border-[#e5e5e5] hover:border-blue-200 rounded-[4px] p-4 transition-all cursor-pointer"
                       onDoubleClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                       onClick={() => file.type === "folder" && handleOpenFolder(file.name)}
                     >
@@ -946,7 +946,7 @@ export default function FileSpace({
 
           {/* Footer Stats */}
           {!loading && filteredFiles.length > 0 && (
-            <div className="px-5 py-2.5 border-t border-gray-100 flex items-center justify-between">
+            <div className="px-5 py-2.5 border-t border-[#e5e5e5] flex items-center justify-between">
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <HardDrive className="w-3 h-3" />
@@ -1092,7 +1092,7 @@ export default function FileSpace({
               {moveBrowsePath !== "/" && (
                 <button
                   onClick={moveBrowseUp}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 border-b border-[#e5e5e5] transition-colors"
                 >
                   <ChevronRight className="w-3.5 h-3.5 rotate-180 text-gray-400" />
                   <span>返回上级目录</span>

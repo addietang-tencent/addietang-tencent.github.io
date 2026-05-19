@@ -302,7 +302,7 @@ export default function NotificationPanel({
                 size="sm"
                 onClick={handleMarkAllRead}
                 disabled={!hasUnread}
-                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
+                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-[#355EF1] hover:bg-[#EFF6FF]"
               >
                 <Check className="w-3.5 h-3.5" />
                 全部已读

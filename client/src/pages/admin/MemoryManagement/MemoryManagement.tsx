@@ -159,7 +159,7 @@ export const MemoryManagement: React.FC = () => {
 
       {/* 状态提示条 - 初始化中 */}
       {isProActivating && (
-        <div className="mb-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-4 py-3">
+        <div className="mb-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Loader2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0 animate-spin" />
           <p className="text-xs text-blue-600 leading-relaxed">Memory Pro 正在初始化中，预计需要几分钟...</p>
         </div>
@@ -167,7 +167,7 @@ export const MemoryManagement: React.FC = () => {
 
       {/* 状态提示条 - 成功 */}
       {showSuccessBanner && isProActive && (
-        <div className="mb-6 flex items-start gap-2.5 bg-green-50 border border-green-100 rounded-[4px] px-4 py-3 animate-in fade-in duration-300">
+        <div className="mb-6 flex items-start gap-2.5 bg-green-50 border border-green-100 rounded-xl px-4 py-3 animate-in fade-in duration-300">
           <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
           <div className="flex-1 flex items-center justify-between">
             <p className="text-xs text-green-600 leading-relaxed">Memory Pro 已就绪</p>
@@ -180,8 +180,7 @@ export const MemoryManagement: React.FC = () => {
 
       {/* 顶部：版本对比说明（可折叠） */}
       <div 
-        className="mb-6 bg-white rounded-[4px] border border-gray-100 overflow-hidden"
-        style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+        className="mb-6 bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
       >
         {/* 折叠触发器 */}
         <button
@@ -214,8 +213,7 @@ export const MemoryManagement: React.FC = () => {
 
       {/* 服务概览 - 统计卡片 */}
       <div 
-        className="mb-6 bg-white rounded-[4px] border border-gray-100"
-        style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+        className="mb-6 bg-white rounded-xl border border-[#e5e5e5]"
       >
         <div className="px-6 py-5 border-b border-gray-50">
           <h2 className="font-semibold text-gray-900">服务概览</h2>
@@ -224,11 +222,10 @@ export const MemoryManagement: React.FC = () => {
           <div className="grid grid-cols-5 gap-4">
             {/* 实例总数 */}
             <div 
-              className="bg-white rounded-[4px] border border-gray-100 p-5"
-              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+              className="bg-white rounded-xl border border-[#e5e5e5] p-5"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-[4px] flex items-center justify-center bg-gray-100">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                   <Bot className="w-5 h-5 text-gray-500" />
                 </div>
                 <span className="text-sm text-gray-500">实例总数</span>
@@ -238,11 +235,10 @@ export const MemoryManagement: React.FC = () => {
 
             {/* 未开启 */}
             <div 
-              className="bg-white rounded-[4px] border border-gray-100 p-5"
-              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+              className="bg-white rounded-xl border border-[#e5e5e5] p-5"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-[4px] flex items-center justify-center bg-gray-100">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
                   <CircleOff className="w-5 h-5 text-gray-400" />
                 </div>
                 <span className="text-sm text-gray-500">未开启</span>
@@ -252,11 +248,10 @@ export const MemoryManagement: React.FC = () => {
 
             {/* Free 版 */}
             <div 
-              className="bg-white rounded-[4px] border border-gray-100 p-5"
-              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
+              className="bg-white rounded-xl border border-[#e5e5e5] p-5"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-[4px] flex items-center justify-center bg-blue-50">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50">
                   <Zap className="w-5 h-5 text-blue-500" />
                 </div>
                 <span className="text-sm text-gray-500">Free 版</span>
@@ -266,24 +261,23 @@ export const MemoryManagement: React.FC = () => {
 
             {/* Pro 版 - 融合配额管理 */}
             <div 
-              className={`col-span-2 rounded-[4px] border p-5 ${
+              className={`col-span-2 rounded-xl border p-5 ${
                 isProActive && memoryAllocationPercent >= 100 
                   ? 'bg-white border-red-200'
                   : isProActive && memoryAllocationPercent >= 80 
                     ? 'bg-white border-yellow-200'
-                    : 'bg-white border-gray-100'
+                    : 'bg-white border-[#e5e5e5]'
               }`}
-              style={{ boxShadow: '0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)' }}
             >
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-[4px] flex items-center justify-center bg-purple-50 flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-50 flex-shrink-0">
                     <Crown className="w-5 h-5 text-purple-500" />
                   </div>
                   <div className="flex flex-col gap-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm text-gray-500">Pro 版</span>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-[4px] text-xs font-semibold bg-amber-400 text-amber-900">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-400 text-amber-900">
                         免费体验中
                       </span>
                     </div>
@@ -294,7 +288,7 @@ export const MemoryManagement: React.FC = () => {
                   {isProInactive && (
                     <button
                       onClick={() => setActivationDialogOpen(true)}
-                      className="whitespace-nowrap px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-[4px] transition-colors"
+                      className="whitespace-nowrap px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-colors"
                     >
                       立即开通
                     </button>
@@ -370,7 +364,7 @@ export const MemoryManagement: React.FC = () => {
 
           {/* 记忆空间告警提示 */}
           {isProActive && memoryAllocationPercent >= 80 && (
-            <div className={`mt-4 flex items-start gap-2.5 rounded-[4px] px-4 py-3 ${
+            <div className={`mt-4 flex items-start gap-2.5 rounded-xl px-4 py-3 ${
               memoryAllocationPercent >= 100
                 ? 'bg-red-50 border border-red-100'
                 : 'bg-amber-50 border border-amber-100'
@@ -398,12 +392,12 @@ export const MemoryManagement: React.FC = () => {
                  · 已开通 Pro 且有 OpenClaw 类型 Pro 版 Agent：可点击，打开一键升级弹窗，将记忆服务
                    升级至最新版本，OpenClaw 类型 Pro 版 Agent 升级后即可使用 Pro 版最新能力；
                  · 未开通 Pro / 无候选 Agent / 有 Agent 升级中：按钮置灰，hover 文案按场景区分 */}
-          <div className="mt-5 pt-5 border-t border-gray-100 flex items-center gap-3 bg-gradient-to-r from-blue-50 to-sky-50 rounded-[4px] px-4 py-3 mb-4">
+          <div className="mt-5 pt-5 border-t border-[#e5e5e5] flex items-center gap-3 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl px-4 py-3 mb-4">
             <div className="flex-1 min-w-0">
               {/* 能力说明区：chip 作为通用标题 + 本期能力「短期记忆压缩」价值描述 + 使用前提
                   合成为一段，避免多行左对齐问题；后续新增 Pro 能力按同格式在下方追加新段 */}
               <div className="text-sm text-gray-700 leading-relaxed">
-                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-[4px] border border-blue-200 bg-white/70 text-xs font-semibold text-blue-700 align-middle">
+                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-xl border border-blue-200 bg-white/70 text-xs font-semibold text-blue-700 align-middle">
                   Memory Pro 新能力
                 </span>
                 <span className="font-semibold text-gray-900">短期记忆压缩</span>
@@ -433,7 +427,7 @@ export const MemoryManagement: React.FC = () => {
                   }}
                   disabled={disabled}
                   title={title}
-                  className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-[4px] border transition-colors whitespace-nowrap ${
+                  className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-xl border transition-colors whitespace-nowrap ${
                     disabled
                       ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
                       : 'text-blue-700 bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-300'
@@ -447,7 +441,7 @@ export const MemoryManagement: React.FC = () => {
           </div>
 
           {/* 新实例默认记忆版本 - 三选一控件 */}
-          <div className="pt-5 border-t border-gray-100 mt-5">
+          <div className="pt-5 border-t border-[#e5e5e5] mt-5">
             <DefaultMemoryVersion
               value={defaultMemoryVersion}
               onChange={setDefaultMemoryVersion}

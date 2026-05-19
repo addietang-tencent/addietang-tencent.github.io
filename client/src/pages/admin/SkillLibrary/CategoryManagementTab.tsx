@@ -78,7 +78,7 @@ export default function CategoryManagementTab() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-[4px] border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -139,7 +139,7 @@ export default function CategoryManagementTab() {
           {/* 删除确认对话框 */}
           {deleteConfirmOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-[4px] p-6 max-w-md">
+              <div className="bg-white rounded-xl p-6 max-w-md">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">删除分类</h3>
                 
                 <p className="text-sm text-gray-600 mb-6">

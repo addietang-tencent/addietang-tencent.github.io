@@ -444,7 +444,7 @@ export default function OpsObservation() {
               type="date"
               value={dateFrom}
               onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
@@ -452,13 +452,13 @@ export default function OpsObservation() {
               type="date"
               value={dateTo}
               onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-[4px] border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
               style={{ colorScheme: 'light' }}
             />
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
               title="刷新数据"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -475,7 +475,7 @@ export default function OpsObservation() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-[4px] p-6 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
@@ -544,14 +544,11 @@ export default function OpsObservation() {
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow"
-                      style={{
-                        boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-                      }}
+                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0"
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                           style={{ background: card.color }}
                         >
                           <Icon className="w-5 h-5 text-white" />
@@ -583,14 +580,11 @@ export default function OpsObservation() {
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-[4px] border border-gray-100 p-4 hover:shadow-md transition-shadow"
-                      style={{
-                        boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)",
-                      }}
+                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0"
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                           style={{ background: card.color }}
                         >
                           <Icon className="w-5 h-5 text-white" />
@@ -637,7 +631,7 @@ export default function OpsObservation() {
                   <tr
                     key={v.version}
                     onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                    className={`border-b border-gray-100 ${
+                    className={`border-b border-[#e5e5e5] ${
                       isUpgradeable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                     } transition-colors ${
                       selectedPluginVersion?.version === v.version
@@ -690,7 +684,7 @@ export default function OpsObservation() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-[4px] px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
           <div className="flex items-start gap-3">
             <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
             <div>
@@ -739,10 +733,10 @@ export default function OpsObservation() {
         {METRIC_CARDS.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <div key={idx} className="bg-white rounded-[4px] border border-gray-100 p-4">
+            <div key={idx} className="bg-white rounded-xl border border-[#e5e5e5] p-4">
               <div className="flex items-start justify-between mb-3">
                 <span className="text-xs text-gray-500">{card.title}</span>
-                <div className="w-8 h-8 rounded-[4px] flex items-center justify-center" style={{ background: card.color }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: card.color }}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -758,7 +752,7 @@ export default function OpsObservation() {
         <h2 className="text-lg font-bold text-gray-900 mb-4">应用日志大盘</h2>
         <div className="grid grid-cols-2 gap-6">
           {/* Log Level Distribution */}
-          <div className="bg-white rounded-[4px] border border-gray-100 p-6">
+          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">日志级别分布</h3>
             </div>
@@ -774,7 +768,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Log Module Distribution */}
-          <div className="bg-white rounded-[4px] border border-gray-100 p-6">
+          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">日志模块分布</h3>
             </div>
@@ -796,7 +790,7 @@ export default function OpsObservation() {
         <h2 className="text-lg font-bold text-gray-900 mb-4">OTEL 指标大盘</h2>
         <div className="grid grid-cols-3 gap-6">
           {/* Message Processing */}
-          <div className="bg-white rounded-[4px] border border-gray-100 p-6">
+          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
@@ -838,7 +832,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Queue Status */}
-          <div className="bg-white rounded-[4px] border border-gray-100 p-6">
+          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
@@ -881,7 +875,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Run Duration */}
-          <div className="bg-white rounded-[4px] border border-gray-100 p-6">
+          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
@@ -973,7 +967,7 @@ export default function OpsObservation() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-[4px] p-4 space-y-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
               <p className="text-sm text-gray-700">
                 为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
@@ -1021,7 +1015,7 @@ export default function OpsObservation() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
-            <div className="bg-red-50 border border-red-200 rounded-[4px] p-3 space-y-2">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">运维观测：</span>
                 <span>支持通过全链路性能监控采集核心运行指标</span>

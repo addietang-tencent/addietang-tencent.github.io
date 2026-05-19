@@ -128,8 +128,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-[4px] border border-gray-100 p-5 transition-all"
-      style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+      className="bg-white rounded-xl border border-[#e5e5e5] p-5 transition-all"
     >
       <div className="flex items-start gap-3 mb-3">
         <StepBadge step={step} done={done} />
@@ -233,7 +232,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-[4px] px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -248,7 +247,7 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
                   draft === "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
@@ -261,7 +260,7 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
                   draft !== "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
@@ -398,10 +397,10 @@ export default function BasicInfo() {
                   </span>
                 </Label>
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
                     A
                   </div>
-                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-[4px] text-xs text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition-colors bg-gray-50">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-xl text-xs text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition-colors bg-gray-50">
                     <Upload className="w-3.5 h-3.5" />
                     更换 Logo
                     <input
@@ -428,7 +427,7 @@ export default function BasicInfo() {
                   )}
                 </div>
                 {logoError && (
-                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-[4px] px-3 py-2">
+                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
                     {logoError}
                   </p>
                 )}
@@ -504,7 +503,7 @@ export default function BasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -525,7 +524,7 @@ export default function BasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -546,7 +545,7 @@ export default function BasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -567,7 +566,7 @@ export default function BasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -595,13 +594,12 @@ export default function BasicInfo() {
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-[4px] border border-gray-100 p-5"
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-4">平台基础信息</h2>
             <div className="space-y-3">
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-[4px] bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <MapPin className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -610,7 +608,7 @@ export default function BasicInfo() {
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-[4px] bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <Globe className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -619,7 +617,7 @@ export default function BasicInfo() {
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-[4px] bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <Cloud className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -632,13 +630,13 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-[4px] border border-gray-100 p-5 cursor-pointer hover:border-blue-200 transition-colors"
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-blue-200 transition-colors"
+           
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[4px] bg-blue-50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                   <BookOpen className="w-4 h-4 text-blue-500" />
                 </div>
                 <div>
@@ -652,8 +650,7 @@ export default function BasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-[4px] border border-gray-100 p-4"
-            style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-4"
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
             <div className="space-y-2.5">
@@ -711,4 +708,3 @@ export default function BasicInfo() {
     </div>
   );
 }
-

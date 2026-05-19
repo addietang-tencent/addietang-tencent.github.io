@@ -43,7 +43,7 @@ const SkeletonRow: React.FC = () => (
   <tr>
     <td className="px-6 py-4">
       <div className="flex items-center gap-3">
-        <Skeleton className="w-8 h-8 rounded-[4px]" />
+        <Skeleton className="w-8 h-8 rounded-xl" />
         <div className="flex flex-col gap-1">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-3 w-16" />
@@ -225,7 +225,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
       <div className="space-y-6">
         {/* 状态提示条 */}
         {isInitializing && (
-          <div className="bg-blue-50 border border-blue-200 rounded-[4px] px-4 py-3 flex items-center justify-between">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
               <span className="text-sm text-blue-700">
@@ -236,7 +236,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         )}
         
         {isError && (
-          <div className="bg-red-50 border border-red-200 rounded-[4px] px-4 py-3 flex items-center justify-between">
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-red-500" />
               <span className="text-sm text-red-700">
@@ -256,7 +256,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         )}
         
         {showSuccessBanner && isReady && (
-          <div className="bg-green-50 border border-green-200 rounded-[4px] px-4 py-3 flex items-center justify-between animate-in fade-in duration-300">
+          <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center justify-between animate-in fade-in duration-300">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-500" />
               <span className="text-sm text-green-700">
@@ -319,7 +319,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         <SurfaceCard className="p-6 relative">
           {/* 初始化遮罩 */}
           {isInitializing && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-[4px] z-10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
                 <span>数据加载中...</span>
@@ -367,7 +367,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 </div>
                 <Skeleton className="h-2 w-full rounded-full" />
               </div>
-              <div className="pt-3 border-t border-gray-100">
+              <div className="pt-3 border-t border-[#e5e5e5]">
                 <Skeleton className="h-3 w-56" />
               </div>
             </>
@@ -399,7 +399,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               
               {/* 容量告警提示 */}
               {memoryAllocationPercent >= 80 && (
-                <div className={`mb-3 px-3 py-2 rounded-[4px] text-xs flex items-center gap-2 ${
+                <div className={`mb-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2 ${
                   memoryAllocationPercent >= 100 
                     ? 'bg-red-50 border border-red-100 text-red-700'
                     : 'bg-amber-50 border border-amber-100 text-amber-700'
@@ -420,7 +420,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
       <SurfaceCard className="relative">
         {/* 初始化遮罩 */}
         {isInitializing && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-[4px] z-10 flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
               <span>正在加载实例状态...</span>
@@ -429,10 +429,10 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         )}
         
         {/* 工具栏 */}
-        <div className="p-5 border-b border-gray-100">
+        <div className="p-5 border-b border-[#e5e5e5]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-[4px] bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
                 <Gem className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -484,7 +484,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               <button
                 onClick={handleRefresh}
                 disabled={refreshing || isInitializing}
-                className="w-9 h-9 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="刷新列表"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -496,7 +496,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
+              <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 tracking-wide">实例名称/ID</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Memory 状态</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">记忆空间 ID</th>
@@ -531,7 +531,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div 
-                            className="w-8 h-8 rounded-[4px] flex items-center justify-center text-white text-sm font-semibold"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
                             style={{ backgroundColor: avatarColor }}
                           >
                             {oc.name.charAt(0)}
@@ -568,8 +568,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
             <>
               <Skeleton className="h-4 w-48" />
               <div className="flex gap-1">
-                <Skeleton className="w-7 h-7 rounded-[4px]" />
-                <Skeleton className="w-7 h-7 rounded-[4px]" />
+                <Skeleton className="w-7 h-7 rounded-xl" />
+                <Skeleton className="w-7 h-7 rounded-xl" />
               </div>
             </>
           ) : (

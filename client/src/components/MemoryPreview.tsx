@@ -302,7 +302,7 @@ export function MemoryPreview({
   // 通用分页组件 - 与管控端样式保持一致
   const Pagination = ({ current, total, totalCount, onChange }: { current: number; total: number; totalCount: number; onChange: (page: number) => void }) => {
     return (
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#e5e5e5]">
         {/* 左侧：共X条记录，第X/Y页 */}
         <span className="text-xs text-gray-400">
           共 {totalCount} 条记录{total > 0 && `，第 ${current} / ${total} 页`}
@@ -342,7 +342,7 @@ export function MemoryPreview({
     ];
 
     return (
-      <div className="w-40 flex-shrink-0 border-r border-gray-100 pr-4">
+      <div className="w-40 flex-shrink-0 border-r border-[#e5e5e5] pr-4">
         <div className="relative pl-4">
           {/* 左侧渐变连接线 */}
           <div 
@@ -412,7 +412,7 @@ export function MemoryPreview({
         {paginatedScenes.map(scene => {
           const isExpanded = expandedScene === scene.id;
           return (
-            <div key={scene.id} className="bg-white border border-gray-100 rounded-[4px] overflow-hidden">
+            <div key={scene.id} className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden">
               <button
                 onClick={() => toggleSceneExpand(scene.id)}
                 className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
@@ -429,7 +429,7 @@ export function MemoryPreview({
                 }
               </button>
               {isExpanded && (
-                <div className="border-t border-gray-100">
+                <div className="border-t border-[#e5e5e5]">
                   <div className="bg-slate-900 m-3 rounded-[4px] overflow-hidden">
                     <div className="flex items-center px-3 py-1.5 bg-slate-800 border-b border-slate-700">
                       <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -483,10 +483,10 @@ export function MemoryPreview({
       </div>
 
       {/* 记录表格 */}
-      <div className="bg-white border border-gray-100 rounded-[4px] overflow-hidden flex-1 flex flex-col">
+      <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
+            <tr className="bg-gray-50 border-b border-[#e5e5e5]">
               <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">类型</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">标签</th>
               <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">内容</th>
@@ -700,10 +700,10 @@ export function MemoryPreview({
         </div>
 
         {/* 消息表格 */}
-        <div className="bg-white border border-gray-100 rounded-[4px] overflow-hidden flex-1 flex flex-col">
+        <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
+              <tr className="bg-gray-50 border-b border-[#e5e5e5]">
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">会话 ID</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">角色</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">内容</th>
@@ -801,7 +801,7 @@ export function MemoryPreview({
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0 relative"
-              style={{ background: '#1447E6' }}
+              style={{ background: '#355EF1' }}
             >
               <Crown className="w-5 h-5 text-white" />
             </div>
@@ -873,7 +873,7 @@ export function MemoryPreview({
 
           {/* 核心能力展示 - 四项特性 */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="p-4 bg-white rounded-[4px] border border-gray-100 flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-blue-50 flex items-center justify-center flex-shrink-0">
                 <Target className="w-5 h-5 text-blue-500" />
               </div>
@@ -882,7 +882,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">自动提取偏好、约束与任务状态，无需手动触发</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-gray-100 flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-purple-50 flex items-center justify-center flex-shrink-0">
                 <Brain className="w-5 h-5 text-purple-500" />
               </div>
@@ -891,7 +891,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">四层记忆金字塔逐步提炼，从"记住你说过什么"到"理解你是谁"</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-gray-100 flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-green-50 flex items-center justify-center flex-shrink-0">
                 <Search className="w-5 h-5 text-green-500" />
               </div>
@@ -900,7 +900,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">记忆分层组织、按场景归类，按需精准召回</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-gray-100 flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-amber-50 flex items-center justify-center flex-shrink-0">
                 <Link2 className="w-5 h-5 text-amber-500" />
               </div>
@@ -932,7 +932,7 @@ export function MemoryPreview({
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-[4px] flex items-center justify-center flex-shrink-0"
-              style={{ background: '#1447E6' }}
+              style={{ background: '#355EF1' }}
             >
               <Zap className="w-5 h-5 text-white" />
             </div>
@@ -973,7 +973,7 @@ export function MemoryPreview({
         <div className="flex items-center gap-3">
           <div 
             className="w-9 h-9 rounded-[4px] flex items-center justify-center flex-shrink-0"
-            style={{ background: '#1447E6' }}
+            style={{ background: '#355EF1' }}
           >
             <Crown className="w-5 h-5 text-white" />
           </div>

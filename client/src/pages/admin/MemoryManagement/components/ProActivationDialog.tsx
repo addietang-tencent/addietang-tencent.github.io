@@ -75,14 +75,14 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
         <div className="py-3 space-y-4">
           {/* 错误提示 */}
           {error && (
-            <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-[4px] px-4 py-3">
+            <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
               <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
           {/* 限免活动提示 —— 合并「免费体验规则」与「开通后获得的额度 / 准备时长」，让管理员一眼看全本次开通的边界 */}
-          <div className="bg-amber-50 border border-amber-200 rounded-[4px] px-4 py-3 space-y-2">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-2">
             <p className="font-semibold text-amber-800 text-sm">限时免费体验（至 2026.6.15）</p>
             <p className="text-xs text-amber-700 leading-relaxed">
               免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。

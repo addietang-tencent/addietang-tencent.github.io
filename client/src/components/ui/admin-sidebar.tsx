@@ -143,7 +143,7 @@ const AdminSidebarBrand = React.forwardRef<HTMLDivElement, React.ComponentProps<
         ref={ref}
         data-slot="admin-sidebar-brand"
         className={cn(
-          "flex min-w-0 items-center gap-2.5 rounded-lg text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
+          "flex min-w-0 items-center gap-2.5 rounded-[4px] text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
           className
         )}
         {...props}

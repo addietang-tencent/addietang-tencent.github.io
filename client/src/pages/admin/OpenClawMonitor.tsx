@@ -47,6 +47,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
@@ -1730,20 +1731,14 @@ export default function AgentMonitor() {
             <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 Agent 云服务器。</p>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DatePicker
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={(v) => { setDateFrom(v); setPage(1); }}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <input
-              type="date"
+            <DatePicker
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={(v) => { setDateTo(v); setPage(1); }}
             />
             {(dateFrom || dateTo) && (
               <button
@@ -1753,14 +1748,16 @@ export default function AgentMonitor() {
                 清除筛选
               </button>
             )}
-            <button
+            <Button
+              variant="claw-outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 shrink-0"
               title="刷新列表"
+              className="w-9 h-9"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </button>
+            </Button>
           </div>
         </div>
 

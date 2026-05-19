@@ -42,7 +42,7 @@ const SECURITY_CARDS = [
 
 export default function SecurityManagement() {
   return (
-      <div className="page-enter max-w-5xl">
+      <div className="page-enter">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-1">

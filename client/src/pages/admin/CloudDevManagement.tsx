@@ -52,7 +52,7 @@ const CLOUD_DEV_FEATURES: {
 
 export default function CloudDevManagement() {
   return (
-    <div className="page-enter max-w-5xl">
+    <div className="page-enter">
       {/* 页面标题 */}
       <div className="mb-8">
         <div className="flex items-center gap-2.5 mb-1">

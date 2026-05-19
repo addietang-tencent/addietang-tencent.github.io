@@ -161,7 +161,7 @@ const AdminSidebarHeaderAction = React.forwardRef<HTMLButtonElement, React.Compo
         ref={ref}
         data-slot="admin-sidebar-header-action"
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:text-[#355EF1] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
+          "flex size-8 shrink-0 items-center justify-center rounded-[4px] border border-[var(--admin-sidebar-action-border)] bg-[var(--admin-sidebar-action-bg)] text-[var(--admin-sidebar-foreground)] outline-none transition-[background,border-color,color,box-shadow] duration-150 hover:text-[var(--admin-sidebar-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
           className
         )}
         {...props}
@@ -171,15 +171,48 @@ const AdminSidebarHeaderAction = React.forwardRef<HTMLButtonElement, React.Compo
 );
 AdminSidebarHeaderAction.displayName = "AdminSidebarHeaderAction";
 
-const AdminSidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"nav">>(
-  ({ className, ...props }, ref) => (
-    <nav
-      ref={ref}
-      data-slot="admin-sidebar-content"
-      className={cn("min-h-0 flex-1 overflow-y-auto px-4 py-4", className)}
-      {...props}
-    />
-  )
+const AdminSidebarContent = React.forwardRef<HTMLElement, React.ComponentProps<"nav">>(
+  ({ className, onScroll, onWheel, ...props }, ref) => {
+    const [isScrolling, setIsScrolling] = React.useState(false);
+    const hideTimerRef = React.useRef<ReturnType<typeof window.setTimeout> | null>(null);
+
+    const showScrollbarTemporarily = React.useCallback(() => {
+      setIsScrolling(true);
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+      }
+      hideTimerRef.current = window.setTimeout(() => {
+        setIsScrolling(false);
+        hideTimerRef.current = null;
+      }, 700);
+    }, []);
+
+    React.useEffect(() => {
+      return () => {
+        if (hideTimerRef.current) {
+          window.clearTimeout(hideTimerRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <nav
+        ref={ref}
+        data-slot="admin-sidebar-content"
+        data-scrolling={isScrolling ? "true" : "false"}
+        className={cn("scrollbar-on-hover min-h-0 flex-1 overflow-y-auto px-4 py-4", className)}
+        onScroll={(event) => {
+          showScrollbarTemporarily();
+          onScroll?.(event);
+        }}
+        onWheel={(event) => {
+          showScrollbarTemporarily();
+          onWheel?.(event);
+        }}
+        {...props}
+      />
+    );
+  }
 );
 AdminSidebarContent.displayName = "AdminSidebarContent";
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { ExternalLink, LogOut, MoreHorizontal } from "lucide-react";
+import { LogOut, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import AdminModeToggle from "@/components/AdminModeToggle";
@@ -33,6 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AdminModeProvider } from "@/contexts/AdminModeContext";
 import { ADMIN_NAV_GROUPS } from "@/config/adminNav";
 
@@ -40,6 +41,18 @@ const CURRENT_ADMIN = {
   name: "jingsujiang",
   role: "管理员",
 };
+
+function GoTenantIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M6.8326 9.8327H4.8326C2.9917 9.8327 1.49927 11.3251 1.49927 13.166V13.8327H6.8665M12.1939 14.1673L14.5007 11.8339L12.1939 9.5007M13.8326 11.834H8.8313M10.1659 4.8327C10.1659 6.4895 8.8228 7.8327 7.1659 7.8327C5.5091 7.8327 4.1659 6.4895 4.1659 4.8327C4.1659 3.1758 5.5091 1.8327 7.1659 1.8327C8.8228 1.8327 10.1659 3.1758 10.1659 4.8327Z"
+        stroke="currentColor"
+        strokeLinecap="square"
+      />
+    </svg>
+  );
+}
 
 function isActiveRoute(location: string, href: string) {
   return location === href || location.startsWith(`${href}/`);
@@ -64,11 +77,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </Link>
               </AdminSidebarBrand>
 
-              <AdminSidebarHeaderAction asChild title="前往用户端">
-                <Link href="/my-openclaw" aria-label="前往用户端" className="!border !border-[#e3e3e3] !rounded-[4px] !bg-white hover:!text-[#355EF1]">
-                  <ExternalLink />
-                </Link>
-              </AdminSidebarHeaderAction>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AdminSidebarHeaderAction asChild>
+                    <Link href="/my-openclaw" aria-label="前往用户端">
+                      <GoTenantIcon />
+                    </Link>
+                  </AdminSidebarHeaderAction>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>前往用户端</TooltipContent>
+              </Tooltip>
             </AdminSidebarHeader>
 
             <AdminSidebarContent aria-label="管理后台导航">

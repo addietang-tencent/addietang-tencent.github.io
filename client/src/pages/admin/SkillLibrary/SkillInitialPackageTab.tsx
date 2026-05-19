@@ -841,8 +841,8 @@ const SKILL_PACKAGE_ICON_BY_ID: Record<string, string> = {
   'pkg-3': '/assets/admin-skill-packages/ops-team-skill-package.svg',
 };
 
-function getSkillPackageIconSrc(pkg: SkillInitialPackage): string | null {
-  return SKILL_PACKAGE_ICON_BY_ID[pkg.id] ?? null;
+function getSkillPackageIconSrc(pkg: SkillInitialPackage): string {
+  return SKILL_PACKAGE_ICON_BY_ID[pkg.id] ?? SKILL_PACKAGE_ICON_BY_ID['pkg-1'];
 }
 
 // ─── 版本比对辅助函数 ─────────────────────────────────────────────────────────
@@ -1778,13 +1778,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
               >
                 <div className="flex items-center gap-3">
                   {/* 图标 */}
-                  {packageIconSrc ? (
-                    <img src={packageIconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#355EF1' }}>
-                      <Package className="w-5 h-5 text-white" />
-                    </div>
-                  )}
+                  <img src={packageIconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
 
                   {/* 信息 */}
                   <div className="flex-1 min-w-0">

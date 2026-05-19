@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
-  Plus, Trash2, Info, Brain, Pencil, AlertTriangle,
+  Plus, Trash2, Info, Pencil, AlertTriangle,
   Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
@@ -727,12 +727,7 @@ export default function ModelConfig() {
         <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
          >
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Brain className="w-4 h-4 text-white" />
-              </div>
-              <h2 className="font-semibold text-gray-900">模型列表</h2>
-            </div>
+            <h2 className="font-semibold text-gray-900">模型列表</h2>
             <Button size="sm" onClick={openAddDialog}
              >
               <Plus className="w-3.5 h-3.5 mr-1.5" />

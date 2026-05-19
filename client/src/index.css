@@ -224,14 +224,31 @@
     min-width: 0;
   }
 
+  [data-slot="admin-sidebar-menu-button"] {
+    border-radius: var(--admin-sidebar-item-radius);
+  }
+
+  [data-slot="admin-sidebar-menu-button"]:hover {
+    background: var(--admin-sidebar-item-hover-bg) !important;
+    border-radius: var(--admin-sidebar-item-radius) !important;
+  }
+
   [data-slot="admin-sidebar-menu-button"][data-active="true"],
   [data-slot="admin-sidebar-menu-button"][data-active="true"]:hover {
-    background: var(--admin-sidebar-item-active-bg);
+    background: var(--admin-sidebar-item-active-bg) !important;
+    border-radius: var(--admin-sidebar-item-radius) !important;
+  }
+
+  [data-slot="admin-sidebar-header-action"] {
+    background: var(--admin-sidebar-action-bg) !important;
+    border-color: var(--admin-sidebar-action-border) !important;
+    border-radius: 4px !important;
+    color: var(--admin-sidebar-foreground) !important;
   }
 
   [data-slot="admin-sidebar-header-action"]:hover {
-    background: var(--admin-sidebar-action-hover-bg);
-    border-color: var(--admin-sidebar-action-hover-border);
+    background: var(--admin-sidebar-action-hover-bg) !important;
+    border-color: var(--admin-sidebar-action-hover-border) !important;
   }
 
   @media (min-width: 640px) {

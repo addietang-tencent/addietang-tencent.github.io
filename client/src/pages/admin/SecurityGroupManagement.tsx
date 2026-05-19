@@ -4756,7 +4756,7 @@ export default function SecurityGroupManagement() {
             {MORE_FEATURE_CARDS.map((card) => (
               <div
                 key={card.title}
-                className="min-h-[102px] rounded-[4px] border-[0.5px] border-[#E5E5E5] bg-white px-6 py-5"
+                className="min-h-[102px] rounded-[4px] border border-[#e5e5e5] bg-white px-6 py-5"
               >
                 <div className="flex items-start gap-[14px]">
                   <img src={card.iconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />

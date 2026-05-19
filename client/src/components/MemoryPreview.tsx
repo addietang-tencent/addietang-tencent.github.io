@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2, Clock, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Mock 数据 - Persona
 const mockPersona = `# 用户画像
@@ -202,7 +209,7 @@ export function MemoryPreview({
   const [activeNav, setActiveNav] = useState<NavItem>('persona');
   const [recordFilter, setRecordFilter] = useState<'all' | 'fact' | 'preference' | 'event'>('all');
   const [sortByConfidence, setSortByConfidence] = useState<'none' | 'asc' | 'desc'>('none');
-  const [expandedScene, setExpandedScene] = useState<string | null>(null);
+  const [expandedScene, setExpandedScene] = useState<string | null>(mockSceneBlocks[0]?.id ?? null);
   
   // 对话记录状态
   const [convSessionFilter, setConvSessionFilter] = useState<string>('all');
@@ -343,19 +350,8 @@ export function MemoryPreview({
 
     return (
       <div className="w-40 flex-shrink-0 border-r border-[#e5e5e5] pr-4">
-        <div className="relative pl-4">
-          {/* 左侧渐变连接线 */}
-          <div 
-            className="absolute left-[7px] top-9 bottom-4 w-0.5 rounded-full"
-            style={{ background: 'linear-gradient(to bottom, #a78bfa, #d1d5db)' }}
-          />
-          
-          {/* 顶部向上箭头 - 与竖线居中对齐 */}
-          <div className="absolute left-0 top-4 w-4 flex justify-center">
-            <ChevronUp className="w-4 h-4 text-purple-500" strokeWidth={2.5} />
-          </div>
-          
-          {navItems.map((item, index) => {
+        <div className="flex flex-col">
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeNav === item.key;
             
@@ -365,11 +361,11 @@ export function MemoryPreview({
                 onClick={() => setActiveNav(item.key as typeof activeNav)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-[4px] text-sm transition-colors mb-0.5 ${
                   isActive 
-                    ? 'bg-purple-50 text-purple-700 font-medium' 
+                    ? 'bg-blue-50 text-[#0A0A0A] font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-purple-600' : 'text-gray-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#1447E6]' : 'text-gray-400'}`} />
                 {item.label}
               </button>
             );
@@ -379,28 +375,35 @@ export function MemoryPreview({
     );
   };
 
-  // Persona 面板
+  // Persona 面板 - 用户画像，样式与场景记忆卡片一致
   const PersonaPanel = () => (
     <div className="h-full flex flex-col">
-      <div className="bg-slate-900 rounded-[4px] overflow-hidden flex-1 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-            persona
+      <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 overflow-y-auto">
+        {/* 白色标题栏 */}
+        <div className="px-4 py-3 border-b border-[#e5e5e5]">
+          <span className="text-sm font-medium text-[#0A0A0A]">用户画像</span>
+        </div>
+        {/* 内容区 */}
+        <div className="px-4 py-3 bg-[#FAFAFA]">
+          <div className="space-y-2">
+            {mockPersona.split('\n').map((line, i) => {
+              if (!line.trim()) return null;
+              if (line.startsWith('# ')) return null;
+              if (line.startsWith('## ')) {
+                return <h4 key={i} className="text-sm font-medium text-[#0A0A0A] mt-3">{line.replace('## ', '')}</h4>;
+              }
+              if (line.startsWith('- ')) {
+                return (
+                  <div key={i} className="flex items-start gap-2 pl-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#A3A3A3] mt-1.5 shrink-0" />
+                    <span className="text-sm text-[#525252] leading-relaxed">{line.replace('- ', '')}</span>
+                  </div>
+                );
+              }
+              return <p key={i} className="text-sm text-[#525252] leading-relaxed">{line}</p>;
+            })}
           </div>
         </div>
-        <pre className="p-4 text-sm text-slate-300 overflow-auto flex-1 font-mono leading-relaxed">
-          {mockPersona.split('\n').map((line, i) => (
-            <div key={i} className="flex">
-              <span className="w-6 text-right text-slate-600 mr-3 select-none">{i + 1}</span>
-              <span className={
-                line.startsWith('# ') ? 'text-blue-400 font-semibold' :
-                line.startsWith('## ') ? 'text-blue-400 font-semibold' :
-                line.startsWith('- ') ? 'text-slate-300' : ''
-              }>{line}</span>
-            </div>
-          ))}
-        </pre>
       </div>
     </div>
   );
@@ -417,38 +420,47 @@ export function MemoryPreview({
                 onClick={() => toggleSceneExpand(scene.id)}
                 className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
               >
-                <div className="w-8 h-8 rounded-[4px] bg-blue-50 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-4 h-4 text-blue-600" />
+                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                  {isExpanded 
+                    ? <ChevronDown className="w-4 h-4 text-[#737373]" />
+                    : <ChevronRight className="w-4 h-4 text-[#737373]" />
+                  }
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="font-medium text-gray-900 text-sm">{scene.name.replace(/\.md$/, '')}</div>
                 </div>
-                {isExpanded 
-                  ? <ChevronDown className="w-4 h-4 text-gray-400" />
-                  : <ChevronRight className="w-4 h-4 text-gray-400" />
-                }
               </button>
               {isExpanded && (
-                <div className="border-t border-[#e5e5e5]">
-                  <div className="bg-slate-900 m-3 rounded-[4px] overflow-hidden">
-                    <div className="flex items-center px-3 py-1.5 bg-slate-800 border-b border-slate-700">
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                        {scene.name.replace(/\.md$/, '')}
-                      </div>
-                    </div>
-                    <pre className="p-3 text-sm text-slate-300 overflow-auto max-h-[200px] font-mono leading-relaxed">
-                      {scene.content.split('\n').map((line, i) => (
-                        <div key={i} className="flex">
-                          <span className="w-5 text-right text-slate-600 mr-2 select-none text-xs">{i + 1}</span>
-                          <span className={
-                            line.startsWith('# ') ? 'text-blue-400 font-semibold' :
-                            line.startsWith('## ') ? 'text-blue-400 font-semibold' :
-                            line.startsWith('- ') ? 'text-slate-300' : ''
-                          }>{line}</span>
-                        </div>
-                      ))}
-                    </pre>
+                <div className="border-t border-[#e5e5e5] px-4 py-3 max-h-[200px] overflow-auto bg-[#FAFAFA]">
+                  <div className="space-y-2">
+                    {(() => {
+                      // 去掉内容区第一行的一级标题（与卡片头部的 scene.name 重复）
+                      const lines = scene.content.split('\n');
+                      if (lines[0]?.startsWith('# ')) {
+                        lines.shift();
+                        while (lines.length > 0 && !lines[0].trim()) {
+                          lines.shift();
+                        }
+                      }
+                      return lines;
+                    })().map((line, i) => {
+                      if (!line.trim()) return null;
+                      if (line.startsWith('# ')) {
+                        return <h4 key={i} className="text-sm font-semibold text-[#0A0A0A]">{line.replace('# ', '')}</h4>;
+                      }
+                      if (line.startsWith('## ')) {
+                        return <h5 key={i} className="text-sm font-medium text-[#0A0A0A] mt-2">{line.replace('## ', '')}</h5>;
+                      }
+                      if (line.startsWith('- ')) {
+                        return (
+                          <div key={i} className="flex items-start gap-2 pl-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#A3A3A3] mt-1.5 shrink-0" />
+                            <span className="text-sm text-[#525252] leading-relaxed">{line.replace('- ', '')}</span>
+                          </div>
+                        );
+                      }
+                      return <p key={i} className="text-sm text-[#525252] leading-relaxed">{line}</p>;
+                    })}
                   </div>
                 </div>
               )}
@@ -463,7 +475,7 @@ export function MemoryPreview({
   // Records 面板
   const RecordsPanel = () => (
     <div className="h-full flex flex-col">
-      {/* 过滤器 */}
+      {/* 过滤器（§8.1 按钮规范） */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex gap-2">
           {(['all', 'fact', 'preference', 'event'] as const).map(filter => (
@@ -472,8 +484,8 @@ export function MemoryPreview({
               onClick={() => { setRecordFilter(filter); setRecordsPage(1); }}
               className={`px-3 py-1.5 text-xs rounded-[4px] border transition-colors ${
                 recordFilter === filter
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                  ? 'bg-blue-50 text-[#1447E6] border-[#1447E6] font-medium'
+                  : 'bg-white text-[#737373] border-[#d3d6db] hover:border-[#1447E6] hover:text-[#1447E6]'
               }`}
             >
               {filter === 'all' ? '全部' : filter === 'fact' ? '事实' : filter === 'preference' ? '偏好' : '事件'}
@@ -482,16 +494,16 @@ export function MemoryPreview({
         </div>
       </div>
 
-      {/* 记录表格 */}
-      <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
-        <table className="w-full text-sm">
+      {/* 记录表格（§8.4 表格规范） */}
+      <div className="bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
+        <table className="w-full">
           <thead>
-            <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-              <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">类型</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">标签</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">内容</th>
+            <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">标签</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
               {showConfidence && (
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   <button 
                     onClick={() => {
                       setSortByConfidence(prev => {
@@ -500,30 +512,28 @@ export function MemoryPreview({
                         return 'none';
                       });
                     }}
-                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                    className="flex items-center gap-1 hover:text-[#1447E6] transition-colors"
                   >
                     置信度
-                    {sortByConfidence === 'none' && <ArrowUpDown className="w-3 h-3" />}
-                    {sortByConfidence === 'desc' && <span className="text-blue-600">↓</span>}
-                    {sortByConfidence === 'asc' && <span className="text-blue-600">↑</span>}
+                    <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
               )}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-50">
             {paginatedRecords.map(record => (
-              <tr key={record.id} className="border-b border-gray-50 hover:bg-gray-50">
-                <td className="px-4 py-3"><TypeBadge type={record.type} /></td>
-                <td className="px-4 py-3">
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{record.tag}</span>
+              <tr key={record.id} className="hover:bg-gray-50/50 transition-colors">
+                <td className="px-6 py-4"><TypeBadge type={record.type} /></td>
+                <td className="px-6 py-4">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-[4px] text-xs font-medium bg-[#F5F5F5] text-[#525252]">{record.tag}</span>
                 </td>
-                <td className="px-4 py-3 text-gray-700 max-w-[280px] truncate">{record.content}</td>
+                <td className="px-6 py-4 text-sm text-gray-700 max-w-[280px] truncate">{record.content}</td>
                 {showConfidence && (
-                  <td className="px-4 py-3">
-                    <span className={`font-semibold ${
-                      record.confidence >= 0.9 ? 'text-green-600' : 
-                      record.confidence >= 0.8 ? 'text-amber-600' : 'text-gray-500'
+                  <td className="px-6 py-4">
+                    <span className={`text-sm font-semibold ${
+                      record.confidence >= 0.9 ? 'text-[#16A34A]' : 
+                      record.confidence >= 0.8 ? 'text-[#F59E0B]' : 'text-[#737373]'
                     }`}>
                       {record.confidence.toFixed(2)}
                     </span>
@@ -534,7 +544,7 @@ export function MemoryPreview({
           </tbody>
         </table>
         {paginatedRecords.length === 0 && (
-          <div className="text-center py-8 text-gray-400 text-sm">暂无匹配的记忆记录</div>
+          <div className="text-center py-12 text-sm text-gray-400">暂无匹配的记忆记录</div>
         )}
       </div>
       <Pagination current={recordsPage} total={totalRecordsPages} totalCount={filteredRecords.length} onChange={setRecordsPage} />
@@ -572,35 +582,35 @@ export function MemoryPreview({
     return (
       <div className="h-full flex flex-col">
         {/* 筛选器 */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">会话:</span>
-              <select
-                value={convSessionFilter}
-                onChange={(e) => { setConvSessionFilter(e.target.value); setConversationsPage(1); }}
-                className="text-xs px-2 py-1.5 border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">全部</option>
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">会话:</span>
+            <Select value={convSessionFilter} onValueChange={(v) => { setConvSessionFilter(v); setConversationsPage(1); }}>
+              <SelectTrigger className="h-8 w-[160px] text-xs rounded-[4px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
                 {sessionIds.map(id => (
-                  <option key={id} value={id}>{id}</option>
+                  <SelectItem key={id} value={id}>{id}</SelectItem>
                 ))}
-              </select>
-            </div>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 时间筛选 */}
           <div className="flex items-center gap-2 relative">
-            <div className="flex items-center gap-1 p-0.5 bg-gray-100 rounded-[4px]">
+            <div className="inline-flex items-center gap-1 p-1 rounded-[4px]" style={{ background: "#F5F5F5" }}>
               {(['7days', '30days'] as const).map(type => (
                 <button
                   key={type}
                   onClick={() => handleQuickFilter(type)}
-                  className={`px-2.5 py-1 text-xs rounded-[4px] transition-all ${
+                  className={`px-3 py-1.5 text-xs rounded-[3px] transition-all duration-150 ${
                     convTimeFilter === type
-                      ? 'bg-white text-blue-600 shadow-sm font-medium'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white text-[#0A0A0A] font-medium'
+                      : 'text-[#737373] hover:text-[#0A0A0A] font-normal'
                   }`}
+                  style={convTimeFilter === type ? { boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : undefined}
                 >
                   {type === '7days' ? '近7天' : '近30天'}
                 </button>
@@ -614,7 +624,6 @@ export function MemoryPreview({
                   setShowDatePicker(false);
                 } else {
                   setShowDatePicker(true);
-                  // 默认设置为近7天
                   const today = new Date();
                   const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
                   if (!convCustomStartDate || !convCustomEndDate) {
@@ -623,10 +632,10 @@ export function MemoryPreview({
                   }
                 }
               }}
-              className={`p-1.5 rounded-[4px] border transition-all ${
+              className={`w-8 h-8 flex items-center justify-center rounded-[4px] border transition-colors ${
                 convTimeFilter === 'custom' || showDatePicker
-                  ? 'bg-blue-50 border-blue-200 text-blue-600'
-                  : 'bg-white border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300'
+                  ? 'bg-[#EFF6FF] border-[#1447E6] text-[#1447E6]'
+                  : 'bg-white border-[#d3d6db] text-[#737373] hover:text-[#0A0A0A] hover:border-[#1447E6]'
               }`}
               title="自定义日期范围"
             >
@@ -635,7 +644,7 @@ export function MemoryPreview({
 
             {/* 显示当前自定义筛选范围 */}
             {convTimeFilter === 'custom' && !showDatePicker && convCustomStartDate && convCustomEndDate && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-[4px] text-xs">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-[#EFF6FF] text-[#1447E6] rounded-[4px] text-xs">
                 <span>{convCustomStartDate} ~ {convCustomEndDate}</span>
                 <button
                   onClick={() => {
@@ -643,7 +652,7 @@ export function MemoryPreview({
                     setConvCustomStartDate('');
                     setConvCustomEndDate('');
                   }}
-                  className="p-0.5 hover:bg-blue-100 rounded transition-colors"
+                  className="p-0.5 hover:bg-[#1447E6]/10 rounded transition-colors"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -652,32 +661,33 @@ export function MemoryPreview({
 
             {/* 自定义日期选择器弹窗 */}
             {showDatePicker && (
-              <div className="absolute right-0 top-full mt-2 p-3 bg-white border border-gray-200 rounded-[4px] shadow-lg z-10">
+              <div
+                className="absolute right-0 top-full mt-2 p-4 bg-white border border-[#E5E5E5] rounded-[4px] z-10"
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+              >
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
                       value={convCustomStartDate}
                       onChange={(e) => setConvCustomStartDate(e.target.value)}
-                      className="text-xs px-2 py-1.5 border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="h-8 text-xs px-2 py-1.5 border border-[#d3d6db] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
-                    <span className="text-xs text-gray-400">至</span>
+                    <span className="text-xs text-[#737373]">至</span>
                     <input
                       type="date"
                       value={convCustomEndDate}
                       onChange={(e) => setConvCustomEndDate(e.target.value)}
-                      className="text-xs px-2 py-1.5 border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="h-8 text-xs px-2 py-1.5 border border-[#d3d6db] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
                   </div>
                   {convCustomStartDate && convCustomEndDate && !isCustomDateValid() && (
-                    <span className="text-xs text-red-500">日期范围最多30天</span>
+                    <span className="text-xs text-[#d42a1e]">日期范围最多30天</span>
                   )}
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => {
-                        setShowDatePicker(false);
-                      }}
-                      className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                      onClick={() => setShowDatePicker(false)}
+                      className="px-3 py-1.5 text-xs text-[#737373] hover:text-[#0A0A0A] rounded-[4px] border border-[#e5e5e5] hover:bg-[#F5F5F5] transition-colors"
                     >
                       取消
                     </button>
@@ -686,8 +696,8 @@ export function MemoryPreview({
                       disabled={!isCustomDateValid()}
                       className={`px-3 py-1.5 text-xs rounded-[4px] transition-colors ${
                         isCustomDateValid()
-                          ? 'bg-blue-500 text-white hover:bg-blue-600'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          ? 'bg-[#0A0A0A] text-white hover:opacity-90'
+                          : 'bg-[#F5F5F5] text-[#A3A3A3] cursor-not-allowed'
                       }`}
                     >
                       确定
@@ -699,37 +709,36 @@ export function MemoryPreview({
           </div>
         </div>
 
-        {/* 消息表格 */}
-        <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
-          <table className="w-full text-sm">
+        {/* 消息表格（§8.4 表格规范） */}
+        <div className="bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
+          <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">会话 ID</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">角色</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">内容</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500 text-xs">
+              <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话 ID</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
                   <button 
                     onClick={() => setConvSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                    className="flex items-center gap-1 hover:text-[#1447E6] transition-colors"
                   >
                     时间
-                    {convSortOrder === 'desc' && <span className="text-blue-600">↓</span>}
-                    {convSortOrder === 'asc' && <span className="text-blue-600">↑</span>}
+                    <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {paginatedConversations.map(conv => {
                 const isExpanded = expandedConvId === conv.id;
-                const isLongContent = conv.content.length > 80; // 超过80字符认为是长内容
+                const isLongContent = conv.content.length > 80;
                 return (
-                  <tr key={conv.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="px-4 py-3">
+                  <tr key={conv.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4">
                       <span className="text-xs text-gray-500 font-mono">{conv.sessionId}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-[4px] text-xs font-medium ${
                         conv.role === 'user' 
                           ? 'bg-blue-50 text-blue-600' 
                           : 'bg-emerald-50 text-emerald-600'
@@ -737,14 +746,14 @@ export function MemoryPreview({
                         {conv.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-700 max-w-[320px]">
+                    <td className="px-6 py-4 text-sm text-gray-700 max-w-[320px]">
                       <div className={isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}>
                         {conv.content}
                       </div>
                       {isLongContent && (
                         <button
                           onClick={() => setExpandedConvId(isExpanded ? null : conv.id)}
-                          className="text-xs text-blue-500 hover:text-blue-600 mt-1 flex items-center gap-0.5"
+                          className="text-xs text-[#1447E6] hover:opacity-80 mt-1 flex items-center gap-0.5"
                         >
                           {isExpanded ? (
                             <>收起 <ChevronUp className="w-3 h-3" /></>
@@ -754,14 +763,14 @@ export function MemoryPreview({
                         </button>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{conv.time}</td>
+                    <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">{conv.time}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
           {paginatedConversations.length === 0 && (
-            <div className="text-center py-8 text-gray-400 text-sm">暂无匹配的对话记录</div>
+            <div className="text-center py-12 text-sm text-gray-400">暂无匹配的对话记录</div>
           )}
         </div>
         <Pagination current={conversationsPage} total={totalConversationsPages} totalCount={filteredConversations.length} onChange={setConversationsPage} />
@@ -968,29 +977,6 @@ export function MemoryPreview({
   // ══════════════════════════════════════════════════════════════════════════════
   return (
     <div className="w-full h-full flex flex-col">
-      {/* Pro 版头部 */}
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <div 
-            className="w-9 h-9 rounded-[4px] flex items-center justify-center flex-shrink-0"
-            style={{ background: '#355EF1' }}
-          >
-            <Crown className="w-5 h-5 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-gray-900">Memory Pro 服务</h2>
-              <span className="px-2 py-0.5 bg-purple-100 text-purple-600 text-xs font-medium rounded-full">
-                已开启
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">
-              基于腾讯云向量数据库的企业级记忆服务，实现语义级记忆检索与数据管理。
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* [本期新增] 免费体验期提示条 */}
       {renderFreeTrialBanner()}
 

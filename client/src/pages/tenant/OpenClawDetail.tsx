@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -1736,13 +1737,15 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </div>
                   </div>
                 )}
-                {/* 备选模型分组 */}
+                {/* 备用模型分组 */}
                 {appliedModels.some(m => !m.primary) && (
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">备选模型</p>
+                    <p className="text-xs text-gray-400 mb-1">
+                      备用模型 ({appliedModels.filter(m => !m.primary).length})
+                    </p>
                     <div className="mb-2 flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                      <span>主模型不可用时会自动切换备选模型，此时备选模型消耗的token将统计到主模型下</span>
+                      <span>主模型不可用时会自动切换备用模型，此时备用模型消耗的token将统计到主模型下</span>
                     </div>
                     <div className="space-y-1.5">
                       {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
@@ -1775,7 +1778,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-400 pointer-events-none">
-                                备选
+                                备用
                               </span>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -2002,19 +2005,6 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </Tooltip>
                 );
               })()}
-              
-              {/* 不支持搜索时的提示信息 */}
-              <div className="flex items-start gap-3 px-4 py-3 rounded-[4px] bg-blue-50 border border-blue-200">
-                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 text-xs text-blue-700 leading-relaxed">
-                  管理员配置了
-                  <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 underline underline-offset-1 font-medium">
-                    SkillHub地址
-                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                  </a>
-                  ，不支持搜索，请输入准确Skill名称
-                </div>
-              </div>
             </div>
             {/* Lower: two scrollable sections */}
             <div className="px-5 pb-5 flex flex-col flex-1 min-h-0 gap-3">
@@ -2052,20 +2042,24 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     <p className="text-xs text-gray-400">待安装技能（{pendingSkills.length}）</p>
                     {pendingSkills.some(s => s.status === "failed") && (
                       <div className="ml-auto flex items-center gap-2">
-                        <button
+                        <Button
+                          variant="claw-primary"
+                          size="claw-sm"
                           onClick={handleRetryAllFailed}
-                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                          className="h-7 px-3 text-xs gap-1 [&_svg]:size-3"
                         >
-                          <RotateCcw className="w-3 h-3" />
+                          <RotateCcw />
                           重试
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="claw-primary"
+                          size="claw-sm"
                           onClick={handleDeleteAllFailed}
-                          className="text-xs text-blue-600 hover:text-blue-700 underline underline-offset-1 flex items-center gap-0.5"
+                          className="h-7 px-3 text-xs gap-1 [&_svg]:size-3"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 />
                           删除
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -3020,6 +3014,18 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               的技能？
             </DialogDescription>
           </DialogHeader>
+          {/* SkillHub 配置提示 */}
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-[4px] bg-blue-50 border border-blue-200 mt-1">
+            <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 text-xs text-blue-700 leading-relaxed">
+              管理员配置了
+              <a href="https://skillhub.tencent.com/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 underline underline-offset-1 font-medium">
+                SkillHub地址
+                <ExternalLink className="w-3 h-3 flex-shrink-0" />
+              </a>
+              ，不支持模糊搜索，请输入准确Skill名称
+            </div>
+          </div>
           <div className="flex items-start gap-2 px-3 py-2.5 rounded-[4px] bg-amber-50 border border-amber-200 mt-1">
             <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-700 leading-relaxed">部分技能(Skills)可能存在安全风险，安装前请确认其安全性。</p>
@@ -4906,7 +4912,12 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
 
       {/* ─── 标题栏 ────────────────────────────────────────────────────────── */}
       <div className="px-6 pt-5 pb-0">
-        <h2 className="text-base font-semibold text-gray-900">龙虾医生</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold text-gray-900">龙虾医生</h2>
+          <Badge variant="secondary" className="text-[#737373] bg-[#F5F5F5] border-transparent rounded-[2px] px-1.5 py-0.5 text-[10px] font-medium">
+            未开启
+          </Badge>
+        </div>
       </div>
 
       {/* ─── 副标题 + 主按钮 ─────────────────────────────────────────────────── */}

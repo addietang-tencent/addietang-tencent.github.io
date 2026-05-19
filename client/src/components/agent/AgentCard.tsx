@@ -410,13 +410,29 @@ export const AgentCard = ({
               className="opacity-40 cursor-not-allowed"
               disabled
             >
-              <Settings className="w-3.5 h-3.5" />
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+                <path d="M9.53796 2H6.46178L6.10863 3.76579C5.81461 3.89729 5.53694 4.05843 5.27938 4.24533L3.57275 3.66799L2.03467 6.33202L3.38795 7.52131C3.37177 7.67884 3.3635 7.83855 3.3635 8C3.3635 8.16151 3.37177 8.32116 3.38795 8.47869L2.03467 9.668L3.57275 12.332L5.27939 11.7547C5.53694 11.9416 5.81462 12.1027 6.10863 12.2342L6.46178 14H9.53796L9.89109 12.2342C10.1851 12.1027 10.4628 11.9416 10.7203 11.7547L12.427 12.332L13.965 9.668L12.6118 8.47869C12.628 8.32116 12.6362 8.16151 12.6362 8C12.6362 7.83855 12.628 7.67884 12.6118 7.52131L13.965 6.33202L12.427 3.66799L10.7203 4.24533C10.4628 4.05843 10.1851 3.89729 9.89109 3.76579L9.53796 2ZM7.99978 10.1818C6.79479 10.1818 5.81796 9.20496 5.81796 8C5.81796 6.79501 6.79479 5.81818 7.99978 5.81818C9.20474 5.81818 10.1816 6.79501 10.1816 8C10.1816 9.20496 9.20474 10.1818 7.99978 10.1818Z" fill="url(#paint0_radial_824_3059)"/>
+                <defs>
+                  <radialGradient id="paint0_radial_824_3059" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.965 8) rotate(-180) scale(11.9304 19.9444)">
+                    <stop offset="0.748539" stopColor="#202020"/>
+                    <stop offset="1" stopColor="#1447E6"/>
+                  </radialGradient>
+                </defs>
+              </svg>
               详细配置
             </Button>
           ) : (
             <Link href={`/openclaw/${claw.id}`} onClick={(e) => e.stopPropagation()}>
               <Button variant="claw-outline" size="claw">
-                <Settings className="w-3.5 h-3.5" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+                  <path d="M9.53796 2H6.46178L6.10863 3.76579C5.81461 3.89729 5.53694 4.05843 5.27938 4.24533L3.57275 3.66799L2.03467 6.33202L3.38795 7.52131C3.37177 7.67884 3.3635 7.83855 3.3635 8C3.3635 8.16151 3.37177 8.32116 3.38795 8.47869L2.03467 9.668L3.57275 12.332L5.27939 11.7547C5.53694 11.9416 5.81462 12.1027 6.10863 12.2342L6.46178 14H9.53796L9.89109 12.2342C10.1851 12.1027 10.4628 11.9416 10.7203 11.7547L12.427 12.332L13.965 9.668L12.6118 8.47869C12.628 8.32116 12.6362 8.16151 12.6362 8C12.6362 7.83855 12.628 7.67884 12.6118 7.52131L13.965 6.33202L12.427 3.66799L10.7203 4.24533C10.4628 4.05843 10.1851 3.89729 9.89109 3.76579L9.53796 2ZM7.99978 10.1818C6.79479 10.1818 5.81796 9.20496 5.81796 8C5.81796 6.79501 6.79479 5.81818 7.99978 5.81818C9.20474 5.81818 10.1816 6.79501 10.1816 8C10.1816 9.20496 9.20474 10.1818 7.99978 10.1818Z" fill="url(#paint0_radial_824_3059b)"/>
+                  <defs>
+                    <radialGradient id="paint0_radial_824_3059b" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(13.965 8) rotate(-180) scale(11.9304 19.9444)">
+                      <stop offset="0.748539" stopColor="#202020"/>
+                      <stop offset="1" stopColor="#1447E6"/>
+                    </radialGradient>
+                  </defs>
+                </svg>
                 详细配置
               </Button>
             </Link>
@@ -432,9 +448,17 @@ export const AgentCard = ({
             disabled={isDisabled}
             aria-label="开始对话"
           >
-            <MessageSquare
-              className="w-3.5 h-3.5"
-            />
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+              <path d="M7.99988 14.5C11.5897 14.5 14.4999 11.5898 14.4999 8C14.4999 4.41015 11.5897 1.5 7.99988 1.5C4.41003 1.5 1.49988 4.41015 1.49988 8C1.49988 9.73056 2.17615 11.3031 3.27884 12.4679L2.14988 14.5H7.99988Z" fill="url(#paint0_radial_824_3063)"/>
+              <rect x="7.66602" y="6.16699" width="1.5" height="2" rx="0.75" fill="#D9D9D9"/>
+              <rect x="10.666" y="6.16699" width="1.5" height="2" rx="0.75" fill="#D9D9D9"/>
+              <defs>
+                <radialGradient id="paint0_radial_824_3063" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14.4999 8) rotate(-180) scale(13 21.6065)">
+                  <stop offset="0.748539" stopColor="#202020"/>
+                  <stop offset="1" stopColor="#1447E6"/>
+                </radialGradient>
+              </defs>
+            </svg>
           </Button>
         </div>
       </div>

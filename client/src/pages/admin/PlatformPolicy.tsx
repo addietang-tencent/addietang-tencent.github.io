@@ -1450,7 +1450,7 @@ export default function PlatformPolicy() {
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       {/* 页面标题 */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>

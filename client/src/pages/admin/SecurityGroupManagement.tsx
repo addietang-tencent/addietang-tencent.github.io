@@ -3303,7 +3303,7 @@ export default function SecurityGroupManagement() {
 
   return (
     <>
-      <div className="page-enter max-w-5xl">
+      <div className="page-enter">
 
         {/* 页头 */}
         <div className="mb-6">

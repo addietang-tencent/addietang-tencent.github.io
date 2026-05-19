@@ -7,9 +7,9 @@
 import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
-  Zap, Pencil, Check, X, Terminal, Monitor, Cpu,
-  Stethoscope, HelpCircle, Cloud, Info, MessageSquare, Brain,
-  BarChart3, MessagesSquare, Plus, Trash2, Search,
+  Pencil, Check, X,
+  Stethoscope, HelpCircle, Info,
+  Plus, Trash2, Search,
   ChevronDown, ChevronRight, Minus, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -857,7 +857,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
+          {icon}
           <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -1075,7 +1075,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
+          {icon}
           <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -1471,8 +1471,8 @@ export default function PlatformPolicy() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">用户配额</h2>
         <div className="space-y-4">
           <QuotaPolicyCard
-            icon={<Zap className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0" />}
+            iconBg=""
             title="单用户 Agent 数量上限"
             description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             type="integer"
@@ -1480,8 +1480,8 @@ export default function PlatformPolicy() {
             onRulesChange={setClawRules}
           />
           <QuotaPolicyCard
-            icon={<Zap className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-platform-policy/user-daily-token-limit.svg" className="shrink-0" />}
+            iconBg=""
             title="单用户每日 Tokens 上限"
             description="单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             type="token"
@@ -1496,8 +1496,8 @@ export default function PlatformPolicy() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">模型配额</h2>
         <div className="space-y-4">
           <QuotaPolicyCard
-            icon={<Zap className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+            icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0" />}
+            iconBg=""
             title="全局 Tokens 上限"
             description="全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务"
             type="token"
@@ -1517,13 +1517,13 @@ export default function PlatformPolicy() {
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
         <div className="space-y-4">
-          <TogglePolicyCard icon={<Brain className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
-          <TogglePolicyCard icon={<MessageSquare className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
-          <TogglePolicyCard icon={<Cpu className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
-          <TogglePolicyCard icon={<Terminal className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
           <TogglePolicyCard
-            icon={<Monitor className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0" />}
+            iconBg=""
             title="允许用户访问 Agent 面板"
             description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板"
             rules={panelRules}
@@ -1550,10 +1550,10 @@ export default function PlatformPolicy() {
               </div>
             }
           />
-          <TogglePolicyCard icon={<MessagesSquare className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-chat-view.svg" className="shrink-0" />} iconBg="" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
           <TogglePolicyCard
-            icon={<Cloud className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            icon={<img src="/assets/admin-platform-policy/allow-cloud-browser.svg" className="shrink-0" />}
+            iconBg=""
             title="允许用户访问 Agent 云端浏览器"
             description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
             rules={cloudBrowserRules}
@@ -1588,7 +1588,7 @@ export default function PlatformPolicy() {
               ) : undefined
             }
           />
-          <TogglePolicyCard icon={<BarChart3 className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
+          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-model-quota.svg" className="shrink-0" />} iconBg="" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
         </div>
       </section>
 

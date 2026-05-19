@@ -43,6 +43,7 @@ export interface SkillDistributionSummary {
   lastDistributionInstanceCount: number;
   lastDistributionSuccessCount: number;
   hasInProgress: boolean; // 是否有进行中的任务
+  lastRecordType?: RecordType; // 最新记录类型：下发 or 卸载
 }
 
 // ========== 缓存读写 ==========
@@ -115,6 +116,7 @@ export function getSkillDistributionSummary(skillId: string): SkillDistributionS
     lastDistributionInstanceCount: latest.totalCount,
     lastDistributionSuccessCount: latest.successCount,
     hasInProgress,
+    lastRecordType: latest.type,
   };
 }
 

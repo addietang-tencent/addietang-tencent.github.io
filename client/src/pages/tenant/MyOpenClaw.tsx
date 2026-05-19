@@ -686,7 +686,9 @@ export default function MyOpenClaw() {
                         分割线：用 100vw + calc(50% - 50vw) 让线横跨整个视口宽度，
                         在 >1920px 大屏下也能左右顶到视口边缘（祖先 overflow-x-clip 兜底防止水平滚动）；
                         分页内容本身保留 px-6 py-3 自适应内边距，与 Section Header 段落对齐；
-                        ref：用于动态测量自身高度，让中间内容区两侧的点阵装饰层避开分页栏段 */}
+                        ref：用于动态测量自身高度，让中间内容区两侧的点阵装饰层避开分页栏段；
+                        仅当总页数 > 1 时才显示分页栏 */}
+                    {totalPages > 1 && (
                     <div ref={paginationRef} className="relative mt-6 px-6 py-3 flex items-center justify-between">
                       <div
                         aria-hidden
@@ -738,6 +740,7 @@ export default function MyOpenClaw() {
                         </div>
                       )}
                     </div>
+                    )}
                     </>
                   )}
                   </div>

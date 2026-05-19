@@ -590,6 +590,9 @@ export default function ModelConfig() {
   const [editQuotaModel, setEditQuotaModel] = useState<ModelRow | null>(null);
   const [showEditQuota, setShowEditQuota] = useState(false);
 
+  // 多模态切换二次确认弹窗
+  const [multimodalConfirm, setMultimodalConfirm] = useState<{ model: ModelRow; enable: boolean } | null>(null);
+
   // Add form state — 统一用一个 provider 字段，默认选第一个厂商
   const [newModel, setNewModel] = useState({
     provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", modelUrl: "", dailyLimit: 100000,
@@ -674,6 +677,14 @@ export default function ModelConfig() {
     }
   };
 
+  // 切换多模态属性（仅自定义模型）
+  const handleToggleMultimodal = (id: string, value: boolean) => {
+    const target = models.find((m) => m.id === id);
+    if (!target) return;
+    setModels(models.map((m) => m.id === id ? { ...m, isMultimodal: value } : m));
+    toast.success(value ? `已为「${target.name}」开启多模态` : `已为「${target.name}」关闭多模态`);
+  };
+
   // 当「用户可见」关闭时，若该模型是默认模型则自动取消默认
   const handleToggleVisible = (id: string, visible: boolean) => {
     const target = models.find((m) => m.id === id);
@@ -727,8 +738,8 @@ export default function ModelConfig() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">模型 URL</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">模型 URL</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">默认配置</th>
@@ -757,11 +768,44 @@ export default function ModelConfig() {
                     <div>
                       <p className="text-sm font-medium text-gray-900">{model.name}</p>
                       <p className="text-xs text-gray-400">{model.version}</p>
-                      {model.provider === CUSTOM_PROVIDER_VALUE && model.isMultimodal && (
-                        <span className="inline-flex items-center mt-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100">
-                          多模态
-                        </span>
-                      )}
+                      <div className="mt-1">
+                        {model.provider === CUSTOM_PROVIDER_VALUE ? (
+                          // 自定义模型：Toggle Tag，点击弹出二次确认
+                          model.isMultimodal ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => setMultimodalConfirm({ model, enable: false })}
+                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
+                                >
+                                  <span className="group-hover:hidden">多模态</span>
+                                  <span className="hidden group-hover:inline-flex items-center gap-0.5">
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    关闭多模态
+                                  </span>
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs">点击关闭多模态</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => setMultimodalConfirm({ model, enable: true })}
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-gray-400 border border-dashed border-gray-300 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                                >
+                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                                  多模态
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent className="text-xs">点击开启多模态</TooltipContent>
+                            </Tooltip>
+                          )
+                        ) : model.isMultimodal ? (
+                          // 非自定义模型：只读 Badge
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100">多模态</span>
+                        ) : null}
+                      </div>
                     </div>
                   </td>
                   <td className="px-4 py-4">
@@ -785,6 +829,7 @@ export default function ModelConfig() {
                       onCheckedChange={(v) => handleToggleVisible(model.id, v)}
                     />
                   </td>
+
                   {/* 默认模型单选 */}
                   <td className="px-4 py-4 align-middle">
                     <Tooltip>
@@ -1024,6 +1069,43 @@ export default function ModelConfig() {
           toast.success("配额已更新");
         }}
       />
+
+      {/* 多模态切换二次确认弹窗 */}
+      <Dialog open={!!multimodalConfirm} onOpenChange={(open) => { if (!open) setMultimodalConfirm(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-blue-500" />
+              </div>
+              {multimodalConfirm?.enable ? "开启多模态" : "关闭多模态"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-sm text-gray-600">
+              {multimodalConfirm?.enable
+                ? `确认开启「${multimodalConfirm.model.name}」的多模态属性么？开启后用户可在对话中上传图片等多模态内容`
+                : `确认关闭「${multimodalConfirm?.model.name}」的多模态属性么？关闭后用户将无法在该模型下上传图片等多模态内容。`
+              }
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMultimodalConfirm(null)}>取消</Button>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => {
+                if (multimodalConfirm) {
+                  handleToggleMultimodal(multimodalConfirm.model.id, multimodalConfirm.enable);
+                  setMultimodalConfirm(null);
+                }
+              }}
+            >
+              {multimodalConfirm?.enable ? "确认开启" : "确认关闭"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

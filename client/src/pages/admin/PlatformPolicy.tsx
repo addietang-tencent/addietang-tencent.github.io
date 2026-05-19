@@ -427,7 +427,7 @@ function GroupTagSelector({
         <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
-          className="relative w-full min-h-7 px-2 py-1 rounded-xl border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+          className="relative w-full min-h-8 px-2.5 py-1 rounded-[4px] border border-[#d3d6db] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
         >
           {selectedIds.length === 0 ? (
             <span className="text-xs text-gray-400 px-1">选择分组…</span>
@@ -477,13 +477,13 @@ function GroupTagSelector({
       >
         <div className="p-2.5 border-b border-[#e5e5e5]">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <Input
               type="text"
               placeholder="搜索分组…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+              className="h-8 pl-8 pr-7 text-xs"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

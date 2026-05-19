@@ -6,6 +6,7 @@
  * - 第三屏：企业版功能与特色
  * - 未登录用户可访问，已登录用户跳转到「我的 Agent」
  */
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/lib/mockData";
@@ -14,6 +15,7 @@ import {
   MessageSquare, Brain, Puzzle, Clock, CheckCircle2
 } from "lucide-react";
 import { useUserRole } from "@/contexts/UserRoleContext";
+import SsoLoginDialog from "@/components/SsoLoginDialog";
 
 const CONCEPT_POINTS = [
   {
@@ -83,6 +85,7 @@ const FEATURE_POINTS = [
 
 export default function LandingPage() {
   const { isAdmin } = useUserRole();
+  const [loginVisible, setLoginVisible] = useState(false);
   return (
     <div className="min-h-screen" style={{ background: "#FAFBFF" }}>
       {/* Top Bar */}
@@ -146,16 +149,15 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="flex items-center justify-center gap-4">
-            <Link href="/my-openclaw">
-              <Button
-                size="lg"
-                className="px-8 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              >
-                立刻创建
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              onClick={() => setLoginVisible(true)}
+              className="px-8 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              立刻创建
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
 
           </div>
 
@@ -254,16 +256,15 @@ export default function LandingPage() {
 
           {/* Bottom CTA */}
           <div className="text-center mt-16">
-            <Link href="/my-openclaw">
-              <Button
-                size="lg"
-                className="px-10 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              >
-                立刻开始使用
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              onClick={() => setLoginVisible(true)}
+              className="px-10 py-3 text-base font-semibold rounded-xl text-white btn-primary-glow"
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            >
+              立刻开始使用
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
           </div>
         </div>
       </section>
@@ -281,6 +282,12 @@ export default function LandingPage() {
           <p className="text-xs text-gray-400">© 2026 企业版 OpenClaw. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* SSO 登录弹窗 - 由 Hero / 底部 CTA 触发 */}
+      <SsoLoginDialog
+        visible={loginVisible}
+        onClose={() => setLoginVisible(false)}
+      />
     </div>
   );
 }

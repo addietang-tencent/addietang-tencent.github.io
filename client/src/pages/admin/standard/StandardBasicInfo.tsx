@@ -469,7 +469,7 @@ export default function StandardBasicInfo() {
                   variant="outline"
                   onClick={handleSyncEnterprise}
                   disabled={syncing}
-                  className="text-xs text-gray-600 flex items-center gap-1.5"
+                  className="text-xs flex items-center gap-1.5"
                 >
                   {syncing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -531,7 +531,7 @@ export default function StandardBasicInfo() {
                   "_blank"
                 );
               }}
-              className="text-xs text-gray-600 flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               前往腾讯统一身份

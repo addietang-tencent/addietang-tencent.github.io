@@ -237,3 +237,98 @@ description: >
 2. 其他人使用组件时，不允许通过 className 覆盖组件定义的颜色/边框/圆角
 3. 如发现 rebase 后组件样式被改，以 addietang 的版本为准强制恢复
 4. 新增组件需经 addietang 审核后才能合入基线
+
+---
+
+## 15. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
+
+> **Owner**: miekoyychen  
+> **源文件**: `client/src/components/ui/admin-sidebar.tsx`  
+> **CSS 变量**: `client/src/index.css` 中 `--admin-sidebar-*` 部分  
+> **修改权限**: 仅 miekoyychen 可修改 sidebar 相关源文件和 CSS 变量
+
+### 15.1 CSS Token（定义在 `:root`）
+
+| Token | 值 | 说明 |
+|-------|-----|------|
+| `--admin-sidebar-width` | `232px` | 展开宽度 |
+| `--admin-sidebar-width-collapsed` | `64px` | 收起宽度 |
+| `--admin-sidebar-header-height` | `72px` | 头部高度 |
+| `--admin-sidebar-footer-height` | `72px` | 底部高度 |
+| `--admin-sidebar-bg` | `#ffffff` | 背景色 |
+| `--admin-sidebar-border` | `#e5e5e5` | 边框色 |
+| `--admin-sidebar-foreground` | `#0a0a0a` | 主文字色 |
+| `--admin-sidebar-muted` | `#737373` | 辅助文字色（分组标题、badge） |
+| `--admin-sidebar-item-height` | `32px` | 菜单项高度 |
+| `--admin-sidebar-item-radius` | `4px` | 菜单项圆角 |
+| `--admin-sidebar-item-hover-bg` | `#f5f5f5` | 菜单项 hover 背景 |
+| `--admin-sidebar-item-active-bg` | `linear-gradient(90deg, #EBF4FF 0%, #DCE8FE 100%)` | 活跃项渐变背景 |
+| `--admin-sidebar-action-bg` | `#ffffff` | 头部操作按钮背景 |
+| `--admin-sidebar-action-border` | `#e3e3e3` | 头部操作按钮边框 |
+| `--admin-sidebar-action-hover-bg` | `#f5f5f5` | 头部操作按钮 hover 背景 |
+| `--admin-sidebar-action-hover-border` | `#e3e3e3` | 头部操作按钮 hover 边框 |
+| `--admin-sidebar-badge-bg` | `#f5f5f5` | badge 背景 |
+
+### 15.2 结构组件
+
+| 组件 | 样式 |
+|------|------|
+| `AdminSidebar` | `fixed inset-y-0 left-0 z-40 flex flex-col border-r` + 宽度过渡 300ms |
+| `AdminSidebarHeader` | `h-[72px] px-4 border-b border-[--admin-sidebar-border]` |
+| `AdminSidebarContent` | `flex-1 overflow-y-auto px-4 py-4` + 自定义滚动条（`.scrollbar-on-hover`） |
+| `AdminSidebarFooter` | `h-[72px] px-6 border-t border-[--admin-sidebar-border]` |
+| `AdminSidebarInset` | `flex-1 min-w-0 overflow-x-hidden` + `margin-left` 跟随侧边栏宽度 |
+
+### 15.3 菜单项样式
+
+| 状态 | 样式 |
+|------|------|
+| Normal | `h-[32px] px-2 gap-2 rounded-[4px] text-[13px] text-[--admin-sidebar-foreground]` |
+| Hover | `background: var(--admin-sidebar-item-hover-bg)` (#f5f5f5) |
+| Active | `background: var(--admin-sidebar-item-active-bg)` (蓝色渐变) + `font-medium` |
+| Icon | `size-4 shrink-0` |
+| 文字 | `tracking-[0.005em] leading-5` |
+
+### 15.4 分组标题
+
+- `text-xs font-normal tracking-[0.015em] text-[--admin-sidebar-muted]`
+- 带折叠/展开箭头（ChevronUp/Down `size-3`）
+- hover: `text-gray-900`
+
+### 15.5 Badge（New/即将开放）
+
+- `h-[18px] rounded-[2px] px-1 text-[10px] font-semibold`
+- 背景: `var(--admin-sidebar-badge-bg)` (#f5f5f5)
+- 文字: `var(--admin-sidebar-muted)` (#737373)
+
+### 15.6 头部品牌区
+
+- Logo: 36×28 SVG
+- 品牌名: `text-sm font-medium text-[--admin-sidebar-foreground]` hover → `#355EF1`
+- 副标题: `text-xs font-normal text-[--admin-sidebar-muted]` hover → `#355EF1`
+
+### 15.7 头部操作按钮（前往用户端）
+
+- `size-8 rounded-[4px] border` 
+- Normal: `bg-[--admin-sidebar-action-bg] border-[--admin-sidebar-action-border]`
+- Hover: `bg-[--admin-sidebar-action-hover-bg] border-[--admin-sidebar-action-hover-border]`
+- Icon: `size-4`
+
+### 15.8 底部用户区
+
+- Avatar: `size-8 rounded-md bg-gradient-to-br from-green-600 to-green-700` + 白字
+- 用户名: `text-sm font-medium text-[--admin-sidebar-foreground]`
+- 角色: `text-xs font-normal text-[--admin-sidebar-foreground]`
+- 更多按钮: `size-8 rounded-lg` hover → `bg-gray-50 text-gray-900`
+
+### 15.9 过渡动画
+
+- 侧边栏展开/收起: `transition-[width] duration-300`
+- 内容区跟随: `transition-[margin-left] duration-300`
+- 菜单项交互: `transition-all duration-150`
+
+### 15.10 强制规则
+
+1. **`admin-sidebar.tsx` 及 `index.css` 中 `--admin-sidebar-*` 变量仅 miekoyychen 可修改**
+2. 其他人不得覆盖 sidebar 组件的样式、token 或结构
+3. 如需新增侧边栏功能，需经 miekoyychen 审核

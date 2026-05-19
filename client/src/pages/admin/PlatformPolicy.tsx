@@ -427,7 +427,7 @@ function GroupTagSelector({
         <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
-          className="relative w-full min-h-8 px-2.5 py-1 rounded-[4px] border border-[#d3d6db] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+          className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#d3d6db] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
         >
           {selectedIds.length === 0 ? (
             <span className="text-xs text-gray-400 px-1">选择分组…</span>
@@ -843,12 +843,12 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
     <>
       {type === "token" && (
         <div className="flex gap-1 shrink-0">
-          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${draftMode === "unlimited" ? "border-blue-500 bg-blue-50 text-blue-600 font-medium" : "border-gray-200 text-gray-500"}`}>无限制</button>
-          <button onClick={() => setDraftMode("custom")} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${draftMode === "custom" ? "border-blue-500 bg-blue-50 text-blue-600 font-medium" : "border-gray-200 text-gray-500"}`}>自定义</button>
+          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "unlimited" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>无限制</button>
+          <button onClick={() => setDraftMode("custom")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "custom" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>自定义</button>
         </div>
       )}
       {(type === "integer" || draftMode === "custom") && (
-        <Input type="number" value={draftValue} onChange={(e) => setDraftValue(e.target.value)} className="h-7 text-xs bg-white w-32" placeholder={type === "integer" ? "0-999" : "数量"} />
+        <Input type="number" value={draftValue} onChange={(e) => setDraftValue(e.target.value)} className="h-9 text-xs bg-white w-32" placeholder={type === "integer" ? "0-999" : "数量"} />
       )}
     </>
   );
@@ -907,8 +907,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                       onChange={setDraftGroupIds}
                     />
                   </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-9">
                     <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                     <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
                   </div>
@@ -936,8 +936,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                   onChange={setDraftGroupIds}
                 />
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-9">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                 <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
@@ -1128,8 +1128,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                       onChange={setDraftGroupIds}
                     />
                   </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-9">
                     <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                     <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
                   </div>
@@ -1160,8 +1160,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                   onChange={setDraftGroupIds}
                 />
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-9">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                 <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>

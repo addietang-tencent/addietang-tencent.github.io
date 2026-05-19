@@ -13,6 +13,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Eye, EyeOff } from "lucide-react";
 import { AgentCombobox } from "@/components/OpenClawCombobox";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
 
 // Mock data for charts
 const logLevelData = [
@@ -440,29 +441,25 @@ export default function OpsObservation() {
             <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DatePicker
               value={dateFrom}
-              onChange={(e) => handleFromChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleFromChange}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <input
-              type="date"
+            <DatePicker
               value={dateTo}
-              onChange={(e) => handleToChange(e.target.value)}
-              className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              style={{ colorScheme: 'light' }}
+              onChange={handleToChange}
             />
-            <button
+            <Button
+              variant="claw-outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
               title="刷新数据"
+              className="w-9 h-9"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </button>
+            </Button>
           </div>
         </div>
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">

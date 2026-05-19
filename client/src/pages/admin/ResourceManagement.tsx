@@ -6,7 +6,7 @@ import { LayoutTemplate } from "lucide-react";
 
 export default function ResourceManagement() {
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="max-w-4xl">
       {/* 页面标题区 */}
       <div className="flex items-start gap-4 mb-8">
         <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">

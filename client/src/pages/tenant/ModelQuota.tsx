@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/Surface";
 import { cn } from "@/lib/utils";
+import { DatePicker } from "@/components/ui/date-picker";
 
 // ─── 多分组相关 ──────────────────────────────────────────────────────────────
 type UserGroupMode = "normal" | "multi-group";
@@ -491,33 +492,27 @@ export default function ModelQuota() {
 
               {/* Date Input(s) */}
               {dateMode === "single" ? (
-                <input
-                  type="date"
+                <DatePicker
                   value={singleDate}
                   max={TODAY}
-                  onChange={(e) => { setSingleDate(e.target.value); setSummaryPage(1); setDetailPage(1); }}
-                  className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
-                  style={{ colorScheme: 'light' }}
+                  onChange={(v) => { setSingleDate(v); setSummaryPage(1); setDetailPage(1); }}
+                  className="h-8"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <input
-                    type="date"
+                  <DatePicker
                     value={dateRange.start}
                     max={dateRange.end}
-                    onChange={(e) => { setDateRange((r) => ({ ...r, start: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
-                    style={{ colorScheme: 'light' }}
+                    onChange={(v) => { setDateRange((r) => ({ ...r, start: v })); setSummaryPage(1); setDetailPage(1); }}
+                    className="h-8"
                   />
                   <span className="text-gray-400 text-sm">至</span>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={dateRange.end}
                     min={dateRange.start}
                     max={TODAY}
-                    onChange={(e) => { setDateRange((r) => ({ ...r, end: e.target.value })); setSummaryPage(1); setDetailPage(1); }}
-                    className="border border-[#d3d6db] rounded-[4px] px-3 h-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-[#355EF1] cursor-pointer"
-                    style={{ colorScheme: 'light' }}
+                    onChange={(v) => { setDateRange((r) => ({ ...r, end: v })); setSummaryPage(1); setDetailPage(1); }}
+                    className="h-8"
                   />
                 </div>
               )}

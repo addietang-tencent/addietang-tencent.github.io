@@ -145,7 +145,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
           <AdminSidebarInset>
             <AdminNoticeBar />
-            <div className="p-6">{children}</div>
+            <div className="px-9 py-8">{children}</div>
           </AdminSidebarInset>
         </div>
       </AdminSidebarProvider>

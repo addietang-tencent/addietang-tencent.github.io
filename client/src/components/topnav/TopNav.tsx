@@ -5,28 +5,12 @@
  * 视觉规范：
  *   - 容器：高 64px，padding 12px 28px，背景 #FFFFFF（带 95% 半透 + 模糊），
  *           底边 1px solid #E2E8F0
- *   - 布局：左 Logo 区 + 中央 segmented Tabs + 右侧功能图标 + 用户菜单
+ *   - 布局：CSS Grid 三栏（左 Logo / 中 Tabs / 右功能区）
  *
- * 用法（推荐）：
- *
- *   <TopNav
- *     centerTabs={CENTER_NAV_ITEMS}
- *     activeTabIndex={activeIndex}
- *     onTabChange={(idx) => navigate(items[idx].path)}
- *     right={
- *       <>
- *         <NavIconButton icon="help" title="使用指南" onClick={...} />
- *         <NavDivider />
- *         <NotificationPanel isAdmin={isAdmin} />
- *         <NavDivider />
- *         <NavIconButton icon="switch-admin" label="切换管控端" onClick={...} />
- *         <NavDivider />
- *         <UserMenu user={...} />
- *       </>
- *     }
- *   />
- *
- * 也可直接在外层组合：见 TenantLayout。
+ * 适配规则：
+ *   - 三栏 Grid：1fr auto 1fr，中间栏 justify-self:center 天然居中
+ *   - 左右栏内容固定不压缩，中间栏居中且不会与两侧重叠
+ *   - < 1200px 时 min-width 锁死，出横向滚动条
  */
 import React from "react";
 import { Link } from "wouter";
@@ -69,52 +53,52 @@ export default function TopNav({
         borderBottom: "1px solid #E2E8F0",
       }}
     >
-      <div className="h-full flex items-center px-10 relative" style={{ gap: "24px" }}>
-        {/* 左：Logo — 永不压缩 */}
-        <Link href={logoHref}>
-          <div
-            className="flex items-center cursor-pointer transition-opacity hover:opacity-90 flex-shrink-0 whitespace-nowrap"
-            style={{ gap: 8 }}
-          >
-            <img
-              src="/landing-assets/60.svg"
-              alt="ClawPro"
-              width={28}
-              height={28}
-              draggable={false}
-              className="select-none"
-            />
-            <span
-              className="select-none"
-              style={{
-                fontSize: "22.12px",
-                fontFamily: "'Be Vietnam Pro', sans-serif",
-                fontWeight: 600,
-                color: "#000",
-                lineHeight: 1,
-              }}
+      {/* 三栏 Grid：左 1fr / 中 auto / 右 1fr — 中栏天然页面正中 */}
+      <div
+        className="h-full grid items-center px-10 min-w-[1200px]"
+        style={{
+          gridTemplateColumns: "1fr auto 1fr",
+          gap: "24px",
+        }}
+      >
+        {/* 左栏：Logo 靠左 */}
+        <div className="justify-self-start min-w-0">
+          <Link href={logoHref}>
+            <div
+              className="flex items-center cursor-pointer transition-opacity hover:opacity-90 whitespace-nowrap"
+              style={{ gap: 8 }}
             >
-              ClawPro
-            </span>
-          </div>
-        </Link>
-
-        {/* 占位弹簧，把右侧推到最右 */}
-        <div className="flex-1" />
-
-        {/* 中：Segmented Tabs
-            >=1400px: 绝对定位，屏幕水平正中
-            <1400px: 回到 flex 流，可压缩，文字溢出省略 */}
-        {center && (
-          <div className="min-w-0 shrink whitespace-nowrap pointer-events-none nav-center-tabs">
-            <div className="pointer-events-auto min-w-0">
-              {center}
+              <img
+                src="/landing-assets/60.svg"
+                alt="ClawPro"
+                width={28}
+                height={28}
+                draggable={false}
+                className="select-none"
+              />
+              <span
+                className="select-none"
+                style={{
+                  fontSize: "22.12px",
+                  fontFamily: "'Be Vietnam Pro', sans-serif",
+                  fontWeight: 600,
+                  color: "#000",
+                  lineHeight: 1,
+                }}
+              >
+                ClawPro
+              </span>
             </div>
-          </div>
-        )}
+          </Link>
+        </div>
 
-        {/* 右：功能图标 + 用户菜单，等比例压缩文字 */}
-        <div className="flex items-center gap-3 min-w-0 shrink">
+        {/* 中栏：Segmented Tabs — auto 宽度，天然居中 */}
+        <div className="whitespace-nowrap">
+          {center}
+        </div>
+
+        {/* 右栏：功能图标 + 用户菜单靠右，min-w-0 防止撑开列宽 */}
+        <div className="justify-self-end flex items-center gap-3 whitespace-nowrap min-w-0">
           {right}
         </div>
       </div>

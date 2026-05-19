@@ -1,0 +1,22 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="enterprise_network_interconnect_clip"><rect width="36" height="36" rx="8"/></clipPath>
+  <linearGradient id="enterprise_network_interconnect_br" x1="18" y1="18" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(16, 212, 234)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="enterprise_network_interconnect_bl" x1="18" y1="18" x2="0" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(16, 212, 234)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="enterprise_network_interconnect_tl" x1="18" y1="18" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(16, 212, 234)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="enterprise_network_interconnect_tr" x1="18" y1="18" x2="36" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(16, 212, 234)" stop-opacity="0.05"/><stop offset="0.55" stop-color="white"/></linearGradient>
+</defs>
+<g clip-path="url(#enterprise_network_interconnect_clip)">
+  <rect width="36" height="36" fill="white"/>
+  <rect x="18" y="18" width="18" height="18" fill="url(#enterprise_network_interconnect_br)"/>
+  <rect x="0" y="18" width="18" height="18" fill="url(#enterprise_network_interconnect_bl)"/>
+  <rect x="0" y="0" width="18" height="18" fill="url(#enterprise_network_interconnect_tl)"/>
+  <rect x="18" y="0" width="18" height="18" fill="url(#enterprise_network_interconnect_tr)"/>
+  <g transform="translate(9 9)" stroke="#202020" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="1.8" y="2.6" width="5" height="5" rx="1.2" fill="none"/>
+    <rect x="11.2" y="2.6" width="5" height="5" rx="1.2" fill="none"/>
+    <rect x="6.5" y="11" width="5" height="5" rx="1.2" fill="none"/>
+    <path d="M6.8 5.1h4.4M5.7 7.1l2.4 4M12.3 7.1l-2.4 4" stroke="#10B0EA"/>
+  </g>
+</g>
+</svg>

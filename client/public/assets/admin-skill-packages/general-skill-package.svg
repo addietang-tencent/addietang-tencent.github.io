@@ -1,0 +1,20 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="general_skill_package_clip"><rect width="36" height="36" rx="8"/></clipPath>
+  <linearGradient id="general_skill_package_br" x1="18" y1="18" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.01"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="general_skill_package_bl" x1="18" y1="18" x2="0" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.01"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="general_skill_package_tl" x1="18" y1="18" x2="0" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.01"/><stop offset="0.55" stop-color="white"/></linearGradient>
+  <linearGradient id="general_skill_package_tr" x1="18" y1="18" x2="36" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="rgb(20, 71, 230)" stop-opacity="0.01"/><stop offset="0.55" stop-color="white"/></linearGradient>
+</defs>
+<g clip-path="url(#general_skill_package_clip)">
+  <rect width="36" height="36" fill="white"/>
+  <rect x="18" y="18" width="18" height="18" fill="url(#general_skill_package_br)"/>
+  <rect x="0" y="18" width="18" height="18" fill="url(#general_skill_package_bl)"/>
+  <rect x="0" y="0" width="18" height="18" fill="url(#general_skill_package_tl)"/>
+  <rect x="18" y="0" width="18" height="18" fill="url(#general_skill_package_tr)"/>
+  <g transform="translate(9 9)" stroke="#202020" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 6.2L9 2.8l6 3.4v6.7L9 16.2l-6-3.3V6.2Z" fill="none"/>
+    <path d="M3.4 6.4L9 9.5l5.6-3.1M9 9.5v6.3" stroke="#0080FF"/>
+  </g>
+</g>
+</svg>

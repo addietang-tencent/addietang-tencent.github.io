@@ -42,7 +42,6 @@ import {
   Info,
   ChevronLeft,
   Link,
-  UserCheck,
   ShoppingCart,
   Trash2,
   RotateCcw,
@@ -412,7 +411,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
+          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
           <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -1284,16 +1283,16 @@ export default function FileManagement() {
         {/* 网盘配置卡片 */}
         <div className="grid grid-cols-2 gap-4">
           <FMTogglePolicyCard
-            icon={<Link className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-disk-management/auto-bind-disk.svg" alt="" className="w-8 h-8" />}
+            iconBg=""
             title="新增实例是否自动绑定网盘"
             description="开启后,新创建的 AI 智能体实例将自动分配网盘空间"
             rules={autoBindRules}
             onRulesChange={setAutoBindRules}
           />
           <FMTogglePolicyCard
-            icon={<UserCheck className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-disk-management/self-enable-disk.svg" alt="" className="w-8 h-8" />}
+            iconBg=""
             title="允许用户自行开启网盘"
             description="开启后,用户可在自己的实例中自主开启网盘服务"
             rules={allowSelfEnableRules}

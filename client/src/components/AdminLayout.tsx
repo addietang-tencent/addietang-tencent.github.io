@@ -55,11 +55,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <AdminSidebar>
             <AdminSidebarHeader>
               <AdminSidebarBrand asChild>
-                <Link href="/" aria-label="返回首页">
+                <Link href="/" aria-label="返回首页" className="group">
                   <AdminSidebarLogo className="shrink-0" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)]">管控端</p>
-                    <p className="truncate text-xs font-normal leading-5 tracking-[0.015em] text-[var(--admin-sidebar-muted)]">ClawPro Admin</p>
+                    <p className="truncate text-sm font-medium leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] group-hover:text-[#1447e6]">管控端</p>
+                    <p className="truncate text-xs font-normal leading-5 tracking-[0.015em] text-[var(--admin-sidebar-muted)] group-hover:text-[#1447e6]">ClawPro Admin</p>
                   </div>
                 </Link>
               </AdminSidebarBrand>

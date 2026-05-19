@@ -24,7 +24,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -54,7 +53,6 @@ import {
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
   Pencil, Plus,
-  TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -73,7 +71,6 @@ import { useAdminMode } from "@/contexts/AdminModeContext";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
-import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -150,8 +147,6 @@ const MOCK_CLAWS: Claw[] = [
   { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "23", instanceId: "ins-d14y8szp", name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "longname-user@very-long-domain-example.com", createTime: "2026-05-01 09:00:00", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "24", instanceId: "ins-e25z9taq", name: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", createTime: "2026-05-02 10:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
 ];
 
 const PAGE_SIZE = 10;
@@ -176,23 +171,6 @@ const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
   "oneid-group": "自定义分组",
   manual: "自定义分组",
 };
-
-/** 获取某 agent creator 的所有部门路径（OneID 模式，主部门排首位） */
-function getCreatorDeptPaths(creator: string): Array<{ path: string; isPrimary: boolean }> {
-  const user = MOCK_USERS.find((u) => u.userId === creator);
-  if (!user) return [];
-  const deptGroupIds = user.groupIds.filter((gid) => {
-    const g = MOCK_GROUPS.find((g) => g.id === gid);
-    return g?.source === "oneid-dept";
-  });
-  if (deptGroupIds.length === 0) return [];
-  return deptGroupIds
-    .map((gid) => ({
-      path: getGroupPath(gid, MOCK_GROUPS),
-      isPrimary: gid === user.primaryGroupId,
-    }))
-    .sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
-}
 
 /** 获取某 agent creator 对应的分组信息（OneID 模式，只返回一个） */
 function getCreatorGroupItemOneid(creator: string): { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null {
@@ -774,11 +752,6 @@ export default function AgentMonitor() {
   const [showUpgradeResultDialog, setShowUpgradeResultDialog] = useState(false);
   const [upgradeFailedAgents, setUpgradeFailedAgents] = useState<{ name: string; instanceId: string; agentType: string; reason: string }[]>([]);
 
-  // 命令下发弹窗（取代旧抽屉）
-  // dispatchPresetIds = null 表示 Dialog 关闭；非 null（即使是空数组）表示打开。
-  // 通过工具栏「命令下发」按钮触发：勾选了实例则预填，否则为空，进入「先选命令再选实例」流程。
-  const [dispatchPresetIds, setDispatchPresetIds] = useState<string[] | null>(null);
-
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
   // 标签键 -> 可选值列表（模拟腾讯云标签库）
@@ -1165,31 +1138,29 @@ export default function AgentMonitor() {
     installedSkills: string[];
   }
 
-  /** 基于 clawId 稳定分布，模拟三种场景：hash%3 → 0=空 / 1=只主 / 2=主+备 */
+  /**
+   * 基于 clawId 稳定分布初始模型场景：
+   * - 多模型 Agent（OpenClaw）：hash%3 → 0=空 / 1=只主 / 2=主+备
+   * - 单模型 Agent（Hermes / LightclawACE）：hash%2 → 0=空 / 1=单条
+   */
   const hashClawId = (s: string): number => {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
     return Math.abs(h);
   };
 
-  const buildDefaultClawDetail = (clawId: string): ClawDetail => {
-    const scenario = hashClawId(clawId) % 3;
+  /** 是否单模型模式（Hermes / LightclawACE 不区分主/备） */
+  const isSingleModelAgentType = (agentType: Claw["agentType"]): boolean =>
+    agentType !== "OpenClaw";
+
+  const buildDefaultClawDetail = (clawId: string, agentType: Claw["agentType"]): ClawDetail => {
     const baseTs = Date.now();
-    const appliedModels: AppliedModelItem[] =
-      scenario === 0
+    const isSingle = isSingleModelAgentType(agentType);
+    let appliedModels: AppliedModelItem[];
+    if (isSingle) {
+      // 单模型模式：0=空 / 1=单条（primary 字段固定 true，仅作内部标记，不参与 UI 区分）
+      appliedModels = hashClawId(clawId) % 2 === 0
         ? []
-        : scenario === 1
-        ? [
-            {
-              id: 1,
-              modelConfigId: "1",
-              providerLabel: "腾讯云 DeepSeek",
-              versionLabel: "DeepSeek V3 0324",
-              isCustom: false,
-              primary: true,
-              addedAt: baseTs,
-            },
-          ]
         : [
             {
               id: 1,
@@ -1200,16 +1171,46 @@ export default function AgentMonitor() {
               primary: true,
               addedAt: baseTs,
             },
-            {
-              id: 2,
-              modelConfigId: "2",
-              providerLabel: "腾讯混元",
-              versionLabel: "Hunyuan Turbo",
-              isCustom: false,
-              primary: false,
-              addedAt: baseTs - 60_000,
-            },
           ];
+    } else {
+      // 多模型模式：0=空 / 1=只主 / 2=主+备
+      const scenario = hashClawId(clawId) % 3;
+      appliedModels =
+        scenario === 0
+          ? []
+          : scenario === 1
+          ? [
+              {
+                id: 1,
+                modelConfigId: "1",
+                providerLabel: "腾讯云 DeepSeek",
+                versionLabel: "DeepSeek V3 0324",
+                isCustom: false,
+                primary: true,
+                addedAt: baseTs,
+              },
+            ]
+          : [
+              {
+                id: 1,
+                modelConfigId: "1",
+                providerLabel: "腾讯云 DeepSeek",
+                versionLabel: "DeepSeek V3 0324",
+                isCustom: false,
+                primary: true,
+                addedAt: baseTs,
+              },
+              {
+                id: 2,
+                modelConfigId: "2",
+                providerLabel: "腾讯混元",
+                versionLabel: "Hunyuan Turbo",
+                isCustom: false,
+                primary: false,
+                addedAt: baseTs - 60_000,
+              },
+            ];
+    }
     return {
       appliedModels,
       connectedChannels: [
@@ -1224,19 +1225,19 @@ export default function AgentMonitor() {
 
   const [clawDetailMap, setClawDetailMap] = useState<Record<string, ClawDetail>>({});
 
-  /** 读取某个 claw 的详情（不存在则按 clawId hash 生成默认快照，不写入 map 以避免 render 期间 setState） */
-  const getClawDetail = (clawId: string): ClawDetail => {
-    return clawDetailMap[clawId] ?? buildDefaultClawDetail(clawId);
+  /** 读取某个 claw 的详情（不存在则按 clawId+agentType 生成默认快照，不写入 map 以避免 render 期间 setState） */
+  const getClawDetail = (claw: Claw): ClawDetail => {
+    return clawDetailMap[claw.id] ?? buildDefaultClawDetail(claw.id, claw.agentType);
   };
 
   /** 用 updater 形式更新某个 claw 的详情，缺失时基于默认值初始化 */
   const updateClawDetail = (
-    clawId: string,
+    claw: Claw,
     updater: (prev: ClawDetail) => ClawDetail,
   ) => {
     setClawDetailMap(prev => {
-      const current = prev[clawId] ?? buildDefaultClawDetail(clawId);
-      return { ...prev, [clawId]: updater(current) };
+      const current = prev[claw.id] ?? buildDefaultClawDetail(claw.id, claw.agentType);
+      return { ...prev, [claw.id]: updater(current) };
     });
   };
 
@@ -1385,7 +1386,7 @@ export default function AgentMonitor() {
     }
     const fields = toAppliedModelFields(group, model);
     const action = modelAction;
-    const current = getClawDetail(selectedClaw.id);
+    const current = getClawDetail(selectedClaw);
     const list = current.appliedModels;
     // 重复校验：同一条模型配置不可重复添加（替换时允许命中自己）
     const dupe = list.find(m => m.modelConfigId === fields.modelConfigId
@@ -1395,13 +1396,15 @@ export default function AgentMonitor() {
       return;
     }
     const hadPrimaryBefore = list.some(m => m.primary);
-    updateClawDetail(selectedClaw.id, prev => {
+    const isSingle = isSingleModelAgentType(selectedClaw.agentType);
+    updateClawDetail(selectedClaw, prev => {
       if (action.kind === "add") {
         const hasPrimary = prev.appliedModels.some(m => m.primary);
         const newEntry: AppliedModelItem = {
           id: nextModelEntryId(prev.appliedModels),
           ...fields,
-          // 无主模型时新加的直接成为主模型；否则作为备选
+          // 多模型：无主模型时新加的直接成为主模型；否则作为备选
+          // 单模型：列表为空时仍标 primary=true（仅作内部标记，不参与 UI 区分）；之后追加的标 false
           primary: !hasPrimary,
           addedAt: Date.now(),
         };
@@ -1417,9 +1420,13 @@ export default function AgentMonitor() {
       }
       return prev;
     });
-    const _isOpenClawSave = selectedClaw?.agentType === 'OpenClaw';
     if (action.kind === "add") {
-      toast.success(hadPrimaryBefore ? "备选模型已添加" : (_isOpenClawSave ? "已设为主模型" : "模型已添加成功"));
+      // 单模型统一为"模型已添加"；多模型按主/备区分
+      if (isSingle) {
+        toast.success("模型已添加");
+      } else {
+        toast.success(hadPrimaryBefore ? "备选模型已添加" : "已设为主模型");
+      }
     } else {
       toast.success("模型已更新");
     }
@@ -1445,7 +1452,7 @@ export default function AgentMonitor() {
       setModelConfirmDialog(prev => ({ ...prev, open: false }));
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => {
+    updateClawDetail(selectedClaw, prev => {
       const list = prev.appliedModels;
       if (type === "set-primary") {
         return {
@@ -1469,10 +1476,12 @@ export default function AgentMonitor() {
     if (modelAction.kind === "replace" && modelAction.modelEntryId === modelEntryId) {
       setModelAction({ kind: "idle" });
     }
-    const _isOpenClaw = selectedClaw?.agentType === 'OpenClaw';
     if (type === "set-primary") toast.success("已设为主模型");
-    else if (type === "delete-backup") toast.success("备选模型已删除");
-    else toast.success(_isOpenClaw ? "主模型已删除，已自动升级备选模型" : "模型删除成功");
+    else if (type === "delete-backup") {
+      // 单模型模式 / 多模型备选 都走 delete-backup，文案区分
+      toast.success(isSingleModelAgentType(selectedClaw.agentType) ? "模型已删除" : "备选模型已删除");
+    }
+    else toast.success("主模型已删除，已自动升级备选模型");
   };
 
   // ── 通道编辑态 ───────────────────────────────────────────────────────────
@@ -1601,7 +1610,7 @@ export default function AgentMonitor() {
       toast.error("请选择要添加的通道");
       return;
     }
-    const detail = getClawDetail(selectedClaw.id);
+    const detail = getClawDetail(selectedClaw);
     if (detail.connectedChannels.some(c => c.name === ch.label)) {
       toast.error(`「${ch.label}」已添加，请勿重复`);
       return;
@@ -1613,7 +1622,7 @@ export default function AgentMonitor() {
       toast.error(`请填写「${missing.label}」`);
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: [
         ...prev.connectedChannels,
@@ -1634,7 +1643,7 @@ export default function AgentMonitor() {
   const confirmRemoveChannel = () => {
     if (!selectedClaw || !channelRemoveTarget) return;
     const targetName = channelRemoveTarget;
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: prev.connectedChannels.filter(c => c.name !== targetName),
     }));
@@ -1677,7 +1686,7 @@ export default function AgentMonitor() {
       toast.error(`请填写「${missing.label}」`);
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: prev.connectedChannels.map(c =>
         c.name === channel.name ? { ...c, fieldValues: { ...channelEditDraft } } : c,
@@ -1942,86 +1951,6 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
               )}
             </Tooltip>
-            {/* 命令下发：
-              * - 勾选实例时：变为主按钮，点击直接打开下发弹窗（预填实例 → 让用户挑命令）
-              * - 未勾选时：保持二级菜单，命令列表/执行记录跳转到独立页 /admin/agent-commands
-              */}
-            {selectedCount > 0 ? (
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      // 仅取运行中的实例，过滤掉异常状态
-                      const runningIds = selectedClaws
-                        .filter((c) => c.status === "running")
-                        .map((c) => c.instanceId);
-                      if (runningIds.length === 0) {
-                        toast.error("所选实例中没有运行中的 Agent，无法下发命令");
-                        return;
-                      }
-                      if (runningIds.length < selectedCount) {
-                        toast.info(`已自动跳过 ${selectedCount - runningIds.length} 台非运行中实例`);
-                      }
-                      setDispatchPresetIds(runningIds);
-                    }}
-                    className="rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all text-white"
-                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                  >
-                    <TerminalSquare className="w-3.5 h-3.5" />
-                    命令下发
-                    <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  对已选 {selectedCount} 台实例下发命令
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  >
-                    <TerminalSquare className="w-3.5 h-3.5" />
-                    命令下发
-                    <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                    onClick={() => setDispatchPresetIds([])}
-                  >
-                    <TerminalSquare className="w-3.5 h-3.5 text-blue-500" />
-                    <div>
-                      <div>立即下发命令</div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">挑选命令模板并选择目标实例</div>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                    onClick={() => setLocation("/admin/agent-commands?tab=list")}
-                  >
-                    <ListChecks className="w-3.5 h-3.5 text-blue-500" />
-                    <div>
-                      <div>命令列表</div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">管理命令模板（沉淀团队 SOP）</div>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
-                    onClick={() => setLocation("/admin/agent-commands?tab=history")}
-                  >
-                    <HistoryIcon className="w-3.5 h-3.5 text-gray-500" />
-                    <div>
-                      <div>执行记录</div>
-                      <div className="text-[10px] text-gray-400 mt-0.5">查看历史下发任务与单机输出</div>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
@@ -2060,7 +1989,7 @@ export default function AgentMonitor() {
                   </div>
                 </th>
                 <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -2121,9 +2050,9 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建人</th>
                 {hasOneid && (
-                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2142,7 +2071,7 @@ export default function AgentMonitor() {
                     </Popover>
                   </th>
                 )}
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '150px' }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2161,8 +2090,8 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
                   <Popover open={typeColFilterOpen} onOpenChange={(open) => {
                     setTypeColFilterOpen(open);
                     if (open) setTempTypeFilter(new Set(agentTypeFilter));
@@ -2207,9 +2136,9 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
                   <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
@@ -2250,18 +2179,13 @@ export default function AgentMonitor() {
                         />
                       </td>
                       {/* 名称/ID */}
-                      <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                        <div className="flex items-center gap-2.5 min-w-0">
+                      <td className="pr-4 py-4" style={{ paddingLeft: '4px' }}>
+                        <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{claw.name}</div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{claw.name}</TooltipContent>
-                            </Tooltip>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
                             <button
                               onClick={() => handleOpenDrawer(claw)}
                               className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
@@ -2272,131 +2196,82 @@ export default function AgentMonitor() {
                         </div>
                       </td>
                       {/* 状态列 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
                           {statusConfig.label}
                         </span>
                       </td>
                       {/* 创建人 */}
-                      <td className="px-3 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="block truncate cursor-default">{claw.creator}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" align="start">
-                            <span className="text-xs">{claw.creator}</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
                       {/* 部门 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-3 py-4">
-                          {(() => {
-                            const deptPaths = getCreatorDeptPaths(claw.creator);
-                            if (deptPaths.length === 0) return <span className="text-sm text-gray-300">—</span>;
-                            if (deptPaths.length === 1) {
-                              return (
-                                <span className="text-sm text-gray-600 truncate block max-w-[200px]" title={deptPaths[0].path}>
-                                  {deptPaths[0].path}
-                                </span>
-                              );
-                            }
-                            return (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
-                                    <span className="text-sm text-gray-600 truncate">{deptPaths[0].path}</span>
-                                    <span className="text-xs text-gray-400 tabular-nums shrink-0">+{deptPaths.length - 1}</span>
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
-                                  <div className="py-2">
-                                    {deptPaths.map((dp, idx) => (
-                                      <div key={idx} className="px-3 py-1.5 text-sm">
-                                        <span className="text-gray-200 mr-1">{idx + 1}.</span>
-                                        <span className="text-white">{dp.path}</span>
-                                        {dp.isPrimary && (
-                                          <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
-                                            主部门
-                                          </span>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            );
-                          })()}
+                        <td className="px-4 py-4 text-sm text-gray-600">
+                          {claw.department ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="block truncate max-w-[120px] cursor-default">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start">
+                                <span className="text-xs">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : <span className="text-gray-300">—</span>}
                         </td>
                       )}
                       {/* 分组 */}
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         {(() => {
                           if (hasOneid) {
                             const item = getCreatorGroupItemOneid(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
-                                      {item.path}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1.5 max-w-[200px] cursor-default">
+                                    <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                      item.kind === "oneid-dept"
+                                        ? "text-blue-600 bg-blue-50"
+                                        : "text-purple-600 bg-purple-50"
+                                    }`}>
+                                      {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
                                     </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm flex items-center gap-2">
-                                        <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                          item.kind === "oneid-dept"
-                                            ? "text-blue-400 bg-blue-500/20"
-                                            : "text-purple-400 bg-purple-500/20"
-                                        }`}>
-                                          {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
-                                        </span>
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                                    <span className="text-sm text-gray-700 truncate max-w-[120px]">{item.path}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           } else {
                             const item = getCreatorGroupItemManual(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
-                                      {item.path}
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm">
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-sm text-gray-700 truncate max-w-[160px] block cursor-default">{item.path}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           }
                         })()}
                       </td>
                       {/* 创建时间 */}
-                      <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
                       </td>
                       {/* Agent 版本 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className="text-xs font-mono text-gray-500">{claw.version}</span>
                       </td>
                       {/* 标签 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
                           <HoverCard openDelay={100} closeDelay={150}>
                             <HoverCardTrigger asChild>
@@ -2434,7 +2309,7 @@ export default function AgentMonitor() {
                         )}
                       </td>
                       {/* 操作 */}
-                      <td className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                      <td className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                         <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
@@ -3069,19 +2944,19 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已应用模型 */}
                 {(() => {
-                  const detail = getClawDetail(selectedClaw.id);
+                  const detail = getClawDetail(selectedClaw);
                   const models = detail.appliedModels;
+                  const isSingle = isSingleModelAgentType(selectedClaw.agentType);
                   const hasPrimary = models.some(m => m.primary);
                   const primaryList = models.filter(m => m.primary);
                   const backupList = [...models.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt);
-                  // 是否为 OpenClaw 类型：OpenClaw 支持主模型 + 备选模型；其他类型只能配置一个模型
-                  const isOpenClaw = selectedClaw.agentType === 'OpenClaw';
-                  // 非 OpenClaw 且已有模型时不展示添加按鈕；OpenClaw 按现有逻辑
-                  const canAddMore = isOpenClaw || models.length === 0;
-                  const addButtonLabel = isOpenClaw
-                    ? (hasPrimary ? "添加备选模型" : "添加主模型")
-                    : "添加模型";
+                  // 单模型模式：按钮统一为"添加模型"，且已存在 1 条时隐藏；多模型模式按主/备状态自适应文案
+                  const addButtonLabel = isSingle
+                    ? "添加模型"
+                    : (hasPrimary ? "添加备选模型" : "设为主模型");
                   const isAdding = modelAction.kind === "add";
+                  // 单模型模式（Hermes / LightclawACE）最多 1 条：已有模型则隐藏添加按钮；多模型不限
+                  const showAddButton = !isAdding && !(isSingle && models.length >= 1);
 
                   /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
                   const renderInlineEditForm = () => (
@@ -3167,18 +3042,20 @@ export default function AgentMonitor() {
                                 </span>
                               )}
                             </div>
-                            {isOpenClaw && (isPrimary ? (
+                            {/* 单模型模式：不展示主/备徽标；多模型模式按主/备区分 */}
+                            {!isSingle && (isPrimary ? (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                                 主模型
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
-                                备选模型
+                                备选
                               </span>
                             ))}
                             <div className="flex items-center gap-1 shrink-0">
-                              {isOpenClaw && !isPrimary && (
+                              {/* 设为主模型：仅多模型模式下的备选行展示 */}
+                              {!isSingle && !isPrimary && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button
@@ -3194,7 +3071,6 @@ export default function AgentMonitor() {
                                   </TooltipContent>
                                 </Tooltip>
                               )}
-                              {!isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -3209,15 +3085,14 @@ export default function AgentMonitor() {
                                   替换
                                 </TooltipContent>
                               </Tooltip>
-                              )}
-                              {isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
                                     type="button"
                                     onClick={() => setModelConfirmDialog({
                                       open: true,
-                                      type: isPrimary ? "delete" : "delete-backup",
+                                      // 单模型模式 / 多模型备选 → delete-backup（统一文案）；多模型主 → delete
+                                      type: (!isSingle && isPrimary) ? "delete" : "delete-backup",
                                       modelEntryId: model.id,
                                     })}
                                     className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
@@ -3229,7 +3104,6 @@ export default function AgentMonitor() {
                                   删除模型
                                 </TooltipContent>
                               </Tooltip>
-                              )}
                             </div>
                           </div>
                         )}
@@ -3240,8 +3114,10 @@ export default function AgentMonitor() {
                   return (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm text-gray-500">已应用模型（{models.length}）</div>
-                        {!isAdding && canAddMore && (
+                        <div className="text-sm text-gray-500">
+                          {isSingle ? "已应用模型" : `已应用模型（${models.length}）`}
+                        </div>
+                        {showAddButton && (
                           <button
                             onClick={startAddModel}
                             className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
@@ -3287,11 +3163,19 @@ export default function AgentMonitor() {
                 {/* 已接入通道 */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
-                    {/* 添加通道按钮已移除（本期需求不包含） */}
+                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw).connectedChannels.length}）</div>
+                    {!channelAdding && (
+                      <button
+                        onClick={() => startAddChannel(getClawDetail(selectedClaw))}
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                        添加通道
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {
+                    {getClawDetail(selectedClaw).connectedChannels.map((channel) => {
                       const chConfig = channelLookup.get(channel.value);
                       const fields = chConfig?.fields ?? [];
                       const isExpanded = expandedChannel === channel.name;
@@ -3407,14 +3291,14 @@ export default function AgentMonitor() {
                         </div>
                       );
                     })}
-                    {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
+                    {getClawDetail(selectedClaw).connectedChannels.length === 0 && !channelAdding && (
                       <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
                         暂未接入通道
                       </div>
                     )}
                     {/* 新增通道面板 */}
                     {channelAdding && (() => {
-                      const existing = new Set(getClawDetail(selectedClaw.id).connectedChannels.map(c => c.name));
+                      const existing = new Set(getClawDetail(selectedClaw).connectedChannels.map(c => c.name));
                       const available = availableChannelOptions.filter(c => !existing.has(c.label));
                       const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
                       const isWechatLike = currentCh?.wechatMode;
@@ -3504,9 +3388,9 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已安装技能 */}
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</div>
+                  <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw).installedSkills.length}）</div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
+                    {getClawDetail(selectedClaw).installedSkills.map((skill) => (
                       <div key={skill} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 text-sm text-gray-800">
                         {skill}
                       </div>
@@ -3541,48 +3425,54 @@ export default function AgentMonitor() {
       </AlertDialog>
 
       {/* 模型操作二次确认（设为主/删主/删备）—— 与用户端 OpenClawDetail 保持一致 */}
-      <Dialog
-        open={modelConfirmDialog.open}
-        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-blue-600">
-              {modelConfirmDialog.type === "delete"
-                ? "确认删除主模型"
-                : modelConfirmDialog.type === "delete-backup"
-                ? "确认删除备选模型"
-                : "切换主模型"}
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
-              {modelConfirmDialog.type === "delete"
-                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
-                : modelConfirmDialog.type === "delete-backup"
-                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
-                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-            >
-              取消
-            </Button>
-            <Button
-              size="sm"
-              variant="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={runModelConfirm}
-            >
-              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
-                ? "确认删除"
-                : "确认设置"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {(() => {
+        // 单模型模式（Hermes / LightclawACE）下不区分主/备文案
+        const isSingle = !!selectedClaw && isSingleModelAgentType(selectedClaw.agentType);
+        const dialogTitle = modelConfirmDialog.type === "delete"
+          ? "确认删除主模型"
+          : modelConfirmDialog.type === "delete-backup"
+          ? (isSingle ? "确认删除模型" : "确认删除备选模型")
+          : "切换主模型";
+        const dialogDesc = modelConfirmDialog.type === "delete"
+          ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+          : modelConfirmDialog.type === "delete-backup"
+          ? (isSingle
+              ? "删除后该 Agent 将无法使用大模型，相关的 Gateway 服务将重启，确认删除么"
+              : "删除后将导致相关的 Gateway 服务重启，确认删除么")
+          : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？";
+        return (
+          <Dialog
+            open={modelConfirmDialog.open}
+            onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+          >
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-blue-600">{dialogTitle}</DialogTitle>
+                <DialogDescription className="text-gray-600 leading-relaxed pt-1">{dialogDesc}</DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+                >
+                  取消
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={runModelConfirm}
+                >
+                  {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
+                    ? "确认删除"
+                    : "确认设置"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (
@@ -3725,21 +3615,6 @@ export default function AgentMonitor() {
           animation: breathing 2s ease-in-out infinite;
         }
       `}</style>
-
-      {/* 命令下发弹窗（取代旧抽屉）：
-        * - 从工具栏「命令下发」主按钮触发，预填已选实例
-        * - 用户在弹窗内选择命令模板 → 选执行策略 → 提交
-        */}
-      <DispatchCommandDialog
-        open={dispatchPresetIds !== null}
-        onOpenChange={(v) => !v && setDispatchPresetIds(null)}
-        command={null}
-        presetInstanceIds={dispatchPresetIds ?? undefined}
-        onDispatched={() => {
-          // 下发成功后清空选中状态，便于用户继续操作
-          setSelectedIds(new Set());
-        }}
-      />
     </TooltipProvider>
   );
 }

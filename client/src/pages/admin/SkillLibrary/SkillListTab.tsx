@@ -626,7 +626,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   return (
     <div className="space-y-4">
       {/* 搜索和工具栏 */}
-      <div className="flex items-center justify-between gap-6">
+      <div className="flex items-center gap-2">
         {/* 搜索框 */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -645,7 +645,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#d3d6db] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#355EF1] transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -799,7 +799,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
+          <div className="flex items-center gap-1 border border-[#d3d6db] rounded-[4px] p-0.5 bg-white h-9">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${
@@ -1094,7 +1094,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
+            <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th

@@ -1768,8 +1768,8 @@ export default function AgentMonitor() {
             onClick={() => handleCardFilterChange("all")}
             className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "all"
-                ? "border-blue-300 ring-1 ring-blue-200"
-                : "border-[#e5e5e5] hover:border-gray-200"
+                ? "border-[#355EF1]"
+                : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -1786,8 +1786,8 @@ export default function AgentMonitor() {
             onClick={() => handleCardFilterChange("running")}
             className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "running"
-                ? "border-green-300 ring-1 ring-green-200"
-                : "border-[#e5e5e5] hover:border-gray-200"
+                ? "border-[#355EF1]"
+                : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -1804,8 +1804,8 @@ export default function AgentMonitor() {
             onClick={() => handleCardFilterChange("shutdown")}
             className={`bg-white rounded-xl border p-4 transition-all text-left ${
               activeCardFilter === "shutdown"
-                ? "border-gray-400 ring-1 ring-gray-200"
-                : "border-[#e5e5e5] hover:border-gray-200"
+                ? "border-[#355EF1]"
+                : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -1824,8 +1824,8 @@ export default function AgentMonitor() {
                 onClick={() => handleCardFilterChange("other")}
                 className={`bg-white rounded-xl border p-4 transition-all text-left ${
                   activeCardFilter === "other"
-                    ? "border-orange-300 ring-1 ring-orange-200"
-                    : "border-[#e5e5e5] hover:border-gray-200"
+                    ? "border-[#355EF1]"
+                    : "border-[#E5E5E5] hover:border-[#355EF1]"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">

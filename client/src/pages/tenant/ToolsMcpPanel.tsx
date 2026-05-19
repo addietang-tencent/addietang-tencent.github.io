@@ -635,13 +635,15 @@ export default function ToolsMcpPanel() {
             >
               <Plus className="w-4 h-4" />
             </Button>
-            <button
+            <Button
+              variant="claw-outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-8 h-8 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 flex items-center justify-center transition-colors shrink-0 disabled:opacity-50"
+              className="w-8 h-8"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            </button>
+            </Button>
           </div>
           {/* 提示 */}
           <div className="flex items-start gap-1.5 bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-2">

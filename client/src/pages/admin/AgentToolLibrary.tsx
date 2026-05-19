@@ -59,7 +59,7 @@ export default function AgentToolLibrary() {
   const currentTab = TABS.find((t) => t.id === activeTab)!;
 
   return (
-    <div className="page-enter">
+    <div className="page-enter w-full min-w-0">
       {/* 页面标题 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Agent 工具库</h1>

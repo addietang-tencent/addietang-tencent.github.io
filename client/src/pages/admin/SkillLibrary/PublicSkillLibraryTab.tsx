@@ -713,7 +713,9 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
             className="pl-9 bg-white"
           />
         </div>
-        <button
+        <Button
+          variant="claw-outline"
+          size="icon"
           onClick={() => {
             setIsRefreshing(true);
             setTimeout(() => {
@@ -723,10 +725,10 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
             }, 250);
           }}
           title="刷新"
-          className="flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
+          className="w-9 h-9"
         >
           <RefreshCw className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
 
       {/* 分类 Tab */}

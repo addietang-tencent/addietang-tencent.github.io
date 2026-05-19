@@ -31,8 +31,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
 
 // ─── 多分组相关 ──────────────────────────────────────────────────────────────
 type UserGroupMode = "normal" | "multi-group";
@@ -203,20 +206,24 @@ function Pagination({
       <span className="text-xs text-gray-400">
         第 {page}/{totalPages} 页，共 {total} 条
       </span>
-      <button
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-7 h-7"
         disabled={page === 1}
         onClick={() => onChange(page - 1)}
       >
         <ChevronLeft className="w-4 h-4 text-gray-500" />
-      </button>
-      <button
-        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30 transition-colors"
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-7 h-7"
         disabled={page === totalPages}
         onClick={() => onChange(page + 1)}
       >
         <ChevronRight className="w-4 h-4 text-gray-500" />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -299,17 +306,15 @@ export default function ModelQuota() {
         <div className="min-w-[1200px] overflow-x-clip">
           <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)]" style={{ paddingBottom: "75px" }}>
+            <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)] pb-[75px]">
           {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
           <div
             aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
-            style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+            className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-px bg-[#E2E8F0]"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
-            style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+            className="pointer-events-none absolute top-0 bottom-0 right-0 z-30 w-px bg-[#E2E8F0]"
           />
           {/* 左右两侧点阵装饰层 — 对齐「我的 Agent」
               覆盖范围：hero 底线(112px) ~ 底部分割线(bottom 75px = paddingBottom)
@@ -339,57 +344,20 @@ export default function ModelQuota() {
             }}
           />
           {/* Hero 段 — 对齐「我的 Agent」HeroBanner 样式（112px / 渐变标题 / 底部贯穿分割线） */}
-          <div className="relative" style={{ height: "112px" }}>
-            <div
-              style={{
-                height: "112px",
-                padding: "0 42px",
-                borderLeft: "1px solid #E2E8F0",
-                borderRight: "1px solid #E2E8F0",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: "8px",
-                overflow: "hidden",
-              }}
-            >
-              <h1
-                style={{
-                  fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-                  fontWeight: 500,
-                  fontSize: "26px",
-                  lineHeight: "35.56px",
-                  letterSpacing: "-4.27%",
-                  margin: 0,
-                  backgroundImage: "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  color: "transparent",
-                  width: "fit-content",
-                }}
-              >
+          <div className="relative h-[112px]">
+            <div className="h-[112px] px-[42px] border-l border-r border-[#E2E8F0] flex flex-col justify-center gap-2 overflow-hidden">
+              <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 w-fit bg-gradient-to-r from-[#0A0A0A] to-[#1447E6] bg-clip-text text-transparent">
                 模型额度
               </h1>
-              <div className="flex items-center" style={{ gap: "8px" }}>
-                <p
-                  style={{
-                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-                    fontWeight: 400,
-                    fontSize: "12px",
-                    lineHeight: "22.22px",
-                    letterSpacing: "1.5%",
-                    color: "#737373",
-                    margin: 0,
-                  }}
-                >
+              <div className="flex items-center gap-2">
+                <p className="font-sans font-normal text-xs leading-[22.22px] tracking-[0.015em] text-[#737373] m-0">
                   查看所选时间范围内的模型 Token 使用情况。
                 </p>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors whitespace-nowrap">
+                    <Button variant="ghost" className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help h-auto p-0 whitespace-nowrap">
                       查看Token使用规则
-                    </button>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-sm text-xs">
                     <div className="space-y-1.5">
@@ -422,72 +390,74 @@ export default function ModelQuota() {
           {/* Filter Bar */}
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
             {/* Left: 分组筛选 */}
-            <div className="relative">
-              <button
-                onClick={() => setShowGroupFilter(!showGroupFilter)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-[4px] border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
-              >
-                <Filter className="w-3.5 h-3.5 text-gray-400" />
-                <span className="text-gray-700">{selectedGroup.name}</span>
-              </button>
-              {showGroupFilter && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowGroupFilter(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-[4px] shadow-lg py-1 min-w-[200px]">
-                    {groupList.map((group) => (
-                      <div key={group.id} className="relative group/item">
-                        <button
-                          disabled={!group.allowViewQuota}
-                          onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
-                          className={cn(
-                            "w-full text-left px-4 py-2.5 text-sm transition-colors",
-                            !group.allowViewQuota
-                              ? "text-gray-300 cursor-not-allowed"
-                              : selectedGroup.id === group.id
-                                ? "bg-blue-50 text-blue-700 font-medium"
-                                : "text-gray-700 hover:bg-gray-50"
-                          )}
-                        >
-                          {group.name}
-                        </button>
-                        {!group.allowViewQuota && (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-[4px] whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
-                            该分组不允许查看模型额度
-                          </div>
-                        )}
+            <Popover open={showGroupFilter} onOpenChange={setShowGroupFilter}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="claw-outline"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm h-8"
+                >
+                  <Filter className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-gray-700">{selectedGroup.name}</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="p-1 min-w-[200px]">
+                {groupList.map((group) => (
+                  <div key={group.id} className="relative group/item">
+                    <Button
+                      variant="ghost"
+                      disabled={!group.allowViewQuota}
+                      onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
+                      className={cn(
+                        "w-full justify-start px-4 py-2.5 text-sm h-auto rounded-none",
+                        !group.allowViewQuota
+                          ? "text-gray-300 cursor-not-allowed"
+                          : selectedGroup.id === group.id
+                            ? "bg-blue-50 text-blue-700 font-medium hover:bg-blue-50"
+                            : "text-gray-700 hover:bg-gray-50"
+                      )}
+                    >
+                      {group.name}
+                    </Button>
+                    {!group.allowViewQuota && (
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-[4px] whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
+                        该分组不允许查看模型额度
                       </div>
-                    ))}
+                    )}
                   </div>
-                </>
-              )}
-            </div>
+                ))}
+              </PopoverContent>
+            </Popover>
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex items-center gap-3 ml-auto flex-wrap">
               {/* Mode Toggle */}
               <div className="flex items-center bg-gray-100 rounded-[4px] p-1 gap-1 h-8">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 h-6 text-sm rounded-[4px] transition-all",
+                    "px-3 h-6 text-sm rounded-[4px]",
                     dateMode === "single"
-                      ? "bg-white text-gray-900 font-medium shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white text-gray-900 font-medium shadow-sm hover:bg-white"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-transparent"
                   )}
                 >
                   单日
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 h-6 text-sm rounded-[4px] transition-all",
+                    "px-3 h-6 text-sm rounded-[4px]",
                     dateMode === "range"
-                      ? "bg-white text-gray-900 font-medium shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white text-gray-900 font-medium shadow-sm hover:bg-white"
+                      : "text-gray-500 hover:text-gray-700 hover:bg-transparent"
                   )}
                 >
                   时间段
-                </button>
+                </Button>
               </div>
 
               {/* Date Input(s) */}
@@ -572,7 +542,7 @@ export default function ModelQuota() {
                     <TooltipContent
                       side="top"
                       className="max-w-[180px] text-xs leading-relaxed text-justify"
-                      style={{ letterSpacing: '0' }}
+                     
                     >
                       此配额为公司提供的外部模型 Token 额度，按自然日统计和刷新
                     </TooltipContent>
@@ -585,17 +555,12 @@ export default function ModelQuota() {
               {/* Progress bar — hover to see token details */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden cursor-default">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        isQuotaWarning ? "bg-orange-500" : "bg-blue-500"
-                      )}
-                      style={{ width: `${Math.min(quotaPct, 100)}%` }}
-                    />
-                  </div>
+                  <Progress
+                    value={Math.min(quotaPct, 100)}
+                    className={cn("h-1.5 cursor-default bg-gray-100", isQuotaWarning ? "[&>[data-slot=progress-indicator]]:bg-orange-500" : "[&>[data-slot=progress-indicator]]:bg-blue-500")}
+                  />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs" style={{ letterSpacing: '0' }}>
+                <TooltipContent side="bottom" className="text-xs">
                   {todayTotalTokens.toLocaleString()} / {TODAY_QUOTA_TOTAL.toLocaleString()} Tokens
                 </TooltipContent>
               </Tooltip>
@@ -608,33 +573,33 @@ export default function ModelQuota() {
               <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
-                    <th className="text-left px-5 py-3 font-medium">模型名称</th>
-                    <th className="text-right px-5 py-3 font-medium">总请求数</th>
-                    <th className="text-right px-5 py-3 font-medium">输入 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium">输出 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium">总 Tokens</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide hover:bg-gray-50">
+                    <TableHead className="text-left px-5 py-3 font-medium">模型名称</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium">总请求数</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium">输入 Tokens</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium">输出 Tokens</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium">总 Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-gray-50">
                   {summarySlice.map((row) => (
-                    <tr key={row.model} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-sm text-gray-600">{row.model}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</td>
-                    </tr>
+                    <TableRow key={row.model} className="hover:bg-gray-50/60">
+                      <TableCell className="px-5 py-3.5 text-sm text-gray-600">{row.model}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</TableCell>
+                    </TableRow>
                   ))}
                   {summarySlice.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
-                    </tr>
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <Pagination
               page={summaryPage}
@@ -649,34 +614,34 @@ export default function ModelQuota() {
             <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
-            <div className="overflow-x-auto" style={{ maxHeight: 360, overflowY: "auto" }}>
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
-                    <th className="text-left px-5 py-3 font-medium whitespace-nowrap w-44">请求时间</th>
-                    <th className="text-left px-5 py-3 font-medium">模型名称</th>
-                    <th className="text-right px-5 py-3 font-medium w-32">输入 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium w-32">输出 Tokens</th>
-                    <th className="text-right px-5 py-3 font-medium w-32">总 Tokens</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+            <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 z-10">
+                  <TableRow className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide hover:bg-gray-50">
+                    <TableHead className="text-left px-5 py-3 font-medium whitespace-nowrap w-44">请求时间</TableHead>
+                    <TableHead className="text-left px-5 py-3 font-medium">模型名称</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium w-32">输入 Tokens</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium w-32">输出 Tokens</TableHead>
+                    <TableHead className="text-right px-5 py-3 font-medium w-32">总 Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-gray-50">
                   {detailSlice.map((row, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap w-44">{row.time}</td>
-                      <td className="px-5 py-3.5 text-sm text-gray-600">{row.model}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.inputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.outputTokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.totalTokens.toLocaleString()}</td>
-                    </tr>
+                    <TableRow key={idx} className="hover:bg-gray-50/60">
+                      <TableCell className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap w-44">{row.time}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-sm text-gray-600">{row.model}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.inputTokens.toLocaleString()}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.outputTokens.toLocaleString()}</TableCell>
+                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.totalTokens.toLocaleString()}</TableCell>
+                    </TableRow>
                   ))}
                   {detailSlice.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</td>
-                    </tr>
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <Pagination
               page={detailPage}

@@ -13,11 +13,14 @@ import { useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { SurfaceCard } from "@/components/ui/Surface";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -44,6 +47,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
+import { StatusBadge } from "@/components/agent/StatusBadge";
 import { MODEL_PROVIDERS, CHANNEL_OPTIONS } from "@/lib/agentConfigConstants";
 import ToolsMcpPanel from "./ToolsMcpPanel";
 import FileSpace from "./FileSpace";
@@ -681,18 +685,24 @@ export default function OpenClawDetailGuide() {
                   }}
                 />
 
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-3">
                   {/* 返回按钮 */}
-                  <button
-                    onClick={() => navigate("/my-openclaw")}
-                    className="inline-flex items-center gap-1 text-sm hover:opacity-80 transition-opacity"
-                    style={{ color: "#525252" }}
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    返回
-                  </button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => navigate("/my-openclaw")}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-[4px] hover:bg-[#f5f5f5] transition-colors"
+                          style={{ color: "#525252" }}
+                        >
+                          <ArrowLeft className="w-5 h-5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>返回</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                  <div className="flex items-center gap-5">
                   {/* 头像 */}
                   <AgentAvatar
                     roleName="设计师"
@@ -709,13 +719,7 @@ export default function OpenClawDetailGuide() {
                         多分组示例–前端研发
                       </h1>
                       {/* 运行中徽标 */}
-                      <span
-                        className="inline-flex items-center gap-1.5 h-5 px-2 text-xs rounded-full"
-                        style={{ background: "rgba(22,163,74,0.06)", color: "#16A34A" }}
-                      >
-                        <span className="w-2 h-2 rounded-full" style={{ background: "#16A34A" }} />
-                        运行中
-                      </span>
+                      <StatusBadge status="running" />
                     </div>
                     <div
                       className="flex items-center flex-wrap"
@@ -821,7 +825,7 @@ export default function OpenClawDetailGuide() {
               </div>
 
               {/* ======== 三栏卡片 ======== */}
-              <div className="px-[42px] py-8">
+              <div className="px-[42px] py-0">
               {activeTab === "basic" && (
                 <div className="grid grid-cols-3 gap-6">
                   {/* ===== 01/ 模型（Models） ===== */}
@@ -853,35 +857,31 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
-                    {/* 模型厂商选择 */}
-                    <Select value={selectedProvider} onValueChange={handleProviderChange}>
+                    {/* 模型选择（级联：厂商 > 版本） */}
+                    <Select
+                      value={`${selectedProvider}::${selectedModel}`}
+                      onValueChange={(val) => {
+                        const [provider, model] = val.split("::");
+                        setSelectedProvider(provider);
+                        setSelectedModel(model);
+                      }}
+                    >
                       <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5]">
-                        <SelectValue placeholder="选择模型厂商" />
+                        <SelectValue placeholder="选择模型" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MODEL_PROVIDERS.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>
-                            {p.label}
-                          </SelectItem>
+                        {MODEL_PROVIDERS.filter(p => p.value !== "custom").map((p) => (
+                          <SelectGroup key={p.value}>
+                            <SelectLabel className="text-xs text-[#737373] px-2 py-1.5">{p.label}</SelectLabel>
+                            {p.versions.map((v) => (
+                              <SelectItem key={`${p.value}::${v.value}`} value={`${p.value}::${v.value}`}>
+                                {p.label}｜{v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>
-
-                    {/* 模型版本选择 */}
-                    {selectedProvider !== "custom" && (
-                      <Select value={selectedModel} onValueChange={setSelectedModel}>
-                        <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5]">
-                          <SelectValue placeholder="选择模型版本" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currentVersions.map((v) => (
-                            <SelectItem key={v.value} value={v.value}>
-                              {v.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
 
                     {/* 添加备用模型按钮 */}
                     <Button

@@ -46,16 +46,16 @@ const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
           "relative inline-flex items-center gap-2 rounded-[4px]",
           "px-2 py-[6px] text-[14px] leading-[22px]",
           "text-[#020617]/90 hover:bg-[#F5F5F5] hover:text-[#020617]",
-          "transition-colors flex-shrink-0",
+          "transition-colors min-w-0 shrink nav-icon-btn",
           className,
         ].join(" ")}
       >
         <span className="inline-flex items-center justify-center flex-shrink-0">
           {icon}
         </span>
-        {label && <span className="whitespace-nowrap">{label}</span>}
+        {label && <span className="truncate min-w-0 nav-btn-label">{label}</span>}
         {badge && (
-          <span className="inline-flex items-center flex-shrink-0">
+          <span className="inline-flex items-center flex-shrink-0 nav-btn-label">
             {badge}
           </span>
         )}

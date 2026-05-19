@@ -76,7 +76,7 @@ const AdminSidebar = React.forwardRef<HTMLElement, React.ComponentProps<"aside">
           collapsed ? "w-[var(--admin-sidebar-width-collapsed)]" : "w-[var(--admin-sidebar-width)]",
           className
         )}
-        style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)", ...style }}
+        style={style}
         {...props}
       />
     );

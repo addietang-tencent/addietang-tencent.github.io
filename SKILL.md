@@ -238,6 +238,40 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 - 活跃：`text-blue-600 bg-blue-50`
 - 非活跃：`text-gray-600 hover:text-gray-900 hover:bg-gray-50`
 
+### 7.2.1 导航栏响应式断点规则
+
+导航栏分为三个区域：左侧 Logo、中央 Segmented Tabs、右侧功能按钮（操作指南/消息通知/切换管控端/用户账号）。
+
+**区域压缩策略**：
+
+| 区域 | 压缩策略 |
+|------|---------|
+| Logo（ClawPro） | 永不压缩（`flex-shrink-0`） |
+| 中央 Tabs | 按断点切换定位方式 + Tab 按钮文字可收缩 |
+| 右侧功能按钮 | 按断点分阶段折叠文字 |
+
+**间距规则**：区域之间最小间距 24px（`gap: 24px`），不允许堆叠或折行。
+
+**断点行为**：
+
+| 屏幕宽度 | 中央 Tabs | 右侧按钮文字 | 用户账号 |
+|----------|-----------|-------------|---------|
+| > 1400px | 绝对定位屏幕水平正中心 | 图标 + 完整文字 + 徽章 | 头像 + 完整用户名 + 箭头 |
+| 1201–1400px | 仍然绝对居中 | 图标不变，文字 `max-width: 3em` 溢出省略 | 用户名溢出省略 |
+| ≤ 1200px | 回到 flex 流（弹簧后面） | 文字和徽章隐藏（`max-width: 0` + `opacity: 0`），仅保留图标 | 仅保留头像 |
+
+**实现方式**：
+
+- 中央 Tabs 通过 CSS class `.nav-center-tabs` 控制，`@media (min-width: 1200px)` 时 `position: absolute; left: 50%; transform: translate(-50%, -50%)`
+- 右侧按钮文字通过 CSS class `.nav-btn-label` 控制断点隐藏
+- 按钮容器通过 `.nav-icon-btn` 在 ≤1200px 时 `gap: 0; padding: 6px` 让图标居中于分隔线之间
+- 用户菜单通过 `.nav-user-btn` 在 ≤1200px 时 `gap: 0; padding: 0` 去掉多余空白
+- 过渡动画：`.nav-btn-label` 设置 `transition: max-width 0.3s ease, opacity 0.3s ease, padding 0.3s ease`，无垂直位移
+
+**hover 样式统一**：所有导航栏按钮（含用户账号）hover 为 `hover:bg-[#F5F5F5]` + 文字变深 `#020617`
+
+**CSS 规则位置**：定义在 `client/src/index.css` 文件末尾
+
 ### 7.3 响应式网格
 
 | 场景 | 列数 |

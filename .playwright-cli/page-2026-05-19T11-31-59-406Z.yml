@@ -1,0 +1,303 @@
+- generic:
+  - generic:
+    - generic:
+      - navigation:
+        - generic:
+          - img
+          - generic: ClawPro
+        - button [active]: 登录
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic: 随时随地提升工作效率
+              - generic: ClawPro 你的 AI 私人助理
+              - generic:
+                - generic: 对话即可完成
+                - generic:
+                  - generic:
+                    - generic: 工作任务
+                    - generic: 信息问答
+                    - generic: 资料整理
+                    - generic: 设计改版
+                    - generic: 调试代码
+                    - generic: 工作任务
+                    - generic: 信息问答
+              - button:
+                - generic: 立即创建
+            - generic [ref=e30]: 提升工作效率
+            - generic [ref=e35]:
+              - generic [ref=e37]: 安装技能
+              - generic [ref=e39]:
+                - generic [ref=e40]: obsidian 1.0.0
+                - generic [ref=e41]: video-transcribe 0.7.0
+                - generic [ref=e42]: ...
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - text: OpenClaw 是一个开源的 AI Agent 框架 专为企业和个人用户设计 让你能够快速创建、部署和管理专属的
+                - generic: AI 智能助理
+          - generic:
+            - generic:
+              - generic:
+                - generic: 概念介绍
+                - generic: OpenClaw 工作原理
+                - generic:
+                  - generic:
+                    - generic: 用户通过 IM 工具发送消息
+                  - generic:
+                    - generic: 消息通过通道传入 OpenClaw
+                  - generic:
+                    - generic: OpenClaw 调用大模型处理请求
+                  - generic:
+                    - generic: 如需要，调用相关技能执行任务
+                  - generic:
+                    - generic: 将结果返回给用户
+                - button:
+                  - generic: 开始使用
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: 01/
+                    - generic: 大模型驱动
+                    - generic: Models
+                  - generic: 支持接入腾讯云 DeepSeek、混元、Coding Plan 等主流大模型，也支持自定义模型接入，灵活适配企业需求。
+                  - generic:
+                    - generic: 主模型
+                    - generic:
+                      - generic: 腾讯云 DeepSeekDeepSeekV3 0324
+                  - generic:
+                    - generic: 备用模型（0）
+                    - generic:
+                      - generic:
+                        - generic: 腾讯云 DeepSeek ｜ DeepSeek V3 0324
+                      - generic: 添加
+                    - generic:
+                      - generic:
+                        - generic: 腾讯云 DeepSeek（DeepSeek V3 0324）
+                      - generic:
+                        - generic: 腾讯云混元（混元 TurboS Latest）
+                      - generic:
+                        - generic: 自定义模型（Claude Opus 4.6）
+                      - generic:
+                        - generic: 自定义模型（Claude Opus 4.6）
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: 02/
+                    - generic: 多通道覆盖
+                    - generic: Channels
+                  - generic: 用户与 Agent 交互的入口，支持微信、QQ、飞书等主流工具
+                  - generic:
+                    - img
+                - generic:
+                  - generic:
+                    - generic: 03/
+                    - generic: 技能扩展
+                    - generic: Skills
+                  - generic: 为 Agent 添加搜索、绘图等扩展能力
+                  - generic:
+                    - generic:
+                      - generic: 安装队列（2）
+                    - generic:
+                      - generic:
+                        - generic: data-analysis 2.0.0
+                        - generic:
+                          - generic:
+                            - generic: 安装中
+                          - generic:
+                            - generic: 安装成功
+                      - generic:
+                        - generic: obsidian 1.0.0
+                        - generic:
+                          - generic:
+                            - generic: 安装中
+                          - generic:
+                            - generic: 安装成功
+                      - generic:
+                        - generic: video-transcribe 0.7.0
+                        - generic:
+                          - generic:
+                            - generic: 安装中
+                          - generic:
+                            - generic: 安装成功
+          - generic:
+            - generic:
+              - generic:
+                - generic: 功能简介
+                - generic: ClawPro 平台的功能与特色
+                - generic: 专为企业场景设计，提供完善的管控能力和极致的使用体验
+              - generic:
+                - generic:
+                  - generic: 云端部署，24小时随时可用
+                  - generic: 部署在腾讯云服务器上，7×24 小时稳定运行，随时随地通过 IM 工具与你的 AI 助理对话。
+                  - generic:
+                    - img
+                - generic:
+                  - generic: 多用户协同
+                  - generic: 支持企业内多名用户各自创建和管理专属 Agent，统一在企业账号体系下管理，互不干扰。
+                  - generic:
+                    - img
+                - generic:
+                  - generic: 集中化配置管理
+                  - generic: 管理员可统一配置可用模型、通道和帮助文档，员工无需关心底层配置，专注于使用 AI 提升工作效率。
+                - generic:
+                  - generic: 实时监控与审计
+                  - generic: 全面的运营监控面板，实时掌握 Agent 运行状态和 Tokens 消耗情况，操作记录全程可追溯。
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: kimi-k2.5
+                        - generic: DeepSeek
+                        - generic: Hy3 preview
+                      - generic:
+                        - generic:
+                          - generic: "100"
+                          - generic: "80"
+                          - generic: "60"
+                          - generic: "40"
+                          - generic: "20"
+                          - generic: "0"
+                        - generic:
+                          - generic: Tookens 请求数：
+                          - generic: 52,250
+                      - generic:
+                        - generic:
+                          - generic: July
+                          - generic: August
+                          - generic: September
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: 核心优势
+                    - generic: 企业版核心优势
+                    - generic: 专为企业场景设计，提供完善的管控能力和极致的使用体验
+                  - generic:
+                    - generic:
+                      - generic: 企业级安全管控
+                      - generic: 完善的用户权限管理，Tokens 配额控制 操作审计日志，确保 AI 使用在可控范围内
+                    - generic:
+                      - generic: 集中化配置管理
+                      - generic: 管理员可统一配置可用模型、通道和帮助文档，员工无需关心底层配置，专注于使用 AI 提升工作效率。
+                    - generic:
+                      - generic: 多用户协同
+                      - generic: 支持企业内多名用户各自创建和管理专属 OpenClaw，统一在企业账号体系下管理，互不干扰。
+                    - generic:
+                      - generic: 实时监控与审计
+                      - generic: 全面的运营监控面板，实时掌握 OpenClaw 运行状态和 Tokens 消耗情况，操作记录全程可追溯。
+                - generic:
+                  - img
+          - generic:
+            - generic:
+              - generic:
+                - generic: 进阶玩法
+                - generic: OpenClaw 多模型切换
+                - generic: 你可以为同一个 OpenClaw 配置多个模型，根据不同的任务需求灵活切换
+              - generic:
+                - generic:
+                  - generic: 多模型切换
+                  - generic:
+                    - list:
+                      - listitem: 日常对话：使用轻量级模型，响应更快、成本更低
+                      - listitem: 复杂推理：切换到更强大的模型，获得更准确的答案
+                      - listitem: 代码生成：使用专门针对代码优化的模型
+                - generic:
+                  - generic: 研究助手
+                  - generic:
+                    - list:
+                      - listitem: tavily-search：实时网络搜索
+                      - listitem: summarize：内容摘要
+                      - listitem: tencent-docs：文档处理
+                - generic:
+                  - generic: 多通道策略
+                  - generic:
+                    - list:
+                      - listitem: 企业微信：适合工作场景，与企业内部系统集成
+                      - listitem: 飞书：适合有飞书办公套件的团队
+                      - listitem: QQ：适合个人使用和非正式沟通
+                - generic:
+                  - generic: 最佳实践
+                  - generic:
+                    - list:
+                      - listitem: 为不同场景创建不同的 OpenClaw，避免一个助手承担过多职责
+                      - listitem: 定期检查 Tokens 消耗，合理规划使用量
+                      - listitem: 及时更新技能版本，获取最新功能和修复
+          - generic:
+            - generic:
+              - generic: ClawPro
+              - generic: AI Agent 管控平台
+            - generic: Copyright © 2013 - 2026 Tencent Cloud. All Rights Reserved. 腾讯云 版权所有
+    - region "Notifications alt+T"
+  - dialog "登录 OpenClaw Enterprise" [ref=e266]:
+    - generic [ref=e267]:
+      - generic [ref=e269]:
+        - generic [ref=e271]: 🦞
+        - heading "登录 OpenClaw Enterprise" [level=2] [ref=e272]
+        - paragraph [ref=e273]: 登录对话框
+      - generic [ref=e275]:
+        - generic [ref=e276]:
+          - button "飞书 飞书" [ref=e277] [cursor=pointer]:
+            - img "飞书" [ref=e278]
+            - generic [ref=e279]: 飞书
+            - img [ref=e280]
+          - button "钉钉 钉钉" [ref=e282] [cursor=pointer]:
+            - img "钉钉" [ref=e283]
+            - generic [ref=e284]: 钉钉
+            - img [ref=e285]
+          - button "微软Entra ID 微软Entra ID" [ref=e287] [cursor=pointer]:
+            - img "微软Entra ID" [ref=e288]
+            - generic [ref=e289]: 微软Entra ID
+            - img [ref=e290]
+          - button "SAML2.0 SAML2.0" [ref=e292] [cursor=pointer]:
+            - img "SAML2.0" [ref=e293]
+            - generic [ref=e294]: SAML2.0
+            - img [ref=e295]
+          - button "Windows AD Windows AD" [ref=e297] [cursor=pointer]:
+            - img "Windows AD" [ref=e298]
+            - generic [ref=e299]: Windows AD
+            - img [ref=e300]
+          - button "私有化企微 私有化企微" [ref=e302] [cursor=pointer]:
+            - img "私有化企微" [ref=e303]
+            - generic [ref=e304]: 私有化企微
+            - img [ref=e305]
+          - button "OIDC OIDC" [ref=e307] [cursor=pointer]:
+            - img "OIDC" [ref=e308]
+            - generic [ref=e309]: OIDC
+            - img [ref=e310]
+          - button "JWT JWT" [ref=e312] [cursor=pointer]:
+            - img "JWT" [ref=e313]
+            - generic [ref=e314]: JWT
+            - img [ref=e315]
+          - button "OpenLDAP OpenLDAP" [ref=e317] [cursor=pointer]:
+            - img "OpenLDAP" [ref=e318]
+            - generic [ref=e319]: OpenLDAP
+            - img [ref=e320]
+          - button "企业微信 企业微信" [ref=e322] [cursor=pointer]:
+            - img "企业微信" [ref=e323]
+            - generic [ref=e324]: 企业微信
+            - img [ref=e325]
+          - button "CAS CAS" [ref=e327] [cursor=pointer]:
+            - img "CAS" [ref=e328]
+            - generic [ref=e329]: CAS
+            - img [ref=e330]
+          - button "Oauth2 Oauth2" [ref=e332] [cursor=pointer]:
+            - img "Oauth2" [ref=e333]
+            - generic [ref=e334]: Oauth2
+            - img [ref=e335]
+        - generic [ref=e337]:
+          - generic [ref=e340]: 其他账号登录
+          - generic [ref=e342]:
+            - button "手机号" [ref=e343] [cursor=pointer]:
+              - img [ref=e345]
+              - generic [ref=e347]: 手机号
+            - button "邮箱" [ref=e348] [cursor=pointer]:
+              - img [ref=e350]
+              - generic [ref=e353]: 邮箱
+          - img "eID Digital Identity" [ref=e355]
+    - button "Close" [ref=e356] [cursor=pointer]:
+      - img
+      - generic [ref=e357]: Close

@@ -4,7 +4,7 @@
  * Design: 「流动蓝图」Fluid Blueprint
  * - 用户端背景：linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%) (v2)
  * - 顶部固定导航栏 (64px) — 基于可复用的 TopNav 组合（对照 Figma 358:2322 还原）
- * - 主色 #355EF1
+ * - 主色 #1447E6
  *
  * 顶部导航相关的视觉/交互全部下沉到 `@/components/topnav`，
  * 本文件只关心：
@@ -165,7 +165,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                     <Link href="/admin/basic-info" className="flex min-w-0 shrink overflow-hidden">
                       <NavIconButton
                         icon={<SwitchAdminIcon />}
-                        label="切换管控端"
+                        label="管控端"
                       />
                     </Link>
                   </TooltipTrigger>
@@ -179,7 +179,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
             {/* 用户菜单 */}
             <UserMenu username={CURRENT_USER}>
-              <div className="px-3 py-2 border-b border-[#e5e5e5]">
+              <div className="px-3 py-2 border-b border-gray-100">
                 <p className="text-xs text-gray-500">当前账号</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{CURRENT_USER}</p>
                 <span
@@ -191,28 +191,28 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                 </span>
               </div>
               {/* 所在分组 */}
-              <div className="px-3 py-2 border-b border-[#e5e5e5]">
+              <div className="px-3 py-2 border-b border-gray-100">
                 <p className="text-xs text-gray-500 mb-1.5">所在分组</p>
                 <div className="flex flex-wrap gap-1">
                   {groupMode === "multi-group" ? (
                     <>
                       <span
                         className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#355EF1" }}
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
                       >A公司 / 技术部 / 前端组</span>
                       <span
                         className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#355EF1" }}
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
                       >A公司 / 技术部 / AI 组</span>
                       <span
                         className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#355EF1" }}
+                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
                       >前端研发同学</span>
                     </>
                   ) : (
                     <span
                       className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                      style={{ background: "rgba(88,86,214,0.10)", color: "#355EF1" }}
+                      style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
                     >默认</span>
                   )}
                 </div>

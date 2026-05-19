@@ -114,8 +114,7 @@ export default function NotificationPanel({
   }, [initialNotifications]);
 
   const hasUnread = notifications.some((n) => !n.read);
-  const totalUnread = notifications.filter((n) => !n.read).length;
-  const unreadDisplay = totalUnread > 99 ? "99+" : String(totalUnread);
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleMarkRead = (id: string) =>
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -138,15 +137,11 @@ export default function NotificationPanel({
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: "all", label: "全部" },
-    { key: "success", label: "操作成功" },
-    { key: "failure", label: "操作报错" },
     { key: "notice", label: "通知公告" },
+    { key: "failure", label: "操作报错" },
+    { key: "success", label: "操作成功" },
   ];
 
-  const unreadCountFor = (key: TabKey) =>
-    key === "all"
-      ? notifications.filter((n) => !n.read).length
-      : notifications.filter((n) => n.category === key && !n.read).length;
 
   const listFor = (key: TabKey) =>
     key === "all" ? notifications : notifications.filter((n) => n.category === key);
@@ -201,14 +196,14 @@ export default function NotificationPanel({
                 </div>
                 <div className="flex items-center gap-2">
                   <TooltipProvider>
-                  {!notif.read && hoveredId === notif.id && (
+                  {!notif.read && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleMarkRead(notif.id)}
-                          className="h-6 w-6 p-0 text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3.5"
+                          className={`h-6 w-6 p-0 text-[#A3A3A3] hover:text-[#334155] hover:bg-[#F5F5F5] [&_svg]:size-3.5 transition-opacity ${hoveredId === notif.id ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                           aria-label="标为已读"
                         >
                           <Check />
@@ -217,22 +212,20 @@ export default function NotificationPanel({
                       <TooltipContent>已读</TooltipContent>
                     </Tooltip>
                   )}
-                  {hoveredId === notif.id && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(notif.id)}
-                          className="h-6 w-6 p-0 text-[#A3A3A3] hover:text-red-600 hover:bg-transparent [&_svg]:size-3.5"
-                          aria-label="删除"
-                        >
-                          <Trash2 />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>删除</TooltipContent>
-                    </Tooltip>
-                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(notif.id)}
+                        className={`h-6 w-6 p-0 text-[#A3A3A3] hover:text-red-600 hover:bg-transparent [&_svg]:size-3.5 transition-opacity ${hoveredId === notif.id ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                        aria-label="删除"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>删除</TooltipContent>
+                  </Tooltip>
                   {notif.category === "failure" && (
                     <Tooltip open={isCopied || undefined}>
                       <TooltipTrigger asChild>
@@ -265,18 +258,32 @@ export default function NotificationPanel({
         <TooltipTrigger asChild>
           <SheetTrigger asChild>
             <NavIconButton
-              icon={<BellIcon />}
-              label="消息通知"
-              badge={
-                hasUnread ? (
-                  <span
-                    aria-label={`${totalUnread} 条未读通知`}
-                    className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-[#F5F5F5] text-[#0A0A0A] leading-none"
-                  >
-                    {unreadDisplay}
-                  </span>
-                ) : null
+              icon={
+                <span className="inline-flex items-start gap-[2px]">
+                  <BellIcon />
+                  {hasUnread && (
+                    <span
+                      className="inline-flex items-center justify-center"
+                      style={{
+                        marginTop: -4,
+                        minWidth: 16,
+                        height: 14,
+                        padding: "0 4px",
+                        borderRadius: 40,
+                        background: "#E7EDFC",
+                        fontFamily: "PingFang SC, sans-serif",
+                        fontWeight: 500,
+                        fontSize: 10,
+                        lineHeight: "16px",
+                        color: "#202020",
+                      }}
+                    >
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </span>
               }
+              title="消息通知"
             />
           </SheetTrigger>
         </TooltipTrigger>
@@ -302,7 +309,7 @@ export default function NotificationPanel({
                 size="sm"
                 onClick={handleMarkAllRead}
                 disabled={!hasUnread}
-                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-[#355EF1] hover:bg-[#EFF6FF]"
+                className="h-7 px-2 gap-1 text-xs text-[#334155] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
               >
                 <Check className="w-3.5 h-3.5" />
                 全部已读
@@ -347,7 +354,9 @@ export default function NotificationPanel({
               style={{ background: "#F5F5F5" }}
             >
               {tabs.map((tab) => {
-                const count = unreadCountFor(tab.key);
+                const count = tab.key === "all"
+                  ? notifications.filter((n) => !n.read).length
+                  : notifications.filter((n) => n.category === tab.key && !n.read).length;
                 return (
                   <TabsTrigger
                     key={tab.key}
@@ -356,7 +365,7 @@ export default function NotificationPanel({
                   >
                     {tab.label}
                     {count > 0 && (
-                      <span className="text-[#737373]">({count})</span>
+                      <span className="text-[#737373]">{count}</span>
                     )}
                   </TabsTrigger>
                 );

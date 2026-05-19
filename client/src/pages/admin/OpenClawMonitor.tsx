@@ -1810,59 +1810,47 @@ export default function AgentMonitor() {
         </div>
 
         {/* 状态统计卡片 */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-5 mb-6">
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
-            className={`bg-white rounded-xl border p-4 transition-all text-left ${
-              activeCardFilter === "all"
-                ? "border-[#355EF1]"
-                : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
+              activeCardFilter === "all" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Layers className="w-3.5 h-3.5 text-white" />
-              </div>
-              <p className="text-xs text-gray-400">总数</p>
+            <div className="flex items-center gap-1">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4375 2.1377C9.21415 2.1377 9.84375 2.76729 9.84375 3.54395V5.15625H14.4385C15.2151 5.15631 15.8447 5.78589 15.8447 6.5625V9.67383H16.5371C17.0031 9.67383 17.3809 10.0516 17.3809 10.5176C17.3807 10.9835 17.003 11.3613 16.5371 11.3613H15.8447V14.4375C15.8447 15.2141 15.2151 15.8437 14.4385 15.8438H3.55957C2.78303 15.8436 2.15332 15.2141 2.15332 14.4375V11.3613H1.46289C0.996982 11.3613 0.619273 10.9835 0.619141 10.5176C0.619141 10.0516 0.9969 9.67383 1.46289 9.67383H2.15332V6.5625C2.15332 5.78593 2.78303 5.15638 3.55957 5.15625H8.15625V3.8252H6.04688C5.58097 3.8252 5.20326 3.44732 5.20312 2.98145C5.20312 2.51546 5.58088 2.1377 6.04688 2.1377H8.4375ZM3.84082 14.1562H14.1572V6.84375H3.84082V14.1562ZM6.75 8.87109C7.21599 8.87109 7.59375 9.24885 7.59375 9.71484V11.29C7.59338 11.7557 7.21576 12.1338 6.75 12.1338C6.28424 12.1338 5.90662 11.7557 5.90625 11.29V9.71484C5.90625 9.24885 6.28401 8.87109 6.75 8.87109ZM11.25 8.87109C11.716 8.87109 12.0938 9.24885 12.0938 9.71484V11.29C12.0934 11.7557 11.7158 12.1338 11.25 12.1338C10.7842 12.1338 10.4066 11.7557 10.4062 11.29V9.71484C10.4062 9.24885 10.784 8.87109 11.25 8.87109Z" fill="url(#icon_total)"/><defs><linearGradient id="icon_total" x1="16" y1="16" x2="14" y2="10" gradientUnits="userSpaceOnUse"><stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/></linearGradient></defs></svg>
+              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">总数</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">{totalCount}</p>
+            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{totalCount}</p>
           </button>
 
           {/* 运行中 */}
           <button
             onClick={() => handleCardFilterChange("running")}
-            className={`bg-white rounded-xl border p-4 transition-all text-left ${
-              activeCardFilter === "running"
-                ? "border-[#355EF1]"
-                : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
+              activeCardFilter === "running" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-              </div>
-              <p className="text-xs text-gray-400">运行中</p>
+            <div className="flex items-center gap-1">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.2998 1.6875C16.1697 1.6875 16.875 2.44302 16.875 3.375V11.8125C16.875 12.7445 16.1697 13.5 15.2998 13.5H9.84375V14.9062H12C12.466 14.9062 12.8438 15.284 12.8438 15.75C12.8438 16.216 12.466 16.5938 12 16.5938H6C5.53401 16.5938 5.15625 16.216 5.15625 15.75C5.15625 15.284 5.53401 14.9062 6 14.9062H8.15625V13.5H2.7002L2.53906 13.4912C1.74482 13.4048 1.125 12.6863 1.125 11.8125V3.375C1.125 2.50124 1.74482 1.78266 2.53906 1.69629L2.7002 1.6875H15.2998ZM2.8125 11.8125H15.1875V3.375H2.8125V11.8125ZM10.6533 5.40332C10.9828 5.07382 11.5172 5.07384 11.8467 5.40332C12.1762 5.73283 12.1762 6.26717 11.8467 6.59668L8.84668 9.59668C8.51717 9.92615 7.98282 9.92617 7.65332 9.59668L6.15332 8.09668C5.82385 7.76718 5.82386 7.23282 6.15332 6.90332C6.48282 6.57382 7.01717 6.57384 7.34668 6.90332L8.25 7.80664L10.6533 5.40332Z" fill="url(#icon_running)"/><defs><radialGradient id="icon_running" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.44798 9.14064) scale(13.427 563.02)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
+              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">运行中</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">{runningCount}</p>
+            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{runningCount}</p>
           </button>
 
           {/* 已关机 */}
           <button
             onClick={() => handleCardFilterChange("shutdown")}
-            className={`bg-white rounded-xl border p-4 transition-all text-left ${
-              activeCardFilter === "shutdown"
-                ? "border-[#355EF1]"
-                : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
+              activeCardFilter === "shutdown" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
             }`}
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                <PowerOff className="w-3.5 h-3.5 text-white" />
-              </div>
-              <p className="text-xs text-gray-400">已关机</p>
+            <div className="flex items-center gap-1">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.65345 2.38477C1.98295 2.05531 2.51732 2.05529 2.84681 2.38477L13.0011 12.5391L13.0021 12.5361L14.1974 13.7314L14.1964 13.7344L16.3468 15.8848C16.6762 16.2143 16.6762 16.7486 16.3468 17.0781C16.0173 17.4075 15.4829 17.4075 15.1534 17.0781L12.9142 14.8389C11.7646 15.6096 10.4045 16.0312 9.00013 16.0312C7.13536 16.0312 5.34705 15.2903 4.02845 13.9717C2.70984 12.6531 1.96888 10.8648 1.96888 9C1.96888 7.57678 2.40035 6.24293 3.19349 5.11816L1.65345 3.57812C1.32399 3.24865 1.32404 2.71427 1.65345 2.38477ZM4.41321 6.33789C3.92181 7.13042 3.65638 8.03988 3.65638 9C3.65638 10.4172 4.21967 11.7762 5.22181 12.7783C6.22394 13.7804 7.58291 14.3437 9.00013 14.3438C9.95388 14.3437 10.8806 14.0875 11.6906 13.6152L4.41321 6.33789ZM12.2081 3.12988C12.4228 3.08177 12.6487 3.11904 12.8361 3.23438C14.8672 4.55486 16.0314 6.65803 16.0314 9C16.0314 10.1751 15.7346 11.3183 15.1867 12.334L13.923 11.0703C14.1967 10.4209 14.3439 9.71855 14.3439 9C14.3439 7.24222 13.4582 5.65082 11.9142 4.64746C11.7332 4.52263 11.6082 4.33191 11.5656 4.11621C11.523 3.90039 11.5665 3.67649 11.6867 3.49219C11.8067 3.30809 11.9937 3.17812 12.2081 3.12988ZM9.00013 0.84375C9.22386 0.843782 9.4386 0.932622 9.59681 1.09082C9.755 1.24905 9.84388 1.46375 9.84388 1.6875V5.625C9.84388 5.84875 9.755 6.06345 9.59681 6.22168C9.4386 6.37988 9.22386 6.46872 9.00013 6.46875C8.77639 6.46874 8.56167 6.37987 8.40345 6.22168C8.24522 6.06345 8.15638 5.84877 8.15638 5.625V1.6875C8.15638 1.46373 8.24522 1.24905 8.40345 1.09082C8.56167 0.93263 8.77639 0.843756 9.00013 0.84375Z" fill="url(#icon_shutdown)"/><defs><radialGradient id="icon_shutdown" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64638 9.08447) scale(12.9475 622.515)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
+              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">已关机</span>
             </div>
-            <p className="text-xl font-bold text-gray-900">{shutdownCount}</p>
+            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{shutdownCount}</p>
           </button>
 
           {/* 其他 */}
@@ -1870,19 +1858,15 @@ export default function AgentMonitor() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
-                className={`bg-white rounded-xl border p-4 transition-all text-left ${
-                  activeCardFilter === "other"
-                    ? "border-[#355EF1]"
-                    : "border-[#E5E5E5] hover:border-[#355EF1]"
+                className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
+                  activeCardFilter === "other" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
                 }`}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
-                    <HelpCircle className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <p className="text-xs text-gray-400">其他</p>
+                <div className="flex items-center gap-1">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.59375 5.90625C7.59375 5.68375 7.65973 5.46624 7.78335 5.28123C7.90697 5.09623 8.08267 4.95203 8.28823 4.86689C8.4938 4.78174 8.72 4.75946 8.93823 4.80287C9.15646 4.84627 9.35691 4.95342 9.51425 5.11076C9.67158 5.26809 9.77873 5.46854 9.82214 5.68677C9.86555 5.905 9.84327 6.1312 9.75812 6.33677C9.67297 6.54234 9.52878 6.71804 9.34377 6.84165C9.15876 6.96527 8.94126 7.03125 8.71875 7.03125C8.42038 7.03125 8.13424 6.91272 7.92326 6.70174C7.71228 6.49077 7.59375 6.20462 7.59375 5.90625ZM16.5938 9C16.5938 10.5019 16.1484 11.9701 15.314 13.2189C14.4796 14.4676 13.2936 15.441 11.906 16.0157C10.5184 16.5905 8.99158 16.7408 7.51854 16.4478C6.04549 16.1548 4.69242 15.4316 3.63041 14.3696C2.56841 13.3076 1.84517 11.9545 1.55217 10.4815C1.25916 9.00842 1.40954 7.48157 1.98429 6.094C2.55905 4.70642 3.53236 3.52044 4.78114 2.68603C6.02993 1.85162 7.4981 1.40625 9 1.40625C11.0133 1.40848 12.9435 2.20925 14.3671 3.63287C15.7907 5.0565 16.5915 6.9867 16.5938 9ZM14.9063 9C14.9063 7.83185 14.5599 6.68994 13.9109 5.71866C13.2619 4.74739 12.3395 3.99037 11.2602 3.54334C10.181 3.09631 8.99345 2.97934 7.84775 3.20724C6.70205 3.43513 5.64966 3.99765 4.82365 4.82365C3.99765 5.64965 3.43513 6.70205 3.20724 7.84775C2.97935 8.99345 3.09631 10.181 3.54334 11.2602C3.99037 12.3394 4.74739 13.2619 5.71867 13.9109C6.68994 14.5599 7.83186 14.9062 9 14.9062C10.5659 14.9046 12.0672 14.2818 13.1745 13.1745C14.2818 12.0672 14.9046 10.5659 14.9063 9ZM9.84375 11.5791V9.28125C9.84375 8.90829 9.6956 8.5506 9.43187 8.28688C9.16815 8.02316 8.81046 7.875 8.4375 7.875C8.23824 7.8747 8.04531 7.94494 7.89287 8.07326C7.74043 8.20158 7.63833 8.37972 7.60464 8.57611C7.57095 8.7725 7.60786 8.97447 7.70882 9.14626C7.80978 9.31805 7.96828 9.44857 8.15625 9.51469V11.8125C8.15625 12.1855 8.30441 12.5431 8.56813 12.8069C8.83186 13.0706 9.18954 13.2188 9.5625 13.2188C9.76176 13.219 9.9547 13.1488 10.1071 13.0205C10.2596 12.8922 10.3617 12.714 10.3954 12.5176C10.4291 12.3213 10.3921 12.1193 10.2912 11.9475C10.1902 11.7757 10.0317 11.6452 9.84375 11.5791Z" fill="url(#icon_other)"/><defs><radialGradient id="icon_other" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64626 9.00001) scale(12.9475 573.644)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
+                  <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">其他</span>
                 </div>
-                <p className="text-xl font-bold text-gray-900">{otherCount}</p>
+                <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{otherCount}</p>
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>

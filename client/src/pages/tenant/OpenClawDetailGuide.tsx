@@ -618,7 +618,7 @@ export default function OpenClawDetailGuide() {
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
 
           {/* 中间内容区：与 MyOpenClaw 对齐，paddingBottom 75px 留出底部空白 */}
-          <div ref={middleRef} className="flex-1 min-w-0 relative" style={{ paddingBottom: "75px" }}>
+          <div ref={middleRef} className="flex-1 min-w-0 relative flex flex-col" style={{ paddingBottom: "75px" }}>
             {/* 左侧点阵装饰层：从 Header 底部横线 ~ 底部分隔栏顶部横线（中间区域） */}
             <div
               aria-hidden
@@ -659,8 +659,8 @@ export default function OpenClawDetailGuide() {
               style={{ width: "1px", backgroundColor: "#E2E8F0" }}
             />
 
-            {/* 内容主体 */}
-            <div className="relative">
+            {/* 内容主体 —— flex-1 + flex-col 保证不满一屏时底部吸底，超出一屏时跟随 */}
+            <div className="relative flex flex-col flex-1">
               {/* ======== Header ======== */}
               <header ref={headerRef} className="relative flex items-end justify-between gap-6 px-[42px] py-6">
                 {/* Header 底部横线（贯穿全视口） */}
@@ -816,7 +816,7 @@ export default function OpenClawDetailGuide() {
               </div>
 
               {/* ======== 三栏卡片 ======== */}
-              <div className="px-[42px] py-0">
+              <div className="px-[42px] py-0 flex-1">
               {activeTab === "basic" && (
                 <div className="grid grid-cols-3 gap-6">
                   {/* ===== 01/ 模型（Models） ===== */}

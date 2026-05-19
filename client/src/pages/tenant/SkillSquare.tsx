@@ -33,38 +33,38 @@ function getSkillInitial(name: string): string | null {
   return 'A';
 }
 
-// 为不同字母分配不同的渐变色
+// 为不同字母分配渐变色，色系对齐 Agent 头像风格（蓝紫、靛蓝、青色系柔和渐变）
 const LETTER_GRADIENTS: Record<string, string> = {
-  A: 'from-blue-500 to-blue-600',
-  B: 'from-green-500 to-green-600',
-  C: 'from-purple-500 to-purple-600',
-  D: 'from-indigo-500 to-indigo-600',
-  E: 'from-orange-500 to-orange-600',
-  F: 'from-pink-500 to-pink-600',
-  G: 'from-teal-500 to-teal-600',
-  H: 'from-cyan-500 to-cyan-600',
-  I: 'from-blue-600 to-purple-600',
-  J: 'from-emerald-500 to-emerald-600',
-  K: 'from-violet-500 to-violet-600',
-  L: 'from-rose-500 to-rose-600',
-  M: 'from-amber-500 to-amber-600',
-  N: 'from-blue-500 to-indigo-600',
-  O: 'from-green-500 to-teal-600',
-  P: 'from-purple-500 to-indigo-600',
-  Q: 'from-red-500 to-red-600',
-  R: 'from-sky-500 to-sky-600',
-  S: 'from-fuchsia-500 to-fuchsia-600',
-  T: 'from-lime-500 to-lime-600',
-  U: 'from-blue-500 to-cyan-600',
-  V: 'from-violet-500 to-purple-600',
-  W: 'from-orange-500 to-red-500',
-  X: 'from-gray-500 to-gray-600',
-  Y: 'from-yellow-500 to-yellow-600',
-  Z: 'from-stone-500 to-stone-600',
+  A: 'from-indigo-400 to-purple-500',
+  B: 'from-blue-400 to-indigo-500',
+  C: 'from-violet-400 to-purple-500',
+  D: 'from-purple-400 to-indigo-500',
+  E: 'from-sky-400 to-blue-500',
+  F: 'from-indigo-400 to-blue-500',
+  G: 'from-cyan-400 to-blue-500',
+  H: 'from-blue-400 to-purple-500',
+  I: 'from-violet-400 to-indigo-500',
+  J: 'from-purple-400 to-violet-500',
+  K: 'from-indigo-400 to-violet-500',
+  L: 'from-blue-400 to-cyan-500',
+  M: 'from-sky-400 to-indigo-500',
+  N: 'from-purple-400 to-blue-500',
+  O: 'from-cyan-400 to-indigo-500',
+  P: 'from-violet-400 to-blue-500',
+  Q: 'from-indigo-400 to-cyan-500',
+  R: 'from-blue-400 to-violet-500',
+  S: 'from-purple-400 to-sky-500',
+  T: 'from-sky-400 to-violet-500',
+  U: 'from-indigo-400 to-purple-500',
+  V: 'from-blue-400 to-blue-500',
+  W: 'from-violet-400 to-cyan-500',
+  X: 'from-purple-400 to-indigo-500',
+  Y: 'from-cyan-400 to-purple-500',
+  Z: 'from-indigo-400 to-blue-500',
 };
 
 function getLetterGradient(letter: string): string {
-  return LETTER_GRADIENTS[letter] || 'from-purple-500 to-purple-600';
+  return LETTER_GRADIENTS[letter] || 'from-indigo-400 to-purple-500';
 }
 import {
   Dialog,
@@ -285,8 +285,20 @@ export default function SkillSquare() {
           <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
             <div
-              className="flex-1 min-w-0 px-[42px] py-8 relative"
+              className="flex-1 min-w-0 px-[42px] py-8 relative min-h-[calc(100vh-64px)]"
+              style={{ paddingBottom: "75px" }}
             >
+              {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
+                style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
+                style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+              />
               <div className="relative">
                 <SkillSquareDetail
                   skillId={selectedSkillId}
@@ -314,23 +326,104 @@ export default function SkillSquare() {
       <div className="min-w-[1200px] overflow-x-clip">
         <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
-          <div className="flex-1 min-w-0 relative">
-            {/* Hero 段（112px 固定高度，含标题 + 副标题） */}
+          <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)]" style={{ paddingBottom: "75px" }}>
+            {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
             <div
-              className="relative flex flex-col justify-center px-[42px]"
+              aria-hidden
+              className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
+              style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
+              style={{ width: "1px", backgroundColor: "#E2E8F0" }}
+            />
+            {/* 左右两侧点阵装饰层 — 对齐「我的 Agent」
+                覆盖范围：hero 底线(112px) ~ 底部分割线(bottom 75px = paddingBottom)
+                点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
               style={{
-                height: "112px",
+                top: "112px",
+                bottom: "75px",
+                left: "calc((100% - 100vw) / 2)",
+                right: "100%",
+                backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+                backgroundSize: "12px 12px",
               }}
-            >
-              <h1
-                className="text-[26px] font-semibold leading-8"
-                style={{ color: "#0A0A0A", letterSpacing: "-0.0385em" }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
+              style={{
+                top: "112px",
+                bottom: "75px",
+                left: "100%",
+                right: "calc((100% - 100vw) / 2)",
+                backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+                backgroundSize: "12px 12px",
+              }}
+            />
+            {/* Hero 段 — 对齐「我的 Agent」HeroBanner 样式（112px / 渐变标题 / 底部贯穿分割线） */}
+            <div className="relative" style={{ height: "112px" }}>
+              <div
+                style={{
+                  height: "112px",
+                  padding: "0 42px",
+                  borderLeft: "1px solid #E2E8F0",
+                  borderRight: "1px solid #E2E8F0",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  gap: "8px",
+                  overflow: "hidden",
+                }}
               >
-                企业技能
-              </h1>
-              <p className="text-xs mt-2" style={{ color: "#737373" }}>
-                一键选装企业内的优质技能。
-              </p>
+                <h1
+                  style={{
+                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "26px",
+                    lineHeight: "35.56px",
+                    letterSpacing: "-4.27%",
+                    margin: 0,
+                    backgroundImage: "linear-gradient(90deg, #0A0A0A 0%, #1447E6 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    color: "transparent",
+                    width: "fit-content",
+                  }}
+                >
+                  企业技能
+                </h1>
+                <p
+                  style={{
+                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontWeight: 400,
+                    fontSize: "12px",
+                    lineHeight: "22.22px",
+                    letterSpacing: "1.5%",
+                    color: "#737373",
+                    margin: 0,
+                  }}
+                >
+                  一键选装企业内的优质技能。
+                </p>
+              </div>
+              {/* 贯穿底部分割线 */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute"
+                style={{
+                  left: "calc(50% - 50vw)",
+                  width: "100vw",
+                  bottom: 0,
+                  height: "1px",
+                  backgroundColor: "#E2E8F0",
+                }}
+              />
             </div>
 
             {/* 内容段（搜索栏 / 分类 / 卡片网格） */}
@@ -461,6 +554,19 @@ export default function SkillSquare() {
         )}
             </div>
             {/* /内容段 */}
+
+            {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px（paddingBottom 区域上方），吸底 */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
+              style={{
+                left: "calc(50% - 50vw)",
+                width: "100vw",
+                bottom: "75px",
+                height: "1px",
+                backgroundColor: "#E2E8F0",
+              }}
+            />
           </div>
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
         </div>
@@ -524,28 +630,98 @@ function SkillCard({
     <>
       <SurfaceCard
         hover
-        className="p-5 cursor-pointer"
+        className="group relative flex flex-col cursor-pointer"
+        style={{ padding: "20px", gap: "16px" }}
         onClick={onClick}
       >
-        {/* 顶部：图标(字母) + 名称 + 下发按钮 */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+        {/* ===== 头部行：图标(字母) + 名称/版本 + 下载量 ===== */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             {initial && (
               <div
-                className={`w-9 h-9 rounded-[4px] bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
+                className={`bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
+                style={{ width: 40, height: 40, borderRadius: "50%" }}
               >
-                <span className="text-white text-sm font-bold">{initial}</span>
+                <span className="text-white font-bold" style={{ fontSize: "14px" }}>{initial}</span>
               </div>
             )}
-            <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold truncate" style={{ color: "#0A0A0A" }}>{skill.name}</h3>
+                <h3
+                  className="truncate transition-colors group-hover:text-[#1447e6]"
+                  style={{
+                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "22px",
+                    color: "#0A0A0A",
+                  }}
+                  title={skill.name}
+                >
+                  {skill.name}
+                </h3>
                 {/* 下发状态图标 */}
                 {distStatus && <DistributionStatusIcon status={distStatus} latestRecord={latestRecord} onClick={() => onDistStatusClick?.()} />}
               </div>
-              <span className="text-xs" style={{ color: "#A3A3A3" }}>v{skill.version}</span>
+              <span
+                style={{
+                  fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                  fontWeight: 400,
+                  fontSize: "12px",
+                  lineHeight: "20px",
+                  color: "#A3A3A3",
+                }}
+              >
+                v{skill.version}
+              </span>
             </div>
           </div>
+
+          {/* 右上角：下载量 */}
+          <div
+            className="flex items-center flex-shrink-0"
+            style={{
+              gap: "4px",
+              fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+              fontWeight: 400,
+              fontSize: "12px",
+              lineHeight: "20px",
+              color: "#A3A3A3",
+            }}
+          >
+            <Download className="w-3 h-3" />
+            <span className="tabular-nums">{formatDownloadCount(downloadCount)}</span>
+          </div>
+        </div>
+
+        {/* ===== 描述 — 支持展示三行 ===== */}
+        <p
+          className="line-clamp-3"
+          style={{
+            fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+            fontWeight: 400,
+            fontSize: "13px",
+            lineHeight: "20px",
+            color: "#737373",
+          }}
+        >
+          {skill.description}
+        </p>
+
+        {/* ===== 底部行：发布时间 + 下发按钮 ===== */}
+        <div className="flex items-center justify-between">
+          <span
+            className="truncate"
+            style={{
+              fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+              fontWeight: 400,
+              fontSize: "12px",
+              lineHeight: "20px",
+              color: "#A3A3A3",
+            }}
+          >
+            {formatDate(skill.uploadTime)}
+          </span>
           {isDistributing ? (
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
@@ -560,7 +736,7 @@ function SkillCard({
             </Tooltip>
           ) : (
             <Button
-              variant="outline"
+              variant="claw-outline"
               size="icon-sm"
               onClick={handleDistributeClick}
               className="flex-shrink-0"
@@ -568,18 +744,6 @@ function SkillCard({
               <Plus className="w-4 h-4" />
             </Button>
           )}
-        </div>
-
-        {/* 描述 — 支持展示三行 */}
-        <p className="text-sm line-clamp-3 mb-3" style={{ color: "#737373" }}>{skill.description}</p>
-
-        {/* 底部:发布时间 + 下载量图标 */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: "#A3A3A3" }}>{formatDate(skill.uploadTime)}</span>
-          <div className="flex items-center gap-1 text-xs" style={{ color: "#A3A3A3" }}>
-            <Download className="w-3 h-3" />
-            <span className="tabular-nums">{formatDownloadCount(downloadCount)}</span>
-          </div>
         </div>
       </SurfaceCard>
 

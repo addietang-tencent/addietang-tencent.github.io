@@ -195,8 +195,8 @@ export default function MyOpenClaw() {
     const pagination = paginationElRef.current;
     if (!middle) return;
     if (!pagination) {
-      // ChatView 模式无分页栏，bottom 直接到中间内容区底部 padding 即可
-      setDotsBottom(0);
+      // ChatView 模式无分页栏，bottom 对齐底部分割线（paddingBottom 75px）
+      setDotsBottom(75);
       return;
     }
     // 用 getBoundingClientRect 跨祖先链计算「分页栏顶部相对中间内容区顶部」的真实距离
@@ -457,7 +457,7 @@ export default function MyOpenClaw() {
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
             {/* 中间内容区 - Figma 446:2944，gap 32px 由各段 mb 控制 / padding-bottom 75px / 子段自带 px-42
                 ref={middleRef}：让点阵装饰层基于中间内容区与分页栏的实际几何动态计算 bottom 值 */}
-            <div ref={middleRef} className="flex-1 min-w-0 relative" style={{ paddingBottom: "75px" }}>
+            <div ref={middleRef} className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)]" style={{ paddingBottom: "75px" }}>
               {/* 左右两侧点阵装饰层 - 仅覆盖 hero 底线 ~ 分页栏顶线（四角无点阵）
                   - 高度自适应：top: 112px = HeroBanner 高度；bottom: dotsBottom（动态 = 中间内容区高度 - 分页栏 offsetTop）
                     完全摆脱对 pb-32 / mt-6 等常量的依赖，直接读取 DOM 几何
@@ -595,7 +595,7 @@ export default function MyOpenClaw() {
           </div>
 
           {/* Content Area - 左右 42px 段落内边距对齐 446:2976 */}
-          <div className="relative px-[42px]">
+          <div className="relative px-[42px] pb-8">
             {/* Main Content */}
               {viewMode === "chat" ? (
                 <ChatView
@@ -744,6 +744,19 @@ export default function MyOpenClaw() {
                 );
               })()}
           </div>
+
+            {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px，对话视图和管理视图统一 */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute"
+              style={{
+                left: "calc(50% - 50vw)",
+                width: "100vw",
+                bottom: "75px",
+                height: "1px",
+                backgroundColor: "#E2E8F0",
+              }}
+            />
             {/* /中间内容区 (flex-1) 闭合 */}
           </div>
             {/* 右侧 80px 占位带 - Figma 446:3001，与左侧同处理：仅留白，点阵由中段 wrapper 延伸渲染 */}

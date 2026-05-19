@@ -284,13 +284,17 @@ export default function SkillSquare() {
         <div className="min-w-[1200px] overflow-x-clip">
           <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 px-[42px] py-8">
-              <SkillSquareDetail
-                skillId={selectedSkillId}
-                skills={visibleSkills}
-                onBack={() => { setSelectedSkillId(null); setInitialTab('overview'); }}
-                initialTab={initialTab}
-              />
+            <div
+              className="flex-1 min-w-0 px-[42px] py-8 relative"
+            >
+              <div className="relative">
+                <SkillSquareDetail
+                  skillId={selectedSkillId}
+                  skills={visibleSkills}
+                  onBack={() => { setSelectedSkillId(null); setInitialTab('overview'); }}
+                  initialTab={initialTab}
+                />
+              </div>
             </div>
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
           </div>
@@ -310,20 +314,32 @@ export default function SkillSquare() {
       <div className="min-w-[1200px] overflow-x-clip">
         <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
-          <div className="flex-1 min-w-0 px-[42px] py-8">
-        {/* 页面标题 */}
-        <div className="mb-6">
-          <h1
-            className="text-[26px] font-semibold leading-8"
-            style={{ color: "#0A0A0A", letterSpacing: "-0.0385em" }}
-          >
-            企业技能
-          </h1>
-          <p className="text-xs mt-1" style={{ color: "#737373" }}>一键选装企业内的优质技能。</p>
-        </div>
+          <div className="flex-1 min-w-0 relative">
+            {/* Hero 段（112px 固定高度，含标题 + 副标题） */}
+            <div
+              className="relative flex flex-col justify-center px-[42px]"
+              style={{
+                height: "112px",
+              }}
+            >
+              <h1
+                className="text-[26px] font-semibold leading-8"
+                style={{ color: "#0A0A0A", letterSpacing: "-0.0385em" }}
+              >
+                企业技能
+              </h1>
+              <p className="text-xs mt-2" style={{ color: "#737373" }}>
+                一键选装企业内的优质技能。
+              </p>
+            </div>
+
+            {/* 内容段（搜索栏 / 分类 / 卡片网格） */}
+            <div
+              className="relative px-[42px] py-6"
+            >
 
         {/* 搜索栏 + 筛选 */}
-        <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <div className="relative flex flex-wrap gap-3 mb-4 items-center">
           {/* 搜索框 — 加长 */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#A3A3A3" }} />
@@ -388,7 +404,7 @@ export default function SkillSquare() {
         </div>
 
         {/* 分类横排按钮 */}
-        <div className="flex items-center gap-1.5 mb-6 flex-wrap pl-1">
+        <div className="relative flex items-center gap-1.5 mb-6 flex-wrap pl-1">
           <Button
             onClick={() => setSelectedCategory('all')}
             variant={selectedCategory === 'all' ? 'default' : 'outline'}
@@ -410,13 +426,13 @@ export default function SkillSquare() {
 
         {/* 技能列表 */}
         {filteredSkills.length === 0 ? (
-          <div className="text-center py-24">
+          <div className="relative text-center py-24">
             <Puzzle className="w-12 h-12 mx-auto mb-4" style={{ color: "#E5E5E5" }} />
             <p className="mb-4" style={{ color: "#A3A3A3" }}>暂无符合条件的技能</p>
           </div>
         ) : viewMode === 'card' ? (
           /* 卡片视图：常规 3 列 / 超大屏 4 列（>1600px 时启用，配合 §7.4 三档容器） */
-          <div className="grid grid-cols-3 2xl:grid-cols-4 gap-4">
+          <div className="relative grid grid-cols-3 2xl:grid-cols-4 gap-4">
             {filteredSkills.map(skill => (
               <SkillCard
                 key={skill.id}
@@ -429,7 +445,7 @@ export default function SkillSquare() {
           </div>
         ) : (
           /* 列表视图 — 紧凑横排布局 */
-          <SurfaceCard className="overflow-hidden">
+          <SurfaceCard className="relative overflow-hidden">
             <div className="divide-y divide-[#F5F5F5]">
               {filteredSkills.map(skill => (
                 <SkillListRow
@@ -443,6 +459,8 @@ export default function SkillSquare() {
             </div>
           </SurfaceCard>
         )}
+            </div>
+            {/* /内容段 */}
           </div>
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
         </div>

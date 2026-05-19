@@ -33,6 +33,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import NavIconButton from "./NavIconButton";
 import { HelpIcon } from "./NavIcons";
@@ -295,14 +300,21 @@ export default function HelpPanel() {
 
   return (
     <Sheet open={showPanel} onOpenChange={setShowPanel} modal={false}>
-      <SheetTrigger asChild>
-        <NavIconButton icon={<HelpIcon />} title="使用指南" />
-      </SheetTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SheetTrigger asChild>
+            <NavIconButton icon={<HelpIcon />} />
+          </SheetTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={6}>
+          使用指南
+        </TooltipContent>
+      </Tooltip>
 
       <SheetContent
         side="right"
         showOverlay={false}
-        className="!w-[420px] !max-w-none !top-16 !h-[calc(100vh-4rem)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
+        className="!w-[420px] !max-w-none !top-[64px] !bottom-0 !h-[calc(100vh-64px)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
       >
         {/* ───── shadcn 规范：SheetHeader > SheetTitle + SheetDescription ───── */}
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-[#E5E5E5] gap-0 space-y-0">
@@ -342,7 +354,7 @@ export default function HelpPanel() {
                 <TabsTrigger
                   key={doc.id}
                   value={doc.id}
-                  className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal whitespace-nowrap text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
                 >
                   {doc.tabLabel}
                 </TabsTrigger>

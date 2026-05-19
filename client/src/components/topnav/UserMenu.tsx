@@ -54,7 +54,8 @@ export default function UserMenu({
           type="button"
           className={[
             "group inline-flex items-center gap-[9px] rounded-[4px]",
-            "px-[9px] py-[4px] transition-colors",
+            "px-[9px] py-[4px] transition-colors min-w-0 shrink nav-user-btn",
+            "hover:bg-[#F5F5F5]",
             className,
           ].join(" ")}
         >
@@ -75,12 +76,12 @@ export default function UserMenu({
           >
             {letter}
           </span>
-          {/* 用户名（单行居中） */}
-          <span className="text-[14px] leading-[22px] text-[#020617] group-hover:text-[#1447e6] max-w-[160px] truncate">
+          {/* 用户名（溢出省略） */}
+          <span className="text-[14px] leading-[22px] text-[#020617]/90 group-hover:text-[#020617] truncate min-w-0 nav-btn-label">
             {username}
           </span>
           {/* 下拉箭头 */}
-          <span className="inline-flex items-center justify-center flex-shrink-0 text-[#020617]/70 group-hover:text-[#1447e6]">
+          <span className="inline-flex items-center justify-center flex-shrink-0 text-[#020617]/70 group-hover:text-[#020617] nav-btn-label">
             <ChevronDownIcon size={14} />
           </span>
         </button>

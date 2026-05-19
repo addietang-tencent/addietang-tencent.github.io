@@ -48,7 +48,7 @@ export default function CenterTabs<V extends string = string>({
 
   return (
     <nav
-      className={`flex items-center gap-1 p-1 rounded-[4px] ${className}`}
+      className={`flex items-center gap-1 p-1 rounded-[4px] min-w-0 ${className}`}
       style={{ background: "#F5F5F5" }}
       role="tablist"
     >
@@ -62,7 +62,7 @@ export default function CenterTabs<V extends string = string>({
             aria-selected={active}
             onClick={() => onChange?.(item.value, idx)}
             className={[
-              "px-3 py-[7px] rounded-[3px] text-[14px] leading-[22px] transition-all duration-150",
+              "px-3 py-[7px] rounded-[3px] text-[14px] leading-[22px] transition-all duration-150 min-w-0 shrink truncate",
               active
                 ? "bg-white text-[#020617] font-medium"
                 : "text-[#334155] hover:text-[#020617] font-normal",

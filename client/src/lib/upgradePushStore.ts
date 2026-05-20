@@ -15,8 +15,8 @@
  */
 
 const STORAGE_KEY = "admin_active_pushes_v1";
-/** 用于区分"用户主动撤回到空"和"从未初始化"——避免每次刷新都回填默认 mock */
-const INIT_FLAG_KEY = "admin_active_pushes_initialized_v1";
+/** 用户主动撤回过的 Agent 类型集合（撤回后不再被默认 mock 回填） */
+const CLEARED_KEY = "admin_active_pushes_cleared_v1";
 
 export interface ActivePush {
   /** Agent 类型 ID（系统：OpenClaw / HermesAgent / LightClawACE 或 custom-xxx） */
@@ -55,46 +55,63 @@ const DEFAULT_PUSH_MAP: PushMap = {
 
 // ── 内部 IO ─────────────────────────────────────────────
 function readAll(): PushMap {
-  // 已初始化过：尊重当前 storage 内容（即使为空对象 {}，说明用户主动撤回过）
-  let initialized = false;
   try {
-    initialized = localStorage.getItem(INIT_FLAG_KEY) === "1";
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as PushMap;
   } catch {
     /* ignore */
   }
-
-  if (initialized) {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as PushMap;
-    } catch {
-      /* ignore */
-    }
-    return {};
-  }
-
-  // 首次访问（或用户清空 localStorage 后）：写入默认 mock 推送
-  // 这样用户端进入 Agent 详情页就能看到"管理员推荐升级"徽章
-  const defaultMap: PushMap = { ...DEFAULT_PUSH_MAP };
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMap));
-    localStorage.setItem(INIT_FLAG_KEY, "1");
-  } catch {
-    /* ignore */
-  }
-  return defaultMap;
+  return {};
 }
 
 function writeAll(map: PushMap): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
-    // 用户主动写入（包括清空 / 撤回），标记为已初始化，避免后续自动回填
-    localStorage.setItem(INIT_FLAG_KEY, "1");
     // 同窗口需要 dispatch storage 事件，让其他组件订阅生效
     window.dispatchEvent(new Event("upgrade-push-changed"));
   } catch {
     /* ignore */
   }
+}
+
+/** 读取"用户已撤回"集合 */
+function readClearedSet(): Set<string> {
+  try {
+    const raw = localStorage.getItem(CLEARED_KEY);
+    if (raw) return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    /* ignore */
+  }
+  return new Set();
+}
+
+/** 标记某 Agent 类型为"已撤回" */
+function markCleared(agentType: string): void {
+  const set = readClearedSet();
+  set.add(agentType);
+  try {
+    localStorage.setItem(CLEARED_KEY, JSON.stringify(Array.from(set)));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 清除"已撤回"标记（用户重新推送时调用） */
+function unmarkCleared(agentType: string): void {
+  const set = readClearedSet();
+  if (set.has(agentType)) {
+    set.delete(agentType);
+    try {
+      localStorage.setItem(CLEARED_KEY, JSON.stringify(Array.from(set)));
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+/** 判断某 Agent 类型是否被用户主动撤回过 */
+function isCleared(agentType: string): boolean {
+  return readClearedSet().has(agentType);
 }
 
 // ── 公开 API ────────────────────────────────────────────
@@ -104,25 +121,41 @@ export function listActivePushes(): ActivePush[] {
   return Object.values(readAll());
 }
 
-/** 查询某个 Agent 类型当前是否有推送 */
+/**
+ * 查询某个 Agent 类型当前是否有推送
+ *
+ * 兜底逻辑：如果 localStorage 中没有该类型的推送，且默认 mock 中有 → 返回默认 mock
+ * 这样即使用户的 localStorage 处于异常状态（空对象、被旧版本污染等），
+ * 设计/演示场景下默认的"管理员推荐升级"徽章仍能正常展示。
+ *
+ * 用户主动撤回（clearActivePush）后会写入"已撤回"标记，此时不会再回退到默认 mock。
+ */
 export function getActivePush(agentType: string): ActivePush | null {
-  return readAll()[agentType] ?? null;
+  const all = readAll();
+  if (all[agentType]) return all[agentType];
+  // 用户主动撤回过：尊重撤回结果，不再回退默认 mock
+  if (isCleared(agentType)) return null;
+  // 否则：回退到默认 mock（如果有）
+  return DEFAULT_PUSH_MAP[agentType] ?? null;
 }
 
-/** 推送（覆盖该 Agent 类型的旧推送） */
+/** 推送（覆盖该 Agent 类型的旧推送，同时清除"已撤回"标记） */
 export function setActivePush(push: ActivePush): void {
   const all = readAll();
   all[push.agentType] = push;
   writeAll(all);
+  // 重新推送，清除可能存在的"已撤回"标记
+  unmarkCleared(push.agentType);
 }
 
-/** 撤回某个 Agent 类型的推送 */
+/** 撤回某个 Agent 类型的推送（同时记录"已撤回"标记，避免被默认 mock 回填） */
 export function clearActivePush(agentType: string): void {
   const all = readAll();
   if (all[agentType]) {
     delete all[agentType];
     writeAll(all);
   }
+  markCleared(agentType);
 }
 
 /**

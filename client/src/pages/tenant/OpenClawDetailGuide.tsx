@@ -165,6 +165,26 @@ const MOCK_PENDING_SKILLS: PendingSkill[] = [
   { id: "ps-12", name: "chart-generator 1.0.0", status: "pending" },
 ];
 
+// ─── 技能头像字母渐变色 ────────────────────────────────────────────────
+const LETTER_GRADIENTS: Record<string, string> = {
+  A: 'from-indigo-400 to-purple-500', B: 'from-blue-400 to-indigo-500',
+  C: 'from-violet-400 to-purple-500', D: 'from-purple-400 to-indigo-500',
+  E: 'from-sky-400 to-blue-500', F: 'from-indigo-400 to-blue-500',
+  G: 'from-cyan-400 to-blue-500', H: 'from-blue-400 to-purple-500',
+  I: 'from-violet-400 to-indigo-500', J: 'from-purple-400 to-violet-500',
+  K: 'from-indigo-400 to-violet-500', L: 'from-blue-400 to-cyan-500',
+  M: 'from-sky-400 to-indigo-500', N: 'from-purple-400 to-blue-500',
+  O: 'from-cyan-400 to-indigo-500', P: 'from-violet-400 to-blue-500',
+  Q: 'from-indigo-400 to-cyan-500', R: 'from-blue-400 to-violet-500',
+  S: 'from-purple-400 to-sky-500', T: 'from-sky-400 to-violet-500',
+  U: 'from-indigo-400 to-purple-500', V: 'from-blue-400 to-blue-500',
+  W: 'from-violet-400 to-cyan-500', X: 'from-purple-400 to-indigo-500',
+  Y: 'from-cyan-400 to-purple-500', Z: 'from-indigo-400 to-blue-500',
+};
+function getLetterGradient(letter: string): string {
+  return LETTER_GRADIENTS[letter.toUpperCase()] || 'from-indigo-400 to-purple-500';
+}
+
 // ─── 技能库数据（弹窗用，参考 skillhub.cn 分类体系） ────────────────────────
 type SkillCategory = "all" | "ai" | "dev" | "tool" | "efficiency" | "data" | "content" | "security" | "collab";
 const SKILL_CATEGORIES: { id: SkillCategory; label: string }[] = [
@@ -698,8 +718,7 @@ function SkillInstallModal({
                 <div className="flex items-center px-4 py-3.5" style={{ gap: "12px" }}>
                   {/* 左：头像 */}
                   <div
-                    className="w-8 h-8 rounded-[6px] flex items-center justify-center text-xs font-semibold shrink-0"
-                    style={{ background: `${skill.color}20`, color: skill.color }}
+                    className={`w-8 h-8 rounded-[4px] bg-gradient-to-br ${getLetterGradient(skill.initial)} flex items-center justify-center text-xs font-bold text-white shrink-0`}
                   >
                     {skill.initial}
                   </div>
@@ -1390,41 +1409,47 @@ export default function OpenClawDetailGuide() {
                           {appliedModels.filter(m => m.primary).map((model) => (
                             <div key={model.id} className="flex flex-col gap-2 mb-2 last:mb-0">
                               <div
-                                className="rounded-[4px] p-3 flex flex-col gap-2"
+                                className="rounded-[4px] p-3 flex items-center justify-between gap-2"
                                 style={{ border: "1px solid #E5E5E5" }}
                               >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="text-sm font-medium" style={{ color: "#0A0A0A" }}>
+                                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium truncate" style={{ color: "#0A0A0A" }}>
                                       {model.providerLabel}
                                     </span>
-                                    <span className="text-xs" style={{ color: "#737373" }}>{model.versionLabel}</span>
+                                    {model.adminPreset && (
+                                      <span
+                                        className="inline-flex shrink-0 items-center px-2 py-0.5 text-xs rounded-[3px]"
+                                        style={{ border: "1px solid #E5E5E5", color: "#737373" }}
+                                      >
+                                        管理员预置
+                                      </span>
+                                    )}
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      aria-label="编辑"
-                                      className="text-[#737373] hover:text-[#1447E6] transition-colors"
-                                      onClick={() => handleEditPrimary(model.id)}
-                                    >
-                                      <Edit3 className="w-4 h-4" />
-                                    </button>
-                                  </div>
+                                  <span className="text-xs" style={{ color: "#737373" }}>{model.versionLabel}</span>
                                 </div>
-                                {model.adminPreset && (
-                                  <span
-                                    className="inline-flex self-start items-center px-2 py-0.5 text-xs rounded-[3px]"
-                                    style={{ border: "1px solid #E5E5E5", color: "#737373" }}
-                                  >
-                                    管理员预置
-                                  </span>
-                                )}
+                                <button
+                                  type="button"
+                                  aria-label="编辑"
+                                  className="shrink-0 text-[#737373] hover:text-[#1447E6] transition-colors"
+                                  onClick={() => handleEditPrimary(model.id)}
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
                               </div>
 
                               {/* 主模型「修改为」编辑卡 —— 与添加备用模型卡片样式一致 */}
                               {editingPrimaryId === model.id && (
-                                <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-2">
-                                  <div className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
+                                <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingPrimaryId(null)}
+                                    className="absolute top-2 right-2 w-6 h-6 rounded-[4px] flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors"
+                                    aria-label="取消"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                  <div className="text-xs font-medium pr-8" style={{ color: "rgba(0,0,0,0.8)" }}>
                                     修改为
                                   </div>
                                   <div className="flex items-center gap-3">
@@ -1505,19 +1530,12 @@ export default function OpenClawDetailGuide() {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Button
+                                      variant="claw-outline"
                                       size="sm"
-                                      className="flex-1"
+                                      className="w-full"
                                       onClick={handleConfirmEditPrimary}
                                     >
                                       确认
-                                    </Button>
-                                    <Button
-                                      variant="claw-outline"
-                                      size="sm"
-                                      className="flex-1"
-                                      onClick={() => setEditingPrimaryId(null)}
-                                    >
-                                      取消
                                     </Button>
                                   </div>
                                 </div>
@@ -1545,7 +1563,23 @@ export default function OpenClawDetailGuide() {
                         </div>
                         {/* 添加模型操作区（仅由 showAddBackupModel 控制；点击取消即收起） */}
                         {showAddBackupModel && (
-                        <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-3 mb-3">
+                        <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-3 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBackupCascadeOpen(false);
+                        setBackupHoveredProvider(null);
+                        setShowAddBackupModel(false);
+                      }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-[4px] flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors z-10"
+                      aria-label="取消"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                    {/* 小标题 */}
+                    <div className="text-xs font-medium pr-8" style={{ color: "rgba(0,0,0,0.8)" }}>
+                      添加备用模型
+                    </div>
                     {/* 模型选择（级联：厂商 > 版本） */}
                     <div className="relative w-full">
                       <button
@@ -1614,23 +1648,12 @@ export default function OpenClawDetailGuide() {
                           {/* 操作按钮（底部均分） */}
                           <div className="flex items-center gap-2">
                             <Button
+                              variant="claw-outline"
                               size="sm"
-                              className="flex-1"
+                              className="w-full"
                               onClick={() => { handleApplyModel(); setShowAddBackupModel(false); }}
                             >
                               添加
-                            </Button>
-                            <Button
-                              variant="claw-outline"
-                              size="sm"
-                              className="flex-1"
-                              onClick={() => {
-                                setBackupCascadeOpen(false);
-                                setBackupHoveredProvider(null);
-                                setShowAddBackupModel(false);
-                              }}
-                            >
-                              取消
                             </Button>
                           </div>
                         </div>
@@ -1713,7 +1736,22 @@ export default function OpenClawDetailGuide() {
 
                         {/* 点击「添加通道」后，配置卡出现在小标题下方 */}
                         {showChannelConfig && (
-                          <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                          <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setChannelFields({});
+                                setShowChannelConfig(false);
+                              }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-[4px] flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors z-10"
+                              aria-label="取消"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                            {/* 小标题 */}
+                            <div className="text-xs font-medium pr-8" style={{ color: "rgba(0,0,0,0.8)" }}>
+                              添加接入通道
+                            </div>
                             {/* 通道选择下拉 */}
                             <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); }}>
                               <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
@@ -1757,25 +1795,15 @@ export default function OpenClawDetailGuide() {
                               </div>
                             )}
 
-                            {/* 前往授权 + 取消 按钮 */}
+                            {/* 前往授权 按钮 */}
                             <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => { handleApplyChannel(); setShowChannelConfig(false); }}
-                              >
-                                前往授权
-                              </Button>
                               <Button
                                 variant="claw-outline"
                                 size="sm"
-                                className="flex-1"
-                                onClick={() => {
-                                  setChannelFields({});
-                                  setShowChannelConfig(false);
-                                }}
+                                className="w-full"
+                                onClick={() => { handleApplyChannel(); setShowChannelConfig(false); }}
                               >
-                                取消
+                                前往授权
                               </Button>
                             </div>
                           </div>
@@ -1872,21 +1900,20 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
-                    {/* 安装技能按钮 */}
-                    <Button
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setSkillModalOpen(true)}
-                    >
-                      安装技能
-                    </Button>
-
                     {/* 已安装技能列表 */}
-                    <div className="flex flex-col gap-3 mt-1">
+                    <div className="flex flex-col gap-3 mt-1 pt-2">
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                           已安装技能（{installedSkills.filter((s) => skillSearch ? s.name.includes(skillSearch) : true).length}）
                         </div>
+                        <button
+                          className="inline-flex items-center gap-1 text-xs hover:opacity-80"
+                          style={{ color: "#1447E6" }}
+                          onClick={() => setSkillModalOpen(true)}
+                        >
+                          <Plus className="w-3 h-3" />
+                          安装技能
+                        </button>
                       </div>
                       {/* Skill 搜索输入框 */}
                       <div className="relative">

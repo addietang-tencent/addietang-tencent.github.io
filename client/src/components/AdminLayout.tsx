@@ -74,12 +74,20 @@ function isActiveRoute(location: string, href: string) {
   return location === href || location.startsWith(`${href}/`);
 }
 
+const ADMIN_ROUTE_ALIASES: Record<string, string[]> = {
+  "/admin/agent-types": ["/admin/image-management"],
+};
+
+function isNavItemActive(location: string, item: Pick<AdminNavItem, "href">) {
+  return isActiveRoute(location, item.href) || (ADMIN_ROUTE_ALIASES[item.href] ?? []).some((href) => isActiveRoute(location, href));
+}
+
 /** 渲染单个菜单项（含图标、文字、徽章）
  *  isSubItem=true 时：左边距加深 + 不显示自身图标（与 main 行为一致）
  *  collapsed=true 时：只显示图标居中，hover 出 Tooltip
  */
 function renderNavItem(item: AdminNavItem, location: string, isSubItem = false, collapsed = false) {
-  const isActive = isActiveRoute(location, item.href);
+  const isActive = isNavItemActive(location, item);
 
   let badgeNode: ReactNode = null;
   if (item.badge && !collapsed) {
@@ -151,15 +159,16 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
 
   // 收起态：图标 + hover 弹出浮层子菜单
   if (collapsed) {
-    const hasActive = subGroup.items.some((item) => isActiveRoute(location, item.href));
+    // 收起态只展示父级分组图标：任一子项命中时，高亮「Agent 启动配置」本身。
+    const hasActiveChild = subGroup.items.some((item) => isNavItemActive(location, item));
 
     return (
       <AdminSidebarMenuItem>
         <HoverCard openDelay={120} closeDelay={200}>
           <HoverCardTrigger asChild>
             <AdminSidebarMenuButton
-              isActive={hasActive}
-              className="justify-center px-0 cursor-pointer"
+              isActive={hasActiveChild}
+              className={`justify-center px-0 cursor-pointer ${hasActiveChild ? "admin-sidebar-collapsed-subgroup-active" : ""}`}
             >
               {subGroup.iconSrc ? (
                 <img src={subGroup.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
@@ -179,7 +188,7 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
             </p>
             <ul className="flex flex-col gap-0.5">
               {subGroup.items.map((item) => {
-                const active = isActiveRoute(location, item.href);
+                const active = isNavItemActive(location, item);
                 return (
                   <li key={item.href}>
                     <Link
@@ -206,6 +215,7 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
     <>
       <AdminSidebarMenuItem>
         <AdminSidebarMenuButton
+          isActive={false}
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label={`${open ? "收起" : "展开"}${subGroup.label}`}

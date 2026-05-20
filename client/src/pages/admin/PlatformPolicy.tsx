@@ -1534,6 +1534,14 @@ export default function PlatformPolicy() {
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
           <TogglePolicyCard
+            icon={<ArrowUpCircle className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            title="允许员工自助更新 Agent 版本"
+            description="开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本。关闭后，所有更新动作只能由管理员推送或批量发起"
+            rules={selfUpgradeRules}
+            onRulesChange={handleSelfUpgradeRulesChange}
+          />
+          <TogglePolicyCard
             icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0" />}
             iconBg=""
             title="允许用户访问 Agent 面板"

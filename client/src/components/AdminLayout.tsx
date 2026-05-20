@@ -1,150 +1,402 @@
-import type { ReactNode } from "react";
+/**
+ * AdminLayout - 管控端布局
+ * Design: 「流动蓝图」Fluid Blueprint
+ * - 浅灰色背景 (#F0F2F8)
+ * - 左侧固定导航栏 (256px)，白色背景，可缩进
+ * - 主色 #007AFF，导航分组
+ */
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LogOut, MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
-
-import AdminModeToggle from "@/components/AdminModeToggle";
-import AdminNoticeBar from "@/components/AdminNoticeBar";
+import { SITE_CONFIG } from "@/lib/mockData";
 import {
-  AdminSidebar,
-  AdminSidebarBadge,
-  AdminSidebarBrand,
-  AdminSidebarContent,
-  AdminSidebarFooter,
-  AdminSidebarFooterAction,
-  AdminSidebarGroup,
-  AdminSidebarGroupContent,
-  AdminSidebarGroupTrigger,
-  AdminSidebarHeader,
-  AdminSidebarHeaderAction,
-  AdminSidebarInset,
-  AdminSidebarLogo,
-  AdminSidebarMenu,
-  AdminSidebarMenuButton,
-  AdminSidebarMenuItem,
-  AdminSidebarProvider,
-  AdminSidebarUser,
-} from "@/components/ui/admin-sidebar";
+  Settings,
+  Users,
+  Brain,
+  MessageSquare,
+  FileText,
+  HardDrive,
+  ShieldCheck,
+  Code2,
+  Activity,
+  BarChart3,
+  ClipboardList,
+  ChevronDown,
+  ChevronRight,
+  LogOut,
+  Shield,
+  ExternalLink,
+  Puzzle,
+  Wrench,
+  Gauge,
+  ChevronLeft,
+  MemoryStick,
+  FolderOpen,
+  LayoutTemplate,
+  Layers,
+} from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import { toast } from "sonner";
+import AdminNoticeBar from "@/components/AdminNoticeBar";
+import AdminModeToggle from "@/components/AdminModeToggle";
 import { AdminModeProvider } from "@/contexts/AdminModeContext";
-import { ADMIN_NAV_GROUPS } from "@/config/adminNav";
 
-const CURRENT_ADMIN = {
-  name: "jingsujiang",
-  role: "管理员",
+// 标记为「即将开放」的菜单项路径（灰色选中态，标签文案「即将开放」）
+const COMING_SOON_PATHS = new Set([
+  "/admin/cloud-dev",
+]);
+
+// 标记为「功能上新」的菜单项路径（蓝色选中态，标签文案「功能上新」，橙色标签）
+const NEW_FEATURE_PATHS = new Set([
+  "/admin/ops-observation",
+  "/admin/security-management",
+  "/admin/session-management",
+  "/admin/skill-config",
+  "/admin/agent-tool-library",
+]);
+
+type NavItem = {
+  label: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 };
 
-function GoTenantIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
-      <path
-        d="M6.8326 9.8327H4.8326C2.9917 9.8327 1.49927 11.3251 1.49927 13.166V13.8327H6.8665M12.1939 14.1673L14.5007 11.8339L12.1939 9.5007M13.8326 11.834H8.8313M10.1659 4.8327C10.1659 6.4895 8.8228 7.8327 7.1659 7.8327C5.5091 7.8327 4.1659 6.4895 4.1659 4.8327C4.1659 3.1758 5.5091 1.8327 7.1659 1.8327C8.8228 1.8327 10.1659 3.1758 10.1659 4.8327Z"
-        stroke="currentColor"
-        strokeLinecap="square"
-      />
-    </svg>
-  );
-}
+type NavSubGroup = {
+  label: string;
+  defaultExpanded?: boolean;
+  items: NavItem[];
+};
 
-function isActiveRoute(location: string, href: string) {
-  return location === href || location.startsWith(`${href}/`);
-}
+type NavGroup = {
+  label: string;
+  items?: NavItem[];
+  subGroups?: NavSubGroup[];
+};
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "基础信息",
+    items: [
+      { label: "基础信息配置", path: "/admin/basic-info", icon: Settings },
+      { label: "平台策略", path: "/admin/platform-policy", icon: Shield },
+      { label: "用户管理", path: "/admin/members", icon: Users },
+    ],
+  },
+  {
+    label: "Agent 配置",
+    items: [
+      { label: "模型配置", path: "/admin/model-config", icon: Brain },
+      { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
+      { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
+      { label: "Agent 工具库", path: "/admin/agent-tool-library", icon: Wrench },
+    ],
+    subGroups: [
+      {
+        label: "Agent 启动配置",
+        defaultExpanded: true,
+        items: [
+          { label: "Agent 类型", path: "/admin/agent-types", icon: HardDrive, badge: "原镜像管理" },
+          { label: "资源管理", path: "/admin/agent-template", icon: LayoutTemplate },
+          { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
+        ],
+      },
+    ],
+  },
+  {
+    label: "运维与观测",
+    items: [
+      { label: "Agent 列表", path: "/admin/openclaw-monitor", icon: Activity },
+      { label: "Tokens 监控", path: "/admin/tokens-monitor", icon: BarChart3 },
+      { label: "运维观测", path: "/admin/ops-observation", icon: Gauge },
+    ],
+  },
+  {
+    label: "Agent 服务",
+    items: [
+      { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
+      { label: "网盘管理", path: "/admin/file-management", icon: FolderOpen },
+      { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },
+    ],
+  },
+  {
+    label: "安全审计",
+    items: [
+      { label: "AI Agent 安全", path: "/admin/security-management", icon: Shield },
+      { label: "会话管理", path: "/admin/session-management", icon: MessageSquare },
+      { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
+    ],
+  },
+];
+
+const CURRENT_ADMIN = "alice@acompany.com";
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  const toggleGroup = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
 
   return (
     <AdminModeProvider>
-      <AdminSidebarProvider>
-        <div className="flex min-h-screen admin-theme" style={{ background: "#FFFFFF" }}>
-          <AdminSidebar>
-            <AdminSidebarHeader>
-              <AdminSidebarBrand asChild>
-                <Link href="/" aria-label="返回首页">
-                  <AdminSidebarLogo className="shrink-0" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] group-hover:text-[#355EF1]">管控端</p>
-                    <p className="truncate text-xs font-normal leading-5 tracking-[0.015em] text-[var(--admin-sidebar-muted)] group-hover:text-[#355EF1]">ClawPro Admin</p>
+    <div className="flex min-h-screen" style={{ background: "#F0F2F8" }}>
+      {/* Sidebar */}
+      <aside className={`fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 flex flex-col z-40 transition-all duration-300 ${
+        sidebarCollapsed ? "w-20" : "w-64"
+      }`}
+        style={{ boxShadow: "1px 0 0 0 rgba(0,0,0,0.04)" }}>
+        {/* Logo */}
+        {!sidebarCollapsed && (
+          <>
+            <Link href="/">
+            <div className="px-5 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              <div className="h-16 flex items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                    🦞
                   </div>
-                </Link>
-              </AdminSidebarBrand>
-
-              <AdminSidebarHeaderAction asChild className="mt-2 size-auto w-full gap-2 rounded-[6px] px-2.5 py-1.5 text-[13px] font-normal">
-                <Link href="/my-openclaw">
-                  <GoTenantIcon />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 leading-tight">管控端</p>
+                    <p className="text-xs text-gray-400">Agent Enterprise</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </Link>
+              {/* 前往用户端 */}
+              <div className="px-5">
+              <Link href="/my-openclaw">
+                <div className="flex items-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all duration-150 cursor-pointer group">
+                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-blue-600" />
                   <span>前往用户端</span>
-                </Link>
-              </AdminSidebarHeaderAction>
-            </AdminSidebarHeader>
+                </div>
+              </Link>
+            </div>
+          </>
+        )}
 
-            <AdminSidebarContent aria-label="管理后台导航">
-              {ADMIN_NAV_GROUPS.map((group) => (
-                <AdminSidebarGroup key={group.label} defaultOpen>
-                  <AdminSidebarGroupTrigger>{group.label}</AdminSidebarGroupTrigger>
-                  <AdminSidebarGroupContent>
-                    <AdminSidebarMenu>
-                      {group.items.map((item) => {
-                        const isActive = isActiveRoute(location, item.href);
+        {/* Navigation */}
+        {!sidebarCollapsed && (
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
+          {NAV_GROUPS.map((group) => {
+            const isCollapsed = collapsedGroups.has(group.label);
 
-                        return (
-                          <AdminSidebarMenuItem key={item.href}>
-                            <AdminSidebarMenuButton asChild isActive={isActive}>
-                              <Link href={item.href}>
-                                {item.iconSrc ? (
-                                  <img src={item.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
-                                ) : (
-                                  <span className="size-4 shrink-0" aria-hidden="true" />
-                                )}
-                                <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                                {item.badge && <AdminSidebarBadge variant={item.badge} />}
-                              </Link>
-                            </AdminSidebarMenuButton>
-                          </AdminSidebarMenuItem>
-                        );
-                      })}
-                    </AdminSidebarMenu>
-                  </AdminSidebarGroupContent>
-                </AdminSidebarGroup>
-              ))}
-            </AdminSidebarContent>
-
-            <AdminSidebarFooter>
-              <AdminSidebarUser name={CURRENT_ADMIN.name} role={CURRENT_ADMIN.role} />
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <AdminSidebarFooterAction aria-label="更多管理操作">
-                    <MoreHorizontal />
-                  </AdminSidebarFooterAction>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="top" align="end" className="w-64">
-                  <DropdownMenuLabel className="text-xs text-gray-500">成员管理模式</DropdownMenuLabel>
-                  <div className="px-1 py-2" onClick={(event) => event.stopPropagation()}>
-                    <AdminModeToggle collapsed={false} />
+            // 渲染单个菜单项（复用逻辑）
+            const renderNavItem = (item: NavItem, isSubGroupItem = false) => {
+              const isActive = location === item.path || location.startsWith(item.path + "/");
+              const isComingSoon = COMING_SOON_PATHS.has(item.path);
+              const isNewFeature = NEW_FEATURE_PATHS.has(item.path);
+              const Icon = item.icon;
+              let bgClass = "";
+              let textClass = "";
+              let iconClass = "";
+              const borderColor = isComingSoon
+                ? (isActive ? "#D1D5DB" : "transparent")
+                : (isActive ? "#007AFF" : "transparent");
+              const borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: isSubGroupItem ? "calc(1.5rem - 2px)" : "calc(0.75rem - 2px)" };
+              if (isComingSoon) {
+                if (isActive) { bgClass = "bg-gray-100"; textClass = "text-gray-600"; iconClass = "text-gray-400"; }
+                else { bgClass = "hover:bg-gray-50"; textClass = "text-gray-600 hover:text-gray-900"; iconClass = "text-gray-400"; }
+              } else {
+                if (isActive) { bgClass = "bg-blue-50"; textClass = "text-blue-600"; iconClass = "text-blue-600"; }
+                else { bgClass = "hover:bg-gray-50"; textClass = "text-gray-600 hover:text-gray-900"; iconClass = "text-gray-400"; }
+              }
+              return (
+                <Link key={item.path} href={item.path}>
+                  <div
+                    className={`flex items-center justify-between gap-2.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
+                    style={borderStyle}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0 relative z-10 pr-2">
+                      {!isSubGroupItem && <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />}
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-gray-400 whitespace-nowrap flex-shrink-0" style={{ fontSize: '10px' }}>
+                          {item.badge}
+                        </span>
+                      )}
+                      {isComingSoon && (
+                        <span className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0" style={{ fontSize: '10px' }}>
+                          即将开放
+                        </span>
+                      )}
+                      {isNewFeature && (
+                        <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#007AFF', letterSpacing: '0.02em' }}>
+                          new
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => toast.info("已退出登录")} variant="destructive">
-                    <LogOut className="size-4" />
-                    退出登录
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </AdminSidebarFooter>
-          </AdminSidebar>
+                </Link>
+              );
+            };
 
-          <AdminSidebarInset>
-            <AdminNoticeBar />
-            <div className="px-9 py-8">{children}</div>
-          </AdminSidebarInset>
+            return (
+              <div key={group.label} className="mb-4">
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="w-full flex items-center justify-between px-2 py-1.5 mb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+                >
+                  <span>{group.label}</span>
+                  {isCollapsed ? (
+                    <ChevronRight className="w-3 h-3" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3" />
+                  )}
+                </button>
+                {!isCollapsed && (
+                  <div className="space-y-0.5">
+                    {/* 普通菜单项 */}
+                    {(group.items ?? []).map((item) => renderNavItem(item, false))}
+                    {/* 子分组 */}
+                    {(group.subGroups ?? []).map((subGroup) => {
+                      const subKey = `${group.label}__${subGroup.label}`;
+                      const isSubCollapsed = collapsedGroups.has(subKey);
+                      return (
+                        <div key={subKey} className="mt-0.5">
+                          {/* 子分组标题：与一级菜单项对齐，带图标 */}
+                          <button
+                            onClick={() => {
+                              setCollapsedGroups((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(subKey)) next.delete(subKey);
+                                else next.add(subKey);
+                                return next;
+                              });
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 mb-0.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                            style={{ borderLeft: '2px solid transparent', paddingLeft: 'calc(0.75rem - 2px)' }}
+                          >
+                            <Layers className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                            <span className="flex-1 text-left truncate">{subGroup.label}</span>
+                            {isSubCollapsed ? (
+                              <ChevronRight className="w-3 h-3 flex-shrink-0 text-gray-400" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 flex-shrink-0 text-gray-400" />
+                            )}
+                          </button>
+                          {!isSubCollapsed && (
+                            <div className="space-y-0.5 ml-3 border-l border-gray-100 pl-1">
+                              {subGroup.items.map((item) => renderNavItem(item, true))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+        )}
+        
+        {/* Collapsed Sidebar - Clickable Area */}
+        {sidebarCollapsed && (
+          <>
+            <div className="h-16 flex items-center justify-between border-b border-gray-100 px-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                onClick={() => setSidebarCollapsed(false)}
+                title="展开侧边栏">
+                🦞
+              </div>
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                title="展开侧边栏"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1" />
+          </>
+        )}
+
+        {/* Mode Toggle */}
+        <div className="border-t border-gray-100 pt-3">
+          <AdminModeToggle collapsed={sidebarCollapsed} />
         </div>
-      </AdminSidebarProvider>
+        {/* User Footer */}
+        {!sidebarCollapsed && (
+        <div className="border-t border-gray-100 p-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <Avatar className="w-7 h-7 flex-shrink-0">
+                  <AvatarFallback className="text-xs font-medium text-white"
+                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                    {CURRENT_ADMIN.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-medium text-gray-900 truncate">{CURRENT_ADMIN}</p>
+                  <p className="text-xs text-gray-400">管理员</p>
+                </div>
+                <Shield className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="start" className="w-52">
+              <DropdownMenuItem onClick={() => toast.info("已退出登录")} className="text-red-600">
+                <LogOut className="w-4 h-4 mr-2" />
+                退出登录
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        )}
+      </aside>
+
+      {/* Main Content */}
+      <main className={`flex-1 min-h-screen transition-all duration-300 ${
+        sidebarCollapsed ? "ml-20" : "ml-64"
+      }`}>
+        {/* Top Bar with Collapse Button */}
+        {sidebarCollapsed && (
+          <div className="h-16 bg-white border-b border-gray-100 flex items-center px-6 sticky top-0 z-30" style={{ boxShadow: "0 1px 0 0 rgba(0,0,0,0.04)" }}>
+            <div className="ml-auto">
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                title="展开侧边栏"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+        <AdminNoticeBar />
+        <div className={sidebarCollapsed ? "p-6 pt-0" : "p-6"}>
+          {children}
+        </div>
+      </main>
+      
+      {/* Collapse Button in Header when Sidebar is Expanded */}
+      {!sidebarCollapsed && (
+        <button
+          onClick={() => setSidebarCollapsed(true)}
+          className="fixed top-4 left-56 p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900 z-50"
+          title="收起侧边栏"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      )}
+    </div>
     </AdminModeProvider>
   );
 }

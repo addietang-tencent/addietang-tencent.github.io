@@ -47,7 +47,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
   Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
@@ -155,8 +154,6 @@ const MOCK_CLAWS: Claw[] = [
   { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
-  { id: "23", instanceId: "ins-d14y8szp", name: "这是一个名称非常非常长的智能助手用来测试超长文本截断效果", creator: "longname-user@very-long-domain-example.com", createTime: "2026-05-01 09:00:00", status: "running",     version: "2026.4.2",  agentType: "OpenClaw",    pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
-  { id: "24", instanceId: "ins-e25z9taq", name: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", createTime: "2026-05-02 10:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
 ];
 
 const PAGE_SIZE = 10;
@@ -181,23 +178,6 @@ const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
   "oneid-group": "自定义分组",
   manual: "自定义分组",
 };
-
-/** 获取某 agent creator 的所有部门路径（OneID 模式，主部门排首位） */
-function getCreatorDeptPaths(creator: string): Array<{ path: string; isPrimary: boolean }> {
-  const user = MOCK_USERS.find((u) => u.userId === creator);
-  if (!user) return [];
-  const deptGroupIds = user.groupIds.filter((gid) => {
-    const g = MOCK_GROUPS.find((g) => g.id === gid);
-    return g?.source === "oneid-dept";
-  });
-  if (deptGroupIds.length === 0) return [];
-  return deptGroupIds
-    .map((gid) => ({
-      path: getGroupPath(gid, MOCK_GROUPS),
-      isPrimary: gid === user.primaryGroupId,
-    }))
-    .sort((a, b) => (a.isPrimary ? -1 : b.isPrimary ? 1 : 0));
-}
 
 /** 获取某 agent creator 对应的分组信息（OneID 模式，只返回一个） */
 function getCreatorGroupItemOneid(creator: string): { id: string; path: string; kind: "oneid-dept" | "oneid-group" } | null {
@@ -258,7 +238,7 @@ function GroupTreeNodeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
           isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -366,13 +346,13 @@ function InstanceGroupFilter({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索分组"
-              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
         </div>
         <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
           {/* 全部分组 */}
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
@@ -397,7 +377,7 @@ function InstanceGroupFilter({
             </div>
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs text-gray-500 truncate">
             {selectedGroup ? getGroupPath(selectedGroup.id, groups) : "全部分组"}
           </div>
@@ -405,7 +385,7 @@ function InstanceGroupFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              onClick={handleConfirm}>确认</Button>
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -427,7 +407,7 @@ function InstanceDepartmentTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
           isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
@@ -502,7 +482,7 @@ function InstanceDepartmentFilter({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
@@ -513,7 +493,7 @@ function InstanceDepartmentFilter({
               selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-blue-600 font-medium truncate">全部部门</span>
@@ -534,7 +514,7 @@ function InstanceDepartmentFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              onClick={handleConfirm}>确认</Button>
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -571,7 +551,7 @@ function DepartmentColumnFilter({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setTempValue(node.id)}
         >
@@ -596,19 +576,19 @@ function DepartmentColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索部门"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
           <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
           {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
         </div>
         {departments.map((d) => renderNode(d, 0))}
       </div>
-      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -656,11 +636,11 @@ function GroupColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索分组"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
           <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
           {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
         </div>
@@ -682,9 +662,9 @@ function GroupColumnFilter({
           </div>
         ))}
       </div>
-      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
+      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
         <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
+        <Button size="sm" className="text-xs h-7 px-3" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -781,7 +761,6 @@ export default function AgentMonitor() {
 
   // 命令下发弹窗（取代旧抽屉）
   // dispatchPresetIds = null 表示 Dialog 关闭；非 null（即使是空数组）表示打开。
-  // 通过工具栏「命令下发」按钮触发：勾选了实例则预填，否则为空，进入「先选命令再选实例」流程。
   const [dispatchPresetIds, setDispatchPresetIds] = useState<string[] | null>(null);
 
   // 配置默认标签
@@ -1170,31 +1149,29 @@ export default function AgentMonitor() {
     installedSkills: string[];
   }
 
-  /** 基于 clawId 稳定分布，模拟三种场景：hash%3 → 0=空 / 1=只主 / 2=主+备 */
+  /**
+   * 基于 clawId 稳定分布初始模型场景：
+   * - 多模型 Agent（OpenClaw）：hash%3 → 0=空 / 1=只主 / 2=主+备
+   * - 单模型 Agent（Hermes / LightclawACE）：hash%2 → 0=空 / 1=单条
+   */
   const hashClawId = (s: string): number => {
     let h = 0;
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
     return Math.abs(h);
   };
 
-  const buildDefaultClawDetail = (clawId: string): ClawDetail => {
-    const scenario = hashClawId(clawId) % 3;
+  /** 是否单模型模式（Hermes / LightclawACE 不区分主/备） */
+  const isSingleModelAgentType = (agentType: Claw["agentType"]): boolean =>
+    agentType !== "OpenClaw";
+
+  const buildDefaultClawDetail = (clawId: string, agentType: Claw["agentType"]): ClawDetail => {
     const baseTs = Date.now();
-    const appliedModels: AppliedModelItem[] =
-      scenario === 0
+    const isSingle = isSingleModelAgentType(agentType);
+    let appliedModels: AppliedModelItem[];
+    if (isSingle) {
+      // 单模型模式：0=空 / 1=单条（primary 字段固定 true，仅作内部标记，不参与 UI 区分）
+      appliedModels = hashClawId(clawId) % 2 === 0
         ? []
-        : scenario === 1
-        ? [
-            {
-              id: 1,
-              modelConfigId: "1",
-              providerLabel: "腾讯云 DeepSeek",
-              versionLabel: "DeepSeek V3 0324",
-              isCustom: false,
-              primary: true,
-              addedAt: baseTs,
-            },
-          ]
         : [
             {
               id: 1,
@@ -1205,16 +1182,46 @@ export default function AgentMonitor() {
               primary: true,
               addedAt: baseTs,
             },
-            {
-              id: 2,
-              modelConfigId: "2",
-              providerLabel: "腾讯混元",
-              versionLabel: "Hunyuan Turbo",
-              isCustom: false,
-              primary: false,
-              addedAt: baseTs - 60_000,
-            },
           ];
+    } else {
+      // 多模型模式：0=空 / 1=只主 / 2=主+备
+      const scenario = hashClawId(clawId) % 3;
+      appliedModels =
+        scenario === 0
+          ? []
+          : scenario === 1
+          ? [
+              {
+                id: 1,
+                modelConfigId: "1",
+                providerLabel: "腾讯云 DeepSeek",
+                versionLabel: "DeepSeek V3 0324",
+                isCustom: false,
+                primary: true,
+                addedAt: baseTs,
+              },
+            ]
+          : [
+              {
+                id: 1,
+                modelConfigId: "1",
+                providerLabel: "腾讯云 DeepSeek",
+                versionLabel: "DeepSeek V3 0324",
+                isCustom: false,
+                primary: true,
+                addedAt: baseTs,
+              },
+              {
+                id: 2,
+                modelConfigId: "2",
+                providerLabel: "腾讯混元",
+                versionLabel: "Hunyuan Turbo",
+                isCustom: false,
+                primary: false,
+                addedAt: baseTs - 60_000,
+              },
+            ];
+    }
     return {
       appliedModels,
       connectedChannels: [
@@ -1229,19 +1236,19 @@ export default function AgentMonitor() {
 
   const [clawDetailMap, setClawDetailMap] = useState<Record<string, ClawDetail>>({});
 
-  /** 读取某个 claw 的详情（不存在则按 clawId hash 生成默认快照，不写入 map 以避免 render 期间 setState） */
-  const getClawDetail = (clawId: string): ClawDetail => {
-    return clawDetailMap[clawId] ?? buildDefaultClawDetail(clawId);
+  /** 读取某个 claw 的详情（不存在则按 clawId+agentType 生成默认快照，不写入 map 以避免 render 期间 setState） */
+  const getClawDetail = (claw: Claw): ClawDetail => {
+    return clawDetailMap[claw.id] ?? buildDefaultClawDetail(claw.id, claw.agentType);
   };
 
   /** 用 updater 形式更新某个 claw 的详情，缺失时基于默认值初始化 */
   const updateClawDetail = (
-    clawId: string,
+    claw: Claw,
     updater: (prev: ClawDetail) => ClawDetail,
   ) => {
     setClawDetailMap(prev => {
-      const current = prev[clawId] ?? buildDefaultClawDetail(clawId);
-      return { ...prev, [clawId]: updater(current) };
+      const current = prev[claw.id] ?? buildDefaultClawDetail(claw.id, claw.agentType);
+      return { ...prev, [claw.id]: updater(current) };
     });
   };
 
@@ -1390,7 +1397,7 @@ export default function AgentMonitor() {
     }
     const fields = toAppliedModelFields(group, model);
     const action = modelAction;
-    const current = getClawDetail(selectedClaw.id);
+    const current = getClawDetail(selectedClaw);
     const list = current.appliedModels;
     // 重复校验：同一条模型配置不可重复添加（替换时允许命中自己）
     const dupe = list.find(m => m.modelConfigId === fields.modelConfigId
@@ -1400,13 +1407,15 @@ export default function AgentMonitor() {
       return;
     }
     const hadPrimaryBefore = list.some(m => m.primary);
-    updateClawDetail(selectedClaw.id, prev => {
+    const isSingle = isSingleModelAgentType(selectedClaw.agentType);
+    updateClawDetail(selectedClaw, prev => {
       if (action.kind === "add") {
         const hasPrimary = prev.appliedModels.some(m => m.primary);
         const newEntry: AppliedModelItem = {
           id: nextModelEntryId(prev.appliedModels),
           ...fields,
-          // 无主模型时新加的直接成为主模型；否则作为备选
+          // 多模型：无主模型时新加的直接成为主模型；否则作为备选
+          // 单模型：列表为空时仍标 primary=true（仅作内部标记，不参与 UI 区分）；之后追加的标 false
           primary: !hasPrimary,
           addedAt: Date.now(),
         };
@@ -1422,9 +1431,13 @@ export default function AgentMonitor() {
       }
       return prev;
     });
-    const _isOpenClawSave = selectedClaw?.agentType === 'OpenClaw';
     if (action.kind === "add") {
-      toast.success(hadPrimaryBefore ? "备选模型已添加" : (_isOpenClawSave ? "已设为主模型" : "模型已添加成功"));
+      // 单模型统一为"模型已添加"；多模型按主/备区分
+      if (isSingle) {
+        toast.success("模型已添加");
+      } else {
+        toast.success(hadPrimaryBefore ? "备选模型已添加" : "已设为主模型");
+      }
     } else {
       toast.success("模型已更新");
     }
@@ -1450,7 +1463,7 @@ export default function AgentMonitor() {
       setModelConfirmDialog(prev => ({ ...prev, open: false }));
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => {
+    updateClawDetail(selectedClaw, prev => {
       const list = prev.appliedModels;
       if (type === "set-primary") {
         return {
@@ -1474,10 +1487,12 @@ export default function AgentMonitor() {
     if (modelAction.kind === "replace" && modelAction.modelEntryId === modelEntryId) {
       setModelAction({ kind: "idle" });
     }
-    const _isOpenClaw = selectedClaw?.agentType === 'OpenClaw';
     if (type === "set-primary") toast.success("已设为主模型");
-    else if (type === "delete-backup") toast.success("备选模型已删除");
-    else toast.success(_isOpenClaw ? "主模型已删除，已自动升级备选模型" : "模型删除成功");
+    else if (type === "delete-backup") {
+      // 单模型模式 / 多模型备选 都走 delete-backup，文案区分
+      toast.success(isSingleModelAgentType(selectedClaw.agentType) ? "模型已删除" : "备选模型已删除");
+    }
+    else toast.success("主模型已删除，已自动升级备选模型");
   };
 
   // ── 通道编辑态 ───────────────────────────────────────────────────────────
@@ -1606,7 +1621,7 @@ export default function AgentMonitor() {
       toast.error("请选择要添加的通道");
       return;
     }
-    const detail = getClawDetail(selectedClaw.id);
+    const detail = getClawDetail(selectedClaw);
     if (detail.connectedChannels.some(c => c.name === ch.label)) {
       toast.error(`「${ch.label}」已添加，请勿重复`);
       return;
@@ -1618,7 +1633,7 @@ export default function AgentMonitor() {
       toast.error(`请填写「${missing.label}」`);
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: [
         ...prev.connectedChannels,
@@ -1639,7 +1654,7 @@ export default function AgentMonitor() {
   const confirmRemoveChannel = () => {
     if (!selectedClaw || !channelRemoveTarget) return;
     const targetName = channelRemoveTarget;
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: prev.connectedChannels.filter(c => c.name !== targetName),
     }));
@@ -1682,7 +1697,7 @@ export default function AgentMonitor() {
       toast.error(`请填写「${missing.label}」`);
       return;
     }
-    updateClawDetail(selectedClaw.id, prev => ({
+    updateClawDetail(selectedClaw, prev => ({
       ...prev,
       connectedChannels: prev.connectedChannels.map(c =>
         c.name === channel.name ? { ...c, fieldValues: { ...channelEditDraft } } : c,
@@ -1735,78 +1750,97 @@ export default function AgentMonitor() {
             <p className="text-sm text-gray-500 mt-1">查看和管理所有企业用户创建的 Agent 云服务器。</p>
           </div>
           <div className="flex items-center gap-2">
-            <DatePicker
+            <input
+              type="date"
               value={dateFrom}
-              onChange={(v) => { setDateFrom(v); setPage(1); }}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <DatePicker
+            <input
+              type="date"
               value={dateTo}
-              onChange={(v) => { setDateTo(v); setPage(1); }}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             {(dateFrom || dateTo) && (
               <button
                 onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-500 hover:border-blue-300 transition-colors whitespace-nowrap"
+                className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-500 hover:border-blue-300 transition-colors whitespace-nowrap"
               >
                 清除筛选
               </button>
             )}
-            <Button
-              variant="claw-outline"
-              size="icon"
+            <button
               onClick={handleRefresh}
               disabled={refreshing}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 shrink-0"
               title="刷新列表"
-              className="w-9 h-9"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* 状态统计卡片 */}
-        <div className="grid grid-cols-4 gap-5 mb-6">
+        <div className="grid grid-cols-4 gap-4 mb-6">
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "all" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
+              activeCardFilter === "all"
+                ? "border-blue-300 ring-1 ring-blue-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="flex items-center gap-1">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4375 2.1377C9.21415 2.1377 9.84375 2.76729 9.84375 3.54395V5.15625H14.4385C15.2151 5.15631 15.8447 5.78589 15.8447 6.5625V9.67383H16.5371C17.0031 9.67383 17.3809 10.0516 17.3809 10.5176C17.3807 10.9835 17.003 11.3613 16.5371 11.3613H15.8447V14.4375C15.8447 15.2141 15.2151 15.8437 14.4385 15.8438H3.55957C2.78303 15.8436 2.15332 15.2141 2.15332 14.4375V11.3613H1.46289C0.996982 11.3613 0.619273 10.9835 0.619141 10.5176C0.619141 10.0516 0.9969 9.67383 1.46289 9.67383H2.15332V6.5625C2.15332 5.78593 2.78303 5.15638 3.55957 5.15625H8.15625V3.8252H6.04688C5.58097 3.8252 5.20326 3.44732 5.20312 2.98145C5.20312 2.51546 5.58088 2.1377 6.04688 2.1377H8.4375ZM3.84082 14.1562H14.1572V6.84375H3.84082V14.1562ZM6.75 8.87109C7.21599 8.87109 7.59375 9.24885 7.59375 9.71484V11.29C7.59338 11.7557 7.21576 12.1338 6.75 12.1338C6.28424 12.1338 5.90662 11.7557 5.90625 11.29V9.71484C5.90625 9.24885 6.28401 8.87109 6.75 8.87109ZM11.25 8.87109C11.716 8.87109 12.0938 9.24885 12.0938 9.71484V11.29C12.0934 11.7557 11.7158 12.1338 11.25 12.1338C10.7842 12.1338 10.4066 11.7557 10.4062 11.29V9.71484C10.4062 9.24885 10.784 8.87109 11.25 8.87109Z" fill="url(#icon_total)"/><defs><linearGradient id="icon_total" x1="16" y1="16" x2="14" y2="10" gradientUnits="userSpaceOnUse"><stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/></linearGradient></defs></svg>
-              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">总数</span>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <Layers className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">总数</p>
             </div>
-            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{totalCount}</p>
+            <p className="text-xl font-bold text-gray-900">{totalCount}</p>
           </button>
 
           {/* 运行中 */}
           <button
             onClick={() => handleCardFilterChange("running")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "running" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
+              activeCardFilter === "running"
+                ? "border-green-300 ring-1 ring-green-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="flex items-center gap-1">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.2998 1.6875C16.1697 1.6875 16.875 2.44302 16.875 3.375V11.8125C16.875 12.7445 16.1697 13.5 15.2998 13.5H9.84375V14.9062H12C12.466 14.9062 12.8438 15.284 12.8438 15.75C12.8438 16.216 12.466 16.5938 12 16.5938H6C5.53401 16.5938 5.15625 16.216 5.15625 15.75C5.15625 15.284 5.53401 14.9062 6 14.9062H8.15625V13.5H2.7002L2.53906 13.4912C1.74482 13.4048 1.125 12.6863 1.125 11.8125V3.375C1.125 2.50124 1.74482 1.78266 2.53906 1.69629L2.7002 1.6875H15.2998ZM2.8125 11.8125H15.1875V3.375H2.8125V11.8125ZM10.6533 5.40332C10.9828 5.07382 11.5172 5.07384 11.8467 5.40332C12.1762 5.73283 12.1762 6.26717 11.8467 6.59668L8.84668 9.59668C8.51717 9.92615 7.98282 9.92617 7.65332 9.59668L6.15332 8.09668C5.82385 7.76718 5.82386 7.23282 6.15332 6.90332C6.48282 6.57382 7.01717 6.57384 7.34668 6.90332L8.25 7.80664L10.6533 5.40332Z" fill="url(#icon_running)"/><defs><radialGradient id="icon_running" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.44798 9.14064) scale(13.427 563.02)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
-              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">运行中</span>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">运行中</p>
             </div>
-            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{runningCount}</p>
+            <p className="text-xl font-bold text-gray-900">{runningCount}</p>
           </button>
 
           {/* 已关机 */}
           <button
             onClick={() => handleCardFilterChange("shutdown")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "shutdown" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+            className={`bg-white rounded-2xl border p-4 transition-all text-left ${
+              activeCardFilter === "shutdown"
+                ? "border-gray-400 ring-1 ring-gray-200"
+                : "border-gray-100 hover:border-gray-200"
             }`}
+            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
           >
-            <div className="flex items-center gap-1">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.65345 2.38477C1.98295 2.05531 2.51732 2.05529 2.84681 2.38477L13.0011 12.5391L13.0021 12.5361L14.1974 13.7314L14.1964 13.7344L16.3468 15.8848C16.6762 16.2143 16.6762 16.7486 16.3468 17.0781C16.0173 17.4075 15.4829 17.4075 15.1534 17.0781L12.9142 14.8389C11.7646 15.6096 10.4045 16.0312 9.00013 16.0312C7.13536 16.0312 5.34705 15.2903 4.02845 13.9717C2.70984 12.6531 1.96888 10.8648 1.96888 9C1.96888 7.57678 2.40035 6.24293 3.19349 5.11816L1.65345 3.57812C1.32399 3.24865 1.32404 2.71427 1.65345 2.38477ZM4.41321 6.33789C3.92181 7.13042 3.65638 8.03988 3.65638 9C3.65638 10.4172 4.21967 11.7762 5.22181 12.7783C6.22394 13.7804 7.58291 14.3437 9.00013 14.3438C9.95388 14.3437 10.8806 14.0875 11.6906 13.6152L4.41321 6.33789ZM12.2081 3.12988C12.4228 3.08177 12.6487 3.11904 12.8361 3.23438C14.8672 4.55486 16.0314 6.65803 16.0314 9C16.0314 10.1751 15.7346 11.3183 15.1867 12.334L13.923 11.0703C14.1967 10.4209 14.3439 9.71855 14.3439 9C14.3439 7.24222 13.4582 5.65082 11.9142 4.64746C11.7332 4.52263 11.6082 4.33191 11.5656 4.11621C11.523 3.90039 11.5665 3.67649 11.6867 3.49219C11.8067 3.30809 11.9937 3.17812 12.2081 3.12988ZM9.00013 0.84375C9.22386 0.843782 9.4386 0.932622 9.59681 1.09082C9.755 1.24905 9.84388 1.46375 9.84388 1.6875V5.625C9.84388 5.84875 9.755 6.06345 9.59681 6.22168C9.4386 6.37988 9.22386 6.46872 9.00013 6.46875C8.77639 6.46874 8.56167 6.37987 8.40345 6.22168C8.24522 6.06345 8.15638 5.84877 8.15638 5.625V1.6875C8.15638 1.46373 8.24522 1.24905 8.40345 1.09082C8.56167 0.93263 8.77639 0.843756 9.00013 0.84375Z" fill="url(#icon_shutdown)"/><defs><radialGradient id="icon_shutdown" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64638 9.08447) scale(12.9475 622.515)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
-              <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">已关机</span>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
+                <PowerOff className="w-3.5 h-3.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-400">已关机</p>
             </div>
-            <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{shutdownCount}</p>
+            <p className="text-xl font-bold text-gray-900">{shutdownCount}</p>
           </button>
 
           {/* 其他 */}
@@ -1814,18 +1848,23 @@ export default function AgentMonitor() {
             <TooltipTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
-                className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-                  activeCardFilter === "other" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+                className={`bg-white rounded-2xl border p-4 transition-all text-left ${
+                  activeCardFilter === "other"
+                    ? "border-orange-300 ring-1 ring-orange-200"
+                    : "border-gray-100 hover:border-gray-200"
                 }`}
+                style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
               >
-                <div className="flex items-center gap-1">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.59375 5.90625C7.59375 5.68375 7.65973 5.46624 7.78335 5.28123C7.90697 5.09623 8.08267 4.95203 8.28823 4.86689C8.4938 4.78174 8.72 4.75946 8.93823 4.80287C9.15646 4.84627 9.35691 4.95342 9.51425 5.11076C9.67158 5.26809 9.77873 5.46854 9.82214 5.68677C9.86555 5.905 9.84327 6.1312 9.75812 6.33677C9.67297 6.54234 9.52878 6.71804 9.34377 6.84165C9.15876 6.96527 8.94126 7.03125 8.71875 7.03125C8.42038 7.03125 8.13424 6.91272 7.92326 6.70174C7.71228 6.49077 7.59375 6.20462 7.59375 5.90625ZM16.5938 9C16.5938 10.5019 16.1484 11.9701 15.314 13.2189C14.4796 14.4676 13.2936 15.441 11.906 16.0157C10.5184 16.5905 8.99158 16.7408 7.51854 16.4478C6.04549 16.1548 4.69242 15.4316 3.63041 14.3696C2.56841 13.3076 1.84517 11.9545 1.55217 10.4815C1.25916 9.00842 1.40954 7.48157 1.98429 6.094C2.55905 4.70642 3.53236 3.52044 4.78114 2.68603C6.02993 1.85162 7.4981 1.40625 9 1.40625C11.0133 1.40848 12.9435 2.20925 14.3671 3.63287C15.7907 5.0565 16.5915 6.9867 16.5938 9ZM14.9063 9C14.9063 7.83185 14.5599 6.68994 13.9109 5.71866C13.2619 4.74739 12.3395 3.99037 11.2602 3.54334C10.181 3.09631 8.99345 2.97934 7.84775 3.20724C6.70205 3.43513 5.64966 3.99765 4.82365 4.82365C3.99765 5.64965 3.43513 6.70205 3.20724 7.84775C2.97935 8.99345 3.09631 10.181 3.54334 11.2602C3.99037 12.3394 4.74739 13.2619 5.71867 13.9109C6.68994 14.5599 7.83186 14.9062 9 14.9062C10.5659 14.9046 12.0672 14.2818 13.1745 13.1745C14.2818 12.0672 14.9046 10.5659 14.9063 9ZM9.84375 11.5791V9.28125C9.84375 8.90829 9.6956 8.5506 9.43187 8.28688C9.16815 8.02316 8.81046 7.875 8.4375 7.875C8.23824 7.8747 8.04531 7.94494 7.89287 8.07326C7.74043 8.20158 7.63833 8.37972 7.60464 8.57611C7.57095 8.7725 7.60786 8.97447 7.70882 9.14626C7.80978 9.31805 7.96828 9.44857 8.15625 9.51469V11.8125C8.15625 12.1855 8.30441 12.5431 8.56813 12.8069C8.83186 13.0706 9.18954 13.2188 9.5625 13.2188C9.76176 13.219 9.9547 13.1488 10.1071 13.0205C10.2596 12.8922 10.3617 12.714 10.3954 12.5176C10.4291 12.3213 10.3921 12.1193 10.2912 11.9475C10.1902 11.7757 10.0317 11.6452 9.84375 11.5791Z" fill="url(#icon_other)"/><defs><radialGradient id="icon_other" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64626 9.00001) scale(12.9475 573.644)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
-                  <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">其他</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
+                    <HelpCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <p className="text-xs text-gray-400">其他</p>
                 </div>
-                <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{otherCount}</p>
+                <p className="text-xl font-bold text-gray-900">{otherCount}</p>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>
+            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-gray-100 shadow-lg" style={{ color: 'inherit' }}>
               <div className="space-y-2.5">
                 <div>
                   <p className="text-xs font-semibold text-orange-500 mb-1.5">⚠ 需关注</p>
@@ -1849,8 +1888,8 @@ export default function AgentMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-         >
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
 
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
@@ -1875,7 +1914,10 @@ export default function AgentMonitor() {
                   <Button
                     onClick={() => !batchDisabled && setShowBatchUpgradeDialog(true)}
                     disabled={batchDisabled}
-                    className="px-3 gap-1.5"
+                    style={!batchDisabled ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
+                    className={`text-white rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                      batchDisabled ? "bg-gray-300 cursor-not-allowed" : "btn-primary-glow"
+                    }`}
                   >
                     <CircleArrowUp className="w-3.5 h-3.5" />
                     批量更新
@@ -1906,7 +1948,7 @@ export default function AgentMonitor() {
                     }}
                     disabled={batchDeleteDisabled}
                     variant="outline"
-                    className={`rounded-xl text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
+                    className={`rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
                       batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
                     }`}
                   >
@@ -1922,16 +1964,12 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">请先选择实例</TooltipContent>
               )}
             </Tooltip>
-            {/* 命令下发：
-              * - 勾选实例时：变为主按钮，点击直接打开下发弹窗（预填实例 → 让用户挑命令）
-              * - 未勾选时：保持二级菜单，命令列表/执行记录跳转到独立页 /admin/agent-commands
-              */}
+            {/* 命令下发：勾选实例时为主按钮，未勾选时为下拉菜单 */}
             {selectedCount > 0 ? (
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
-                      // 仅取运行中的实例，过滤掉异常状态
                       const runningIds = selectedClaws
                         .filter((c) => c.status === "running")
                         .map((c) => c.instanceId);
@@ -1959,9 +1997,7 @@ export default function AgentMonitor() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  >
+                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
                     <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
@@ -2004,14 +2040,14 @@ export default function AgentMonitor() {
             )}
             <button
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
             >
               <Tag className="w-3.5 h-3.5" />
               配置默认标签
             </button>
             {/* 智能体迁移按鈕 */}
             <Link href="/admin/agent-migration">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 智能体迁移
               </button>
@@ -2040,7 +2076,7 @@ export default function AgentMonitor() {
                   </div>
                 </th>
                 <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -2067,7 +2103,7 @@ export default function AgentMonitor() {
                           style={{ pointerEvents: 'auto' }}
                         />
                         <div 
-                          className="fixed w-56 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 will-change-transform" 
+                          className="fixed w-56 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" 
                           style={{
                             top: `${filterPosition.top}px`,
                             left: `${filterPosition.left}px`,
@@ -2088,7 +2124,7 @@ export default function AgentMonitor() {
                               </label>
                             ))}
                           </div>
-                          <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
+                          <div className="border-t border-gray-100 p-2 flex gap-2">
                             <Button variant="outline" size="sm" onClick={handleStatusFilterReset} className="flex-1">
                               重置
                             </Button>
@@ -2101,9 +2137,9 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建人</th>
                 {hasOneid && (
-                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2122,7 +2158,7 @@ export default function AgentMonitor() {
                     </Popover>
                   </th>
                 )}
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '150px' }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2141,8 +2177,8 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
                   <Popover open={typeColFilterOpen} onOpenChange={(open) => {
                     setTypeColFilterOpen(open);
                     if (open) setTempTypeFilter(new Set(agentTypeFilter));
@@ -2171,14 +2207,14 @@ export default function AgentMonitor() {
                           </label>
                         ))}
                       </div>
-                      <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
+                      <div className="border-t border-gray-100 p-2 flex gap-2">
                         <Button variant="outline" size="sm" className="flex-1" onClick={() => {
                           setTempTypeFilter(new Set(ALL_AGENT_TYPES));
                           setAgentTypeFilter(new Set(ALL_AGENT_TYPES));
                           setPage(1);
                           setTypeColFilterOpen(false);
                         }}>重置</Button>
-                        <Button size="sm" className="flex-1" onClick={() => {
+                        <Button size="sm" className="flex-1" style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)', color: 'white' }} onClick={() => {
                           setAgentTypeFilter(new Set(tempTypeFilter));
                           setPage(1);
                           setTypeColFilterOpen(false);
@@ -2187,9 +2223,9 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
                   <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
@@ -2230,18 +2266,13 @@ export default function AgentMonitor() {
                         />
                       </td>
                       {/* 名称/ID */}
-                      <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                      <td className="pr-4 py-4" style={{ paddingLeft: '4px' }}>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <Bot className="w-3.5 h-3.5 text-white" />
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{claw.name}</div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs max-w-xs break-all">{claw.name}</TooltipContent>
-                            </Tooltip>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{claw.name}</div>
                             <button
                               onClick={() => handleOpenDrawer(claw)}
                               className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
@@ -2252,131 +2283,82 @@ export default function AgentMonitor() {
                         </div>
                       </td>
                       {/* 状态列 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
                           {statusConfig.label}
                         </span>
                       </td>
                       {/* 创建人 */}
-                      <td className="px-3 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="block truncate cursor-default">{claw.creator}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" align="start">
-                            <span className="text-xs">{claw.creator}</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-500">{claw.creator}</td>
                       {/* 部门 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-3 py-4">
-                          {(() => {
-                            const deptPaths = getCreatorDeptPaths(claw.creator);
-                            if (deptPaths.length === 0) return <span className="text-sm text-gray-300">—</span>;
-                            if (deptPaths.length === 1) {
-                              return (
-                                <span className="text-sm text-gray-600 truncate block max-w-[200px]" title={deptPaths[0].path}>
-                                  {deptPaths[0].path}
-                                </span>
-                              );
-                            }
-                            return (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
-                                    <span className="text-sm text-gray-600 truncate">{deptPaths[0].path}</span>
-                                    <span className="text-xs text-gray-400 tabular-nums shrink-0">+{deptPaths.length - 1}</span>
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
-                                  <div className="py-2">
-                                    {deptPaths.map((dp, idx) => (
-                                      <div key={idx} className="px-3 py-1.5 text-sm">
-                                        <span className="text-gray-200 mr-1">{idx + 1}.</span>
-                                        <span className="text-white">{dp.path}</span>
-                                        {dp.isPrimary && (
-                                          <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
-                                            主部门
-                                          </span>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </TooltipContent>
-                              </Tooltip>
-                            );
-                          })()}
+                        <td className="px-4 py-4 text-sm text-gray-600">
+                          {claw.department ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="block truncate max-w-[120px] cursor-default">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start">
+                                <span className="text-xs">{claw.department.replace(/\//g, " / ")}</span>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : <span className="text-gray-300">—</span>}
                         </td>
                       )}
                       {/* 分组 */}
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         {(() => {
                           if (hasOneid) {
                             const item = getCreatorGroupItemOneid(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
-                                      {item.path}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center gap-1.5 max-w-[200px] cursor-default">
+                                    <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                      item.kind === "oneid-dept"
+                                        ? "text-blue-600 bg-blue-50"
+                                        : "text-purple-600 bg-purple-50"
+                                    }`}>
+                                      {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
                                     </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm flex items-center gap-2">
-                                        <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                          item.kind === "oneid-dept"
-                                            ? "text-blue-400 bg-blue-500/20"
-                                            : "text-purple-400 bg-purple-500/20"
-                                        }`}>
-                                          {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
-                                        </span>
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                                    <span className="text-sm text-gray-700 truncate max-w-[120px]">{item.path}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           } else {
                             const item = getCreatorGroupItemManual(claw.creator);
                             if (!item) return <span className="text-sm text-gray-300">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
-                                      {item.path}
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm">
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-sm text-gray-700 truncate max-w-[160px] block cursor-default">{item.path}</span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                  <span className="text-xs">{item.path}</span>
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           }
                         })()}
                       </td>
                       {/* 创建时间 */}
-                      <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      <td className="px-4 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
                       {/* 智能体 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
                       </td>
                       {/* Agent 版本 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         <span className="text-xs font-mono text-gray-500">{claw.version}</span>
                       </td>
                       {/* 标签 */}
-                      <td className="px-3 py-4">
+                      <td className="px-4 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
                           <HoverCard openDelay={100} closeDelay={150}>
                             <HoverCardTrigger asChild>
@@ -2384,8 +2366,8 @@ export default function AgentMonitor() {
                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
                               </button>
                             </HoverCardTrigger>
-                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
-                              <div className="grid grid-cols-2 bg-gray-50 border-b border-[#e5e5e5] px-3 py-2">
+                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-lg overflow-hidden">
+                              <div className="grid grid-cols-2 bg-gray-50 border-b border-gray-100 px-3 py-2">
                                 <span className="text-xs font-semibold text-gray-600">标签键</span>
                                 <span className="text-xs font-semibold text-gray-600">标签値</span>
                               </div>
@@ -2414,7 +2396,7 @@ export default function AgentMonitor() {
                         )}
                       </td>
                       {/* 操作 */}
-                      <td className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                      <td className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                         <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
@@ -2537,7 +2519,7 @@ export default function AgentMonitor() {
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <button disabled={safePage === 1} onClick={() => setPage(safePage - 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 {(() => {
@@ -2557,15 +2539,15 @@ export default function AgentMonitor() {
                     ) : (
                       <button
                         key={p}
-                        className={`h-7 w-7 rounded-xl text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
-                        style={p === safePage ? { background: "#355EF1" } : undefined}
+                        className={`h-7 w-7 rounded-md text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
+                        style={p === safePage ? { background: "#007AFF" } : undefined}
                         onClick={() => setPage(p as number)}
                       >{p}</button>
                     )
                   );
                 })()}
                 <button disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -2620,7 +2602,7 @@ export default function AgentMonitor() {
             <Button
               onClick={confirmReinstall}
               disabled={reinstallInput !== "重装"}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
             >
               确认重新安装
             </Button>
@@ -2655,7 +2637,7 @@ export default function AgentMonitor() {
             <Button
               onClick={confirmDelete}
               disabled={claws.find(c => c.id === deleteTarget)?.status === "running" && deleteInput !== "删除"}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
             >
               确认删除
             </Button>
@@ -2675,10 +2657,10 @@ export default function AgentMonitor() {
             <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
           </div>
           <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
+          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-xl">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
+                <tr className="border-b border-gray-100 bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent 版本</th>
@@ -2693,7 +2675,7 @@ export default function AgentMonitor() {
                     <tr key={c.id} className="hover:bg-gray-50/50">
                       <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                             <span className="text-white" style={{ fontSize: '10px' }}>C</span>
                           </div>
                           <div className="min-w-0">
@@ -2730,7 +2712,7 @@ export default function AgentMonitor() {
           </div>
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
-            <Button onClick={confirmBatchUpgrade}>
+            <Button onClick={confirmBatchUpgrade} className="bg-blue-500 hover:bg-blue-600 text-white">
               确认更新
             </Button>
           </DialogFooter>
@@ -2749,10 +2731,10 @@ export default function AgentMonitor() {
             <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
           </div>
           <p className="text-sm text-gray-600">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
+          <div className="max-h-64 overflow-y-auto border border-gray-100 rounded-xl">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
+                <tr className="border-b border-gray-100 bg-gray-50/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
                    <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">下发失败原因</th>
@@ -2763,7 +2745,7 @@ export default function AgentMonitor() {
                   <tr key={idx} className="hover:bg-gray-50/50">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
                           <span className="text-white" style={{ fontSize: '10px' }}>C</span>
                         </div>
                         <div className="min-w-0">
@@ -2784,7 +2766,7 @@ export default function AgentMonitor() {
             </table>
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button onClick={() => setShowUpgradeResultDialog(false)}>
+            <Button onClick={() => setShowUpgradeResultDialog(false)} className="bg-blue-500 hover:bg-blue-600 text-white">
               我知道了
             </Button>
           </DialogFooter>
@@ -2802,7 +2784,7 @@ export default function AgentMonitor() {
           </DialogHeader>
 
           {/* 提示语 */}
-          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-gray-600">
+          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-gray-600">
             <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-400" />
             <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
               <li>当前仅支持使用<a href="https://console.cloud.tencent.com/tag/taglist" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5" onClick={(e) => e.stopPropagation()}>腾讯云控制台</a>已创建的标签。</li>
@@ -2847,7 +2829,7 @@ export default function AgentMonitor() {
                     <TooltipTrigger asChild>
                       <PopoverTrigger asChild>
                         <button
-                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
                           onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
                         >
                           <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-gray-800' : 'text-gray-400'}`}>{addingKey || '选择标签键'}</span>
@@ -2863,7 +2845,7 @@ export default function AgentMonitor() {
                   </Tooltip>
                   <PopoverContent className="w-72 p-0" align="start" side="bottom">
                     {/* 搜索框 */}
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-[#e5e5e5]">
+                    <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
                       <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                       <input
                         autoFocus
@@ -2893,7 +2875,7 @@ export default function AgentMonitor() {
                         <div className="px-4 py-3 text-sm text-gray-400 text-center">无匹配结果</div>
                       )}
                     </div>
-                    <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-gray-400">共 {DEMO_TAG_KEYS.length} 条</div>
+                    <div className="px-3 py-1.5 border-t border-gray-100 text-xs text-gray-400">共 {DEMO_TAG_KEYS.length} 条</div>
                   </PopoverContent>
                 </Popover>
               </div>
@@ -2908,7 +2890,7 @@ export default function AgentMonitor() {
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
                           <button
-                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white hover:border-gray-300 transition-colors overflow-hidden"
                             onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
                           >
                             <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-gray-800' : 'text-gray-400'}`}>{addingValue || '选择标签値'}</span>
@@ -2939,7 +2921,7 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <div className="w-full px-3 py-2 text-sm border border-[#e5e5e5] rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed truncate">
+                  <div className="w-full px-3 py-2 text-sm border border-gray-100 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed truncate">
                     请先选择标签键
                   </div>
                 )}
@@ -2948,7 +2930,7 @@ export default function AgentMonitor() {
               {/* 添加按鈕 */}
               <button
                 disabled={!addingKey || !addingValue}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 onClick={() => {
                   if (!addingKey || !addingValue) return;
                   // 检查标签键是否已存在
@@ -2985,6 +2967,8 @@ export default function AgentMonitor() {
                     : '已清空默认标签配置'
                 );
               }}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              className="text-white"
             >
               确认
             </Button>
@@ -3001,7 +2985,7 @@ export default function AgentMonitor() {
           />
           <div className="w-[593px] bg-white shadow-lg flex flex-col">
             {/* 抽屉头 */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] bg-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
               <h2 className="text-lg font-semibold text-gray-900">Agent 详情</h2>
               <div className="flex items-center gap-2">
                 <Button
@@ -3047,25 +3031,25 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已应用模型 */}
                 {(() => {
-                  const detail = getClawDetail(selectedClaw.id);
+                  const detail = getClawDetail(selectedClaw);
                   const models = detail.appliedModels;
+                  const isSingle = isSingleModelAgentType(selectedClaw.agentType);
                   const hasPrimary = models.some(m => m.primary);
                   const primaryList = models.filter(m => m.primary);
                   const backupList = [...models.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt);
-                  // 是否为 OpenClaw 类型：OpenClaw 支持主模型 + 备选模型；其他类型只能配置一个模型
-                  const isOpenClaw = selectedClaw.agentType === 'OpenClaw';
-                  // 非 OpenClaw 且已有模型时不展示添加按鈕；OpenClaw 按现有逻辑
-                  const canAddMore = isOpenClaw || models.length === 0;
-                  const addButtonLabel = isOpenClaw
-                    ? (hasPrimary ? "添加备选模型" : "添加主模型")
-                    : "添加模型";
+                  // 单模型模式：按钮统一为"添加模型"，且已存在 1 条时隐藏；多模型模式按主/备状态自适应文案
+                  const addButtonLabel = isSingle
+                    ? "添加模型"
+                    : (hasPrimary ? "添加备选模型" : "设为主模型");
                   const isAdding = modelAction.kind === "add";
+                  // 单模型模式（Hermes / LightclawACE）最多 1 条：已有模型则隐藏添加按钮；多模型不限
+                  const showAddButton = !isAdding && !(isSingle && models.length >= 1);
 
                   /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
                   const renderInlineEditForm = () => (
                     <div className="space-y-3">
                       {providerGroups.length === 0 ? (
-                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
                           <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-amber-700 leading-relaxed">
                             当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
@@ -3112,7 +3096,8 @@ export default function AgentMonitor() {
                         </Button>
                         <Button
                           size="sm"
-                          className="h-8 px-3 text-xs"
+                          className="h-8 px-3 text-xs text-white"
+                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                           onClick={saveEditModel}
                           disabled={!modelDraftProvider || !modelDraftModelId}
                         >
@@ -3128,7 +3113,7 @@ export default function AgentMonitor() {
                     return (
                       <div
                         key={model.id}
-                        className={`px-4 py-3 bg-white rounded-xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
+                        className={`px-4 py-3 bg-white rounded-2xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
                       >
                         {isReplacingThis ? (
                           renderInlineEditForm()
@@ -3144,18 +3129,20 @@ export default function AgentMonitor() {
                                 </span>
                               )}
                             </div>
-                            {isOpenClaw && (isPrimary ? (
+                            {/* 单模型模式：不展示主/备徽标；多模型模式按主/备区分 */}
+                            {!isSingle && (isPrimary ? (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
                                 主模型
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
-                                备选模型
+                                备选
                               </span>
                             ))}
                             <div className="flex items-center gap-1 shrink-0">
-                              {isOpenClaw && !isPrimary && (
+                              {/* 设为主模型：仅多模型模式下的备选行展示 */}
+                              {!isSingle && !isPrimary && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <button
@@ -3171,7 +3158,6 @@ export default function AgentMonitor() {
                                   </TooltipContent>
                                 </Tooltip>
                               )}
-                              {!isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -3186,15 +3172,14 @@ export default function AgentMonitor() {
                                   替换
                                 </TooltipContent>
                               </Tooltip>
-                              )}
-                              {isOpenClaw && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
                                     type="button"
                                     onClick={() => setModelConfirmDialog({
                                       open: true,
-                                      type: isPrimary ? "delete" : "delete-backup",
+                                      // 单模型模式 / 多模型备选 → delete-backup（统一文案）；多模型主 → delete
+                                      type: (!isSingle && isPrimary) ? "delete" : "delete-backup",
                                       modelEntryId: model.id,
                                     })}
                                     className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
@@ -3206,7 +3191,6 @@ export default function AgentMonitor() {
                                   删除模型
                                 </TooltipContent>
                               </Tooltip>
-                              )}
                             </div>
                           </div>
                         )}
@@ -3217,8 +3201,10 @@ export default function AgentMonitor() {
                   return (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm text-gray-500">已应用模型（{models.length}）</div>
-                        {!isAdding && canAddMore && (
+                        <div className="text-sm text-gray-500">
+                          {isSingle ? "已应用模型" : `已应用模型（${models.length}）`}
+                        </div>
+                        {showAddButton && (
                           <button
                             onClick={startAddModel}
                             className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
@@ -3231,7 +3217,7 @@ export default function AgentMonitor() {
 
                       {/* 空态（无模型且不在新增态） */}
                       {models.length === 0 && !isAdding && (
-                        <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                        <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
                           暂未配置模型
                         </div>
                       )}
@@ -3254,7 +3240,7 @@ export default function AgentMonitor() {
 
                       {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
                       {isAdding && (
-                        <div className="mt-2 px-4 py-3 bg-white rounded-xl border border-blue-200">
+                        <div className="mt-2 px-4 py-3 bg-white rounded-2xl border border-blue-200">
                           {renderInlineEditForm()}
                         </div>
                       )}
@@ -3264,17 +3250,25 @@ export default function AgentMonitor() {
                 {/* 已接入通道 */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
-                    {/* 添加通道按钮已移除（本期需求不包含） */}
+                    <div className="text-sm text-gray-500">已接入通道（{getClawDetail(selectedClaw).connectedChannels.length}）</div>
+                    {!channelAdding && (
+                      <button
+                        onClick={() => startAddChannel(getClawDetail(selectedClaw))}
+                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                        添加通道
+                      </button>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {
+                    {getClawDetail(selectedClaw).connectedChannels.map((channel) => {
                       const chConfig = channelLookup.get(channel.value);
                       const fields = chConfig?.fields ?? [];
                       const isExpanded = expandedChannel === channel.name;
                       const isEditingThis = isExpanded && channelEditDraft !== null;
                       return (
-                        <div key={channel.name} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div key={channel.name} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                           {/* 行头：通道名 + 展开/折叠按钮 */}
                           <div className="group px-4 py-3 flex items-center gap-3">
                             <button
@@ -3296,9 +3290,9 @@ export default function AgentMonitor() {
 
                           {/* 展开区域：凭证查看 / 编辑 */}
                           {isExpanded && (
-                            <div className="border-t border-[#e5e5e5] px-4 py-3 bg-gray-50/50 space-y-2">
+                            <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50 space-y-2">
                               {fields.length === 0 ? (
-                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
                                   <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                                   <p className="text-xs text-blue-600 leading-relaxed">
                                     该通道无需凭证配置（由租户在用户端完成扫码授权）。
@@ -3363,7 +3357,8 @@ export default function AgentMonitor() {
                                         </Button>
                                         <Button
                                           size="sm"
-                                          className="h-8 px-3 text-xs"
+                                          className="h-8 px-3 text-xs text-white"
+                                          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                                           onClick={() => saveEditChannel(channel)}
                                         >
                                           保存
@@ -3383,19 +3378,19 @@ export default function AgentMonitor() {
                         </div>
                       );
                     })}
-                    {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
-                      <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
+                    {getClawDetail(selectedClaw).connectedChannels.length === 0 && !channelAdding && (
+                      <div className="px-4 py-6 bg-white rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-400">
                         暂未接入通道
                       </div>
                     )}
                     {/* 新增通道面板 */}
                     {channelAdding && (() => {
-                      const existing = new Set(getClawDetail(selectedClaw.id).connectedChannels.map(c => c.name));
+                      const existing = new Set(getClawDetail(selectedClaw).connectedChannels.map(c => c.name));
                       const available = availableChannelOptions.filter(c => !existing.has(c.label));
                       const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
                       const isWechatLike = currentCh?.wechatMode;
                       return (
-                        <div className="px-4 py-3 bg-white rounded-xl border border-gray-200 space-y-3">
+                        <div className="px-4 py-3 bg-white rounded-2xl border border-gray-200 space-y-3">
                           {/* 通道选择 */}
                           <div className="space-y-2">
                             <label className="text-xs font-medium text-gray-600">通道类型</label>
@@ -3419,7 +3414,7 @@ export default function AgentMonitor() {
 
                           {/* 无凭证字段的通道（微信）：提示框 */}
                           {currentCh && isWechatLike && (
-                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
                               <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
                               <p className="text-xs text-blue-600 leading-relaxed">
                                 微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
@@ -3465,7 +3460,8 @@ export default function AgentMonitor() {
                             </Button>
                             <Button
                               size="sm"
-                              className="h-8 px-3 text-xs"
+                              className="h-8 px-3 text-xs text-white"
+                              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
                               onClick={confirmAddChannel}
                               disabled={!channelDraft}
                             >
@@ -3479,10 +3475,10 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已安装技能 */}
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</div>
+                  <div className="text-sm text-gray-500 mb-2">已安装技能（{getClawDetail(selectedClaw).installedSkills.length}）</div>
                   <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
-                      <div key={skill} className="px-4 py-3 bg-white rounded-xl border border-gray-200 text-sm text-gray-800">
+                    {getClawDetail(selectedClaw).installedSkills.map((skill) => (
+                      <div key={skill} className="px-4 py-3 bg-white rounded-2xl border border-gray-200 text-sm text-gray-800">
                         {skill}
                       </div>
                     ))}
@@ -3506,7 +3502,7 @@ export default function AgentMonitor() {
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-red-500 hover:bg-red-600 text-white"
               onClick={confirmRemoveChannel}
             >
               确认移除
@@ -3516,47 +3512,54 @@ export default function AgentMonitor() {
       </AlertDialog>
 
       {/* 模型操作二次确认（设为主/删主/删备）—— 与用户端 OpenClawDetail 保持一致 */}
-      <Dialog
-        open={modelConfirmDialog.open}
-        onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-blue-600">
-              {modelConfirmDialog.type === "delete"
-                ? "确认删除主模型"
-                : modelConfirmDialog.type === "delete-backup"
-                ? "确认删除备选模型"
-                : "切换主模型"}
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 leading-relaxed pt-1">
-              {modelConfirmDialog.type === "delete"
-                ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
-                : modelConfirmDialog.type === "delete-backup"
-                ? "删除后将导致相关的 Gateway 服务重启，确认删除么"
-                : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
-            >
-              取消
-            </Button>
-            <Button
-              size="sm"
-              variant="default"
-              onClick={runModelConfirm}
-            >
-              {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
-                ? "确认删除"
-                : "确认设置"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {(() => {
+        // 单模型模式（Hermes / LightclawACE）下不区分主/备文案
+        const isSingle = !!selectedClaw && isSingleModelAgentType(selectedClaw.agentType);
+        const dialogTitle = modelConfirmDialog.type === "delete"
+          ? "确认删除主模型"
+          : modelConfirmDialog.type === "delete-backup"
+          ? (isSingle ? "确认删除模型" : "确认删除备选模型")
+          : "切换主模型";
+        const dialogDesc = modelConfirmDialog.type === "delete"
+          ? "删除后将自动切换备选模型作为主模型，切换过程中将导致相关的 Gateway 服务重启"
+          : modelConfirmDialog.type === "delete-backup"
+          ? (isSingle
+              ? "删除后该 Agent 将无法使用大模型，相关的 Gateway 服务将重启，确认删除么"
+              : "删除后将导致相关的 Gateway 服务重启，确认删除么")
+          : "将此模型设为主模型后，原主模型将降为备选模型。切换过程中会自动重启 Gateway 服务，是否继续？";
+        return (
+          <Dialog
+            open={modelConfirmDialog.open}
+            onOpenChange={(open) => !open && setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+          >
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-blue-600">{dialogTitle}</DialogTitle>
+                <DialogDescription className="text-gray-600 leading-relaxed pt-1">{dialogDesc}</DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
+                >
+                  取消
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={runModelConfirm}
+                >
+                  {modelConfirmDialog.type === "delete" || modelConfirmDialog.type === "delete-backup"
+                    ? "确认删除"
+                    : "确认设置"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
 
       {/* 监控抽屉 */}
       {showMonitorDrawer && selectedClaw && (
@@ -3566,7 +3569,7 @@ export default function AgentMonitor() {
             onClick={() => setShowMonitorDrawer(false)}
           />
           <div className="absolute right-0 top-0 bottom-0 w-[640px] bg-white shadow-lg overflow-y-auto">
-            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] bg-white">
+            <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
               <h2 className="text-lg font-semibold text-gray-900">{selectedClaw.name} - 监控</h2>
               <button
                 onClick={() => setShowMonitorDrawer(false)}
@@ -3587,10 +3590,11 @@ export default function AgentMonitor() {
                     { label: "总 Tokens",   value: "6,912", icon: Zap,         color: "from-blue-600 to-purple-600" },
                   ].map((stat) => (
                     <div key={stat.label}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+                      className="bg-white rounded-2xl border border-gray-100 p-4"
+                      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                           <stat.icon className="w-3.5 h-3.5 text-white" />
                         </div>
                         <p className="text-xs text-gray-400">{stat.label}</p>
@@ -3608,7 +3612,7 @@ export default function AgentMonitor() {
               </div>
 
               {/* 分隔线 */}
-              {clsEnabled && <div className="border-t border-[#e5e5e5]" />}
+              {clsEnabled && <div className="border-t border-gray-100" />}
 
               {/* 会话记录区 - 仅当 CLS 日志服务开启时显示 */}
               {clsEnabled && (
@@ -3620,10 +3624,11 @@ export default function AgentMonitor() {
                       { label: "平均轮次", value: "8.5", icon: RotateCw,     color: "from-cyan-500 to-cyan-600" },
                     ].map((stat) => (
                       <div key={stat.label}
-                        className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+                        className="bg-white rounded-2xl border border-gray-100 p-4"
+                        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                          <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                             <stat.icon className="w-3.5 h-3.5 text-white" />
                           </div>
                           <p className="text-xs text-gray-400">{stat.label}</p>
@@ -3634,7 +3639,8 @@ export default function AgentMonitor() {
                   </div>
 
                   {/* 会话摘要表格 */}
-                  <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+                    style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
                   >
                     <table className="w-full text-sm table-fixed">
                       <colgroup>
@@ -3652,13 +3658,13 @@ export default function AgentMonitor() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
                           <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">c3b2ac3c</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">Feishu Dm</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>
                           <td className="px-4 py-3 text-gray-500 text-xs">2026-03-09 17:49</td>
                         </tr>
-                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
                           <td className="px-4 py-3 text-gray-900 font-mono text-xs truncate">81c87c7b</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">QQ Dm</td>
                           <td className="px-4 py-3 text-gray-600 text-xs truncate">hunyuan-turbos-latest</td>
@@ -3697,17 +3703,13 @@ export default function AgentMonitor() {
         }
       `}</style>
 
-      {/* 命令下发弹窗（取代旧抽屉）：
-        * - 从工具栏「命令下发」主按钮触发，预填已选实例
-        * - 用户在弹窗内选择命令模板 → 选执行策略 → 提交
-        */}
+      {/* 命令下发弹窗 */}
       <DispatchCommandDialog
         open={dispatchPresetIds !== null}
         onOpenChange={(v) => !v && setDispatchPresetIds(null)}
         command={null}
         presetInstanceIds={dispatchPresetIds ?? undefined}
         onDispatched={() => {
-          // 下发成功后清空选中状态，便于用户继续操作
           setSelectedIds(new Set());
         }}
       />

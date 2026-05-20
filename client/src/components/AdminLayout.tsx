@@ -147,7 +147,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </Link>
               </AdminSidebarBrand>
 
-              <AdminSidebarHeaderAction asChild className="mt-2 size-auto w-full gap-2 rounded-[6px] px-2.5 py-1.5 text-[13px] font-normal">
+              <AdminSidebarHeaderAction asChild className="mt-2 size-auto w-full gap-2 rounded-[4px] px-2.5 py-1.5 text-[13px] font-normal">
                 <Link href="/my-openclaw">
                   <GoTenantIcon />
                   <span>前往用户端</span>

@@ -55,6 +55,7 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Megaphone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
@@ -67,9 +68,17 @@ import {
   loadBuiltinChannelVisibility,
   onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
+import { getActivePush, type ActivePush } from "@/lib/upgradePushStore";
 import ToolsMcpPanel from "./ToolsMcpPanel";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
+
+// ─── 当前实例 mock 数据（Guide 页演示用） ─────────────────────────────────
+// 真实业务接入时替换为 findClawById(id)，目前 Guide 版写死演示数据
+const MOCK_INSTANCE = {
+  agentType: "OpenClaw" as const, // 与 upgradePushStore 的 key 对齐
+  agentVersion: "2026.4.0",       // 当前实例版本（< 推送目标版本 2026.4.23 才会出现徽章）
+};
 
 // ─── 顶部 Tab 数据（横向 Segmented Control） ─────────────────────────────
 type DetailTab = "basic" | "tools" | "memory" | "files" | "doctor";
@@ -808,6 +817,43 @@ export default function OpenClawDetailGuide() {
   const [activeTab, setActiveTab] = useState<DetailTab>("basic");
   const [skillSearch] = useState("");
   const [skillModalOpen, setSkillModalOpen] = useState(false);
+
+  // ── 平台策略：是否允许员工自助更新（与管控端 PlatformPolicy 共享 key） ──
+  // 默认 true；管理员关闭后「一键更新」按钮置灰 + Tooltip 提示
+  const [allowSelfUpgrade, setAllowSelfUpgrade] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("admin_allow_self_upgrade");
+      return raw === null ? true : raw === "true";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const raw = localStorage.getItem("admin_allow_self_upgrade");
+        setAllowSelfUpgrade(raw === null ? true : raw === "true");
+      } catch { /* ignore */ }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+
+  // ── 管理员推送的「可更新」徽章（监听 upgrade-push-changed / storage 事件） ──
+  const [recommendPush, setRecommendPush] = useState<ActivePush | null>(
+    () => getActivePush(MOCK_INSTANCE.agentType),
+  );
+  useEffect(() => {
+    const refresh = () => setRecommendPush(getActivePush(MOCK_INSTANCE.agentType));
+    refresh();
+    window.addEventListener("upgrade-push-changed", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("upgrade-push-changed", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
   // ─── 已安装 / 待安装技能（动态状态机，对齐 main 分支） ───
   const [installedSkills, setInstalledSkills] = useState<{ name: string; version: string }[]>(
     MOCK_INSTALLED_SKILLS,
@@ -1294,6 +1340,44 @@ export default function OpenClawDetailGuide() {
                       <span>ID：ins-grpdemo02</span>
                       <span style={{ color: "#E2E8F0" }}>｜</span>
                       <span>分组：默认</span>
+                      {/* 当前 Agent 版本号 */}
+                      <span style={{ color: "#E2E8F0" }}>｜</span>
+                      <span className="font-mono tabular-nums" style={{ color: "#64748B" }}>
+                        v{MOCK_INSTANCE.agentVersion}
+                      </span>
+                      {/* 管理员推送的「可更新」徽章 */}
+                      {recommendPush && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="inline-flex items-center gap-1 cursor-help whitespace-nowrap ml-1"
+                              style={{
+                                padding: "2px 6px",
+                                borderRadius: "2px",
+                                fontSize: "11px",
+                                lineHeight: "16px",
+                                fontWeight: 500,
+                                color: "#1D4ED8",
+                                backgroundColor: "#EFF6FF",
+                                border: "1px solid #DBEAFE",
+                              }}
+                            >
+                              <Megaphone className="w-3 h-3" />
+                              可更新 v{recommendPush.version}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[320px] text-xs leading-relaxed">
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {recommendPush.message ?? `推荐更新到 v${recommendPush.version}`}
+                              </div>
+                              <div className="text-gray-300">
+                                来自 {recommendPush.pushedBy} · {recommendPush.pushedAt}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1301,15 +1385,36 @@ export default function OpenClawDetailGuide() {
 
                 {/* 右：操作按钮 */}
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="claw-outline"
-                    size="claw"
-                    onClick={() => {
-                      toast.success("配置已更新至最新版本");
-                    }}
-                  >
-                    一键更新
-                  </Button>
+                  {allowSelfUpgrade ? (
+                    <Button
+                      variant="claw-outline"
+                      size="claw"
+                      onClick={() => {
+                        toast.success("配置已更新至最新版本");
+                      }}
+                    >
+                      一键更新
+                    </Button>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {/* 用 span 包裹 disabled Button，确保 Tooltip 在禁用态仍可触发 */}
+                        <span tabIndex={0}>
+                          <Button
+                            variant="claw-outline"
+                            size="claw"
+                            disabled
+                            className="cursor-not-allowed opacity-60"
+                          >
+                            一键更新
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs max-w-[240px] leading-relaxed">
+                        管理员已关闭"自助更新"，请联系管理员开启
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <Button
                     variant="claw-outline"
                     size="claw"

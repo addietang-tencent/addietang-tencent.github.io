@@ -18,8 +18,17 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { KeyRound, LogOut, UserCog, Settings } from "lucide-react";
+import { KeyRound, LogOut, UserCog, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -84,6 +93,23 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   const [groupMode, setGroupMode] = useState<"normal" | "multi-group">(() => {
     return (localStorage.getItem("openclaw_group_mode") as "normal" | "multi-group") || "normal";
   });
+
+  // 重置密码弹窗
+  const [resetPwdOpen, setResetPwdOpen] = useState(false);
+  const [oldPwd, setOldPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const handleResetPwd = () => {
+    if (!oldPwd || !newPwd || !confirmPwd) { toast.error("请填写所有字段"); return; }
+    if (newPwd !== confirmPwd) { toast.error("两次输入的新密码不一致"); return; }
+    if (newPwd.length < 8) { toast.error("新密码长度不能少于 8 位"); return; }
+    toast.success("密码重置成功");
+    setResetPwdOpen(false);
+    setOldPwd(""); setNewPwd(""); setConfirmPwd("");
+  };
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "openclaw_group_mode") {
@@ -213,11 +239,10 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                   )}
                 </div>
               </div>
-              <DropdownMenuItem onClick={() => (window.location.href = "/reset-password")}>
-                <KeyRound className="w-4 h-4 mr-2 text-gray-500" />
+              <DropdownMenuItem onClick={() => setResetPwdOpen(true)}>
+                <KeyRound className="w-4 h-4 mr-2 text-black" />
                 重置密码
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
               {/* 演示用：切换角色 */}
               <DropdownMenuItem
                 onClick={() => {
@@ -250,6 +275,73 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
       {/* Main Content */}
       <main className="min-h-[calc(100vh-64px)]">{children}</main>
+
+      {/* 重置密码弹窗 */}
+      <Dialog open={resetPwdOpen} onOpenChange={(open) => { setResetPwdOpen(open); if (!open) { setOldPwd(""); setNewPwd(""); setConfirmPwd(""); setShowOld(false); setShowNew(false); setShowConfirm(false); } }}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">重置密码</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm text-[#525252]">当前密码</Label>
+              <div className="relative">
+                <Input
+                  type={showOld ? "text" : "password"}
+                  value={oldPwd}
+                  onChange={(e) => setOldPwd(e.target.value)}
+                  placeholder="请输入当前密码"
+                  className="pr-10"
+                />
+                <button type="button" onClick={() => setShowOld(!showOld)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0A0A0A]">
+                  {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-[#525252]">新密码</Label>
+              <div className="relative">
+                <Input
+                  type={showNew ? "text" : "password"}
+                  value={newPwd}
+                  onChange={(e) => setNewPwd(e.target.value)}
+                  placeholder="请输入新密码（至少 8 位）"
+                  className="pr-10"
+                />
+                <button type="button" onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0A0A0A]">
+                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-[#525252]">确认新密码</Label>
+              <div className="relative">
+                <Input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPwd}
+                  onChange={(e) => setConfirmPwd(e.target.value)}
+                  placeholder="请再次输入新密码"
+                  className="pr-10"
+                />
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#737373] hover:text-[#0A0A0A]">
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-3">
+            <Button variant="claw-outline" onClick={() => setResetPwdOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleResetPwd}>
+              确认重置
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

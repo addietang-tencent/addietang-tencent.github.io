@@ -131,10 +131,10 @@ export default function PushUpgradeDialog({
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Megaphone className="w-4 h-4 text-blue-500" />
+            <Megaphone className="w-4 h-4 text-[#1447E6]" />
             推送更新提醒
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-500">
+          <DialogDescription className="text-xs text-[#737373]">
             向使用某 Agent 类型的员工推送更新提醒，建议更新到当前启用的镜像版本
           </DialogDescription>
         </DialogHeader>
@@ -146,7 +146,7 @@ export default function PushUpgradeDialog({
               Agent 类型 <span className="text-red-400">*</span>
             </Label>
             {pushable.length === 0 ? (
-              <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-3 text-center">
+              <div className="text-xs text-[#737373] bg-[#FAFAFA] rounded-[4px] px-3 py-3 text-center">
                 暂无已启用的 Agent 类型，请先到表格中启用一个镜像
               </div>
             ) : (
@@ -155,7 +155,7 @@ export default function PushUpgradeDialog({
                 onValueChange={setSelectedType}
                 disabled={selectable.length === 0}
               >
-                <SelectTrigger className="bg-gray-50 w-full h-auto py-2">
+                <SelectTrigger className="bg-[#FAFAFA] w-full h-auto py-2">
                   <SelectValue
                     placeholder={
                       selectable.length === 0
@@ -176,11 +176,11 @@ export default function PushUpgradeDialog({
                           <Sparkles className="w-3 h-3 text-purple-500 shrink-0" />
                         )}
                         <span className="font-medium">{p.agentTypeLabel}</span>
-                        <span className="text-[11px] text-gray-400 font-mono tabular-nums">
+                        <span className="text-[11px] text-[#A3A3A3] font-mono tabular-nums">
                           v{p.enabledVersion}
                         </span>
                         {p.allUpToDate && (
-                          <span className="ml-auto text-[11px] text-gray-400 shrink-0">
+                          <span className="ml-auto text-[11px] text-[#A3A3A3] shrink-0">
                             全部已是最新版
                           </span>
                         )}
@@ -194,21 +194,21 @@ export default function PushUpgradeDialog({
 
           {/* 2. 信息提示 */}
           {selected && !selected.allUpToDate && (
-            <div className="rounded-lg bg-blue-50/60 border border-blue-100 px-3 py-2.5 flex items-start gap-2">
-              <Info className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" />
-              <div className="text-xs text-gray-700 leading-relaxed">
+            <div className="rounded-[4px] bg-[#1447E6]/5 border border-[#1447E6]/20 px-3 py-2.5 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-[#1447E6] mt-0.5 shrink-0" />
+              <div className="text-xs text-[#334155] leading-relaxed">
                 <div>
                   推送后，使用 <strong>{selected.agentTypeLabel}</strong> 且版本低于
-                  <span className="mx-1 font-mono font-semibold text-blue-700 tabular-nums">
+                  <span className="mx-1 font-mono font-semibold text-[#1447E6] tabular-nums">
                     v{selected.enabledVersion}
                   </span>
                   的
-                  <span className="mx-1 font-semibold text-blue-700 tabular-nums">
+                  <span className="mx-1 font-semibold text-[#1447E6] tabular-nums">
                     {selected.outdatedInstanceCount}
                   </span>
                   个 Agent，将在用户端收到更新提醒。
                 </div>
-                <div className="mt-1 text-[11px] text-gray-500">
+                <div className="mt-1 text-[11px] text-[#737373]">
                   当前镜像：{selected.imageName}（
                   {selected.imageSource === "public" ? "腾讯云维护" : "企业自维护"}）
                 </div>
@@ -218,9 +218,9 @@ export default function PushUpgradeDialog({
 
           {/* 3. 已是最新版提示 */}
           {selected && selected.allUpToDate && (
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-3 py-2.5 flex items-start gap-2">
-              <Info className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-              <div className="text-xs text-gray-500 leading-relaxed">
+            <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-3 py-2.5 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
+              <div className="text-xs text-[#737373] leading-relaxed">
                 {selected.agentTypeLabel} 下所有实例都已是 v{selected.enabledVersion}，无需推送
               </div>
             </div>
@@ -228,17 +228,14 @@ export default function PushUpgradeDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="claw-outline" size="claw-sm" onClick={() => onOpenChange(false)}>
             取消
           </Button>
           <Button
+            variant="claw-primary"
+            size="claw-sm"
             onClick={handleConfirm}
             disabled={!canPush}
-            style={
-              canPush
-                ? { background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }
-                : {}
-            }
           >
             确认推送
           </Button>

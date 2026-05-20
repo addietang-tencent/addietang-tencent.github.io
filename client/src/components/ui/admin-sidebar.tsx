@@ -409,7 +409,7 @@ const AdminSidebarUser = React.forwardRef<HTMLDivElement, React.ComponentProps<"
       className={cn("flex min-w-0 flex-1 items-center gap-2.5", className)}
       {...props}
     >
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-green-600 to-green-700 font-mono text-sm text-white">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-gradient-to-br from-green-600 to-green-700 font-mono text-sm text-white">
         {fallback ?? name.charAt(0).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
@@ -429,7 +429,7 @@ const AdminSidebarFooterAction = React.forwardRef<HTMLButtonElement, React.Compo
         ref={ref}
         data-slot="admin-sidebar-footer-action"
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
+          "flex size-8 shrink-0 items-center justify-center rounded-[4px] text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>svg]:size-4",
           className
         )}
         {...props}
@@ -467,7 +467,7 @@ const AdminSidebarTrigger = React.forwardRef<HTMLButtonElement, React.ComponentP
         ref={ref}
         data-slot="admin-sidebar-trigger"
         className={cn(
-          "flex size-8 items-center justify-center rounded-lg text-[var(--admin-sidebar-muted)] transition-colors hover:bg-gray-50 hover:text-gray-900 [&>svg]:size-4",
+          "flex size-8 items-center justify-center rounded-[4px] text-[var(--admin-sidebar-muted)] transition-colors hover:bg-gray-50 hover:text-gray-900 [&>svg]:size-4",
           className
         )}
         onClick={(event: React.MouseEvent<HTMLButtonElement>) => {

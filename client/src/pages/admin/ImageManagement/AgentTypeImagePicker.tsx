@@ -106,9 +106,9 @@ export default function AgentTypeImagePicker({
             className="text-xs h-7 data-[state=active]:bg-white"
           >
             公共镜像
-            <span className="ml-1.5 text-gray-400">({publicCount})</span>
+            <span className="ml-1.5 text-[#A3A3A3]">({publicCount})</span>
             {enabledInPublic && (
-              <CheckCircle2 className="w-3 h-3 ml-1 text-blue-500" />
+              <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
             )}
           </TabsTrigger>
           <TabsTrigger
@@ -116,9 +116,9 @@ export default function AgentTypeImagePicker({
             className="text-xs h-7 data-[state=active]:bg-white"
           >
             自定义镜像
-            <span className="ml-1.5 text-gray-400">({customCount})</span>
+            <span className="ml-1.5 text-[#A3A3A3]">({customCount})</span>
             {enabledInCustom && (
-              <CheckCircle2 className="w-3 h-3 ml-1 text-blue-500" />
+              <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
             )}
           </TabsTrigger>
         </TabsList>
@@ -139,7 +139,7 @@ export default function AgentTypeImagePicker({
                 <>
                   <button
                     onClick={() => onViewPublicHistory(img.id)}
-                    className="px-2 py-1 text-[11px] text-blue-600 hover:bg-blue-50 rounded inline-flex items-center gap-1 transition-colors whitespace-nowrap"
+                    className="px-2 py-1 text-[11px] text-[#1447E6] hover:bg-[#1447E6]/10 rounded inline-flex items-center gap-1 transition-colors whitespace-nowrap"
                   >
                     <History className="w-3 h-3" />
                     版本更新记录
@@ -199,12 +199,12 @@ function CustomList({
   return (
     <>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] text-gray-500">由企业自行制作和维护</p>
+        <p className="text-[11px] text-[#737373]">由企业自行制作和维护</p>
         <button
           onClick={onImportCustom}
-          className="px-2.5 py-1 text-[11px] text-white rounded inline-flex items-center gap-1 transition-opacity hover:opacity-90 whitespace-nowrap shadow-sm"
+          className="px-2.5 py-1 text-[11px] text-white rounded inline-flex items-center gap-1 transition-opacity hover:opacity-90 whitespace-nowrap"
           style={{
-            background: "linear-gradient(135deg, #007AFF, #5856D6)",
+            background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)", // allow-inline-gradient: 主操作按钮使用主 CTA 渐变
           }}
         >
           <Plus className="w-3 h-3" />
@@ -225,7 +225,7 @@ function CustomList({
                 {missingVersion && (
                   <button
                     onClick={() => onEditImage(img.id)}
-                    className="px-2 py-1 text-[11px] text-blue-600 hover:bg-blue-50 rounded transition-colors whitespace-nowrap"
+                    className="px-2 py-1 text-[11px] text-[#1447E6] hover:bg-[#1447E6]/10 rounded transition-colors whitespace-nowrap"
                   >
                     编辑补齐版本
                   </button>
@@ -234,7 +234,7 @@ function CustomList({
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onEditImage(img.id)}
-                      className="p-1 text-gray-400 hover:text-blue-500 transition-colors rounded"
+                      className="p-1 text-[#A3A3A3] hover:text-[#1447E6] transition-colors rounded"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
@@ -273,8 +273,8 @@ function ImageList({
 }) {
   const accentColors = {
     blue: {
-      ringChecked: "border-blue-500 bg-blue-500",
-      bgChecked: "bg-blue-50/60",
+      ringChecked: "border-[#1447E6] bg-[#1447E6]",
+      bgChecked: "bg-[#1447E6]/5",
     },
     purple: {
       ringChecked: "border-purple-500 bg-purple-500",
@@ -284,7 +284,7 @@ function ImageList({
   const colors = accentColors[accent];
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-[3px] border border-[#E5E5E5] bg-white overflow-hidden">
       {images.map((img, idx) => {
         const checked = img.isEffective;
         const missingVersion = !img.agentVersion?.trim();
@@ -294,12 +294,12 @@ function ImageList({
             key={img.id}
             onClick={() => selectable && onSelectImage(img.id)}
             className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
-              idx > 0 ? "border-t border-gray-100" : ""
+              idx > 0 ? "border-t border-[#F5F5F5]" : ""
             } ${
               checked
                 ? colors.bgChecked
                 : selectable
-                  ? "bg-white hover:bg-gray-50/60 cursor-pointer"
+                  ? "bg-white hover:bg-[#FAFAFA] cursor-pointer"
                   : "bg-amber-50/20"
             }`}
           >
@@ -309,8 +309,8 @@ function ImageList({
                 checked
                   ? colors.ringChecked
                   : selectable
-                    ? "border-gray-300 bg-white"
-                    : "border-gray-200 bg-gray-50"
+                    ? "border-[#A3A3A3] bg-white"
+                    : "border-[#E5E5E5] bg-[#FAFAFA]"
               }`}
             >
               {checked && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -319,12 +319,12 @@ function ImageList({
             {/* 用户可见徽章 */}
             <div className="basis-0 grow shrink-0 min-w-[70px] max-w-[90px]">
               {checked ? (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1447E6]/10 text-[#1447E6] border border-[#1447E6]/20 whitespace-nowrap">
                   <CheckCircle2 className="w-2.5 h-2.5" />
                   用户可见
                 </span>
               ) : (
-                <span className="text-[11px] text-gray-300">—</span>
+                <span className="text-[11px] text-[#A3A3A3]">—</span>
               )}
             </div>
 
@@ -426,8 +426,8 @@ function DeleteIconButton({
 // ─── 空提示 ─────────────────────────────────────────────────────────
 function EmptyHint({ text }: { text: string }) {
   return (
-    <div className="rounded-md border border-dashed border-gray-200 px-3 py-6 text-center">
-      <span className="text-xs text-gray-400">{text}</span>
+    <div className="rounded-[3px] border border-dashed border-[#E5E5E5] px-3 py-6 text-center">
+      <span className="text-xs text-[#A3A3A3]">{text}</span>
     </div>
   );
 }
@@ -450,7 +450,7 @@ function PublicRefreshButton() {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="px-2 py-1 text-[11px] text-gray-600 bg-white border border-gray-300 hover:border-blue-300 hover:text-blue-600 rounded inline-flex items-center gap-1 transition-colors whitespace-nowrap disabled:opacity-60"
+          className="px-2 py-1 text-[11px] text-[#334155] bg-white border border-[#E5E5E5] hover:border-[#1447E6]/40 hover:text-[#1447E6] rounded inline-flex items-center gap-1 transition-colors whitespace-nowrap disabled:opacity-60"
         >
           <RefreshCw
             className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`}

@@ -330,7 +330,7 @@ function ImageScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[3px] hover:bg-gray-50 transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
@@ -442,20 +442,20 @@ function ImageScopePopover({
             <div className="flex gap-1.5">
               <button
                 onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === "all"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    ? "border-blue-200 bg-blue-50 text-[#1447E6]"
+                    : "border-[#E5E5E5] bg-white text-[#334155] hover:bg-gray-50"
                 }`}
               >
                 全部用户
               </button>
               <button
                 onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
                   draftScope === "groups"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                    ? "border-blue-200 bg-blue-50 text-[#1447E6]"
+                    : "border-[#E5E5E5] bg-white text-[#334155] hover:bg-gray-50"
                 }`}
               >
                 按分组
@@ -479,11 +479,11 @@ function ImageScopePopover({
                   </div>
                 ) : (
                   <>
-                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
+                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-md border border-blue-100 shrink-0 max-w-[200px]"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-[#1447E6] text-[10px] rounded-[3px] border border-blue-100 shrink-0 max-w-[200px]"
                         >
                           <span className="truncate">{tag.path}</span>
                           <button
@@ -550,16 +550,15 @@ function ImageScopePopover({
               </div>
             )}
           </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100 shrink-0">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#E5E5E5] shrink-0">
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setOpen(false)}>
               取消
             </Button>
             <Button
-              size="sm"
-              className="h-7 text-xs px-3"
+              variant="claw-primary"
+              size="claw-sm"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               确认
             </Button>
@@ -581,17 +580,17 @@ function OverviewStats({
   imageCount: number;
 }) {
   return (
-    <div className="inline-flex items-center gap-4 px-4 py-2 rounded-lg bg-gray-50/80 border border-gray-100 text-xs text-gray-500">
+    <div className="inline-flex items-center gap-4 px-4 py-2 rounded-[4px] bg-gray-50/80 border border-[#E5E5E5] text-xs text-[#737373]">
       <span>
-        Agent 类型 <span className="text-gray-900 font-semibold tabular-nums">{typeCount}</span>
+        Agent 类型 <span className="text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
       </span>
       <span className="text-gray-300">·</span>
       <span>
-        已对用户可见 <span className="text-blue-600 font-semibold tabular-nums">{enabledTypeCount}</span>
+        已对用户可见 <span className="text-[#1447E6] font-semibold tabular-nums">{enabledTypeCount}</span>
       </span>
       <span className="text-gray-300">·</span>
       <span>
-        镜像总数 <span className="text-gray-900 font-semibold tabular-nums">{imageCount}</span>
+        镜像总数 <span className="text-[#0A0A0A] font-semibold tabular-nums">{imageCount}</span>
       </span>
     </div>
   );
@@ -1106,12 +1105,12 @@ export default function ImageManagement() {
               imageCount={images.length}
             />
             <Button
-              size="sm"
+              variant="claw-primary"
+              size="claw-sm"
               onClick={() => setShowCreateCustomDialog(true)}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
-              className="text-xs h-8 shrink-0"
+              className="shrink-0"
             >
-              <Plus className="w-3 h-3 mr-1" />
+              <Plus className="w-3 h-3" />
               添加自定义 Agent 类型
             </Button>
           </div>
@@ -1154,16 +1153,16 @@ export default function ImageManagement() {
           <button
             type="button"
             onClick={() => setShowCreateCustomDialog(true)}
-            className="mt-4 w-full rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50/70 hover:border-blue-300 transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
+            className="mt-4 w-full rounded-[4px] border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50/70 hover:border-blue-300 transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
           >
             <span
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full text-white shadow-sm group-hover:scale-105 transition-transform"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full text-white group-hover:scale-105 transition-transform"
+              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 圆形装饰图标使用主 CTA 渐变
             >
               <Plus className="w-5 h-5" />
             </span>
-            <span className="text-sm font-medium text-blue-600">添加自定义 Agent 类型</span>
-            <span className="text-xs text-gray-500">
+            <span className="text-sm font-medium text-[#1447E6]">添加自定义 Agent 类型</span>
+            <span className="text-xs text-[#737373]">
               支持基于现有 Agent 内核拓展，或添加完全自定义的 Agent 类型
             </span>
           </button>
@@ -1204,35 +1203,35 @@ export default function ImageManagement() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="rounded-lg bg-purple-50/40 border border-purple-100 px-3 py-2.5 -mt-1">
+          <div className="rounded-[4px] bg-purple-50/40 border border-purple-100 px-3 py-2.5 -mt-1">
             <p className="text-xs text-purple-900/80 leading-relaxed mb-1.5">
               自定义镜像由企业自行制作和维护：
             </p>
             <ul className="space-y-1 text-[11px]">
-              <li className="flex items-start gap-1.5 text-gray-700">
+              <li className="flex items-start gap-1.5 text-[#334155]">
                 <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
                 <span>版本固定不变，便于合规审计与稳定性管理</span>
               </li>
-              <li className="flex items-start gap-1.5 text-gray-700">
+              <li className="flex items-start gap-1.5 text-[#334155]">
                 <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
                 <span>可基于业务需要预装技能、插件、企业内部依赖</span>
               </li>
-              <li className="flex items-start gap-1.5 text-gray-500">
-                <XIcon className="w-3 h-3 mt-0.5 text-gray-400 shrink-0" />
+              <li className="flex items-start gap-1.5 text-[#737373]">
+                <XIcon className="w-3 h-3 mt-0.5 text-[#A3A3A3] shrink-0" />
                 <span>需要企业自行跟进版本更新与维护</span>
               </li>
             </ul>
           </div>
 
-          <div className="flex items-start gap-2 bg-gray-50 rounded-lg px-3 py-2">
-            <Info className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-gray-500 leading-relaxed">
+          <div className="flex items-start gap-2 bg-[#FAFAFA] rounded-[4px] px-3 py-2">
+            <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
+            <p className="text-[11px] text-[#737373] leading-relaxed">
               以下镜像均为已在腾讯云创建好的镜像。若需要创建新镜像，请前往{" "}
               <a
                 href="https://console.cloud.tencent.com/cvm/image"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
+                className="text-[#1447E6] hover:opacity-80 inline-flex items-center gap-0.5"
               >
                 腾讯云云服务器控制台 <ExternalLink className="w-3 h-3" />
               </a>{" "}
@@ -1246,39 +1245,39 @@ export default function ImageManagement() {
               <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => setShowImageList(!showImageList)}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-600 hover:bg-gray-100 transition-colors text-left flex items-center justify-between"
+                  className="flex-1 px-3 py-2 border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-sm text-[#334155] hover:bg-[#F5F5F5] transition-colors text-left flex items-center justify-between"
                 >
                   <span>
                     {selectedImageId
                       ? CUSTOM_IMAGES.find((i) => i.id === selectedImageId)?.name
                       : "请选择要关联的镜像"}
                   </span>
-                  <ChevronsUpDown className="w-4 h-4 text-gray-400" />
+                  <ChevronsUpDown className="w-4 h-4 text-[#A3A3A3]" />
                 </button>
                 <button
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
+                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white text-[#A3A3A3] hover:text-[#1447E6] hover:border-[#1447E6]/40 transition-colors disabled:opacity-50"
                   title="刷新镜像列表"
                 >
                   <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
                 </button>
               </div>
-              <p className="text-xs text-gray-400">镜像大小不允许超过 50 GiB</p>
+              <p className="text-xs text-[#A3A3A3]">镜像大小不允许超过 50 GiB</p>
               {showImageList && (
                 <div
                   ref={imageListRef}
-                  className="border border-gray-200 rounded-lg bg-white overflow-hidden"
+                  className="border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="relative p-2 border-b border-gray-100">
-                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <div className="relative p-2 border-b border-[#F5F5F5]">
+                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                     <input
                       type="text"
                       placeholder="搜索镜像 ID..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-9 pr-3 py-2 border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-sm placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-[#1447E6]/30 focus:border-transparent"
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -1286,28 +1285,28 @@ export default function ImageManagement() {
                   <div className="max-h-64 overflow-y-auto">
                     {filteredImportImages.length > 0 ? (
                       <div>
-                        <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 sticky top-0">
-                          自定义镜像 <span className="text-gray-400 font-normal">（企业维护）</span>
+                        <div className="px-3 py-2 bg-[#FAFAFA] text-xs font-medium text-[#737373] sticky top-0">
+                          自定义镜像 <span className="text-[#A3A3A3] font-normal">（企业维护）</span>
                         </div>
                         {filteredImportImages.map((img) => (
                           <div
                             key={img.id}
                             onClick={(e) => { e.stopPropagation(); handleSelectImage(img.id); }}
-                            className={`px-3 py-2.5 cursor-pointer hover:bg-blue-50 transition-colors ${
+                            className={`px-3 py-2.5 cursor-pointer hover:bg-[#1447E6]/5 transition-colors ${
                               selectedImageId === img.id
-                                ? "bg-blue-50 border-l-2 border-blue-500"
+                                ? "bg-[#1447E6]/5 border-l-2 border-[#1447E6]"
                                 : ""
                             }`}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm text-gray-900 truncate">{img.name}</span>
-                              <span className="text-xs text-gray-400 font-mono shrink-0">{img.id}</span>
+                              <span className="text-sm text-[#0A0A0A] truncate">{img.name}</span>
+                              <span className="text-xs text-[#A3A3A3] font-mono shrink-0">{img.id}</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="px-3 py-8 text-center text-sm text-gray-400">
+                      <div className="px-3 py-8 text-center text-sm text-[#A3A3A3]">
                         未找到匹配的镜像
                       </div>
                     )}
@@ -1374,11 +1373,12 @@ export default function ImageManagement() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => handleDialogOpenChange(false)}>取消</Button>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => handleDialogOpenChange(false)}>取消</Button>
             <Button
+              variant="claw-primary"
+              size="claw-sm"
               onClick={handleImport}
               disabled={!canImport}
-              style={canImport ? { background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" } : {}}
             >
               导入并关联
             </Button>
@@ -1434,10 +1434,11 @@ export default function ImageManagement() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>取消</Button>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setShowEditDialog(false)}>取消</Button>
             <Button
+              variant="claw-primary"
+              size="claw-sm"
               onClick={handleEditSave}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
             >
               保存
             </Button>
@@ -1486,25 +1487,25 @@ export default function ImageManagement() {
                       key={opt.value}
                       type="button"
                       onClick={() => { setNewKernelBase(opt.value); if (!isNative) setNativeAck(false); }}
-                      className={`w-full text-left rounded-xl border-2 p-3 transition-all ${
+                      className={`w-full text-left rounded-[4px] border-2 p-3 transition-all ${
                         isSelected
-                          ? (isNative ? "border-orange-400 bg-orange-50/60" : "border-blue-500 bg-blue-50/60")
-                          : "border-gray-200 hover:border-blue-300 bg-white"
+                          ? (isNative ? "border-orange-400 bg-orange-50/60" : "border-[#1447E6] bg-[#1447E6]/5")
+                          : "border-[#E5E5E5] hover:border-[#1447E6]/40 bg-white"
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
                         <div
                           className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
                             isSelected
-                              ? (isNative ? "border-orange-500 bg-orange-500" : "border-blue-500 bg-blue-500")
-                              : "border-gray-300"
+                              ? (isNative ? "border-orange-500 bg-orange-500" : "border-[#1447E6] bg-[#1447E6]")
+                              : "border-[#A3A3A3]"
                           }`}
                         >
                           {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 mb-0.5">{opt.title}</div>
-                          <p className="text-xs text-gray-500 leading-relaxed">{opt.description}</p>
+                          <div className="text-sm font-medium text-[#0A0A0A] mb-0.5">{opt.title}</div>
+                          <p className="text-xs text-[#737373] leading-relaxed">{opt.description}</p>
                         </div>
                       </div>
                     </button>
@@ -1515,9 +1516,9 @@ export default function ImageManagement() {
 
             {/* 兼容内核：温馨提示 */}
             {newKernelBase && newKernelBase !== "native" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5 flex items-start gap-2">
-                <Check className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <div className="text-xs text-blue-700 leading-relaxed">
+              <div className="bg-[#1447E6]/5 border border-[#1447E6]/20 rounded-[4px] px-3 py-2.5 flex items-start gap-2">
+                <Check className="w-4 h-4 text-[#1447E6] shrink-0 mt-0.5" />
+                <div className="text-xs text-[#1447E6] leading-relaxed">
                   将直接复用
                   <strong className="mx-1">{kernelBaseLabel(newKernelBase)}</strong>
                   的全部管控能力，无需额外配置。创建后可直接导入镜像使用
@@ -1528,21 +1529,21 @@ export default function ImageManagement() {
             {/* 自研（native）：风险提示 + 必勾选确认 */}
             {newKernelBase === "native" && (
               <div className="space-y-2">
-                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5">
+                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-[4px] px-3 py-2.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" />
                   <div className="text-xs text-orange-700 leading-relaxed space-y-1">
                     <p className="font-semibold">{NATIVE_KERNEL_NOTICE_TITLE}：</p>
                     {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (<p key={i}>{l}</p>))}
                   </div>
                 </div>
-                <label className="flex items-start gap-2 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-[#E5E5E5] cursor-pointer hover:bg-[#FAFAFA]">
                   <Checkbox
                     id="native-ack"
                     checked={nativeAck}
                     onCheckedChange={(c) => setNativeAck(!!c)}
                     className="mt-0.5"
                   />
-                  <span className="text-xs text-gray-700 leading-relaxed">
+                  <span className="text-xs text-[#334155] leading-relaxed">
                     我已知晓上述限制，且确认<span className="font-medium">允许用户进入该类型 Agent 的终端</span>
                   </span>
                 </label>
@@ -1551,13 +1552,14 @@ export default function ImageManagement() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { resetCreateDialog(); setShowCreateCustomDialog(false); }}>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => { resetCreateDialog(); setShowCreateCustomDialog(false); }}>
               取消
             </Button>
             <Button
+              variant="claw-primary"
+              size="claw-sm"
               onClick={handleCreateCustomType}
               disabled={!canCreateCustom}
-              style={canCreateCustom ? { background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" } : {}}
             >
               添加
             </Button>
@@ -1583,8 +1585,8 @@ export default function ImageManagement() {
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
-            <Button onClick={confirmRemoveCustomType} className="bg-red-500 hover:bg-red-600 text-white">
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
+            <Button size="claw-sm" onClick={confirmRemoveCustomType} className="bg-red-500 hover:bg-red-600 text-white">
               确认删除
             </Button>
           </DialogFooter>

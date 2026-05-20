@@ -80,7 +80,7 @@ export default function UpdateRecordSidebar({
     <div className="space-y-5">
       {/* 1. Agent 类型导航 */}
       <div>
-        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 px-3">
+        <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wide mb-2 px-3">
           Agent 类型
         </div>
         <nav className="flex flex-col gap-0.5">
@@ -93,14 +93,14 @@ export default function UpdateRecordSidebar({
                   const el = document.getElementById(`section-${agentType}`);
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="group flex items-center gap-1.5 px-3 py-2 rounded-lg text-left text-sm transition-colors text-gray-600 hover:bg-gray-50"
+                className="group flex items-center gap-1.5 px-3 py-2 rounded-[3px] text-left text-sm transition-colors text-[#334155] hover:bg-[#FAFAFA]"
               >
                 {isDef ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span
-                        className="inline-flex items-center justify-center w-5 h-5 rounded-md shrink-0"
-                        style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded-[3px] shrink-0"
+                        style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 首选徽章使用主 CTA 渐变
                       >
                         <Star className="w-3 h-3 text-white" />
                       </span>
@@ -115,7 +115,7 @@ export default function UpdateRecordSidebar({
                       <span className="inline-flex items-center justify-center w-5 h-5 shrink-0">
                         <span
                           className={`w-1.5 h-1.5 rounded-full inline-block ${
-                            isEnabled ? "bg-green-500" : "bg-gray-300"
+                            isEnabled ? "bg-green-500" : "bg-[#A3A3A3]"
                           }`}
                         />
                       </span>
@@ -134,8 +134,8 @@ export default function UpdateRecordSidebar({
 
       {/* 2. 镜像新版本提醒（仅在有更新时展示） */}
       {hasUpdate && (
-        <div className="border-t border-gray-100 pt-4 px-3">
-          <div className="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2.5">
+        <div className="border-t border-[#F5F5F5] pt-4 px-3">
+          <div className="rounded-[4px] border border-amber-200 bg-amber-50/50 px-3 py-2.5">
             <div className="flex items-start gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -167,11 +167,11 @@ export default function UpdateRecordSidebar({
       )}
 
       {/* 3. 操作区：推送更新 + 正在推送列表 + 查看全部更新记录 */}
-      <div className={hasUpdate ? "px-3" : "border-t border-gray-100 pt-4 px-3"}>
+      <div className={hasUpdate ? "px-3" : "border-t border-[#F5F5F5] pt-4 px-3"}>
         <button
           onClick={onPush}
-          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] text-xs font-medium text-white transition-opacity hover:opacity-90"
+          style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 主 CTA 使用主渐变
         >
           <Megaphone className="w-3.5 h-3.5" />
           推送更新
@@ -179,8 +179,8 @@ export default function UpdateRecordSidebar({
 
         {/* 正在推送中的列表（仅有推送时展示，每条带撤回） */}
         {activePushes.length > 0 && (
-          <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50/40 px-2.5 py-2">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-1.5">
+          <div className="mt-2 rounded-[4px] border border-[#1447E6]/20 bg-[#1447E6]/5 px-2.5 py-2">
+            <div className="flex items-center gap-1 text-[10px] font-semibold text-[#1447E6] uppercase tracking-wide mb-1.5">
               <Megaphone className="w-2.5 h-2.5" />
               正在提醒员工更新
             </div>
@@ -191,10 +191,10 @@ export default function UpdateRecordSidebar({
                   className="flex items-center justify-between gap-2"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] font-medium text-gray-800 truncate">
+                    <div className="text-[11px] font-medium text-[#0A0A0A] truncate">
                       {p.agentTypeLabel}
                     </div>
-                    <div className="text-[10px] text-gray-500 font-mono tabular-nums truncate">
+                    <div className="text-[10px] text-[#737373] font-mono tabular-nums truncate">
                       {formatVersion(p.version)} · {p.pushedAt.slice(0, 10)}
                     </div>
                   </div>
@@ -202,7 +202,7 @@ export default function UpdateRecordSidebar({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => handleRevoke(p)}
-                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] text-[#737373] hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
                       >
                         <RotateCcw className="w-2.5 h-2.5" />
                         撤回
@@ -220,10 +220,10 @@ export default function UpdateRecordSidebar({
 
         <button
           onClick={onViewAll}
-          className="w-full mt-2 inline-flex items-center justify-between px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+          className="w-full mt-2 inline-flex items-center justify-between px-3 py-2 rounded-[3px] text-xs text-[#334155] hover:bg-[#FAFAFA] transition-colors"
         >
           <span>查看全部更新记录</span>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />
         </button>
       </div>
     </div>

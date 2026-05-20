@@ -111,7 +111,7 @@ export default function AgentTypesTable({
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-x-auto">
+    <div className="rounded-[4px] border border-[#E5E5E5] bg-white overflow-x-auto">
       <table className="w-full text-sm table-auto">
         <thead>
           <tr style={{ backgroundColor: "#f9fafb" }}>
@@ -219,7 +219,7 @@ function AgentTypeRow({
                   <span
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold text-white cursor-default whitespace-nowrap"
                     style={{
-                      background: "linear-gradient(135deg, #007AFF, #5856D6)",
+                      background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)", // allow-inline-gradient: 首选徽章使用主 CTA 渐变
                     }}
                   >
                     <Star className="w-2.5 h-2.5" /> 用户端首选
@@ -300,7 +300,7 @@ function AgentTypeRow({
                 <span className="inline-flex items-center gap-1.5">
                   <span
                     className={`text-[11px] ${
-                      isEnabled ? "text-blue-600 font-medium" : "text-gray-500"
+                      isEnabled ? "text-[#1447E6] font-medium" : "text-[#737373]"
                     }`}
                   >
                     用户可见
@@ -405,9 +405,9 @@ function AgentTypeRow({
               <span
                 aria-hidden
                 className="absolute left-6 top-3 bottom-3 w-0.5 rounded-full"
-                style={{ background: "linear-gradient(180deg, #007AFF, #5856D6)" }}
+                style={{ background: "linear-gradient(180deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 二级层级标识使用主 CTA 渐变
               />
-              <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+              <div className="rounded-[4px] border border-[#E5E5E5] bg-white">
                 <AgentTypeImagePicker
                   view={view}
                   isCustomAgentType={isCustom}
@@ -446,7 +446,7 @@ function AgentVersionCell({
             <TooltipTrigger asChild>
               <button
                 onClick={onViewHistory}
-                className="inline-flex items-center justify-center w-6 h-6 rounded text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
+                className="inline-flex items-center justify-center w-6 h-6 rounded text-[#1447E6] hover:bg-[#1447E6]/10 transition-colors shrink-0"
               >
                 <History className="w-3.5 h-3.5" />
               </button>

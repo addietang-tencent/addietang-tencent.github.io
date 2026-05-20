@@ -47,22 +47,22 @@ export default function PublicImageHistoryDialog({
       <DialogContent className="sm:max-w-[560px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">
-            <Cloud className="w-4 h-4 text-blue-500" />
+            <Cloud className="w-4 h-4 text-[#1447E6]" />
             版本更新记录
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-500 leading-relaxed">
-            <div className="font-medium text-gray-700">{imageName}</div>
-            <div className="font-mono text-[11px] text-gray-400 mt-0.5">{imageId}</div>
+          <DialogDescription className="text-xs text-[#737373] leading-relaxed">
+            <div className="font-medium text-[#334155]">{imageName}</div>
+            <div className="font-mono text-[11px] text-[#A3A3A3] mt-0.5">{imageId}</div>
           </DialogDescription>
         </DialogHeader>
 
         {records.length === 0 ? (
-          <div className="text-center py-12 text-sm text-gray-400">
+          <div className="text-center py-12 text-sm text-[#A3A3A3]">
             暂无版本更新记录
           </div>
         ) : (
           <div className="py-2">
-            <ol className="relative space-y-4 ml-4 border-l-2 border-gray-100 pl-6">
+            <ol className="relative space-y-4 ml-4 border-l-2 border-[#F5F5F5] pl-6">
               {records.map((r, idx) => {
                 const isCurrent = r.isLatest;
                 return (
@@ -71,32 +71,32 @@ export default function PublicImageHistoryDialog({
                     <span
                       className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 ${
                         isCurrent
-                          ? "bg-blue-500 border-blue-200"
-                          : "bg-white border-gray-300"
+                          ? "bg-[#1447E6] border-[#1447E6]/30"
+                          : "bg-white border-[#A3A3A3]"
                       }`}
                     />
                     <div
-                      className={`rounded-lg p-3 ${
+                      className={`rounded-[4px] p-3 ${
                         isCurrent
-                          ? "bg-blue-50/40 border border-blue-100"
-                          : "bg-gray-50/30 border border-gray-100"
+                          ? "bg-[#1447E6]/5 border border-[#1447E6]/20"
+                          : "bg-[#FAFAFA] border border-[#E5E5E5]"
                       }`}
                     >
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono font-semibold text-sm text-gray-900 tabular-nums">
+                        <span className="font-mono font-semibold text-sm text-[#0A0A0A] tabular-nums">
                           v{r.version}
                         </span>
                         {isCurrent && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-500 text-white">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1447E6] text-white">
                             当前版本
                           </span>
                         )}
-                        <span className="text-[11px] text-gray-400 font-mono ml-auto">
+                        <span className="text-[11px] text-[#A3A3A3] font-mono ml-auto">
                           {r.releaseTime}
                         </span>
                       </div>
                       {r.description && (
-                        <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
+                        <p className="mt-1.5 text-xs text-[#334155] leading-relaxed">
                           {r.description}
                         </p>
                       )}
@@ -111,7 +111,7 @@ export default function PublicImageHistoryDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="claw-outline" size="claw-sm" onClick={onClose}>
             关闭
           </Button>
         </DialogFooter>

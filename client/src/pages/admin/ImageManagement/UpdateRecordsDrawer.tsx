@@ -144,10 +144,10 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
       <DialogContent className="sm:max-w-[680px] max-h-[80vh] overflow-hidden flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-3 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Cloud className="w-4 h-4 text-blue-500" />
+            <Cloud className="w-4 h-4 text-[#1447E6]" />
             镜像更新记录
           </DialogTitle>
-          <DialogDescription className="text-xs text-gray-500">
+          <DialogDescription className="text-xs text-[#737373]">
             所有 Agent 类型下各镜像的版本发布历史。一个 Agent 类型可能包含多个镜像（不同 OS 等），可按类型或镜像筛选；当前正在推送的版本可在此撤回。
           </DialogDescription>
         </DialogHeader>
@@ -156,15 +156,15 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
         <div className="px-6 pb-3 space-y-2 shrink-0">
           {/* 第一级：Agent 类型 */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
+            <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider mr-1">
               Agent 类型
             </span>
             <button
               onClick={() => setFilter({ kind: "all", value: "" })}
-              className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${
+              className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
                 filter.kind === "all"
-                  ? "border-blue-300 bg-blue-50 text-blue-700"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-blue-200"
+                  ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
+                  : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
               }`}
             >
               全部
@@ -178,14 +178,14 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                 <button
                   key={t.agentType}
                   onClick={() => setFilter({ kind: "type", value: t.agentType })}
-                  className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${
+                  className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
                     isActive
-                      ? "border-blue-300 bg-blue-50 text-blue-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-blue-200"
+                      ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
+                      : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
                   }`}
                 >
                   {t.label}
-                  <span className="ml-1 text-[10px] text-gray-400 tabular-nums">
+                  <span className="ml-1 text-[10px] text-[#A3A3A3] tabular-nums">
                     · {imagesByType.get(t.agentType)?.length ?? 0} 镜像
                   </span>
                 </button>
@@ -195,16 +195,16 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
 
           {/* 第二级：镜像（按选中的 Agent 类型展开） */}
           {imageOptionsForActiveType.length > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap border-l-2 border-blue-100 ml-1 pl-3">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mr-1">
+            <div className="flex items-center gap-1.5 flex-wrap border-l-2 border-[#1447E6]/20 ml-1 pl-3">
+              <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider mr-1">
                 镜像
               </span>
               <button
                 onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
-                className={`text-xs px-2 py-0.5 rounded-md border transition-colors ${
+                className={`text-xs px-2 py-0.5 rounded-[3px] border transition-colors ${
                   filter.kind === "type"
-                    ? "border-blue-300 bg-blue-50 text-blue-700"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-blue-200"
+                    ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
+                    : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
                 }`}
               >
                 全部镜像
@@ -216,10 +216,10 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                   <button
                     key={img.imageId}
                     onClick={() => setFilter({ kind: "image", value: img.imageId })}
-                    className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border transition-colors ${
+                    className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-[3px] border transition-colors ${
                       isActive
                         ? `${c.bg} ${c.text} ${c.border}`
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                        : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#A3A3A3]"
                     }`}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
@@ -234,9 +234,9 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
         {/* 时间线 */}
         <div className="flex-1 overflow-y-auto px-6 py-2">
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-sm text-gray-400">暂无更新记录</div>
+            <div className="py-12 text-center text-sm text-[#A3A3A3]">暂无更新记录</div>
           ) : (
-            <ol className="relative space-y-3 ml-2 border-l-2 border-gray-100 pl-5">
+            <ol className="relative space-y-3 ml-2 border-l-2 border-[#F5F5F5] pl-5">
               {filtered.map((r, idx) => {
                 const push = findPush(r);
                 const isFirstRelease = r.type === "firstRelease";
@@ -247,17 +247,17 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                     <span
                       className={`absolute -left-[26px] top-2 w-3 h-3 rounded-full border-2 ${
                         push
-                          ? "bg-blue-500 border-blue-200"
+                          ? "bg-[#1447E6] border-[#1447E6]/30"
                           : isFirstRelease
                             ? "bg-purple-500 border-purple-200"
-                            : "bg-white border-gray-300"
+                            : "bg-white border-[#A3A3A3]"
                       }`}
                     />
                     <div
-                      className={`rounded-lg p-3 border ${
+                      className={`rounded-[4px] p-3 border ${
                         push
-                          ? "bg-blue-50/40 border-blue-100"
-                          : "bg-white border-gray-100"
+                          ? "bg-[#1447E6]/5 border-[#1447E6]/20"
+                          : "bg-white border-[#E5E5E5]"
                       }`}
                     >
                       {/* 第一行：镜像彩色徽章 + 版本号 + 首次上线 + 日期 */}
@@ -279,7 +279,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                             </div>
                           </TooltipContent>
                         </Tooltip>
-                        <span className="font-mono font-semibold text-sm text-gray-900 tabular-nums">
+                        <span className="font-mono font-semibold text-sm text-[#0A0A0A] tabular-nums">
                           {formatVersion(r.version)}
                         </span>
                         {isFirstRelease && (
@@ -288,7 +288,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                             首次上线
                           </span>
                         )}
-                        <span className="inline-flex items-center gap-1 text-[11px] text-gray-400 ml-auto">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-[#A3A3A3] ml-auto">
                           <Calendar className="w-2.5 h-2.5" />
                           <span className="font-mono tabular-nums">{r.releaseDate}</span>
                         </span>
@@ -296,15 +296,15 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
 
                       {/* 第二行：所属 Agent 类型 + 镜像 ID（弱化为副标识） */}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <span className="text-[11px] text-gray-500">
-                          属于 <span className="font-medium text-gray-700">{r.agentTypeLabel}</span>
+                        <span className="text-[11px] text-[#737373]">
+                          属于 <span className="font-medium text-[#334155]">{r.agentTypeLabel}</span>
                         </span>
-                        <span className="text-gray-300 text-[11px]">·</span>
-                        <span className="text-[11px] text-gray-400 font-mono">{r.imageId}</span>
+                        <span className="text-[#A3A3A3] text-[11px]">·</span>
+                        <span className="text-[11px] text-[#A3A3A3] font-mono">{r.imageId}</span>
                       </div>
 
                       {/* 第三行：发布说明 */}
-                      <div className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                      <div className="text-[11px] text-[#737373] mt-1 leading-relaxed">
                         {isFirstRelease
                           ? "镜像首次上线"
                           : `更新到 ${formatVersion(r.version)} 版本`}
@@ -312,7 +312,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
 
                       {push ? (
                         <div className="mt-2 flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1447E6]/10 text-[#1447E6] border border-[#1447E6]/20">
                             <Megaphone className="w-2.5 h-2.5" />
                             正在提醒员工更新此版本
                           </span>
@@ -320,7 +320,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => handleRevoke(push)}
-                                className="inline-flex items-center gap-0.5 text-[10px] text-gray-500 hover:text-red-500 transition-colors"
+                                className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
                               >
                                 <RotateCcw className="w-2.5 h-2.5" />
                                 撤回
@@ -337,7 +337,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                             <TooltipTrigger asChild>
                               <button
                                 onClick={() => onPush(r.agentType)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] text-blue-600 hover:bg-blue-50 transition-colors"
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] text-[#1447E6] hover:bg-[#1447E6]/10 transition-colors"
                               >
                                 <Megaphone className="w-2.5 h-2.5" />
                                 推送 {r.agentTypeLabel} 最新版本
@@ -357,8 +357,8 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
           )}
         </div>
 
-        <DialogFooter className="px-6 pb-4 pt-3 border-t border-gray-100 shrink-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="px-6 pb-4 pt-3 border-t border-[#F5F5F5] shrink-0">
+          <Button variant="claw-outline" size="claw-sm" onClick={() => onOpenChange(false)}>
             关闭
           </Button>
         </DialogFooter>

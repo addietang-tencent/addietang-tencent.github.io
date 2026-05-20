@@ -60,7 +60,26 @@ const NEW_FEATURE_PATHS = new Set([
   "/admin/agent-tool-library",
 ]);
 
-const NAV_GROUPS = [
+type NavItem = {
+  label: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+};
+
+type NavSubGroup = {
+  label: string;
+  defaultExpanded?: boolean;
+  items: NavItem[];
+};
+
+type NavGroup = {
+  label: string;
+  items?: NavItem[];
+  subGroups?: NavSubGroup[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
   {
     label: "基础信息",
     items: [
@@ -76,25 +95,33 @@ const NAV_GROUPS = [
       { label: "通道配置", path: "/admin/channel-config", icon: MessageSquare },
       { label: "技能配置", path: "/admin/skill-config", icon: Puzzle },
       { label: "Agent 工具库", path: "/admin/agent-tool-library", icon: Wrench },
-      { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
-      { label: "网盘管理", path: "/admin/file-management", icon: FolderOpen },
+    ],
+    subGroups: [
+      {
+        label: "Agent 启动配置",
+        defaultExpanded: true,
+        items: [
+          { label: "Agent 类型", path: "/admin/agent-types", icon: HardDrive, badge: "原镜像管理" },
+          { label: "资源管理", path: "/admin/agent-template", icon: LayoutTemplate },
+          { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
+        ],
+      },
     ],
   },
   {
-    label: "云设备配置",
-    items: [
-      { label: "Agent 模板", path: "/admin/agent-template", icon: LayoutTemplate },
-      { label: "镜像管理", path: "/admin/image-management", icon: HardDrive },
-      { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
-      { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },
-    ],
-  },
-  {
-    label: "运营监控",
+    label: "运维与观测",
     items: [
       { label: "Agent 列表", path: "/admin/openclaw-monitor", icon: Activity },
       { label: "Tokens 监控", path: "/admin/tokens-monitor", icon: BarChart3 },
       { label: "运维观测", path: "/admin/ops-observation", icon: Gauge },
+    ],
+  },
+  {
+    label: "Agent 服务",
+    items: [
+      { label: "记忆管理", path: "/admin/memory-management", icon: MemoryStick },
+      { label: "网盘管理", path: "/admin/file-management", icon: FolderOpen },
+      { label: "云开发管理", path: "/admin/cloud-dev", icon: Code2 },
     ],
   },
   {
@@ -105,7 +132,6 @@ const NAV_GROUPS = [
       { label: "操作记录", path: "/admin/audit-log", icon: ClipboardList },
     ],
   },
-
 ];
 
 const CURRENT_ADMIN = "alice@acompany.com";
@@ -168,6 +194,57 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           {NAV_GROUPS.map((group) => {
             const isCollapsed = collapsedGroups.has(group.label);
+
+            // 渲染单个菜单项（复用逻辑）
+            const renderNavItem = (item: NavItem, isSubGroupItem = false) => {
+              const isActive = location === item.path || location.startsWith(item.path + "/");
+              const isComingSoon = COMING_SOON_PATHS.has(item.path);
+              const isNewFeature = NEW_FEATURE_PATHS.has(item.path);
+              const Icon = item.icon;
+              let bgClass = "";
+              let textClass = "";
+              let iconClass = "";
+              const borderColor = isComingSoon
+                ? (isActive ? "#D1D5DB" : "transparent")
+                : (isActive ? "#007AFF" : "transparent");
+              const borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: isSubGroupItem ? "calc(1.5rem - 2px)" : "calc(0.75rem - 2px)" };
+              if (isComingSoon) {
+                if (isActive) { bgClass = "bg-gray-100"; textClass = "text-gray-600"; iconClass = "text-gray-400"; }
+                else { bgClass = "hover:bg-gray-50"; textClass = "text-gray-600 hover:text-gray-900"; iconClass = "text-gray-400"; }
+              } else {
+                if (isActive) { bgClass = "bg-blue-50"; textClass = "text-blue-600"; iconClass = "text-blue-600"; }
+                else { bgClass = "hover:bg-gray-50"; textClass = "text-gray-600 hover:text-gray-900"; iconClass = "text-gray-400"; }
+              }
+              return (
+                <Link key={item.path} href={item.path}>
+                  <div
+                    className={`flex items-center justify-between gap-2.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
+                    style={borderStyle}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0 relative z-10 pr-2">
+                      {!isSubGroupItem && <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />}
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && (
+                        <span className="text-gray-400 whitespace-nowrap flex-shrink-0" style={{ fontSize: '10px' }}>
+                          {item.badge}
+                        </span>
+                      )}
+                      {isComingSoon && (
+                        <span className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0" style={{ fontSize: '10px' }}>
+                          即将开放
+                        </span>
+                      )}
+                      {isNewFeature && (
+                        <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#007AFF', letterSpacing: '0.02em' }}>
+                          new
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            };
+
             return (
               <div key={group.label} className="mb-4">
                 <button
@@ -183,70 +260,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </button>
                 {!isCollapsed && (
                   <div className="space-y-0.5">
-                    {group.items.map((item) => {
-                      const isActive = location === item.path || location.startsWith(item.path + "/");
-                      const isComingSoon = COMING_SOON_PATHS.has(item.path);
-                      const isNewFeature = NEW_FEATURE_PATHS.has(item.path);
-                      const Icon = item.icon;
-
-                      // 确定样式
-                      let bgClass = "";
-                      let textClass = "";
-                      let iconClass = "";
-                      let borderStyle = {};
-
-                      // 始终保留 2px 左边框占位（transparent），active 时显示颜色
-                      const borderColor = isComingSoon
-                        ? (isActive ? "#D1D5DB" : "transparent")
-                        : (isActive ? "#007AFF" : "transparent");
-                      borderStyle = { borderLeft: `2px solid ${borderColor}`, paddingLeft: "calc(0.75rem - 2px)" };
-
-                      if (isComingSoon) {
-                        // 即将开放：选中灰色
-                        if (isActive) {
-                          bgClass = "bg-gray-100";
-                          textClass = "text-gray-600";
-                          iconClass = "text-gray-400";
-                        } else {
-                          bgClass = "hover:bg-gray-50";
-                          textClass = "text-gray-600 hover:text-gray-900";
-                          iconClass = "text-gray-400";
-                        }
-                      } else {
-                        // 正常项 & 功能上新：选中蓝色
-                        if (isActive) {
-                          bgClass = "bg-blue-50";
-                          textClass = "text-blue-600";
-                          iconClass = "text-blue-600";
-                        } else {
-                          bgClass = "hover:bg-gray-50";
-                          textClass = "text-gray-600 hover:text-gray-900";
-                          iconClass = "text-gray-400";
-                        }
-                      }
-
+                    {/* 普通菜单项 */}
+                    {(group.items ?? []).map((item) => renderNavItem(item, false))}
+                    {/* 子分组 */}
+                    {(group.subGroups ?? []).map((subGroup) => {
+                      const subKey = `${group.label}__${subGroup.label}`;
+                      const isSubCollapsed = collapsedGroups.has(subKey);
+                      // 初始化：defaultExpanded 时不折叠
                       return (
-                        <Link key={item.path} href={item.path}>
-                          <div
-                            className={`flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer relative z-0 ${bgClass} ${textClass}`}
-                            style={borderStyle}
+                        <div key={subKey} className="mt-1">
+                          <button
+                            onClick={() => {
+                              setCollapsedGroups((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(subKey)) next.delete(subKey);
+                                else next.add(subKey);
+                                return next;
+                              });
+                            }}
+                            className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                           >
-                            <div className="flex items-center gap-2.5 flex-1 min-w-0 relative z-10">
-                              <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
-                              <span className="truncate">{item.label}</span>
-                              {isComingSoon && (
-                                <span className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1" style={{ fontSize: '10px' }}>
-                                  即将开放
-                                </span>
-                              )}
-                            {isNewFeature && (
-                                <span className="font-semibold px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 ml-1 relative z-10" style={{ fontSize: '10px', color: '#fff', background: '#007AFF', letterSpacing: '0.02em' }}>
-                                  new
-                                </span>
-                              )}
+                            <span>{subGroup.label}</span>
+                            {isSubCollapsed ? (
+                              <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                            )}
+                          </button>
+                          {!isSubCollapsed && (
+                            <div className="space-y-0.5">
+                              {subGroup.items.map((item) => renderNavItem(item, true))}
                             </div>
-                          </div>
-                        </Link>
+                          )}
+                        </div>
                       );
                     })}
                   </div>

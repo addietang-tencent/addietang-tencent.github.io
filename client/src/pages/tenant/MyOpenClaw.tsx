@@ -12,6 +12,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
   Dialog,
   DialogContent,
@@ -531,51 +532,23 @@ export default function MyOpenClaw() {
               <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
             </div>
             <div className="flex items-center gap-3">
-              {/* 双模式 Segmented：保留 OneID / 普通模式逻辑
-                  字号/内边距/图标尺寸与 ViewModeSegmented 保持一致 */}
-              <div
-                className="hidden md:inline-flex items-center gap-1 rounded-[4px] p-1 h-9"
-                style={{ background: "#F5F5F5" }}
-                role="tablist"
-                aria-label="用户分组模式切换"
-              >
-                <button
-                  role="tab"
-                  aria-selected={groupMode === "normal"}
+              {/* 双模式 Segmented：保留 OneID / 普通模式逻辑 */}
+              <SegmentGroup className="hidden md:inline-flex">
+                <SegmentOption
+                  active={groupMode === "normal"}
                   onClick={() => handleGroupModeChange("normal")}
-                  className={`inline-flex items-center gap-1 px-3 h-7 rounded-[3px] text-sm font-medium transition-all duration-150 ${
-                    groupMode === "normal"
-                      ? "bg-white text-[#0A0A0A]"
-                      : "text-[#737373] hover:text-[#0A0A0A]"
-                  }`}
-                  style={
-                    groupMode === "normal"
-                      ? { boxShadow: "var(--shadow-segment)" }
-                      : undefined
-                  }
                   title="切换到普通用户模式"
                 >
                   普通
-                </button>
-                <button
-                  role="tab"
-                  aria-selected={groupMode === "multi-group"}
+                </SegmentOption>
+                <SegmentOption
+                  active={groupMode === "multi-group"}
                   onClick={() => handleGroupModeChange("multi-group")}
-                  className={`inline-flex items-center gap-1 px-3 h-7 rounded-[3px] text-sm font-medium transition-all duration-150 ${
-                    groupMode === "multi-group"
-                      ? "bg-white text-[#0A0A0A]"
-                      : "text-[#737373] hover:text-[#0A0A0A]"
-                  }`}
-                  style={
-                    groupMode === "multi-group"
-                      ? { boxShadow: "var(--shadow-segment)" }
-                      : undefined
-                  }
                   title="切换到多分组用户模式"
                 >
                   多分组
-                </button>
-              </div>
+                </SegmentOption>
+              </SegmentGroup>
               {/* 创建 Agent 按钮：Figma 黑→蓝渐变 */}
               <Button
                 onClick={() => {

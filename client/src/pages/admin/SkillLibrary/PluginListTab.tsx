@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Input } from '@/components/ui/input';
 import { Search, Grid3x3, List, Send, Trash2, Loader } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -278,22 +279,14 @@ export default function PluginListTab() {
 
         <div className="flex items-center gap-4">
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
-            <button
-              onClick={() => setViewMode('card')}
-              className={`p-2 rounded transition-colors ${viewMode === 'card' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
-              title="卡片视图"
-            >
+          <SegmentGroup>
+            <SegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')} title="卡片视图">
               <Grid3x3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
-              title="列表视图"
-            >
+            </SegmentOption>
+            <SegmentOption active={viewMode === 'list'} onClick={() => setViewMode('list')} title="列表视图">
               <List className="w-4 h-4" />
-            </button>
-          </div>
+            </SegmentOption>
+          </SegmentGroup>
 
           <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
             + 发布插件

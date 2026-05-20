@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -66,22 +67,18 @@ export default function AgentToolLibrary() {
       </div>
 
       {/* Tab 切换器 */}
-      <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-            }}
-            className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-1">
+        <SegmentGroup>
+          {TABS.map((tab) => (
+            <SegmentOption
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </SegmentOption>
+          ))}
+        </SegmentGroup>
       </div>
 
       {/* Tab 描述 */}

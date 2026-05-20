@@ -59,7 +59,7 @@ const buttonVariants = cva(
           "bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
         secondary:
           "bg-[#f5f5f5] border border-[#e3e3e3] text-[#020617] font-normal " +
           "hover:bg-[#ebebeb] hover:border-[#d4d4d4] " +
@@ -91,7 +91,7 @@ const buttonVariants = cva(
           "bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
 
         /**
          * 深色填充（主按钮）

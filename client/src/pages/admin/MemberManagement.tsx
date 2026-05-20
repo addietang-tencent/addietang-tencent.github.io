@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -2417,22 +2418,20 @@ export default function MemberManagement() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {/* 视图切换按钮组（最左侧，两种模式通用） */}
-            <div
-              className="inline-flex items-center rounded-xl p-1 gap-0.5 bg-white border border-gray-200 h-9"
-            >
-              <button
-                className={`h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${viewMode === "all" ? "font-semibold text-[#020617] bg-[#F5F5F5]" : "text-[#020617] hover:bg-[#F5F5F5]"}`}
+            <SegmentGroup>
+              <SegmentOption
+                active={viewMode === "all"}
                 onClick={() => { setViewMode("all"); setPage(1); }}
               >
                 全部
-              </button>
-              <button
-                className={`h-7 px-3 rounded-[4px] text-xs font-medium transition-all duration-200 ${viewMode === "group" ? "font-semibold text-[#020617] bg-[#F5F5F5]" : "text-[#020617] hover:bg-[#F5F5F5]"}`}
+              </SegmentOption>
+              <SegmentOption
+                active={viewMode === "group"}
                 onClick={() => { setViewMode("group"); setGroupPage(1); }}
               >
                 分组
-              </button>
-            </div>
+              </SegmentOption>
+            </SegmentGroup>
             {/* OneID 模式：部门筛选 */}
             {hasOneid && (
               <DepartmentFilter

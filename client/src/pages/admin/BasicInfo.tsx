@@ -596,33 +596,27 @@ export default function BasicInfo() {
           <div
             className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">平台基础信息</h2>
-            <div className="space-y-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">所在地域</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.region}</p>
+            <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4 items-start">
+                <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Globe className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">域名</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5 break-all">https://nmyy3n7z.clawpro.cloud/</p>
+              <div className="flex gap-4 items-start">
+                <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Cloud className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">关联腾讯云账号</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.tencentUin}</p>
+              <div className="flex gap-4 items-start">
+                <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>

@@ -11,6 +11,7 @@ import {
   Stethoscope, HelpCircle, Info,
   Plus, Trash2, Search,
   ChevronDown, ChevronRight, Minus, Loader2,
+  ArrowUpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1259,6 +1260,18 @@ export default function PlatformPolicy() {
   const [configChannelRules, setConfigChannelRules] = useState<PolicyRule<boolean>[]>([{ id: "cc-fallback", groupIds: [], value: true }]);
   const [customModelRules, setCustomModelRules] = useState<PolicyRule<boolean>[]>([{ id: "cust-fallback", groupIds: [], value: false }]);
   const [terminalRules, setTerminalRules] = useState<PolicyRule<boolean>[]>([{ id: "term-fallback", groupIds: [], value: false }]);
+  // 允许员工自助更新 Agent 版本（用户端 OpenClawDetail 读取同一 key）
+  // 默认值 true（新企业符合既有产品行为：员工有"一键更新"按钮）
+  const [selfUpgradeRules, setSelfUpgradeRules] = useState<PolicyRule<boolean>[]>(() => {
+    const raw = localStorage.getItem("admin_allow_self_upgrade");
+    const value = raw === null ? true : raw === "true";
+    return [{ id: "selfup-fallback", groupIds: [], value }];
+  });
+  const handleSelfUpgradeRulesChange = (next: PolicyRule<boolean>[]): boolean | void => {
+    setSelfUpgradeRules(next);
+    const enabled = next.some((r) => r.value);
+    localStorage.setItem("admin_allow_self_upgrade", enabled ? "true" : "false");
+  };
   const [panelRules, setPanelRules] = useState<PolicyRule<boolean>[]>(() => [
     { id: "panel-fallback", groupIds: [], value: localStorage.getItem("admin_allow_panel_access") === "true" },
   ]);
@@ -1521,6 +1534,13 @@ export default function PlatformPolicy() {
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
+            icon={<ArrowUpCircle className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
+            title="允许员工自助更新 Agent 版本"
+            description="开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本。关闭后，所有更新动作只能由管理员推送或批量发起"
+            rules={selfUpgradeRules}
+            onRulesChange={handleSelfUpgradeRulesChange}
+          />
           <TogglePolicyCard
             icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0" />}
             iconBg=""

@@ -56,11 +56,12 @@ import {
   ArrowLeft, Trash2, EyeOff, Eye,
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
   ChevronRight, ChevronDown, ChevronUp, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
-  Copy, Terminal, Database, Clock, Shield, Lock,
+  Copy, Terminal, Database, Clock, Shield, Lock, Megaphone,
   Plus, Sparkles, Mic, Send,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
 import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
+import { getActivePush, type ActivePush } from "@/lib/upgradePushStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
 import ToolsMcpPanel from "./ToolsMcpPanel";
@@ -387,6 +388,51 @@ export default function AgentDetail() {
   const [showUpdateConfirmDialog, setShowUpdateConfirmDialog] = useState(false);
   const [showUpdateBubble, setShowUpdateBubble] = useState(true);
   const [activeDetailTab, setActiveDetailTab] = useState("basic");
+
+  // ── 平台策略：是否允许员工自助更新（同 key：admin_allow_self_upgrade） ──
+  // 默认 true；管理员关闭后按钮置灰，hover 提示联系管理员
+  const [allowSelfUpgrade, setAllowSelfUpgrade] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("admin_allow_self_upgrade");
+      return raw === null ? true : raw === "true";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const raw = localStorage.getItem("admin_allow_self_upgrade");
+        setAllowSelfUpgrade(raw === null ? true : raw === "true");
+      } catch { /* ignore */ }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+
+  // ── 管理员推送的"可更新"徽章 ──
+  // 把员工端 agentType（小写 openclaw/hermes/lightclawace）映射到管控端 key
+  const imgAgentType = ((): string => {
+    const raw = (claw as any).agentType as string | undefined;
+    if (!raw) return "OpenClaw";
+    const map: Record<string, string> = {
+      openclaw: "OpenClaw",
+      hermes: "HermesAgent",
+      lightclawace: "LightClawACE",
+    };
+    return map[raw.toLowerCase()] ?? "OpenClaw";
+  })();
+  const [recommendPush, setRecommendPush] = useState<ActivePush | null>(() => getActivePush(imgAgentType));
+  useEffect(() => {
+    const refresh = () => setRecommendPush(getActivePush(imgAgentType));
+    refresh();
+    window.addEventListener("upgrade-push-changed", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("upgrade-push-changed", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, [imgAgentType]);
 
   // ── Memory 状态 ──
   // 当前实例的 Memory 状态：'pro' | 'free' | 'none'
@@ -1368,6 +1414,29 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   </span>
                 )}
                 <p className="text-xs text-gray-400">{claw.instanceId}</p>
+                {/* 当前 Agent 版本号（mock 数据缺字段时兜底） */}
+                <span className="text-xs text-gray-300">·</span>
+                <span className="text-xs text-gray-500 font-mono tabular-nums">
+                  v{(claw as any).agentVersion ?? "2026.4.0"}
+                </span>
+                {recommendPush && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100 cursor-help whitespace-nowrap">
+                        <Megaphone className="w-2.5 h-2.5" />
+                        可更新 v{recommendPush.version}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[320px] text-xs leading-relaxed">
+                      <div className="space-y-1">
+                        <div className="font-medium">{recommendPush.message ?? `推荐更新到 v${recommendPush.version}`}</div>
+                        <div className="text-gray-300">
+                          来自 {recommendPush.pushedBy} · {recommendPush.pushedAt}
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
             </div>
           </div>
@@ -1400,6 +1469,21 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
                   更新中
                 </button>
+              ) : !allowSelfUpgrade ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      disabled
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white border border-gray-200 rounded-lg px-3 py-1.5 cursor-not-allowed opacity-60 leading-none"
+                    >
+                      <ArrowUpCircle className="w-3.5 h-3.5" />
+                      一键更新
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs max-w-[240px] leading-relaxed">
+                    管理员已关闭"自助更新"，请联系管理员开启
+                  </TooltipContent>
+                </Tooltip>
               ) : (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -2774,7 +2858,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <DialogDescription className="sr-only">更新确认</DialogDescription>
           </DialogHeader>
           <div className="text-sm text-gray-700 leading-relaxed space-y-2 py-1">
-            <p>Agent版本将会升级至管理员指定生效镜像所对应的版本，且不支持跨Agent类型升级。</p>
+            <p>Agent版本将会更新至管理员指定生效镜像所对应的版本，且不支持跨Agent类型更新。</p>
             <p>更新版本预计需要 5～10 分钟不等，请您耐心等待。更新期间 Agent 网关服务暂停，面板不可操作。</p>
             <p>更新版本后模型（Models）、通道（Channels）、技能（Skills）和记忆均不会丢失。</p>
           </div>

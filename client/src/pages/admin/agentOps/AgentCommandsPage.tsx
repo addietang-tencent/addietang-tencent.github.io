@@ -3,7 +3,7 @@
  *
  * 路由: /admin/agent-commands
  * 内含两个 Tab：
- *   - list    命令模板  ← 现 CommandTaskTab（命令模板沉淀，含创建/编辑/下发/删除）
+ *   - list    命令列表  ← 现 CommandTaskTab（命令模板沉淀，含创建/编辑/下发/删除）
  *   - history 执行记录  ← HistoryTab，scope 锁定为 command-execute
  *
  * URL 同步：?tab=list | history
@@ -23,7 +23,7 @@ type TabId = "list" | "history";
 const TABS = [
   {
     id: "list" as const,
-    label: "命令模板",
+    label: "命令列表",
     description: "沉淀团队的运维命令模板，便于复用与审计；点击「下发」可批量到 Agent 实例执行。",
   },
   {

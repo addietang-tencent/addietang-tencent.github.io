@@ -47,10 +47,10 @@ export default function TopNav({
 }: TopNavProps) {
   return (
     <header
-      className={`fixed left-0 right-0 z-50 h-[64px] bg-white/95 backdrop-blur-md ${className}`}
+      className={`sticky top-0 z-50 h-[64px] bg-white/95 backdrop-blur-md ${className}`}
       style={{
-        top: 0,
         borderBottom: "1px solid #E2E8F0",
+        minWidth: "1200px",
       }}
     >
       {/* 三栏 Grid：左 1fr / 中 auto / 右 1fr — 中栏天然页面正中 */}

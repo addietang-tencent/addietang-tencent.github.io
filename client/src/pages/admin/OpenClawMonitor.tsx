@@ -1869,19 +1869,21 @@ export default function AgentMonitor() {
             </div>
             {/* 镜像更新提醒铃铛（与批量更新按钮同列） */}
             <ImageUpdateBellEntry />
-            {/* 批量更新按鈕 */}
+            {/* 批量更新按钮（次级样式，避免抢主操作） */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
                   <Button
                     onClick={() => !batchDisabled && setShowBatchUpgradeDialog(true)}
                     disabled={batchDisabled}
+                    variant="claw-outline"
+                    size="claw"
                     className="px-3 gap-1.5"
                   >
                     <CircleArrowUp className="w-3.5 h-3.5" />
                     批量更新
                     {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#f0f3ff] text-[#355EF1] rounded text-xs">{selectedCount}</span>
                     )}
                   </Button>
                 </span>
@@ -1890,7 +1892,7 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
               )}
             </Tooltip>
-            {/* 批量删除按钮 */}
+            {/* 批量删除按钮（次级样式 + 红色文字提示危险性） */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
@@ -1906,15 +1908,16 @@ export default function AgentMonitor() {
                       }
                     }}
                     disabled={batchDeleteDisabled}
-                    variant="outline"
-                    className={`rounded-xl text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
-                      batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    variant="claw-outline"
+                    size="claw"
+                    className={`px-3 gap-1.5 ${
+                      batchDeleteDisabled ? "" : "!text-[#d42a1e] hover:!text-[#b91c1c]"
                     }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     批量删除
                     {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-xs">{selectedCount}</span>
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#fdecea] text-[#d42a1e] rounded text-xs">{selectedCount}</span>
                     )}
                   </Button>
                 </span>
@@ -1945,8 +1948,9 @@ export default function AgentMonitor() {
                       }
                       setDispatchPresetIds(runningIds);
                     }}
-                    className="rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all text-white"
-                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                    variant="claw-primary"
+                    size="claw"
+                    className="px-3 gap-1.5"
                   >
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
@@ -1960,13 +1964,11 @@ export default function AgentMonitor() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  >
+                  <Button variant="claw-outline" size="claw" className="px-3 gap-1.5">
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
                     <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem
@@ -2003,19 +2005,21 @@ export default function AgentMonitor() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <button
+            <Button
+              variant="claw-outline"
+              size="claw"
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              className="px-3 gap-1.5"
             >
               <Tag className="w-3.5 h-3.5" />
               配置默认标签
-            </button>
-            {/* 智能体迁移按鈕 */}
+            </Button>
+            {/* 智能体迁移按钮 */}
             <Link href="/admin/agent-migration">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
+              <Button variant="claw-outline" size="claw" className="px-3 gap-1.5">
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 智能体迁移
-              </button>
+              </Button>
             </Link>
           </div>
 

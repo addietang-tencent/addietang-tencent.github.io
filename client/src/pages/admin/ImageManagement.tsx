@@ -1139,7 +1139,7 @@ export default function ImageManagement() {
                 );
               })()}
             </div>
-            <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            <p className="text-sm text-gray-500 mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
           </div>

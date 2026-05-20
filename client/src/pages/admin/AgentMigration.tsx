@@ -425,7 +425,7 @@ rm -f /tmp/openclaw-state.tgz`;
           <ArrowLeft className="w-3.5 h-3.5" /> 返回 Agent 列表
         </button>
         <h1 className="text-2xl font-bold text-gray-900">智能体迁移</h1>
-        <p className="text-sm text-gray-500 mt-0.5">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
+        <p className="text-sm text-gray-500 mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
       </div>
 
       {/* ==================== Section 1: 源端配置 ==================== */}

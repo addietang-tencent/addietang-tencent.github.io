@@ -23,6 +23,16 @@ function useAdminSidebar() {
 
 /** 视口宽度 ≤ 此值时侧栏自动收起 */
 const ADMIN_SIDEBAR_AUTO_COLLAPSE_BP = 1200;
+/** 持久化用户主动设置的折叠态，避免跨页路由切换时 Provider 重新挂载丢失偏好 */
+const ADMIN_SIDEBAR_STORAGE_KEY = "admin_sidebar_collapsed";
+
+function readStoredCollapsed(): boolean | null {
+  if (typeof window === "undefined") return null;
+  const v = window.localStorage.getItem(ADMIN_SIDEBAR_STORAGE_KEY);
+  if (v === "true") return true;
+  if (v === "false") return false;
+  return null;
+}
 
 function AdminSidebarProvider({
   defaultCollapsed = false,
@@ -35,7 +45,16 @@ function AdminSidebarProvider({
   onCollapsedChange?: (collapsed: boolean) => void;
   children: React.ReactNode;
 }) {
-  const [internalCollapsed, setInternalCollapsed] = React.useState(defaultCollapsed);
+  // 初始值优先用 localStorage 中保留的用户偏好；其次再退回到 defaultCollapsed
+  const [internalCollapsed, setInternalCollapsed] = React.useState(() => {
+    const stored = readStoredCollapsed();
+    if (stored !== null) return stored;
+    if (typeof window !== "undefined") {
+      // 首次进入：按视口宽度推断
+      return window.matchMedia(`(max-width: ${ADMIN_SIDEBAR_AUTO_COLLAPSE_BP}px)`).matches;
+    }
+    return defaultCollapsed;
+  });
   const collapsed = collapsedProp ?? internalCollapsed;
 
   const setCollapsed = React.useCallback(
@@ -43,6 +62,10 @@ function AdminSidebarProvider({
       onCollapsedChange?.(nextCollapsed);
       if (collapsedProp === undefined) {
         setInternalCollapsed(nextCollapsed);
+        // 用户主动切换 → 持久化偏好
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(ADMIN_SIDEBAR_STORAGE_KEY, String(nextCollapsed));
+        }
       }
     },
     [collapsedProp, onCollapsedChange]
@@ -52,14 +75,15 @@ function AdminSidebarProvider({
     setCollapsed(!collapsed);
   }, [collapsed, setCollapsed]);
 
-  // ≤1200px 视口自动收起，>1200px 恢复展开
+  // 视口跨阈值时同步：仅在 mql change 事件触发时更新；首次挂载不再强制覆盖（已由初始 state 处理）
   React.useEffect(() => {
     if (collapsedProp !== undefined) return;
     const mql = window.matchMedia(`(max-width: ${ADMIN_SIDEBAR_AUTO_COLLAPSE_BP}px)`);
-    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
+    const handler = (e: MediaQueryListEvent) => {
       setInternalCollapsed(e.matches);
+      // 视口驱动的同步同样写回偏好，让用户保留"最近一次的折叠态"
+      window.localStorage.setItem(ADMIN_SIDEBAR_STORAGE_KEY, String(e.matches));
     };
-    handler(mql);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
   }, [collapsedProp]);

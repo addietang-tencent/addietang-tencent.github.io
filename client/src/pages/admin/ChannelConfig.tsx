@@ -13,9 +13,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, ChevronDown, ChevronRight, Settings2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
 import { ScopePopover } from "@/components/ScopePopover";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
@@ -67,6 +78,22 @@ const BUILTIN_CHANNELS = [
   { id: "wework-app", name: "企业微信应用" },
   { id: "dingtalk", name: "钉钉" },
   { id: "feishu", name: "飞书" },
+];
+
+// ─── Tab 定义（与 SkillConfig 同款） ─────────────────────────────────────────────
+const CHANNEL_TABS = [
+  {
+    id: "builtin",
+    label: "内置通道",
+    description:
+      "通过微信、QQ 等机器人接入，可实现与对应渠道的智能机器人对话，满足全场景下的个人沟通与企业服务需求，覆盖不同团队多样化协作场景。",
+  },
+  {
+    id: "custom",
+    label: "自定义通道",
+    description:
+      "企业可配置自研 IM 通道信息，添加后用户可在 Agent 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。目前自定义通道仅支持 WebSocket 长连接方式接入。",
+  },
 ];
 
 // 预设颜色列表
@@ -134,6 +161,10 @@ export default function ChannelConfig() {
 
   // 弹窗状态（仅用于新增）
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Tab 切换
+  const [activeTab, setActiveTab] = useState("builtin");
+  const currentTab = CHANNEL_TABS.find((t) => t.id === activeTab)!;
 
   // 表单状态
   const [form, setForm] = useState<FormState>(emptyForm());
@@ -240,296 +271,303 @@ export default function ChannelConfig() {
 
   return (
     <div className="page-enter">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          配置用户可以为实例选择接入的即时通讯工具。开启「用户可见」后，用户可在实例配置中选择对应通道。
-        </p>
       </div>
 
-      {/* ── 内置通道 ── */}
-      <div
-        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden mb-6"
-      >
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-50">
-          <h2 className="font-semibold text-gray-900">内置通道</h2>
-        </div>
-        <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-          <p className="text-xs text-gray-500">通过微信、QQ 等机器人接入，可实现与对应渠道的智能机器人对话，满足全场景下的个人沟通与企业服务需求，覆盖不同团队多样化协作场景</p>
-        </div>
+      {/* Tab 切换器（与 SkillConfig 同款） */}
+      <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
+        {CHANNEL_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+              activeTab === tab.id
+                ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        <div className="divide-y divide-gray-50">
-          {BUILTIN_CHANNELS.map((ch) => (
-            <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
-              <div className="flex items-center gap-4">
-                <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-10 w-10 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+      {/* Tab 描述（仅一行） */}
+      <div className="flex items-center gap-3 mt-3 mb-6">
+        <p className="text-sm text-gray-500 leading-relaxed">{currentTab.description}</p>
+      </div>
+
+      {/* ── 内置通道 Tab ── */}
+      {activeTab === "builtin" && (
+        <div
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        >
+          <div className="divide-y divide-gray-50">
+            {BUILTIN_CHANNELS.map((ch) => (
+              <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-10 w-10 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">用户可见</span>
-                  <Switch
-                    checked={builtinVisibility[ch.id] || false}
-                    onCheckedChange={(v) => {
-                      const updated = { ...builtinVisibility, [ch.id]: v };
-                      setBuiltinVisibility(updated);
-                      saveBuiltinChannelVisibility(updated);
-                      toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400">用户可见</span>
+                    <Switch
+                      checked={builtinVisibility[ch.id] || false}
+                      onCheckedChange={(v) => {
+                        const updated = { ...builtinVisibility, [ch.id]: v };
+                        setBuiltinVisibility(updated);
+                        saveBuiltinChannelVisibility(updated);
+                        toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
+                      }}
+                    />
+                  </div>
+                  <div className="w-px h-4 bg-gray-200" />
+                  <ScopePopover
+                    visibilityScope={builtinScopes[ch.id]?.scope || "all"}
+                    visibilityGroupIds={builtinScopes[ch.id]?.groupIds || []}
+                    groups={ALL_GROUPS}
+                    onSave={(scope, groupIds) => {
+                      setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
                     }}
                   />
                 </div>
-                <div className="w-px h-4 bg-gray-200" />
-                <ScopePopover
-                  visibilityScope={builtinScopes[ch.id]?.scope || "all"}
-                  visibilityGroupIds={builtinScopes[ch.id]?.groupIds || []}
-                  groups={ALL_GROUPS}
-                  onSave={(scope, groupIds) => {
-                    setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
-                  }}
-                />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── 自定义通道 ── */}
-      <div
-        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-      >
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-          <h2 className="font-semibold text-gray-900">自定义通道</h2>
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex items-center gap-1.5 text-sm"
-            onClick={openAddDialog}
-          >
-            <Plus className="w-4 h-4" />
-            添加通道
-          </Button>
-        </div>
-        {/* ① 修改1：补充「仅支持长连接」说明 */}
-        <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-          <p className="text-xs text-gray-500">
-            企业可配置自研 IM 通道信息，添加后用户可在 Agent 配置页选择对应通道并填写凭证。开启「用户可见」后通道才会对用户展示。目前自定义通道仅支持 WebSocket 长连接方式接入。
+      {/* ── 自定义通道 Tab ── */}
+      {activeTab === "custom" && (
+        <div
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <a
               href="#"
-              className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
               onClick={(e) => e.preventDefault()}
             >
               自定义通道配置指引
               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </a>
-          </p>
-        </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center gap-1.5 text-sm"
+              onClick={openAddDialog}
+            >
+              <Plus className="w-4 h-4" />
+              添加通道
+            </Button>
+          </div>
 
-        {customChannels.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-[218px]">
-              <img
-                src="/assets/admin-channel-icons/empty-custom-channel.svg"
-                alt=""
-                aria-hidden="true"
-                className="mx-auto h-[60px] w-[60px]"
-              />
-              <div className="mt-1">
-                <p className="text-sm font-semibold text-[#020617]">暂无自定义通道</p>
-                <p className="mt-1 text-xs font-normal tracking-[0.015em] text-gray-400">点击「添加通道」配置企业自研 IM 通道</p>
+          {customChannels.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-[218px]">
+                <img
+                  src="/assets/admin-channel-icons/empty-custom-channel.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="mx-auto h-[60px] w-[60px]"
+                />
+                <div className="mt-1">
+                  <p className="text-sm font-semibold text-[#020617]">暂无自定义通道</p>
+                  <p className="mt-1 text-xs font-normal tracking-[0.015em] text-gray-400">点击「添加通道」配置企业自研 IM 通道</p>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {customChannels.map((ch) => (
-              <div key={ch.id} className="hover:bg-gray-50/30 transition-colors">
-                {/* 主行：仅展示通道名称 + Channel ID + 操作 */}
-                <div className="flex items-center justify-between px-6 py-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <CustomChannelIcon name={ch.name} color={ch.color} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900 truncate">{ch.name}</p>
-                        <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
-                          {ch.channelId}
-                        </span>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {customChannels.map((ch) => (
+                <div key={ch.id} className="hover:bg-gray-50/30 transition-colors">
+                  {/* 主行：仅展示通道名称 + Channel ID + 操作 */}
+                  <div className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <CustomChannelIcon name={ch.name} color={ch.color} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-900 truncate">{ch.name}</p>
+                          <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+                            {ch.channelId}
+                          </span>
+                        </div>
+                        {/* 详情展开按钮：放在通道名称下方 */}
+                        <button
+                          className="mt-1 text-xs text-gray-400 hover:text-blue-500 flex items-center gap-0.5 transition-colors"
+                          onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                          title="查看详情"
+                        >
+                          {expandedCustomId === ch.id
+                            ? <ChevronDown className="w-3 h-3" />
+                            : <ChevronRight className="w-3 h-3" />
+                          }
+                          <span>详情</span>
+                        </button>
                       </div>
-                      {/* 详情展开按钮：放在通道名称下方 */}
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <span className="text-xs text-gray-400">用户可见</span>
+                      <Switch
+                        checked={ch.visible}
+                        onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
+                      />
+                      <div className="w-px h-4 bg-gray-200" />
+                      <ScopePopover
+                        visibilityScope={customScopes[ch.id]?.scope || "all"}
+                        visibilityGroupIds={customScopes[ch.id]?.groupIds || []}
+                        groups={ALL_GROUPS}
+                        onSave={(scope, groupIds) => {
+                          setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                        }}
+                      />
+                      <div className="w-px h-4 bg-gray-200" />
+                      {/* 去掉编辑按钮，只保留删除 */}
                       <button
-                        className="mt-1 text-xs text-gray-400 hover:text-blue-500 flex items-center gap-0.5 transition-colors"
-                        onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
-                        title="查看详情"
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        onClick={() => setDeleteConfirmId(ch.id)}
+                        title="删除"
                       >
-                        {expandedCustomId === ch.id
-                          ? <ChevronDown className="w-3 h-3" />
-                          : <ChevronRight className="w-3 h-3" />
-                        }
-                        <span>详情</span>
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-4">
-                    <span className="text-xs text-gray-400">用户可见</span>
-                    <Switch
-                      checked={ch.visible}
-                      onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
-                    />
-                    <div className="w-px h-4 bg-gray-200" />
-                    <ScopePopover
-                      visibilityScope={customScopes[ch.id]?.scope || "all"}
-                      visibilityGroupIds={customScopes[ch.id]?.groupIds || []}
-                      groups={ALL_GROUPS}
-                      onSave={(scope, groupIds) => {
-                        setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
-                      }}
-                    />
-                    <div className="w-px h-4 bg-gray-200" />
-                    {/* ⑦ 修改7：去掉编辑按钮，只保留删除 */}
-                    <button
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                      onClick={() => setDeleteConfirmId(ch.id)}
-                      title="删除"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
 
-                {/* ⑥ 修改6：展开后展示两部分：IM 服务器地址 + 用户凭证字段 */}
-                {expandedCustomId === ch.id && (
-                  <div className="px-6 pb-4">
-                    <div className="ml-14 space-y-3">
-                      {/* IM 服务器地址 */}
-                      <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-                        <p className="text-xs font-medium text-gray-500 mb-2">IM 服务器地址</p>
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="text-gray-400 w-24 shrink-0">Server URL</span>
-                            <span className="text-gray-700 font-mono break-all">{ch.serverUrl || "—"}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="text-gray-400 w-24 shrink-0">WebSocket URL</span>
-                            <span className="text-gray-700 font-mono break-all">{ch.wsUrl || "—"}</span>
+                  {/* 展开后展示两部分：IM 服务器地址 + 用户凭证字段 */}
+                  {expandedCustomId === ch.id && (
+                    <div className="px-6 pb-4">
+                      <div className="ml-14 space-y-3">
+                        {/* IM 服务器地址 */}
+                        <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+                          <p className="text-xs font-medium text-gray-500 mb-2">IM 服务器地址</p>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-400 w-24 shrink-0">Server URL</span>
+                              <span className="text-gray-700 font-mono break-all">{ch.serverUrl || "—"}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-400 w-24 shrink-0">WebSocket URL</span>
+                              <span className="text-gray-700 font-mono break-all">{ch.wsUrl || "—"}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {/* 用户凭证字段 */}
-                      <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-                        <p className="text-xs font-medium text-gray-500 mb-2">用户凭证字段</p>
-                        {ch.credentialFields.length === 0 ? (
-                          <p className="text-xs text-gray-400">无凭证字段</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {ch.credentialFields.map((f, idx) => (
-                              <span
-                                key={f.id}
-                                className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
-                              >
-                                <span className="text-gray-400">{idx + 1}.</span>
-                                <span className="font-mono text-gray-500">{f.key}</span>
-                                <span className="text-gray-300">/</span>
-                                {f.label}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {/* 用户凭证字段 */}
+                        <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+                          <p className="text-xs font-medium text-gray-500 mb-2">用户凭证字段</p>
+                          {ch.credentialFields.length === 0 ? (
+                            <p className="text-xs text-gray-400">无凭证字段</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {ch.credentialFields.map((f, idx) => (
+                                <span
+                                  key={f.id}
+                                  className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
+                                >
+                                  <span className="text-gray-400">{idx + 1}.</span>
+                                  <span className="font-mono text-gray-500">{f.key}</span>
+                                  <span className="text-gray-300">/</span>
+                                  {f.label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── 新增自定义通道弹窗 ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg p-0 gap-0 flex flex-col max-h-[min(640px,90vh)]">
+          <DialogHeader className="shrink-0">
             <DialogTitle>添加自定义通道</DialogTitle>
             <DialogDescription>
               配置企业自研 IM 通道信息，保存后可在通道列表中管理可见性。
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 pt-1">
-            {/* ② 修改2：顶部提醒条 */}
-            <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
-              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-amber-700 leading-relaxed">
+          {/* 中间内容区：滚动只发生在这里，header / footer 始终可见 */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-1 space-y-5">
+            {/* 顶部提醒条 */}
+            <div className="flex items-start gap-2 rounded-[4px] border border-[#FCD28C] bg-[#FFFBED] px-3 py-2">
+              <AlertCircle className="w-4 h-4 text-[#FCA004] mt-0.5 shrink-0" />
+              <p className="text-xs text-[#181818] leading-5">
                 使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
               </p>
             </div>
 
             {/* ── 第一部分：通道基础信息 ── */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">1</div>
-                <h3 className="text-sm font-semibold text-gray-800">通道基础信息</h3>
-              </div>
-              <div className="space-y-2 pl-7">
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900">通道基础信息</h3>
+              <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">通道名称 <span className="text-red-400">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    通道名称 <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="展示给用户的通道名字，如「内部 IM」"
                     value={form.name}
                     onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="bg-gray-50 border-gray-200 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Channel ID <span className="text-red-400">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Channel ID <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="写入 agent.json 的 key，需与插件名一致"
                     value={form.channelId}
                     onChange={(e) => setForm(f => ({ ...f, channelId: e.target.value }))}
-                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                    className="font-mono"
                   />
-                  <p className="text-xs text-gray-400 mt-1">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
+                  <p className="text-xs text-[#7b818f] mt-1.5">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* ── 第二部分：IM 服务器地址 ── */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">2</div>
-                <h3 className="text-sm font-semibold text-gray-800">IM 服务器地址</h3>
-              </div>
-              <div className="space-y-2 pl-7">
+            <section className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-900">IM 服务器地址</h3>
+              <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Server URL <span className="text-red-400">*</span></label>
-                  {/* ③ 修改3：Server URL 不举例 */}
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Server URL <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="自定义 IM 的 HTTP API 地址"
                     value={form.serverUrl}
                     onChange={(e) => setForm(f => ({ ...f, serverUrl: e.target.value }))}
-                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                    className="font-mono"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">WebSocket URL <span className="text-red-400">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    WebSocket URL <span className="text-red-500">*</span>
+                  </label>
                   <Input
                     placeholder="自定义 IM 的长连接地址，可与 Server URL 相同"
                     value={form.wsUrl}
                     onChange={(e) => setForm(f => ({ ...f, wsUrl: e.target.value }))}
-                    className="bg-gray-50 border-gray-200 text-sm font-mono"
+                    className="font-mono"
                   />
-                  <p className="text-xs text-gray-400 mt-1">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
+                  <p className="text-xs text-[#7b818f] mt-1.5">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* ── 第三部分：用户凭证字段 ── */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-xl bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">3</div>
-                  <h3 className="text-sm font-semibold text-gray-800">用户凭证字段</h3>
-                </div>
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-900">用户凭证字段</h3>
                 <Button
                   size="sm"
                   variant="outline"
@@ -541,10 +579,10 @@ export default function ChannelConfig() {
                 </Button>
               </div>
 
-              <div className="pl-7 space-y-2">
+              <div className="space-y-2">
                 {form.credentialFields.length === 0 ? (
-                  <div className="rounded-xl bg-gray-50 border border-dashed border-gray-200 px-4 py-3 text-center">
-                    <p className="text-xs text-gray-400">暂未添加凭证字段</p>
+                  <div className="rounded-[4px] bg-[#fafafa] border border-dashed border-[#e5e5e5] px-4 py-3 text-center">
+                    <p className="text-xs text-[#7b818f]">暂未添加凭证字段</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -553,12 +591,12 @@ export default function ChannelConfig() {
                       <span className="w-5 shrink-0" />{/* 序号占位 */}
                       <div className="flex gap-2 flex-1">
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-600">字段 Key</p>
-                          <p className="text-xs text-gray-400">写入配置文件的字段名</p>
+                          <p className="text-xs font-medium text-gray-700">字段 Key</p>
+                          <p className="text-xs text-[#7b818f]">写入配置文件的字段名</p>
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-600">字段名称</p>
-                          <p className="text-xs text-gray-400">用户看到的字段名称</p>
+                          <p className="text-xs font-medium text-gray-700">字段名称</p>
+                          <p className="text-xs text-[#7b818f]">用户看到的字段名称</p>
                         </div>
                       </div>
                       <span className="w-7 shrink-0" />{/* 删除按钮占位 */}
@@ -566,23 +604,23 @@ export default function ChannelConfig() {
                     {/* 字段行 */}
                     {form.credentialFields.map((field, idx) => (
                       <div key={field.id} className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400 w-5 text-right shrink-0">{idx + 1}.</span>
+                        <span className="text-xs text-[#7b818f] w-5 text-right shrink-0">{idx + 1}.</span>
                         <div className="flex gap-2 flex-1">
                           <Input
                             placeholder={`如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
                             value={field.key}
                             onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
-                            className="flex-1 bg-gray-50 border-gray-200 text-sm font-mono"
+                            className="flex-1 font-mono"
                           />
                           <Input
                             placeholder={idx % 2 === 0 ? "如 机器人的AccessKey" : "如 机器人的SecretKey"}
                             value={field.label}
                             onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
-                            className="flex-1 bg-gray-50 border-gray-200 text-sm"
+                            className="flex-1"
                           />
                         </div>
                         <button
-                          className="w-7 shrink-0 text-gray-300 hover:text-red-500 transition-colors flex items-center justify-center"
+                          className="w-7 shrink-0 text-[#b0b6c3] hover:text-[#d42a1e] transition-colors flex items-center justify-center"
                           onClick={() => removeCredentialField(field.id)}
                           title="删除此字段"
                         >
@@ -592,55 +630,47 @@ export default function ChannelConfig() {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-gray-400 leading-relaxed pt-1">
+                <p className="text-xs text-[#7b818f] leading-5 pt-0.5">
                   用户凭证的字段名称会展示在用户端，用户选择该通道后会看到对应的输入框
                 </p>
               </div>
-            </div>
-
-            {/* ── 操作按钮 ── */}
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setDialogOpen(false)}
-              >
-                取消
-              </Button>
-              <Button
-                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
-                onClick={handleSave}
-              >
-                保存
-              </Button>
-            </div>
+            </section>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* ── 删除确认弹窗 ── */}
-      <Dialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
-            <DialogDescription>
-              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。此操作不可撤销。
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 pt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setDeleteConfirmId(null)}>
+          <DialogFooter className="shrink-0">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               取消
             </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
-            >
-              确认删除
+            <Button onClick={handleSave}>
+              保存
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── 删除确认弹窗（危险操作改用 AlertDialog） ── */}
+      <AlertDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+      >
+        <AlertDialogContent className="sm:max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。此操作不可撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

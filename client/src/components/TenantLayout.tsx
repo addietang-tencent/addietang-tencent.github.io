@@ -252,8 +252,8 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
         }
       />
 
-      {/* Main Content：上偏移 = 顶部导航 64px */}
-      <main className="pt-[64px] min-h-screen">{children}</main>
+      {/* Main Content */}
+      <main className="min-h-[calc(100vh-64px)]">{children}</main>
     </div>
   );
 }

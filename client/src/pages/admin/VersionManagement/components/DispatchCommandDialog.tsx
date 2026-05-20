@@ -464,7 +464,7 @@ export default function DispatchCommandDialog({
                 />
               </div>
 
-              <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[260px] overflow-y-auto">
+              <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[260px] overflow-y-auto scrollbar-on-hover">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-gray-50 z-10">
                     <tr className="border-b border-gray-100">

@@ -595,7 +595,7 @@ export default function OpsObservation() {
             <DialogTitle>升级 CLS 采集插件</DialogTitle>
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto max-h-80">
+          <div className="overflow-y-auto max-h-80 scrollbar-on-hover">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">

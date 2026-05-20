@@ -75,7 +75,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div className="relative group rounded-lg overflow-hidden border border-gray-200/80">
+    <div className="relative group rounded-xl overflow-hidden border border-gray-200/80">
       {language && (
         <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-200/80 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
           {language}
@@ -86,7 +86,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 p-1.5 rounded-md bg-white/80 border border-gray-200/80 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-gray-50"
+        className="absolute top-2 right-2 p-1.5 rounded-xl bg-white/80 border border-gray-200/80 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-gray-50"
         title="复制代码"
       >
         {copied ? (
@@ -144,11 +144,11 @@ function NavTreeNode({
             onSelect(item.id);
           }
         }}
-        className="w-full flex items-center gap-1 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150 cursor-pointer"
+        className="w-full flex items-center gap-1 px-3 py-[7px] rounded-xl text-[13px] transition-all duration-150 cursor-pointer"
         style={{
           paddingLeft: depth * 12 + 12,
-          background: isActive ? "rgba(0,122,255,0.08)" : "transparent",
-          color: isActive ? "#007AFF" : "#374151",
+          background: isActive ? "rgba(20,71,230,0.08)" : "transparent",
+          color: isActive ? "#355EF1" : "#374151",
           fontWeight: isActive ? 600 : hasChildren && !isEndpointItem ? 500 : 400,
         }}
         onMouseEnter={(e) => {
@@ -158,7 +158,7 @@ function NavTreeNode({
         onMouseLeave={(e) => {
           if (!isActive)
             (e.currentTarget as HTMLElement).style.background = isActive
-              ? "rgba(0,122,255,0.08)"
+              ? "rgba(20,71,230,0.08)"
               : "transparent";
         }}
       >
@@ -231,12 +231,12 @@ function OverviewTable({
               return (
                 <tr
                   key={idx}
-                  className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors"
+                  className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="px-4 py-2.5">
                     <button
                       onClick={() => onNavigate(section.sectionId, entry.name)}
-                      className="text-[#007AFF] hover:underline cursor-pointer font-medium"
+                      className="text-[#355EF1] hover:underline cursor-pointer font-medium"
                     >
                       <MethodPath method={method} path={path} />
                     </button>
@@ -284,12 +284,12 @@ function EndpointDetailView({
               </tr>
             </thead>
             <tbody>
-              <tr className="border-t border-gray-100">
+              <tr className="border-t border-[#e5e5e5]">
                 <td className="px-4 py-2.5 text-gray-900 font-medium">认证</td>
                 <td className="px-4 py-2.5 text-gray-600">{endpoint.auth}</td>
               </tr>
               {endpoint.contentType && (
-                <tr className="border-t border-gray-100">
+                <tr className="border-t border-[#e5e5e5]">
                   <td className="px-4 py-2.5 text-gray-900 font-medium">Content-Type</td>
                   <td className="px-4 py-2.5">
                     <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded font-mono text-gray-700">
@@ -319,7 +319,7 @@ function EndpointDetailView({
               </thead>
               <tbody>
                 {endpoint.inputParams.map((p, i) => (
-                  <tr key={i} className="border-t border-gray-100">
+                  <tr key={i} className="border-t border-[#e5e5e5]">
                     <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900 break-all">{p.name}</td>
                     <td className="px-4 py-2.5 font-mono text-[13px] text-gray-600">{p.type}</td>
                     <td className="px-4 py-2.5 text-[13px] text-gray-600">{p.required}</td>
@@ -349,7 +349,7 @@ function EndpointDetailView({
               </thead>
               <tbody>
                 {endpoint.outputParams.map((p, i) => (
-                  <tr key={i} className="border-t border-gray-100">
+                  <tr key={i} className="border-t border-[#e5e5e5]">
                     <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900 break-all">{p.name}</td>
                     <td className="px-4 py-2.5 font-mono text-[13px] text-gray-600">{p.type}</td>
                     <td className="px-4 py-2.5 text-[13px] text-gray-600 break-words">{p.description}</td>
@@ -390,7 +390,7 @@ function EndpointDetailView({
               </thead>
               <tbody>
                 {endpoint.errorCodes.map((ec, i) => (
-                  <tr key={i} className="border-t border-gray-100">
+                  <tr key={i} className="border-t border-[#e5e5e5]">
                     <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">{ec.code}</td>
                     <td className="px-4 py-2.5 text-[13px] text-gray-600 break-words">{ec.error}</td>
                   </tr>
@@ -446,12 +446,12 @@ function SectionDetailPage({
               return (
                 <tr
                   key={idx}
-                  className="border-t border-gray-100 hover:bg-gray-50/50 transition-colors"
+                  className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
                 >
                   <td className="px-4 py-2.5">
                     <button
                       onClick={() => onNavigateToEndpoint(section.sectionId, entry.name)}
-                      className="text-[#007AFF] hover:underline cursor-pointer font-medium"
+                      className="text-[#355EF1] hover:underline cursor-pointer font-medium"
                     >
                       <MethodPath method={method} path={path} />
                     </button>
@@ -601,17 +601,17 @@ export default function ApiDocs() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-t border-gray-100">
+                    <tr className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 text-gray-900 font-medium">Base URL</td>
                       <td className="px-4 py-2.5 break-words">
                         <code className="text-[13px] bg-gray-50 px-2 py-0.5 rounded text-gray-700 font-mono">{baseInfo.baseUrl}</code>
                       </td>
                     </tr>
-                    <tr className="border-t border-gray-100">
+                    <tr className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 text-gray-900 font-medium">协议</td>
                       <td className="px-4 py-2.5 text-gray-600">{baseInfo.protocol}</td>
                     </tr>
-                    <tr className="border-t border-gray-100">
+                    <tr className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 text-gray-900 font-medium">数据格式</td>
                       <td className="px-4 py-2.5 text-gray-600">{baseInfo.dataFormat}</td>
                     </tr>
@@ -712,11 +712,11 @@ export default function ApiDocs() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-t border-gray-100">
+                    <tr className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">Authorization</td>
                       <td className="px-4 py-2.5 text-gray-600 break-words">Bearer Token 认证（大部分接口必须）</td>
                     </tr>
-                    <tr className="border-t border-gray-100">
+                    <tr className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">Content-Type</td>
                       <td className="px-4 py-2.5 text-gray-600 break-words">
                         <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded">application/json</code>{" "}
@@ -753,7 +753,7 @@ export default function ApiDocs() {
                   </thead>
                   <tbody>
                     {authInfo.tokenTypes.map((t, i) => (
-                      <tr key={i} className="border-t border-gray-100">
+                      <tr key={i} className="border-t border-[#e5e5e5]">
                         <td className="px-4 py-2.5 text-gray-900 font-medium">{t.type}</td>
                         <td className="px-4 py-2.5 font-mono text-gray-600">{t.prefix}</td>
                         <td className="px-4 py-2.5 text-gray-600 break-words">{t.scope}</td>
@@ -762,7 +762,7 @@ export default function ApiDocs() {
                   </tbody>
                 </table>
               </div>
-              <div className="mt-3 flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200/80 rounded-lg px-4 py-3">
+              <div className="mt-3 flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200/80 rounded-xl px-4 py-3">
                 <span className="shrink-0 mt-0.5">⚠️</span>
                 <span>{authInfo.note}</span>
               </div>
@@ -807,7 +807,7 @@ export default function ApiDocs() {
                 </thead>
                 <tbody>
                   {parameterTypes.map((pt, i) => (
-                    <tr key={i} className="border-t border-gray-100">
+                    <tr key={i} className="border-t border-[#e5e5e5]">
                       <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">{pt.type}</td>
                       <td className="px-4 py-2.5 text-gray-600">{pt.desc}</td>
                       <td className="px-4 py-2.5 font-mono text-[13px] text-gray-500 break-words">{pt.example}</td>
@@ -841,7 +841,7 @@ export default function ApiDocs() {
                 <div className="flex items-center gap-1.5 text-sm text-gray-400">
                   <button
                     onClick={() => handleSelect(sectionId)}
-                    className="hover:text-[#007AFF] transition-colors cursor-pointer"
+                    className="hover:text-[#355EF1] transition-colors cursor-pointer"
                   >
                     {matchedSectionTitle || sectionId}
                   </button>
@@ -882,14 +882,13 @@ export default function ApiDocs() {
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex flex-col"
-      style={{ background: "#F0F2F8" }}
+      style={{ background: "#FFFFFF" }}
     >
       {/* ─── 顶部导航栏 ───────────────────────── */}
       <header
-        className="shrink-0 bg-white border-b border-gray-100 px-6"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+        className="shrink-0 bg-white border-b border-[#e5e5e5] px-6"
       >
-        <div className="h-14 flex items-center gap-4 max-w-[1400px] mx-auto">
+        <div className="h-16 flex items-center gap-4 max-w-[1400px] mx-auto">
           <button
             onClick={() => window.close()}
             onAuxClick={() => window.history.back()}
@@ -902,10 +901,7 @@ export default function ApiDocs() {
           <div className="h-4 w-px bg-gray-200" />
           <div className="flex items-center gap-2">
             <div
-              className="w-6 h-6 rounded-md flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, #007AFF, #5856D6)",
-              }}
+              className="w-6 h-6 rounded-xl flex items-center justify-center bg-[linear-gradient(90deg,#020617_70%,#355EF1_110%)]"
             >
               <Book className="w-3.5 h-3.5 text-white" />
             </div>
@@ -922,10 +918,9 @@ export default function ApiDocs() {
       <div className="flex-1 flex overflow-hidden">
         {/* 左侧导航 */}
         <aside
-          className="w-[300px] shrink-0 bg-white border-r border-gray-100 flex flex-col"
-          style={{ boxShadow: "1px 0 3px rgba(0,0,0,0.02)" }}
+          className="w-[300px] shrink-0 bg-white border-r border-[#e5e5e5] flex flex-col"
         >
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-[#e5e5e5]">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
               <input
@@ -933,7 +928,7 @@ export default function ApiDocs() {
                 placeholder="搜索文档..."
                 value={navSearchQuery}
                 onChange={(e) => setNavSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#007AFF]/20 focus:border-[#007AFF] transition-all placeholder:text-gray-400"
+                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#355EF1]/20 focus:border-[#355EF1] transition-all placeholder:text-gray-400"
               />
             </div>
           </div>

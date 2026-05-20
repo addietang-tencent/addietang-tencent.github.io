@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bot, Zap, Crown, CircleOff, Info } from 'lucide-react';
+import { SurfaceCard } from '@/components/ui/Surface';
 
 interface OverviewStatsProps {
   totalCount: number;
@@ -12,7 +13,7 @@ interface OverviewStatsProps {
  * 记忆空间概览统计组件
  * 
  * 遵循 Agent Enterprise 设计规范：
- * - 卡片圆角：rounded-2xl
+ * - 卡片圆角：rounded-xl
  * - 统一阴影：通过 inline style 设置
  * - 图标容器：使用规范渐变色
  * - 图标：仅使用 lucide-react
@@ -36,10 +37,10 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
       label: '已开启记忆',
       value: enabledCount,
       icon: Zap,
-      gradient: 'linear-gradient(135deg, #007AFF, #5856D6)', // 品牌色
+      gradient: 'linear-gradient(90deg, #020617 70%, #355EF1 100%)', // 品牌色
       subItems: [
         { label: 'Pro', value: proCount, color: '#16A34A' },
-        { label: 'Free', value: freeCount, color: '#007AFF' },
+        { label: 'Free', value: freeCount, color: '#355EF1' },
       ],
     },
     {
@@ -51,10 +52,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
   ];
 
   return (
-    <div
-      className="bg-white rounded-2xl border border-gray-100 p-5"
-      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
-    >
+    <SurfaceCard className="p-5">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="font-semibold text-gray-900">记忆空间概览</h3>
       </div>
@@ -63,10 +61,9 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
         {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <div
+            <SurfaceCard
               key={stat.label}
-              className="bg-white rounded-2xl border border-gray-100 p-5"
-              style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
+              className="p-5"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div
@@ -93,7 +90,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
                   ))}
                 </div>
               )}
-            </div>
+            </SurfaceCard>
           );
         })}
       </div>
@@ -107,6 +104,6 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
           </p>
         </div>
       )}
-    </div>
+    </SurfaceCard>
   );
 };

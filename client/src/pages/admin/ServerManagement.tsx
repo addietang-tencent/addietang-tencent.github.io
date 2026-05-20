@@ -108,12 +108,12 @@ export default function ServerManagement() {
 
           {/* 镜像管理 */}
           <TabsContent value="images">
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
                 <h2 className="font-semibold text-gray-900">镜像列表</h2>
                 <Button size="sm" onClick={() => setShowImportDialog(true)}
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+                 >
                   <Download className="w-3.5 h-3.5 mr-1.5" />
                   导入镜像
                 </Button>
@@ -187,8 +187,8 @@ export default function ServerManagement() {
               </TabsList>
 
               <TabsContent value="inbound">
-                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                 >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                     <span className="text-sm font-medium text-gray-700">入站规则</span>
                     <Button size="sm" variant="outline" onClick={() => openAddRule("inbound")}>
@@ -234,8 +234,8 @@ export default function ServerManagement() {
               </TabsContent>
 
               <TabsContent value="outbound">
-                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                  style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                 >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                     <span className="text-sm font-medium text-gray-700">出站规则</span>
                     <Button size="sm" variant="outline" onClick={() => openAddRule("outbound")}>
@@ -301,7 +301,7 @@ export default function ServerManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowImportDialog(false)}>取消</Button>
             <Button onClick={() => { setShowImportDialog(false); toast.success("镜像导入任务已提交"); }}
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+             >
               确认导入
             </Button>
           </DialogFooter>
@@ -368,7 +368,7 @@ export default function ServerManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddRuleDialog(false)}>取消</Button>
-            <Button onClick={handleSaveRule} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <Button onClick={handleSaveRule}>
               {editRule ? "保存" : "确认添加"}
             </Button>
           </DialogFooter>

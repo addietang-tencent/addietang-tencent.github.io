@@ -65,7 +65,7 @@ const STATUS_META: Record<OverrideStatus, StatusMeta> = {
 };
 
 const TONE_CLASS: Record<StatusMeta["tone"], string> = {
-  neutral: "text-gray-500 bg-gray-50 border border-gray-100",
+  neutral: "text-gray-500 bg-gray-50 border border-[#e5e5e5]",
   amber: "text-amber-600 bg-amber-50 border border-amber-100",
   red: "text-red-600 bg-red-50 border border-red-100",
 };
@@ -96,7 +96,7 @@ function EffectiveDetailCard({ user }: { user: UserOrg }) {
   ];
   return (
     <div className="w-[420px]">
-      <div className="px-4 py-3 border-b border-gray-100">
+      <div className="px-4 py-3 border-b border-[#e5e5e5]">
         <div className="text-sm font-semibold text-gray-900">
           {user.displayName} · 最终生效配置
         </div>
@@ -186,7 +186,7 @@ function ConflictPopover({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{triggerChildren}</PopoverTrigger>
       <PopoverContent className="w-[440px] p-0" align="start" side="bottom">
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-[#e5e5e5]">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             <div className="text-sm font-semibold text-gray-900">
@@ -211,10 +211,10 @@ function ConflictPopover({
           {candidates.map((c) => (
             <label
               key={c.resourceId}
-              className={`flex items-start gap-2.5 p-2.5 rounded-lg cursor-pointer border transition-colors ${
+              className={`flex items-start gap-2.5 p-2.5 rounded-xl cursor-pointer border transition-colors ${
                 selected === c.resourceId
                   ? "border-blue-300 bg-blue-50/60"
-                  : "border-gray-100 hover:bg-gray-50"
+                  : "border-[#e5e5e5] hover:bg-gray-50"
               }`}
             >
               <input
@@ -237,19 +237,19 @@ function ConflictPopover({
             </label>
           ))}
         </div>
-        <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+        <div className="px-4 py-2.5 border-t border-[#e5e5e5] bg-gray-50/50">
           <div className="text-xs text-gray-500 leading-relaxed">
             确定后将为该用户写入一条显式决策记录；winner 被删除时自动失效。
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-[#e5e5e5]">
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
             取消
           </Button>
           <Button
             size="sm"
             className="text-white"
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+           
             onClick={handleConfirm}
           >
             确定本次选择
@@ -300,7 +300,7 @@ export default function OverrideCell({
         </HoverCardTrigger>
         <HoverCardContent align="start" className="p-0">
           <div className="w-[420px]">
-            <div className="px-4 py-3 border-b border-gray-100">
+            <div className="px-4 py-3 border-b border-[#e5e5e5]">
               <div className="flex items-center gap-2">
                 <OverrideBadge status={info.status} />
               </div>

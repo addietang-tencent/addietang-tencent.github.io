@@ -34,8 +34,8 @@ interface DefaultMemoryVersionProps {
  * 新实例默认记忆版本 - 三选一分段控制器
  * 
  * 遵循 Agent Enterprise 设计规范：
- * - 品牌渐变：linear-gradient(135deg, #007AFF, #5856D6)
- * - 卡片圆角：rounded-2xl (16px)
+ * - 品牌渐变：linear-gradient(90deg, #020617 70%, #355EF1 100%)
+ * - 卡片圆角：rounded-xl (16px)
  * - 统一阴影：通过 inline style 设置
  * - 图标：仅使用 lucide-react
  */

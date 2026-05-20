@@ -145,8 +145,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 p-5 transition-all"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      className="bg-white rounded-xl border border-[#e5e5e5] p-5 transition-all"
     >
       <div className="flex items-start gap-3 mb-3">
         <StepBadge step={step} done={done} />
@@ -250,7 +249,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -265,7 +264,7 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
                   draft === "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
@@ -278,7 +277,7 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
                   draft !== "unlimited"
                     ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
                     : "border-gray-200 text-gray-500 hover:border-gray-300"
@@ -459,7 +458,7 @@ export default function StandardBasicInfo() {
                   )}
                 </div>
                 {logoError && (
-                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2">
+                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
                     {logoError}
                   </p>
                 )}
@@ -470,7 +469,7 @@ export default function StandardBasicInfo() {
                   variant="outline"
                   onClick={handleSyncEnterprise}
                   disabled={syncing}
-                  className="text-xs text-gray-600 flex items-center gap-1.5"
+                  className="text-xs flex items-center gap-1.5"
                 >
                   {syncing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -532,7 +531,7 @@ export default function StandardBasicInfo() {
                   "_blank"
                 );
               }}
-              className="text-xs text-gray-600 flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               前往腾讯统一身份
@@ -551,7 +550,7 @@ export default function StandardBasicInfo() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="w-full flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-left hover:border-gray-300 transition-colors h-9 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
+                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-left hover:border-gray-300 transition-colors h-9 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
                   >
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
                       {ssoImTypes.length === 0 ? (
@@ -647,7 +646,7 @@ export default function StandardBasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -668,7 +667,7 @@ export default function StandardBasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -689,7 +688,7 @@ export default function StandardBasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -710,7 +709,7 @@ export default function StandardBasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -738,13 +737,12 @@ export default function StandardBasicInfo() {
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-4">平台基础信息</h2>
             <div className="space-y-3">
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <MapPin className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -753,7 +751,7 @@ export default function StandardBasicInfo() {
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <Globe className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -762,7 +760,7 @@ export default function StandardBasicInfo() {
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                   <Cloud className="w-3.5 h-3.5 text-blue-500" />
                 </div>
                 <div className="min-w-0">
@@ -775,13 +773,13 @@ export default function StandardBasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:border-blue-200 transition-colors"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-blue-200 transition-colors"
+           
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                   <BookOpen className="w-4 h-4 text-blue-500" />
                 </div>
                 <div>
@@ -795,8 +793,7 @@ export default function StandardBasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-4"
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
             <div className="space-y-2.5">

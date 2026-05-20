@@ -47,6 +47,8 @@ import {
   RotateCcw,
   Terminal,
   UserMinus,
+  Pencil,
+
   Send,
   Plus,
   Mic,
@@ -71,7 +73,10 @@ import {
 // 产品要求：页面主工作态只保留 3 种
 
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+const RUNNING_ONLY_ACTION_STATUSES: OpenClawStatus[] = ["running"];
+const canRunOnlyAction = (status: OpenClawStatus) => RUNNING_ONLY_ACTION_STATUSES.includes(status);
 type WorkspaceMode = "chat" | "chat_with_browser" | "browser_fullscreen";
+
 type BrowserSite = "home" | "search" | "news" | "docs";
 
 type BrowserTaskState = "idle" | "running";
@@ -645,7 +650,9 @@ interface ChatViewProps {
   onDeleteConfirm: (claw: { id: string; name: string; status: OpenClawStatus }) => void;
   onRestartConfirm: (claw: { id: string; name: string }) => void;
   onReinstallConfirm: (claw: { id: string; name: string }) => void;
+  onRenameConfirm: (claw: { id: string; name: string }) => void;
   onRemoveRoleConfirm: (claw: { id: string; name: string; roleName: string }) => void;
+
   onRetry: (id: string, name: string) => void;
   allowTerminal: boolean;
   refreshingIds: Set<string>;
@@ -662,7 +669,9 @@ export default function ChatView({
   onDeleteConfirm,
   onRestartConfirm,
   onReinstallConfirm,
+  onRenameConfirm,
   onRemoveRoleConfirm,
+
   onRetry,
   allowTerminal,
   refreshingIds,
@@ -2065,7 +2074,8 @@ export default function ChatView({
                         {claw.agentType === "hermes" ? "Hermes Agent" : claw.agentType === "lightclawace" ? "Lightclaw ACE" : "OpenClaw"}
                       </span>
                       <div className="flex items-center gap-1.5 min-w-0 mt-3">
-                        <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{claw.name}</h4>
+                        <h4 className={`text-sm font-medium truncate ${isSelected ? "text-blue-700" : "text-gray-900"}`} title={claw.name}>{claw.name}</h4>
+
                         <StatusBadgeSmall status={claw.status} />
                       </div>
                       <div className="flex items-center gap-1.5 mt-1 min-w-0">
@@ -2117,7 +2127,7 @@ export default function ChatView({
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-52">
-                            {claw.status === "running" ? (
+                            {canRunOnlyAction(claw.status) ? (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRestartConfirm({ id: claw.id, name: claw.name }); }}>
                                 <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
                                 重启
@@ -2128,18 +2138,32 @@ export default function ChatView({
                                 重启
                               </DropdownMenuItem>
                             )}
-                            {claw.status === "running" ? (
+                            {canRunOnlyAction(claw.status) ? (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleTrackedClawReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                 <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
-                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
+                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                               </DropdownMenuItem>
                             ) : (
                               <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
                                 <HardDriveDownload className="w-4 h-4 mr-2 text-gray-400" />
-                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装"}
+                                {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
                               </DropdownMenuItem>
                             )}
+                            {canRunOnlyAction(claw.status) ? (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRenameConfirm({ id: claw.id, name: claw.name }); }}>
+                                <Pencil className="w-4 h-4 mr-2 text-gray-500" />
+                                重命名
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                <Pencil className="w-4 h-4 mr-2 text-gray-400" />
+                                重命名
+                              </DropdownMenuItem>
+                            )}
+
+
                             {(() => {
+
                               // 多分组模式下检查当前 claw 的分组终端权限
                               const groupPerms = getClawGroupPermissions?.(claw);
                               const canTerminal = groupMode === "multi-group" && groupPerms
@@ -2244,6 +2268,7 @@ export default function ChatView({
                 <div className="min-w-0 flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold text-gray-900 truncate">{selectedClaw.name}</h3>
+
                     <p className="text-xs text-gray-400 truncate mt-0.5">{selectedClaw.instanceId}</p>
                   </div>
                   <div className="flex-shrink-0 self-center">

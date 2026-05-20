@@ -197,22 +197,18 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                   {groupMode === "multi-group" ? (
                     <>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
                       >A公司 / 技术部 / 前端组</span>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
                       >A公司 / 技术部 / AI 组</span>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                        style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
                       >前端研发同学</span>
                     </>
                   ) : (
                     <span
-                      className="inline-block text-xs px-1.5 py-0.5 rounded font-medium"
-                      style={{ background: "rgba(88,86,214,0.10)", color: "#1447E6" }}
+                      className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
                     >默认</span>
                   )}
                 </div>
@@ -229,14 +225,14 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                   toast.info(`已切换为${isAdmin ? "普通成员" : "管理员"}视角`);
                 }}
               >
-                <UserCog className="w-4 h-4 mr-2 text-gray-500" />
+                <UserCog className="w-4 h-4 mr-2 text-[#0A0A0A]" />
                 切换为{isAdmin ? "普通成员" : "管理员"}视角
               </DropdownMenuItem>
               {/* 仅管理员：保留旧版"管理后台"快捷入口 */}
               {isAdmin && (
                 <DropdownMenuItem onClick={() => (window.location.href = "/admin/basic-info")}>
-                  <Settings className="w-4 h-4 mr-2 text-gray-500" />
-                  进入管理后台
+                  <SwitchAdminIcon size={16} className="mr-2 text-[#0A0A0A]" />
+                  切换至管控端
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
@@ -244,7 +240,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                 onClick={() => toast.info("已退出登录")}
                 className="text-red-600"
               >
-                <LogOut className="w-4 h-4 mr-2" />
+                <LogOut className="w-4 h-4 mr-2 text-[#0A0A0A]" />
                 退出登录
               </DropdownMenuItem>
             </UserMenu>

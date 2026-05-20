@@ -55,7 +55,6 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
@@ -165,24 +164,37 @@ const MOCK_PENDING_SKILLS: PendingSkill[] = [
   { id: "ps-12", name: "chart-generator 1.0.0", status: "pending" },
 ];
 
-// ─── 技能头像字母渐变色 ────────────────────────────────────────────────
-const LETTER_GRADIENTS: Record<string, string> = {
-  A: 'from-indigo-400 to-purple-500', B: 'from-blue-400 to-indigo-500',
-  C: 'from-violet-400 to-purple-500', D: 'from-purple-400 to-indigo-500',
-  E: 'from-sky-400 to-blue-500', F: 'from-indigo-400 to-blue-500',
-  G: 'from-cyan-400 to-blue-500', H: 'from-blue-400 to-purple-500',
-  I: 'from-violet-400 to-indigo-500', J: 'from-purple-400 to-violet-500',
-  K: 'from-indigo-400 to-violet-500', L: 'from-blue-400 to-cyan-500',
-  M: 'from-sky-400 to-indigo-500', N: 'from-purple-400 to-blue-500',
-  O: 'from-cyan-400 to-indigo-500', P: 'from-violet-400 to-blue-500',
-  Q: 'from-indigo-400 to-cyan-500', R: 'from-blue-400 to-violet-500',
-  S: 'from-purple-400 to-sky-500', T: 'from-sky-400 to-violet-500',
-  U: 'from-indigo-400 to-purple-500', V: 'from-blue-400 to-blue-500',
-  W: 'from-violet-400 to-cyan-500', X: 'from-purple-400 to-indigo-500',
-  Y: 'from-cyan-400 to-purple-500', Z: 'from-indigo-400 to-blue-500',
+// ─── 技能头像字母配色（浅底+深色字母） ────────────────────────────────────────────────
+const LETTER_COLORS: Record<string, { bg: string; text: string }> = {
+  A: { bg: "#E8F4FD", text: "#1A73E8" },
+  B: { bg: "#F3E8FD", text: "#8B5CF6" },
+  C: { bg: "#E8FDF0", text: "#16A34A" },
+  D: { bg: "#FDF2E8", text: "#EA580C" },
+  E: { bg: "#FDE8F0", text: "#DC2626" },
+  F: { bg: "#FDE8F0", text: "#DC2626" },
+  G: { bg: "#E8FDF0", text: "#16A34A" },
+  H: { bg: "#E8F4FD", text: "#1A73E8" },
+  I: { bg: "#F3E8FD", text: "#8B5CF6" },
+  J: { bg: "#FDF2E8", text: "#EA580C" },
+  K: { bg: "#E8FDF0", text: "#16A34A" },
+  L: { bg: "#E8F4FD", text: "#1A73E8" },
+  M: { bg: "#F3E8FD", text: "#8B5CF6" },
+  N: { bg: "#FDE8F0", text: "#DC2626" },
+  O: { bg: "#FDF2E8", text: "#EA580C" },
+  P: { bg: "#E8FDF0", text: "#16A34A" },
+  Q: { bg: "#E8F4FD", text: "#1A73E8" },
+  R: { bg: "#F3E8FD", text: "#8B5CF6" },
+  S: { bg: "#E8F4FD", text: "#1A73E8" },
+  T: { bg: "#F3E8FD", text: "#8B5CF6" },
+  U: { bg: "#E8FDF0", text: "#16A34A" },
+  V: { bg: "#FDF2E8", text: "#EA580C" },
+  W: { bg: "#FDE8F0", text: "#DC2626" },
+  X: { bg: "#E8F4FD", text: "#1A73E8" },
+  Y: { bg: "#F3E8FD", text: "#8B5CF6" },
+  Z: { bg: "#E8FDF0", text: "#16A34A" },
 };
-function getLetterGradient(letter: string): string {
-  return LETTER_GRADIENTS[letter.toUpperCase()] || 'from-indigo-400 to-purple-500';
+function getLetterColor(letter: string): { bg: string; text: string } {
+  return LETTER_COLORS[letter.toUpperCase()] || { bg: "#E8F4FD", text: "#1A73E8" };
 }
 
 // ─── 技能库数据（弹窗用，参考 skillhub.cn 分类体系） ────────────────────────
@@ -718,7 +730,8 @@ function SkillInstallModal({
                 <div className="flex items-center px-4 py-3.5" style={{ gap: "12px" }}>
                   {/* 左：头像 */}
                   <div
-                    className={`w-8 h-8 rounded-[4px] bg-gradient-to-br ${getLetterGradient(skill.initial)} flex items-center justify-center text-xs font-bold text-white shrink-0`}
+                    className="w-8 h-8 rounded-[4px] flex items-center justify-center text-xs font-bold shrink-0"
+                    style={{ background: getLetterColor(skill.initial).bg, color: getLetterColor(skill.initial).text }}
                   >
                     {skill.initial}
                   </div>
@@ -2003,8 +2016,29 @@ export default function OpenClawDetailGuide() {
                                   className="inline-flex items-center gap-1 text-xs flex-shrink-0"
                                   style={{ color: "#DC2626" }}
                                 >
-                                  <XCircle className="w-3 h-3" />
-                                  安装失败
+                                  <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                  >
+                                    <g clipPath="url(#clip0_70703_2337)">
+                                      <path
+                                        fillRule="evenodd"
+                                        clipRule="evenodd"
+                                        d="M8.00032 1.99984C11.3141 1.99984 14.0004 4.68613 14.0004 7.99984C14.0004 11.3135 11.3141 13.9998 8.00032 13.9998C4.68662 13.9998 2.00032 11.3135 2.00032 7.99984C2.00032 4.68613 4.68661 1.99984 8.00032 1.99984ZM15.3337 7.99984C15.3337 3.94975 12.0505 0.666503 8.00032 0.666504C3.95024 0.666504 0.666991 3.94975 0.666992 7.99984C0.666992 12.0499 3.95024 15.3332 8.00032 15.3332C12.0505 15.3332 15.3337 12.0499 15.3337 7.99984ZM7.33366 4.33317V9.33317H8.66699V4.33317H7.33366ZM8.66699 10.3332H7.33105V11.6691H8.66699V10.3332Z"
+                                        fill="currentColor"
+                                      />
+                                    </g>
+                                    <defs>
+                                      <clipPath id="clip0_70703_2337">
+                                        <rect width="16" height="16" fill="white" />
+                                      </clipPath>
+                                    </defs>
+                                  </svg>
+                                  安装失败，请重试
                                 </span>
                               )}
                             </div>

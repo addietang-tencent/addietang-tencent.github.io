@@ -52,6 +52,7 @@ import { HeroBanner } from "@/components/agent/HeroBanner";
 import { QuickStartGuide } from "@/components/agent/QuickStartGuide";
 import { ViewModeSegmented } from "@/components/agent/ViewModeSegmented";
 import { AgentCard } from "@/components/agent/AgentCard";
+import { AgentAvatar } from "@/components/agent/AgentAvatar";
 
 const DISABLED_TIP = "您的 OpenClaw 已被管理员停用，无法操作";
 const LAUNCH_FAILED_TIP = "创建失败，无法操作";
@@ -1109,23 +1110,30 @@ export default function MyOpenClaw() {
 
                 {/* Role Detail —— 选中具体角色后展示介绍卡片 */}
                 {selectedRole && (
-                  <SurfaceInner className="mt-3 overflow-hidden">
-                    <div className="p-4 space-y-3">
+                  <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative">
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 top-0 h-12"
+                      style={{
+                        backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+                        backgroundSize: "12px 12px",
+                        maskImage: "linear-gradient(to bottom, black, transparent)",
+                        WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
+                      }}
+                    />
+                    <div className="p-4 space-y-3 relative z-10">
                       <div className="flex items-center gap-2">
-                        <div
-                          className="w-7 h-7 rounded-[4px] flex items-center justify-center shrink-0"
-                          style={{ background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)" }}
-                        >
-                          <Bot className="w-4 h-4 text-white" />
-                        </div>
+                        <AgentAvatar
+                          roleName={selectedRole.name}
+                          size={28}
+                        />
                         <p className="text-sm font-semibold text-[#0A0A0A]">
                           {selectedRole.name}角色介绍
                         </p>
                       </div>
                       <Separator />
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#355EF1] flex items-center gap-1.5">
-                          <Sparkles className="w-3 h-3" />
+                        <p className="text-xs font-semibold text-[#0A0A0A]">
                           角色技能
                         </p>
                         <p className="text-xs text-[#334155] leading-relaxed">
@@ -1133,8 +1141,7 @@ export default function MyOpenClaw() {
                         </p>
                       </div>
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#355EF1] flex items-center gap-1.5">
-                          <Heart className="w-3 h-3" />
+                        <p className="text-xs font-semibold text-[#0A0A0A]">
                           角色风格
                         </p>
                         <p className="text-xs text-[#334155] leading-relaxed">

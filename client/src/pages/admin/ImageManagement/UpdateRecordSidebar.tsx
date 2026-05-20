@@ -11,7 +11,7 @@
  *   5. 「查看全部更新记录」链接（触发 Dialog 弹窗）
  */
 import { useEffect, useState } from "react";
-import { Star, Megaphone, ChevronRight, Sparkles, RotateCcw } from "lucide-react";
+import { Star, Megaphone, ChevronRight, Sparkles, RotateCcw, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ import {
   type FlatUpdateRecord,
 } from "./publicImageRecords";
 import {
+  setActivePush,
   listActivePushes,
   clearActivePush,
   type ActivePush,
@@ -37,6 +38,12 @@ interface Props {
   onPush: () => void;
   /** 触发"查看全部更新记录"弹窗 */
   onViewAll: () => void;
+  /** 布局方向：默认 vertical（右侧栏）；horizontal 用于标题下横幅 */
+  orientation?: "vertical" | "horizontal";
+  /** 最小化回调 */
+  onMinimize?: () => void;
+  /** 可推送的 Agent 类型列表 */
+  pushable?: { agentType: string; agentTypeLabel: string; enabledVersion: string; outdatedInstanceCount: number; allUpToDate: boolean; imageSource: "public" | "custom"; imageName: string }[];
 }
 
 // ─── 公共镜像更新记录条目（兼容历史名称导出，便于其他文件复用） ───
@@ -54,6 +61,9 @@ export default function UpdateRecordSidebar({
   defaultAgentType,
   onPush,
   onViewAll,
+  orientation = "vertical",
+  onMinimize,
+  pushable = [],
 }: Props) {
   // 复用与 Agent 列表页相同的"是否有镜像更新"判断
   const outdatedTypes = useOutdatedTypes();
@@ -76,6 +86,109 @@ export default function UpdateRecordSidebar({
     toast.success(`已撤回「${push.agentTypeLabel} v${push.version}」的推送提醒`);
   };
 
+  // ─── 横向布局（标题右上角合并卡片）────────────────────────────
+  if (orientation === "horizontal") {
+    // 当既无更新也无活跃推送时，仅展示一行简短按钮（不上卡片）
+    if (!hasUpdate && activePushes.length === 0) {
+      return (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={onPush}
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-[4px] text-xs font-medium text-white transition-opacity hover:opacity-90"
+            style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 主 CTA 使用主渐变
+          >
+            <Megaphone className="w-3.5 h-3.5" />
+            推送更新
+          </button>
+          <button
+            onClick={onViewAll}
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-[3px] text-xs text-[#334155] hover:bg-[#FAFAFA] transition-colors"
+          >
+            <span>查看全部更新记录</span>
+            <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />
+          </button>
+        </div>
+      );
+    }
+
+    // 有更新或有活跃推送：合并成一个卡片
+    return (
+      <div className="rounded-[4px] border border-[#E5E5E5] bg-white overflow-hidden relative">
+        {/* 关闭按钮 */}
+        {onMinimize && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={onMinimize}
+              className="absolute top-2 right-2 p-1 rounded-[3px] text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="text-xs">折叠</TooltipContent>
+        </Tooltip>
+        )}
+        {/* Agent 新版本卡片列表 */}
+        <div className="px-3 py-2.5 space-y-2">
+          <div className="text-xs font-semibold text-[#0A0A0A] mb-4">{activePushes.length > 0 ? "有新版本上线（正在提醒员工更新）" : "有新版本上线，请尽快更新"}</div>
+          {pushable.filter(p => !p.allUpToDate).map(p => {
+            const isPushing = activePushes.some(ap => ap.agentType === p.agentType);
+            return (
+              <div key={p.agentType} className="px-2.5 py-2 rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA]">
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#E5E5E5]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[12px] font-medium text-[#0A0A0A] truncate">{p.agentTypeLabel}</span>
+                    <span className="text-[10px] text-[#A3A3A3] font-mono tabular-nums">v{p.enabledVersion}</span>
+                    {isPushing && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-[3px] bg-[#1447E6]/10 text-[9px] font-medium text-[#1447E6]">
+                        正在提醒员工更新
+                      </span>
+                    )}
+                  </div>
+                  {isPushing ? (
+                    <button
+                      onClick={() => {
+                        clearActivePush(p.agentType);
+                        toast.success(`已撤回「${p.agentTypeLabel}」的推送提醒`);
+                      }}
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[10px] text-[#737373] border border-[#E5E5E5] hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
+                    >
+                      <RotateCcw className="w-2.5 h-2.5" />
+                      撤回
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        const ts = new Date().toISOString().slice(0, 19).replace("T", " ");
+                        setActivePush({ agentType: p.agentType, agentTypeLabel: p.agentTypeLabel, version: p.enabledVersion, imageName: p.imageName, imageSource: p.imageSource, pushedAt: ts, message: `管理员推荐更新到 v${p.enabledVersion}` } as ActivePush);
+                        toast.success(`已向「${p.agentTypeLabel}」推送更新提醒`);
+                      }}
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[10px] font-medium text-[#1447E6] border border-[#1447E6]/30 hover:bg-[#1447E6]/5 transition-colors shrink-0"
+                    >
+                      <Megaphone className="w-2.5 h-2.5" />
+                      推送提醒
+                    </button>
+                  )}
+                </div>
+                <p className="text-[10px] text-[#737373] leading-relaxed">
+                  推送后，使用 <span className="font-medium text-[#0A0A0A]">{p.agentTypeLabel}</span> 且版本低于 <span className="font-mono text-[#1447E6]">v{p.enabledVersion}</span> 的 <span className="font-medium text-[#0A0A0A]">{p.outdatedInstanceCount}</span> 个 Agent，将在用户端收到更新提醒。
+                </p>
+              </div>
+            );
+          })}
+          <button
+            onClick={onViewAll}
+            className="inline-flex items-center gap-1 text-[11px] text-[#1447E6] hover:opacity-80 mt-1"
+          >
+            查看全部更新记录
+            <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── 纵向布局（默认右侧栏）────────────────────────────────
   return (
     <div className="space-y-5">
       {/* 1. Agent 类型导航 */}

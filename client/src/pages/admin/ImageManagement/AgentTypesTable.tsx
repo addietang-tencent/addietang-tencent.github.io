@@ -21,11 +21,18 @@ import {
   ChevronDown,
   ChevronRight,
   History,
+  MoreVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusTag } from "@/components/ui/status-tag";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import AgentTypeImagePicker from "./AgentTypeImagePicker";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
 import type { CustomAgentType } from "./types";
@@ -116,7 +123,7 @@ export default function AgentTypesTable({
       <table className="w-full text-sm table-auto">
         <thead>
           <tr style={{ backgroundColor: "#f9fafb" }}>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 180 }}>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
               Agent 类型
             </th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 170 }}>
@@ -127,6 +134,9 @@ export default function AgentTypesTable({
             </th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 160 }}>
               应用范围
+            </th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 100 }}>
+              用户可见
             </th>
             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 300, width: "1%" }}>
               操作
@@ -209,7 +219,7 @@ function AgentTypeRow({
         className="group hover:bg-gray-50/50 transition-colors"
       >
         {/* 1. Agent 类型 */}
-        <td className="px-4 py-4 align-top">
+        <td className="px-4 py-4 align-top" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-sm font-semibold text-gray-900 truncate max-w-[160px]">
               {label}
@@ -220,7 +230,7 @@ function AgentTypeRow({
                   <span
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold text-white cursor-default whitespace-nowrap"
                     style={{
-                      background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)", // allow-inline-gradient: 首选徽章使用主 CTA 渐变
+                      background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
                     }}
                   >
                     <Star className="w-2.5 h-2.5" /> 用户端首选
@@ -230,6 +240,14 @@ function AgentTypeRow({
                   用户端首选 Agent 类型
                 </TooltipContent>
               </Tooltip>
+            )}
+            {!isDefault && (
+              <button
+                onClick={onSetDefaultType}
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-[3px] text-[10px] font-medium text-[#1447E6] hover:bg-blue-50 transition-colors whitespace-nowrap invisible group-hover:visible"
+              >
+                <Star className="w-2.5 h-2.5" /> 设为首选
+              </button>
             )}
           </div>
           {(isNative || (customType && !isNative && kernelBaseLabel)) && (
@@ -286,108 +304,92 @@ function AgentTypeRow({
           {scopeSlot}
         </td>
 
-        {/* 5. 操作（最多两行）：
-         *   第一行 [用户可见 ⚪] [设首选 ★] [切换镜像 ▷]
-         *   第二行 [删除类型]（仅自定义类型）
-         */}
+        {/* 5. 用户可见 */}
         <td className="px-4 py-4 align-top whitespace-nowrap">
-          <div className="flex flex-col items-start gap-1.5">
-            {/* 第一行：用户可见 + 设首选 + 切换镜像 */}
-            <div className="flex items-center gap-2">
-              {/* 用户可见 Switch */}
-              {selected ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <span
-                    className={`text-[11px] ${
-                      isEnabled ? "text-[#1447E6] font-medium" : "text-[#737373]"
-                    }`}
-                  >
-                    用户可见
-                  </span>
-                  <Switch
-                    checked={isEnabled}
-                    onCheckedChange={handleSwitchToggle}
-                  />
+          {selected ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Switch
+                checked={isEnabled}
+                onCheckedChange={handleSwitchToggle}
+              />
+            </span>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1.5 cursor-not-allowed">
+                  <Switch checked={false} disabled />
                 </span>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center gap-1.5 cursor-not-allowed">
-                      <span className="text-[11px] text-gray-300">用户可见</span>
-                      <Switch checked={false} disabled />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    请先选择一个镜像
-                  </TooltipContent>
-                </Tooltip>
-              )}
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                请先选择一个镜像
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </td>
 
-              {/* 设首选 */}
-              {isDefault ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-7 px-2.5 justify-center"
-                        disabled
+        {/* 6. 操作：[切换镜像 ▷] [更多 ⋯] */}
+        <td className="px-4 py-4 align-top whitespace-nowrap">
+          <div className="flex items-center gap-2">
+            {/* 切换镜像 */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 px-2.5 justify-center border border-[#E5E5E5]"
+              onClick={onToggleExpand}
+            >
+              {expanded ? "收起列表" : "切换镜像"}
+              {expanded ? (
+                <ChevronDown className="w-3 h-3 ml-1" />
+              ) : (
+                <ChevronRight className="w-3 h-3 ml-1" />
+              )}
+            </Button>
+
+            {/* 更多：内含「设为首选」+（自定义类型）「删除类型」
+                 当所有项都不可操作时（已是首选 + 非自定义类型），按钮整体禁用 */}
+            {(() => {
+              const hasClickableMenuItem = !isDefault || isCustom;
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-7 px-2.5 justify-center border border-[#E5E5E5]"
+                      aria-label="更多操作"
+                      disabled={!hasClickableMenuItem}
+                    >
+                      更多
+                      <MoreVertical className="w-3 h-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[160px]">
+                    {/* 设为首选 */}
+                    {isDefault ? (
+                      <DropdownMenuItem disabled>
+                        <Star className="w-3.5 h-3.5 mr-2" />
+                        已是用户端首选
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={onSetDefaultType}>
+                        <Star className="w-3.5 h-3.5 mr-2" />
+                        设为首选
+                      </DropdownMenuItem>
+                    )}
+                    {/* 删除类型（仅自定义类型） */}
+                    {isCustom && (
+                      <DropdownMenuItem
+                        onClick={onRemoveCustomType}
+                        className="text-red-600 focus:text-red-600"
                       >
-                        <Star className="w-3 h-3 mr-1" />
-                        设首选
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    已是用户端首选类型
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs h-7 px-2.5 justify-center"
-                  onClick={onSetDefaultType}
-                >
-                  <Star className="w-3 h-3 mr-1" />
-                  设首选
-                </Button>
-              )}
-
-              {/* 切换镜像 */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-7 px-2.5 justify-center"
-                onClick={onToggleExpand}
-              >
-                {expanded ? "收起列表" : "切换镜像"}
-                {expanded ? (
-                  <ChevronDown className="w-3 h-3 ml-1" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 ml-1" />
-                )}
-              </Button>
-            </div>
-
-            {/* 第二行：删除（仅自定义类型，左对齐） */}
-            {isCustom && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={onRemoveCustomType}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors rounded"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                    删除类型
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-[220px] text-xs">
-                  删除此自定义 Agent 类型
-                </TooltipContent>
-              </Tooltip>
-            )}
+                        <Trash2 className="w-3.5 h-3.5 mr-2" />
+                        删除类型
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })()}
           </div>
         </td>
       </tr>
@@ -396,16 +398,10 @@ function AgentTypeRow({
       {expanded && (
         <tr>
           <td
-            colSpan={5}
+            colSpan={6}
             className="p-0 bg-slate-50/80 border-b border-gray-200"
           >
-            {/* 内嵌缩进容器：左侧大缩进 + 蓝色竖线，强化"二级"视觉层级 */}
-            <div className="pl-12 pr-6 py-3 relative">
-              <span
-                aria-hidden
-                className="absolute left-6 top-3 bottom-3 w-0.5 rounded-full"
-                style={{ background: "linear-gradient(180deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 二级层级标识使用主 CTA 渐变
-              />
+            <div className="px-4 py-3">
               <div className="rounded-[4px] border border-[#E5E5E5] bg-white">
                 <AgentTypeImagePicker
                   view={view}
@@ -437,7 +433,7 @@ function AgentVersionCell({
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 whitespace-nowrap">
-        <span className="font-mono font-bold text-base text-gray-900 tabular-nums">
+        <span className="text-sm font-medium text-gray-900">
           v{image.agentVersion}
         </span>
         {isPublic && (

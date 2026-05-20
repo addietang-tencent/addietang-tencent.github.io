@@ -22,10 +22,12 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3 } from "lucide-react";
+import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3, Bell } from "lucide-react";
 import { toast } from "sonner";
 import {
+  setActivePush,
   listActivePushes,
   clearActivePush,
   type ActivePush,
@@ -36,11 +38,25 @@ import {
   type UpdateRecord,
 } from "./UpdateRecordSidebar";
 
+export interface PushableItem {
+  agentType: string;
+  agentTypeLabel: string;
+  enabledVersion: string;
+  outdatedInstanceCount: number;
+  allUpToDate: boolean;
+  imageSource: "public" | "custom";
+  imageName: string;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** 触发推送弹窗（默认选中传入的 agent 类型） */
   onPush: (defaultAgentType?: string) => void;
+  /** 可推送的 Agent 类型列表 */
+  pushable?: PushableItem[];
+  /** 默认打开的 tab */
+  defaultTab?: "current" | "history";
 }
 
 // ─── 镜像彩色徽章：稳定 hash → 颜色，使同一镜像在视觉上保持一致 ────
@@ -59,7 +75,19 @@ function hashImageColor(imageId: string): typeof IMAGE_COLOR_PALETTE[number] {
   return IMAGE_COLOR_PALETTE[h % IMAGE_COLOR_PALETTE.length];
 }
 
-export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Props) {
+export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushable = [], defaultTab = "current" }: Props) {
+  const [activeTab, setActiveTab] = useState<"current" | "history">(defaultTab);
+
+  useEffect(() => { if (open) setActiveTab(defaultTab); }, [open, defaultTab]);
+
+  // 活跃推送列表
+  const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
+  useEffect(() => {
+    if (!open) return;
+    setActivePushes(listActivePushes());
+    const interval = setInterval(() => setActivePushes(listActivePushes()), 1000);
+    return () => clearInterval(interval);
+  }, [open]);
   /** 筛选粒度：按 Agent 类型 或 按具体镜像 */
   const [filter, setFilter] = useState<{ kind: "all" | "type" | "image"; value: string }>({
     kind: "all",
@@ -107,18 +135,6 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
     return map;
   }, [filtered]);
 
-  // 订阅活跃推送
-  const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
-  useEffect(() => {
-    const refresh = () => setActivePushes(listActivePushes());
-    window.addEventListener("upgrade-push-changed", refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener("upgrade-push-changed", refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
-
   const findPush = (r: UpdateRecord): ActivePush | undefined =>
     activePushes.find((p) => p.agentType === r.agentType && p.version === r.version);
 
@@ -144,20 +160,89 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
       <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0">
         <SheetHeader className="px-6 pt-6 pb-3 shrink-0">
           <SheetTitle className="text-base">
-            镜像更新记录
+            版本更新
           </SheetTitle>
-          <SheetDescription className="text-xs text-[#737373]">
-            所有 Agent 类型下各镜像的版本发布历史。
-          </SheetDescription>
         </SheetHeader>
 
-        {/* 筛选区：第一级 Agent 类型；第二级镜像（仅在选中类型后出现） */}
+        {/* Tab 切换 */}
+        <div className="px-6 pb-3">
+          <SegmentGroup>
+            <SegmentOption active={activeTab === "current"} onClick={() => setActiveTab("current")}>
+              新版本推送
+              {pushable.filter(p => !p.allUpToDate).length > 0 && (
+                <span className="ml-1 text-[#A3A3A3]">({pushable.filter(p => !p.allUpToDate).length})</span>
+              )}
+            </SegmentOption>
+            <SegmentOption active={activeTab === "history"} onClick={() => setActiveTab("history")}>
+              全部更新记录
+            </SegmentOption>
+          </SegmentGroup>
+        </div>
+
+        {/* 当前更新 Tab */}
+        {activeTab === "current" && (
+          <div className="px-6 pb-4 space-y-3">
+            {pushable.filter(p => !p.allUpToDate).length === 0 ? (
+              <p className="text-xs text-[#A3A3A3] text-center py-6">当前没有版本更新</p>
+            ) : (
+              pushable.filter(p => !p.allUpToDate).map(p => {
+                const isPushing = activePushes.some(ap => ap.agentType === p.agentType);
+                return (
+                  <div key={p.agentType} className="px-3 py-2.5 rounded-[4px] border border-[#E5E5E5] bg-white hover:bg-[#FAFAFA] transition-colors">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E5E5]">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-sm font-medium text-[#0A0A0A] truncate">{p.agentTypeLabel}</span>
+                        <span className="text-xs text-[#A3A3A3] font-mono tabular-nums">v{p.enabledVersion}</span>
+                        {isPushing && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-[3px] bg-[#1447E6]/10 text-[10px] font-medium text-[#1447E6]">
+                            正在提醒员工更新
+                          </span>
+                        )}
+                      </div>
+                      {isPushing ? (
+                        <button
+                          onClick={() => { clearActivePush(p.agentType); setActivePushes(listActivePushes()); toast.success(`已撤回「${p.agentTypeLabel}」的推送提醒`); }}
+                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[11px] text-[#737373] border border-[#E5E5E5] hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
+                        >
+                          <RotateCcw className="w-2.5 h-2.5" />
+                          撤回
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const ts = new Date().toISOString().slice(0, 19).replace("T", " ");
+                            setActivePush({ agentType: p.agentType, agentTypeLabel: p.agentTypeLabel, version: p.enabledVersion, imageName: p.imageName, imageSource: p.imageSource, pushedAt: ts, message: `管理员推荐更新到 v${p.enabledVersion}` } as ActivePush);
+                            setActivePushes(listActivePushes());
+                            toast.success(`已向「${p.agentTypeLabel}」推送更新提醒`);
+                          }}
+                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[11px] font-medium text-[#1447E6] border border-[#1447E6]/30 hover:bg-[#1447E6]/5 transition-colors shrink-0"
+                        >
+                          <Megaphone className="w-2.5 h-2.5" />
+                          推送提醒
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#737373] leading-relaxed">
+                      推送后，使用 <span className="font-medium text-[#0A0A0A]">{p.agentTypeLabel}</span> 且版本低于 <span className="font-mono text-[#1447E6]">v{p.enabledVersion}</span> 的 <span className="font-medium text-[#0A0A0A]">{p.outdatedInstanceCount}</span> 个 Agent，将在用户端收到更新提醒。
+                    </p>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* 历史更新 Tab */}
+        {activeTab === "history" && (
+          <>
+        {/* 筛选区 */}
         <div className="px-6 pb-3 space-y-2 shrink-0">
           {/* 第一级：Agent 类型 */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider mr-1">
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
               Agent 类型
             </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setFilter({ kind: "all", value: "" })}
               className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
@@ -190,17 +275,19 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                 </button>
               );
             })}
+            </div>
           </div>
 
           {/* 第二级：镜像（按选中的 Agent 类型展开） */}
           {imageOptionsForActiveType.length > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap border-l-2 border-[#1447E6]/20 ml-1 pl-3">
-              <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider mr-1">
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
                 镜像
               </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
-                className={`text-xs px-2 py-0.5 rounded-[3px] border transition-colors ${
+                className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
                   filter.kind === "type"
                     ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
                     : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
@@ -215,7 +302,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                   <button
                     key={img.imageId}
                     onClick={() => setFilter({ kind: "image", value: img.imageId })}
-                    className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-[3px] border transition-colors ${
+                    className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
                       isActive
                         ? `${c.bg} ${c.text} ${c.border}`
                         : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#A3A3A3]"
@@ -226,6 +313,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
                   </button>
                 );
               })}
+              </div>
             </div>
           )}
         </div>
@@ -361,6 +449,8 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
             关闭
           </Button>
         </SheetFooter>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   );

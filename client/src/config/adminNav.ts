@@ -19,6 +19,10 @@ export type AdminNavItem = {
 /** 二级子分组（如「Agent 启动配置」嵌在「Agent 配置」下） */
 export type AdminNavSubGroup = {
   label: string;
+  /** lucide 图标名（如 "Layers"），可选；不填则用默认 */
+  icon?: string;
+  /** 默认展开 */
+  defaultExpanded?: boolean;
   items: AdminNavItem[];
 };
 
@@ -52,6 +56,8 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     subGroups: [
       {
         label: "Agent 启动配置",
+        icon: "Layers",
+        defaultExpanded: true,
         items: [
           { label: "Agent 类型", href: "/admin/agent-types", iconSrc: `${ADMIN_SIDEBAR_ICON_BASE}/image-management.svg`, badge: "原镜像管理" },
           { label: "资源管理", href: "/admin/agent-template", iconSrc: `${ADMIN_SIDEBAR_ICON_BASE}/agent-template.svg` },

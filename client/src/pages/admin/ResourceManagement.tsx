@@ -2,16 +2,20 @@
  * ResourceManagement - 资源管理页
  * 管控端「Agent 启动配置」分组下，供管理员统一管理和分发 Agent 资源模板
  */
+import { LayoutTemplate } from "lucide-react";
 
 export default function ResourceManagement() {
   return (
-    <div className="flex items-center justify-center h-full min-h-[calc(100vh-200px)]">
-      <div className="flex flex-col items-center text-center max-w-[590px]">
-        <img src="/assets/admin-agent-template/agent-template.svg" className="shrink-0" />
-        <div className="mt-4">
-          <div className="text-2xl font-medium text-[#737373] mb-5">Agent 模板</div>
-          <p className="text-sm font-normal text-[#737373] leading-relaxed tracking-[0.07px]">
-            在此统一管理企业内可复用的 Agent 模板，包括预设的系统提示词、工具配置与模型参数。<br />
+    <div className="p-8 max-w-4xl">
+      {/* 页面标题区 */}
+      <div className="flex items-start gap-4 mb-8">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <LayoutTemplate className="w-5 h-5 text-blue-600" />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-1.5">Agent 模板</h1>
+          <p className="text-sm text-gray-500 leading-relaxed max-w-xl">
+            在此统一管理企业内可复用的 Agent 模板，包括预设的系统提示词、工具配置与模型参数。
             管理员可发布模板供员工一键创建标准化 Agent，降低配置门槛，保障使用规范。
           </p>
         </div>

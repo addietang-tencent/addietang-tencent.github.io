@@ -45,7 +45,10 @@ function Section({
         {title}
       </div>
       <div
-        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        className="bg-white rounded-xl border border-gray-100 overflow-hidden"
+        style={{
+          boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.03)",
+        }}
       >
         {children}
       </div>
@@ -127,7 +130,7 @@ export default function MemberDrawer({
         side="right"
         className="!w-[600px] !max-w-none p-0 flex flex-col"
       >
-        <SheetHeader className="px-6 py-5 border-b border-[#e5e5e5]">
+        <SheetHeader className="px-6 py-5 border-b border-gray-100">
           <SheetTitle className="text-lg">
             {user.displayName}
             <span className="ml-2 text-sm font-normal text-gray-500">
@@ -141,7 +144,7 @@ export default function MemberDrawer({
 
         <div
           className="flex-1 overflow-y-auto px-6 py-5"
-          style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}
+          style={{ background: "#FAFBFF" }}
         >
           {(hasConflict || hasMissing) && (
             <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-5">
@@ -227,7 +230,7 @@ export default function MemberDrawer({
                     {(cfg.models ?? []).map((m) => (
                       <span
                         key={m}
-                        className="text-xs bg-gray-50 text-gray-700 rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-gray-700 rounded-md px-2 py-0.5 border border-gray-100"
                       >
                         {m}
                       </span>
@@ -247,7 +250,7 @@ export default function MemberDrawer({
                     {(cfg.channels ?? []).map((c) => (
                       <span
                         key={c}
-                        className="text-xs bg-gray-50 text-gray-700 rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-gray-700 rounded-md px-2 py-0.5 border border-gray-100"
                       >
                         {c}
                       </span>

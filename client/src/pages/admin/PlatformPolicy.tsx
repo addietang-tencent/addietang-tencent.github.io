@@ -7,10 +7,10 @@
 import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
-  Pencil, Check, X,
-  Stethoscope, HelpCircle, Info,
-  Plus, Trash2, Search,
-  ChevronDown, ChevronRight, Minus, Loader2,
+  Zap, Pencil, Check, X, Terminal, Monitor, Cpu,
+  Stethoscope, HelpCircle, Cloud, Info, MessageSquare, Brain,
+  BarChart3, MessagesSquare, Plus, Trash2, Search,
+  ChevronDown, ChevronRight, Minus, Loader2, ArrowUpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -382,7 +382,7 @@ function GroupTagSelector({
           type="button"
           onClick={() => !isDisabled && toggleNode(node)}
           disabled={isDisabled}
-          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-colors text-left ${isDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors text-left ${isDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
@@ -427,7 +427,7 @@ function GroupTagSelector({
         <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
-          className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#d3d6db] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+          className="relative w-full min-h-7 px-2 py-1 rounded-lg border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
         >
           {selectedIds.length === 0 ? (
             <span className="text-xs text-gray-400 px-1">选择分组…</span>
@@ -475,15 +475,15 @@ function GroupTagSelector({
         align="start"
         sideOffset={4}
       >
-        <div className="p-2.5 border-b border-[#e5e5e5]">
+        <div className="p-2.5 border-b border-gray-100">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-            <Input
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
               type="text"
               placeholder="搜索分组…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-8 pl-8 pr-7 text-xs"
+              className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -701,16 +701,16 @@ function LabeledOptionIndicator<T extends string>({
                 <button
                   key={opt.value}
                   onClick={() => setDraft(opt.value)}
-                  className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${draft === opt.value ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}
+                  className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${draft === opt.value ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}
                 >
                   {opt.label}
                 </button>
               ))}
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5]">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
-            <Button size="sm" className="h-7 text-xs px-3" onClick={handleConfirm}>确认</Button>
+            <Button size="sm" className="h-7 text-xs px-3" onClick={handleConfirm} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>确认</Button>
           </div>
         </PopoverContent>
       </Popover>
@@ -771,7 +771,7 @@ function TimeDimensionIndicator({ mode, onSave }: { mode: "daily" | "monthly"; o
 // ─── 统一的行容器 ─────────────────────────────────────────────────────────────
 const ROW_CLASS = "flex items-center gap-3 px-3 h-10";
 // 编辑行：允许分组标签撑开高度（多标签时换行）
-const EDIT_ROW_CLASS = "flex items-center gap-3 px-3 min-h-10 py-1.5";
+const EDIT_ROW_CLASS = "flex items-start gap-3 px-3 min-h-10 py-1.5";
 
 // ─── 子组件：配额策略卡片 ────────────────────────────────────────────────────
 
@@ -843,21 +843,21 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
     <>
       {type === "token" && (
         <div className="flex gap-1 shrink-0">
-          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "unlimited" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>无限制</button>
-          <button onClick={() => setDraftMode("custom")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "custom" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>自定义</button>
+          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftMode === "unlimited" ? "border-blue-500 bg-blue-50 text-blue-600 font-medium" : "border-gray-200 text-gray-500"}`}>无限制</button>
+          <button onClick={() => setDraftMode("custom")} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftMode === "custom" ? "border-blue-500 bg-blue-50 text-blue-600 font-medium" : "border-gray-200 text-gray-500"}`}>自定义</button>
         </div>
       )}
       {(type === "integer" || draftMode === "custom") && (
-        <Input type="number" value={draftValue} onChange={(e) => setDraftValue(e.target.value)} className="h-9 text-xs bg-white w-32" placeholder={type === "integer" ? "0-999" : "数量"} />
+        <Input type="number" value={draftValue} onChange={(e) => setDraftValue(e.target.value)} className="h-7 text-xs bg-white w-32" placeholder={type === "integer" ? "0-999" : "数量"} />
       )}
     </>
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          {icon}
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
           <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -888,7 +888,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
           {/* 表头：仅在新增/编辑分组策略时展示 */}
           {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-            <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
+            <div className={`${ROW_CLASS} border-b border-gray-100`}>
               <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
               <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
               <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
@@ -900,15 +900,15 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
             <div key={rule.id}>
               {editingId === rule.id ? (
                 <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pt-0.5">
                     <GroupTagSelector
                       selectedIds={draftGroupIds}
                       disabledIds={getDisabledIds(rule.id)}
                       onChange={setDraftGroupIds}
                     />
                   </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-9">
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                     <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                     <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
                   </div>
@@ -936,14 +936,14 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                   onChange={setDraftGroupIds}
                 />
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-9">
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderValueEditor()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                 <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
             </div>
           ) : (
-            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
               <Plus className="w-3.5 h-3.5" />添加分组策略
             </button>
           )}
@@ -951,7 +951,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
       </div>
 
       {extraContent && (
-        <div className="px-8 pb-4 pt-3 border-t border-[#e5e5e5]">{extraContent}</div>
+        <div className="px-8 pb-4 pt-3 border-t border-gray-100">{extraContent}</div>
       )}
     </div>
   );
@@ -1056,8 +1056,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   // 兜底值编辑器（开启/关闭 二选一按钮）
   const renderFallbackValueEditor = () => (
     <>
-      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-gray-200 text-gray-500"}`}>开启</button>
-      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-gray-200 text-gray-500"}`}>关闭</button>
+      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-gray-200 text-gray-500"}`}>开启</button>
+      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-gray-200 text-gray-500"}`}>关闭</button>
     </>
   );
   // 分组规则编辑态：展示静态文字（值固定为例外值，不可改）
@@ -1072,10 +1072,10 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          {icon}
+          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
           <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -1110,7 +1110,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
         <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
           {/* 表头：仅在新增/编辑分组策略时展示 */}
           {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-            <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
+            <div className={`${ROW_CLASS} border-b border-gray-100`}>
               <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
               <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
               <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
@@ -1121,15 +1121,15 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
             <div key={rule.id}>
               {editingId === rule.id ? (
                 <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 pt-0.5">
                     <GroupTagSelector
                       selectedIds={draftGroupIds}
                       disabledIds={getDisabledIds(rule.id)}
                       onChange={setDraftGroupIds}
                     />
                   </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-9">
+                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
+                  <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                     <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                     <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
                   </div>
@@ -1160,8 +1160,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                   onChange={setDraftGroupIds}
                 />
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-9">
+              <div className={`${valueColClass} flex items-center justify-end gap-1 h-7 pt-0.5`}>{renderGroupRuleStaticValue()}</div>
+              <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
                 <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
                 <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
@@ -1169,7 +1169,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
           ) : (
             // 最多 1 条分组策略：已有则不显示添加按钮
             groupRules.length === 0 && (
-              <button onClick={startAdd} disabled={!!loadingRuleId} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              <button onClick={startAdd} disabled={!!loadingRuleId} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                 <Plus className="w-3.5 h-3.5" />添加分组策略
               </button>
             )
@@ -1178,7 +1178,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
       </div>
 
       {extraContent && (
-        <div className="px-8 pb-4 pt-3 border-t border-[#e5e5e5]">{extraContent}</div>
+        <div className="px-8 pb-4 pt-3 border-t border-gray-100">{extraContent}</div>
       )}
 
       {/* 兜底值切换二次确认弹窗 */}
@@ -1462,7 +1462,7 @@ export default function PlatformPolicy() {
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl">
       {/* 页面标题 */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
@@ -1470,7 +1470,7 @@ export default function PlatformPolicy() {
       </div>
 
       {/* 优先级说明信息条 */}
-      <div className="flex items-start gap-2.5 rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
+      <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 border border-blue-100 px-4 py-3">
         <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
         <ul className="text-xs text-blue-700 leading-relaxed space-y-1 list-disc pl-4">
           <li>无需按分组设置策略时，直接使用<span className="font-medium">「预设策略」</span>，全部用户应用该策略。</li>
@@ -1483,8 +1483,8 @@ export default function PlatformPolicy() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">用户配额</h2>
         <div className="space-y-4">
           <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0" />}
-            iconBg=""
+            icon={<Zap className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
             title="单用户 Agent 数量上限"
             description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             type="integer"
@@ -1492,8 +1492,8 @@ export default function PlatformPolicy() {
             onRulesChange={setClawRules}
           />
           <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/user-daily-token-limit.svg" className="shrink-0" />}
-            iconBg=""
+            icon={<Zap className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
             title="单用户每日 Tokens 上限"
             description="单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
             type="token"
@@ -1508,8 +1508,8 @@ export default function PlatformPolicy() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">模型配额</h2>
         <div className="space-y-4">
           <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0" />}
-            iconBg=""
+            icon={<Zap className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
             title="全局 Tokens 上限"
             description="全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务"
             type="token"
@@ -1529,10 +1529,10 @@ export default function PlatformPolicy() {
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
         <div className="space-y-4">
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
+          <TogglePolicyCard icon={<Brain className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
+          <TogglePolicyCard icon={<MessageSquare className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
+          <TogglePolicyCard icon={<Cpu className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
+          <TogglePolicyCard icon={<Terminal className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
           <TogglePolicyCard
             icon={<ArrowUpCircle className="w-4 h-4 text-white" />}
             iconBg="bg-gradient-to-br from-green-500 to-green-600"
@@ -1542,8 +1542,8 @@ export default function PlatformPolicy() {
             onRulesChange={handleSelfUpgradeRulesChange}
           />
           <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0" />}
-            iconBg=""
+            icon={<Monitor className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户访问 Agent 面板"
             description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板"
             rules={panelRules}
@@ -1556,7 +1556,7 @@ export default function PlatformPolicy() {
                   onSave={(m) => { setPanelAccessMode(m); localStorage.setItem("admin_panel_access_mode", m); }}
                 />
                 {panelPort && (
-                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
+                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
                     <span className="text-xs text-blue-700 leading-relaxed">
                       {panelSgRuleId
                         ? `已为您分配随机端口 ${panelPort} 并自动为默认安全组添加该端口放通规则，`
@@ -1570,17 +1570,17 @@ export default function PlatformPolicy() {
               </div>
             }
           />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-chat-view.svg" className="shrink-0" />} iconBg="" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
+          <TogglePolicyCard icon={<MessagesSquare className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
           <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-cloud-browser.svg" className="shrink-0" />}
-            iconBg=""
+            icon={<Cloud className="w-4 h-4 text-white" />}
+            iconBg="bg-gradient-to-br from-green-500 to-green-600"
             title="允许用户访问 Agent 云端浏览器"
             description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
             rules={cloudBrowserRules}
             onRulesChange={handleCloudBrowserRulesChange}
             extraContent={
               isCloudBrowserEnabled(cloudBrowserRules) && cloudBrowserSgRuleId ? (
-                <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
+                <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-lg px-3 py-2">
                   <span className="text-xs text-blue-700 leading-relaxed">
                     已为您当前的安全组添加该功能所需的 6080 端口放通规则，如用户端仍无法访问，请在网络管理的
                     <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
@@ -1599,7 +1599,7 @@ export default function PlatformPolicy() {
             onRulesChange={handleLobsterDoctorRulesChange}
             extraContent={
               lobsterDoctorRules.some((r) => r.value) ? (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
                   <p className="text-xs text-blue-700 leading-relaxed">
                     龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
                     <button onClick={() => setShowLobsterDoctorDialog(true)} className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity" title="查看详情"><HelpCircle className="w-3.5 h-3.5" /></button>
@@ -1608,7 +1608,7 @@ export default function PlatformPolicy() {
               ) : undefined
             }
           />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-model-quota.svg" className="shrink-0" />} iconBg="" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
+          <TogglePolicyCard icon={<BarChart3 className="w-4 h-4 text-white" />} iconBg="bg-gradient-to-br from-green-500 to-green-600" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
         </div>
       </section>
 
@@ -1625,7 +1625,7 @@ export default function PlatformPolicy() {
                 <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
               </ol>
             </div>
-            <div className="border-t border-[#e5e5e5] pt-3 space-y-2">
+            <div className="border-t border-gray-100 pt-3 space-y-2">
               <p className="text-sm font-medium text-gray-900">说明</p>
               <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
                 <li><span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">腾讯云费用中心</a> 查看</li>

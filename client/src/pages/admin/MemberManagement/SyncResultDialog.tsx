@@ -66,10 +66,10 @@ export default function SyncResultDialog({
               </div>
 
               {/* 分组异常表格 */}
-              <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-[#e5e5e5]">
+                    <tr className="bg-gray-50 border-b border-gray-100">
                       <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
                         分组名称
                       </th>
@@ -98,7 +98,7 @@ export default function SyncResultDialog({
                             {group.boundConfigs.map((config) => (
                               <span
                                 key={config}
-                                className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-xl border border-red-100"
+                                className="inline-flex items-center px-2 py-0.5 text-xs bg-red-50 text-red-600 rounded-md border border-red-100"
                               >
                                 {config}
                               </span>
@@ -133,10 +133,10 @@ export default function SyncResultDialog({
               </div>
 
               {/* 用户异常表格 */}
-              <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
+              <div className="border border-gray-100 rounded-xl overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-[#e5e5e5]">
+                    <tr className="bg-gray-50 border-b border-gray-100">
                       <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
                         用户
                       </th>

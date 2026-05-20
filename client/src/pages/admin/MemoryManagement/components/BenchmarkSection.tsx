@@ -9,7 +9,8 @@ interface BenchmarkSectionProps {
 export const BenchmarkSection: React.FC<BenchmarkSectionProps> = () => {
   return (
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+      className="bg-white rounded-xl border border-gray-100 overflow-hidden"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
     >
       {/* 标题栏 — 常驻展开，不可折叠 */}
       <div className="px-5 py-4 flex items-center gap-2">

@@ -22,10 +22,10 @@ export const FeatureGrid: React.FC = () => {
           return (
             <div
               key={f.title}
-              className="p-3 rounded-xl border border-[#e5e5e5] bg-white/60 hover:border-gray-200 hover:shadow-sm transition-all flex items-start gap-2.5"
+              className="p-3 rounded-lg border border-gray-100 bg-white/60 hover:border-gray-200 hover:shadow-sm transition-all flex items-start gap-2.5"
             >
               <div
-                className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center"
+                className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
                 style={{ background: `${f.color}10` }}
               >
                 <Icon className="w-4 h-4" style={{ color: f.color }} />

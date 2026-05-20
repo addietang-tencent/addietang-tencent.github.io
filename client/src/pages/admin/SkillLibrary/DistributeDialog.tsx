@@ -167,7 +167,7 @@ export default function DistributeDialog({
         </div>
 
         {/* 实例列表 */}
-        <div className="border border-gray-200 rounded-xl max-h-64 overflow-y-auto">
+        <div className="border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
           {/* 全选复选框 */}
           <div className="flex items-center gap-3 p-2 border-b border-gray-200 bg-gray-50 sticky top-0">
             <Checkbox
@@ -183,7 +183,7 @@ export default function DistributeDialog({
           {filteredInstances.map(instance => (
             <div
               key={instance.id}
-              className="flex items-center gap-3 p-2 border-b border-[#e5e5e5] last:border-b-0 hover:bg-gray-50"
+              className="flex items-center gap-3 p-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
             >
               <Checkbox
                 checked={selectedInstances.includes(instance.id)}

@@ -1,123 +1,98 @@
 /**
- * SecurityManagement - AI Agent 安全
- * 设计稿: Figma node 34:187 (clawpro 组件补充)
- * 三个统计卡片 + 描述文案
+ * SecurityManagement - 安全管理页面
+ * Design: 「流动蓝图」Fluid Blueprint
+ * - 标题、副标题、卡片、icon 与其他子页面保持一致
  */
+import { Shield, FileText, Lock, AlertCircle } from "lucide-react";
 
-// ─── Icons (inline SVG from design assets) ───────────────────────────────────
-
-function AgentAssetIcon({ className }: { className?: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M8.4375 2.1377C9.21415 2.1377 9.84375 2.76729 9.84375 3.54395V5.15625H14.4385C15.2151 5.15631 15.8447 5.78589 15.8447 6.5625V9.67383H16.5371C17.0031 9.67383 17.3809 10.0516 17.3809 10.5176C17.3807 10.9835 17.003 11.3613 16.5371 11.3613H15.8447V14.4375C15.8447 15.2141 15.2151 15.8437 14.4385 15.8438H3.55957C2.78303 15.8436 2.15332 15.2141 2.15332 14.4375V11.3613H1.46289C0.996982 11.3613 0.619273 10.9835 0.619141 10.5176C0.619141 10.0516 0.9969 9.67383 1.46289 9.67383H2.15332V6.5625C2.15332 5.78593 2.78303 5.15638 3.55957 5.15625H8.15625V3.8252H6.04688C5.58097 3.8252 5.20326 3.44732 5.20312 2.98145C5.20312 2.51546 5.58088 2.1377 6.04688 2.1377H8.4375ZM3.84082 14.1562H14.1572V6.84375H3.84082V14.1562ZM6.75 8.87109C7.21599 8.87109 7.59375 9.24885 7.59375 9.71484V11.29C7.59338 11.7557 7.21576 12.1338 6.75 12.1338C6.28424 12.1338 5.90662 11.7557 5.90625 11.29V9.71484C5.90625 9.24885 6.28401 8.87109 6.75 8.87109ZM11.25 8.87109C11.716 8.87109 12.0938 9.24885 12.0938 9.71484V11.29C12.0934 11.7557 11.7158 12.1338 11.25 12.1338C10.7842 12.1338 10.4066 11.7557 10.4062 11.29V9.71484C10.4062 9.24885 10.784 8.87109 11.25 8.87109Z" fill="url(#paint0_linear_agent)"/>
-      <defs>
-        <linearGradient id="paint0_linear_agent" x1="16" y1="16" x2="14" y2="10" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#0080FF"/>
-          <stop offset="1" stopColor="#202020"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function RiskIcon({ className }: { className?: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M9.03321 11.7588C9.49958 11.7592 9.87794 12.1371 9.87794 12.6035C9.8777 13.0698 9.49943 13.4479 9.03321 13.4482H9.0254C8.55886 13.4482 8.18091 13.07 8.18067 12.6035C8.18067 12.1368 8.55872 11.7588 9.0254 11.7588H9.03321Z" fill="url(#paint0_radial_risk)"/>
-      <path d="M9.0254 5.99707C9.49191 5.99727 9.87012 6.37524 9.87012 6.8418V9.72266C9.86998 10.1891 9.49182 10.5672 9.0254 10.5674C8.5588 10.5674 8.18081 10.1892 8.18067 9.72266V6.8418C8.18067 6.37512 8.55872 5.99707 9.0254 5.99707Z" fill="url(#paint1_radial_risk)"/>
-      <path fillRule="evenodd" clipRule="evenodd" d="M9.01758 1.66602C9.42181 1.66604 9.81969 1.77305 10.169 1.97656C10.517 2.17945 10.8047 2.47118 11.0039 2.82129L16.7647 12.9004L16.835 13.0332C16.9894 13.3467 17.0702 13.6922 17.0703 14.043C17.0704 14.4439 16.9649 14.8382 16.7647 15.1855C16.5645 15.5326 16.2764 15.8208 15.9297 16.0215C15.5826 16.2222 15.188 16.3287 14.7871 16.3291H3.26368C2.8635 16.3313 2.4691 16.2281 2.1211 16.0303C1.77116 15.8313 1.48028 15.543 1.27735 15.1953C1.07438 14.8474 0.966773 14.4516 0.965826 14.0488C0.964934 13.6459 1.07002 13.2493 1.27149 12.9004L7.03126 2.82129C7.23048 2.47094 7.51896 2.17953 7.86719 1.97656C8.21635 1.77312 8.61349 1.66609 9.01758 1.66602ZM9.01758 3.35547C8.91261 3.35554 8.80951 3.38376 8.71876 3.43652C8.62784 3.4895 8.55193 3.5657 8.50001 3.65723L8.49903 3.66016L2.73731 13.7422L2.7002 13.8164C2.67044 13.8886 2.65511 13.9664 2.65528 14.0449C2.65554 14.1498 2.68347 14.2531 2.73633 14.3438C2.78922 14.4343 2.86583 14.5097 2.95704 14.5615C3.04804 14.6131 3.15125 14.6395 3.25587 14.6387H14.7861L14.8633 14.6338C14.9405 14.6235 15.0152 14.5978 15.083 14.5586C15.1734 14.5063 15.2486 14.4313 15.3008 14.3408C15.3529 14.2504 15.3809 14.1474 15.3809 14.043C15.3808 13.9388 15.3528 13.8364 15.3008 13.7461L15.2988 13.7422L9.53712 3.66016L9.53614 3.65723C9.48424 3.56571 9.40828 3.48951 9.31739 3.43652C9.22651 3.38365 9.12273 3.35549 9.01758 3.35547Z" fill="url(#paint2_radial_risk)"/>
-      <defs>
-        <radialGradient id="paint0_radial_risk" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.36502 8.99707) scale(13.67 551.217)">
-          <stop stopColor="#202020"/>
-          <stop offset="1" stopColor="#0080FF"/>
-        </radialGradient>
-        <radialGradient id="paint1_radial_risk" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.36502 8.99707) scale(13.67 551.217)">
-          <stop stopColor="#202020"/>
-          <stop offset="1" stopColor="#0080FF"/>
-        </radialGradient>
-        <radialGradient id="paint2_radial_risk" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.36502 8.99707) scale(13.67 551.217)">
-          <stop stopColor="#202020"/>
-          <stop offset="1" stopColor="#0080FF"/>
-        </radialGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function ThreatAlertIcon({ className }: { className?: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <path d="M8.15625 1.40625V0.84375C8.15625 0.619974 8.24514 0.405362 8.40338 0.247129C8.56161 0.0888948 8.77622 0 9 0C9.22378 0 9.43839 0.0888948 9.59662 0.247129C9.75485 0.405362 9.84375 0.619974 9.84375 0.84375V1.40625C9.84375 1.63003 9.75485 1.84464 9.59662 2.00287C9.43839 2.16111 9.22378 2.25 9 2.25C8.77622 2.25 8.56161 2.16111 8.40338 2.00287C8.24514 1.84464 8.15625 1.63003 8.15625 1.40625ZM14.0625 3.9375C14.1733 3.93759 14.2831 3.91584 14.3855 3.87349C14.488 3.83114 14.581 3.76903 14.6595 3.6907L15.222 3.1282C15.3004 3.04972 15.3627 2.95654 15.4052 2.854C15.4476 2.75145 15.4695 2.64154 15.4695 2.53055C15.4695 2.41955 15.4476 2.30964 15.4052 2.2071C15.3627 2.10455 15.3004 2.01138 15.222 1.93289C15.1435 1.85441 15.0503 1.79215 14.9477 1.74967C14.8452 1.7072 14.7353 1.68533 14.6243 1.68533C14.5133 1.68533 14.4034 1.7072 14.3008 1.74967C14.1983 1.79215 14.1051 1.85441 14.0266 1.93289L13.4641 2.49539C13.3454 2.6134 13.2645 2.76406 13.2317 2.92819C13.1988 3.09232 13.2155 3.26251 13.2797 3.41712C13.3438 3.57172 13.4525 3.70375 13.5919 3.79642C13.7313 3.88908 13.8951 3.93819 14.0625 3.9375ZM3.34055 3.6907C3.49906 3.84921 3.71404 3.93826 3.9382 3.93826C4.16237 3.93826 4.37735 3.84921 4.53586 3.6907C4.69437 3.53219 4.78342 3.31721 4.78342 3.09305C4.78342 2.86888 4.69437 2.6539 4.53586 2.49539L3.97336 1.93289C3.81485 1.77438 3.59987 1.68533 3.3757 1.68533C3.15154 1.68533 2.93656 1.77438 2.77805 1.93289C2.61954 2.0914 2.53049 2.30638 2.53049 2.53055C2.53049 2.75471 2.61954 2.96969 2.77805 3.1282L3.34055 3.6907ZM16.5938 12.375V14.0625C16.5938 14.4355 16.4456 14.7931 16.1819 15.0569C15.9181 15.3206 15.5605 15.4688 15.1875 15.4688H2.8125C2.43954 15.4688 2.08185 15.3206 1.81813 15.0569C1.55441 14.7931 1.40625 14.4355 1.40625 14.0625V12.375C1.40618 12.0508 1.51813 11.7366 1.72313 11.4854C1.92814 11.2343 2.21362 11.0617 2.53125 10.9969V9.84375C2.53125 8.12813 3.21278 6.48278 4.4259 5.26965C5.63903 4.05653 7.28438 3.375 9 3.375H9.04992C12.5859 3.40172 15.4688 6.33516 15.4688 9.91406V10.9969C15.7864 11.0617 16.0719 11.2343 16.2769 11.4854C16.4819 11.7366 16.5938 12.0508 16.5938 12.375ZM4.21875 9.84375V10.9688H13.7812V9.91406C13.7812 7.25836 11.6529 5.08219 9.03656 5.0625H9C7.73193 5.0625 6.5158 5.56624 5.61915 6.4629C4.72249 7.35955 4.21875 8.57568 4.21875 9.84375ZM14.9062 12.6562H3.09375V13.7812H14.9062V12.6562ZM9.59062 7.965C9.89322 8.06007 10.1684 8.22684 10.3926 8.45111C10.6169 8.67539 10.7837 8.95053 10.8788 9.25313C10.9459 9.46665 11.0951 9.64475 11.2935 9.74826C11.492 9.85177 11.7234 9.87221 11.937 9.80508C12.1505 9.73794 12.3286 9.58874 12.4321 9.39029C12.5356 9.19184 12.556 8.9604 12.4889 8.74688C12.3123 8.18539 12.0027 7.67486 11.5865 7.25865C11.1703 6.84244 10.6598 6.53287 10.0983 6.35625C9.88476 6.28912 9.65332 6.30955 9.45487 6.41307C9.25641 6.51658 9.10721 6.69468 9.04008 6.9082C8.97295 7.12172 8.99338 7.35317 9.09689 7.55162C9.2004 7.75007 9.37851 7.89927 9.59203 7.96641L9.59062 7.965Z" fill="url(#paint0_radial_threat)"/>
-      <defs>
-        <radialGradient id="paint0_radial_threat" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.40625 7.73437) scale(15.1875 685.349)">
-          <stop stopColor="#202020"/>
-          <stop offset="1" stopColor="#0080FF"/>
-        </radialGradient>
-      </defs>
-    </svg>
-  );
-}
-
-// ─── Stats Data ──────────────────────────────────────────────────────────────
-
-const STATS = [
+const SECURITY_CARDS = [
   {
-    id: "agent-assets",
-    label: "AI Agent资产",
-    value: "1841",
-    icon: AgentAssetIcon,
+    id: "asset-visibility",
+    title: "资产盘点与风险可视",
+    description:
+      "自动发现并清点企业内所有 AI Agent 资产，实时侵测大模型调用与敏感凭证泄露，实现安全风险动态可视",
+    icon: Shield,
+    color: "#007AFF",
   },
   {
-    id: "risk-assets",
-    label: "存在风险/告警资产",
-    value: "533112",
-    icon: RiskIcon,
+    id: "audit-tracing",
+    title: "深度审计与全链路源",
+    description:
+      "完整记录 AI Agent 的每轮对话、工具调用及系统行为日志，提供满足严格合规要求的全链路操作源能力",
+    icon: FileText,
+    color: "#AF52DE",
   },
   {
-    id: "threat-alerts",
-    label: "威胁告警",
-    value: "533112",
-    icon: ThreatAlertIcon,
+    id: "runtime-control",
+    title: "运行管控与环境隔离",
+    description:
+      "通过策略对高危命令、恶意请求进行拦截，并管控 Agent 网络访问与身份密鑰，实现主机行为与内网环境的主动隔离防护",
+    icon: Lock,
+    color: "#34C759",
+  },
+  {
+    id: "skills-scanning",
+    title: "Skills 供应链安全扫描",
+    description:
+      "对 Agent 安装的所有 Skills 进行深度扫描，排查木马、恶意代码与提示词注入漏洞，确保第三方工具链的安全可信",
+    icon: AlertCircle,
+    color: "#FF9500",
   },
 ];
 
-// ─── Page Component ──────────────────────────────────────────────────────────
-
 export default function SecurityManagement() {
   return (
-    <div className="page-enter">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#0A0A0A] leading-8 tracking-[-1px]">
-          AI Agent 安全
-        </h1>
-        <p className="text-xs text-[#737373] mt-1 leading-5 tracking-[0.18px]">
-          帮助您持续监测AI Agent资产的风险告警、管控策略生效情况与审计记录，让你在"可见—可控—可追溯"的闭环下，安全引入并持续使用AI Agent。（已支持 OpenClaw，其他 Agent 类型敬请期待）
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-5">
-        {STATS.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.id}
-              className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4"
+      <div className="page-enter max-w-5xl">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900">安全管理</h1>
+            <span
+              className="font-medium text-gray-500 bg-white border border-gray-300 px-2 py-0.5 rounded whitespace-nowrap"
+              style={{ fontSize: "11px" }}
             >
-              <div className="flex items-center gap-1">
-                <Icon className="shrink-0" />
-                <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">
-                  {stat.label}
-                </span>
+              即将开放
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            提供全面的 AI Agent 资产盘点与全链路安全审计能力，实时发现恶意 Skills
+            与安全威胁，并支持一键管控，为你的 AI 业务构建可信运行环境。
+          </p>
+        </div>
+
+        {/* 2x2 Card Grid */}
+        <div className="grid grid-cols-2 gap-6">
+          {SECURITY_CARDS.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.id}
+                className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow"
+                style={{
+                  boxShadow:
+                    "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                }}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: card.color }}
+                  >
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 mb-1">
+                      {card.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>
-                {stat.value}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
   );
 }

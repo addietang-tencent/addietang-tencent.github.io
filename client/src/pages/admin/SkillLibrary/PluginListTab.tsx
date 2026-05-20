@@ -5,7 +5,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Input } from '@/components/ui/input';
 import { Search, Grid3x3, List, Send, Trash2, Loader } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -279,14 +278,22 @@ export default function PluginListTab() {
 
         <div className="flex items-center gap-4">
           {/* 视图切换 */}
-          <SegmentGroup>
-            <SegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')} title="卡片视图">
+          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
+            <button
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded transition-colors ${viewMode === 'card' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+              title="卡片视图"
+            >
               <Grid3x3 className="w-4 h-4" />
-            </SegmentOption>
-            <SegmentOption active={viewMode === 'list'} onClick={() => setViewMode('list')} title="列表视图">
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'}`}
+              title="列表视图"
+            >
               <List className="w-4 h-4" />
-            </SegmentOption>
-          </SegmentGroup>
+            </button>
+          </div>
 
           <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
             + 发布插件
@@ -308,7 +315,7 @@ export default function PluginListTab() {
           {sortedPlugins.map(plugin => {
             const dist = isDistributing(plugin.id);
             return (
-              <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer flex flex-col">
+              <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-lg border border-gray-200 bg-white p-4 transition-all hover:shadow-md cursor-pointer flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-gray-900 flex-1 truncate">{plugin.name}</h3>
                   <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
@@ -340,7 +347,7 @@ export default function PluginListTab() {
 
       {/* 列表视图 */}
       {viewMode === 'list' && sortedPlugins.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -393,7 +400,7 @@ export default function PluginListTab() {
                 }
 
                 return (
-                  <tr key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group">
+                  <tr key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
                     {/* 名称 / Slug */}
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900 truncate">{plugin.name}</div>

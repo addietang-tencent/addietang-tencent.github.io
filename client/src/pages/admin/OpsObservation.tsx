@@ -13,7 +13,6 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Eye, EyeOff } from "lucide-react";
 import { AgentCombobox } from "@/components/OpenClawCombobox";
 import { toast } from "sonner";
-import { DatePicker } from "@/components/ui/date-picker";
 
 // Mock data for charts
 const logLevelData = [
@@ -82,21 +81,21 @@ const METRIC_CARDS = [
   { title: "卡死会话", value: "4", unit: "", icon: AlertCircle, color: "#EF4444" },
 ];
 
-const SESSION_MGMT_ICON_BASE = "/assets/admin-session-management";
-
 // 现有观测功能卡片
 const EXISTING_OBSERVATION_CARDS = [
   {
     id: "health-monitoring",
     title: "业务运行健康度实时监控",
     description: "聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/business-health-monitoring.svg`,
+    icon: Activity,
+    color: "#10B981",
   },
   {
     id: "log-metrics-insight",
     title: "应用日志与 OTEL 指标全景洞察",
     description: "多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/app-log-otel-insight.svg`,
+    icon: BarChart3,
+    color: "#3B82F6",
   },
 ];
 
@@ -106,25 +105,29 @@ const CLS_NEW_CARDS = [
     id: "high-cost-session",
     title: "高Token会话实时分析与管控",
     description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/high-token-session-control.svg`,
+    icon: TrendingUp,
+    color: "#F59E0B",
   },
   {
     id: "single-session-cost",
     title: "单会话全链路Token透视",
     description: "拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/single-session-token-insight.svg`,
+    icon: Zap,
+    color: "#AF52DE",
   },
   {
     id: "session-global-monitoring",
     title: "会话全局运行态势监控",
     description: "聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/session-global-monitoring.svg`,
+    icon: Activity,
+    color: "#34C759",
   },
   {
     id: "session-efficiency",
     title: "会话详情与交互效率精细化分析",
     description: "聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率",
-    iconSrc: `${SESSION_MGMT_ICON_BASE}/session-detail-analysis.svg`,
+    icon: BarChart3,
+    color: "#FF9500",
   },
 ];
 
@@ -437,25 +440,29 @@ export default function OpsObservation() {
             <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
           </div>
           <div className="flex items-center gap-2">
-            <DatePicker
+            <input
+              type="date"
               value={dateFrom}
-              onChange={handleFromChange}
+              onChange={(e) => handleFromChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
             <span className="text-gray-400 text-sm">—</span>
-            <DatePicker
+            <input
+              type="date"
               value={dateTo}
-              onChange={handleToChange}
+              onChange={(e) => handleToChange(e.target.value)}
+              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
+              style={{ colorScheme: 'light' }}
             />
-            <Button
-              variant="claw-outline"
-              size="icon"
+            <button
               onClick={handleRefresh}
               disabled={refreshing}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
               title="刷新数据"
-              className="w-9 h-9"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
+            </button>
           </div>
         </div>
         <p className="text-sm text-gray-500 mt-1 leading-relaxed">
@@ -468,7 +475,7 @@ export default function OpsObservation() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-blue-900 mb-1">运维观测需要开启 CLS 日志服务</h3>
@@ -477,7 +484,7 @@ export default function OpsObservation() {
               <Button
                 onClick={handleOpenCLS}
                 disabled={isEnablingCls}
-                className="ml-4 text-xs h-8 px-4 whitespace-nowrap flex-shrink-0"
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50 flex-shrink-0"
               >
                 {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
               </Button>
@@ -519,6 +526,7 @@ export default function OpsObservation() {
                 <Button
                   onClick={handleConfirmClsAgreement}
                   disabled={!clsAgreed || isEnablingCls}
+                  className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                 >
                   {isEnablingCls ? "开启中..." : "确认"}
                 </Button>
@@ -533,18 +541,27 @@ export default function OpsObservation() {
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
+                  const Icon = card.icon;
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
+                      className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                      style={{
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                      }}
                     >
                       <div className="flex items-start gap-3">
-                        <img src={card.iconSrc} alt="" className="shrink-0" />
+                        <div
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: card.color }}
+                        >
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
+                          <h5 className="text-xs font-bold text-gray-900 mb-1">
                             {card.title}
                           </h5>
-                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
+                          <p className="text-xs text-gray-500 leading-relaxed">
                             {card.description}
                           </p>
                         </div>
@@ -563,18 +580,27 @@ export default function OpsObservation() {
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
                 {CLS_NEW_CARDS.map((card) => {
+                  const Icon = card.icon;
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
+                      className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow"
+                      style={{
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+                      }}
                     >
                       <div className="flex items-start gap-3">
-                        <img src={card.iconSrc} alt="" className="shrink-0" />
+                        <div
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+                          style={{ background: card.color }}
+                        >
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
+                          <h5 className="text-xs font-bold text-gray-900 mb-1">
                             {card.title}
                           </h5>
-                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
+                          <p className="text-xs text-gray-500 leading-relaxed">
                             {card.description}
                           </p>
                         </div>
@@ -612,7 +638,7 @@ export default function OpsObservation() {
                   <tr
                     key={v.version}
                     onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                    className={`border-b border-[#e5e5e5] ${
+                    className={`border-b border-gray-100 ${
                       isUpgradeable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                     } transition-colors ${
                       selectedPluginVersion?.version === v.version
@@ -656,6 +682,7 @@ export default function OpsObservation() {
                 }, 2000);
               }}
               disabled={isUpgradingPlugin || !selectedPluginVersion || selectedPluginVersion?.status === 'current'}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
             >
               {isUpgradingPlugin ? "升级中..." : "确认升级"}
             </Button>
@@ -665,7 +692,7 @@ export default function OpsObservation() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
           <div className="flex items-start gap-3">
             <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
             <div>
@@ -714,10 +741,10 @@ export default function OpsObservation() {
         {METRIC_CARDS.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <div key={idx} className="bg-white rounded-xl border border-[#e5e5e5] p-4">
+            <div key={idx} className="bg-white rounded-lg border border-gray-100 p-4">
               <div className="flex items-start justify-between mb-3">
                 <span className="text-xs text-gray-500">{card.title}</span>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: card.color }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: card.color }}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -733,7 +760,7 @@ export default function OpsObservation() {
         <h2 className="text-lg font-bold text-gray-900 mb-4">应用日志大盘</h2>
         <div className="grid grid-cols-2 gap-6">
           {/* Log Level Distribution */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">日志级别分布</h3>
             </div>
@@ -749,7 +776,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Log Module Distribution */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">日志模块分布</h3>
             </div>
@@ -771,7 +798,7 @@ export default function OpsObservation() {
         <h2 className="text-lg font-bold text-gray-900 mb-4">OTEL 指标大盘</h2>
         <div className="grid grid-cols-3 gap-6">
           {/* Message Processing */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
@@ -813,7 +840,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Queue Status */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
@@ -856,7 +883,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Run Duration */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="group relative">
                 <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
@@ -934,6 +961,7 @@ export default function OpsObservation() {
             </Button>
             <Button
               onClick={handleGoToAuth}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               前往授权
             </Button>
@@ -948,7 +976,7 @@ export default function OpsObservation() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
               <p className="text-sm text-gray-700">
                 为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
@@ -981,6 +1009,7 @@ export default function OpsObservation() {
             <Button
               onClick={handleConfirmFreeQuota}
               disabled={!freeQuotaAgreed}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300"
             >
               确认
             </Button>
@@ -996,7 +1025,7 @@ export default function OpsObservation() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">运维观测：</span>
                 <span>支持通过全链路性能监控采集核心运行指标</span>
@@ -1045,7 +1074,7 @@ export default function OpsObservation() {
             <Button
               onClick={handleCloseCls}
               disabled={isClosingCls}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
               {isClosingCls ? "关闭中..." : "确定关闭"}
             </Button>

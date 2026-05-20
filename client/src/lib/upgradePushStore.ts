@@ -15,6 +15,8 @@
  */
 
 const STORAGE_KEY = "admin_active_pushes_v1";
+/** 用于区分"用户主动撤回到空"和"从未初始化"——避免每次刷新都回填默认 mock */
+const INIT_FLAG_KEY = "admin_active_pushes_initialized_v1";
 
 export interface ActivePush {
   /** Agent 类型 ID（系统：OpenClaw / HermesAgent / LightClawACE 或 custom-xxx） */
@@ -37,30 +39,46 @@ export interface ActivePush {
 
 type PushMap = Record<string, ActivePush>;
 
+/** 默认 mock 推送数据（演示用：管理员已推送 OpenClaw 升级提醒） */
+const DEFAULT_PUSH_MAP: PushMap = {
+  OpenClaw: {
+    agentType: "OpenClaw",
+    agentTypeLabel: "OpenClaw",
+    version: "2026.4.23",
+    imageName: "OpenClaw on Ubuntu 24.04",
+    imageSource: "public",
+    pushedAt: "2026-05-13 10:30:00",
+    pushedBy: "alice@acompany.com",
+    message: "管理员推荐升级到 v2026.4.23",
+  },
+};
+
 // ── 内部 IO ─────────────────────────────────────────────
 function readAll(): PushMap {
+  // 已初始化过：尊重当前 storage 内容（即使为空对象 {}，说明用户主动撤回过）
+  let initialized = false;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as PushMap;
+    initialized = localStorage.getItem(INIT_FLAG_KEY) === "1";
   } catch {
     /* ignore */
   }
-  // 首次访问写入一条默认推送（演示用：管理员已推送 OpenClaw 升级提醒）
+
+  if (initialized) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw) as PushMap;
+    } catch {
+      /* ignore */
+    }
+    return {};
+  }
+
+  // 首次访问（或用户清空 localStorage 后）：写入默认 mock 推送
   // 这样用户端进入 Agent 详情页就能看到"管理员推荐升级"徽章
-  const defaultMap: PushMap = {
-    OpenClaw: {
-      agentType: "OpenClaw",
-      agentTypeLabel: "OpenClaw",
-      version: "2026.4.23",
-      imageName: "OpenClaw on Ubuntu 24.04",
-      imageSource: "public",
-      pushedAt: "2026-05-13 10:30:00",
-      pushedBy: "alice@acompany.com",
-      message: "管理员推荐升级到 v2026.4.23",
-    },
-  };
+  const defaultMap: PushMap = { ...DEFAULT_PUSH_MAP };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMap));
+    localStorage.setItem(INIT_FLAG_KEY, "1");
   } catch {
     /* ignore */
   }
@@ -70,6 +88,8 @@ function readAll(): PushMap {
 function writeAll(map: PushMap): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    // 用户主动写入（包括清空 / 撤回），标记为已初始化，避免后续自动回填
+    localStorage.setItem(INIT_FLAG_KEY, "1");
     // 同窗口需要 dispatch storage 事件，让其他组件订阅生效
     window.dispatchEvent(new Event("upgrade-push-changed"));
   } catch {

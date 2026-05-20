@@ -32,6 +32,7 @@ import {
   MemoryStick,
   FolderOpen,
   LayoutTemplate,
+  Layers,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -266,9 +267,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {(group.subGroups ?? []).map((subGroup) => {
                       const subKey = `${group.label}__${subGroup.label}`;
                       const isSubCollapsed = collapsedGroups.has(subKey);
-                      // 初始化：defaultExpanded 时不折叠
                       return (
-                        <div key={subKey} className="mt-1">
+                        <div key={subKey} className="mt-0.5">
+                          {/* 子分组标题：与一级菜单项对齐，带图标 */}
                           <button
                             onClick={() => {
                               setCollapsedGroups((prev) => {
@@ -278,17 +279,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 return next;
                               });
                             }}
-                            className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-2.5 px-3 py-2 mb-0.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                            style={{ borderLeft: '2px solid transparent', paddingLeft: 'calc(0.75rem - 2px)' }}
                           >
-                            <span>{subGroup.label}</span>
+                            <Layers className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                            <span className="flex-1 text-left truncate">{subGroup.label}</span>
                             {isSubCollapsed ? (
-                              <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                              <ChevronRight className="w-3 h-3 flex-shrink-0 text-gray-400" />
                             ) : (
-                              <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                              <ChevronDown className="w-3 h-3 flex-shrink-0 text-gray-400" />
                             )}
                           </button>
                           {!isSubCollapsed && (
-                            <div className="space-y-0.5">
+                            <div className="space-y-0.5 ml-3 border-l border-gray-100 pl-1">
                               {subGroup.items.map((item) => renderNavItem(item, true))}
                             </div>
                           )}

@@ -752,7 +752,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   return (
     <div className="space-y-4">
       {/* 搜索和工具栏 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-6">
         {/* 搜索框 */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -771,7 +771,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#d3d6db] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#355EF1] transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -811,7 +811,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             };
 
             return (
-            <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+            <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
               {/* 搜索框 */}
               <div className="px-2 pb-1.5 pt-1">
                 <div className="relative">
@@ -820,7 +820,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     placeholder="搜索..."
                     value={scopeSearchQuery}
                     onChange={(e) => setScopeSearchQuery(e.target.value)}
-                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -902,7 +902,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               )}
               {/* 底部：已选数量 + 清除筛选 */}
               {selectedScopes.size > 0 && (
-                <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
+                <div className="border-t border-gray-100 mt-1 px-3 py-2 flex items-center justify-between">
                   <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                   <button
                     type="button"
@@ -925,7 +925,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-[#d3d6db] rounded-[4px] p-0.5 bg-white h-9">
+          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${
@@ -962,12 +962,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
         <button
           onClick={() => setSelectedCategory(null)}
-          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
             selectedCategory === null
               ? 'text-white border-transparent'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
           }`}
-          style={selectedCategory === null ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
+          style={selectedCategory === null ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
         >
           全部
         </button>
@@ -975,12 +975,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
               selectedCategory === cat.id
                 ? 'text-white border-transparent'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
-            style={selectedCategory === cat.id ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
+            style={selectedCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
           >
             {cat.name}
           </button>
@@ -1007,7 +1007,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <div
                 key={skill.id}
                 onClick={() => handleViewDetail(skill.id)}
-                className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:bg-gray-50"
+                className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
               >
                 {/* 名称 + 安全检测图标 + 版本 */}
                 <div className="flex items-center gap-2 mb-2">
@@ -1226,9 +1226,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
           <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+            <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
@@ -1275,11 +1275,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   if (summary) {
                     if (summary.lastDistributionStatus === 'deleting' as any) {
                       statusLine1 = '卸载中';
-                      statusLine1Color = 'text-red-600';
+                      statusLine1Color = 'text-blue-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-red-600';
-                      statusLine2Bg = 'bg-red-50';
-                      statusLine2HoverBg = 'hover:bg-red-100';
+                      statusLine2Color = 'text-blue-600';
+                      statusLine2Bg = 'bg-blue-50';
+                      statusLine2HoverBg = 'hover:bg-blue-100';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
                       statusLine1Color = 'text-blue-600';
@@ -1312,7 +1312,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     <tr
                       key={skill.id}
                       onClick={() => handleViewDetail(skill.id)}
-                      className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group"
+                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group"
                     >
                       {/* 名称 / Slug — 固定左侧 */}
                       <td
@@ -1733,12 +1733,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
-              <span className="relative group">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                </span>
-              </span>
             </AlertDialogTitle>
             <AlertDialogDescription>
               {securityServiceUsed >= 1000 ? (
@@ -1754,7 +1748,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               onClick={handleSecurityScanConfirm}
               disabled={securityServiceUsed >= 1000}
               className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
             >
               确认检测
             </AlertDialogAction>

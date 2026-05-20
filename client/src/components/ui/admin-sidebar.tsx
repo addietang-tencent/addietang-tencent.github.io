@@ -202,7 +202,7 @@ AdminSidebarHeaderAction.displayName = "AdminSidebarHeaderAction";
 const AdminSidebarContent = React.forwardRef<HTMLElement, React.ComponentProps<"nav">>(
   ({ className, onScroll, onWheel, ...props }, ref) => {
     const [isScrolling, setIsScrolling] = React.useState(false);
-    const hideTimerRef = React.useRef<ReturnType<typeof window.setTimeout> | null>(null);
+    const hideTimerRef = React.useRef<number | null>(null);
 
     const showScrollbarTemporarily = React.useCallback(() => {
       setIsScrolling(true);
@@ -358,7 +358,7 @@ const AdminSidebarMenuItem = React.forwardRef<HTMLLIElement, React.ComponentProp
 AdminSidebarMenuItem.displayName = "AdminSidebarMenuItem";
 
 const adminSidebarMenuButtonVariants = cva(
-  "flex h-[var(--admin-sidebar-item-height)] w-full items-center gap-2 rounded-[var(--admin-sidebar-item-radius)] px-2 text-left text-[13px] leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] data-[active=true]:font-medium [&>img]:size-4 [&>img]:shrink-0 [&>svg]:size-4 [&>svg]:shrink-0",
+  "flex h-[var(--admin-sidebar-item-height)] w-full items-center gap-2 rounded-[var(--admin-sidebar-item-radius)] px-2 text-left text-[13px] leading-5 tracking-[0.005em] text-[var(--admin-sidebar-foreground)] outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)] [&>img]:size-4 [&>img]:shrink-0 [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       tone: {
@@ -395,15 +395,15 @@ const AdminSidebarMenuButton = React.forwardRef<
 });
 AdminSidebarMenuButton.displayName = "AdminSidebarMenuButton";
 
-const AdminSidebarBadge = React.forwardRef<HTMLSpanElement, React.ComponentProps<"span"> & { variant?: "new" | "coming-soon" }>(
+const AdminSidebarBadge = React.forwardRef<HTMLSpanElement, React.ComponentProps<"span"> & { variant?: "new" | "coming-soon" | "custom" }>(
   ({ variant = "new", className, children, ...props }, ref) => (
     <span
       ref={ref}
       data-slot="admin-sidebar-badge"
       data-variant={variant}
       className={cn(
-        "ml-auto inline-flex h-[18px] shrink-0 items-center justify-center rounded-[2px] bg-[var(--admin-sidebar-badge-bg)] px-1 text-[10px] font-semibold leading-none tracking-[0.015em] text-[var(--admin-sidebar-muted)]",
-        variant === "new" ? "w-[31px] font-['Open_Sans']" : "w-auto",
+        "ml-auto inline-flex h-[18px] shrink-0 items-center justify-center rounded-[2px] border bg-transparent px-1 text-[10px] leading-none tracking-[0.015em] transition-colors duration-150",
+        variant === "new" ? "w-[31px] font-['Open_Sans'] font-semibold" : "w-auto font-normal",
         className
       )}
       {...props}

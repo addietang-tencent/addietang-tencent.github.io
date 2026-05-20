@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ChevronDown, ChevronRight, Layers, LogOut, MoreHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, LogOut, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import AdminModeToggle from "@/components/AdminModeToggle";
@@ -86,7 +86,7 @@ function renderNavItem(item: AdminNavItem, location: string, isSubItem = false, 
     if (PRESET_BADGE_VARIANTS.has(item.badge)) {
       badgeNode = <AdminSidebarBadge variant={item.badge as "new" | "coming-soon"} />;
     } else {
-      badgeNode = <AdminSidebarBadge variant="coming-soon">{item.badge}</AdminSidebarBadge>;
+      badgeNode = <AdminSidebarBadge variant="custom">{item.badge}</AdminSidebarBadge>;
     }
   }
 
@@ -125,7 +125,7 @@ function renderNavItem(item: AdminNavItem, location: string, isSubItem = false, 
       <AdminSidebarMenuButton
         asChild
         isActive={isActive}
-        className={isSubItem ? "pl-7" : undefined}
+        className={isSubItem ? "admin-sidebar-subitem-button" : undefined}
       >
         <Link href={item.href}>
           {!isSubItem && (
@@ -148,7 +148,6 @@ function renderNavItem(item: AdminNavItem, location: string, isSubItem = false, 
  */
 function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSubGroup; location: string; collapsed: boolean }) {
   const [open, setOpen] = useState(subGroup.defaultExpanded ?? true);
-  const Icon = subGroup.icon === "Layers" ? Layers : Layers;
 
   // 收起态：图标 + hover 弹出浮层子菜单
   if (collapsed) {
@@ -162,7 +161,11 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
               isActive={hasActive}
               className="justify-center px-0 cursor-pointer"
             >
-              <Icon className="size-4 shrink-0" />
+              {subGroup.iconSrc ? (
+                <img src={subGroup.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
+              ) : (
+                <span className="size-4 shrink-0" aria-hidden="true" />
+              )}
             </AdminSidebarMenuButton>
           </HoverCardTrigger>
           <HoverCardContent
@@ -207,7 +210,11 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
           aria-expanded={open}
           aria-label={`${open ? "收起" : "展开"}${subGroup.label}`}
         >
-          <Icon className="size-4 shrink-0 text-[var(--admin-sidebar-muted)]" />
+          {subGroup.iconSrc ? (
+            <img src={subGroup.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
+          ) : (
+            <span className="size-4 shrink-0" aria-hidden="true" />
+          )}
           <span className="min-w-0 flex-1 truncate">{subGroup.label}</span>
           {open ? (
             <ChevronDown className="size-3 shrink-0 text-[var(--admin-sidebar-muted)]" />

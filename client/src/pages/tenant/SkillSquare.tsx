@@ -35,37 +35,40 @@ function getSkillInitial(name: string): string | null {
 }
 
 // 为不同字母分配渐变色，色系对齐 Agent 头像风格（蓝紫、靛蓝、青色系柔和渐变）
-const LETTER_GRADIENTS: Record<string, string> = {
-  A: 'from-indigo-400 to-purple-500',
-  B: 'from-blue-400 to-indigo-500',
-  C: 'from-violet-400 to-purple-500',
-  D: 'from-purple-400 to-indigo-500',
-  E: 'from-sky-400 to-blue-500',
-  F: 'from-indigo-400 to-blue-500',
-  G: 'from-cyan-400 to-blue-500',
-  H: 'from-blue-400 to-purple-500',
-  I: 'from-violet-400 to-indigo-500',
-  J: 'from-purple-400 to-violet-500',
-  K: 'from-indigo-400 to-violet-500',
-  L: 'from-blue-400 to-cyan-500',
-  M: 'from-sky-400 to-indigo-500',
-  N: 'from-purple-400 to-blue-500',
-  O: 'from-cyan-400 to-indigo-500',
-  P: 'from-violet-400 to-blue-500',
-  Q: 'from-indigo-400 to-cyan-500',
-  R: 'from-blue-400 to-violet-500',
-  S: 'from-purple-400 to-sky-500',
-  T: 'from-sky-400 to-violet-500',
-  U: 'from-indigo-400 to-purple-500',
-  V: 'from-blue-400 to-blue-500',
-  W: 'from-violet-400 to-cyan-500',
-  X: 'from-purple-400 to-indigo-500',
-  Y: 'from-cyan-400 to-purple-500',
-  Z: 'from-indigo-400 to-blue-500',
+const LETTER_COLORS: Record<string, { bg: string; text: string }> = {
+  A: { bg: "#E8F4FD", text: "#1A73E8" },
+  B: { bg: "#F3E8FD", text: "#8B5CF6" },
+  C: { bg: "#E8FDF0", text: "#16A34A" },
+  D: { bg: "#FDF2E8", text: "#EA580C" },
+  E: { bg: "#FDE8F0", text: "#DC2626" },
+  F: { bg: "#FDE8F0", text: "#DC2626" },
+  G: { bg: "#E8FDF0", text: "#16A34A" },
+  H: { bg: "#E8F4FD", text: "#1A73E8" },
+  I: { bg: "#F3E8FD", text: "#8B5CF6" },
+  J: { bg: "#FDF2E8", text: "#EA580C" },
+  K: { bg: "#E8FDF0", text: "#16A34A" },
+  L: { bg: "#E8F4FD", text: "#1A73E8" },
+  M: { bg: "#F3E8FD", text: "#8B5CF6" },
+  N: { bg: "#FDE8F0", text: "#DC2626" },
+  O: { bg: "#FDF2E8", text: "#EA580C" },
+  P: { bg: "#E8FDF0", text: "#16A34A" },
+  Q: { bg: "#E8F4FD", text: "#1A73E8" },
+  R: { bg: "#F3E8FD", text: "#8B5CF6" },
+  S: { bg: "#E8F4FD", text: "#1A73E8" },
+  T: { bg: "#F3E8FD", text: "#8B5CF6" },
+  U: { bg: "#E8FDF0", text: "#16A34A" },
+  V: { bg: "#FDF2E8", text: "#EA580C" },
+  W: { bg: "#FDE8F0", text: "#DC2626" },
+  X: { bg: "#E8F4FD", text: "#1A73E8" },
+  Y: { bg: "#F3E8FD", text: "#8B5CF6" },
+  Z: { bg: "#E8FDF0", text: "#16A34A" },
 };
+function getLetterColor(letter: string): { bg: string; text: string } {
+  return LETTER_COLORS[letter.toUpperCase()] || { bg: "#E8F4FD", text: "#1A73E8" };
+}
 
 function getLetterGradient(letter: string): string {
-  return LETTER_GRADIENTS[letter] || 'from-indigo-400 to-purple-500';
+  return `from-[${getLetterColor(letter).bg}] to-[${getLetterColor(letter).bg}]`;
 }
 import {
   Dialog,
@@ -402,10 +405,7 @@ export default function SkillSquare() {
           {/* 排序 */}
           <Select value={sortType} onValueChange={(v) => setSortType(v as SortType)}>
             <SelectTrigger className="w-32 bg-white border-[#E5E5E5] rounded-[4px]">
-              <div className="flex items-center gap-1.5">
-                <ArrowUpDown className="w-3.5 h-3.5 text-[#A3A3A3]"/>
-                <SelectValue />
-              </div>
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="time">发布时间</SelectItem>
@@ -600,10 +600,10 @@ function SkillCard({
           <div className="flex items-center gap-4 min-w-0 flex-1">
             {initial && (
               <div
-                className={`bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0 rounded-[4px]`}
-                style={{ width: 40, height: 40 }}
+                className="flex items-center justify-center flex-shrink-0 rounded-[4px]"
+                style={{ width: 40, height: 40, background: getLetterColor(initial).bg }}
               >
-                <span className="text-white font-bold text-sm">{initial}</span>
+                <span className="font-bold text-sm" style={{ color: getLetterColor(initial).text }}>{initial}</span>
               </div>
             )}
             <div className="flex flex-col gap-1 min-w-0 flex-1">
@@ -792,9 +792,10 @@ function SkillListRow({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {initial && (
             <div
-              className={`w-9 h-9 rounded-[4px] bg-gradient-to-br ${getLetterGradient(initial)} flex items-center justify-center flex-shrink-0`}
+              className="w-9 h-9 rounded-[4px] flex items-center justify-center flex-shrink-0"
+              style={{ background: getLetterColor(initial).bg }}
             >
-              <span className="text-white text-sm font-bold">{initial}</span>
+              <span className="text-sm font-bold" style={{ color: getLetterColor(initial).text }}>{initial}</span>
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -1290,10 +1291,11 @@ function SkillSquareDetail({
           {/* 技能图标（首字母渐变圆形） */}
           {(() => {
             const initial = getSkillInitial(skill.name) || 'A';
-            const gradient = getLetterGradient(initial);
+            const colors = getLetterColor(initial);
             return (
               <div
-                className={`w-12 h-12 rounded-[4px] flex items-center justify-center text-white text-xl font-semibold shrink-0 bg-gradient-to-br ${gradient}`}
+                className="w-12 h-12 rounded-[4px] flex items-center justify-center text-xl font-semibold shrink-0"
+                style={{ background: colors.bg, color: colors.text }}
               >
                 {initial}
               </div>

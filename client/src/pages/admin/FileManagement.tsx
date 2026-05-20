@@ -31,6 +31,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { StatusTag } from "@/components/ui/status-tag";
 import { toast } from "sonner";
 import { 
   Search, 
@@ -2178,9 +2179,7 @@ export default function FileManagement() {
                               <h4 className="text-sm font-semibold text-gray-900 truncate">
                                 {item.instanceName}
                               </h4>
-                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-                                未启用
-                              </span>
+                              <StatusTag variant="gray">未启用</StatusTag>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-gray-500">
                               <span>创建人: {item.creator}</span>

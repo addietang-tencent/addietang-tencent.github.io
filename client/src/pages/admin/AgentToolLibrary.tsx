@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatusTag } from "@/components/ui/status-tag";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -102,9 +103,7 @@ export default function AgentToolLibrary() {
                     <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
                     恶意 Skills 扫描 API
                   </span>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">
-                    未开通
-                  </span>
+                  <StatusTag variant="gray">未开通</StatusTag>
                   <button
                     onClick={() => setSecurityApplyDialogOpen(true)}
                     className="text-xs text-blue-500 hover:text-blue-600 font-medium"
@@ -120,9 +119,7 @@ export default function AgentToolLibrary() {
                         <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
                         恶意 Skills 扫描 API
                       </span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-600 border border-green-200">
-                        试用中
-                      </span>
+                      <StatusTag variant="green">试用中</StatusTag>
                     </div>
                   </HoverCardTrigger>
                   <HoverCardContent side="bottom" align="end" className="w-80 p-4">

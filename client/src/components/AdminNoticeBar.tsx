@@ -149,10 +149,10 @@ export default function AdminNoticeBar() {
     >
       <div
         role="alert"
-        className={`relative w-full rounded-[4px] border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr_auto] grid-cols-[0_1fr_auto] has-[>svg]:gap-x-3 gap-y-0.5 items-center [&>svg]:size-4 [&>svg]:translate-y-0 ${
+        className={`relative w-full rounded-[4px] border h-12 px-4 flex items-center gap-2 text-xs [&>svg]:size-4 [&>svg]:shrink-0 ${
           isWarning
-            ? "border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-950"
-            : "border-blue-200 bg-blue-50 text-blue-950 [&>svg]:text-blue-950"
+            ? "border-[#FCD28C] bg-[#FFFBED] text-[#181818] [&>svg]:text-[#FCA004]"
+            : "border-[#A7C5FD] bg-[#F1F6FD] text-[#181818] [&>svg]:text-[#0052EA]"
         }`}
       >
         {/* 图标 */}
@@ -163,7 +163,7 @@ export default function AdminNoticeBar() {
         )}
 
         {/* 通知内容 */}
-        <div className="col-start-2 flex items-baseline flex-wrap gap-x-1 leading-5">
+        <div className="flex-1 min-w-0 flex items-baseline flex-wrap gap-x-1 leading-5">
           <span>{notice.message}</span>
           {notice.action && (
             <>
@@ -190,7 +190,7 @@ export default function AdminNoticeBar() {
 
         {/* 切换按钮（仅多条时显示） */}
         {total > 1 && (
-          <div className="col-start-3 flex items-center gap-1 text-current">
+          <div className="shrink-0 flex items-center gap-1 text-current">
             <button
               onClick={goPrev}
               className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"

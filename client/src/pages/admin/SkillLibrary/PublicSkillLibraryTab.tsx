@@ -164,24 +164,17 @@ function Pagination({ currentPage, totalPages, totalCount, onPageChange }: Pagin
 // ─── 排名徽章 ─────────────────────────────────────────────────────────────────
 
 function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return (
-    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md z-10">
-      <span className="text-white text-xs font-bold">1</span>
-    </div>
-  );
-  if (rank === 2) return (
-    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md z-10">
-      <span className="text-white text-xs font-bold">2</span>
-    </div>
-  );
-  if (rank === 3) return (
-    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-md z-10">
-      <span className="text-white text-xs font-bold">3</span>
-    </div>
-  );
+  const style = rank === 1
+    ? "bg-[#E9F8EB] text-[#008236]"
+    : rank === 2
+    ? "bg-[#E8ECFE] text-[#1447E6]"
+    : rank === 3
+    ? "bg-[#F5F5F5] text-[#0A0A0A]"
+    : "bg-[#F5F5F5] text-[#0A0A0A]";
+
   return (
-    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center z-10 shadow-sm">
-      <span className="text-gray-500 font-medium" style={{ fontSize: '10px', lineHeight: 1 }}>{rank}</span>
+    <div className={`absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full flex items-center justify-center z-10 ${style}`}>
+      <span className="text-xs font-bold tracking-[0.18px]">{rank}</span>
     </div>
   );
 }
@@ -734,18 +727,14 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
       {/* 分类 Tab */}
       <div className="flex items-center gap-1.5 flex-wrap">
         {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <button
+          <Button
             key={cat.id}
             onClick={() => handleCategoryChange(cat.id)}
-            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-              activeCategory === cat.id
-                ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-            }`}
-            style={activeCategory === cat.id ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
+            variant={activeCategory === cat.id ? "claw-primary" : "claw-outline"}
+            size="claw-sm"
           >
             {cat.name}
-          </button>
+          </Button>
         ))}
       </div>
 

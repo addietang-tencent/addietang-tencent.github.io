@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { StatusTag } from '@/components/ui/status-tag';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import {
@@ -316,18 +317,18 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           {/* 应用范围标签 - 右上角 */}
           <div className="flex items-center gap-1 shrink-0">
             {isPublicScope ? (
-              <span className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-full whitespace-nowrap">
+              <span className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 whitespace-nowrap">
                 全部用户
               </span>
             ) : (
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-default">
-                    <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full max-w-[80px] truncate">
+                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 max-w-[80px] truncate">
                       {scopeLabelsArr[0]}
                     </span>
                     {scopeLabelsArr.length > 1 && (
-                      <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full whitespace-nowrap">
+                      <span className="inline-block px-1.5 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 whitespace-nowrap">
                         +{scopeLabelsArr.length - 1}
                       </span>
                     )}
@@ -1241,17 +1242,13 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
               {pkg.isActive && (
-                <span className="badge-running text-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                  生效中
-                </span>
+                <StatusTag variant="green" dot>生效中</StatusTag>
               )}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <Globe className="w-3 h-3" />
-              <span>
+              <StatusTag variant={isPublicScope(pkg) ? "blue" : "gray"}>
                 {isPublicScope(pkg) ? '全部用户' : scopeLabels.join('、')}
-              </span>
+              </StatusTag>
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ import {
   Upload,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   ChevronRight,
   Zap,
   MapPin,
@@ -105,9 +106,9 @@ const PRODUCT_UPDATES = [
 
 function StepBadge({ step }: { step: number; done: boolean }) {
   return (
-    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-gray-100 text-gray-500 text-xs font-bold">
-      {step}
-    </div>
+    <span className="text-[#1447E6] text-lg font-normal font-['Menlo'] leading-[26px] shrink-0">
+      {String(step).padStart(2, '0')}
+    </span>
   );
 }
 
@@ -128,28 +129,29 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] p-5 transition-all"
+      className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 transition-all overflow-hidden"
     >
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-3.5">
         <StepBadge step={step} done={done} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
             {done ? (
-              <span className="text-xs font-medium text-green-600 bg-green-50 border border-green-100 px-1.5 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 bg-[#E9F8EB] text-[#008236] text-xs leading-3 tracking-[0.18px] px-2 py-[2px] rounded-full h-[22px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#008236]" />
                 已完成
               </span>
             ) : (
-              <span className="text-xs font-medium text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 bg-[#f5f5f5] text-[rgba(0,0,0,0.9)] text-xs leading-3 tracking-[0.18px] px-2 py-[2px] rounded-full h-[22px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(0,0,0,0.3)]" />
                 待完成
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+          <p className="text-xs text-black/70 leading-5 tracking-[0.18px]">{description}</p>
+          <div className="mt-4">{children}</div>
         </div>
       </div>
-      <div className="border-t border-gray-50 pt-4">{children}</div>
     </div>
   );
 }
@@ -219,7 +221,7 @@ function InlineQuotaField({
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <Label className="text-xs font-medium ">
         {label}
         {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
@@ -232,7 +234,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
+          className="w-full max-w-[360px] flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -364,7 +366,7 @@ export default function BasicInfo() {
 
 
       {/* 双栏主体 */}
-        <div className="flex gap-6 items-start">
+        <div className="flex gap-4 items-start">
         {/* ── 左侧：分步引导 ── */}
         <div className="min-w-0 space-y-4" style={{ flex: "1 1 0" }}>
 
@@ -373,36 +375,32 @@ export default function BasicInfo() {
             step={1}
             done={MOCK_STEP_STATUS[1]}
             title="设置平台名称与品牌"
-            description="配置展示在用户端的网站名称和 Logo"
+            description="配置展示在用户端的网站名称和logo"
           >
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="siteName" className="text-xs font-medium ">
-                  网站名称
-                  <span className="text-gray-400 font-normal ml-1">将展示在用户端左上角常驻和首页</span>
-                </Label>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-[#020617] leading-[22px]">网站名称</p>
+                  <p className="text-xs text-black/30 leading-5">将展示在用户端左上角常驻和首页</p>
+                </div>
                 <Input
                   id="siteName"
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   placeholder="例如：A公司企业版Agent"
-                  className="bg-gray-50 border-gray-200 text-sm"
+                  className="w-full max-w-[360px] h-9 border-[#d3d6db] rounded-[4px] text-sm text-[#020617]"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium ">
-                  网站 Logo
-                  <span className="text-gray-400 font-normal ml-1">
-                    建议尺寸 200×200px，不超过 512KB
-                  </span>
-                </Label>
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
-                    A
-                  </div>
-                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#d3d6db] rounded-[4px] text-xs text-[#020617] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer transition-colors bg-white">
-                    <Upload className="w-3.5 h-3.5" />
-                    更换 Logo
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-[#020617] leading-[22px]">网站logo</p>
+                  <p className="text-xs text-black/30 leading-5">建议尺寸200x200px，不超过512kb</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src="/icon/上传图片默认icon.svg" alt="" className="w-14 h-14 shrink-0 rounded-[6px]" />
+                  <label className="flex items-center gap-2 px-4 py-[5px] border border-dashed border-[#ddd] rounded-[3px] text-sm text-[rgba(0,0,0,0.9)] hover:border-[#355EF1] cursor-pointer transition-colors bg-white">
+                    <Upload className="w-4 h-4" />
+                    更换logo
                     <input
                       type="file"
                       accept="image/*"
@@ -427,19 +425,18 @@ export default function BasicInfo() {
                   )}
                 </div>
                 {logoError && (
-                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
+                  <div className="relative w-full rounded-[4px] border border-amber-200 bg-amber-50 text-amber-950 px-4 py-3 text-sm flex items-center gap-3">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                     {logoError}
-                  </p>
+                  </div>
                 )}
               </div>
-              <Button
-                size="sm"
-                variant="outline"
+              <button
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="text-xs "
+                className="w-[58px] h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
               >
                 保存
-              </Button>
+              </button>
             </div>
           </StepCard>
 
@@ -590,7 +587,7 @@ export default function BasicInfo() {
         </div>
 
         {/* ── 右侧：基础信息 + API文档 + 产品动态 ── */}
-        <div className="shrink-0 space-y-4" style={{ width: "352px" }}>
+        <div className="shrink-0 flex flex-col gap-4" style={{ width: "352px" }}>
 
           {/* 平台基础信息 */}
           <div
@@ -624,78 +621,61 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-[#355EF1] transition-colors"
-           
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-4 h-4 text-blue-500" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-900">API 文档</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">查阅开放接口与调用示例</p>
+              <div className="flex items-center gap-4">
+                <img src="/icon/api文档-icon.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-sm font-medium text-black tracking-[0.07px] group-hover:text-[#355EF1] transition-colors">API 文档</p>
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px] group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-300" />
+              <img src="/icon/arrow-left-stroke.svg" alt="" className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:[filter:invert(32%)_sepia(98%)_saturate(1497%)_hue-rotate(215deg)_brightness(96%)_contrast(95%)] transition-all rotate-[-45deg]" />
             </div>
           </div>
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
-            <div className="space-y-2.5">
+            <p className="text-sm font-medium text-black tracking-[0.07px] mb-6">产品动态</p>
+            <div className="flex flex-col gap-3">
               {PRODUCT_UPDATES.map((item, idx) => (
-                <div key={idx} className="flex gap-3">
-                  {/* 时间轴线 */}
-                  <div className="flex flex-col items-center shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        item.type === "feature"
-                          ? "bg-blue-50"
-                          : "bg-purple-50"
-                      }`}
-                    >
-                      {item.type === "feature" ? (
-                        <Sparkles className="w-3 h-3 text-blue-500" />
-                      ) : (
-                        <Wrench className="w-3 h-3 text-purple-500" />
-                      )}
-                    </div>
-                    {idx < PRODUCT_UPDATES.length - 1 && (
-                      <div className="w-px flex-1 bg-gray-100 mt-1.5 mb-0" style={{ minHeight: "12px" }} />
-                    )}
-                  </div>
-                  {/* 内容 */}
-                  <div className="flex-1 min-w-0 pb-0.5">
-                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <span
-                        className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                          item.type === "feature"
-                            ? "bg-blue-50 text-blue-600"
-                            : "bg-purple-50 text-purple-600"
-                        }`}
-                        style={{ fontSize: "10px" }}
-                      >
-                        {item.type === "feature" ? "功能上线" : "体验优化"}
+                <div key={idx}>
+                  {/* 分隔线 */}
+                  {idx > 0 && (
+                    <div className="w-2 h-3 mb-3 border-l border-black/9 ml-[1px]" />
+                  )}
+                  {/* 条目 */}
+                  <div className="flex flex-col gap-1 cursor-pointer group/item">
+                    {/* 图标 + 标签行 */}
+                    <div className="flex items-center justify-between">
+                      <img
+                        src={item.type === "feature" ? "/icon/功能上新icon.svg" : "/icon/体验优化-icon.svg"}
+                        alt=""
+                        className="w-[18px] h-[18px]"
+                      />
+                      <span className={`text-[#0a0a0a] text-[10px] leading-5 tracking-[0.15px] px-[5px] py-[2px] rounded-full h-[18px] flex items-center ${item.type === "feature" ? "bg-[#E9F8EB]" : "bg-[#E2E8FC]"}`}>
+                        {item.type === "feature" ? "功能上新" : "体验优化"}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>
-                    <p className="text-xs text-gray-300 mt-1">{item.date}</p>
+                    {/* 标题 */}
+                    <p className="text-xs font-medium text-black leading-5 group-hover/item:text-[#355EF1] transition-colors">{item.title}</p>
+                    {/* 描述 */}
+                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden group-hover/item:text-[#355EF1] transition-colors">{item.summary}</p>
+                    {/* 日期 */}
+                    <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">{item.date}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-2.5 border-t border-gray-50">
-              <button className="text-xs text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1">
-                查看全部更新
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
+            {/* 查看全部更新按钮 */}
+            <button className="mt-6 border border-black/9 rounded-[4px] px-3 py-2 flex items-center gap-1 text-xs text-black leading-5 hover:bg-[#f5f5f5] transition-colors">
+              查看全部更新
+              <img src="/icon/arrow-left-stroke.svg" alt="" className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>

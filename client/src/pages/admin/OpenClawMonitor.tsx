@@ -69,6 +69,7 @@ import {
   onCustomChannelsChange,
   type CustomChannel as AdminCustomChannel,
 } from "@/lib/customChannelStore";
+import { loadCustomTypes } from "./ImageManagement/customAgentStore";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
@@ -98,7 +99,11 @@ interface Claw {
   createTime: string;
   status: ClawStatus;
   version: string;
-  agentType: 'OpenClaw' | 'Hermes' | 'LightclawACE';
+  /**
+   * Agent 类型字符串：包含系统类型 'OpenClaw' / 'Hermes' / 'LightclawACE'，
+   * 以及在「Agent 类型管理」中创建的自定义类型 id（如 'petselfclaw'）。
+   */
+  agentType: string;
   pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
@@ -154,6 +159,8 @@ const MOCK_CLAWS: Claw[] = [
   { id: "20", instanceId: "ins-a81v5pwm", name: "Tina的客服助手",  creator: "tina@acompany.com",    createTime: "2026-03-19 15:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
   { id: "21", instanceId: "ins-b92w6qxn", name: "Uma的设计助手",   creator: "uma@acompany.com",     createTime: "2026-03-20 09:30:00", status: "running",     version: "2026.4.2",  agentType: "Hermes",      pluginVersions: { wechat: "3.3.0", dingtalk: "2.9.1", feishu: "1.6.0", wecom: "2.2.0", qq: "1.1.0" } },
   { id: "22", instanceId: "ins-c03x7ryo", name: "Victor的技术助手", creator: "victor@acompany.com",  createTime: "2026-03-21 10:00:00", status: "running",     version: "2026.3.28", agentType: "OpenClaw",    pluginVersions: { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" } },
+  // 自研内核（kernelBase: native）实例：管控台不展示其详细配置，列表行 instanceId 入口置灰
+  { id: "23", instanceId: "ins-r4gun0qw", name: "custom-customclaw", creator: "admin123",            createTime: "2026-05-20 16:09:53", status: "running",     version: "1.0.0",     agentType: "petselfclaw", pluginVersions: DEFAULT_PLUGIN_VERSIONS },
 ];
 
 const PAGE_SIZE = 10;
@@ -690,6 +697,13 @@ export default function AgentMonitor() {
     }
     return [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime));
   });
+  // 自研内核（kernelBase: native）类型集合：用于列表行 instanceId 入口的禁用判定
+  // 来自「Agent 类型管理」localStorage，键为 agentType 字符串（自定义类型 id）
+  const nativeAgentTypeIds = useMemo(() => {
+    const types = loadCustomTypes();
+    return new Set(types.filter(t => t.kernelBase === "native").map(t => t.id));
+  }, [claws]);  // claws 变化时重读（HMR / mock 改动友好）
+  const isNativeKernelAgentType = (agentType: string): boolean => nativeAgentTypeIds.has(agentType);
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -2273,12 +2287,29 @@ export default function AgentMonitor() {
                           </div>
                           <div>
                             <div className="text-sm font-medium text-gray-900">{claw.name}</div>
-                            <button
-                              onClick={() => handleOpenDrawer(claw)}
-                              className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
-                            >
-                              {claw.instanceId}
-                            </button>
+                            {isNativeKernelAgentType(claw.agentType) ? (
+                              // 自研内核（kernelBase: native）：管控台不展示其详细配置，instanceId 入口置灰且不可点击
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span
+                                    className="text-xs font-mono text-gray-400 cursor-not-allowed select-none"
+                                    aria-disabled="true"
+                                  >
+                                    {claw.instanceId}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                                  该 Agent 类型暂不支持查看详情
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenDrawer(claw)}
+                                className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
+                              >
+                                {claw.instanceId}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </td>

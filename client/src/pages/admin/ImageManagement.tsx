@@ -67,7 +67,6 @@ import AgentTypesTable, {
   type AgentTypeRowData,
 } from "./ImageManagement/AgentTypesTable";
 import PublicImageHistoryDialog from "./ImageManagement/PublicImageHistoryDialog";
-import UpdateRecordSidebar from "./ImageManagement/UpdateRecordSidebar";
 import UpdateRecordsDrawer from "./ImageManagement/UpdateRecordsDrawer";
 import PushUpgradeDialog, {
   type PushableAgentType,
@@ -397,10 +396,9 @@ function ImageScopePopover({
 
   const renderBadges = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
-      // 默认态："全部用户"用图标+文字（无方框），与下方"按分组"徽章拉开层级
+      // 默认态："全部用户" — 与已选分组徽章保持同款白底黑字风格
       return (
-        <span className="inline-flex items-center gap-1 text-[11px] text-gray-600 whitespace-nowrap">
-          <Users className="w-3 h-3 text-gray-400" />
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] whitespace-nowrap">
           全部用户
         </span>
       );
@@ -412,11 +410,11 @@ function ImageScopePopover({
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-100 max-w-[140px] truncate">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] max-w-[140px] truncate">
               {firstName}
             </span>
             {rest > 0 && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-100 whitespace-nowrap">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] whitespace-nowrap">
                 +{rest}
               </span>
             )}
@@ -589,7 +587,7 @@ function OverviewStats({
       <span className="w-px h-3 bg-[#E5E5E5]" />
       <div className="flex items-center gap-2">
         <span className="text-xs text-[#737373]">已对用户可见</span>
-        <span className="text-xs text-[#1447E6] font-semibold tabular-nums">{enabledTypeCount}</span>
+        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
       </div>
       <span className="w-px h-3 bg-[#E5E5E5]" />
       <div className="flex items-center gap-2">
@@ -666,8 +664,6 @@ export default function ImageManagement() {
 
   // Agent 类型筛选
   const [agentTypeFilter, setAgentTypeFilter] = useState("all");
-  // 更新提醒卡片最小化状态（默认收起，点击标题旁的常驻按钮展开到右上角）
-  const [updateCardMinimized, setUpdateCardMinimized] = useState(true);
   const [nativeAck, setNativeAck] = useState(false);
   const newTypeNameError = useMemo(() => {
     if (!newTypeName.trim()) return "";
@@ -1096,26 +1092,6 @@ export default function ImageManagement() {
   // ── 渲染 ──────────────────────────────────────────────────────────
   return (
     <>
-      {/* 固定悬浮在页面右上角的更新提醒卡片（非最小化时展示） */}
-      {!updateCardMinimized && (
-      <div className="fixed top-6 right-6 w-[360px] z-30 shadow-lg rounded-[4px]">
-        <UpdateRecordSidebar
-          views={views.map(({ agentType, view }) => ({
-            agentType,
-            isEnabled: view.enabled.isEnabled,
-            version: view.enabled.version,
-          }))}
-          getTypeLabel={getTypeLabel}
-          defaultAgentType={defaultAgentType}
-          onPush={() => openPushDialog()}
-          onViewAll={() => setShowAllRecordsDrawer(true)}
-          orientation="horizontal"
-          onMinimize={() => setUpdateCardMinimized(true)}
-          pushable={pushable}
-        />
-      </div>
-      )}
-
       <div className="page-enter">
         <div className="min-w-0">
           {/* 页面标题 */}
@@ -1127,30 +1103,38 @@ export default function ImageManagement() {
                 const hasNewVersion = true;
                 if (!hasNewVersion && !hasActivePush) {
                   return (
-                    <button
-                      onClick={() => setShowAllRecordsDrawer(true)}
-                      className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
-                    >
-                      <Bell className="w-3 h-3 text-[#1447E6]" />
-                      当前没有版本更新，查看历史更新记录
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setShowAllRecordsDrawer(true)}
+                          className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
+                        >
+                          <Bell className="w-3 h-3 text-[#1447E6]" />
+                          当前没有版本更新，查看历史更新记录
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs">打开更新记录</TooltipContent>
+                    </Tooltip>
                   );
                 }
                 return (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
-                        onClick={() => setUpdateCardMinimized((v) => !v)}
-                        className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
+                        onClick={() => setShowAllRecordsDrawer(true)}
+                        className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-amber-200 bg-amber-50 text-xs font-medium text-amber-800 hover:bg-amber-100/70 transition-colors shrink-0"
                       >
                         <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
-                        <Bell className="w-3 h-3 text-[#1447E6]" />
-                        {hasActivePush ? "有新版本上线（正在提醒员工更新）" : "有新版本上线，请尽快更新"}
+                        <Bell className="w-3 h-3 text-amber-700" />
+                        {(() => {
+                          const total = pushable.filter(p => !p.allUpToDate).length;
+                          const pushed = listActivePushes().length;
+                          const pending = total - pushed;
+                          return <span>有 <span className="font-bold text-amber-950">{pending > 0 ? pending : 0}</span> 个新版本待发布提醒，<span className="font-bold text-amber-950">{pushed}</span> 个版本正在提醒员工更新</span>;
+                        })()}
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className="text-xs">
-                      {updateCardMinimized ? "展开详情" : "收起详情"}
-                    </TooltipContent>
+                    <TooltipContent className="text-xs">打开更新详情</TooltipContent>
                   </Tooltip>
                 );
               })()}
@@ -1176,7 +1160,7 @@ export default function ImageManagement() {
               onClick={() => setShowAllRecordsDrawer(true)}
               className="shrink-0"
             >
-              查看全部更新记录
+              全部更新记录
             </Button>
             <Button
               variant="claw-primary"
@@ -1658,6 +1642,7 @@ export default function ImageManagement() {
       <UpdateRecordsDrawer
         open={showAllRecordsDrawer}
         onOpenChange={setShowAllRecordsDrawer}
+        pushable={pushable}
         onPush={(defaultType) => {
           setShowAllRecordsDrawer(false);
           openPushDialog(defaultType);

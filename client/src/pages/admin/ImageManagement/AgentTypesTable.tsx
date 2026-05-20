@@ -227,14 +227,7 @@ function AgentTypeRow({
             {isDefault && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span
-                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold text-white cursor-default whitespace-nowrap"
-                    style={{
-                      background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)",
-                    }}
-                  >
-                    <Star className="w-2.5 h-2.5" /> 用户端首选
-                  </span>
+                  <span><StatusTag variant="blue">用户端首选</StatusTag></span>
                 </TooltipTrigger>
                 <TooltipContent className="text-xs">
                   用户端首选 Agent 类型
@@ -255,9 +248,7 @@ function AgentTypeRow({
               {isNative && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-orange-50 text-orange-700 border border-orange-200 cursor-default whitespace-nowrap">
-                      <Sparkles className="w-2.5 h-2.5" /> 自定义内核
-                    </span>
+                    <span><StatusTag variant="gray" dot>自定义内核</StatusTag></span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
                     完全自研内核：管控台部分功能不可用，用户需通过终端配置
@@ -267,7 +258,7 @@ function AgentTypeRow({
               {customType && !isNative && kernelBaseLabel && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <StatusTag variant="blue">兼容 {kernelBaseLabel}</StatusTag>
+                    <StatusTag variant="gray" className="text-[10px] h-4 px-1.5">兼容 {kernelBaseLabel}</StatusTag>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
                     与 {kernelBaseLabel} 完全兼容，管控台功能保持一致
@@ -441,7 +432,7 @@ function AgentVersionCell({
             <TooltipTrigger asChild>
               <button
                 onClick={onViewHistory}
-                className="inline-flex items-center justify-center w-6 h-6 rounded text-[#1447E6] hover:bg-[#1447E6]/10 transition-colors shrink-0"
+                className="inline-flex items-center justify-center w-6 h-6 rounded bg-white border border-[#E5E5E5] text-[#737373] hover:text-[#0A0A0A] hover:bg-[#FAFAFA] transition-colors shrink-0"
               >
                 <History className="w-3.5 h-3.5" />
               </button>
@@ -451,20 +442,6 @@ function AgentVersionCell({
             </TooltipContent>
           </Tooltip>
         )}
-      </div>
-      <div className="mt-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <StatusTag variant={isPublic ? "blue" : "gray"}>
-              {isPublic ? "腾讯云维护" : "企业自维护"}
-            </StatusTag>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
-            {isPublic
-              ? "由腾讯云持续维护更新，自动跟随官方版本"
-              : "由企业自行制作和维护"}
-          </TooltipContent>
-        </Tooltip>
       </div>
     </div>
   );
@@ -476,7 +453,7 @@ function ImageCombinedCell({ image }: { image: ViewImage }) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <StatusTag variant={isPublic ? "blue" : "gray"}>
+        <StatusTag variant="gray" className="text-[10px] h-4 px-1.5">
           {isPublic ? "公共" : "自定义"}
         </StatusTag>
         <span className="text-sm font-medium text-gray-900 truncate">

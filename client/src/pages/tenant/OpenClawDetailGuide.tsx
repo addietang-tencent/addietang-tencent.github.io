@@ -1701,7 +1701,7 @@ export default function OpenClawDetailGuide() {
                   </SurfaceCard>
 
                   {/* ===== 02/ 通道（Channels） ===== */}
-                  <SurfaceCard className="flex flex-col p-6 gap-4">
+                  <SurfaceCard className="flex flex-col p-6 gap-3">
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
@@ -1729,25 +1729,21 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
-                    {/* 通道配置：始终展示「已接入通道」小标题 + 添加配置卡 / 添加按钮 + 通道列表 */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
-                          已接入通道（{appliedChannels.length}）
-                        </div>
+                    {/* 通道配置：新增通道按钮 / 配置卡切换 */}
+                    <div>
+                        {/* 新增通道按钮（收起态） */}
                         {!showChannelConfig && (
-                          <button
-                            className="inline-flex items-center gap-1 text-xs hover:opacity-80"
-                            style={{ color: "#1447E6" }}
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full mb-3 bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
                             onClick={() => setShowChannelConfig(true)}
                           >
-                            <Plus className="w-3 h-3" />
-                            添加通道
-                          </button>
+                            <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                            新增通道
+                          </Button>
                         )}
-                      </div>
-
-                        {/* 点击「添加通道」后，配置卡出现在小标题下方 */}
+                        {/* 添加接入通道配置卡（展开态） */}
                         {showChannelConfig && (
                           <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
                             <button
@@ -1757,12 +1753,12 @@ export default function OpenClawDetailGuide() {
                                 setShowChannelConfig(false);
                               }}
                               className="absolute top-2 right-2 w-6 h-6 rounded-[4px] flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors z-10"
-                              aria-label="取消"
+                              aria-label="关闭"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
                             {/* 小标题 */}
-                            <div className="text-xs font-medium pr-8" style={{ color: "rgba(0,0,0,0.8)" }}>
+                            <div className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                               添加接入通道
                             </div>
                             {/* 通道选择下拉 */}
@@ -1791,7 +1787,7 @@ export default function OpenClawDetailGuide() {
                                         placeholder={`请输入${field.label}`}
                                         value={channelFields[field.key] || ""}
                                         onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
-                                        className="h-9 rounded-[4px] text-sm pr-9 bg-white"
+                                        className="h-9 rounded-[4px] text-sm pr-9 bg-white border-[#E5E5E5]"
                                       />
                                       {field.secret && (
                                         <button
@@ -1808,7 +1804,7 @@ export default function OpenClawDetailGuide() {
                               </div>
                             )}
 
-                            {/* 前往授权 按钮 */}
+                            {/* 授权添加 按钮 */}
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="claw-outline"
@@ -1816,11 +1812,19 @@ export default function OpenClawDetailGuide() {
                                 className="w-full"
                                 onClick={() => { handleApplyChannel(); setShowChannelConfig(false); }}
                               >
-                                前往授权
+                                授权添加
                               </Button>
                             </div>
                           </div>
                         )}
+
+                      {appliedChannels.length > 0 && (
+                      <div className="mb-3">
+                        <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
+                          已接入通道（{appliedChannels.length}）
+                        </div>
+                      </div>
+                      )}
 
                         {appliedChannels.length > 0 && (
                         <div className="space-y-2">
@@ -1913,20 +1917,23 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
+                    {/* 安装技能（白底灰边黑字 二级按钮样式） */}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
+                      onClick={() => setSkillModalOpen(true)}
+                    >
+                      <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                      安装技能
+                    </Button>
+
                     {/* 已安装技能列表 */}
                     <div className="flex flex-col gap-3 mt-1 pt-2">
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                           已安装技能（{installedSkills.filter((s) => skillSearch ? s.name.includes(skillSearch) : true).length}）
                         </div>
-                        <button
-                          className="inline-flex items-center gap-1 text-xs hover:opacity-80"
-                          style={{ color: "#1447E6" }}
-                          onClick={() => setSkillModalOpen(true)}
-                        >
-                          <Plus className="w-3 h-3" />
-                          安装技能
-                        </button>
                       </div>
                       {/* Skill 搜索输入框 */}
                       <div className="relative">

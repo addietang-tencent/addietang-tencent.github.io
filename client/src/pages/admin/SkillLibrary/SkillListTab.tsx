@@ -825,7 +825,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button variant="claw-primary" size="claw-sm" onClick={() => setUploadDialogOpen(true)}>
               + 发布 Skill
             </Button>
           </div>
@@ -834,30 +834,22 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 分类筛选 */}
       <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
-        <button
+        <Button
           onClick={() => setSelectedCategory(null)}
-          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-            selectedCategory === null
-              ? 'text-white border-transparent'
-              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-          }`}
-          style={selectedCategory === null ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
+          variant={selectedCategory === null ? "claw-primary" : "claw-outline"}
+          size="claw-sm"
         >
           全部
-        </button>
+        </Button>
         {categories.map((cat: any) => (
-          <button
+          <Button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-              selectedCategory === cat.id
-                ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-            }`}
-            style={selectedCategory === cat.id ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
+            variant={selectedCategory === cat.id ? "claw-primary" : "claw-outline"}
+            size="claw-sm"
           >
             {cat.name}
-          </button>
+          </Button>
         ))}
       </div>
 

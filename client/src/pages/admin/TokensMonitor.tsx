@@ -5,11 +5,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { StatusTag } from "@/components/ui/status-tag";
 import { AgentCombobox } from "@/components/OpenClawCombobox";
 import {
   Tooltip as UITooltip,
@@ -1233,23 +1235,23 @@ export default function TokensMonitor() {
         </div>
 
         {/* Detail Tabs */}
-        <Tabs defaultValue="instance">
+        <Segment defaultValue="instance">
           <div className="flex items-center justify-between mb-2">
-            <TabsList>
-              <TabsTrigger value="instance">按实例</TabsTrigger>
-              <TabsTrigger value="member">按用户</TabsTrigger>
-              <TabsTrigger value="model">按模型</TabsTrigger>
-              {hasOneid && <TabsTrigger value="department">按部门</TabsTrigger>}
-              <TabsTrigger value="group" className="relative pr-3">
+            <SegmentList>
+              <SegmentItem value="instance">按实例</SegmentItem>
+              <SegmentItem value="member">按用户</SegmentItem>
+              <SegmentItem value="model">按模型</SegmentItem>
+              {hasOneid && <SegmentItem value="department">按部门</SegmentItem>}
+              <SegmentItem value="group" className="relative pr-3">
                 按分组
                 <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
-              </TabsTrigger>
-              <TabsTrigger value="session">按会话</TabsTrigger>
-            </TabsList>
+              </SegmentItem>
+              <SegmentItem value="session">按会话</SegmentItem>
+            </SegmentList>
           </div>
 
           {/* 按实例 */}
-          <TabsContent value="instance">
+          <SegmentContent value="instance">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
               <UITooltip>
@@ -1311,10 +1313,10 @@ export default function TokensMonitor() {
               </table>
               <Pagination page={instancePage} total={instanceStats.length} onChange={setInstancePage} />
             </div>
-          </TabsContent>
+          </SegmentContent>
 
           {/* 按用户 */}
-          <TabsContent value="member">
+          <SegmentContent value="member">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
@@ -1364,10 +1366,10 @@ export default function TokensMonitor() {
               </table>
               <Pagination page={memberPage} total={memberStats.length} onChange={setMemberPage} />
             </div>
-          </TabsContent>
+          </SegmentContent>
 
           {/* 按模型 */}
-          <TabsContent value="model">
+          <SegmentContent value="model">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
@@ -1410,11 +1412,11 @@ export default function TokensMonitor() {
               </table>
               <Pagination page={modelPage} total={modelStats.length} onChange={setModelPage} />
             </div>
-          </TabsContent>
+          </SegmentContent>
 
           {/* 按部门 - 仅 OneID 模式显示 */}
           {hasOneid && (
-            <TabsContent value="department">
+            <SegmentContent value="department">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs text-gray-400">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
                 <div className="flex items-center gap-2">
@@ -1466,11 +1468,11 @@ export default function TokensMonitor() {
                 </table>
                 <Pagination page={deptPage} total={deptStats.length} onChange={setDeptPage} />
               </div>
-            </TabsContent>
+            </SegmentContent>
           )}
 
           {/* 按分组 */}
-          <TabsContent value="group">
+          <SegmentContent value="group">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs text-gray-400">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
               <div className="flex items-center gap-2">
@@ -1544,10 +1546,10 @@ export default function TokensMonitor() {
               </table>
               <Pagination page={groupPage} total={groupStats.length} onChange={setGroupPage} />
             </div>
-          </TabsContent>
+          </SegmentContent>
 
           {/* 按会话 */}
-          <TabsContent value="session">
+          <SegmentContent value="session">
             {!clsEnabled && (
               <>
                 {/* CLS 提示弹框 */}
@@ -1805,8 +1807,8 @@ export default function TokensMonitor() {
               </div>
               </>
             )}
-          </TabsContent>
-        </Tabs>
+          </SegmentContent>
+        </Segment>
 
       {/* CLS 授权 Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
@@ -1995,7 +1997,7 @@ export default function TokensMonitor() {
                     <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ flex: 1 }}>{v.changelog}</td>
                     <td className="px-3 py-2 text-center" style={{ width: '100px' }}>
                       {v.status === 'current' && (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
+                              <StatusTag variant="green">当前版本</StatusTag>
                       )}
                     </td>
                   </tr>

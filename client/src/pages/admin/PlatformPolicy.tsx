@@ -20,6 +20,7 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Dialog, DialogContent,
 } from "@/components/ui/dialog";
@@ -690,7 +691,7 @@ function LabeledOptionIndicator<T extends string>({
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="text-gray-400">{label}</span>
-      <span className="badge-shutdown whitespace-nowrap">{currentLabel}</span>
+      <StatusTag variant="gray">{currentLabel}</StatusTag>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button className="text-gray-300 hover:text-blue-500 transition-colors" title={`编辑${label}`}><Pencil className="w-3 h-3" /></button>
@@ -1471,11 +1472,11 @@ export default function PlatformPolicy() {
       </div>
 
       {/* 优先级说明信息条 */}
-      <div className="flex items-start gap-2.5 rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
-        <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-        <ul className="text-xs text-blue-700 leading-relaxed space-y-1 list-disc pl-4">
-          <li>无需按分组设置策略时，直接使用<span className="font-medium">「预设策略」</span>，全部用户应用该策略。</li>
-          <li>需要按分组设置策略时，添加<span className="font-medium">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium">「预设策略」</span>。若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
+      <div className="flex items-start gap-2.5 rounded-[4px] border border-[#e5e5e5] bg-white px-4 py-3">
+        <Info className="w-4 h-4 text-[#0A0A0A] mt-0.5 shrink-0" />
+        <ul className="text-xs text-[#737373] leading-relaxed space-y-1 list-disc pl-4">
+          <li>无需按分组设置策略时，直接使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>，全部用户应用该策略。</li>
+          <li>需要按分组设置策略时，添加<span className="font-medium text-[#0A0A0A]">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>。若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
         </ul>
       </div>
 

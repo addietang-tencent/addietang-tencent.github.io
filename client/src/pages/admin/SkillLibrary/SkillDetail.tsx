@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { StatusTag } from '@/components/ui/status-tag';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
@@ -633,9 +634,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 if (secStatus === 'not_scanned') {
                   return (
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-50 text-gray-400 text-xs font-medium rounded-full">
-                        未检测
-                      </span>
+                      <StatusTag variant="gray">未检测</StatusTag>
                       <button
                         onClick={() => setSecurityScanDialogOpen(true)}
                         className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
@@ -648,10 +647,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 }
                 if (secStatus === 'scanning') {
                   return (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+                    <StatusTag variant="blue">
                       <Loader className="w-3 h-3 animate-spin" />
                       检测中
-                    </span>
+                    </StatusTag>
                   );
                 }
                 const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;

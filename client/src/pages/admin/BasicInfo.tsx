@@ -10,6 +10,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -137,15 +138,9 @@ function StepCard({
           <div className="flex items-center gap-2.5 flex-wrap">
             <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
             {done ? (
-              <span className="inline-flex items-center gap-1 bg-[#E9F8EB] text-[#008236] text-xs leading-3 tracking-[0.18px] px-2 py-[2px] rounded-full h-[22px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#008236]" />
-                已完成
-              </span>
+              <StatusTag variant="green" dot>已完成</StatusTag>
             ) : (
-              <span className="inline-flex items-center gap-1 bg-[#f5f5f5] text-[rgba(0,0,0,0.9)] text-xs leading-3 tracking-[0.18px] px-2 py-[2px] rounded-full h-[22px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(0,0,0,0.3)]" />
-                待完成
-              </span>
+              <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
           <p className="text-xs text-black/70 leading-5 tracking-[0.18px]">{description}</p>
@@ -433,7 +428,7 @@ export default function BasicInfo() {
               </div>
               <button
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="w-[58px] h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
+                className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
               >
                 保存
               </button>
@@ -595,21 +590,21 @@ export default function BasicInfo() {
           >
             <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
             <div className="flex flex-col gap-4">
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 items-center">
                 <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
                   <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 items-center">
                 <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
                   <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 items-center">
                 <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
                   <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
@@ -657,9 +652,9 @@ export default function BasicInfo() {
                         alt=""
                         className="w-[18px] h-[18px]"
                       />
-                      <span className={`text-[#0a0a0a] text-[10px] leading-5 tracking-[0.15px] px-[5px] py-[2px] rounded-full h-[18px] flex items-center ${item.type === "feature" ? "bg-[#E9F8EB]" : "bg-[#E2E8FC]"}`}>
+                      <StatusTag variant={item.type === "feature" ? "green" : "blue"}>
                         {item.type === "feature" ? "功能上新" : "体验优化"}
-                      </span>
+                      </StatusTag>
                     </div>
                     {/* 标题 */}
                     <p className="text-xs font-medium text-black leading-5 group-hover/item:text-[#355EF1] transition-colors">{item.title}</p>

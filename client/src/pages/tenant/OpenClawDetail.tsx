@@ -12,6 +12,7 @@ import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
 import { Badge } from "@/components/ui/badge";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -1778,10 +1779,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <span className="badge-running pointer-events-none">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                                主模型
-                              </span>
+                              <StatusTag variant="green" dot>主模型</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -1845,9 +1843,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-400 pointer-events-none">
-                                备用
-                              </span>
+                              <StatusTag variant="gray">备用</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -1995,10 +1991,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                             </button>
                           )}
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="badge-running text-xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                              运行中
-                            </span>
+                            <StatusTag variant="green" dot>运行中</StatusTag>
                             <button
                               onClick={() => {
                                 setAppliedChannels(appliedChannels.filter((_, i) => i !== chIdx));

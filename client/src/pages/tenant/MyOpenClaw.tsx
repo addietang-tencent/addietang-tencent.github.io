@@ -895,26 +895,55 @@ export default function MyOpenClaw() {
                           重试
                         </Button>
                       ) : isDisabled ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs opacity-40 cursor-not-allowed"
-                          disabled
-                        >
-                          <Settings className="w-3.5 h-3.5 mr-1.5" />
-                          详细配置
-                        </Button>
-                      ) : (
-                        <Link href={`/openclaw/${claw.id}`}>
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs"
+                            className="flex-1 text-xs opacity-40 cursor-not-allowed"
+                            disabled
                           >
                             <Settings className="w-3.5 h-3.5 mr-1.5" />
                             详细配置
                           </Button>
-                        </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs opacity-40 cursor-not-allowed"
+                            disabled
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                            对话视图
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/openclaw/${claw.id}`);
+                            }}
+                          >
+                            <Settings className="w-3.5 h-3.5 mr-1.5" />
+                            详细配置
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // 写入待选中的 clawId，供 ChatView 初始化时读取
+                              localStorage.setItem("openclaw_pending_chat_claw_id", claw.id);
+                              handleViewModeChange("chat");
+                            }}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                            对话视图
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>

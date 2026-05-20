@@ -43,7 +43,7 @@ export default function DeleteSkillDialog({
             <div className="space-y-3">
               {hasReferences ? (
                 <>
-                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-yellow-800">
                       <p className="font-medium mb-1">该 Skill 被以下技能包引用：</p>
@@ -73,7 +73,7 @@ export default function DeleteSkillDialog({
           <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className="bg-red-500 hover:bg-red-600 text-white"
           >
             确认删除
           </AlertDialogAction>

@@ -14,8 +14,8 @@ interface ComparisonTableProps {
  * 本组件只负责"展开后"的对比内容渲染。
  *
  * 遵循 Agent Enterprise 设计规范：
- * - 品牌渐变：linear-gradient(90deg, #020617 70%, #355EF1 100%)
- * - 卡片圆角：rounded-xl (16px)
+ * - 品牌渐变：linear-gradient(135deg, #007AFF, #5856D6)
+ * - 卡片圆角：rounded-2xl (16px)
  * - 统一阴影：通过 inline style 设置
  * - 图标：仅使用 lucide-react，禁止 emoji
  */
@@ -27,13 +27,14 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
       <div className="grid grid-cols-[1fr_1.5fr] gap-5">
         {/* Free 版卡片 */}
         <div 
-          className="bg-white rounded-xl border border-gray-200 p-5 transition-all duration-200 flex flex-col"
+          className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition-all duration-200 flex flex-col"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
         >
           {/* 头部 */}
           <div className="flex items-center gap-3 mb-5">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#355EF1' }}
+              style={{ background: '#007AFF' }}
             >
               <Zap className="w-5 h-5 text-white" />
             </div>
@@ -68,13 +69,14 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
 
         {/* Pro 版卡片 */}
         <div 
-          className="bg-white rounded-xl border border-blue-200 p-5 transition-all duration-200 flex flex-col"
+          className="bg-white rounded-2xl border border-blue-200 p-5 hover:shadow-md transition-all duration-200 flex flex-col"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
         >
           {/* 头部 */}
           <div className="flex items-center gap-3 mb-5">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#355EF1' }}
+              style={{ background: '#007AFF' }}
             >
               <Crown className="w-5 h-5 text-white" />
             </div>
@@ -84,7 +86,7 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
             </div>
             {/* 已开通状态标签 */}
             {isProActive && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-green-100 text-green-700 text-xs font-medium">
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-100 text-green-700 text-xs font-medium">
                 <Check className="w-3 h-3" />
                 已开通
               </div>
@@ -115,21 +117,21 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
 
           {/* 企业级特性 Grid */}
           <div className="grid grid-cols-2 gap-2.5 mt-4">
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Sparkles className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="text-sm text-gray-600">短期记忆压缩，Token 节省 50%+</span>
               <span className="px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">New</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="text-sm text-gray-600">全链路加密，保障数据安全</span>
               <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Database className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="text-sm text-gray-600">数据备份，可靠性更高</span>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
               <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="text-sm text-gray-600">租户权限隔离，访问更安全</span>
             </div>

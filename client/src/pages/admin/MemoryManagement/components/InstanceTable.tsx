@@ -10,7 +10,6 @@ import {
   X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
@@ -29,7 +28,7 @@ const SkeletonRow: React.FC = () => (
     <td className="w-12 px-4 py-4"><Skeleton className="w-4 h-4 rounded" /></td>
     <td className="px-6 py-4">
       <div className="flex items-center gap-2.5">
-        <Skeleton className="w-7 h-7 rounded-xl" />
+        <Skeleton className="w-7 h-7 rounded-lg" />
         <div className="flex flex-col gap-1">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-3 w-32" />
@@ -553,7 +552,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               <p className="text-gray-600 text-sm leading-relaxed">
                 即将为 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 开启 Memory Free 服务。
               </p>
-              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-blue-700 text-sm">开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
               </div>
               {selectedInstances.length > count && (
@@ -588,7 +587,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               <p className="text-gray-500 text-sm leading-relaxed">
                 开启后将重启 Gateway 服务，届时会有短暂的服务中断。
               </p>
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                 <p className="text-amber-700 text-sm">开启 Pro 版后不支持回退到 Free 版</p>
               </div>
               {selectedInstances.length > count && (
@@ -621,11 +620,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   包含 {proCount} 个 Pro 版、{freeCount} 个 Free 版实例。
                 </p>
               )}
-              <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
                 <p className="text-blue-700 text-sm">关闭后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
               </div>
               {hasProInDisable ? (
-                <div className="p-3 bg-red-50 rounded-xl border border-red-200">
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                   <p className="text-red-600 text-sm font-medium">
                     {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复
                   </p>
@@ -645,7 +644,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="请输入「关闭」"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>
               {selectedInstances.length > count && (
@@ -703,7 +702,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
 
-                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <p className="text-amber-700 text-sm">开启 Pro 版后不支持回退到 Free 版</p>
                 </div>
               </div>
@@ -725,7 +724,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   关闭后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
                 {isProVersion ? (
-                  <div className="p-3 bg-red-50 rounded-xl border border-red-200">
+                  <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                     <p className="text-red-600 text-sm font-medium">所有记忆数据将被清除，此操作不可恢复</p>
                   </div>
                 ) : (
@@ -743,7 +742,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
                     placeholder="请输入「关闭」"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -764,7 +763,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div 
-          className="bg-white rounded-xl w-[420px] max-w-[90vw] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+          className="bg-white rounded-lg w-[420px] max-w-[90vw] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.12)' }}
         >
           {/* 弹窗头部 */}
           <div className="flex items-center justify-between px-6 py-4">
@@ -772,7 +772,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             <button
               onClick={closeDialog}
               disabled={isProcessing}
-              className="p-1 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50"
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>
@@ -784,18 +784,18 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           </div>
           
           {/* 弹窗底部 */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#e5e5e5] bg-gray-50/50">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
             <button
               onClick={closeDialog}
               disabled={isProcessing}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               取消
             </button>
             <button
               onClick={executeStatusChange}
               disabled={isProcessing || config.confirmDisabled}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-xl transition-colors disabled:opacity-70 flex items-center gap-2 ${config.confirmClass}`}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors disabled:opacity-70 flex items-center gap-2 ${config.confirmClass}`}
             >
               {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
               {config.confirmText}
@@ -820,11 +820,12 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 
   return (
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] relative overflow-hidden"
+      className="bg-white rounded-2xl border border-gray-100 relative overflow-hidden"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}
     >
       {/* 加载遮罩 */}
       {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-2xl z-10 flex items-center justify-center">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
             <span>正在加载实例状态...</span>
@@ -856,7 +857,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <button
                         onClick={handleBatchEnableFree}
                         disabled={!hasSelection || !canEnableFree}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                           hasSelection && canEnableFree
                             ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
                             : 'text-gray-400 bg-gray-100 cursor-not-allowed'
@@ -878,7 +879,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <button
                         onClick={handleBatchEnablePro}
                         disabled={!hasSelection || !canEnablePro || !isProActive}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                           hasSelection && canEnablePro && isProActive
                             ? 'text-purple-600 bg-purple-50 hover:bg-purple-100'
                             : 'text-gray-400 bg-gray-100 cursor-not-allowed'
@@ -902,7 +903,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <button
                         onClick={handleBatchDisable}
                         disabled={!hasSelection || !canDisable}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                           hasSelection && canDisable
                             ? 'text-red-600 bg-red-50 hover:bg-red-100'
                             : 'text-gray-400 bg-gray-100 cursor-not-allowed'
@@ -943,7 +944,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="刷新列表"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -1013,7 +1014,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         style={{ pointerEvents: 'auto' }}
                       />
                       <div 
-                        className="fixed w-48 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 will-change-transform" 
+                        className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" 
                         style={{
                           top: `${memoryFilterPosition.top}px`,
                           left: `${memoryFilterPosition.left}px`,
@@ -1043,18 +1044,17 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                             </label>
                           ))}
                         </div>
-                        <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
-                          <button
-                            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+                        <div className="border-t border-gray-100 p-2 flex gap-2">
+                          <button 
+                            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
                             onClick={() => {
                               setTempSelectedMemoryStates(new Set(['none', 'free', 'pro']));
                             }}
                           >
                             重置
                           </button>
-                          <Button
-                            size="sm"
-                            className="flex-1"
+                          <button 
+                            className="flex-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
                             onClick={() => {
                               setSelectedMemoryStates(new Set(tempSelectedMemoryStates));
                               setShowMemoryFilter(false);
@@ -1062,7 +1062,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                             }}
                           >
                             确认
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     </>
@@ -1179,7 +1179,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                     {/* 名称/ID */}
                     <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                           <Bot className="w-3.5 h-3.5 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1245,7 +1245,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -1253,7 +1253,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -9,7 +9,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { SurfaceCard } from '@/components/ui/Surface';
 import { toast } from 'sonner';
 import { Zap, Info, AlertTriangle, AlertOctagon } from 'lucide-react';
 import {
@@ -78,11 +77,11 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
   return (
     <TooltipProvider>
       <>
-        <SurfaceCard
-          className={`overflow-hidden transition-all duration-500 ${disabled ? 'opacity-60' : ''}`}
+        <div
+          className={`bg-white rounded-2xl border overflow-hidden transition-all duration-500 ${disabled ? 'opacity-60' : ''}`}
           style={{
-            border: '1px solid',
-            borderColor: isEnabled ? 'rgba(20,71,230,0.2)' : 'rgba(229,231,235,1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
+            borderColor: isEnabled ? 'rgba(0,122,255,0.2)' : 'rgba(229,231,235,1)',
           }}
         >
           <div className="px-8 py-7">
@@ -91,6 +90,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               <div className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
                 >
                   <Zap className="w-5 h-5 text-white" />
                 </div>
@@ -142,7 +142,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               ))}
             </div>
           </div>
-        </SurfaceCard>
+        </div>
 
         {/* 确认弹窗 — 开启 */}
         <Dialog open={confirmType === 'enable'} onOpenChange={(o) => { if (!o) setConfirmType(null); }}>
@@ -177,6 +177,8 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               <Button
                 onClick={handleConfirm}
                 disabled={!confirmChecked}
+                className="text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
               >
                 确认开启
               </Button>
@@ -223,7 +225,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               <Button
                 onClick={handleConfirm}
                 disabled={!confirmChecked}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
               >
                 确认关闭
               </Button>

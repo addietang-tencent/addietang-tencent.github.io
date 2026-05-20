@@ -369,7 +369,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
       </button>
 
       {/* 基础信息卡片 */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{mcp.displayName || mcp.name}</h1>
@@ -420,13 +420,13 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="files"
-              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -434,7 +434,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
           {/* 文件列表 Tab — 三栏布局 */}
           <TabsContent value="files" className="mt-4 p-0">
-            <div className="flex h-[47rem] border border-gray-200 rounded-xl overflow-hidden bg-white">
+            <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
               {/* 左列：版本列表 */}
               <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
@@ -452,7 +452,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-2.5 border-b border-[#e5e5e5] transition-colors ${
+                        className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
                           isSelected ? 'bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'
                         }`}
                       >
@@ -516,7 +516,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
           {/* 下发记录 Tab */}
           <TabsContent value="distribution" className="mt-4 p-0">
-            <div className="bg-white rounded-xl p-6 border border-gray-200">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-gray-900">下发记录</h3>
@@ -532,7 +532,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
               <div className="space-y-3 mt-4">
                 {distributionRecords.length === 0 ? (
-                  <div className="text-center py-8 bg-gray-50 rounded-xl">
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <p className="text-gray-500">还没有下发记录</p>
                   </div>
                 ) : (
@@ -540,7 +540,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                     {distributionRecords.map((record, idx) => {
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
-                        <div key={record.id} className="border border-gray-200 rounded-xl p-4">
+                        <div key={record.id} className="border border-gray-200 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">
@@ -657,7 +657,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                   </SelectContent>
                 </Select>
               </div>
-              <div className="border border-gray-200 rounded-xl overflow-y-auto max-h-64">
+              <div className="border border-gray-200 rounded-lg overflow-y-auto max-h-64">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
@@ -676,7 +676,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                       </tr>
                     ) : (
                       filteredInstances.map((instance) => (
-                        <tr key={instance.id} className="border-b border-[#e5e5e5] hover:bg-gray-50">
+                        <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="px-4 py-2.5 text-gray-900">{instance.name}</td>
                           <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{instance.id}</td>
                           <td className="px-4 py-2.5">

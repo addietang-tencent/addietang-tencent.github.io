@@ -70,7 +70,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
               当前还有 <strong className="text-gray-900">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
             </div>
             
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="text-sm text-amber-800">
                 <strong>请先关闭所有实例的 Memory Pro</strong>，再执行关闭服务操作。
               </div>

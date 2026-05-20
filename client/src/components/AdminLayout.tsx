@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LogOut, MoreHorizontal } from "lucide-react";
+import { ChevronDown, ChevronRight, Layers, LogOut, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
 import AdminModeToggle from "@/components/AdminModeToggle";
@@ -35,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { AdminModeProvider } from "@/contexts/AdminModeContext";
-import { ADMIN_NAV_GROUPS, type AdminNavItem } from "@/config/adminNav";
+import { ADMIN_NAV_GROUPS, type AdminNavItem, type AdminNavSubGroup } from "@/config/adminNav";
 
 const CURRENT_ADMIN = {
   name: "jingsujiang",
@@ -61,8 +62,10 @@ function isActiveRoute(location: string, href: string) {
   return location === href || location.startsWith(`${href}/`);
 }
 
-/** 渲染单个菜单项（含图标、文字、徽章） */
-function renderNavItem(item: AdminNavItem, location: string) {
+/** 渲染单个菜单项（含图标、文字、徽章）
+ *  isSubItem=true 时：左边距加深 + 不显示自身图标（与 main 行为一致）
+ */
+function renderNavItem(item: AdminNavItem, location: string, isSubItem = false) {
   const isActive = isActiveRoute(location, item.href);
 
   let badgeNode: ReactNode = null;
@@ -77,18 +80,51 @@ function renderNavItem(item: AdminNavItem, location: string) {
 
   return (
     <AdminSidebarMenuItem key={item.href}>
-      <AdminSidebarMenuButton asChild isActive={isActive}>
+      <AdminSidebarMenuButton
+        asChild
+        isActive={isActive}
+        className={isSubItem ? "pl-7" : undefined}
+      >
         <Link href={item.href}>
-          {item.iconSrc ? (
-            <img src={item.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
-          ) : (
-            <span className="size-4 shrink-0" aria-hidden="true" />
+          {!isSubItem && (
+            item.iconSrc ? (
+              <img src={item.iconSrc} alt="" className="size-4 shrink-0" aria-hidden="true" />
+            ) : (
+              <span className="size-4 shrink-0" aria-hidden="true" />
+            )
           )}
           <span className="min-w-0 flex-1 truncate">{item.label}</span>
           {badgeNode}
         </Link>
       </AdminSidebarMenuButton>
     </AdminSidebarMenuItem>
+  );
+}
+
+/** 二级子分组：渲染为「可折叠的菜单项」（带图标 + 文字 + 折叠箭头），打开后子项缩进显示 */
+function SubGroupBlock({ subGroup, location }: { subGroup: AdminNavSubGroup; location: string }) {
+  const [open, setOpen] = useState(subGroup.defaultExpanded ?? true);
+  const Icon = subGroup.icon === "Layers" ? Layers : Layers; // 目前仅 Layers，后续如需扩展可加映射
+
+  return (
+    <>
+      <AdminSidebarMenuItem>
+        <AdminSidebarMenuButton
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={`${open ? "收起" : "展开"}${subGroup.label}`}
+        >
+          <Icon className="size-4 shrink-0 text-[var(--admin-sidebar-muted)]" />
+          <span className="min-w-0 flex-1 truncate">{subGroup.label}</span>
+          {open ? (
+            <ChevronDown className="size-3 shrink-0 text-[var(--admin-sidebar-muted)]" />
+          ) : (
+            <ChevronRight className="size-3 shrink-0 text-[var(--admin-sidebar-muted)]" />
+          )}
+        </AdminSidebarMenuButton>
+      </AdminSidebarMenuItem>
+      {open && subGroup.items.map((item) => renderNavItem(item, location, true))}
+    </>
   );
 }
 
@@ -124,24 +160,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <AdminSidebarGroup key={group.label} defaultOpen>
                   <AdminSidebarGroupTrigger>{group.label}</AdminSidebarGroupTrigger>
                   <AdminSidebarGroupContent>
-                    {/* 一级菜单项 */}
-                    {group.items && group.items.length > 0 && (
-                      <AdminSidebarMenu>
-                        {group.items.map((item) => renderNavItem(item, location))}
-                      </AdminSidebarMenu>
-                    )}
-
-                    {/* 二级子分组（如「Agent 启动配置」） */}
-                    {group.subGroups?.map((sub) => (
-                      <div key={sub.label} className="mt-2">
-                        <div className="mb-1 px-3 pt-2 pb-1 text-[11px] font-medium tracking-[0.04em] text-[var(--admin-sidebar-muted)]">
-                          {sub.label}
-                        </div>
-                        <AdminSidebarMenu>
-                          {sub.items.map((item) => renderNavItem(item, location))}
-                        </AdminSidebarMenu>
-                      </div>
-                    ))}
+                    <AdminSidebarMenu>
+                      {/* 一级菜单项 */}
+                      {group.items?.map((item) => renderNavItem(item, location))}
+                      {/* 二级子分组：作为可折叠菜单项混排在一级里 */}
+                      {group.subGroups?.map((sub) => (
+                        <SubGroupBlock key={sub.label} subGroup={sub} location={location} />
+                      ))}
+                    </AdminSidebarMenu>
                   </AdminSidebarGroupContent>
                 </AdminSidebarGroup>
               ))}

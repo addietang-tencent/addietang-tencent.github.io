@@ -407,7 +407,6 @@ export const AgentCard = ({
             <Button
               variant="claw-outline"
               size="claw"
-              className="disabled:opacity-30 cursor-not-allowed"
               disabled
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
@@ -447,7 +446,6 @@ export const AgentCard = ({
             }}
             disabled={isDisabled}
             aria-label="开始对话"
-            className="disabled:opacity-30"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
               <path d="M7.99988 14.5C11.5897 14.5 14.4999 11.5898 14.4999 8C14.4999 4.41015 11.5897 1.5 7.99988 1.5C4.41003 1.5 1.49988 4.41015 1.49988 8C1.49988 9.73056 2.17615 11.3031 3.27884 12.4679L2.14988 14.5H7.99988Z" fill="url(#paint0_radial_824_3063)"/>

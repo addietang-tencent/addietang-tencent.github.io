@@ -143,81 +143,74 @@ export default function AdminNoticeBar() {
 
   return (
     <div
-      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs transition-colors duration-300 sticky top-0 z-20 ${
-        isWarning
-          ? "bg-amber-50 border-b border-amber-200"
-          : "bg-blue-50 border-b border-blue-200"
-      }`}
+      className="sticky top-0 z-20 w-full px-4 pt-4 pb-2"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* 图标 */}
-      <div className={`flex-shrink-0 ${isWarning ? "text-amber-500" : "text-blue-500"}`}>
+      <div
+        role="alert"
+        className={`relative w-full rounded-[4px] border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr_auto] grid-cols-[0_1fr_auto] has-[>svg]:gap-x-3 gap-y-0.5 items-center [&>svg]:size-4 [&>svg]:translate-y-0 [&>svg]:text-current ${
+          isWarning
+            ? "border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-500"
+            : "border-blue-200 bg-blue-50 text-blue-950 [&>svg]:text-blue-500"
+        }`}
+      >
+        {/* 图标 */}
         {isWarning ? (
           <AlertTriangle className="w-4 h-4" />
         ) : (
           <Sparkles className="w-4 h-4" />
         )}
-      </div>
 
-      {/* 通知文字 + 跳转链接（内联排列） */}
-      <div className={`flex-1 min-w-0 leading-5 flex items-baseline flex-wrap gap-x-1 ${isWarning ? "text-amber-800" : "text-blue-800"}`}>
-        <span className="shrink-0 max-w-full">{notice.message}</span>
-        {notice.action && (
-          <>
-            {notice.action.external ? (
-              <a
-                href={notice.action.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap flex-shrink-0 ${
-                  isWarning ? "text-amber-700 hover:text-amber-900" : "text-blue-700 hover:text-blue-900"
-                }`}
-              >
-                {notice.action.label}
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            ) : (
-              <Link href={notice.action.href}>
-                <span
-                  className={`inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
-                    isWarning ? "text-amber-700 hover:text-amber-900" : "text-blue-700 hover:text-blue-900"
-                  }`}
+        {/* 通知内容 */}
+        <div className="col-start-2 flex items-baseline flex-wrap gap-x-1 leading-5">
+          <span>{notice.message}</span>
+          {notice.action && (
+            <>
+              {notice.action.external ? (
+                <a
+                  href={notice.action.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap text-current hover:opacity-80 transition-opacity"
                 >
                   {notice.action.label}
-                </span>
-              </Link>
-            )}
-          </>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <Link href={notice.action.href}>
+                  <span className="inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer text-current hover:opacity-80 transition-opacity">
+                    {notice.action.label}
+                  </span>
+                </Link>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* 切换按钮（仅多条时显示） */}
+        {total > 1 && (
+          <div className="col-start-3 flex items-center gap-1 text-current">
+            <button
+              onClick={goPrev}
+              className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
+              aria-label="上一条"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <span className="text-xs tabular-nums text-current">
+              {current + 1}/{total}
+            </span>
+            <button
+              onClick={goNext}
+              className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
+              aria-label="下一条"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </div>
-
-      {/* 切换按钮（仅多条时显示） */}
-      {total > 1 && (
-        <div className="flex-shrink-0 flex items-center gap-1 ml-1">
-          <button
-            onClick={goPrev}
-            className={`p-0.5 rounded hover:bg-black/10 transition-colors ${
-              isWarning ? "text-amber-600" : "text-blue-600"
-            }`}
-            aria-label="上一条"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-          <span className={`text-xs tabular-nums ${isWarning ? "text-amber-500" : "text-blue-500"}`}>
-            {current + 1}/{total}
-          </span>
-          <button
-            onClick={goNext}
-            className={`p-0.5 rounded hover:bg-black/10 transition-colors ${
-              isWarning ? "text-amber-600" : "text-blue-600"
-            }`}
-            aria-label="下一条"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

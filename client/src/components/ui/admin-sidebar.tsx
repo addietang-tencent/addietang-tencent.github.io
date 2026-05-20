@@ -90,7 +90,7 @@ const AdminSidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps
       ref={ref}
       data-slot="admin-sidebar-header"
       className={cn(
-        "flex h-[var(--admin-sidebar-header-height)] shrink-0 items-center justify-between border-b border-[var(--admin-sidebar-border)] px-4",
+        "flex shrink-0 flex-col border-b border-[var(--admin-sidebar-border)] px-4 py-3",
         className
       )}
       {...props}

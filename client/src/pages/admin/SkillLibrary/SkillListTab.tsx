@@ -33,14 +33,12 @@ import EditCategoriesDialog from './EditCategoriesDialog';
 import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
-import { Skill, type SkillScope, type DistributionStatus, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
-import BatchDeleteDialog from './BatchDeleteDialog';
+import { Skill, type SkillScope, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
 import {
   getSkillDistributionSummary,
   addDistributionRecord,
   updateDistributionRecord,
   createDistributionRecordId,
-  getAllDistributionRecords,
   type CachedDistributionRecord,
   type SkillDistributionSummary,
 } from './distributionCache';
@@ -141,8 +139,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const [updateSkillId, setUpdateSkillId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
-  const [uninstallDialogOpen, setUninstallDialogOpen] = useState(false);
-  const [uninstallSkillId, setUninstallSkillId] = useState<string | null>(null);
   const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
   // 安全检测确认弹窗
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
@@ -310,32 +306,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     window.addEventListener('distribution-cache-updated', handler);
     return () => window.removeEventListener('distribution-cache-updated', handler);
   }, [refreshDistributionSummaries]);
-
-  // Mock 种子：为 skill-3 创建一条"已卸载(3/3成功)"的历史记录
-  useEffect(() => {
-    const allRecords = getAllDistributionRecords();
-    const hasDeleteSeed = allRecords.some(r => r.skillId === 'skill-3' && r.type === 'delete');
-    if (!hasDeleteSeed) {
-      const seedRecord: CachedDistributionRecord = {
-        id: 'mock-delete-seed-001',
-        skillId: 'skill-3',
-        timestamp: new Date(Date.now() - 3600000).toISOString(), // 1小时前
-        totalCount: 3,
-        successCount: 3,
-        failedCount: 0,
-        inProgressCount: 0,
-        status: 'success',
-        type: 'delete',
-        operator: 'admin',
-        instances: [
-          { id: 'inst-1', name: '实例-北京-01', createdBy: 'admin', distributionStatus: 'success' },
-          { id: 'inst-2', name: '实例-上海-02', createdBy: 'admin', distributionStatus: 'success' },
-          { id: 'inst-3', name: '实例-广州-03', createdBy: 'admin', distributionStatus: 'success' },
-        ],
-      };
-      addDistributionRecord(seedRecord);
-    }
-  }, []);
 
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find((cat: any) => cat.id === catId)?.name || catId;
@@ -603,102 +573,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     setDeleteSkillId(null);
   };
 
-  // 卸载 Skill（从实例上移除）
-  const handleUninstall = (skillId: string) => {
-    setUninstallSkillId(skillId);
-    setUninstallDialogOpen(true);
-  };
-
-  /** 从下发记录中聚合某 Skill 已下发成功的实例列表（用于卸载弹窗） */
-  const distributedInstancesForUninstall = useMemo(() => {
-    if (!uninstallSkillId) return [];
-    const allRecords = getAllDistributionRecords();
-    const instanceMap = new Map<string, any>();
-    allRecords
-      .filter(r => r.skillId === uninstallSkillId && (r.type || 'distribute') === 'distribute')
-      .forEach(r => {
-        r.instances.forEach(inst => {
-          if (inst.distributionStatus === 'success' && !instanceMap.has(inst.id)) {
-            const fullInst = MOCK_OPENCLAW_INSTANCES.find(i => i.id === inst.id);
-            const groupName = fullInst?.groupIds?.[0]
-              ? MOCK_GROUPS.find(g => g.id === fullInst.groupIds[0])?.name
-              : undefined;
-            const skill = skills.find(s => s.id === uninstallSkillId);
-            instanceMap.set(inst.id, {
-              id: inst.id,
-              name: inst.name,
-              createdBy: inst.createdBy || 'admin',
-              groupName: groupName || '全部用户',
-              distributedVersion: skill?.version,
-              distributedTime: r.timestamp,
-              deleteStatus: 'not_deleted' as const,
-            });
-          }
-        });
-      });
-    return Array.from(instanceMap.values());
-  }, [uninstallSkillId, skills]);
-
-  const handleUninstallStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
-    if (!uninstallSkillId) return;
-    const recordId = createDistributionRecordId();
-    const newRecord: CachedDistributionRecord = {
-      id: recordId,
-      skillId: uninstallSkillId,
-      timestamp: new Date().toISOString(),
-      totalCount: selectedInstanceIds.length,
-      successCount: 0,
-      failedCount: 0,
-      inProgressCount: selectedInstanceIds.length,
-      status: 'distributing' as DistributionStatus,
-      type: 'delete',
-      operator: 'admin',
-      instances: selectedInstancesData.map(inst => ({
-        id: inst.id,
-        name: inst.name,
-        createdBy: inst.createdBy || 'admin',
-        distributionStatus: 'distributing' as DistributionStatus,
-      })),
-    };
-    addDistributionRecord(newRecord);
-    setUninstallDialogOpen(false);
-    toast.success('已开始卸载流程');
-
-    // 模拟卸载进度
-    const totalCount = selectedInstanceIds.length;
-    let completed = 0;
-    const failReasons = ['实例离线', '权限不足', '技能被占用', '网络超时', '实例已停止'];
-    const interval = setInterval(() => {
-      completed += Math.floor(Math.random() * 3) + 1;
-      if (completed >= totalCount) {
-        completed = totalCount;
-        clearInterval(interval);
-        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
-        const successCount = results.filter(Boolean).length;
-        const failedCount = totalCount - successCount;
-        updateDistributionRecord(recordId, (record) => ({
-          ...record,
-          successCount,
-          failedCount,
-          inProgressCount: 0,
-          status: 'success' as DistributionStatus,
-          instances: record.instances.map((inst, idx) => ({
-            ...inst,
-            distributionStatus: (results[idx] ? 'success' : 'failed') as DistributionStatus,
-            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
-          })),
-        }));
-        toast.success('卸载完成');
-      } else {
-        updateDistributionRecord(recordId, (record) => ({
-          ...record,
-          successCount: completed,
-          inProgressCount: totalCount - completed,
-        }));
-      }
-    }, 800);
-  };
-
   // 下载 Skill
   const handleDownload = async (skill: Skill) => {
     setDownloadingSkillId(skill.id);
@@ -752,7 +626,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   return (
     <div className="space-y-4">
       {/* 搜索和工具栏 */}
-      <div className="flex items-center justify-between gap-6">
+      <div className="flex items-center gap-2">
         {/* 搜索框 */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -771,7 +645,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#d3d6db] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#355EF1] transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -811,7 +685,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             };
 
             return (
-            <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+            <div className="absolute left-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
               {/* 搜索框 */}
               <div className="px-2 pb-1.5 pt-1">
                 <div className="relative">
@@ -820,7 +694,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     placeholder="搜索..."
                     value={scopeSearchQuery}
                     onChange={(e) => setScopeSearchQuery(e.target.value)}
-                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -902,7 +776,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               )}
               {/* 底部：已选数量 + 清除筛选 */}
               {selectedScopes.size > 0 && (
-                <div className="border-t border-gray-100 mt-1 px-3 py-2 flex items-center justify-between">
+                <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
                   <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                   <button
                     type="button"
@@ -925,7 +799,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-gray-200 rounded p-1 bg-white">
+          <div className="flex items-center gap-1 border border-[#d3d6db] rounded-[4px] p-0.5 bg-white h-9">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${
@@ -962,12 +836,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
         <button
           onClick={() => setSelectedCategory(null)}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
             selectedCategory === null
               ? 'text-white border-transparent'
               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
           }`}
-          style={selectedCategory === null ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+          style={selectedCategory === null ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
         >
           全部
         </button>
@@ -975,12 +849,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
               selectedCategory === cat.id
                 ? 'text-white border-transparent'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
             }`}
-            style={selectedCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+            style={selectedCategory === cat.id ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
           >
             {cat.name}
           </button>
@@ -1007,7 +881,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <div
                 key={skill.id}
                 onClick={() => handleViewDetail(skill.id)}
-                className="rounded-lg border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:shadow-md hover:bg-gray-50"
+                className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:bg-gray-50"
               >
                 {/* 名称 + 安全检测图标 + 版本 */}
                 <div className="flex items-center gap-2 mb-2">
@@ -1200,14 +1074,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         下载
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleUninstall(skill.id)}
-                        disabled={distributing}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                        卸载
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
                         onClick={() => handleDelete(skill.id)}
                         disabled={distributing}
                         className="text-red-600 focus:text-red-600"
@@ -1226,9 +1092,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="text-sm" style={{ minWidth: '1520px', width: '100%', tableLayout: 'fixed' }}>
+            <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
@@ -1243,7 +1109,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/操作动态</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
@@ -1275,11 +1141,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   if (summary) {
                     if (summary.lastDistributionStatus === 'deleting' as any) {
                       statusLine1 = '卸载中';
-                      statusLine1Color = 'text-blue-600';
+                      statusLine1Color = 'text-red-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-blue-600';
-                      statusLine2Bg = 'bg-blue-50';
-                      statusLine2HoverBg = 'hover:bg-blue-100';
+                      statusLine2Color = 'text-red-600';
+                      statusLine2Bg = 'bg-red-50';
+                      statusLine2HoverBg = 'hover:bg-red-100';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
                       statusLine1Color = 'text-blue-600';
@@ -1292,10 +1158,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       statusLine1Color = 'text-gray-700';
                       const total = summary.lastDistributionInstanceCount || 0;
                       const success = summary.lastDistributionSuccessCount ?? total;
-                      const isDeleteType = summary.lastRecordType === 'delete';
-                      statusLine2 = isDeleteType
-                        ? `已卸载(${success}/${total}成功)`
-                        : `已下发(${success}/${total}成功)`;
+                      statusLine2 = `已下发（${success}/${total}成功）`;
                       if (success === total) {
                         statusLine2Color = 'text-green-600';
                         statusLine2Bg = 'bg-green-50';
@@ -1312,7 +1175,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     <tr
                       key={skill.id}
                       onClick={() => handleViewDetail(skill.id)}
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group"
+                      className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group"
                     >
                       {/* 名称 / Slug — 固定左侧 */}
                       <td
@@ -1569,14 +1432,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                 下载
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleUninstall(skill.id)}
-                                disabled={distributing}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                                卸载
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
                                 onClick={() => handleDelete(skill.id)}
                                 disabled={distributing}
                                 className="text-red-600 focus:text-red-600"
@@ -1622,22 +1477,6 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           onDistributionStart={handleDistributeStart}
           instances={MOCK_OPENCLAW_INSTANCES}
           groups={MOCK_GROUPS}
-        />
-      )}
-
-      {/* 批量卸载对话框 */}
-      {uninstallSkillId && (
-        <BatchDeleteDialog
-          open={uninstallDialogOpen}
-          onOpenChange={(open) => {
-            setUninstallDialogOpen(open);
-            if (!open) setUninstallSkillId(null);
-          }}
-          skillName={skills.find(s => s.id === uninstallSkillId)?.name || ''}
-          skillVersion={skills.find(s => s.id === uninstallSkillId)?.version}
-          distributedInstances={distributedInstancesForUninstall}
-          groups={MOCK_GROUPS}
-          onDeleteStart={handleUninstallStart}
         />
       )}
 
@@ -1733,6 +1572,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
+              <span className="relative group">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
+                </span>
+              </span>
             </AlertDialogTitle>
             <AlertDialogDescription>
               {securityServiceUsed >= 1000 ? (
@@ -1748,7 +1593,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               onClick={handleSecurityScanConfirm}
               disabled={securityServiceUsed >= 1000}
               className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
+              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
             >
               确认检测
             </AlertDialogAction>

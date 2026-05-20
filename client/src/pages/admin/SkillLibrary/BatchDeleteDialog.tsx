@@ -21,26 +21,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Search, AlertTriangle, ChevronDown, Check } from 'lucide-react';
 import type { Group } from './types';
 
-/** 卸载状态筛选选项（单选） */
-type UninstallFilterOption = 'all' | 'not_deleted' | 'delete_failed';
+/** 卸载状态筛选选项 */
+type UninstallFilterOption = 'not_deleted' | 'delete_failed';
 
 const UNINSTALL_FILTER_OPTIONS: { key: UninstallFilterOption; label: string }[] = [
-  { key: 'all', label: '全部' },
   { key: 'not_deleted', label: '未卸载' },
   { key: 'delete_failed', label: '卸载失败' },
 ];
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200, 500];
 
 interface BatchDeleteDialogProps {
   open: boolean;
@@ -74,15 +64,11 @@ export default function BatchDeleteDialog({
 }: BatchDeleteDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
-  /** 是否处于"选择全部"模式（跨页全选） */
-  const [selectAllMode, setSelectAllMode] = useState(false);
-  /** 状态单选筛选 */
-  const [statusFilter, setStatusFilter] = useState<UninstallFilterOption>('all');
+  /** 状态多选筛选 */
+  const [statusFilters, setStatusFilters] = useState<UninstallFilterOption[]>([]);
   /** 分组筛选：空数组=全部, 否则为选中的分组名列表（多选） */
   const [scopeFilters, setScopeFilters] = useState<string[]>([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
 
   /** 多选下拉展开状态 */
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
@@ -110,15 +96,12 @@ export default function BatchDeleteDialog({
     if (open) {
       setSearchQuery('');
       setSelectedInstances([]);
-      setSelectAllMode(false);
-      setStatusFilter('all');
+      setStatusFilters([]);
       setScopeFilters([]);
       setConfirmDialogOpen(false);
       setStatusDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
-      setCurrentPage(1);
-      setPageSize(20);
     }
   }, [open]);
 
@@ -153,61 +136,33 @@ export default function BatchDeleteDialog({
         const matchesUngrouped = hasUngrouped && (instGroup === '全部用户' || !instGroup);
         if (!matchesGroup && !matchesUngrouped) return false;
       }
-      // 状态过滤（单选）
-      if (statusFilter !== 'all') {
-        const instStatus = (inst.deleteStatus || 'not_deleted') as string;
-        if (instStatus !== statusFilter) return false;
+      // 状态过滤（多选）
+      if (statusFilters.length > 0) {
+        if ((statusFilters as any)[0] === '__none__') return false;
+        const instStatus = (inst.deleteStatus || 'not_deleted') as UninstallFilterOption;
+        if (!statusFilters.includes(instStatus)) return false;
       }
       return true;
     });
-  }, [distributedInstances, searchQuery, scopeFilters, statusFilter]);
+  }, [distributedInstances, searchQuery, scopeFilters, statusFilters]);
 
-  // 分页计算
-  const totalCount = filteredInstances.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const startIndex = (safeCurrentPage - 1) * pageSize;
-  const pagedInstances = filteredInstances.slice(startIndex, startIndex + pageSize);
-
-  // 全选判断：当前页级别
-  const pageIds = pagedInstances.map(inst => inst.id);
-  const selectedInPageCount = pageIds.filter(id => selectedInstances.includes(id)).length;
-  const isPageAllSelected = pageIds.length > 0 && selectedInPageCount === pageIds.length;
-  const isPageIndeterminate = selectedInPageCount > 0 && selectedInPageCount < pageIds.length;
-  // 跨页全选判断
-  const allFilteredIds = filteredInstances.map(inst => inst.id);
-  const isAllFilteredSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedInstances.includes(id));
+  // 全选/取消全选
+  const isAllSelected = filteredInstances.length > 0 && filteredInstances.every(inst => selectedInstances.includes(inst.id));
+  const isSomeSelected = filteredInstances.some(inst => selectedInstances.includes(inst.id)) && !isAllSelected;
 
   const toggleAll = () => {
-    if (isPageAllSelected) {
-      // 当前页已全选 → 清空当前页
-      setSelectedInstances(prev => prev.filter(id => !pageIds.includes(id)));
+    if (isAllSelected) {
+      setSelectedInstances(prev => prev.filter(id => !filteredInstances.some(inst => inst.id === id)));
     } else {
-      // 选中当前页所有
-      setSelectedInstances(prev => Array.from(new Set([...prev, ...pageIds])));
+      const newIds = filteredInstances.map(inst => inst.id);
+      setSelectedInstances(prev => Array.from(new Set([...prev, ...newIds])));
     }
   };
 
-  /** 选择全部（跨页）—— 选中所有筛选后的实例 */
-  const handleSelectAllFiltered = () => {
-    setSelectedInstances(prev => Array.from(new Set([...prev, ...allFilteredIds])));
-    setSelectAllMode(true);
-  };
-
-  /** 取消选择全部 */
-  const handleDeselectAll = () => {
-    setSelectedInstances([]);
-    setSelectAllMode(false);
-  };
-
   const toggleInstance = (id: string) => {
-    setSelectedInstances(prev => {
-      if (prev.includes(id)) {
-        setSelectAllMode(false);
-        return prev.filter(x => x !== id);
-      }
-      return [...prev, id];
-    });
+    setSelectedInstances(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   const handleDelete = () => {
@@ -223,12 +178,17 @@ export default function BatchDeleteDialog({
   };
 
   // 选中数量（在筛选范围内）
-  const selectedInFilterCount = allFilteredIds.filter(id => selectedInstances.includes(id)).length;
+  const selectedInFilterCount = filteredInstances.filter(inst => selectedInstances.includes(inst.id)).length;
+
+  /** 是否为全部状态 */
+  const isAllStatusSelected = statusFilters.length === 0 || statusFilters.length === UNINSTALL_FILTER_OPTIONS.length;
 
   /** 获取状态筛选显示文本 */
   const getStatusDisplayText = () => {
-    const opt = UNINSTALL_FILTER_OPTIONS.find(o => o.key === statusFilter);
-    return opt?.label || '全部';
+    if (statusFilters.length === 0) return '全部状态';
+    if ((statusFilters as any)[0] === '__none__') return '状态';
+    if (statusFilters.length === UNINSTALL_FILTER_OPTIONS.length) return '全部状态';
+    return statusFilters.map(k => UNINSTALL_FILTER_OPTIONS.find(o => o.key === k)?.label).filter(Boolean).join('、');
   };
 
   /** 获取分组筛选显示文本 */
@@ -455,23 +415,58 @@ export default function BatchDeleteDialog({
               </Tooltip>
               {statusDropdownOpen && (
                 <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
-                  {UNINSTALL_FILTER_OPTIONS.map(opt => (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => {
-                        setStatusFilter(opt.key);
-                        setStatusDropdownOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`flex items-center justify-between w-full px-3 py-2 text-sm transition-colors ${
-                        statusFilter === opt.key ? 'text-gray-900 bg-gray-50' : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <span>{opt.label}</span>
-                      {statusFilter === opt.key && <Check className="w-4 h-4 text-gray-500" />}
-                    </button>
-                  ))}
+                  {/* 全部状态 */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilters(prev => {
+                        if (isAllStatusSelected) return ['__none__'] as any;
+                        return [];
+                      });
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                      isAllStatusSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                    }`}>
+                      {isAllStatusSelected && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <span>全部状态</span>
+                  </button>
+                  {UNINSTALL_FILTER_OPTIONS.map(opt => {
+                    const isOptSelected = isAllStatusSelected || (!(statusFilters as any).includes('__none__') && statusFilters.includes(opt.key));
+                    return (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => {
+                          setStatusFilters(prev => {
+                            const cleaned = (prev as any).filter((k: string) => k !== '__none__') as UninstallFilterOption[];
+                            if (prev.length === 0) {
+                              return UNINSTALL_FILTER_OPTIONS.filter(o => o.key !== opt.key).map(o => o.key);
+                            }
+                            if (prev.length === UNINSTALL_FILTER_OPTIONS.length) {
+                              return UNINSTALL_FILTER_OPTIONS.filter(o => o.key !== opt.key).map(o => o.key);
+                            }
+                            const next = cleaned.includes(opt.key)
+                              ? cleaned.filter(k => k !== opt.key)
+                              : [...cleaned, opt.key];
+                            if (next.length === UNINSTALL_FILTER_OPTIONS.length) return [];
+                            if (next.length === 0) return ['__none__'] as any;
+                            return next;
+                          });
+                        }}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                          isOptSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                        }`}>
+                          {isOptSelected && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <span>{opt.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -479,33 +474,26 @@ export default function BatchDeleteDialog({
 
           {/* 实例列表 — 卡片式布局，参考下发弹窗 */}
           <div className="border border-gray-200 rounded-lg max-h-[340px] overflow-y-auto">
-            {/* 全选复选框 — 当前页全选 */}
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={isPageAllSelected}
-                  // @ts-ignore – indeterminate prop
-                  indeterminate={isPageIndeterminate}
-                  onCheckedChange={toggleAll}
-                />
-                <span className="text-sm font-medium text-gray-900">
-                  全选
-                </span>
-              </div>
-              {selectedInFilterCount > 0 && (
-                <span className="text-sm text-gray-500">
-                  已选 {selectedInFilterCount} 条
-                </span>
-              )}
+            {/* 全选复选框 */}
+            <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+              <Checkbox
+                checked={isAllSelected}
+                // @ts-ignore – indeterminate prop
+                indeterminate={isSomeSelected}
+                onCheckedChange={toggleAll}
+              />
+              <span className="text-sm font-medium text-gray-900">
+                全选（{selectedInFilterCount}/{filteredInstances.length}）
+              </span>
             </div>
 
             {/* 实例项 */}
-            {pagedInstances.length === 0 ? (
+            {filteredInstances.length === 0 ? (
               <div className="flex items-center justify-center py-8 text-sm text-gray-400">
                 暂无已下发的实例
               </div>
             ) : (
-              pagedInstances.map(inst => {
+              filteredInstances.map(inst => {
                 const isSelected = selectedInstances.includes(inst.id);
                 const deleteStatus = inst.deleteStatus || 'not_deleted';
                 return (
@@ -527,32 +515,29 @@ export default function BatchDeleteDialog({
                       <div className="flex items-baseline gap-3">
                         <span className="text-sm font-medium text-gray-900 truncate">{inst.name}</span>
                         <span className="text-xs text-gray-400 font-mono flex-shrink-0">{inst.id}</span>
+                        {deleteStatus === 'delete_failed' ? (
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 cursor-help ml-auto flex-shrink-0">
+                                卸载失败
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                              <span className="text-xs">{inst.deleteFailReason || '未知原因'}</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 ml-auto flex-shrink-0">
+                            未卸载
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
                         <span className="text-xs text-gray-500">创建人：{inst.createdBy}</span>
                         <span className="text-xs text-gray-500">分组：{inst.groupName || '全部用户'}</span>
-                      </div>
-                    </div>
-                    {/* 右侧：卸载状态 + 版本号 */}
-                    <div className="flex-shrink-0 text-right">
-                      {deleteStatus === 'delete_failed' ? (
-                        <Tooltip delayDuration={300}>
-                          <TooltipTrigger asChild>
-                            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600 cursor-help">
-                              卸载失败
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <span className="text-xs">{inst.deleteFailReason || '未知原因'}</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500">
-                          未卸载
+                        <span className="text-[11px] text-gray-400 ml-auto">
+                          v{inst.distributedVersion || skillVersion}
                         </span>
-                      )}
-                      <div className="text-[11px] text-gray-400 mt-0.5 text-center">
-                        v{inst.distributedVersion || skillVersion}
                       </div>
                     </div>
                   </div>
@@ -561,47 +546,12 @@ export default function BatchDeleteDialog({
             )}
           </div>
 
-          {/* 分页控件 */}
-          <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
-            <div className="flex items-center gap-1.5">
-              <span>共 {totalCount} 条，每页</span>
-              <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); setSelectedInstances([]); setSelectAllMode(false); }}>
-                <SelectTrigger className="w-16 h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PAGE_SIZE_OPTIONS.map(size => (
-                    <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span>条</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                disabled={safeCurrentPage <= 1}
-                onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); setSelectedInstances([]); setSelectAllMode(false); }}
-              >
-                上一页
-              </Button>
-              <span className="px-2 text-gray-600">{safeCurrentPage} / {totalPages}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                disabled={safeCurrentPage >= totalPages}
-                onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); setSelectedInstances([]); setSelectAllMode(false); }}
-              >
-                下一页
-              </Button>
-            </div>
-          </div>
-
           {/* 底部操作 */}
-          <div className="flex items-center justify-end pt-2 gap-3">
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-sm text-gray-500">
+              已选择 <span className="font-semibold text-gray-900">{selectedInstances.length}</span> 个实例
+            </span>
+            <div className="flex gap-3">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 取消
               </Button>
@@ -612,6 +562,7 @@ export default function BatchDeleteDialog({
               >
                 确认卸载
               </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

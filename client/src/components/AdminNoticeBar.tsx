@@ -149,10 +149,10 @@ export default function AdminNoticeBar() {
     >
       <div
         role="alert"
-        className={`relative w-full rounded-[4px] border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr_auto] grid-cols-[0_1fr_auto] has-[>svg]:gap-x-3 gap-y-0.5 items-center [&>svg]:size-4 [&>svg]:translate-y-0 [&>svg]:text-current ${
+        className={`relative w-full rounded-[4px] border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr_auto] grid-cols-[0_1fr_auto] has-[>svg]:gap-x-3 gap-y-0.5 items-center [&>svg]:size-4 [&>svg]:translate-y-0 ${
           isWarning
-            ? "border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-500"
-            : "border-blue-200 bg-blue-50 text-blue-950 [&>svg]:text-blue-500"
+            ? "border-amber-200 bg-amber-50 text-amber-950 [&>svg]:text-amber-950"
+            : "border-blue-200 bg-blue-50 text-blue-950 [&>svg]:text-blue-950"
         }`}
       >
         {/* 图标 */}

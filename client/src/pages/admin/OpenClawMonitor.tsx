@@ -53,7 +53,7 @@ import {
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
-  Pencil, Plus,
+  Pencil, Plus, Bell,
   TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
@@ -74,6 +74,10 @@ import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
+import BatchUpdateNotice, {
+  useOutdatedTypes,
+  HasOutdatedIndicator,
+} from "./BatchUpdateNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -1901,6 +1905,8 @@ export default function AgentMonitor() {
                 />
               </div>
             </div>
+            {/* 镜像更新提醒铃铛（与批量更新按钮同列） */}
+            <ImageUpdateBellEntry />
             {/* 批量更新按鈕 */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -3708,5 +3714,24 @@ export default function AgentMonitor() {
         }}
       />
     </TooltipProvider>
+  );
+}
+
+// ─── 工具栏铃铛入口：镜像更新提醒（独立组件，不污染主组件状态） ─────────────
+function ImageUpdateBellEntry() {
+  const outdated = useOutdatedTypes();
+  if (outdated.length === 0) return null;
+  return (
+    <BatchUpdateNotice outdated={outdated}>
+      <button
+        type="button"
+        title={`${outdated.length} 个 Agent 类型有新版本，可推送提醒员工更新`}
+        className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors shrink-0"
+        aria-label="镜像更新提醒"
+      >
+        <Bell className="w-4 h-4" />
+        <HasOutdatedIndicator outdated={outdated} />
+      </button>
+    </BatchUpdateNotice>
   );
 }

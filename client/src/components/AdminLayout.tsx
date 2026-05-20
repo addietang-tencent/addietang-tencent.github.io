@@ -33,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { AdminModeProvider } from "@/contexts/AdminModeContext";
 import { ADMIN_NAV_GROUPS } from "@/config/adminNav";
 
@@ -77,16 +77,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </Link>
               </AdminSidebarBrand>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AdminSidebarHeaderAction asChild>
-                    <Link href="/my-openclaw" aria-label="前往用户端">
-                      <GoTenantIcon />
-                    </Link>
-                  </AdminSidebarHeaderAction>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>前往用户端</TooltipContent>
-              </Tooltip>
+              <AdminSidebarHeaderAction asChild className="mt-2 size-auto w-full gap-2 rounded-[6px] px-2.5 py-1.5 text-[13px] font-normal">
+                <Link href="/my-openclaw">
+                  <GoTenantIcon />
+                  <span>前往用户端</span>
+                </Link>
+              </AdminSidebarHeaderAction>
             </AdminSidebarHeader>
 
             <AdminSidebarContent aria-label="管理后台导航">
@@ -122,7 +118,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
             <AdminSidebarFooter>
               <AdminSidebarUser name={CURRENT_ADMIN.name} role={CURRENT_ADMIN.role} />
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <AdminSidebarFooterAction aria-label="更多管理操作">
                     <MoreHorizontal />

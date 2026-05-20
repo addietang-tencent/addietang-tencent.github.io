@@ -18,7 +18,7 @@ import AgentDetail from "./pages/tenant/OpenClawDetail";
 import ModelQuota from "./pages/tenant/ModelQuota";
 import HelpDocs from "./pages/tenant/HelpDocs";
 import SkillSquare from "./pages/tenant/SkillSquare";
-import AgentTemplate from "./pages/admin/AgentTemplate";
+import ResourceManagement from "./pages/admin/ResourceManagement";
 import ResetPassword from "./pages/tenant/ResetPassword";
 
 // Admin
@@ -73,7 +73,7 @@ function Router() {
       <Route path="/admin/model-config" component={() => <AdminLayout><ModelConfig /></AdminLayout>} />
       <Route path="/admin/channel-config" component={() => <AdminLayout><ChannelConfig /></AdminLayout>} />
       <Route path="/admin/skill-config" component={() => <AdminLayout><SkillConfig /></AdminLayout>} />
-      <Route path="/admin/agent-template" component={() => <AdminLayout><AgentTemplate /></AdminLayout>} />
+      <Route path="/admin/resource-management" component={() => <AdminLayout><ResourceManagement /></AdminLayout>} />
       <Route path="/admin/image-management" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/agent-types" component={() => <AdminLayout><ImageManagement /></AdminLayout>} />
       <Route path="/admin/security-group" component={() => <AdminLayout><SecurityGroupManagement /></AdminLayout>} />

@@ -103,7 +103,7 @@ const NAV_GROUPS: NavGroup[] = [
         defaultExpanded: true,
         items: [
           { label: "Agent 类型", path: "/admin/agent-types", icon: HardDrive, badge: "原镜像管理" },
-          { label: "资源管理", path: "/admin/agent-template", icon: LayoutTemplate },
+          { label: "资源管理", path: "/admin/resource-management", icon: LayoutTemplate },
           { label: "网络管理", path: "/admin/security-group", icon: ShieldCheck },
         ],
       },

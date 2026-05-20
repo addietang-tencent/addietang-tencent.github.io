@@ -1,10 +1,10 @@
 /**
- * AgentTemplate - Agent 模板管理页
- * 管控端「云设备配置」分组下，供管理员统一管理和分发 Agent 模板
+ * ResourceManagement - 资源管理页
+ * 管控端「Agent 启动配置」分组下，供管理员统一管理和分发 Agent 资源模板
  */
 import { LayoutTemplate } from "lucide-react";
 
-export default function AgentTemplate() {
+export default function ResourceManagement() {
   return (
     <div className="p-8 max-w-4xl">
       {/* 页面标题区 */}
@@ -13,9 +13,9 @@ export default function AgentTemplate() {
           <LayoutTemplate className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-1.5">Agent 模板</h1>
+          <h1 className="text-xl font-semibold text-gray-900 mb-1.5">资源管理</h1>
           <p className="text-sm text-gray-500 leading-relaxed max-w-xl">
-            在此统一管理企业内可复用的 Agent 模板，包括预设的系统提示词、工具配置与模型参数。
+            在此统一管理企业内可复用的 Agent 资源模板，包括预设的系统提示词、工具配置与模型参数。
             管理员可发布模板供员工一键创建标准化 Agent，降低配置门槛，保障使用规范。
           </p>
         </div>

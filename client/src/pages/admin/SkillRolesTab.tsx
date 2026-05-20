@@ -399,7 +399,7 @@ function BatchUpdateDialog({
         ) : (
           <>
             {/* 列表容器 */}
-            <div className="border border-gray-200 rounded-xl max-h-[380px] overflow-y-auto">
+            <div className="border border-gray-200 rounded-xl max-h-[380px] overflow-y-auto scrollbar-on-hover">
               {/* 表头行 — sticky，左侧带全选 checkbox */}
               <div
                 className="grid items-center gap-2 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-20 cursor-pointer hover:bg-gray-100 transition-colors"

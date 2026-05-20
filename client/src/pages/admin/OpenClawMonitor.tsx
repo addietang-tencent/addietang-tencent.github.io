@@ -2675,7 +2675,7 @@ export default function AgentMonitor() {
             <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
           </div>
           <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
+          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl scrollbar-on-hover">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
@@ -2749,7 +2749,7 @@ export default function AgentMonitor() {
             <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
           </div>
           <p className="text-sm text-gray-600">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl">
+          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl scrollbar-on-hover">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#e5e5e5] bg-gray-50/60">

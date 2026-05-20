@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatusTag } from "@/components/ui/status-tag";
 import AgentTypeImagePicker from "./AgentTypeImagePicker";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
 import type { CustomAgentType } from "./types";
@@ -248,9 +249,7 @@ function AgentTypeRow({
               {customType && !isNative && kernelBaseLabel && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 cursor-default whitespace-nowrap">
-                      兼容 {kernelBaseLabel}
-                    </span>
+                    <StatusTag variant="blue">兼容 {kernelBaseLabel}</StatusTag>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
                     与 {kernelBaseLabel} 完全兼容，管控台功能保持一致
@@ -460,15 +459,9 @@ function AgentVersionCell({
       <div className="mt-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <span
-              className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border cursor-default whitespace-nowrap ${
-                isPublic
-                  ? "bg-blue-50 text-blue-700 border-blue-100"
-                  : "bg-purple-50 text-purple-700 border-purple-100"
-              }`}
-            >
+            <StatusTag variant={isPublic ? "blue" : "gray"}>
               {isPublic ? "腾讯云维护" : "企业自维护"}
-            </span>
+            </StatusTag>
           </TooltipTrigger>
           <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
             {isPublic
@@ -487,15 +480,9 @@ function ImageCombinedCell({ image }: { image: ViewImage }) {
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span
-          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border cursor-default whitespace-nowrap shrink-0 ${
-            isPublic
-              ? "bg-blue-50 text-blue-700 border-blue-100"
-              : "bg-purple-50 text-purple-700 border-purple-100"
-          }`}
-        >
+        <StatusTag variant={isPublic ? "blue" : "gray"}>
           {isPublic ? "公共" : "自定义"}
-        </span>
+        </StatusTag>
         <span className="text-sm font-medium text-gray-900 truncate">
           {image.name}
         </span>

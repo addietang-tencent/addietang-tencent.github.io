@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StatusTag } from "@/components/ui/status-tag";
 
 // Mock 数据 - Persona
 const mockPersona = `# 用户画像
@@ -948,9 +949,7 @@ export function MemoryPreview({
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-semibold text-gray-900">Memory Free 服务</h2>
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-medium rounded-full">
-                  已开启
-                </span>
+                <StatusTag variant="blue">已开启</StatusTag>
               </div>
               <p className="text-sm text-gray-500 mt-1">
                 让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。

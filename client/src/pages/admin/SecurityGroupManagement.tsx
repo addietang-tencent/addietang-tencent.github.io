@@ -17,6 +17,7 @@ import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
 } from "@/components/ui/command";
 import { toast } from "sonner";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
@@ -1348,15 +1349,13 @@ function CreateSecurityGroupDialog({
                             <td className="px-3 py-2 text-gray-700">{rule.port}</td>
                             <td className="px-3 py-2">
                               {rule.policy === "允许" ? (
-                                <span className="badge-running !text-xs !font-normal !px-1.5 !py-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                                <StatusTag variant="green" dot>
                                   {rule.policy}
-                                </span>
+                                </StatusTag>
                               ) : (
-                                <span className="badge-stopped !text-xs !font-normal !px-1.5 !py-0.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                                <StatusTag variant="gray" dot>
                                   {rule.policy}
-                                </span>
+                                </StatusTag>
                               )}
                             </td>
                             <td className="px-3 py-2 text-gray-400">{rule.remark || "—"}</td>
@@ -2962,15 +2961,13 @@ export default function SecurityGroupManagement() {
                   <td className="px-6 py-4 text-sm text-gray-700">{rule.port}</td>
                   <td className="px-6 py-4">
                     {rule.policy === "允许" ? (
-                      <span className="badge-running">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                      <StatusTag variant="green" dot>
                         {rule.policy}
-                      </span>
+                      </StatusTag>
                     ) : (
-                      <span className="badge-stopped">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                      <StatusTag variant="gray" dot>
                         {rule.policy}
-                      </span>
+                      </StatusTag>
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">{rule.remark || "—"}</td>
@@ -3000,10 +2997,7 @@ export default function SecurityGroupManagement() {
               <tr>
                 <td colSpan={readonly ? 5 : 6} className="px-6 py-8">
                   {type === "outbound" ? (
-                    <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 max-w-lg mx-auto">
-                      <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                      <p className="text-sm text-amber-800 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
-                    </div>
+                    <p className="text-sm text-[#737373] leading-relaxed text-center">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
                   ) : (
                     <p className="text-center text-sm text-gray-400">暂无入站规则</p>
                   )}
@@ -3564,7 +3558,7 @@ export default function SecurityGroupManagement() {
                     {securityTab === "outbound" ? (
                       <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 max-w-lg w-full">
                         <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                        <p className="text-sm text-amber-800 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                        <p className="text-sm text-[#181818] leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
                       </div>
                     ) : (
                       <>

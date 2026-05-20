@@ -45,6 +45,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -1847,8 +1848,8 @@ export default function AgentMonitor() {
                 <div>
                   <p className="text-xs font-semibold text-gray-500 mb-1.5">◎ 处理中</p>
                   <div className="flex gap-1">
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 whitespace-nowrap">创建中</span>
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 whitespace-nowrap">加载中</span>
+                    <StatusTag variant="blue">创建中</StatusTag>
+                    <StatusTag variant="blue">加载中</StatusTag>
                   </div>
                 </div>
               </div>
@@ -2328,9 +2329,9 @@ export default function AgentMonitor() {
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
+                                    <StatusTag variant="gray" className="max-w-[160px] truncate cursor-default">
                                       {item.path}
-                                    </span>
+                                    </StatusTag>
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
                                     <div className="py-2">
@@ -2356,9 +2357,9 @@ export default function AgentMonitor() {
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle cursor-default">
+                                    <StatusTag variant="gray" className="max-w-[160px] truncate cursor-default">
                                       {item.path}
-                                    </span>
+                                    </StatusTag>
                                   </TooltipTrigger>
                                   <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
                                     <div className="py-2">
@@ -3153,14 +3154,9 @@ export default function AgentMonitor() {
                               )}
                             </div>
                             {isOpenClaw && (isPrimary ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-green-50 text-green-600 border border-green-100 pointer-events-none shrink-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                                主模型
-                              </span>
+                              <StatusTag variant="green" dot>主模型</StatusTag>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500 pointer-events-none shrink-0">
-                                备选模型
-                              </span>
+                              <StatusTag variant="gray">备选模型</StatusTag>
                             ))}
                             <div className="flex items-center gap-1 shrink-0">
                               {isOpenClaw && !isPrimary && (

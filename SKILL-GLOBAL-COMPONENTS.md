@@ -186,6 +186,7 @@ description: >
 |------|---------|
 | Tabs | 活跃态 `#355EF1` + 底色 `#f3f3f4` |
 | Segment | 活跃态 `#020617 font-semibold` 白底阴影 + 底色 `#f3f3f4` |
+| StatusTag | green `#E9F8EB/#008236` · gray `#F5F5F5/#0A0A0A` · blue `#E8ECFE/#1447E6` |
 | Textarea | 与 Input 一致 |
 | Badge | `rounded-full` + 品牌色 variants |
 | DropdownMenu | `rounded-[8px]` + 三层阴影 + hover `bg-[#f5f5f5]` |

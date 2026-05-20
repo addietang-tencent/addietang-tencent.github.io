@@ -1153,15 +1153,14 @@ export default function ImageManagement() {
           <button
             type="button"
             onClick={() => setShowCreateCustomDialog(true)}
-            className="mt-4 w-full rounded-[4px] border-2 border-dashed border-blue-200 bg-blue-50/40 hover:bg-blue-50/70 hover:border-blue-300 transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
+            className="mt-4 w-full rounded-[4px] border border-dashed border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] hover:border-[#d3d6db] transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
           >
             <span
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full text-white group-hover:scale-105 transition-transform"
-              style={{ background: "linear-gradient(90deg, #020617 70%, #1447E6 100%)" }} // allow-inline-gradient: 圆形装饰图标使用主 CTA 渐变
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-[#e5e5e5] bg-white text-[#020617] group-hover:border-[#355EF1] group-hover:text-[#355EF1] transition-colors"
             >
               <Plus className="w-5 h-5" />
             </span>
-            <span className="text-sm font-medium text-[#1447E6]">添加自定义 Agent 类型</span>
+            <span className="text-sm font-medium text-[#020617]">添加自定义 Agent 类型</span>
             <span className="text-xs text-[#737373]">
               支持基于现有 Agent 内核拓展，或添加完全自定义的 Agent 类型
             </span>

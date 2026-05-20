@@ -40,6 +40,7 @@ import {
   BookOpen,
   ArrowUpRight,
 } from "lucide-react";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   SITE_CONFIG,
   MOCK_SSO_IM_TYPE_OPTIONS,
@@ -153,14 +154,9 @@ function StepCard({
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
             {done ? (
-              <span className="text-xs font-medium text-green-600 bg-green-50 border border-green-100 px-1.5 py-0.5 rounded-full">
-                已完成
-              </span>
+              <StatusTag variant="green" dot>已完成</StatusTag>
             ) : (
-              <span className="text-xs font-medium text-orange-500 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                待完成
-              </span>
+              <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
           <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
@@ -819,16 +815,9 @@ export default function StandardBasicInfo() {
                   </div>
                   <div className="flex-1 min-w-0 pb-0.5">
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <span
-                        className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                          item.type === "feature"
-                            ? "bg-blue-50 text-blue-600"
-                            : "bg-purple-50 text-purple-600"
-                        }`}
-                        style={{ fontSize: "10px" }}
-                      >
+                      <StatusTag variant={item.type === "feature" ? "blue" : "gray"}>
                         {item.type === "feature" ? "功能上线" : "体验优化"}
-                      </span>
+                      </StatusTag>
                     </div>
                     <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
                     <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>

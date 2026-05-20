@@ -8,6 +8,7 @@ import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -2708,13 +2709,13 @@ export default function MemberManagement() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                  <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle">
+                                  <StatusTag variant="gray" className="max-w-[160px] truncate">
                                     {mmGroupItems[0].path}
-                                  </span>
+                                  </StatusTag>
                                   {mmGroupItems.length > 1 && (
-                                    <span className="badge-shutdown whitespace-nowrap">
+                                    <StatusTag variant="gray">
                                       +{mmGroupItems.length - 1}
-                                    </span>
+                                    </StatusTag>
                                   )}
                                 </span>
                               </TooltipTrigger>
@@ -2752,13 +2753,13 @@ export default function MemberManagement() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                <span className="badge-shutdown max-w-[160px] truncate inline-block align-middle">
+                                <StatusTag variant="gray" className="max-w-[160px] truncate">
                                   {manualGroupPaths[0].path}
-                                </span>
+                                </StatusTag>
                                 {manualGroupPaths.length > 1 && (
-                                  <span className="badge-shutdown whitespace-nowrap">
+                                  <StatusTag variant="gray">
                                     +{manualGroupPaths.length - 1}
-                                  </span>
+                                  </StatusTag>
                                 )}
                               </span>
                             </TooltipTrigger>
@@ -2777,15 +2778,15 @@ export default function MemberManagement() {
                     </td>
                   )}
                   <td className="px-3 py-4 whitespace-nowrap">
-                    <Badge variant="outline" className={member.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50" : "border-gray-200 text-gray-500"}>
+                    <StatusTag variant={member.role === "admin" ? "blue" : "gray"}>
                       {member.role === "admin" ? "管理员" : "用户"}
-                    </Badge>
+                    </StatusTag>
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
                     {member.status === "active" ? (
-                      <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
+                      <StatusTag variant="green" dot>正常</StatusTag>
                     ) : (
-                      <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
+                      <StatusTag variant="gray" dot>禁用</StatusTag>
                     )}
                   </td>
                   <td className="px-3 py-4">
@@ -3462,10 +3463,7 @@ export default function MemberManagement() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <span className="badge-stopped">
-                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                              禁用
-                            </span>
+                            <StatusTag variant="gray" dot>禁用</StatusTag>
                           </td>
                         </tr>
                       ))}
@@ -4040,7 +4038,7 @@ export default function MemberManagement() {
                   {hasRelatedConfigs ? (
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {configs.filter((c) => c.items.length > 0).map((c) => (
-                        <span key={c.type} className="badge-shutdown">{c.type}({c.items.length})</span>
+                        <StatusTag key={c.type} variant="gray">{c.type}({c.items.length})</StatusTag>
                       ))}
                     </div>
                   ) : (
@@ -4192,13 +4190,13 @@ export default function MemberManagement() {
                         <span className="text-xs text-gray-400 block truncate">{groupDisplay}</span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <Badge variant="outline" className={m.role === "admin" ? "border-blue-200 text-blue-600 bg-blue-50 text-xs" : "border-gray-200 text-gray-500 text-xs"}>
+                        <StatusTag variant={m.role === "admin" ? "blue" : "gray"}>
                           {m.role === "admin" ? "管理员" : "用户"}
-                        </Badge>
+                        </StatusTag>
                         {m.status === "active" ? (
-                          <span className="badge-running text-xs"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />正常</span>
+                          <StatusTag variant="green" dot>正常</StatusTag>
                         ) : (
-                          <span className="badge-stopped text-xs"><span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />禁用</span>
+                          <StatusTag variant="gray" dot>禁用</StatusTag>
                         )}
                       </div>
                     </label>

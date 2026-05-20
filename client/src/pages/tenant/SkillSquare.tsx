@@ -463,6 +463,7 @@ export default function SkillSquare() {
             onClick={() => setSelectedCategory('all')}
             variant={selectedCategory === 'all' ? 'default' : 'outline'}
             size="sm"
+            className={selectedCategory === 'all' ? '!bg-[#020617] !bg-none !border !border-[#020617] hover:!bg-[#0A0F1F] hover:!bg-none' : undefined}
           >
             全部
           </Button>
@@ -472,6 +473,7 @@ export default function SkillSquare() {
               onClick={() => setSelectedCategory(cat.id)}
               variant={selectedCategory === cat.id ? 'default' : 'outline'}
               size="sm"
+              className={selectedCategory === cat.id ? '!bg-[#020617] !bg-none !border !border-[#020617] hover:!bg-[#0A0F1F] hover:!bg-none' : undefined}
             >
               {cat.name}
             </Button>

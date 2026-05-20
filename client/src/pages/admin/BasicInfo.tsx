@@ -644,7 +644,7 @@ export default function BasicInfo() {
                     <div className="w-2 h-3 mb-3 border-l border-black/9 ml-[1px]" />
                   )}
                   {/* 条目 */}
-                  <div className="flex flex-col gap-1 cursor-pointer group/item">
+                  <div className="flex flex-col gap-1">
                     {/* 图标 + 标签行 */}
                     <div className="flex items-center justify-between">
                       <img
@@ -657,9 +657,9 @@ export default function BasicInfo() {
                       </StatusTag>
                     </div>
                     {/* 标题 */}
-                    <p className="text-xs font-medium text-black leading-5 group-hover/item:text-[#355EF1] transition-colors">{item.title}</p>
+                    <p className="text-xs font-medium text-black leading-5">{item.title}</p>
                     {/* 描述 */}
-                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden group-hover/item:text-[#355EF1] transition-colors">{item.summary}</p>
+                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
                     {/* 日期 */}
                     <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">{item.date}</p>
                   </div>

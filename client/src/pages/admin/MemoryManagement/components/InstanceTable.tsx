@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  Bot,
   X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -28,12 +27,9 @@ const SkeletonRow: React.FC = () => (
   <tr>
     <td className="w-12 px-4 py-4"><Skeleton className="w-4 h-4 rounded" /></td>
     <td className="px-6 py-4">
-      <div className="flex items-center gap-2.5">
-        <Skeleton className="w-7 h-7 rounded-xl" />
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-3 w-32" />
-        </div>
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-3 w-32" />
       </div>
     </td>
     <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
@@ -1178,28 +1174,23 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                     </td>
                     {/* 名称/ID */}
                     <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-3.5 h-3.5 text-white" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{oc.name}</div>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-xs break-all">{oc.name}</TooltipContent>
-                          </Tooltip>
-                          {onOpenDetail ? (
-                            <button
-                              onClick={() => onOpenDetail(oc)}
-                              className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
-                            >
-                              {oc.id}
-                            </button>
-                          ) : (
-                            <span className="text-xs font-mono text-blue-500">{oc.id}</span>
-                          )}
-                        </div>
+                      <div className="min-w-0">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{oc.name}</div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs max-w-xs break-all">{oc.name}</TooltipContent>
+                        </Tooltip>
+                        {onOpenDetail ? (
+                          <button
+                            onClick={() => onOpenDetail(oc)}
+                            className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
+                          >
+                            {oc.id}
+                          </button>
+                        ) : (
+                          <span className="text-xs font-mono text-blue-500">{oc.id}</span>
+                        )}
                       </div>
                     </td>
                     {/* 创建人 */}

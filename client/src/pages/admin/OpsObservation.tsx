@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Eye, EyeOff } from "lucide-react";
 import { AgentCombobox } from "@/components/OpenClawCombobox";
@@ -494,16 +497,15 @@ export default function OpsObservation() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="cls-agreement"
                     checked={clsAgreed}
-                    onChange={(e) => setClsAgreed(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    onCheckedChange={(checked) => setClsAgreed(checked === true)}
+                    className="mt-1"
                   />
-                  <label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1">
+                  <Label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1 font-normal leading-relaxed">
                     为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
-                  </label>
+                  </Label>
                 </div>
               </div>
               <DialogFooter>
@@ -556,7 +558,7 @@ export default function OpsObservation() {
             </div>
 
             {/* 分割线 */}
-            <div className="border-t border-gray-200" />
+            <Separator />
 
             {/* 第二块：CLS 新增功能 */}
             <div>
@@ -596,42 +598,42 @@ export default function OpsObservation() {
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
           <div className="overflow-y-auto max-h-80 scrollbar-on-hover">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>版本号</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ flex: 1 }}>更新内容</th>
-                  <th className="text-center px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>状态</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="text-xs">
+              <TableHeader>
+                <TableRow className="bg-gray-50 hover:bg-gray-50">
+                  <TableHead className="px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>版本号</TableHead>
+                  <TableHead className="px-3 py-2 font-semibold text-gray-700">更新内容</TableHead>
+                  <TableHead className="px-3 py-2 font-semibold text-gray-700 text-center" style={{ width: '100px' }}>状态</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {CLS_PLUGIN_VERSIONS.map((v) => {
                   // 只允许选择比当前版本（v3）更高的版本
                   const isUpgradeable = v.status !== 'current' && v.status !== 'deprecated';
                   return (
-                  <tr
+                  <TableRow
                     key={v.version}
                     onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                    className={`border-b border-[#e5e5e5] ${
+                    className={`${
                       isUpgradeable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                     } transition-colors ${
                       selectedPluginVersion?.version === v.version
-                        ? "bg-blue-50"
-                        : isUpgradeable ? "hover:bg-gray-50" : ""
+                        ? "bg-blue-50 hover:bg-blue-50"
+                        : isUpgradeable ? "hover:bg-gray-50" : "hover:bg-transparent"
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap" style={{ width: '100px' }}>{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ flex: 1 }}>{v.changelog}</td>
-                    <td className="px-3 py-2 text-center" style={{ width: '100px' }}>
+                    <TableCell className="px-3 py-2 font-medium text-gray-900" style={{ width: '100px' }}>{v.version}</TableCell>
+                    <TableCell className="px-3 py-2 text-gray-600">{v.changelog}</TableCell>
+                    <TableCell className="px-3 py-2 text-center" style={{ width: '100px' }}>
                       {v.status === 'current' && (
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">当前版本</span>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
           <DialogFooter>
             <Button
@@ -769,16 +771,19 @@ export default function OpsObservation() {
       {/* OTEL Metrics Dashboard */}
       <div>
         <h2 className="text-lg font-bold text-gray-900 mb-4">OTEL 指标大盘</h2>
+        <TooltipProvider delayDuration={150}>
         <div className="grid grid-cols-3 gap-6">
           {/* Message Processing */}
           <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="group relative">
-                <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
-                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start">
                   已处理完成：已成功处理完成的消息数量；等待处理：等待处理的消息数量
-                </div>
-              </div>
+                </TooltipContent>
+              </UITooltip>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={messageProcessData}>
@@ -791,37 +796,39 @@ export default function OpsObservation() {
               </LineChart>
             </ResponsiveContainer>
             <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
-                  <span className="text-gray-600">已处理完成的消息数量</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  已成功处理完成的消息数量
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
-                  <span className="text-gray-600">等待处理的消息数量</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  等待处理的消息数量
-                </div>
-              </div>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
+                    <span className="text-gray-600">已处理完成的消息数量</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">已成功处理完成的消息数量</TooltipContent>
+              </UITooltip>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
+                    <span className="text-gray-600">等待处理的消息数量</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">等待处理的消息数量</TooltipContent>
+              </UITooltip>
             </div>
           </div>
 
           {/* Queue Status */}
           <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="group relative">
-                <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
-                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 z-10 w-max">
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start">
                   <div>队列长度 P95：95% 的时间队列长度不超过此值，反映队列拥堵程度</div>
                   <div>等待时间 P95：95% 的消息等待时间不超过此值，反映队列延迟</div>
-                </div>
-              </div>
+                </TooltipContent>
+              </UITooltip>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={queueStatusData}>
@@ -834,37 +841,39 @@ export default function OpsObservation() {
               </LineChart>
             </ResponsiveContainer>
             <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B5CF6' }} />
-                  <span className="text-gray-600">队列长度 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的时间队列长度不超过此值，反映队列拥堵程度
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06B6D4' }} />
-                  <span className="text-gray-600">等待时间 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的消息等待时间不超过此值，反映队列延迟
-                </div>
-              </div>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B5CF6' }} />
+                    <span className="text-gray-600">队列长度 P95</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">95% 的时间队列长度不超过此值，反映队列拥堵程度</TooltipContent>
+              </UITooltip>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06B6D4' }} />
+                    <span className="text-gray-600">等待时间 P95</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">95% 的消息等待时间不超过此值，反映队列延迟</TooltipContent>
+              </UITooltip>
             </div>
           </div>
 
           {/* Run Duration */}
           <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="group relative">
-                <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
-                <div className="invisible group-hover:visible absolute left-0 top-full mt-1 bg-gray-900 text-white text-xs rounded px-2 py-1 z-10 w-max">
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start">
                   <div>处理耗时 P50：50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</div>
                   <div>处理耗时 P95：95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</div>
-                </div>
-              </div>
+                </TooltipContent>
+              </UITooltip>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={runDurationData}>
@@ -877,27 +886,28 @@ export default function OpsObservation() {
               </LineChart>
             </ResponsiveContainer>
             <div className="flex gap-4 mt-3 text-xs flex-wrap">
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
-                  <span className="text-gray-600">处理耗时 P50</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险
-                </div>
-              </div>
-              <div className="group relative cursor-help inline-flex items-center gap-1">
-                <span className="inline-flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
-                  <span className="text-gray-600">处理耗时 P95</span>
-                </span>
-                <div className="invisible group-hover:visible absolute bottom-full left-0 mb-2 bg-gray-900 text-white rounded px-2 py-1 z-50 w-max whitespace-nowrap text-xs">
-                  95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验
-                </div>
-              </div>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
+                    <span className="text-gray-600">处理耗时 P50</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</TooltipContent>
+              </UITooltip>
+              <UITooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 cursor-help">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
+                    <span className="text-gray-600">处理耗时 P95</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start">95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</TooltipContent>
+              </UITooltip>
             </div>
           </div>
         </div>
+        </TooltipProvider>
       </div>
         </>
       )}
@@ -965,13 +975,12 @@ export default function OpsObservation() {
               </p>
             </div>
             <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
+              <Checkbox
+                id="free-quota-agreement"
                 checked={freeQuotaAgreed}
-                onChange={(e) => setFreeQuotaAgreed(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                onCheckedChange={(checked) => setFreeQuotaAgreed(checked === true)}
               />
-              <span className="text-sm text-gray-700">我已阅读并同意免费额度说明</span>
+              <Label htmlFor="free-quota-agreement" className="text-sm text-gray-700 cursor-pointer font-normal">我已阅读并同意免费额度说明</Label>
             </label>
           </div>
           <DialogFooter className="flex gap-2 justify-end">

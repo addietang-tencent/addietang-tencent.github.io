@@ -41,7 +41,9 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
     // 底部分割线由绝对定位的子元素实现「100vw」贯穿全视口
     <div className="relative" style={{ height: "112px" }}>
       {/* 358:2325 / 363:5079 - 页面引导语：高 112 / padding 0 42 / 左右竖线 / 无底色
-          overflow:hidden 兜底，防止副文/按钮意外换行撑高 */}
+          overflow:hidden 兜底，防止副文/按钮意外换行撑高
+          alignItems: flex-start 让子元素宽度 hug 内容，避免标题用 fit-content 时
+          每次父级 reflow 都重新测量渐变文字宽度（这是关闭 QuickStart 时标题抖动的根因之一）*/}
       <div
         style={{
           height: "112px",
@@ -51,11 +53,16 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
+          alignItems: "flex-start",
           gap: "8px",
           overflow: "hidden",
         }}
       >
-        {/* 主标题：黑→蓝渐变文字 */}
+        {/* 主标题：黑→蓝渐变文字
+            - 用 inline-block + alignSelf:flex-start 让宽度 hug 内容，
+              比 width: fit-content 在父级 flex 重排时更稳定（不会反复重测内容宽度）。
+            - transform: translateZ(0) 把标题提升到独立合成层，
+              关闭 QuickStartGuide 时父级 DOM 变更不会触发渐变文字的子像素重绘抖动。 */}
         <h1
           style={{
             fontFamily:
@@ -71,8 +78,9 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
             color: "transparent",
-            // 单行宽度自适应（hug），不强制断行
-            width: "fit-content",
+            display: "inline-block",
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
           }}
         >
           快速创建你的专属 AI 助理
@@ -81,8 +89,18 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
         {/*
           副文 + 「查看步骤指引」按钮 - Figma 363:5486 row gap 8 align-center hug
           只有传入 onShowQuickStart 时才渲染按钮（即 QuickStart 已被关闭时）
+
+          ⚠️ 抖动修复：两态副文行的渲染高度不同会导致标题跳动 ——
+            · 展开态：只有 <p>，外盒高度 = lineHeight 22.22px
+            · 关闭态：<p> + 按钮，外盒高度被按钮（padding 2/2 + border 1/1 + 内文 20 = 26px）撑高到 ~26px
+            高度差 ~3.78px，叠加父级 column flex justify-center 后，标题 y 坐标
+            会瞬时上移 ~1.89px，肉眼看就是关闭瞬间「标题抖一下」。
+          解法：把副文行外盒高度恒定锁在 26px（按钮态高度），两态都不再变化。
         */}
-        <div className="flex items-center" style={{ gap: "8px" }}>
+        <div
+          className="flex items-center"
+          style={{ gap: "8px", height: "26px" }}
+        >
           {/* 副文案：muted-foreground */}
           <p
             style={{

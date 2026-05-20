@@ -1,11 +1,11 @@
 /**
- * PushUpgradeDialog - 推送更新提醒弹窗
+ * PushUpgradeDialog - 推送更新提醒弹窗（支持 Agent 类型多选）
  *
  * 心智：
  *   推送是声音放大 = "管理员让员工知道：你的实例和当前生效镜像版本不一致"
  *   - 不需要选目标版本：版本由"当前启用镜像"决定
  *   - 不需要选实例范围：默认就是该类型下所有"实例版本 ≠ 启用版本"的员工
- *   - 弹窗里只让用户选「Agent 类型」
+ *   - 弹窗里只让用户选「Agent 类型」（支持多选）
  *
  * 可推送条件：
  *   - 该类型已启用某镜像（启用版本存在）
@@ -21,14 +21,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Megaphone, Info, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { setActivePush, type ActivePush } from "@/lib/upgradePushStore";
@@ -79,49 +73,73 @@ export default function PushUpgradeDialog({
     [pushable],
   );
 
-  const [selectedType, setSelectedType] = useState<string>("");
+  // 多选：保存被选中的 agentType 列表
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     if (!open) return;
-    // 优先用默认值，否则用第一个可选
+    // 优先用默认值；否则默认全选
     if (defaultAgentType && selectable.some((p) => p.agentType === defaultAgentType)) {
-      setSelectedType(defaultAgentType);
+      setSelectedTypes([defaultAgentType]);
     } else if (selectable.length > 0) {
-      setSelectedType(selectable[0].agentType);
+      setSelectedTypes(selectable.map((p) => p.agentType));
     } else {
-      setSelectedType("");
+      setSelectedTypes([]);
     }
   }, [open, defaultAgentType, selectable]);
 
-  const selected = useMemo(
-    () => pushable.find((p) => p.agentType === selectedType),
-    [pushable, selectedType],
+  const selectedItems = useMemo(
+    () => pushable.filter((p) => selectedTypes.includes(p.agentType) && !p.allUpToDate),
+    [pushable, selectedTypes],
   );
 
-  const canPush = !!selected && !selected.allUpToDate;
+  const totalOutdated = useMemo(
+    () => selectedItems.reduce((sum, p) => sum + p.outdatedInstanceCount, 0),
+    [selectedItems],
+  );
+
+  const allSelectableChecked =
+    selectable.length > 0 && selectable.every((p) => selectedTypes.includes(p.agentType));
+  const someSelectableChecked = selectable.some((p) => selectedTypes.includes(p.agentType));
+
+  const toggleOne = (agentType: string, checked: boolean) => {
+    setSelectedTypes((prev) =>
+      checked ? [...new Set([...prev, agentType])] : prev.filter((t) => t !== agentType),
+    );
+  };
+
+  const toggleAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTypes(selectable.map((p) => p.agentType));
+    } else {
+      setSelectedTypes([]);
+    }
+  };
+
+  const canPush = selectedItems.length > 0;
 
   const handleConfirm = () => {
-    if (!selected) {
-      toast.error("请选择 Agent 类型");
+    if (selectedItems.length === 0) {
+      toast.error("请至少选择一个 Agent 类型");
       return;
     }
-    if (selected.allUpToDate) {
-      toast.error("该类型下所有实例已是最新版，无需推送");
-      return;
-    }
-    const push: ActivePush = {
-      agentType: selected.agentType,
-      agentTypeLabel: selected.agentTypeLabel,
-      version: selected.enabledVersion,
-      imageName: selected.imageName,
-      imageSource: selected.imageSource,
-      pushedAt: nowStr(),
-      pushedBy,
-      message: `管理员推荐更新到 v${selected.enabledVersion}`,
-    };
-    setActivePush(push);
+    const ts = nowStr();
+    selectedItems.forEach((item) => {
+      const push: ActivePush = {
+        agentType: item.agentType,
+        agentTypeLabel: item.agentTypeLabel,
+        version: item.enabledVersion,
+        imageName: item.imageName,
+        imageSource: item.imageSource,
+        pushedAt: ts,
+        pushedBy,
+        message: `管理员推荐更新到 v${item.enabledVersion}`,
+      };
+      setActivePush(push);
+    });
+    const labels = selectedItems.map((p) => p.agentTypeLabel).join("、");
     toast.success(
-      `已向「${selected.agentTypeLabel}」的 ${selected.outdatedInstanceCount} 个旧版本 Agent 推送更新提醒`,
+      `已向「${labels}」共 ${totalOutdated} 个旧版本 Agent 推送更新提醒`,
     );
     onOpenChange(false);
   };
@@ -140,88 +158,109 @@ export default function PushUpgradeDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-1">
-          {/* 1. Agent 类型选择 */}
+          {/* 1. Agent 类型多选 */}
           <div className="space-y-2">
-            <Label className="text-xs">
-              Agent 类型 <span className="text-red-400">*</span>
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">
+                Agent 类型 <span className="text-red-400">*</span>
+                <span className="ml-1 text-[#A3A3A3]">（可多选）</span>
+              </Label>
+              {selectable.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggleAll(!allSelectableChecked)}
+                  className="text-[11px] text-[#1447E6] hover:opacity-80"
+                >
+                  {allSelectableChecked ? "取消全选" : "全选"}
+                </button>
+              )}
+            </div>
             {pushable.length === 0 ? (
               <div className="text-xs text-[#737373] bg-[#FAFAFA] rounded-[4px] px-3 py-3 text-center">
                 暂无已启用的 Agent 类型，请先到表格中启用一个镜像
               </div>
             ) : (
-              <Select
-                value={selectedType}
-                onValueChange={setSelectedType}
-                disabled={selectable.length === 0}
-              >
-                <SelectTrigger className="bg-[#FAFAFA] w-full h-auto py-2">
-                  <SelectValue
-                    placeholder={
-                      selectable.length === 0
-                        ? "全部类型实例已是最新版"
-                        : "选择要推送的 Agent 类型"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {pushable.map((p) => (
-                    <SelectItem
+              <div className="rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] divide-y divide-[#E5E5E5] max-h-[280px] overflow-y-auto">
+                {pushable.map((p) => {
+                  const checked = selectedTypes.includes(p.agentType);
+                  const disabled = p.allUpToDate;
+                  return (
+                    <label
                       key={p.agentType}
-                      value={p.agentType}
-                      disabled={p.allUpToDate}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 transition-colors ${
+                        disabled
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer hover:bg-white"
+                      }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0">
+                      <Checkbox
+                        checked={checked}
+                        disabled={disabled}
+                        onCheckedChange={(c) => toggleOne(p.agentType, c === true)}
+                      />
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         {p.imageSource === "custom" && (
                           <Sparkles className="w-3 h-3 text-purple-500 shrink-0" />
                         )}
-                        <span className="font-medium">{p.agentTypeLabel}</span>
-                        <span className="text-[11px] text-[#A3A3A3] font-mono tabular-nums">
+                        <span className="text-sm font-medium text-[#0A0A0A] truncate">
+                          {p.agentTypeLabel}
+                        </span>
+                        <span className="text-[11px] text-[#A3A3A3] font-mono tabular-nums shrink-0">
                           v{p.enabledVersion}
                         </span>
-                        {p.allUpToDate && (
-                          <span className="ml-auto text-[11px] text-[#A3A3A3] shrink-0">
-                            全部已是最新版
+                        {!disabled && (
+                          <span className="text-[11px] text-[#737373] shrink-0 ml-auto">
+                            {p.outdatedInstanceCount} 个旧版本
+                          </span>
+                        )}
+                        {disabled && (
+                          <span className="text-[11px] text-[#A3A3A3] shrink-0 ml-auto">
+                            已是最新版
                           </span>
                         )}
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </label>
+                  );
+                })}
+              </div>
             )}
           </div>
 
-          {/* 2. 信息提示 */}
-          {selected && !selected.allUpToDate && (
+          {/* 2. 信息提示（多选汇总） */}
+          {selectedItems.length > 0 && (
             <div className="rounded-[4px] bg-[#1447E6]/5 border border-[#1447E6]/20 px-3 py-2.5 flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#1447E6] mt-0.5 shrink-0" />
               <div className="text-xs text-[#334155] leading-relaxed">
                 <div>
-                  推送后，使用 <strong>{selected.agentTypeLabel}</strong> 且版本低于
-                  <span className="mx-1 font-mono font-semibold text-[#1447E6] tabular-nums">
-                    v{selected.enabledVersion}
-                  </span>
-                  的
+                  推送后，已选
                   <span className="mx-1 font-semibold text-[#1447E6] tabular-nums">
-                    {selected.outdatedInstanceCount}
+                    {selectedItems.length}
                   </span>
-                  个 Agent，将在用户端收到更新提醒。
+                  个 Agent 类型下共
+                  <span className="mx-1 font-semibold text-[#1447E6] tabular-nums">
+                    {totalOutdated}
+                  </span>
+                  个旧版本 Agent，将在用户端收到更新提醒。
                 </div>
-                <div className="mt-1 text-[11px] text-[#737373]">
-                  当前镜像：{selected.imageName}（
-                  {selected.imageSource === "public" ? "腾讯云维护" : "企业自维护"}）
-                </div>
+                <ul className="mt-1.5 space-y-0.5 text-[11px] text-[#737373]">
+                  {selectedItems.map((item) => (
+                    <li key={item.agentType} className="flex items-center gap-1">
+                      <span className="font-medium text-[#334155]">{item.agentTypeLabel}</span>
+                      <span className="font-mono tabular-nums">→ v{item.enabledVersion}</span>
+                      <span>· {item.outdatedInstanceCount} 个</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
 
-          {/* 3. 已是最新版提示 */}
-          {selected && selected.allUpToDate && (
+          {/* 3. 全部已是最新版提示 */}
+          {selectable.length === 0 && pushable.length > 0 && (
             <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-3 py-2.5 flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
               <div className="text-xs text-[#737373] leading-relaxed">
-                {selected.agentTypeLabel} 下所有实例都已是 v{selected.enabledVersion}，无需推送
+                所有 Agent 类型下的实例都已是最新版，无需推送
               </div>
             </div>
           )}

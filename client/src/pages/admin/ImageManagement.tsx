@@ -60,6 +60,7 @@ import {
   Pencil,
   Minus,
   Users,
+  Bell,
 } from "lucide-react";
 
 import AgentTypesTable, {
@@ -83,7 +84,7 @@ import {
   getHardenedImageId,
   type ImageRow,
 } from "./ImageManagement/deriveAgentTypeView";
-import { pruneOnVersionChange } from "@/lib/upgradePushStore";
+import { pruneOnVersionChange, listActivePushes } from "@/lib/upgradePushStore";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
@@ -580,18 +581,21 @@ function OverviewStats({
   imageCount: number;
 }) {
   return (
-    <div className="inline-flex items-center gap-4 px-4 py-2 rounded-[4px] bg-gray-50/80 border border-[#E5E5E5] text-xs text-[#737373]">
-      <span>
-        Agent 类型 <span className="text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
-      </span>
-      <span className="text-gray-300">·</span>
-      <span>
-        已对用户可见 <span className="text-[#1447E6] font-semibold tabular-nums">{enabledTypeCount}</span>
-      </span>
-      <span className="text-gray-300">·</span>
-      <span>
-        镜像总数 <span className="text-[#0A0A0A] font-semibold tabular-nums">{imageCount}</span>
-      </span>
+    <div className="h-8 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-[#737373]">Agent 类型</span>
+        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
+      </div>
+      <span className="w-px h-3 bg-[#E5E5E5]" />
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-[#737373]">已对用户可见</span>
+        <span className="text-xs text-[#1447E6] font-semibold tabular-nums">{enabledTypeCount}</span>
+      </div>
+      <span className="w-px h-3 bg-[#E5E5E5]" />
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-[#737373]">镜像总数</span>
+        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{imageCount}</span>
+      </div>
     </div>
   );
 }
@@ -659,6 +663,11 @@ export default function ImageManagement() {
   const [showCreateCustomDialog, setShowCreateCustomDialog] = useState(false);
   const [newTypeName, setNewTypeName] = useState("");
   const [newKernelBase, setNewKernelBase] = useState<KernelBase | null>(null);
+
+  // Agent 类型筛选
+  const [agentTypeFilter, setAgentTypeFilter] = useState("all");
+  // 更新提醒卡片最小化状态（默认收起，点击标题旁的常驻按钮展开到右上角）
+  const [updateCardMinimized, setUpdateCardMinimized] = useState(true);
   const [nativeAck, setNativeAck] = useState(false);
   const newTypeNameError = useMemo(() => {
     if (!newTypeName.trim()) return "";
@@ -1087,16 +1096,72 @@ export default function ImageManagement() {
   // ── 渲染 ──────────────────────────────────────────────────────────
   return (
     <>
-      <div className="page-enter flex gap-6">
-        <div className="flex-1 min-w-0">
+      {/* 固定悬浮在页面右上角的更新提醒卡片（非最小化时展示） */}
+      {!updateCardMinimized && (
+      <div className="fixed top-6 right-6 w-[360px] z-30 shadow-lg rounded-[4px]">
+        <UpdateRecordSidebar
+          views={views.map(({ agentType, view }) => ({
+            agentType,
+            isEnabled: view.enabled.isEnabled,
+            version: view.enabled.version,
+          }))}
+          getTypeLabel={getTypeLabel}
+          defaultAgentType={defaultAgentType}
+          onPush={() => openPushDialog()}
+          onViewAll={() => setShowAllRecordsDrawer(true)}
+          orientation="horizontal"
+          onMinimize={() => setUpdateCardMinimized(true)}
+          pushable={pushable}
+        />
+      </div>
+      )}
+
+      <div className="page-enter">
+        <div className="min-w-0">
           {/* 页面标题 */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Agent 类型</h1>
+          <div className="mb-4">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">Agent 类型</h1>
+              {(() => {
+                const hasActivePush = listActivePushes().length > 0;
+                const hasNewVersion = true;
+                if (!hasNewVersion && !hasActivePush) {
+                  return (
+                    <button
+                      onClick={() => setShowAllRecordsDrawer(true)}
+                      className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
+                    >
+                      <Bell className="w-3 h-3 text-[#1447E6]" />
+                      当前没有版本更新，查看历史更新记录
+                    </button>
+                  );
+                }
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setUpdateCardMinimized((v) => !v)}
+                        className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
+                      >
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
+                        <Bell className="w-3 h-3 text-[#1447E6]" />
+                        {hasActivePush ? "有新版本上线（正在提醒员工更新）" : "有新版本上线，请尽快更新"}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs">
+                      {updateCardMinimized ? "展开详情" : "收起详情"}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })()}
+            </div>
             <p className="text-sm text-gray-500 mt-1 leading-relaxed">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
           </div>
 
+          {/* 主体内容 */}
+          <div className="min-w-0">
           {/* 顶部总览 + 添加自定义类型按钮 */}
           <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
             <OverviewStats
@@ -1104,6 +1169,15 @@ export default function ImageManagement() {
               enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
               imageCount={images.length}
             />
+            <div className="flex items-center gap-2">
+            <Button
+              variant="claw-outline"
+              size="claw-sm"
+              onClick={() => setShowAllRecordsDrawer(true)}
+              className="shrink-0"
+            >
+              查看全部更新记录
+            </Button>
             <Button
               variant="claw-primary"
               size="claw-sm"
@@ -1113,11 +1187,12 @@ export default function ImageManagement() {
               <Plus className="w-3 h-3" />
               添加自定义 Agent 类型
             </Button>
+            </div>
           </div>
 
           {/* 大表格 */}
           <AgentTypesTable
-            rows={views.map(({ agentType, view }): AgentTypeRowData => {
+            rows={views.filter(({ agentType }) => agentTypeFilter === "all" || agentType === agentTypeFilter).map(({ agentType, view }): AgentTypeRowData => {
               const customType = getCustomType(agentType);
               return {
                 agentType,
@@ -1148,43 +1223,8 @@ export default function ImageManagement() {
               />
             )}
           />
-
-          {/* 表格底部：添加自定义 Agent 类型 大入口卡片 */}
-          <button
-            type="button"
-            onClick={() => setShowCreateCustomDialog(true)}
-            className="mt-4 w-full rounded-[4px] border border-dashed border-[#e5e5e5] bg-white hover:bg-[#f5f5f5] hover:border-[#d3d6db] transition-colors py-6 flex flex-col items-center justify-center gap-2 group"
-          >
-            <span
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-[#e5e5e5] bg-white text-[#020617] group-hover:border-[#355EF1] group-hover:text-[#355EF1] transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium text-[#020617]">添加自定义 Agent 类型</span>
-            <span className="text-xs text-[#737373]">
-              支持基于现有 Agent 内核拓展，或添加完全自定义的 Agent 类型
-            </span>
-          </button>
-        </div>
-
-        {/* 右侧栏：Agent 类型锚点 + 镜像更新记录 + 推送更新按钮
-            内部 padding 让其视觉起点与左侧表格上沿对齐
-            （标题块 ≈ 80px + 顶部总览行 ≈ 56px = 约 136px） */}
-        <aside className="hidden lg:block w-[220px] shrink-0 pt-[136px]">
-          <div className="sticky top-6 max-h-[calc(100vh-32px)] overflow-y-auto pr-1">
-            <UpdateRecordSidebar
-              views={views.map(({ agentType, view }) => ({
-                agentType,
-                isEnabled: view.enabled.isEnabled,
-                version: view.enabled.version,
-              }))}
-              getTypeLabel={getTypeLabel}
-              defaultAgentType={defaultAgentType}
-              onPush={() => openPushDialog()}
-              onViewAll={() => setShowAllRecordsDrawer(true)}
-            />
           </div>
-        </aside>
+        </div>
       </div>
 
       {/* ─── 导入自定义镜像弹窗 ─── */}

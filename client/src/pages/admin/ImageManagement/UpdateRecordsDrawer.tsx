@@ -14,16 +14,16 @@
  */
 import { useMemo, useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Megaphone, Calendar, RotateCcw, Cloud, Sparkles, Disc3 } from "lucide-react";
+import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3 } from "lucide-react";
 import { toast } from "sonner";
 import {
   listActivePushes,
@@ -140,17 +140,16 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
     : [];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[680px] max-h-[80vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-3 shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Cloud className="w-4 h-4 text-[#1447E6]" />
+    <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
+      <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0">
+        <SheetHeader className="px-6 pt-6 pb-3 shrink-0">
+          <SheetTitle className="text-base">
             镜像更新记录
-          </DialogTitle>
-          <DialogDescription className="text-xs text-[#737373]">
-            所有 Agent 类型下各镜像的版本发布历史。一个 Agent 类型可能包含多个镜像（不同 OS 等），可按类型或镜像筛选；当前正在推送的版本可在此撤回。
-          </DialogDescription>
-        </DialogHeader>
+          </SheetTitle>
+          <SheetDescription className="text-xs text-[#737373]">
+            所有 Agent 类型下各镜像的版本发布历史。
+          </SheetDescription>
+        </SheetHeader>
 
         {/* 筛选区：第一级 Agent 类型；第二级镜像（仅在选中类型后出现） */}
         <div className="px-6 pb-3 space-y-2 shrink-0">
@@ -357,12 +356,12 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush }: Prop
           )}
         </div>
 
-        <DialogFooter className="px-6 pb-4 pt-3 border-t border-[#F5F5F5] shrink-0">
+        <SheetFooter className="px-6 pb-4 pt-3 border-t border-[#F5F5F5] shrink-0">
           <Button variant="claw-outline" size="claw-sm" onClick={() => onOpenChange(false)}>
             关闭
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

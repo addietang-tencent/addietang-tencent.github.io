@@ -28,6 +28,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
 
 // ─── 状态徽章（紧凑） ─────────────────────────────────────────────────
@@ -100,36 +101,45 @@ export default function AgentTypeImagePicker({
   return (
     <div className="px-4 py-4">
       <Tabs value={tab} onValueChange={(v) => setTab(v as "public" | "custom")}>
-        <TabsList className="h-auto p-0.5 bg-gray-100/80">
-          <TabsTrigger
-            value="public"
-            className="text-xs h-7 data-[state=active]:bg-white"
-          >
-            公共镜像
-            <span className="ml-1.5 text-[#A3A3A3]">({publicCount})</span>
-            {enabledInPublic && (
-              <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="custom"
-            className="text-xs h-7 data-[state=active]:bg-white"
-          >
-            自定义镜像
-            <span className="ml-1.5 text-[#A3A3A3]">({customCount})</span>
-            {enabledInCustom && (
-              <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="public" className="mt-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] text-gray-500">
-              由腾讯云持续维护更新，自动跟随官方版本
-            </p>
+        <div className="flex items-center gap-3">
+          <SegmentGroup>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SegmentOption
+                  active={tab === "public"}
+                  onClick={() => setTab("public")}
+                >
+                  公共镜像
+                  <span className="ml-1.5 text-[#A3A3A3]">({publicCount})</span>
+                  {enabledInPublic && (
+                    <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
+                  )}
+                </SegmentOption>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">由腾讯云持续维护更新，自动跟随官方版本</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SegmentOption
+                  active={tab === "custom"}
+                  onClick={() => setTab("custom")}
+                >
+                  自定义镜像
+                  <span className="ml-1.5 text-[#A3A3A3]">({customCount})</span>
+                  {enabledInCustom && (
+                    <CheckCircle2 className="w-3 h-3 ml-1 text-[#1447E6]" />
+                  )}
+                </SegmentOption>
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">由企业自行制作和维护</TooltipContent>
+            </Tooltip>
+          </SegmentGroup>
+          <div className="ml-auto">
             <PublicRefreshButton />
           </div>
+        </div>
+
+        <TabsContent value="public" className="mt-3">
           {view.publicRow && view.publicRow.allImages.length > 0 ? (
             <ImageList
               images={view.publicRow.allImages}
@@ -198,8 +208,7 @@ function CustomList({
 
   return (
     <>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] text-[#737373]">由企业自行制作和维护</p>
+      <div className="flex items-center justify-end mb-2">
         <button
           onClick={onImportCustom}
           className="px-2.5 py-1 text-[11px] text-white rounded inline-flex items-center gap-1 transition-opacity hover:opacity-90 whitespace-nowrap"
@@ -271,6 +280,7 @@ function ImageList({
   onSelectImage: (imageId: string) => void;
   renderActions: (img: ViewImage) => React.ReactNode;
 }) {
+  const [typeFilter, setTypeFilter] = useState<string>("all");
   const accentColors = {
     blue: {
       ringChecked: "border-[#1447E6] bg-[#1447E6]",
@@ -283,12 +293,20 @@ function ImageList({
   } as const;
   const colors = accentColors[accent];
 
+  // 获取所有镜像类型用于筛选
+  const imageTypes = Array.from(new Set(images.map(img => img.source === "public" ? "公共" : "自定义")));
+  const filteredImages = typeFilter === "all" ? images : images.filter(img => {
+    const type = img.source === "public" ? "公共" : "自定义";
+    return type === typeFilter;
+  });
+
   return (
     <div className="rounded-[3px] border border-[#E5E5E5] bg-white overflow-hidden">
-      {images.map((img, idx) => {
+      {filteredImages.map((img, idx) => {
         const checked = img.isEffective;
         const missingVersion = !img.agentVersion?.trim();
         const selectable = allowSelectIfMissingVersion || !missingVersion;
+        const imgType = img.source === "public" ? "公共" : "自定义";
         return (
           <div
             key={img.id}
@@ -316,18 +334,6 @@ function ImageList({
               {checked && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
             </span>
 
-            {/* 用户可见徽章 */}
-            <div className="basis-0 grow shrink-0 min-w-[70px] max-w-[90px]">
-              {checked ? (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1447E6]/10 text-[#1447E6] border border-[#1447E6]/20 whitespace-nowrap">
-                  <CheckCircle2 className="w-2.5 h-2.5" />
-                  用户可见
-                </span>
-              ) : (
-                <span className="text-[11px] text-[#A3A3A3]">—</span>
-              )}
-            </div>
-
             {/* 版本（含缺版本号警告） */}
             <div className="basis-0 grow shrink-0 min-w-[100px] max-w-[130px]">
               {missingVersion ? (
@@ -343,10 +349,19 @@ function ImageList({
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <span className="font-mono font-semibold text-[13px] text-gray-900 tabular-nums whitespace-nowrap">
+                <span className="text-[13px] font-medium text-gray-900 whitespace-nowrap">
                   v{img.agentVersion}
                 </span>
               )}
+            </div>
+
+            {/* 镜像类型 */}
+            <div className="basis-0 grow shrink-0 min-w-[70px] max-w-[90px]">
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${
+                imgType === "公共" ? "bg-blue-50 text-[#1447E6]" : "bg-purple-50 text-purple-600"
+              }`}>
+                {imgType}
+              </span>
             </div>
 
             {/* 镜像（名称 + ID 副位含状态）—— 占主要空间 */}

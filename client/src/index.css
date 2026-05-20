@@ -234,7 +234,9 @@
   }
 
   [data-slot="admin-sidebar-menu-button"][data-active="true"],
-  [data-slot="admin-sidebar-menu-button"][data-active="true"]:hover {
+  [data-slot="admin-sidebar-menu-button"][data-active="true"]:hover,
+  .admin-sidebar-collapsed-subgroup-active,
+  .admin-sidebar-collapsed-subgroup-active:hover {
     background: var(--admin-sidebar-item-active-bg) !important;
     border-radius: var(--admin-sidebar-item-radius) !important;
   }
@@ -306,7 +308,8 @@
   }
 
   /* 选中态：左侧导航 SVG 图标渲染为纯黑（覆盖图标自带渐变色） */
-  [data-slot="admin-sidebar-menu-button"][data-active="true"] > img {
+  [data-slot="admin-sidebar-menu-button"][data-active="true"] > img,
+  .admin-sidebar-collapsed-subgroup-active > img {
     filter: brightness(0) saturate(100%);
   }
 

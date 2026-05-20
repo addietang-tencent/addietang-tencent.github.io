@@ -135,7 +135,7 @@ export default function EditScopePopover({
             <div className="flex gap-1.5">
               <button
                 onClick={() => setDraftScope('public')}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === 'public'
                     ? 'border-blue-200 bg-blue-50 text-blue-600'
                     : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -145,7 +145,7 @@ export default function EditScopePopover({
               </button>
               <button
                 onClick={() => setDraftScope('private')}
-                className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === 'private'
                     ? 'border-blue-200 bg-blue-50 text-blue-600'
                     : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
@@ -166,7 +166,7 @@ export default function EditScopePopover({
                     placeholder="搜索分组…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                   />
                   {searchQuery && (
                     <button
@@ -189,7 +189,7 @@ export default function EditScopePopover({
                         <button
                           key={group.id}
                           onClick={() => toggleGroup(group.id)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
                         >
                           <span
                             className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
@@ -226,7 +226,7 @@ export default function EditScopePopover({
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5]">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
               取消
             </Button>
@@ -235,7 +235,6 @@ export default function EditScopePopover({
               className="h-7 text-xs px-3"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
-              style={isConfirmDisabled ? undefined : { background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
             >
               确认
             </Button>

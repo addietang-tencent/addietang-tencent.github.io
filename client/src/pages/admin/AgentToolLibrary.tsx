@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -59,29 +60,25 @@ export default function AgentToolLibrary() {
   const currentTab = TABS.find((t) => t.id === activeTab)!;
 
   return (
-    <div className="page-enter max-w-5xl">
+    <div className="page-enter w-full min-w-0">
       {/* 页面标题 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Agent 工具库</h1>
       </div>
 
       {/* Tab 切换器 */}
-      <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-            }}
-            className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-1">
+        <SegmentGroup>
+          {TABS.map((tab) => (
+            <SegmentOption
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </SegmentOption>
+          ))}
+        </SegmentGroup>
       </div>
 
       {/* Tab 描述 */}
@@ -89,7 +86,7 @@ export default function AgentToolLibrary() {
         <p className="text-sm text-gray-500 leading-relaxed">{currentTab.description}</p>
         {currentTab.id === 'enterprise' && (
           <div className="flex items-center justify-between gap-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-md whitespace-nowrap">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-[4px] whitespace-nowrap">
               <svg className="w-3 h-3 text-blue-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
                 <path d="M20 3v4" /><path d="M22 5h-4" /><path d="M4 17v2" /><path d="M5 18H3" />

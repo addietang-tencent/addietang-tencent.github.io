@@ -128,8 +128,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 p-5 transition-all"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+      className="bg-white rounded-xl border border-[#e5e5e5] p-5 transition-all"
     >
       <div className="flex items-start gap-3 mb-3">
         <StepBadge step={step} done={done} />
@@ -221,7 +220,7 @@ function InlineQuotaField({
 
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-medium text-gray-600">
+      <Label className="text-xs font-medium ">
         {label}
         {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
       </Label>
@@ -233,7 +232,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+          className="w-full flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -248,10 +247,10 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 无限制
@@ -261,10 +260,10 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-md border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 自定义
@@ -291,7 +290,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={() => setEditing(false)}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               取消
             </Button>
@@ -299,7 +298,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={handleSave}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               保存
             </Button>
@@ -378,7 +377,7 @@ export default function BasicInfo() {
           >
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="siteName" className="text-xs font-medium text-gray-600">
+                <Label htmlFor="siteName" className="text-xs font-medium ">
                   网站名称
                   <span className="text-gray-400 font-normal ml-1">将展示在用户端左上角常驻和首页</span>
                 </Label>
@@ -391,7 +390,7 @@ export default function BasicInfo() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-600">
+                <Label className="text-xs font-medium ">
                   网站 Logo
                   <span className="text-gray-400 font-normal ml-1">
                     建议尺寸 200×200px，不超过 512KB
@@ -401,7 +400,7 @@ export default function BasicInfo() {
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
                     A
                   </div>
-                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-xl text-xs text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition-colors bg-gray-50">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-[#d3d6db] rounded-[4px] text-xs text-[#020617] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer transition-colors bg-white">
                     <Upload className="w-3.5 h-3.5" />
                     更换 Logo
                     <input
@@ -428,7 +427,7 @@ export default function BasicInfo() {
                   )}
                 </div>
                 {logoError && (
-                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2">
+                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
                     {logoError}
                   </p>
                 )}
@@ -437,7 +436,7 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="text-xs text-gray-600"
+                className="text-xs "
               >
                 保存
               </Button>
@@ -480,7 +479,7 @@ export default function BasicInfo() {
               size="sm"
               variant="outline"
               onClick={() => navigate("/admin/members")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
+              className="text-xs flex items-center gap-1.5 "
             >
               前往用户管理
               <ChevronRight className="w-3.5 h-3.5" />
@@ -499,12 +498,12 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/model-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -520,12 +519,12 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/channel-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -541,12 +540,12 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/image-management")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -562,12 +561,12 @@ export default function BasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/security-group?tab=vpc")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-100"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -582,7 +581,7 @@ export default function BasicInfo() {
               size="sm"
               variant="outline"
               onClick={() => navigate("/admin/security-group")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
+              className="text-xs flex items-center gap-1.5 "
             >
               前往安全组管理
               <ChevronRight className="w-3.5 h-3.5" />
@@ -595,36 +594,29 @@ export default function BasicInfo() {
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-5"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">平台基础信息</h2>
-            <div className="space-y-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">所在地域</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.region}</p>
+            <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4 items-start">
+                <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Globe className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">域名</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5 break-all">https://nmyy3n7z.clawpro.cloud/</p>
+              <div className="flex gap-4 items-start">
+                <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Cloud className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">关联腾讯云账号</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.tencentUin}</p>
+              <div className="flex gap-4 items-start">
+                <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>
@@ -632,13 +624,13 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:border-blue-200 transition-colors"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-[#355EF1] transition-colors"
+           
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                   <BookOpen className="w-4 h-4 text-blue-500" />
                 </div>
                 <div>
@@ -652,8 +644,7 @@ export default function BasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-2xl border border-gray-100 p-4"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+            className="bg-white rounded-xl border border-[#e5e5e5] p-4"
           >
             <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
             <div className="space-y-2.5">
@@ -711,4 +702,3 @@ export default function BasicInfo() {
     </div>
   );
 }
-

@@ -4,11 +4,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const PAGE_SIZE = 10;
 
@@ -234,22 +236,16 @@ export default function AuditLog() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <input
-              type="date"
+            <DatePicker
               value={dateFrom}
-              onChange={(e) => handleDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              title="开始日期"
-              style={{ colorScheme: 'light' }}
+              onChange={handleDateFrom}
+              placeholder="开始日期"
             />
             <span className="text-gray-400 text-sm shrink-0">—</span>
-            <input
-              type="date"
+            <DatePicker
               value={dateTo}
-              onChange={(e) => handleDateTo(e.target.value)}
-              className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-              title="结束日期"
-              style={{ colorScheme: 'light' }}
+              onChange={handleDateTo}
+              placeholder="结束日期"
             />
           </div>
           {hasFilter && (
@@ -257,19 +253,20 @@ export default function AuditLog() {
               清除筛选
             </Button>
           )}
-          <button
+          <Button
+            variant="claw-outline"
+            size="icon"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
             title="刷新列表"
+            className="w-9 h-9"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
+          </Button>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <SurfaceCard className="overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -320,7 +317,7 @@ export default function AuditLog() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
@@ -328,7 +325,7 @@ export default function AuditLog() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-7 h-7 flex items-center justify-center rounded-md text-xs font-medium transition-colors ${
+                    className={`w-7 h-7 flex items-center justify-center rounded-xl text-xs font-medium transition-colors ${
                       p === safePage
                         ? "bg-blue-500 text-white border border-blue-500"
                         : "border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500"
@@ -340,14 +337,14 @@ export default function AuditLog() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
           </div>
-        </div>
+        </SurfaceCard>
       </div>
 
       {/* Detail Dialog */}

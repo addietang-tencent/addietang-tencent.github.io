@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, BarChart3, Activity, TrendingUp, AlertTriangle, Info } from "lucide-react";
+import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, AlertTriangle, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import {
   PieChart, Pie,
 } from "recharts";
 import { toast } from "sonner";
+import { DatePicker } from "@/components/ui/date-picker";
 
 // CLS 采集插件版本历史
 interface CLSPluginVersion {
@@ -477,29 +478,25 @@ export default function SessionManagement() {
           <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            type="date"
+          <DatePicker
             value={dateFrom}
-            onChange={(e) => handleFromChange(e.target.value)}
-            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-            style={{ colorScheme: 'light' }}
+            onChange={handleFromChange}
           />
           <span className="text-gray-400 text-sm">—</span>
-          <input
-            type="date"
+          <DatePicker
             value={dateTo}
-            onChange={(e) => handleToChange(e.target.value)}
-            className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer"
-            style={{ colorScheme: 'light' }}
+            onChange={handleToChange}
           />
-          <button
+          <Button
+            variant="claw-outline"
+            size="icon"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50"
             title="刷新数据"
+            className="w-9 h-9"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -507,7 +504,7 @@ export default function SessionManagement() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-blue-900">会话管理需要开启 CLS 日志服务</h3>
@@ -516,7 +513,7 @@ export default function SessionManagement() {
               <Button
                 onClick={handleOpenCLS}
                 disabled={isEnablingCls}
-                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-4 whitespace-nowrap disabled:opacity-50"
+                className="ml-4 text-xs h-8 px-4 whitespace-nowrap"
               >
                 {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
               </Button>
@@ -529,25 +526,21 @@ export default function SessionManagement() {
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
-                      <Activity className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/session-global-monitoring.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话全局运行态势监控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话全局运行态势监控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#FF9500" }}>
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/session-detail-analysis.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">会话详情与交互效率精细化分析</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话详情与交互效率精细化分析</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
                     </div>
                   </div>
                 </div>
@@ -561,47 +554,39 @@ export default function SessionManagement() {
             <div>
               <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#F59E0B" }}>
-                      <TrendingUp className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/high-token-session-control.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">高Token会话实时分析与管控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">高Token会话实时分析与管控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#AF52DE" }}>
-                      <Zap className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/single-session-token-insight.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">单会话全链路Token透视</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">单会话全链路Token透视</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
-                      <Activity className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/business-health-monitoring.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">业务运行健康度实时监控</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">业务运行健康度实时监控</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
-                      <BarChart3 className="w-5 h-5 text-white" />
-                    </div>
+                    <img src="/assets/admin-session-management/app-log-otel-insight.svg" alt="" className="shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-xs font-bold text-gray-900 mb-1">应用日志与 OTEL 指标全景洞察</h5>
-                      <p className="text-xs text-gray-500 leading-relaxed">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
+                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">应用日志与 OTEL 指标全景洞察</h5>
+                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
                     </div>
                   </div>
                 </div>
@@ -615,7 +600,7 @@ export default function SessionManagement() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -663,10 +648,10 @@ export default function SessionManagement() {
           {/* 顶部指标卡 */}
           <div className="grid grid-cols-4 gap-4">
             {STAT_CARDS.map((card) => (
-              <div key={card.metric} className="bg-white rounded-xl border border-gray-100 p-5">
+              <div key={card.metric} className="bg-white rounded-xl border border-[#e5e5e5] p-5">
                 <div className="flex items-start justify-between mb-3">
                   <span className="text-xs text-gray-500 font-medium">{card.label}</span>
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
                     <card.icon className="w-4 h-4" />
                   </div>
                 </div>
@@ -688,8 +673,8 @@ export default function SessionManagement() {
               <h2 className="text-lg font-bold text-gray-900">会话摘要一览</h2>
               <p className="text-xs text-gray-400 mt-1">按时间倒序 · 点击查看会话详情</p>
             </div>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+            <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+             >
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -776,7 +761,7 @@ export default function SessionManagement() {
           {/* 渠道与模型分布 */}
           <div className="grid grid-cols-2 gap-6">
             {/* 渠道分布 */}
-            <div className="bg-white rounded-xl border border-gray-100 p-6">
+            <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
               <h3 className="text-sm font-bold text-gray-900 mb-4">渠道分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={CHANNEL_DIST_DATA}>
@@ -790,7 +775,7 @@ export default function SessionManagement() {
             </div>
 
             {/* 模型分布 */}
-            <div className="bg-white rounded-xl border border-gray-100 p-6">
+            <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
               <h3 className="text-sm font-bold text-gray-900 mb-4">模型分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -845,7 +830,6 @@ export default function SessionManagement() {
             </Button>
             <Button
               onClick={handleGoToAuth}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               前往授权
             </Button>
@@ -860,7 +844,7 @@ export default function SessionManagement() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
               <p className="text-sm text-gray-700">
                 为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
@@ -893,7 +877,6 @@ export default function SessionManagement() {
             <Button
               onClick={handleConfirmFreeQuota}
               disabled={!freeQuotaAgreed}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300"
             >
               确认
             </Button>
@@ -909,7 +892,7 @@ export default function SessionManagement() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
               <div className="text-xs text-gray-700">
                 <span className="font-semibold text-red-700">运维观测：</span>
                 <span>支持通过全链路性能监控采集核心运行指标</span>
@@ -958,7 +941,7 @@ export default function SessionManagement() {
             <Button
               onClick={handleCloseCls}
               disabled={isClosingCls}
-              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
+              className="bg-red-600 hover:bg-red-700"
             >
               {isClosingCls ? "关闭中..." : "确定关闭"}
             </Button>
@@ -990,7 +973,7 @@ export default function SessionManagement() {
                   <tr
                     key={v.version}
                     onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                    className={`border-b border-gray-100 ${
+                    className={`border-b border-[#e5e5e5] ${
                       isUpgradeable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                     } transition-colors ${
                       selectedPluginVersion?.version === v.version
@@ -1034,7 +1017,6 @@ export default function SessionManagement() {
                 }, 2000);
               }}
               disabled={isUpgradingPlugin || !selectedPluginVersion || selectedPluginVersion?.status === 'current'}
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
             >
               {isUpgradingPlugin ? "升级中..." : "确认升级"}
             </Button>

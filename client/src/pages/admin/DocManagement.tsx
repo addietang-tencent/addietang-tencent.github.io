@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -49,14 +50,13 @@ export default function DocManagement() {
             </p>
           </div>
           <Button onClick={() => setShowAddDialog(true)}
-            style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+           >
             <Plus className="w-4 h-4 mr-1.5" />
             添加文档
           </Button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+        <SurfaceCard className="overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
@@ -130,7 +130,7 @@ export default function DocManagement() {
           <div className="px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
             共 {docs.length} 篇文档
           </div>
-        </div>
+        </SurfaceCard>
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -170,7 +170,7 @@ export default function DocManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button onClick={handleAdd} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>确认添加</Button>
+            <Button onClick={handleAdd}>确认添加</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

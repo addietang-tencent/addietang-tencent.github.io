@@ -42,7 +42,6 @@ import {
   Info,
   ChevronLeft,
   Link,
-  UserCheck,
   ShoppingCart,
   Trash2,
   RotateCcw,
@@ -145,7 +144,7 @@ function FMGroupFilter({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
-        <div className="p-2 border-b border-gray-100">
+        <div className="p-2 border-b border-[#e5e5e5]">
           <input
             type="text" placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
             className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
@@ -158,7 +157,7 @@ function FMGroupFilter({
           </div>
           {groups.map(g => <TreeNode key={g.id} node={g} />)}
         </div>
-        <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-blue-600 font-medium truncate">全部分组</span>
@@ -170,7 +169,7 @@ function FMGroupFilter({
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={handleCancel}>取消</Button>
-            <Button size="sm" className="text-xs h-7 px-3" style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }} onClick={handleConfirm}>确认</Button>
+            <Button size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -409,10 +408,10 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}>
+    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>
+          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
           <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
         </div>
         <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
@@ -420,7 +419,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
 
       <div className="px-5 pb-4">
         {(groupRules.length > 0 || addingNew) && (
-          <div className={`${FM_ROW_CLASS} border-b border-gray-100`}>
+          <div className={`${FM_ROW_CLASS} border-b border-[#e5e5e5]`}>
             <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
             <span className="w-24 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">权限</span>
             <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
@@ -545,18 +544,53 @@ const PERSONAL_SPACES_DATA = [
   { id: "user-ins-20", instanceId: "ins-b22v4byw", instanceName: "GPULab产品线专属AI智能运营分析与决策支持系统", creator: "product-ops-admin@enterprise-acompany.com", avatar: "G", type: "个人", used: "22GB", quota: "50GB", expiry: "2026-06-30", enabled: false },
 ];
 
-const StatCard = ({ title, value, icon: Icon, gradient }: any) => (
-  <div
-    className="bg-white rounded-2xl border border-gray-100 p-5 transition-all duration-200 hover:-translate-y-0.5"
-    style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-  >
-    <div className="flex items-center gap-3 mb-3">
-      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
-        <Icon className="w-5 h-5 text-white" />
-      </div>
-      <span className="text-sm text-gray-500">{title}</span>
+function EnterpriseSpaceIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15 2.25C15.7824 2.25 16.417 2.88459 16.417 3.66699V12.333C16.417 14.22 14.887 15.75 13 15.75H1.58301V6.91699H6.25V3.66699C6.25 2.88459 6.88459 2.25 7.66699 2.25H15ZM3.08398 14.25H4.33398C5.39207 14.2497 6.2506 13.392 6.25098 12.334V9H6.25V8.41699H3.08398V14.25ZM7.75 6.91699H7.75098V12.334C7.75084 13.0442 7.53321 13.7036 7.16211 14.25H13C14.0585 14.25 14.917 13.3916 14.917 12.333V3.75H7.75V6.91699ZM13.667 9.08301H9V7.58301H13.667V9.08301ZM13.667 6.41699H9V4.91699H13.667V6.41699Z" fill="url(#paint0_linear_enterprise_space)"/>
+      <defs>
+        <linearGradient id="paint0_linear_enterprise_space" x1="15.1949" y1="15.9039" x2="7.92473" y2="6.96759" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0080FF"/>
+          <stop offset="0.240385" stopColor="#0869C9"/>
+          <stop offset="1" stopColor="#202020"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function AgentDiskIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4.50781 11.1562C4.97366 11.1563 5.35156 11.534 5.35156 11.9999C5.3515 12.4657 4.97362 12.8435 4.50781 12.8437H4.5C4.03405 12.8437 3.65631 12.4659 3.65625 11.9999C3.65625 11.5339 4.03401 11.1562 4.5 11.1562H4.50781Z" fill="url(#paint0_linear_agent_disk)"/>
+      <path d="M7.50781 11.1562C7.97366 11.1563 8.35156 11.534 8.35156 11.9999C8.3515 12.4657 7.97362 12.8435 7.50781 12.8437H7.5C7.03405 12.8437 6.65631 12.4659 6.65625 11.9999C6.65625 11.5339 7.03401 11.1562 7.5 11.1562H7.50781Z" fill="url(#paint1_linear_agent_disk)"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M9 2.15616C9.46599 2.15616 9.84375 2.53392 9.84375 2.99991C9.84369 3.46585 9.46595 3.84366 9 3.84366H5.43066L5.33984 3.8505C5.24975 3.86312 5.16284 3.894 5.08496 3.9423C4.98124 4.00664 4.89709 4.09862 4.84277 4.20792L2.86133 8.16593H15.1387L14.9795 7.84757C14.771 7.43094 14.9399 6.92434 15.3564 6.71573C15.7731 6.50728 16.2797 6.67608 16.4883 7.09269L17.0957 8.3046C17.2589 8.63039 17.3437 8.99001 17.3438 9.35441V13.4999C17.3437 14.1215 17.0967 14.7176 16.6572 15.1571C16.2177 15.5966 15.6216 15.8437 15 15.8437H3C2.37843 15.8437 1.78231 15.5966 1.34277 15.1571C0.903263 14.7176 0.656281 14.1215 0.65625 13.4999V9.35441C0.656306 8.99001 0.74106 8.63039 0.904297 8.3046L3.33301 3.45499C3.52705 3.06543 3.82544 2.73712 4.19531 2.50773C4.56588 2.27793 4.99365 2.15639 5.42969 2.15616H9ZM2.34375 13.4999C2.34378 13.6739 2.41309 13.8407 2.53613 13.9638C2.6592 14.0868 2.82598 14.1562 3 14.1562H15C15.174 14.1562 15.3408 14.0868 15.4639 13.9638C15.5869 13.8407 15.6562 13.6739 15.6562 13.4999V9.85343H2.34375V13.4999Z" fill="url(#paint2_linear_agent_disk)"/>
+      <path d="M13.3721 1.04776C13.4631 0.801787 13.8103 0.801787 13.9014 1.04776L14.5908 2.90909L16.4521 3.59855C16.698 3.68964 16.698 4.03679 16.4521 4.12784L14.5908 4.8173L13.9014 6.67862C13.816 6.90922 13.5051 6.92344 13.3916 6.72159L13.3721 6.67862L12.6826 4.8173L10.8213 4.12784C10.5753 4.03682 10.5753 3.68957 10.8213 3.59855L12.6826 2.90909L13.3721 1.04776Z" fill="url(#paint3_linear_agent_disk)"/>
+      <defs>
+        <linearGradient id="paint0_linear_agent_disk" x1="17" y1="16.5" x2="6.44431" y2="6.59202" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_agent_disk" x1="17" y1="16.5" x2="6.44431" y2="6.59202" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/>
+        </linearGradient>
+        <linearGradient id="paint2_linear_agent_disk" x1="17" y1="16.5" x2="6.44431" y2="6.59202" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/>
+        </linearGradient>
+        <linearGradient id="paint3_linear_agent_disk" x1="17" y1="16.5" x2="6.44431" y2="6.59202" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+const StatCard = ({ title, value, icon: IconComponent }: { title: string; value: number; icon: React.FC }) => (
+  <div className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4">
+    <div className="flex items-center gap-1">
+      <IconComponent />
+      <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{title}</span>
     </div>
-    <div className="text-2xl font-bold text-gray-900 tabular-nums">{value}</div>
+    <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{value}</p>
   </div>
 );
 
@@ -1153,18 +1187,16 @@ export default function FileManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-6">
-        <StatCard 
-          title="企业公共空间" 
+      <div className="grid grid-cols-2 gap-5">
+        <StatCard
+          title="企业公共空间"
           value={stats.enterpriseSpacesCount}
-          icon={Building} 
-          gradient="from-blue-500 to-blue-600"
+          icon={EnterpriseSpaceIcon}
         />
-        <StatCard 
-          title="已开通智能体网盘" 
+        <StatCard
+          title="已开通智能体网盘"
           value={stats.totalPersonalInstances}
-          icon={Bot} 
-          gradient="from-purple-500 to-purple-600"
+          icon={AgentDiskIcon}
         />
       </div>
 
@@ -1183,8 +1215,7 @@ export default function FileManagement() {
         </div>
 
         <div
-          className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           <table className="w-full">
             <thead>
@@ -1215,7 +1246,7 @@ export default function FileManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                    <span className="px-2 py-1 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
                       {item.type}
                     </span>
                   </td>
@@ -1223,7 +1254,7 @@ export default function FileManagement() {
                     <span className="tabular-nums">
                       {item.used}/{<span className="font-semibold">{item.quota}</span>}
                     </span>
-                    <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600">
+                    <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-600">
                       免费
                     </span>
                   </td>
@@ -1252,16 +1283,16 @@ export default function FileManagement() {
         {/* 网盘配置卡片 */}
         <div className="grid grid-cols-2 gap-4">
           <FMTogglePolicyCard
-            icon={<Link className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-disk-management/auto-bind-disk.svg" alt="" className="w-8 h-8" />}
+            iconBg=""
             title="新增实例是否自动绑定网盘"
             description="开启后,新创建的 AI 智能体实例将自动分配网盘空间"
             rules={autoBindRules}
             onRulesChange={setAutoBindRules}
           />
           <FMTogglePolicyCard
-            icon={<UserCheck className="w-4 h-4 text-white" />}
-            iconBg="bg-gradient-to-br from-blue-500 to-blue-600"
+            icon={<img src="/assets/admin-disk-management/self-enable-disk.svg" alt="" className="w-8 h-8" />}
+            iconBg=""
             title="允许用户自行开启网盘"
             description="开启后,用户可在自己的实例中自主开启网盘服务"
             rules={allowSelfEnableRules}
@@ -1270,8 +1301,7 @@ export default function FileManagement() {
         </div>
 
         <div
-          className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-          style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
+          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           {/* Search Bar and Batch Enable */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
@@ -1279,10 +1309,6 @@ export default function FileManagement() {
               <Button
                 onClick={handleBatchEnable}
                 disabled={selectedInstances.size === 0}
-                style={selectedInstances.size > 0 ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
-                className={`text-white rounded-lg text-sm font-medium px-4 h-9 transition-all ${
-                  selectedInstances.size === 0 ? "bg-gray-300 cursor-not-allowed" : "btn-primary-glow"
-                }`}
               >
                 批量启用网盘服务
                 {selectedInstances.size > 0 && (
@@ -1300,7 +1326,7 @@ export default function FileManagement() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input 
                   placeholder="搜索名称、ID或创建人" 
-                  className="pl-9 h-9 bg-white border-gray-300 hover:border-gray-400 focus:border-purple-500 rounded-lg text-sm transition-colors"
+                  className="pl-9 h-9 bg-white border-gray-300 hover:border-gray-400 focus:border-purple-500 rounded-xl text-sm transition-colors"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -1393,7 +1419,7 @@ export default function FileManagement() {
                       </td>
                       <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#355EF1] flex items-center justify-center shrink-0">
                             <Bot className="w-5 h-5 text-white" />
                           </div>
                           <div className="flex flex-col min-w-0 flex-1">
@@ -1416,7 +1442,7 @@ export default function FileManagement() {
                         </Tooltip>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                        <span className="px-2 py-1 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
                           {item.type}
                         </span>
                       </td>
@@ -1424,7 +1450,7 @@ export default function FileManagement() {
                         {isEnabled ? (
                           <span className="tabular-nums">
                             {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                            <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-600">
+                            <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-600">
                               免费
                             </span>
                           </span>
@@ -1432,7 +1458,7 @@ export default function FileManagement() {
                           <span className="tabular-nums flex items-center gap-1">
                             <span>
                               {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                              <span className="ml-2 px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600">
+                              <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
                                 可恢复
                               </span>
                             </span>
@@ -1469,7 +1495,7 @@ export default function FileManagement() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-[#e5e5e5]">
               <div className="text-sm text-gray-500">
                 显示 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredPersonalSpaces.length)} 条，共 {filteredPersonalSpaces.length} 条记录
               </div>
@@ -1521,7 +1547,7 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要关闭 <span className="font-bold text-gray-900">"{instanceToDisable?.name}"</span> 的网盘功能吗？
             </p>
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl">
               <div className="text-xs text-gray-700 space-y-1">
                 <p className="font-semibold">关闭网盘后：</p>
                 <div className="space-y-0.5 ml-1">
@@ -1533,7 +1559,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelDisable}>取消</Button>
-            <Button onClick={handleConfirmDisable} className="bg-red-500 hover:bg-red-600 text-white">
+            <Button onClick={handleConfirmDisable} variant="destructive">
               确认关闭
             </Button>
           </DialogFooter>
@@ -1552,7 +1578,7 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为选中的 <span className="font-semibold text-gray-900 tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
             </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -1565,7 +1591,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelBatchEnable}>取消</Button>
-            <Button onClick={handleConfirmBatchEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <Button onClick={handleConfirmBatchEnable}>
               确认启用
             </Button>
           </DialogFooter>
@@ -1589,7 +1615,7 @@ export default function FileManagement() {
               {/* 新启用网盘 */}
               <button
                 onClick={handleChooseNewEnable}
-                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-blue-400 bg-white p-5 text-left transition-all duration-200 hover:shadow-lg"
+                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-blue-400 bg-white p-5 text-left transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1609,7 +1635,7 @@ export default function FileManagement() {
               {/* 恢复已有网盘 */}
               <button
                 onClick={handleChooseRecoverExisting}
-                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-green-400 bg-white p-5 text-left transition-all duration-200 hover:shadow-lg"
+                className="w-full group relative overflow-hidden rounded-xl border-2 border-gray-200 hover:border-green-400 bg-white p-5 text-left transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1643,7 +1669,7 @@ export default function FileManagement() {
             <p className="text-sm text-gray-700">
               您确定要为 <span className="font-bold text-gray-900">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
             </p>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -1656,7 +1682,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
-            <Button onClick={handleConfirmSingleEnable} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+            <Button onClick={handleConfirmSingleEnable}>
               确认启用
             </Button>
           </DialogFooter>
@@ -1673,7 +1699,7 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
               <p className="text-xs text-blue-600 leading-relaxed">
                 为 <span className="font-semibold">"{instanceToPurchase?.name}"</span> 购买网盘容量
               </p>
@@ -1693,7 +1719,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={item.value} className="peer sr-only" />
                       <Label
                         htmlFor={item.value}
-                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-semibold text-gray-900">{item.label}</span>
                         <span className="text-xs text-gray-500 mt-1">{item.price}</span>
@@ -1719,7 +1745,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-medium text-gray-900">{item.label}</span>
                       </Label>
@@ -1730,7 +1756,7 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">合计金额：</span>
                 <div className="flex items-baseline gap-1">
@@ -1744,9 +1770,8 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelPurchase}>取消</Button>
-            <Button 
-              onClick={handleConfirmPurchase} 
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+            <Button
+              onClick={handleConfirmPurchase}
               className="gap-2"
             >
               <ShoppingCart className="w-4 h-4" />
@@ -1766,13 +1791,13 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
               <p className="text-xs text-blue-600 leading-relaxed">
                 为 <span className="font-semibold">"{instanceToRenew?.name}"</span> 续费网盘服务
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
@@ -1795,7 +1820,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`renew-duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`renew-duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
+                        className="flex flex-1 items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
                       >
                         <span className="text-sm font-medium text-gray-900">{item.label}</span>
                       </Label>
@@ -1806,7 +1831,7 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">续费金额：</span>
                 <div className="flex items-baseline gap-1">
@@ -1822,7 +1847,7 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelRenew}>取消</Button>
             <Button 
               onClick={handleConfirmRenew} 
-              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
+              style={{ background: "linear-gradient(135deg, #355EF1, #00C6FF)" }}
               className="gap-2"
             >
               确认续费
@@ -1841,13 +1866,13 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-purple-50 border border-purple-100 rounded-lg px-3 py-2.5">
+            <div className="bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5">
               <p className="text-xs text-purple-600 leading-relaxed">
                 为 <span className="font-semibold">"{instanceToExpand?.name}"</span> 扩容网盘空间
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
               <div className="text-xs text-gray-700 space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
@@ -1865,7 +1890,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`expand-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`expand-${item.value}`}
-                        className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-semibold text-gray-900">{item.label}</span>
                         <span className="text-xs text-gray-500 mt-1">{item.price}</span>
@@ -1877,7 +1902,7 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-700">扩容费用：</span>
                 <div className="flex items-baseline gap-1">
@@ -1922,11 +1947,11 @@ export default function FileManagement() {
                 {getRecyclebinInstances().map((instance) => (
                   <div
                     key={instance.id}
-                    className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors"
+                    className="bg-gray-50 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                           {instance.avatar}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2026,12 +2051,12 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
               <p className="text-sm text-gray-700 leading-relaxed">
                 确定要恢复 <span className="font-semibold text-blue-600">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
               </p>
             </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
               <div className="flex items-start gap-2 text-xs text-gray-600">
                 <Info className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -2046,7 +2071,7 @@ export default function FileManagement() {
             <Button variant="outline" onClick={handleCancelRecyclebinRecover}>取消</Button>
             <Button 
               onClick={handleConfirmRecyclebinRecover}
-              style={{ background: "linear-gradient(135deg, #007AFF, #00C6FF)" }}
+              style={{ background: "linear-gradient(135deg, #355EF1, #00C6FF)" }}
               className="gap-2"
             >
               <RotateCcw className="w-4 h-4" />
@@ -2066,12 +2091,12 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
               <p className="text-sm text-gray-700 leading-relaxed">
                 确定要永久删除 <span className="font-semibold text-red-600">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
               </p>
             </div>
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
               <div className="flex items-start gap-2 text-xs text-gray-600">
                 <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -2107,7 +2132,7 @@ export default function FileManagement() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto py-4 space-y-4">
-            <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
+            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
               <p className="text-sm text-gray-700 leading-relaxed">
                 将 <span className="font-semibold text-purple-600">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
               </p>
@@ -2116,7 +2141,7 @@ export default function FileManagement() {
               </p>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
               <div className="flex items-start gap-2 text-xs text-blue-600">
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -2143,9 +2168,9 @@ export default function FileManagement() {
                         <RadioGroupItem value={item.id} id={`transfer-${item.id}`} className="peer sr-only" />
                         <Label
                           htmlFor={`transfer-${item.id}`}
-                          className="flex flex-1 items-center gap-3 rounded-lg border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                          className="flex flex-1 items-center gap-3 rounded-xl border-2 border-gray-200 bg-white p-4 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                         >
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                             {item.avatar}
                           </div>
                           <div className="flex-1 min-w-0">

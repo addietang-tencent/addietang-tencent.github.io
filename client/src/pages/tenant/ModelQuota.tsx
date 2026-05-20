@@ -614,7 +614,7 @@ export default function ModelQuota() {
             <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
-            <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
+            <div className="overflow-x-auto max-h-[360px] overflow-y-auto scrollbar-on-hover">
               <Table>
                 <TableHeader className="sticky top-0 z-10">
                   <TableRow className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide hover:bg-gray-50">

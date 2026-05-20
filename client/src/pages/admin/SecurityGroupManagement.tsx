@@ -1323,7 +1323,7 @@ function CreateSecurityGroupDialog({
                 ))}
               </div>
 
-              <div className="max-h-40 overflow-y-auto">
+              <div className="max-h-40 overflow-y-auto scrollbar-on-hover">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-gray-50/50 border-b border-[#e5e5e5]">

@@ -21,6 +21,9 @@ function useAdminSidebar() {
   return context;
 }
 
+/** 视口宽度 ≤ 此值时侧栏自动收起 */
+const ADMIN_SIDEBAR_AUTO_COLLAPSE_BP = 1200;
+
 function AdminSidebarProvider({
   defaultCollapsed = false,
   collapsed: collapsedProp,
@@ -49,6 +52,18 @@ function AdminSidebarProvider({
     setCollapsed(!collapsed);
   }, [collapsed, setCollapsed]);
 
+  // ≤1200px 视口自动收起，>1200px 恢复展开
+  React.useEffect(() => {
+    if (collapsedProp !== undefined) return;
+    const mql = window.matchMedia(`(max-width: ${ADMIN_SIDEBAR_AUTO_COLLAPSE_BP}px)`);
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => {
+      setInternalCollapsed(e.matches);
+    };
+    handler(mql);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [collapsedProp]);
+
   const value = React.useMemo(
     () => ({ collapsed, setCollapsed, toggleSidebar }),
     [collapsed, setCollapsed, toggleSidebar]
@@ -58,6 +73,15 @@ function AdminSidebarProvider({
     <AdminSidebarContext.Provider value={value}>
       {children}
     </AdminSidebarContext.Provider>
+  );
+}
+
+/** 收起/展开图标（用户提供的 SVG） */
+function SidebarCollapseIcon({ className }: { className?: string }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <path d="M13 1.5C14.1046 1.5 15 2.39543 15 3.5V12.5C15 13.5357 14.2128 14.387 13.2041 14.4893L13 14.5H3L2.7959 14.4893C1.85435 14.3938 1.1062 13.6457 1.01074 12.7041L1 12.5V3.5C1 2.39543 1.89543 1.5 3 1.5H13ZM3 2.7002C2.55817 2.7002 2.2002 3.05817 2.2002 3.5V12.5C2.2002 12.9418 2.55817 13.2998 3 13.2998H5.90039V2.7002H3ZM7.09961 13.2998H13C13.4418 13.2998 13.7998 12.9418 13.7998 12.5V3.5C13.7998 3.05817 13.4418 2.7002 13 2.7002H7.09961V13.2998ZM4.59961 8.59961H3.40039V7.40039H4.59961V8.59961ZM4.59961 5.59961H3.40039V4.40039H4.59961V5.59961Z" fill="currentColor"/>
+    </svg>
   );
 }
 
@@ -85,17 +109,21 @@ const AdminSidebar = React.forwardRef<HTMLElement, React.ComponentProps<"aside">
 AdminSidebar.displayName = "AdminSidebar";
 
 const AdminSidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      data-slot="admin-sidebar-header"
-      className={cn(
-        "flex shrink-0 flex-col border-b border-[var(--admin-sidebar-border)] px-4 py-3",
-        className
-      )}
-      {...props}
-    />
-  )
+  ({ className, ...props }, ref) => {
+    const { collapsed } = useAdminSidebar();
+    return (
+      <div
+        ref={ref}
+        data-slot="admin-sidebar-header"
+        className={cn(
+          "flex shrink-0 flex-col border-b border-[var(--admin-sidebar-border)]",
+          collapsed ? "items-center px-2 py-3" : "px-4 py-3",
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 AdminSidebarHeader.displayName = "AdminSidebarHeader";
 
@@ -504,5 +532,6 @@ export {
   AdminSidebarProvider,
   AdminSidebarTrigger,
   AdminSidebarUser,
+  SidebarCollapseIcon,
   useAdminSidebar,
 };

@@ -143,7 +143,7 @@ export default function AdminNoticeBar() {
 
   return (
     <div
-      className="sticky top-0 z-20 w-full px-4 pt-4 pb-2"
+      className="sticky top-0 z-20 w-full min-w-[960px] px-10 pt-4 pb-2"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

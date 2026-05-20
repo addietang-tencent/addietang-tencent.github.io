@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
+import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -1570,34 +1571,17 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
         </div>
 
-        {/* Left tab nav + content area */}
-        <div className="flex gap-5" style={{ alignItems: "start" }}>
+        {/* Segment nav + content area */}
+        <Segment value={activeDetailTab} onValueChange={setActiveDetailTab}>
+          <SegmentList>
+            <SegmentItem value="basic">基础配置</SegmentItem>
+            <SegmentItem value="tools">工具管理</SegmentItem>
+            <SegmentItem value="memory">记忆管理</SegmentItem>
+            <SegmentItem value="files">网盘管理</SegmentItem>
+            <SegmentItem value="doctor">龙虾医院</SegmentItem>
+          </SegmentList>
 
-          {/* ===== Left vertical tab nav ===== */}
-          <div className="flex flex-col gap-1 flex-shrink-0 w-36">
-            {([
-              { id: "basic", label: "基础配置" },
-              { id: "tools", label: "工具管理" },
-              { id: "memory", label: "记忆管理" },
-              { id: "files", label: "网盘管理" },
-              { id: "doctor", label: "龙虾医院" },
-            ] as { id: string; label: string }[]).map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveDetailTab(tab.id)}
-                className={`w-full text-left px-4 py-2 text-sm transition-colors border-l-2 ${
-                  activeDetailTab === tab.id
-                    ? "border-blue-600 text-gray-900 font-semibold"
-                    : "border-transparent text-gray-500 font-normal hover:text-gray-800"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* ===== Tab content ===== */}
-          <div className="flex-1 min-w-0">
+          <div className="mt-1">
 
           {/* 基础配置 tab */}
           {activeDetailTab === "basic" && (
@@ -2319,7 +2303,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           )}
 
           </div>{/* end tab content */}
-        </div>{/* end flex outer */}
+        </Segment>{/* end segment */}
           </div>{/* end 中间内容区 (flex-1 min-w-0 px-[42px] py-8) */}
           <div aria-hidden className="shrink-0 w-20 self-stretch" />
         </div>{/* end max-w-[1920px] flex */}

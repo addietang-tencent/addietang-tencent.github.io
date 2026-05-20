@@ -185,6 +185,7 @@ description: >
 | 组件 | 关键样式 |
 |------|---------|
 | Tabs | 活跃态 `#355EF1` + 底色 `#f3f3f4` |
+| Segment | 活跃态 `#020617 font-semibold` 白底阴影 + 底色 `#f3f3f4` |
 | Textarea | 与 Input 一致 |
 | Badge | `rounded-full` + 品牌色 variants |
 | DropdownMenu | `rounded-[8px]` + 三层阴影 + hover `bg-[#f5f5f5]` |
@@ -199,6 +200,50 @@ description: >
 | Accordion | `border-[#e5e5e5]` 卡片式 + 无 shadow |
 | Tooltip | `bg-[#020617] text-white rounded-[4px]` |
 | Card | `rounded-xl border-[#E5E5E5]` 无 boxShadow（用 SurfaceCard） |
+
+---
+
+## 11.5 Segment 分段选择器规范
+
+文件：`client/src/components/ui/segment.tsx`
+
+> Segment 与 Tabs 的区别：Tabs 活跃态为品牌蓝 `#355EF1`；Segment 活跃态为深色 `#020617` + `font-semibold` + 白底浮起。Segment 适用于内容区域的子分类切换（如详情页各 Tab）。
+
+**设计令牌（对齐 Figma）：**
+
+| Token | Value |
+|-------|-------|
+| container / bg | `#f3f3f4` |
+| container / radius | `6px` |
+| container / padding | `3px` |
+| container / height | `36px` (h-9) |
+| item / active bg | `#FFFFFF` |
+| item / active text | `#020617` (font-semibold) |
+| item / active shadow | `0px 1px 2px rgba(0,0,0,0.05)` |
+| item / active radius | `4px` |
+| item / inactive text | `#7b818f` (font-normal) |
+| item / hover text | `#4b5563` |
+| item / padding | `4px 16px` |
+| item / disabled text | `#d3d6db` |
+
+**使用方式：**
+```jsx
+import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
+
+<Segment defaultValue="basic">
+  <SegmentList>
+    <SegmentItem value="basic">基础配置</SegmentItem>
+    <SegmentItem value="tools">工具管理</SegmentItem>
+    <SegmentItem value="memory">记忆管理</SegmentItem>
+  </SegmentList>
+  <SegmentContent value="basic">...</SegmentContent>
+  <SegmentContent value="tools">...</SegmentContent>
+</Segment>
+```
+
+**禁止事项：**
+- 禁止用 className 覆盖 Segment 组件样式
+- 页面内分类切换统一使用 Segment，不再自行写 button + border-l 的竖向导航
 
 ---
 

@@ -157,7 +157,7 @@ function RecordRow({ record }: { record: HistoryRecord }) {
               {record.commandExtra?.testInstanceId && (
                 <span className="ml-0.5 inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 align-middle shrink-0">
                   <FlaskConical className="w-2.5 h-2.5 mr-0.5" />
-                  测试机
+                  灰度机
                 </span>
               )}
             </div>

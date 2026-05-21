@@ -24,6 +24,7 @@
  *   - Star 装饰渐变：linear-gradient(112deg, #E3453D 7%, #7D2621 70%)，10×11
  */
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import {
   Pencil,
   ChevronDown,
@@ -227,6 +228,7 @@ interface AgentChatProps {
 }
 
 export default function AgentChat({ embedded = false }: AgentChatProps) {
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
   const [activeAgentKey, setActiveAgentKey] = useState<string>("dev");
   const [inputText, setInputText] = useState<string>("");
@@ -558,7 +560,14 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
               return (
                 <button
                   key={key}
-                  onClick={() => setActiveTab(key)}
+                  onClick={() => {
+                    if (key === "settings") {
+                      // 跳转到 OpenClaw 详情/基础配置页（图 1）
+                      setLocation(`/openclaw/${activeInstanceKey}`);
+                      return;
+                    }
+                    setActiveTab(key);
+                  }}
                   className="flex-1 flex items-center justify-center transition-colors"
                   style={{
                     padding: "2px 16px",

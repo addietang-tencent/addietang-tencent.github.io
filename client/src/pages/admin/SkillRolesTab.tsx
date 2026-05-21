@@ -26,7 +26,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
+  DialogBody,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -39,6 +41,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -68,7 +71,7 @@ import {
   Edit2,
   AlertCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   MOCK_ROLES,
 } from "@/lib/mockData";
@@ -384,152 +387,152 @@ function BatchUpdateDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-3xl">
+      <DialogContent
+        className="sm:max-w-3xl"
+        style={{ maxHeight: 'min(80vh, 720px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle>批量刷新技能版本</DialogTitle>
+          <DialogDescription className="sr-only">
+            选择需要刷新到最新版本的技能
+          </DialogDescription>
         </DialogHeader>
 
-        {updatableSkills.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-gray-400">
-            <div className="text-center">
-              <CheckCircle2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">所有技能均为最新版本</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* 列表容器 */}
-            <div className="border border-gray-200 rounded-xl max-h-[380px] overflow-y-auto scrollbar-on-hover">
-              {/* 表头行 — sticky，左侧带全选 checkbox */}
-              <div
-                className="grid items-center gap-2 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-20 cursor-pointer hover:bg-gray-100 transition-colors"
-                style={{ gridTemplateColumns: '28px 1.3fr 52px 60px 60px 1.8fr' }}
-                onClick={toggleAll}
-              >
-                <div className="flex items-center justify-center">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                    allPageSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                  }`}>
-                    {allPageSelected && <Check className="w-3 h-3 text-white" />}
-                  </div>
-                </div>
-                <span className="text-xs font-medium text-gray-500">技能名称</span>
-                <span className="text-xs font-medium text-gray-500">类型</span>
-                <span className="text-xs font-medium text-gray-500">新版本</span>
-                <span className="text-xs font-medium text-gray-500">原版本</span>
-                <span className="text-xs font-medium text-gray-500">更新说明</span>
+        <DialogBody className="min-h-0">
+          {updatableSkills.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-[#A3A3A3]">
+              <div className="text-center">
+                <CheckCircle2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">所有技能均为最新版本</p>
               </div>
-
-              {/* 技能列表项 */}
-              {pagedSkills.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-sm text-gray-400">
-                  暂无可更新的技能
-                </div>
-              ) : (
-                pagedSkills.map((item) => {
-                  const checked = selectedIndices.has(item.index);
-                  return (
-                    <div
-                      key={item.index}
-                      onClick={() => toggleOne(item.index)}
-                      className={`grid items-center gap-2 px-3 py-3 border-b border-[#e5e5e5] last:border-b-0 cursor-pointer transition-colors ${checked ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
-                      style={{ gridTemplateColumns: '28px 1.3fr 52px 60px 60px 1.8fr' }}
-                    >
-                      {/* 勾选框 */}
-                      <div className="flex items-center justify-center">
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                          checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                        }`}>
-                          {checked && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                      </div>
-                      {/* 技能名称 */}
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {item.skill.name}
-                      </span>
-                      {/* 类型 */}
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] px-1.5 py-0 w-fit ${
-                          item.skill.source === '公共'
-                            ? 'text-blue-600 border-blue-200 bg-blue-50'
-                            : 'text-purple-600 border-purple-200 bg-purple-50'
-                        }`}
-                      >
-                        {item.skill.source}
-                      </Badge>
-                      {/* 新版本 */}
-                      <span className="font-mono text-xs text-gray-600 font-medium">{item.latestVersion}</span>
-                      {/* 原版本 */}
-                      <span className="font-mono text-xs text-gray-400">{item.skill.version}</span>
-                      {/* 更新说明 */}
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <span className="text-xs text-gray-500 line-clamp-2 block">
-                            {item.updateNote}
-                          </span>
-                        </TooltipTrigger>
-                        {item.updateNote !== '-' && (
-                          <TooltipContent side="top" className="max-w-[360px]">
-                            <p className="text-xs whitespace-pre-wrap">{item.updateNote}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </div>
-                  );
-                })
-              )}
             </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {/* 列表容器 */}
+              <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
+                {/* 表头行 — 左侧带全选 checkbox */}
+                <div
+                  className="grid items-center gap-2 px-3 py-2.5 border-b border-[#E5E5E5] bg-[#FAFAFA] cursor-pointer hover:bg-[#F5F5F5] transition-colors"
+                  style={{ gridTemplateColumns: '28px 1.3fr 60px 64px 64px 1.8fr' }}
+                  onClick={toggleAll}
+                >
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={allPageSelected}
+                      onCheckedChange={toggleAll}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-[#737373]">技能名称</span>
+                  <span className="text-xs font-medium text-[#737373]">类型</span>
+                  <span className="text-xs font-medium text-[#737373]">新版本</span>
+                  <span className="text-xs font-medium text-[#737373]">原版本</span>
+                  <span className="text-xs font-medium text-[#737373]">更新说明</span>
+                </div>
 
-            {/* 分页控件 */}
-            <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
-              <div className="flex items-center gap-1.5">
-                <span>共 {updatableSkills.length} 条，每页</span>
-                <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[70px] h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map(size => (
-                      <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span>条</span>
-                {selectedIndices.size > 0 && (
-                  <span className="text-gray-500 ml-1.5">
-                    已选 {selectedIndices.size} 条记录
-                  </span>
+                {/* 技能列表项 */}
+                {pagedSkills.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-sm text-[#A3A3A3]">
+                    暂无可更新的技能
+                  </div>
+                ) : (
+                  pagedSkills.map((item) => {
+                    const checked = selectedIndices.has(item.index);
+                    return (
+                      <div
+                        key={item.index}
+                        onClick={() => toggleOne(item.index)}
+                        className={`grid items-center gap-2 px-3 py-3 border-b border-[#F5F5F5] last:border-b-0 cursor-pointer transition-colors ${checked ? 'bg-[#EFF6FF]' : 'hover:bg-[#F5F5F5]'}`}
+                        style={{ gridTemplateColumns: '28px 1.3fr 60px 64px 64px 1.8fr' }}
+                      >
+                        {/* 勾选框 */}
+                        <div className="flex items-center justify-center">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleOne(item.index)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        {/* 技能名称 */}
+                        <span className="text-sm font-medium text-[#0A0A0A] truncate">
+                          {item.skill.name}
+                        </span>
+                        {/* 类型 */}
+                        <StatusTag variant={item.skill.source === '公共' ? 'blue' : 'gray'}>
+                          {item.skill.source}
+                        </StatusTag>
+                        {/* 新版本 */}
+                        <span className="font-mono text-xs text-[#334155] font-medium">{item.latestVersion}</span>
+                        {/* 原版本 */}
+                        <span className="font-mono text-xs text-[#A3A3A3]">{item.skill.version}</span>
+                        {/* 更新说明 */}
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="text-xs text-[#737373] line-clamp-2 block">
+                              {item.updateNote}
+                            </span>
+                          </TooltipTrigger>
+                          {item.updateNote !== '-' && (
+                            <TooltipContent side="top" className="max-w-[360px]">
+                              <p className="text-xs whitespace-pre-wrap">{item.updateNote}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </div>
+                    );
+                  })
                 )}
               </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                >
-                  上一页
-                </Button>
-                <span className="px-2 text-gray-600">{currentPage} / {totalPages}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                >
-                  下一页
-                </Button>
+
+              {/* 分页控件 */}
+              <div className="flex items-center justify-between text-sm text-[#737373]">
+                <div className="flex items-center gap-1.5">
+                  <span>共 {updatableSkills.length} 条，每页</span>
+                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+                    <SelectTrigger className="w-[70px] h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map(size => (
+                        <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span>条</span>
+                  {selectedIndices.size > 0 && (
+                    <span className="text-[#737373] ml-1.5">
+                      已选 {selectedIndices.size} 条记录
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="claw-outline"
+                    className="h-7 px-3 text-xs"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  >
+                    上一页
+                  </Button>
+                  <span className="px-2 text-[#334155]">{currentPage} / {totalPages}</span>
+                  <Button
+                    variant="claw-outline"
+                    className="h-7 px-3 text-xs"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  >
+                    下一页
+                  </Button>
+                </div>
               </div>
             </div>
-          </>
-        )}
+          )}
+        </DialogBody>
 
-        <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" onClick={handleCancel}>取消</Button>
+        <DialogFooter>
+          <Button variant="claw-outline" onClick={handleCancel}>取消</Button>
           <Button
+            variant="claw-primary"
             onClick={handleConfirm}
             disabled={selectedIndices.size === 0}
           >
@@ -675,20 +678,20 @@ function RoleAddPublicSkillDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
+      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader>
           <DialogTitle>从公共技能库添加</DialogTitle>
         </DialogHeader>
 
-        <div className="px-5 pt-4 pb-2 shrink-0">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-            我的收藏
+        <DialogBody className="flex-1">
+          <div className="pb-3">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-[#0A0A0A]">
+              我的收藏
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-5 pb-3">
           {MOCK_FAVORITES.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-[#A3A3A3]">
               <Star className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">还没有收藏任何技能</p>
               <p className="text-xs mt-1">可先前往公共技能库收藏技能</p>
@@ -702,35 +705,35 @@ function RoleAddPublicSkillDialog({
                   <div
                     key={skill.id}
                     onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-                    className={`relative rounded-xl border p-3 transition-all ${
+                    className={`relative rounded-lg border p-3 transition-all ${
                       isAlreadyAdded
-                        ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+                        ? 'border-[#E5E5E5] bg-[#FAFAFA] opacity-40 cursor-not-allowed'
                         : isSelected
-                          ? 'border-blue-400 bg-blue-50 cursor-pointer'
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                          ? 'border-[#1447E6] bg-[#1447E6]/5 cursor-pointer'
+                          : 'border-[#E5E5E5] bg-white hover:border-[#1447E6]/50 hover:shadow-sm cursor-pointer'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#1447E6] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                     {isAlreadyAdded && (
-                      <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+                      <StatusTag variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
                     )}
                     <div className="flex items-center gap-2 mb-1.5 pr-8">
-                      <span className="font-mono font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
-                      <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+                      <span className="font-mono font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
+                      <StatusTag variant="gray">v{skill.version}</StatusTag>
                     </div>
-                    <p className="text-xs text-gray-500 line-clamp-2">{skill.descriptionZh}</p>
+                    <p className="text-xs text-[#737373] line-clamp-2">{skill.descriptionZh}</p>
                   </div>
                 );
               })}
             </div>
           )}
-        </div>
+        </DialogBody>
 
-        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
+        <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -885,45 +888,43 @@ function RoleAddEnterpriseSkillDialog({
       <div
         key={skill.id}
         onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-        className={`relative rounded-xl border p-3 transition-all ${
+        className={`relative rounded-lg border p-3 transition-all ${
           isAlreadyAdded
-            ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+            ? 'border-[#E5E5E5] bg-[#FAFAFA] opacity-40 cursor-not-allowed'
             : isSelected
-              ? 'border-blue-400 bg-blue-50 cursor-pointer'
-              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+              ? 'border-[#1447E6] bg-[#1447E6]/5 cursor-pointer'
+              : 'border-[#E5E5E5] bg-white hover:border-[#1447E6]/50 hover:shadow-sm cursor-pointer'
         }`}
       >
         {isSelected && (
-          <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center z-10">
+          <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-[#1447E6] flex items-center justify-center z-10">
             <Check className="w-3 h-3 text-white" />
           </div>
         )}
         {isAlreadyAdded && (
-          <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded z-10">已添加</div>
+          <StatusTag variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
         )}
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
-            <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+            <span className="font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
+            <StatusTag variant="gray">v{skill.version}</StatusTag>
           </div>
           {/* 应用范围标签 - 右上角（已添加的技能不显示，右上角只显示"已添加"） */}
           {!isAlreadyAdded && (
             <div className="flex items-center gap-1 shrink-0">
               {isPublicScope ? (
-                <span className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-full whitespace-nowrap">
-                  全部用户
-                </span>
+                <StatusTag variant="blue">全部用户</StatusTag>
               ) : (
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <span className="inline-flex items-center gap-1 cursor-default">
-                      <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded-full max-w-[80px] truncate">
+                      <StatusTag variant="gray" className="max-w-[80px] truncate">
                         {scopeLabelsArr[0]}
-                      </span>
+                      </StatusTag>
                       {scopeLabelsArr.length > 1 && (
-                        <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[10px] rounded-full whitespace-nowrap">
+                        <StatusTag variant="gray">
                           +{scopeLabelsArr.length - 1}
-                        </span>
+                        </StatusTag>
                       )}
                     </span>
                   </TooltipTrigger>
@@ -935,28 +936,28 @@ function RoleAddEnterpriseSkillDialog({
             </div>
           )}
         </div>
-        <p className="text-xs text-gray-500 line-clamp-2">{skill.description}</p>
+        <p className="text-xs text-[#737373] line-clamp-2">{skill.description}</p>
       </div>
     );
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
+      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
+        <DialogHeader>
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <DialogBody className="flex-1">
           {/* 搜索框 + 应用范围筛选 + 刷新 */}
-          <div className="px-5 pt-3 pb-2 shrink-0 flex items-center gap-2">
+          <div className="pb-3 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <input
                 type="text"
                 placeholder="搜索技能名称或描述..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-[#E5E5E5] rounded-[4px] bg-white focus:outline-none focus:border-[#1447E6] transition-colors"
               />
             </div>
             {/* 应用范围多选下拉 */}
@@ -966,10 +967,10 @@ function RoleAddEnterpriseSkillDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-[#0A0A0A] hover:bg-[#FAFAFA] transition-colors"
                   >
                     <span className="truncate text-left text-xs">{getScopeFilterLabel()}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-[#737373] shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
@@ -991,16 +992,16 @@ function RoleAddEnterpriseSkillDialog({
                 };
 
                 return (
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-[#E5E5E5] rounded-[4px] shadow-[0px_0px_2px_0px_rgba(0,0,0,0.1),0px_4px_16px_0px_rgba(0,0,0,0.12)] z-50 py-1">
                     {/* 搜索框 */}
                     <div className="px-2 pb-1.5 pt-1">
                       <div className="relative">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                         <input
                           placeholder="搜索..."
                           value={scopeSearchQuery}
                           onChange={(e) => setScopeSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full pl-7 pr-2 h-8 text-sm border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
@@ -1017,10 +1018,10 @@ function RoleAddEnterpriseSkillDialog({
                           }
                           setScopeSearchQuery('');
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#FAFAFA] transition-colors text-[#0A0A0A]"
                       >
                         <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                          allSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                          allSelected ? 'bg-[#1447E6] border-[#1447E6]' : 'border-[#E5E5E5]'
                         }`}>
                           {allSelected && <Check className="w-3 h-3 text-white" />}
                         </span>
@@ -1030,16 +1031,16 @@ function RoleAddEnterpriseSkillDialog({
                     {/* 全部用户 区域 */}
                     {showPublic && (
                       <>
-                        <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
+                        <div className="px-3 pt-2 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                           全部用户
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleScopeItem('__public__')}
-                          className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
+                          className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#FAFAFA] transition-colors text-[#0A0A0A]"
                         >
                           <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                            scopeFilters.includes('__public__') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                            scopeFilters.includes('__public__') ? 'bg-[#1447E6] border-[#1447E6]' : 'border-[#E5E5E5]'
                           }`}>
                             {scopeFilters.includes('__public__') && <Check className="w-3 h-3 text-white" />}
                           </span>
@@ -1050,7 +1051,7 @@ function RoleAddEnterpriseSkillDialog({
                     {/* 按分组 区域 */}
                     {showGroupSection && (
                       <>
-                        <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
+                        <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                           按分组
                         </div>
                         <div className="max-h-44 overflow-y-auto">
@@ -1061,10 +1062,10 @@ function RoleAddEnterpriseSkillDialog({
                                 key={group.id}
                                 type="button"
                                 onClick={() => toggleScopeItem(group.id)}
-                                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
+                                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#FAFAFA] transition-colors text-[#0A0A0A]"
                               >
                                 <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                                  checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                                  checked ? 'bg-[#1447E6] border-[#1447E6]' : 'border-[#E5E5E5]'
                                 }`}>
                                   {checked && <Check className="w-3 h-3 text-white" />}
                                 </span>
@@ -1073,20 +1074,20 @@ function RoleAddEnterpriseSkillDialog({
                             );
                           })}
                           {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
-                            <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
+                            <p className="text-xs text-[#A3A3A3] py-2 text-center">没有匹配的结果</p>
                           )}
                         </div>
                       </>
                     )}
                     {/* 底部已选信息 + 清除 */}
                     {scopeFilters.length > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5] mt-1">
-                        <span className="text-xs text-gray-500">
+                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5] mt-1">
+                        <span className="text-xs text-[#737373]">
                           已选 {scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项
                         </span>
                         <button
                           onClick={() => { setScopeFilters([]); setScopeSearchQuery(''); }}
-                          className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                          className="text-xs text-[#1447E6] hover:opacity-80 transition-opacity"
                         >
                           清除
                         </button>
@@ -1098,20 +1099,20 @@ function RoleAddEnterpriseSkillDialog({
             </div>
             <button
               onClick={handleRefresh}
-              className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              className="p-2 rounded-[4px] border border-[#E5E5E5] bg-white hover:bg-[#FAFAFA] transition-colors text-[#737373] hover:text-[#0A0A0A]"
               title="刷新"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="px-5 pb-3 shrink-0 flex flex-wrap gap-2">
+          <div className="pb-3 flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                 activeCategory === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                  : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
               }`}
             >
               全部
@@ -1120,10 +1121,10 @@ function RoleAddEnterpriseSkillDialog({
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   activeCategory === cat.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                    : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
                 }`}
               >
                 {cat.name}
@@ -1131,20 +1132,19 @@ function RoleAddEnterpriseSkillDialog({
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
-            {filteredSkills.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {filteredSkills.map(skill => renderSkillCard(skill))}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">暂无匹配的技能</p>
-              </div>
-            )}
-          </div>
-        </div>
-        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
+          {filteredSkills.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {filteredSkills.map(skill => renderSkillCard(skill))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-[#A3A3A3]">
+              <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">暂无匹配的技能</p>
+            </div>
+          )}
+        </DialogBody>
+
+        <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -1299,25 +1299,32 @@ function RoleEditModal({
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="sm:max-w-lg"
+          style={{ height: 'min(80vh, 720px)', display: 'flex', flexDirection: 'column' }}
+        >
           <DialogHeader>
             <DialogTitle>
               {isNew ? "自定义角色" : `编辑角色 — ${role?.name}`}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {isNew ? "创建一个新的自定义角色，配置角色的名称、描述、灵魂、应用范围与角色技能" : "编辑该角色的名称、描述、灵魂、应用范围与角色技能"}
+            </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <DialogBody className="flex-1">
+            <div className="space-y-5">
             {/* Name */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-[#334155]">
                 角色名称
-                <span className="text-xs text-gray-300 font-normal ml-1.5">{name.length}/{NAME_MAX_LEN}</span>
+                <span className="text-xs text-[#A3A3A3] font-normal ml-1.5">{name.length}/{NAME_MAX_LEN}</span>
               </Label>
               <Input
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="例如：营养师、法律顾问..."
-                className={`mt-1.5 bg-gray-50 ${nameError ? "border-red-400" : ""}`}
+                className={`mt-1.5 rounded-[4px] ${nameError ? "border-red-400" : ""}`}
                 autoFocus={isNew}
                 maxLength={NAME_MAX_LEN}
               />
@@ -1328,56 +1335,62 @@ function RoleEditModal({
 
             {/* Description — use Textarea for auto wrap */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">角色描述</Label>
+              <Label className="text-sm font-medium text-[#334155]">角色描述</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="一句话描述角色的核心能力"
-                className="mt-1.5 min-h-[60px] resize-none bg-gray-50"
+                className="mt-1.5 min-h-[60px] resize-none rounded-[4px]"
                 rows={2}
               />
             </div>
 
             {/* Soul */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-[#334155]">
                 角色灵魂
-                <span className="text-gray-400 font-normal ml-1.5">— 定义智能体的人格、价值观与行为准则</span>
+                <span className="text-[#A3A3A3] font-normal ml-1.5">— 定义智能体的人格、价值观与行为准则</span>
               </Label>
               <Textarea
                 value={soul}
                 onChange={(e) => setSoul(e.target.value)}
                 placeholder="描述角色的人格特质、专业领域和行为准则..."
-                className="mt-1.5 min-h-[80px] resize-none bg-gray-50"
+                className="mt-1.5 min-h-[80px] resize-none rounded-[4px]"
                 rows={3}
               />
             </div>
 
             {/* 应用范围 — 放在角色技能上面 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">应用范围</Label>
+              <Label className="text-sm font-medium text-[#334155]">应用范围</Label>
               <div className="mt-2 space-y-3">
                 <div className="flex items-center gap-1.5">
-                  <button
+                  <Button
+                    type="button"
+                    variant="claw-outline"
+                    size="claw-sm"
                     onClick={() => { setScope('public'); setGroupIds([]); }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                    className={`h-8 px-3 text-xs ${
                       scope === 'public'
-                        ? 'border-blue-200 bg-blue-50 text-blue-600'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        ? 'border-[#1447E6] bg-[#EFF6FF] text-[#1447E6] hover:bg-[#EFF6FF] hover:text-[#1447E6]'
+                        : ''
                     }`}
                   >
                     全部用户
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="claw-outline"
+                    size="claw-sm"
                     onClick={() => setScope('private')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                    className={`h-8 px-3 text-xs ${
                       scope === 'private'
-                        ? 'border-blue-200 bg-blue-50 text-blue-600'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        ? 'border-[#1447E6] bg-[#EFF6FF] text-[#1447E6] hover:bg-[#EFF6FF] hover:text-[#1447E6]'
+                        : ''
                     }`}
                   >
                     按分组
-                  </button>
+                  </Button>
 
                   {/* 选择按分组后，右侧出现下拉选择器 */}
                   {scope === 'private' && (
@@ -1385,14 +1398,19 @@ function RoleEditModal({
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                            <Button
+                              type="button"
+                              variant="claw-outline"
+                              size="claw-sm"
+                              className="h-8 px-3 text-xs font-normal text-[#334155] min-w-[120px] justify-between"
+                            >
                               <span className="truncate">
                                 {groupIds.length > 0
                                   ? `已选 ${groupIds.length} 个分组`
                                   : '选择分组…'}
                               </span>
-                              <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
-                            </button>
+                              <ChevronDown className="w-3 h-3 text-[#A3A3A3] shrink-0" />
+                            </Button>
                           </PopoverTrigger>
                         </TooltipTrigger>
                         {groupIds.length > 0 && (
@@ -1404,14 +1422,14 @@ function RoleEditModal({
                         )}
                       </Tooltip>
                       <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                        <div className="p-2 border-b border-[#e5e5e5]">
+                        <div className="p-2 border-b border-[#E5E5E5]">
                           <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                            <input
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                            <Input
                               placeholder="搜索分组…"
                               value={groupSearchQuery}
                               onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                              className="pl-8 pr-3 h-8 text-xs rounded-[4px]"
                             />
                           </div>
                         </div>
@@ -1421,6 +1439,7 @@ function RoleEditModal({
                             return (
                               <button
                                 key={group.id}
+                                type="button"
                                 onClick={() => {
                                   setGroupIds(prev =>
                                     prev.includes(group.id)
@@ -1428,29 +1447,29 @@ function RoleEditModal({
                                       : [...prev, group.id]
                                   );
                                 }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-[#F5F5F5] transition-colors text-left"
                               >
-                                <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                                  checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
-                                }`}>
-                                  {checked && <Check className="w-2.5 h-2.5 text-white" />}
-                                </span>
-                                <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                                <Checkbox
+                                  checked={checked}
+                                  className="h-3.5 w-3.5 pointer-events-none"
+                                />
+                                <span className="text-xs text-[#334155] truncate">{group.name}</span>
                               </button>
                             );
                           })}
                           {filteredGroupsForEdit.length === 0 && (
-                            <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
+                            <p className="text-[11px] text-[#A3A3A3] py-3 text-center">无匹配分组</p>
                           )}
                         </div>
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5]">
-                          <p className="text-[11px] text-gray-400">
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5]">
+                          <p className="text-[11px] text-[#A3A3A3]">
                             已选 {groupIds.length} 个分组
                           </p>
                           {groupIds.length > 0 && (
                             <button
+                              type="button"
                               onClick={() => setGroupIds([])}
-                              className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-[11px] text-[#1447E6] hover:opacity-80 transition-opacity"
                             >
                               清除
                             </button>
@@ -1465,13 +1484,13 @@ function RoleEditModal({
 
             {/* Skills */}
             <div>
-              <Label className="text-sm font-medium text-gray-700">
+              <Label className="text-sm font-medium text-[#334155]">
                 角色技能
-                <span className="text-gray-400 font-normal ml-1.5">— 赋予智能体专业执行能力的技能工具</span>
+                <span className="text-[#A3A3A3] font-normal ml-1.5">— 赋予智能体专业执行能力的技能工具</span>
               </Label>
-              <div className="mt-1.5 border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-4 border-b border-[#e5e5e5] flex items-center justify-between" style={{ minHeight: '48px' }}>
-                  <span className="text-sm font-medium text-gray-700">
+              <div className="mt-1.5 border border-[#E5E5E5] rounded-[4px] overflow-hidden">
+                <div className="px-4 border-b border-[#E5E5E5] flex items-center justify-between" style={{ minHeight: '48px' }}>
+                  <span className="text-sm font-medium text-[#334155]">
                     技能列表（共 {skills.length} 个）
                   </span>
                   <div className="flex items-center gap-2">
@@ -1479,8 +1498,8 @@ function RoleEditModal({
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="claw-outline"
+                          size="claw-sm"
                           onClick={() => {
                             const updatable = getUpdatableSkills();
                             if (updatable.length === 0) {
@@ -1510,62 +1529,54 @@ function RoleEditModal({
                   </div>
                 </div>
                 {skills.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-[#A3A3A3]">
                     <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
                     <p className="text-sm">该角色还没有技能</p>
                     <p className="text-xs mt-1">可从公共技能库或企业技能库添加</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-50">
+                  <div className="divide-y divide-[#F5F5F5]">
                     {skills.map((skill, idx) => {
                       const updateResult = checkSkillUpdate(skill);
                       const wasRefreshed = !!skill.previousVersion;
                       return (
-                        <div key={`${skill.name}-${idx}`} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                          <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                            <Package className="w-4 h-4 text-gray-500" />
+                        <div key={`${skill.name}-${idx}`} className="flex items-center gap-3 px-4 py-3 hover:bg-[#F5F5F5] transition-colors">
+                          <div className="w-8 h-8 rounded-[4px] bg-[#F5F5F5] flex items-center justify-center shrink-0">
+                            <Package className="w-4 h-4 text-[#737373]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm font-medium text-gray-800">
+                              <span className="font-mono text-sm font-medium text-[#0A0A0A]">
                                 {skill.name}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] px-1.5 py-0 ${
-                                  skill.source === '公共'
-                                    ? 'text-blue-600 border-blue-200 bg-blue-50'
-                                    : 'text-purple-600 border-purple-200 bg-purple-50'
-                                }`}
-                              >
+                              <StatusTag variant={skill.source === '公共' ? 'blue' : 'gray'}>
                                 {skill.source}
-                              </Badge>
+                              </StatusTag>
                               {wasRefreshed ? (
                                 <span className="font-mono text-[10px]">
                                   <span className="text-green-600 font-medium">{skill.version}</span>
-                                  <span className="text-gray-400 ml-0.5">(原{skill.previousVersion})</span>
+                                  <span className="text-[#A3A3A3] ml-0.5">(原{skill.previousVersion})</span>
                                 </span>
                               ) : (
-                                <span className="font-mono text-[10px] text-gray-400">{skill.version}</span>
+                                <span className="font-mono text-[10px] text-[#A3A3A3]">{skill.version}</span>
                               )}
                             </div>
                           </div>
                           {/* 刷新按钮 */}
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
-                              <button
+                              <Button
+                                type="button"
+                                variant="claw-outline"
                                 onClick={() => updateResult.hasUpdate ? handleRefreshSingleSkill(idx) : undefined}
-                                className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
-                                  updateResult.hasUpdate
-                                    ? 'text-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer'
-                                    : 'text-gray-300 cursor-default'
-                                }`}
+                                disabled={!updateResult.hasUpdate}
+                                className="h-7 w-7 p-0 rounded-[4px] border-0 bg-transparent hover:bg-transparent hover:text-[#1447E6] [&_svg]:size-3.5 text-[#0A0A0A]"
                                 title={updateResult.hasUpdate ? '有新版本，点击刷新' : '已是最新'}
                               >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                              </button>
+                                <RefreshCw />
+                              </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top">
                               {updateResult.hasUpdate
@@ -1574,24 +1585,26 @@ function RoleEditModal({
                             </TooltipContent>
                           </Tooltip>
                           {/* 删除按钮 */}
-                          <button
+                          <Button
+                            type="button"
+                            variant="claw-outline"
                             onClick={() => removeSkill(idx)}
-                            className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="h-7 w-7 p-0 rounded-[4px] border-0 bg-transparent hover:bg-transparent hover:text-[#DC2626] [&_svg]:size-3.5 text-[#0A0A0A]"
                             title="从角色中移除"
                           >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                            <Trash2 />
+                          </Button>
                         </div>
                       );
                     })}
                   </div>
                 )}
-                <div className="px-4 py-3 border-t border-[#e5e5e5] flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddPublicDialog(true)}>
+                <div className="px-4 py-3 border-t border-[#E5E5E5] flex items-center gap-2">
+                  <Button variant="claw-outline" size="claw-sm" className="gap-1.5 text-xs h-8" onClick={() => setShowAddPublicDialog(true)}>
                     <Plus className="w-3.5 h-3.5" />
                     从公共技能库添加
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddEnterpriseDialog(true)}>
+                  <Button variant="claw-outline" size="claw-sm" className="gap-1.5 text-xs h-8" onClick={() => setShowAddEnterpriseDialog(true)}>
                     <Plus className="w-3.5 h-3.5" />
                     从企业技能库添加
                   </Button>
@@ -1602,16 +1615,18 @@ function RoleEditModal({
             {/* Visible */}
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-sm font-medium text-gray-700">用户可见</Label>
-                <p className="text-xs text-gray-400 mt-0.5">启用后，员工创建 Agent 时可选择此角色</p>
+                <Label className="text-sm font-medium text-[#334155]">用户可见</Label>
+                <p className="text-xs text-[#A3A3A3] mt-0.5">启用后，员工创建 Agent 时可选择此角色</p>
               </div>
               <Switch checked={visible} onCheckedChange={setVisible} />
             </div>
-          </div>
+            </div>
+          </DialogBody>
 
           <DialogFooter>
-            <Button variant="outline" onClick={onClose}>取消</Button>
+            <Button variant="claw-outline" onClick={onClose}>取消</Button>
             <Button
+              variant="claw-primary"
               onClick={handleSave}
             >
               保存

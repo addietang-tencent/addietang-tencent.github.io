@@ -6,16 +6,17 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
 import { StatusTag } from '@/components/ui/status-tag';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogBody,
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -81,22 +82,22 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
+      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+        <DialogHeader>
           <DialogTitle>从公共技能库添加</DialogTitle>
         </DialogHeader>
 
-        {/* 收藏分区标题 */}
-        <div className="px-5 pt-4 pb-2 shrink-0">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-            我的收藏
+        <DialogBody className="flex-1">
+          {/* 收藏分区标题 */}
+          <div className="pb-3">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-[#0A0A0A]">
+              我的收藏
+            </div>
           </div>
-        </div>
 
-        {/* 技能列表 */}
-        <div className="flex-1 overflow-y-auto px-5 pb-3">
+          {/* 技能列表 */}
           {MOCK_FAVORITES.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-[#A3A3A3]">
               <Star className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">还没有收藏任何技能</p>
               <p className="text-xs mt-1">可先前往公共技能库收藏技能</p>
@@ -110,37 +111,37 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
                   <div
                     key={skill.id}
                     onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-                    className={`relative rounded-xl border p-3 transition-all ${
+                    className={`relative rounded-lg border p-3 transition-all ${
                       isAlreadyAdded
-                        ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+                        ? 'border-[#E5E5E5] bg-[#FAFAFA] opacity-40 cursor-not-allowed'
                         : isSelected
-                          ? 'border-blue-400 bg-blue-50 cursor-pointer'
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                          ? 'border-[#1447E6] bg-[#1447E6]/5 cursor-pointer'
+                          : 'border-[#E5E5E5] bg-white hover:border-[#1447E6]/50 hover:shadow-sm cursor-pointer'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#1447E6] flex items-center justify-center">
                         <Check className="w-3 h-3 text-white" />
                       </div>
                     )}
                     {isAlreadyAdded && (
-                      <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded">已添加</div>
+                      <StatusTag variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
                     )}
                     {/* 技能名称（英文）+ 版本号 */}
                     <div className="flex items-center gap-2 mb-1.5 pr-8">
-                      <span className="font-mono font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
-                      <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+                      <span className="font-mono font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
+                      <StatusTag variant="gray">v{skill.version}</StatusTag>
                     </div>
                     {/* 描述（中文） */}
-                    <p className="text-xs text-gray-500 line-clamp-2">{skill.descriptionZh}</p>
+                    <p className="text-xs text-[#737373] line-clamp-2">{skill.descriptionZh}</p>
                   </div>
                 );
               })}
             </div>
           )}
-        </div>
+        </DialogBody>
 
-        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
+        <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -176,18 +177,6 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
   const [scopeFilters, setScopeFilters] = useState<string[]>([]);
   const [scopeDropdownOpen, setScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState('');
-  const scopeDropdownRef = useRef<HTMLDivElement>(null);
-
-  // 点击外部关闭应用范围下拉
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (scopeDropdownRef.current && !scopeDropdownRef.current.contains(e.target as Node)) {
-        setScopeDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // 打开时根据技能包应用范围设置默认筛选
   // 规则：【全部用户】默认必勾选
@@ -293,44 +282,42 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
       <div
         key={skill.id}
         onClick={() => !isAlreadyAdded && toggleSkill(skill.id)}
-        className={`relative rounded-xl border p-3 transition-all ${
+        className={`relative rounded-lg border p-3 transition-all ${
           isAlreadyAdded
-            ? 'border-gray-200 bg-gray-100 opacity-40 cursor-not-allowed'
+            ? 'border-[#E5E5E5] bg-[#FAFAFA] opacity-40 cursor-not-allowed'
             : isSelected
-              ? 'border-blue-400 bg-blue-50 cursor-pointer'
-              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm cursor-pointer'
+              ? 'border-[#1447E6] bg-[#1447E6]/5 cursor-pointer'
+              : 'border-[#E5E5E5] bg-white hover:border-[#1447E6]/50 hover:shadow-sm cursor-pointer'
         }`}
       >
         {isSelected && (
-          <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center z-10">
+          <div className="absolute bottom-2 right-2 w-5 h-5 rounded-full bg-[#1447E6] flex items-center justify-center z-10">
             <Check className="w-3 h-3 text-white" />
           </div>
         )}
         {isAlreadyAdded && (
-          <div className="absolute top-2 right-2 text-[10px] text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded z-10">已添加</div>
+          <StatusTag variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
         )}
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-medium text-sm text-gray-900 truncate min-w-0">{skill.name}</span>
-            <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded shrink-0">v{skill.version}</span>
+            <span className="font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
+            <StatusTag variant="gray">v{skill.version}</StatusTag>
           </div>
           {/* 应用范围标签 - 右上角 */}
           <div className="flex items-center gap-1 shrink-0">
             {isPublicScope ? (
-              <span className="inline-flex items-center px-2 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 whitespace-nowrap">
-                全部用户
-              </span>
+              <StatusTag variant="blue">全部用户</StatusTag>
             ) : (
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-default">
-                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 max-w-[80px] truncate">
+                    <StatusTag variant="gray" className="max-w-[80px] truncate">
                       {scopeLabelsArr[0]}
-                    </span>
+                    </StatusTag>
                     {scopeLabelsArr.length > 1 && (
-                      <span className="inline-block px-1.5 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] font-medium rounded-[4px] border border-blue-100 whitespace-nowrap">
+                      <StatusTag variant="gray">
                         +{scopeLabelsArr.length - 1}
-                      </span>
+                      </StatusTag>
                     )}
                   </span>
                 </TooltipTrigger>
@@ -341,51 +328,54 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
             )}
           </div>
         </div>
-        <p className="text-xs text-gray-500 line-clamp-2">{skill.description}</p>
+        <p className="text-xs text-[#737373] line-clamp-2">{skill.description}</p>
       </div>
     );
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl p-0 overflow-hidden" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#e5e5e5] shrink-0">
+      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
+        <DialogHeader>
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col flex-1 overflow-hidden">
+
+        <DialogBody className="flex-1">
           {/* 搜索框 + 应用范围筛选 + 刷新按钮 */}
-          <div className="px-5 pt-3 pb-2 shrink-0 flex items-center gap-2">
+          <div className="pb-3 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <input
                 type="text"
                 placeholder="搜索技能名称或描述..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-[#E5E5E5] rounded-[4px] bg-white focus:outline-none focus:border-[#1447E6] transition-colors"
               />
             </div>
             {/* 应用范围多选下拉 — 层级结构：全部应用范围 / 全部用户 / 按分组 */}
-            <div className="relative" ref={scopeDropdownRef}>
+            <Popover open={scopeDropdownOpen} onOpenChange={setScopeDropdownOpen}>
               <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[16rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="truncate text-left text-xs">
-                      {(() => {
-                        const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
-                        const allSelected = allIds.every(id => scopeFilters.includes(id));
-                        if (scopeFilters.length === 0 || allSelected) return '全部应用范围';
-                        if (scopeFilters.includes('__public__') && scopeFilters.length === 1) return '全部用户';
-                        const count = scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0);
-                        return `已选 ${count} 项`;
-                      })()}
-                    </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="claw-outline"
+                      type="button"
+                      className="min-w-[10rem] max-w-[16rem] h-9 px-3 justify-between text-xs font-normal text-[#334155]"
+                    >
+                      <span className="truncate text-left">
+                        {(() => {
+                          const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
+                          const allSelected = allIds.every(id => scopeFilters.includes(id));
+                          if (scopeFilters.length === 0 || allSelected) return '全部应用范围';
+                          if (scopeFilters.includes('__public__') && scopeFilters.length === 1) return '全部用户';
+                          const count = scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0);
+                          return `已选 ${count} 项`;
+                        })()}
+                      </span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-[#A3A3A3] shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
                   <p className="break-words text-xs">
@@ -398,129 +388,128 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
                   </p>
                 </TooltipContent>
               </Tooltip>
-              {scopeDropdownOpen && (() => {
-                const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
-                const allSelected = allIds.every(id => scopeFilters.includes(id));
-                const filteredGroups = MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()));
-                const showPublic = !scopeSearchQuery || '全部用户'.includes(scopeSearchQuery);
-                const showGroupSection = !scopeSearchQuery || '按分组'.includes(scopeSearchQuery) || filteredGroups.length > 0;
+              <PopoverContent align="end" sideOffset={6} className="w-56 p-0">
+                {(() => {
+                  const allIds = ['__public__', ...MOCK_GROUPS.map(g => g.id)];
+                  const allSelected = allIds.every(id => scopeFilters.includes(id));
+                  const filteredGroups = MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(scopeSearchQuery.toLowerCase()));
+                  const showPublic = !scopeSearchQuery || '全部用户'.includes(scopeSearchQuery);
+                  const showGroupSection = !scopeSearchQuery || '按分组'.includes(scopeSearchQuery) || filteredGroups.length > 0;
 
-                const toggleScopeItem = (key: string) => {
-                  setScopeFilters(prev => {
-                    if (prev.includes(key)) return prev.filter(f => f !== key);
-                    return [...prev, key];
-                  });
-                };
+                  const toggleScopeItem = (key: string) => {
+                    setScopeFilters(prev => {
+                      if (prev.includes(key)) return prev.filter(f => f !== key);
+                      return [...prev, key];
+                    });
+                  };
 
-                return (
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
-                    {/* 搜索框 */}
-                    <div className="px-2 pb-1.5 pt-1">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                        <input
-                          placeholder="搜索..."
-                          value={scopeSearchQuery}
-                          onChange={(e) => setScopeSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    </div>
-                    {/* 全部应用范围 — 全选/全不选切换 */}
-                    {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (allSelected) {
-                            setScopeFilters([]);
-                          } else {
-                            setScopeFilters(allIds);
-                          }
-                          setScopeSearchQuery('');
-                        }}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
-                      >
-                        <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                          allSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
-                        }`}>
-                          {allSelected && <Check className="w-3 h-3 text-white" />}
-                        </span>
-                        <span className="truncate text-left">全部应用范围</span>
-                      </button>
-                    )}
-                    {/* 全部用户 区域 */}
-                    {showPublic && (
-                      <>
-                        <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
-                          全部用户
+                  return (
+                    <div className="py-1">
+                      {/* 搜索框 */}
+                      <div className="px-2 pb-1.5 pt-1">
+                        <div className="relative">
+                          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                          <Input
+                            placeholder="搜索..."
+                            value={scopeSearchQuery}
+                            onChange={(e) => setScopeSearchQuery(e.target.value)}
+                            className="h-8 pl-7 pr-2 text-sm rounded-[4px]"
+                          />
                         </div>
+                      </div>
+                      {/* 全部应用范围 — 全选/全不选切换 */}
+                      {(!scopeSearchQuery || '全部应用范围'.includes(scopeSearchQuery)) && (
                         <button
                           type="button"
-                          onClick={() => toggleScopeItem('__public__')}
-                          className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
+                          onClick={() => {
+                            if (allSelected) {
+                              setScopeFilters([]);
+                            } else {
+                              setScopeFilters(allIds);
+                            }
+                            setScopeSearchQuery('');
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#F5F5F5] transition-colors text-[#334155]"
                         >
-                          <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                            scopeFilters.includes('__public__') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
-                          }`}>
-                            {scopeFilters.includes('__public__') && <Check className="w-3 h-3 text-white" />}
+                          <Checkbox
+                            checked={allSelected}
+                            className="h-4 w-4 pointer-events-none"
+                          />
+                          <span className="truncate text-left">全部应用范围</span>
+                        </button>
+                      )}
+                      {/* 全部用户 区域 */}
+                      {showPublic && (
+                        <>
+                          <div className="px-3 pt-2 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
+                            全部用户
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleScopeItem('__public__')}
+                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#F5F5F5] transition-colors text-[#334155]"
+                          >
+                            <Checkbox
+                              checked={scopeFilters.includes('__public__')}
+                              className="h-4 w-4 pointer-events-none"
+                            />
+                            <span className="truncate text-left">全部用户</span>
+                          </button>
+                        </>
+                      )}
+                      {/* 按分组 区域 */}
+                      {showGroupSection && (
+                        <>
+                          <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
+                            按分组
+                          </div>
+                          <div className="max-h-44 overflow-y-auto">
+                            {filteredGroups.map(group => {
+                              const checked = scopeFilters.includes(group.id);
+                              return (
+                                <button
+                                  key={group.id}
+                                  type="button"
+                                  onClick={() => toggleScopeItem(group.id)}
+                                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-[#F5F5F5] transition-colors text-[#334155]"
+                                >
+                                  <Checkbox
+                                    checked={checked}
+                                    className="h-4 w-4 pointer-events-none"
+                                  />
+                                  <span className="truncate text-left" title={group.name}>{group.name}</span>
+                                </button>
+                              );
+                            })}
+                            {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
+                              <p className="text-xs text-[#A3A3A3] py-2 text-center">没有匹配的结果</p>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      {/* 底部已选信息 + 清除 */}
+                      {scopeFilters.length > 0 && (
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5] mt-1">
+                          <span className="text-xs text-[#737373]">
+                            已选 {scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项
                           </span>
-                          <span className="truncate text-left">全部用户</span>
-                        </button>
-                      </>
-                    )}
-                    {/* 按分组 区域 */}
-                    {showGroupSection && (
-                      <>
-                        <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
-                          按分组
+                          <button
+                            type="button"
+                            onClick={() => { setScopeFilters([]); setScopeSearchQuery(''); }}
+                            className="text-xs text-[#1447E6] hover:opacity-80 transition-opacity"
+                          >
+                            清除
+                          </button>
                         </div>
-                        <div className="max-h-44 overflow-y-auto">
-                          {filteredGroups.map(group => {
-                            const checked = scopeFilters.includes(group.id);
-                            return (
-                              <button
-                                key={group.id}
-                                type="button"
-                                onClick={() => toggleScopeItem(group.id)}
-                                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors text-gray-700"
-                              >
-                                <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
-                                  checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
-                                }`}>
-                                  {checked && <Check className="w-3 h-3 text-white" />}
-                                </span>
-                                <span className="truncate text-left" title={group.name}>{group.name}</span>
-                              </button>
-                            );
-                          })}
-                          {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
-                            <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
-                          )}
-                        </div>
-                      </>
-                    )}
-                    {/* 底部已选信息 + 清除 */}
-                    {scopeFilters.length > 0 && (
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5] mt-1">
-                        <span className="text-xs text-gray-500">
-                          已选 {scopeFilters.filter(f => f !== '__public__').length + (scopeFilters.includes('__public__') ? 1 : 0)} 项
-                        </span>
-                        <button
-                          onClick={() => { setScopeFilters([]); setScopeSearchQuery(''); }}
-                          className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
-                        >
-                          清除
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </PopoverContent>
+            </Popover>
             <button
               onClick={handleRefresh}
-              className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-700"
+              className="p-2 rounded-[4px] border border-[#E5E5E5] bg-white hover:bg-[#FAFAFA] transition-colors text-[#737373] hover:text-[#0A0A0A]"
               title="刷新"
             >
               <RefreshCw className="w-4 h-4" />
@@ -528,13 +517,13 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
 
           {/* 分类标签 */}
-          <div className="px-5 pb-3 shrink-0 flex flex-wrap gap-2">
+          <div className="pb-3 flex items-center gap-2 flex-wrap">
             <button
               onClick={() => setActiveCategory('all')}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                 activeCategory === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                  : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
               }`}
             >
               全部
@@ -543,10 +532,10 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   activeCategory === cat.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                    : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
                 }`}
               >
                 {cat.name}
@@ -555,20 +544,19 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
 
           {/* 技能卡片列表 */}
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
-            {filteredSkills.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {filteredSkills.map(skill => renderSkillCard(skill))}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">暂无匹配的技能</p>
-              </div>
-            )}
-          </div>
-        </div>
-        <DialogFooter className="px-5 py-3 border-t border-[#e5e5e5] shrink-0">
+          {filteredSkills.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {filteredSkills.map(skill => renderSkillCard(skill))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-[#A3A3A3]">
+              <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">暂无匹配的技能</p>
+            </div>
+          )}
+        </DialogBody>
+
+        <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
             onClick={handleConfirm}
@@ -1025,16 +1013,9 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                         {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
                       </span>
                       {/* 类型 */}
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] px-1.5 py-0 w-fit ${
-                          skill.source === 'public'
-                            ? 'text-blue-600 border-blue-200 bg-blue-50'
-                            : 'text-purple-600 border-purple-200 bg-purple-50'
-                        }`}
-                      >
+                      <StatusTag variant={skill.source === 'public' ? 'blue' : 'gray'}>
                         {skill.source === 'public' ? '公共' : '企业'}
-                      </Badge>
+                      </StatusTag>
                       {/* 新版本 */}
                       <span className="font-mono text-xs text-gray-600 font-medium">v{latest}</span>
                       {/* 原版本 */}
@@ -1323,16 +1304,9 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] px-1.5 py-0 ${
-                          skill.source === 'public'
-                            ? 'text-blue-600 border-blue-200 bg-blue-50'
-                            : 'text-purple-600 border-purple-200 bg-purple-50'
-                        }`}
-                      >
+                      <StatusTag variant={skill.source === 'public' ? 'blue' : 'gray'}>
                         {skill.source === 'public' ? '公共' : '企业'}
-                      </Badge>
+                      </StatusTag>
                       {wasRefreshed ? (
                         <span className="font-mono text-[10px]">
                           <span className="text-green-600 font-medium">v{skill.version}</span>

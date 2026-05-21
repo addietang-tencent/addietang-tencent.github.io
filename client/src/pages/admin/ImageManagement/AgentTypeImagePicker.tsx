@@ -426,7 +426,7 @@ function DeleteIconButton({
       <TooltipTrigger asChild>
         <button
           onClick={onClick}
-          className="p-1 text-gray-400 hover:text-red-500 transition-colors rounded"
+          className="p-1 text-[#0A0A0A] transition-colors"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -465,7 +465,7 @@ function PublicRefreshButton() {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="px-2 py-1 text-[11px] text-[#334155] bg-white border border-[#E5E5E5] hover:border-[#1447E6]/40 hover:text-[#1447E6] rounded inline-flex items-center gap-1 transition-colors whitespace-nowrap disabled:opacity-60"
+          className="px-2 py-1 text-[11px] text-[#0A0A0A] inline-flex items-center gap-1 transition-colors whitespace-nowrap disabled:opacity-60"
         >
           <RefreshCw
             className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`}

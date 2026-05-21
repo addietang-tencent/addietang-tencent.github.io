@@ -463,8 +463,8 @@ export default function SkillSquare() {
             onClick={() => setSelectedCategory('all')}
             className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
               selectedCategory === 'all'
-                ? 'bg-[#f3f7ff] border-[#355EF1] text-[#355EF1]'
-                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#355EF1]'
+                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
             }`}
           >
             全部
@@ -475,8 +475,8 @@ export default function SkillSquare() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                 selectedCategory === cat.id
-                  ? 'bg-[#f3f7ff] border-[#355EF1] text-[#355EF1]'
-                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#355EF1]'
+                  ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
               }`}
             >
               {cat.name}

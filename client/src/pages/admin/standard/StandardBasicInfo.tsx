@@ -2,20 +2,17 @@
  * StandardBasicInfo - 管控端基础信息配置页（OneID 专用模式）
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side (浅灰背景)
  *
- * 布局：左宽右窄双栏（与普通模式一致）
- *   左侧：7 步分步引导（步骤 1-2 内嵌表单，步骤 3 跳转腾讯统一身份，步骤 4 用户登录方式多选，步骤 5-7 跳转引导）
- *   右侧上：平台基础信息（只读）
- *   右侧下：产品动态时间轴
+ * 视觉基线：与 BasicInfo（普通模式）完全一致
  *
- * 与普通模式差异：
- *   - 步骤 1 多一个「同步企业信息」按钮
- *   - 步骤 3 指向腾讯统一身份而非用户管理
- *   - 新增步骤 4 用户登录方式多选
- *   - 后续步骤顺延为 5/6/7
+ * 与普通模式的业务差异（仅以下三处）：
+ *   - 步骤 1 多一个「同步企业信息」按钮（同步腾讯统一身份的网站名）
+ *   - 步骤 3 「导入企业用户」跳转腾讯统一身份外链，而非站内用户管理
+ *   - 新增步骤 4「设置用户登录方式」（多选 Popover），后续步骤顺延
  */
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,24 +20,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   Upload,
-  AlertCircle,
+  AlertTriangle,
   ChevronRight,
   ExternalLink,
-  Zap,
-  MapPin,
-  Globe,
-  Cloud,
-  Sparkles,
-  Wrench,
   RefreshCw,
   Loader2,
   ChevronDown,
   X,
   Pencil,
-  BookOpen,
-  ArrowUpRight,
 } from "lucide-react";
-import { StatusTag } from "@/components/ui/status-tag";
 import {
   SITE_CONFIG,
   MOCK_SSO_IM_TYPE_OPTIONS,
@@ -57,7 +45,7 @@ const MOCK_STEP_STATUS: Record<number, boolean> = {
   1: true,  // 平台名称与品牌 — 已完成
   2: true,  // 用户默认配额 — 已完成
   3: false, // 导入企业用户 — 未完成
-  4: false, // 用户登录方式 — 未完成
+  4: false, // 用户登录方式 — 未完成（OneID 专属）
   5: true,  // 配置模型 — 已完成
   6: false, // 配置通道 — 未完成
   7: true,  // 配置镜像 — 已完成（默认有公共镜像）
@@ -123,9 +111,9 @@ const PRODUCT_UPDATES = [
 
 function StepBadge({ step }: { step: number; done: boolean }) {
   return (
-    <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-gray-100 text-gray-500 text-xs font-bold">
-      {step}
-    </div>
+    <span className="text-[#1447E6] text-lg font-normal font-['Menlo'] leading-[26px] shrink-0">
+      {String(step).padStart(2, '0')}
+    </span>
   );
 }
 
@@ -146,23 +134,23 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] p-5 transition-all"
+      className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 transition-all overflow-hidden"
     >
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-3.5">
         <StepBadge step={step} done={done} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
             {done ? (
               <StatusTag variant="green" dot>已完成</StatusTag>
             ) : (
               <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{description}</p>
+          <p className="text-xs text-black/70 leading-5 tracking-[0.18px]">{description}</p>
+          <div className="mt-4">{children}</div>
         </div>
       </div>
-      <div className="border-t border-gray-50 pt-4">{children}</div>
     </div>
   );
 }
@@ -232,8 +220,8 @@ function InlineQuotaField({
   };
 
   return (
-    <div className="space-y-1">
-      <Label className="text-xs font-medium text-gray-600">
+    <div className="space-y-2">
+      <Label className="text-xs font-medium ">
         {label}
         {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
       </Label>
@@ -245,7 +233,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3 h-9 text-sm text-gray-700 font-medium hover:border-gray-300 transition-colors text-left group"
+          className="w-full max-w-[360px] flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -260,10 +248,10 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 无限制
@@ -273,10 +261,10 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-xl border transition-colors ${
+                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
-                    ? "border-blue-500 bg-blue-50 text-blue-600 font-medium"
-                    : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
                 }`}
               >
                 自定义
@@ -303,7 +291,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={() => setEditing(false)}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               取消
             </Button>
@@ -311,7 +299,7 @@ function InlineQuotaField({
               size="sm"
               variant="outline"
               onClick={handleSave}
-              className="h-9 px-3 text-xs text-gray-600"
+              className="h-9 px-3 text-xs "
             >
               保存
             </Button>
@@ -334,7 +322,7 @@ export default function StandardBasicInfo() {
   const [syncing, setSyncing] = useState(false);
   const MAX_FILE_SIZE = 512 * 1024;
 
-  // ── 步骤 2：用户默认配额 ──
+  // ── 步骤 2：用户默认配额（与平台策略页共享 localStorage） ──
   const [clawLimit, setClawLimit] = useState<number>(() => {
     const v = localStorage.getItem("policy_claw_limit");
     return v !== null ? Number(v) : 3;
@@ -362,12 +350,12 @@ export default function StandardBasicInfo() {
     }
   };
 
-  // ── 步骤 4：用户登录方式 ──
+  // ── 步骤 4：用户登录方式（OneID 专属） ──
   const [ssoImTypes, setSsoImTypes] = useState<string[]>([]);
   const ssoImTypeOptions: SsoImTypeOption[] = MOCK_SSO_IM_TYPE_OPTIONS;
   const originalSsoImTypesRef = useRef<string[]>([]);
 
-  // ── 同步企业信息 ──
+  // ── 同步企业信息（OneID 专属） ──
   const handleSyncEnterprise = () => {
     setSyncing(true);
     setTimeout(() => {
@@ -376,9 +364,6 @@ export default function StandardBasicInfo() {
       toast.success("企业信息已同步成功");
     }, 1500);
   };
-
-  // ── 汇总：未完成步骤数 ──
-  const incompleteCount = Object.values(MOCK_STEP_STATUS).filter((v) => !v).length;
 
   return (
     <div className="page-enter">
@@ -391,45 +376,41 @@ export default function StandardBasicInfo() {
       </div>
 
       {/* 双栏主体 */}
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-4 items-start">
         {/* ── 左侧：分步引导 ── */}
         <div className="min-w-0 space-y-4" style={{ flex: "1 1 0" }}>
 
-          {/* 步骤 1：平台名称与品牌（含同步企业信息按钮） */}
+          {/* 步骤 1：平台名称与品牌（OneID 专属：含「同步企业信息」按钮） */}
           <StepCard
             step={1}
             done={MOCK_STEP_STATUS[1]}
             title="设置平台名称与品牌"
-            description="配置展示在用户端的网站名称和 Logo"
+            description="配置展示在用户端的网站名称和logo"
           >
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="siteName" className="text-xs font-medium text-gray-600">
-                  网站名称
-                  <span className="text-gray-400 font-normal ml-1">将展示在用户端左上角常驻和首页</span>
-                </Label>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-[#020617] leading-[22px]">网站名称</p>
+                  <p className="text-xs text-black/30 leading-5">将展示在用户端左上角常驻和首页</p>
+                </div>
                 <Input
                   id="siteName"
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   placeholder="例如：A公司企业版Agent"
-                  className="bg-gray-50 border-gray-200 text-sm"
+                  className="w-full max-w-[360px] h-9 border-[#d3d6db] rounded-[4px] text-sm text-[#020617]"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-600">
-                  网站 Logo
-                  <span className="text-gray-400 font-normal ml-1">
-                    建议尺寸 200×200px，不超过 512KB
-                  </span>
-                </Label>
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
-                    A
-                  </div>
-                  <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-xl text-xs text-gray-500 hover:border-blue-400 hover:text-blue-500 cursor-pointer transition-colors bg-gray-50">
-                    <Upload className="w-3.5 h-3.5" />
-                    更换 Logo
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm font-medium text-[#020617] leading-[22px]">网站logo</p>
+                  <p className="text-xs text-black/30 leading-5">建议尺寸200x200px，不超过512kb</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src="/icon/上传图片默认icon.svg" alt="" className="w-14 h-14 shrink-0 rounded-[6px]" />
+                  <label className="flex items-center gap-2 px-4 py-[5px] border border-dashed border-[#ddd] rounded-[3px] text-sm text-[rgba(0,0,0,0.9)] hover:border-[#355EF1] cursor-pointer transition-colors bg-white">
+                    <Upload className="w-4 h-4" />
+                    更换logo
                     <input
                       type="file"
                       accept="image/*"
@@ -454,18 +435,18 @@ export default function StandardBasicInfo() {
                   )}
                 </div>
                 {logoError && (
-                  <p className="text-xs text-orange-600 bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
+                  <div className="relative w-full rounded-[4px] border border-amber-200 bg-amber-50 text-amber-950 px-4 py-3 text-sm flex items-center gap-3">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
                     {logoError}
-                  </p>
+                  </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  size="sm"
-                  variant="outline"
+              {/* OneID 专属：同步企业信息 + 保存 */}
+              <div className="flex items-center gap-2">
+                <button
                   onClick={handleSyncEnterprise}
                   disabled={syncing}
-                  className="text-xs flex items-center gap-1.5"
+                  className="h-8 px-3 inline-flex items-center gap-1.5 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors disabled:opacity-60"
                 >
                   {syncing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -473,15 +454,13 @@ export default function StandardBasicInfo() {
                     <RefreshCw className="w-3.5 h-3.5" />
                   )}
                   同步企业信息
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
+                </button>
+                <button
                   onClick={() => toast.success("平台名称与品牌已保存")}
-                  className="text-xs text-gray-600"
+                  className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
                 >
                   保存
-                </Button>
+                </button>
               </div>
             </div>
           </StepCard>
@@ -511,7 +490,7 @@ export default function StandardBasicInfo() {
             </div>
           </StepCard>
 
-          {/* 步骤 3：导入企业用户（前往腾讯统一身份） */}
+          {/* 步骤 3：导入企业用户（OneID 专属：跳转腾讯统一身份） */}
           <StepCard
             step={3}
             done={MOCK_STEP_STATUS[3]}
@@ -527,14 +506,14 @@ export default function StandardBasicInfo() {
                   "_blank"
                 );
               }}
-              className="text-xs flex items-center gap-1.5"
+              className="text-xs flex items-center gap-1.5 "
             >
               <ExternalLink className="w-3.5 h-3.5" />
               前往腾讯统一身份
             </Button>
           </StepCard>
 
-          {/* 步骤 4：用户登录方式（OneID 专属） */}
+          {/* 步骤 4：设置用户登录方式（OneID 专属） */}
           <StepCard
             step={4}
             done={MOCK_STEP_STATUS[4]}
@@ -546,7 +525,7 @@ export default function StandardBasicInfo() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="w-full flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-left hover:border-gray-300 transition-colors h-9 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
+                    className="w-full max-w-[360px] flex items-center justify-between gap-2 rounded-[4px] border border-[#d3d6db] bg-white px-3 text-sm text-left hover:border-[#355EF1] transition-colors h-9 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
                   >
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
                       {ssoImTypes.length === 0 ? (
@@ -611,17 +590,15 @@ export default function StandardBasicInfo() {
                   </div>
                 </PopoverContent>
               </Popover>
-              <Button
-                size="sm"
-                variant="outline"
+              <button
                 onClick={() => {
                   originalSsoImTypesRef.current = [...ssoImTypes];
                   toast.success("用户登录方式已保存");
                 }}
-                className="text-xs text-gray-600"
+                className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
               >
                 保存
-              </Button>
+              </button>
             </div>
           </StepCard>
 
@@ -637,7 +614,7 @@ export default function StandardBasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/model-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -658,7 +635,7 @@ export default function StandardBasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/channel-config")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -679,7 +656,7 @@ export default function StandardBasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/image-management")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -700,7 +677,7 @@ export default function StandardBasicInfo() {
                 size="sm"
                 variant="outline"
                 onClick={() => navigate("/admin/security-group?tab=vpc")}
-                className="text-xs flex items-center gap-1.5 text-gray-600"
+                className="text-xs flex items-center gap-1.5 "
               >
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -720,7 +697,7 @@ export default function StandardBasicInfo() {
               size="sm"
               variant="outline"
               onClick={() => navigate("/admin/security-group")}
-              className="text-xs flex items-center gap-1.5 text-gray-600"
+              className="text-xs flex items-center gap-1.5 "
             >
               前往安全组管理
               <ChevronRight className="w-3.5 h-3.5" />
@@ -729,39 +706,33 @@ export default function StandardBasicInfo() {
         </div>
 
         {/* ── 右侧：基础信息 + API文档 + 产品动态 ── */}
-        <div className="shrink-0 space-y-4" style={{ width: "352px" }}>
+        <div className="shrink-0 flex flex-col gap-4" style={{ width: "352px" }}>
 
           {/* 平台基础信息 */}
           <div
             className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">平台基础信息</h2>
-            <div className="space-y-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">所在地域</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.region}</p>
+            <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4 items-center">
+                <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Globe className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">域名</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5 break-all">https://nmyy3n7z.clawpro.cloud/</p>
+              <div className="flex gap-4 items-center">
+                <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <Cloud className="w-3.5 h-3.5 text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">关联腾讯云账号</p>
-                  <p className="text-sm text-gray-700 font-medium mt-0.5">{SITE_CONFIG.tencentUin}</p>
+              <div className="flex gap-4 items-center">
+                <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-1">
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
+                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>
@@ -769,69 +740,61 @@ export default function StandardBasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer hover:border-blue-200 transition-colors"
-           
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-4 h-4 text-blue-500" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-900">API 文档</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">查阅开放接口与调用示例</p>
+              <div className="flex items-center gap-4">
+                <img src="/icon/api文档-icon.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-sm font-medium text-black tracking-[0.07px] group-hover:text-[#355EF1] transition-colors">API 文档</p>
+                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px] group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
                 </div>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-300" />
+              <img src="/icon/arrow-left-stroke.svg" alt="" className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:[filter:invert(32%)_sepia(98%)_saturate(1497%)_hue-rotate(215deg)_brightness(96%)_contrast(95%)] transition-all rotate-[-45deg]" />
             </div>
           </div>
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <h2 className="text-sm font-semibold text-gray-900 mb-3">产品动态</h2>
-            <div className="space-y-2.5">
+            <p className="text-sm font-medium text-black tracking-[0.07px] mb-6">产品动态</p>
+            <div className="flex flex-col gap-3">
               {PRODUCT_UPDATES.map((item, idx) => (
-                <div key={idx} className="flex gap-3">
-                  <div className="flex flex-col items-center shrink-0">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                        item.type === "feature"
-                          ? "bg-blue-50"
-                          : "bg-purple-50"
-                      }`}
-                    >
-                      {item.type === "feature" ? (
-                        <Sparkles className="w-3 h-3 text-blue-500" />
-                      ) : (
-                        <Wrench className="w-3 h-3 text-purple-500" />
-                      )}
-                    </div>
-                    {idx < PRODUCT_UPDATES.length - 1 && (
-                      <div className="w-px flex-1 bg-gray-100 mt-1.5 mb-0" style={{ minHeight: "12px" }} />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0 pb-0.5">
-                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <StatusTag variant={item.type === "feature" ? "blue" : "gray"}>
-                        {item.type === "feature" ? "功能上线" : "体验优化"}
+                <div key={idx}>
+                  {/* 分隔线 */}
+                  {idx > 0 && (
+                    <div className="w-2 h-3 mb-3 border-l border-black/9 ml-[1px]" />
+                  )}
+                  {/* 条目 */}
+                  <div className="flex flex-col gap-1">
+                    {/* 图标 + 标签行 */}
+                    <div className="flex items-center justify-between">
+                      <img
+                        src={item.type === "feature" ? "/icon/功能上新icon.svg" : "/icon/体验优化-icon.svg"}
+                        alt=""
+                        className="w-[18px] h-[18px]"
+                      />
+                      <StatusTag variant={item.type === "feature" ? "green" : "blue"}>
+                        {item.type === "feature" ? "功能上新" : "体验优化"}
                       </StatusTag>
                     </div>
-                    <p className="text-xs font-medium text-gray-800 mb-0.5">{item.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">{item.summary}</p>
-                    <p className="text-xs text-gray-300 mt-1">{item.date}</p>
+                    {/* 标题 */}
+                    <p className="text-xs font-medium text-black leading-5">{item.title}</p>
+                    {/* 描述 */}
+                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
+                    {/* 日期 */}
+                    <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">{item.date}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-3 pt-2.5 border-t border-gray-50">
-              <button className="text-xs text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1">
-                查看全部更新
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
+            {/* 查看全部更新按钮 */}
+            <button className="mt-6 border border-black/9 rounded-[4px] px-3 py-2 flex items-center gap-1 text-xs text-black leading-5 hover:bg-[#f5f5f5] transition-colors">
+              查看全部更新
+              <img src="/icon/arrow-left-stroke.svg" alt="" className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>

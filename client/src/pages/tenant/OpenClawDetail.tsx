@@ -192,7 +192,8 @@ export default function AgentDetail() {
 
 
   // ── Inline rename state ──
-  const AGENT_NAME_MAX_LENGTH = 30;
+  const AGENT_NAME_MAX_BYTES = 128;
+  const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value).length;
   const [isNameEditing, setIsNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [nameError, setNameError] = useState<string>("");
@@ -215,15 +216,16 @@ export default function AgentDetail() {
     setNameError("");
   }, [clawName]);
 
-  const saveNameEdit = useCallback((options?: { silentIfEmpty?: boolean }) => {
+  const saveNameEdit = useCallback(() => {
     const trimmed = nameDraft.trim();
 
     if (!trimmed) {
-      if (options?.silentIfEmpty) {
-        cancelNameEdit();
-        return true;
-      }
-      setNameError("名称不能为空");
+      cancelNameEdit();
+      return true;
+    }
+
+    if (getAgentNameByteLength(trimmed) > AGENT_NAME_MAX_BYTES) {
+      setNameError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
       return false;
     }
 
@@ -264,7 +266,7 @@ export default function AgentDetail() {
     const handlePointerDown = (e: MouseEvent) => {
       if (!nameEditWrapperRef.current) return;
       if (nameEditWrapperRef.current.contains(e.target as Node)) return;
-      saveNameEdit({ silentIfEmpty: true });
+      saveNameEdit();
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -1465,16 +1467,19 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       <Input
                         ref={nameInputRef}
                         value={nameDraft}
-                        maxLength={AGENT_NAME_MAX_LENGTH}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[\r\n]/g, "").slice(0, AGENT_NAME_MAX_LENGTH);
+                          const value = e.target.value.replace(/[\r\n]/g, "");
                           setNameDraft(value);
-                          if (nameError) setNameError("");
+                          if (getAgentNameByteLength(value.trim()) > AGENT_NAME_MAX_BYTES) {
+                            setNameError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+                          } else if (nameError) {
+                            setNameError("");
+                          }
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            saveNameEdit({ silentIfEmpty: true });
+                            saveNameEdit();
                           }
                           if (e.key === "Escape") {
                             e.preventDefault();
@@ -1483,11 +1488,8 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                         }}
                         aria-label="编辑 Agent 名称"
                         aria-invalid={!!nameError}
-                        className={`h-9 w-full pr-16 text-2xl font-bold text-gray-900 bg-transparent rounded-lg ${nameError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200 focus-visible:ring-blue-500"}`}
+                        className={`h-9 w-full text-2xl font-bold text-gray-900 bg-transparent rounded-lg ${nameError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200 focus-visible:ring-blue-500"}`}
                       />
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 tabular-nums">
-                        {nameDraft.length}/{AGENT_NAME_MAX_LENGTH}
-                      </span>
                       {nameError && <p className="absolute left-0 bottom-full mb-1 text-xs text-red-500">{nameError}</p>}
                     </div>
                   ) : (
@@ -1501,10 +1503,10 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           aria-label="重命名 Agent"
                         >
 
-                          <h1 ref={nameTextRef} className="text-2xl font-bold text-gray-900 leading-tight whitespace-nowrap">
+                          <h1 ref={nameTextRef} className="text-2xl font-bold text-gray-900 leading-tight max-w-[460px] truncate">
                             {clawName}
                           </h1>
-                          <span className="h-5 inline-flex items-center justify-center flex-shrink-0 overflow-hidden w-0 opacity-0 transition-all duration-150 group-hover/name:w-5 group-hover/name:opacity-100 group-focus-within/name:w-5 group-focus-within/name:opacity-100">
+                          <span className="h-5 inline-flex items-center justify-center flex-shrink-0 overflow-hidden w-5 opacity-100">
                             <Pencil className="w-3.5 h-3.5 text-gray-400" />
                           </span>
                         </button>

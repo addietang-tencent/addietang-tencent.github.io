@@ -52,8 +52,9 @@ const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // [006] 列表分页：每页默认 30 条，与后端 GET /openclaw/list 默认 page_size 保持一致
 const PAGE_SIZE = 30;
-const AGENT_NAME_MAX_LENGTH = 30;
+const AGENT_NAME_MAX_BYTES = 128;
 
+const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value).length;
 
 // 8 种状态配置
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
@@ -378,7 +379,6 @@ export default function MyOpenClaw() {
   const [reinstallConfirmInput, setReinstallConfirmInput] = useState("");
   const [renameConfirm, setRenameConfirm] = useState<{ id: string; name: string } | null>(null);
   const [renameInput, setRenameInput] = useState("");
-  const [renameFailedDialogOpen, setRenameFailedDialogOpen] = useState(false);
   const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ id: string; name: string; roleName: string } | null>(null);
 
 
@@ -532,11 +532,13 @@ export default function MyOpenClaw() {
 
   const handleRenameInputChange = (value: string) => {
     const noLineBreakValue = value.replace(/[\r\n]/g, "");
-    setRenameInput(noLineBreakValue.slice(0, AGENT_NAME_MAX_LENGTH));
+    setRenameInput(noLineBreakValue);
   };
 
   const renameTrimmedValue = renameInput.trim();
-  const isRenameConfirmDisabled = renameTrimmedValue.length === 0;
+  const renameInputBytes = getAgentNameByteLength(renameInput);
+  const isRenameOverByteLimit = renameInputBytes > AGENT_NAME_MAX_BYTES;
+  const isRenameConfirmDisabled = renameTrimmedValue.length === 0 || isRenameOverByteLimit;
 
   const handleRenameConfirm = () => {
     if (!renameConfirm || isRenameConfirmDisabled) return;
@@ -557,9 +559,8 @@ export default function MyOpenClaw() {
 
       setRenameConfirm(null);
       setRenameInput("");
-      toast.success("重命名成功");
     } catch {
-      setRenameFailedDialogOpen(true);
+      toast.error("重命名失败，请重试");
     }
   };
 
@@ -1141,7 +1142,7 @@ export default function MyOpenClaw() {
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">重命名 Agent</DialogTitle>
               <DialogDescription className="text-sm text-gray-500">
-                支持中英文、数字、空格及常用符号，最长 30 个字符。
+                支持中英文、数字、空格及常用符号，名称长度不能超过 128 字节。
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
@@ -1149,8 +1150,9 @@ export default function MyOpenClaw() {
               <Input
                 id="rename-agent-input"
                 value={renameInput}
-                maxLength={AGENT_NAME_MAX_LENGTH}
                 placeholder="请输入 Agent 名称"
+                aria-invalid={isRenameOverByteLimit}
+                className={isRenameOverByteLimit ? "border-red-500 focus-visible:ring-red-500" : undefined}
                 onChange={(e) => handleRenameInputChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -1159,7 +1161,13 @@ export default function MyOpenClaw() {
                   }
                 }}
               />
-              <p className="text-xs text-gray-400 text-right">{renameInput.length}/{AGENT_NAME_MAX_LENGTH}</p>
+              <p
+                className={`text-xs min-h-5 ${isRenameOverByteLimit ? "text-red-500" : "text-transparent"}`}
+                aria-live="polite"
+              >
+                {isRenameOverByteLimit ? "名称不能超过 128 字节" : ""}
+              </p>
+
             </div>
             <DialogFooter className="gap-2 pt-2">
               <Button
@@ -1176,21 +1184,6 @@ export default function MyOpenClaw() {
                 disabled={isRenameConfirmDisabled}
                 onClick={handleRenameConfirm}
               >
-                确认
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Rename Failed Dialog */}
-        <Dialog open={renameFailedDialogOpen} onOpenChange={setRenameFailedDialogOpen}>
-          <DialogContent className="sm:max-w-[360px]" onInteractOutside={(event) => event.preventDefault()}>
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold text-gray-900">提示</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-gray-600 leading-relaxed">重命名失败，请重试</p>
-            <DialogFooter className="gap-2 pt-2">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setRenameFailedDialogOpen(false)}>
                 确认
               </Button>
             </DialogFooter>

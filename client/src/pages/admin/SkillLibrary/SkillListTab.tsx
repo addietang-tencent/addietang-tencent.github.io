@@ -838,8 +838,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           onClick={() => setSelectedCategory(null)}
           className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
             selectedCategory === null
-              ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
-              : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+              ? 'bg-[#020617] border-[#020617] text-white'
+              : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
           }`}
         >
           全部
@@ -850,8 +850,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             onClick={() => setSelectedCategory(cat.id)}
             className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
               selectedCategory === cat.id
-                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
-                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+                ? 'bg-[#020617] border-[#020617] text-white'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
             }`}
           >
             {cat.name}

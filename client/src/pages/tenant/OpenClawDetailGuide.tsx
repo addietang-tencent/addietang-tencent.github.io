@@ -678,7 +678,7 @@ function SkillInstallModal({
         </div>
 
         {/* 搜索栏 + 排序（§8.6 规范） */}
-        <div className="px-6 pb-3 flex items-center gap-3">
+        <div className="px-6 pb-2 flex items-center gap-3">
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
@@ -710,7 +710,7 @@ function SkillInstallModal({
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.id)}
-                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                className={`h-[30px] px-3 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   category === cat.id
                     ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
                     : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'

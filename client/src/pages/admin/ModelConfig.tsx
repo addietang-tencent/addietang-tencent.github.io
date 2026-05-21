@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -888,18 +888,18 @@ export default function ModelConfig() {
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader className="border-b border-[#F5F5F5]">
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             {/* 模型厂商选择（含自定义模型） */}
-            <div className="space-y-2">
-              <Label>模型厂商</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-[#525252]">模型厂商</Label>
               <Select
                 value={newModel.provider}
                 onValueChange={(v) => setNewModel({ ...newModel, provider: v, version: "" })}
               >
-                <SelectTrigger className="bg-gray-50 w-full">
+                <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
                   <SelectValue placeholder="选择模型厂商或自定义模型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -913,11 +913,11 @@ export default function ModelConfig() {
             {/* 厂商模型：版本 + API Key + 每日上限 */}
             {newModel.provider && !isCustomProvider && (
               <>
-                <div className="space-y-2">
-                  <Label>模型名称</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-[#525252]">模型名称</Label>
                   {selectedProviderData && selectedProviderData.versions.length > 0 ? (
                     <Select value={newModel.version} onValueChange={(v) => setNewModel({ ...newModel, version: v })}>
-                      <SelectTrigger className="bg-gray-50 w-full">
+                      <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
                         <SelectValue placeholder="选择模型版本" />
                       </SelectTrigger>
                       <SelectContent>
@@ -927,28 +927,28 @@ export default function ModelConfig() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="bg-gray-50 w-full px-3 py-2 rounded-xl border border-gray-200 text-gray-500 text-sm">
+                    <div className="w-full px-3 py-2 rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] text-[#A3A3A3] text-sm">
                       暂无可用的模型版本
                     </div>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label>模型 URL</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-[#525252]">模型 URL</Label>
                   <Input
                     type="text"
                     placeholder="请输入模型 URL地址"
                     value={newModel.modelUrl}
                     onChange={(e) => setNewModel({ ...newModel, modelUrl: e.target.value })}
-                    className="bg-gray-50"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>每日 Tokens 数量上限</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限</Label>
                   <Input
                     type="number"
                     value={newModel.dailyLimit}
                     onChange={(e) => setNewModel({ ...newModel, dailyLimit: Number(e.target.value) })}
-                    className="bg-gray-50"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white"
                   />
                 </div>
               </>
@@ -966,7 +966,7 @@ export default function ModelConfig() {
                     <Textarea
                       value={customJson}
                       onChange={(e) => setCustomJson(e.target.value)}
-                      className="font-mono text-xs bg-gray-50 border-gray-200 min-h-48"
+                      className="font-mono text-xs rounded-[4px] border-[#E5E5E5] bg-white min-h-48"
                     />
                   </TabsContent>
                   <TabsContent value="form" className="mt-3 space-y-3">
@@ -983,24 +983,24 @@ export default function ModelConfig() {
                         placeholder={field.label}
                         value={(customForm as any)[field.key]}
                         onChange={(e) => setCustomForm({ ...customForm, [field.key]: e.target.value })}
-                        className="bg-gray-50"
+                        className="rounded-[4px] border-[#E5E5E5] bg-white"
                       />
                     ))}
                   </TabsContent>
                 </Tabs>
-                <div className="space-y-2">
-                  <Label>每日 Tokens 数量上限</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限</Label>
                   <Input
                     type="number"
                     value={customForm.dailyLimit}
                     onChange={(e) => setCustomForm({ ...customForm, dailyLimit: Number(e.target.value) })}
-                    className="bg-gray-50"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white"
                   />
                 </div>
-                <div className="rounded-xl border border-[#e5e5e5] bg-gray-50 px-4 py-3 flex items-center justify-between">
+                <div className="rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">多模态模型</p>
-                    <p className="text-xs text-gray-400 mt-0.5">支持图片、文字多模态输入</p>
+                    <p className="text-sm font-semibold text-[#0A0A0A]">多模态模型</p>
+                    <p className="text-xs text-[#737373] mt-0.5">支持图片、文字多模态输入</p>
                   </div>
                   <Switch
                     checked={customForm.isMultimodal}
@@ -1010,11 +1010,9 @@ export default function ModelConfig() {
               </>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button
-              onClick={handleAddModel}
-            >
+          <DialogFooter className="border-t border-[#F5F5F5]">
+            <Button variant="outline" className="rounded-[4px] border-[#E5E5E5]" onClick={() => setShowAddDialog(false)}>取消</Button>
+            <Button onClick={handleAddModel} className="rounded-[4px]">
               确认添加
             </Button>
           </DialogFooter>
@@ -1073,28 +1071,22 @@ export default function ModelConfig() {
 
       {/* 多模态切换二次确认弹窗 */}
       <Dialog open={!!multimodalConfirm} onOpenChange={(open) => { if (!open) setMultimodalConfirm(null); }}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-blue-500" />
-              </div>
+            <DialogTitle className="text-base font-bold text-[#0A0A0A]">
               {multimodalConfirm?.enable ? "开启多模态" : "关闭多模态"}
             </DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <p className="text-sm text-gray-600">
+            <DialogDescription className="text-sm text-[#334155] leading-relaxed">
               {multimodalConfirm?.enable
                 ? `确认开启「${multimodalConfirm.model.name}」的多模态属性么？开启后用户可在对话中上传图片等多模态内容`
                 : `确认关闭「${multimodalConfirm?.model.name}」的多模态属性么？关闭后用户将无法在该模型下上传图片等多模态内容。`
               }
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMultimodalConfirm(null)}>取消</Button>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="claw-outline" onClick={() => setMultimodalConfirm(null)}>取消</Button>
             <Button
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              className="text-white"
+              variant="claw-primary"
               onClick={() => {
                 if (multimodalConfirm) {
                   handleToggleMultimodal(multimodalConfirm.model.id, multimodalConfirm.enable);

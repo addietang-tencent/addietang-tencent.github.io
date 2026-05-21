@@ -54,14 +54,14 @@ function Input({
       type={type}
       data-slot="input"
       className={cn(
-        "h-9 w-full min-w-0 rounded-[4px] border border-[#E4E4E4] bg-transparent px-3 py-[5px] text-sm text-[#020617] font-normal transition-colors outline-none",
-        "placeholder:text-[#b0b6c3]",
-        "hover:border-[#355EF1]",
-        "focus:border-[#355EF1]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#E4E4E4] disabled:text-[#b0b6c3]",
+        "h-9 w-full min-w-0 rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
+        "placeholder:text-[#A3A3A3]",
+        "hover:border-[#1447E6]",
+        "focus:border-[#1447E6]",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-[#E5E5E5] disabled:text-[#A3A3A3]",
         "aria-invalid:border-[#d42a1e]",
-        "selection:bg-[#355EF1]/10 selection:text-[#020617]",
-        "file:text-[#020617] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
+        "selection:bg-[#1447E6]/10 selection:text-[#0A0A0A]",
+        "file:text-[#0A0A0A] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
         "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-ms-reveal]:hidden",
         className
       )}

@@ -12,7 +12,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { SurfaceCard } from "@/components/ui/Surface";
-import { Button } from "@/components/ui/button";
+import { Button, SmallIconStateButton } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,6 +45,7 @@ import {
   X,
   ArrowLeft,
   Send,
+  Check,
   CheckCircle2,
   AlertCircle,
   Star,
@@ -217,6 +218,12 @@ const SKILL_CATEGORIES: { id: SkillCategory; label: string }[] = [
   { id: "security", label: "安全合规" },
   { id: "collab", label: "通讯协作" },
 ];
+
+function formatSkillCount(count: number) {
+  if (count >= 10000) return `${Math.round(count / 10000)}万`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return `${count}`;
+}
 
 interface SkillItem {
   id: string;
@@ -620,44 +627,46 @@ function SkillInstallModal({
           </Button>
         </div>
 
-        {/* 当前添加 小标题 */}
-        <div className="px-6 pb-2">
-          <div className="text-sm font-medium" style={{ color: "#0A0A0A" }}>
-            当前添加：{addedSkills.length}个
-          </div>
-        </div>
-
-        {/* 已添加技能 tag 列表 */}
-        {addedSkills.length > 0 && (
-          <div className="px-6 pb-3 flex flex-wrap gap-2">
-            {addedSkills.map((skillId) => {
-              const skill = SKILL_LIBRARY.find((s) => s.id === skillId);
-              if (!skill) return null;
-              return (
-                <Badge
-                  key={skillId}
-                  variant="secondary"
-                  className="bg-[#EFF6FF] border-0 text-[#1447E6] gap-1 pr-1"
-                >
-                  {skill.name}
-                  <button
-                    onClick={() => setAddedSkills((prev) => prev.filter((id) => id !== skillId))}
-                    className="ml-0.5 rounded-full hover:bg-[#1447E6]/10 p-0.5 transition-colors"
-                    aria-label={`移除 ${skill.name}`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              );
-            })}
-          </div>
-        )}
-
-        {/* 技能库 小标题 */}
-        <div className="px-6 pb-2">
-          <div className="text-sm font-medium" style={{ color: "#0A0A0A" }}>
-            技能库
-          </div>
+        {/* 当前添加 */}
+        <div className="px-6 pb-4">
+          {addedSkills.length === 0 ? (
+            <div className="w-[445px] text-sm font-normal tracking-[0.07px] text-[#737373]">
+              暂未添加技能
+            </div>
+          ) : (
+            <div className="w-[734px]">
+              <div className="w-[734px] text-sm font-normal tracking-[0.07px] text-[#0A0A0A]">
+                <span>当前添加&nbsp;</span>
+                <span className="font-medium">{addedSkills.length}</span>
+                <span>&nbsp;个技能</span>
+              </div>
+              <div className="mt-1.5 flex h-6 flex-wrap gap-x-1 gap-y-2 overflow-hidden">
+                {addedSkills.map((skillId) => {
+                  const skill = SKILL_LIBRARY.find((s) => s.id === skillId);
+                  if (!skill) return null;
+                  return (
+                    <Badge
+                      key={skillId}
+                      variant="outline"
+                      className="h-6 justify-start gap-0 overflow-hidden rounded-full border-[#E5E5E5] bg-white px-0 py-0 text-[#0A0A0A]"
+                    >
+                      <span className="ml-2 max-w-[160px] truncate text-[12px] font-normal leading-5 tracking-[0.18px] text-[#0A0A0A]">
+                        {skill.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setAddedSkills((prev) => prev.filter((id) => id !== skillId))}
+                        className="ml-auto mr-2 inline-flex size-3 items-center justify-center text-[#737373] transition-colors hover:text-[#0A0A0A]"
+                        aria-label={`移除 ${skill.name}`}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 管理员配置提示 */}
@@ -723,71 +732,78 @@ function SkillInstallModal({
         </div>
 
         {/* 技能列表 */}
-        <div
-          className="mx-6 mb-4 rounded-[4px] overflow-hidden max-h-[340px] overflow-y-auto"
-          style={{ border: "1px solid #E5E5E5" }}
-        >
-          {filteredSkills.map((skill, idx) => {
-            const isAdded = addedSkills.includes(skill.id);
-            return (
-              <div key={skill.id}>
-                {idx > 0 && <div className="h-px" style={{ background: "#F0F0F0" }} />}
-                <div className="flex items-center px-4 py-3.5" style={{ gap: "12px" }}>
-                  {/* 左：头像 */}
+        <div className="mx-6 mb-4 max-h-[340px] overflow-y-auto rounded-[4px] border border-[#E5E5E5] bg-white">
+          {filteredSkills.length === 0 ? (
+            <div className="px-4 py-10 text-center text-xs text-[#A3A3A3]">
+              暂无符合条件的技能
+            </div>
+          ) : (
+            <div>
+              {filteredSkills.map((skill) => {
+                const isAdded = addedSkills.includes(skill.id);
+                return (
                   <div
-                    className="w-8 h-8 rounded-[4px] flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{ background: getLetterColor(skill.initial).bg, color: getLetterColor(skill.initial).text }}
+                    key={skill.id}
+                    className="relative h-[106px] border-b border-[#F5F5F5] transition-colors last:border-b-0 hover:bg-[#FAFAFA]"
                   >
-                    {skill.initial}
-                  </div>
+                    {/* 左：头像（暂不改动图标内容） */}
+                    <div
+                      className="absolute left-5 top-[35px] w-9 h-9 rounded-[4px] flex items-center justify-center text-xs font-bold"
+                      style={{ background: getLetterColor(skill.initial).bg, color: getLetterColor(skill.initial).text }}
+                    >
+                      {skill.initial}
+                    </div>
 
-                  {/* 中：标题 + 描述 */}
-                  <div className="flex flex-col gap-1 flex-1 min-w-0 mr-[36px]">
-                    <span className="text-sm font-medium truncate" style={{ color: "#0A0A0A" }}>
-                      {skill.name}
-                    </span>
-                    <span className="text-xs leading-4 line-clamp-2" style={{ color: "#737373" }}>
-                      {skill.description}
-                    </span>
-                  </div>
+                    {/* 中：标题 + 描述 */}
+                    <div className="absolute left-[70px] top-5 w-[445px]">
+                      <div className="w-[445px] h-5 truncate text-[14px] font-medium leading-[22px] tracking-[0px] text-[#020617]">
+                        {skill.name}
+                      </div>
+                      <div className="mt-1 line-clamp-2 text-[12px] font-normal leading-5 tracking-[0.18px] text-[#737373]">
+                        {skill.description}
+                      </div>
+                    </div>
 
-                  {/* 右：数据信息 + 按钮（上下排列） */}
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="flex items-center gap-3 text-[11px]" style={{ color: "#A3A3A3" }}>
+                    {/* 右：指标 + 操作 */}
+                    <div className="absolute right-5 top-4 flex h-5 items-center gap-3 text-xs font-normal leading-5 tracking-[0.18px] text-[#A3A3A3]">
                       <span className="inline-flex items-center gap-1">
-                        <Star className="w-3 h-3" />
-                        {skill.favorites >= 1000 ? `${(skill.favorites / 1000).toFixed(1)}k` : skill.favorites}
+                        <Star className="size-3" />
+                        {formatSkillCount(skill.favorites)}
                       </span>
                       <span className="inline-flex items-center gap-1">
-                        <Download className="w-3 h-3" />
-                        {skill.downloads >= 10000 ? `${(skill.downloads / 10000).toFixed(1)}万` : skill.downloads}
+                        <Download className="size-3" />
+                        {formatSkillCount(skill.downloads)}
                       </span>
-                      <span>源自 {skill.source}</span>
-                    </span>
-                    {skill.installed ? (
-                      <Button variant="claw-outline" size="sm" disabled className="h-6 px-2 text-xs w-[68px]">
-                        已安装
-                      </Button>
-                    ) : isAdded ? (
-                      <Button
-                        variant="claw-outline"
-                        size="sm"
-                        onClick={() => setAddedSkills((prev) => prev.filter((id) => id !== skill.id))}
-                        className="h-6 px-2 text-xs w-[68px]"
-                      >
-                        取消添加
-                      </Button>
-                    ) : (
-                      <Button size="sm" onClick={() => handleAdd(skill.id)} className="h-6 px-2 text-xs w-[68px]">
-                        <Plus className="w-3 h-3" />
-                        添加
-                      </Button>
-                    )}
+                      <span>源自{skill.source === "SkillHub" ? "Skillhub" : skill.source}</span>
+                    </div>
+                    <div className="absolute right-5 top-[41px]">
+                      {skill.installed ? (
+                        <SmallIconStateButton
+                          state="disabled"
+                          icon={Check}
+                          label="已安装"
+                          aria-label={`${skill.name} 已安装`}
+                        />
+                      ) : (
+                        <SmallIconStateButton
+                          icon={isAdded ? X : Plus}
+                          label={isAdded ? "取消添加" : "添加"}
+                          onClick={() => {
+                            if (isAdded) {
+                              setAddedSkills((prev) => prev.filter((id) => id !== skill.id));
+                              return;
+                            }
+                            handleAdd(skill.id);
+                          }}
+                          aria-label={isAdded ? `从安装列表移除 ${skill.name}` : `添加 ${skill.name}`}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* 底部操作栏（§8.7 无分割线，按钮右对齐） */}

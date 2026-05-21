@@ -182,7 +182,7 @@ description: >
 
 ## 10.5 Tab 切换卡（筛选标签按钮）
 
-> Figma: node 1061:7458 (ClawPro 项目设计)  
+> Figma: node 1061:7458 (ClawPro 项目设计)
 > 用于分类筛选场景（如技能库分类、技能列表分类等）
 
 **使用标准 Button 组件实现**：`<Button variant="claw-primary"/"claw-outline" size="claw-sm">`

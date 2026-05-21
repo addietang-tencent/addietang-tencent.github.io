@@ -688,4 +688,6 @@ export const MOCK_CLAWS_WITH_DEPT: Array<{
   { id: "12", instanceId: "ins-s03n7heo", name: "Leo的项目助手",     creator: "leo@acompany.com",    createTime: "2026-03-10 08:39:27", status: "running",     department: "A公司/运营部", departmentId: "dept-ops" },
   { id: "13", instanceId: "ins-t14o8ipf", name: "Mia的新助手",       creator: "mia@acompany.com",    createTime: "2026-03-12 11:00:00", status: "loading",     department: "A公司/产品部/设计组", departmentId: "dept-design" },
   { id: "14", instanceId: "ins-u25p9jqg", name: "Noah的分析助手",    creator: "noah@acompany.com",   createTime: "2026-03-13 14:30:00", status: "pending",     department: "A公司/人力资源部", departmentId: "dept-hr" },
+  // 自研内核（kernelBase: native）实例：管控台不展示其详细配置
+  { id: "23", instanceId: "ins-r4gun0qw", name: "custom-customclaw", creator: "admin123",            createTime: "2026-05-20 16:09:53", status: "running",     department: "A公司/技术部/AI 团队", departmentId: "dept-ai" },
 ];

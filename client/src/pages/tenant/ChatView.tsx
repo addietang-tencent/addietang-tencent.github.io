@@ -690,6 +690,15 @@ export default function ChatView({
 
   const [selectedClawId, setSelectedClawId] = useState<string | null>(() => {
     if (sortedClaws.length === 0) return null;
+    // 优先读取从「我的 Agent」卡片「对话视图」按钮跳转时写入的待选中 clawId
+    const pendingId = typeof window !== "undefined"
+      ? localStorage.getItem("openclaw_pending_chat_claw_id")
+      : null;
+    if (pendingId) {
+      localStorage.removeItem("openclaw_pending_chat_claw_id");
+      const matched = sortedClaws.find((c) => c.id === pendingId);
+      if (matched) return matched.id;
+    }
     // 默认选中第一个 OpenClaw 类型的实例，没有则选第一个
     const firstOpenclaw = sortedClaws.find((c) => !c.agentType || c.agentType === "openclaw");
     return (firstOpenclaw ?? sortedClaws[0]).id;

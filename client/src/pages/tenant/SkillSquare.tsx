@@ -458,25 +458,29 @@ export default function SkillSquare() {
         </div>
 
         {/* 分类横排按钮 */}
-        <div className="relative flex items-center gap-1.5 mb-6 flex-wrap pl-1">
-          <Button
+        <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <button
             onClick={() => setSelectedCategory('all')}
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
-            className={selectedCategory === 'all' ? '!bg-[#020617] !bg-none !border !border-[#020617] hover:!bg-[#0A0F1F] hover:!bg-none' : undefined}
+            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+              selectedCategory === 'all'
+                ? 'bg-[#f3f7ff] border-[#355EF1] text-[#355EF1]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#355EF1]'
+            }`}
           >
             全部
-          </Button>
+          </button>
           {DEFAULT_CATEGORIES.map(cat => (
-            <Button
+            <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              variant={selectedCategory === cat.id ? 'default' : 'outline'}
-              size="sm"
-              className={selectedCategory === cat.id ? '!bg-[#020617] !bg-none !border !border-[#020617] hover:!bg-[#0A0F1F] hover:!bg-none' : undefined}
+              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                selectedCategory === cat.id
+                  ? 'bg-[#f3f7ff] border-[#355EF1] text-[#355EF1]'
+                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#355EF1]'
+              }`}
             >
               {cat.name}
-            </Button>
+            </button>
           ))}
         </div>
 

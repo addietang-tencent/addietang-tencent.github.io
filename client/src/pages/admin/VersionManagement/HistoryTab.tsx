@@ -107,20 +107,16 @@ export default function HistoryTab({ scope = "all" }: Props) {
           </Select>
         )}
 
-        {/* 执行方筛选：仅在 scope=all 或 agent-upgrade 时显示
-          * command-execute 当前版本不支持平台自动执行（无定时任务），筛选无意义 */}
-        {scope !== "command-execute" && (
-          <Select value={operatorFilter} onValueChange={(v) => setOperatorFilter(v as OperatorFilter)}>
-            <SelectTrigger className="h-9 w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部执行方</SelectItem>
-              <SelectItem value="manual">管理员手动</SelectItem>
-              <SelectItem value="auto">平台自动更新</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <Select value={operatorFilter} onValueChange={(v) => setOperatorFilter(v as OperatorFilter)}>
+          <SelectTrigger className="h-9 w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部执行方</SelectItem>
+            <SelectItem value="manual">管理员手动</SelectItem>
+            <SelectItem value="auto">平台自动更新</SelectItem>
+          </SelectContent>
+        </Select>
 
         <div className="flex-1 relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -160,11 +156,9 @@ export default function HistoryTab({ scope = "all" }: Props) {
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">
                   运维内容
                 </th>
-                {scope !== "command-execute" && (
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">
-                    执行方
-                  </th>
-                )}
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">
+                  执行方
+                </th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
                   执行时间
                 </th>
@@ -179,22 +173,13 @@ export default function HistoryTab({ scope = "all" }: Props) {
             <tbody className="divide-y divide-gray-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5 + (scope === "all" ? 1 : 0) + (scope !== "command-execute" ? 1 : 0)}
-                    className="px-6 py-16 text-center text-sm text-gray-400"
-                  >
+                  <td colSpan={scope === "all" ? 7 : 6} className="px-6 py-16 text-center text-sm text-gray-400">
                     暂无符合条件的记录
                   </td>
                 </tr>
               ) : (
                 filtered.map((r) => (
-                  <HistoryRow
-                    key={r.id}
-                    record={r}
-                    showType={scope === "all"}
-                    showOperator={scope !== "command-execute"}
-                    onDetail={() => setDetailRecord(r)}
-                  />
+                  <HistoryRow key={r.id} record={r} showType={scope === "all"} onDetail={() => setDetailRecord(r)} />
                 ))
               )}
             </tbody>
@@ -238,12 +223,10 @@ function getOverallStatus(record: HistoryRecord): {
 function HistoryRow({
   record,
   showType,
-  showOperator,
   onDetail,
 }: {
   record: HistoryRecord;
   showType: boolean;
-  showOperator: boolean;
   onDetail: () => void;
 }) {
   const successRate = record.totalInstances > 0
@@ -309,22 +292,20 @@ function HistoryRow({
         )}
       </td>
 
-      {/* 执行方（command-execute 永远是当前管理员，列已隐藏） */}
-      {showOperator && (
-        <td className="px-6 py-4">
-          {record.isAuto ? (
-            <div className="inline-flex items-center gap-1.5 text-sm">
-              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-              <span className="text-blue-700">{record.operator}</span>
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 text-sm">
-              <User className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-gray-700 truncate max-w-[120px]">{record.operator}</span>
-            </div>
-          )}
-        </td>
-      )}
+      {/* 执行方 */}
+      <td className="px-6 py-4">
+        {record.isAuto ? (
+          <div className="inline-flex items-center gap-1.5 text-sm">
+            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <span className="text-blue-700">{record.operator}</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 text-sm">
+            <User className="w-3.5 h-3.5 text-gray-400" />
+            <span className="text-gray-700 truncate max-w-[120px]">{record.operator}</span>
+          </div>
+        )}
+      </td>
 
       {/* 执行时间 */}
       <td className="px-6 py-4">
@@ -399,13 +380,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
           <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50/60 rounded-xl">
             <Field label="任务 ID" value={record.taskId} mono />
             <Field label="记录 ID" value={record.id} mono />
-            {/* command-execute 当前版本仅支持人工触发，统一展示为「操作人」；
-              * agent-upgrade 区分手动/自动，展示「执行方」 */}
-            {record.action === "command-execute" ? (
-              <Field label="操作人" value={record.operator} />
-            ) : (
-              <Field label="执行方" value={record.isAuto ? `${record.operator}（自动）` : record.operator} />
-            )}
+            <Field label="执行方" value={record.isAuto ? `${record.operator}（自动）` : record.operator} />
             <Field label="执行时间" value={record.operatedAt} />
             {record.scheduledAt && <Field label="计划执行时间" value={record.scheduledAt} />}
             <Field label="影响 Agent" value={`${record.totalInstances} 个`} />
@@ -434,55 +409,11 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 <Field label="超时时间" value={`${record.commandExtra.timeoutSec} 秒`} small />
               </div>
               <div>
-                <div className="text-xs text-gray-500 mb-1">
-                  命令内容
-                  {record.commandExtra.paramValues && Object.keys(record.commandExtra.paramValues).length > 0 && (
-                    <span className="ml-1 text-[10px] text-gray-400">（已替换参数后的实际下发内容）</span>
-                  )}
-                </div>
+                <div className="text-xs text-gray-500 mb-1">命令内容</div>
                 <pre className="text-xs font-mono text-gray-700 bg-gray-50 rounded-lg p-3 max-h-[180px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
                   {record.commandExtra.commandContent}
                 </pre>
               </div>
-
-              {/* 命令参数值（仅本次任务用到了参数化命令时显示） */}
-              {record.commandExtra.paramValues && Object.keys(record.commandExtra.paramValues).length > 0 && (
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">命令参数</div>
-                  <div className="rounded-lg border border-gray-100 overflow-hidden">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50">
-                        <tr className="border-b border-gray-100">
-                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium w-[36%]">
-                            参数名
-                          </th>
-                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium">
-                            参数值
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {Object.entries(record.commandExtra.paramValues).map(([k, v]) => (
-                          <tr key={k}>
-                            <td className="px-3 py-1.5 font-mono text-gray-900 break-all">{k}</td>
-                            <td className="px-3 py-1.5 font-mono text-gray-700 break-all">{v}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {record.commandExtra.commandContentTemplate && (
-                    <details className="text-xs mt-2">
-                      <summary className="text-gray-500 cursor-pointer hover:text-blue-600">
-                        查看命令模板原始内容（含 {"{{key}}"}）
-                      </summary>
-                      <pre className="text-xs font-mono text-gray-500 bg-gray-50/60 rounded p-2 mt-1.5 max-h-[120px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
-                        {record.commandExtra.commandContentTemplate}
-                      </pre>
-                    </details>
-                  )}
-                </div>
-              )}
 
               {/* 测试机结果 */}
               {record.commandExtra.testInstanceId && (

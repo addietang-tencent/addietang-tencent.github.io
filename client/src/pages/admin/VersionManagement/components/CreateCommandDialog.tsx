@@ -135,22 +135,9 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
         }
         seen.add(p.key);
       }
-      // 已定义但命令内容未引用 → 阻断保存（参数定义了不用，下发时无法注入，属于配置错误）
-      if (unusedKeys.length > 0) {
-        e.params_unused = `参数 ${unusedKeys.map((k) => `{{${k}}}`).join("、")} 已定义但命令内容未引用`;
-      }
-      // 命令内容引用了 {{key}} 但未在参数列表定义 → 阻断保存（下发时拿不到值，会直接报错）
-      if (undefinedKeys.length > 0) {
-        e.params_undefined = `命令内容引用了 ${undefinedKeys.map((k) => `{{${k}}}`).join("、")} 但未在参数列表定义`;
-      }
-    } else {
-      // 未开启参数，但命令内容里写了 {{key}} → 阻断（用户大概率忘了开关）
-      if (refKeys.length > 0) {
-        e.params_disabled = `命令内容包含 ${refKeys.map((k) => `{{${k}}}`).join("、")}，请开启「使用参数」并定义对应变量`;
-      }
     }
     return e;
-  }, [draft, refKeys, unusedKeys, undefinedKeys]);
+  }, [draft]);
 
   const update = <K extends keyof DraftTemplate>(key: K, value: DraftTemplate[K]) => {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -385,50 +372,13 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
                 />
               </div>
 
-              {/* 未开启「使用参数」但命令内容里写了 {{key}} → 阻断保存 */}
-              {!draft.useParams && refKeys.length > 0 && (
-                <div className="flex items-start gap-2 text-xs bg-red-50 border border-red-200 rounded-md px-2.5 py-2 mb-2">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0" />
-                  <div className="flex-1 text-red-700 leading-relaxed">
-                    命令内容包含
-                    {refKeys.map((k, i) => (
-                      <span key={k}>
-                        {i > 0 && "、"}
-                        <span className="font-mono mx-0.5">{`{{${k}}}`}</span>
-                      </span>
-                    ))}
-                    ，请开启「使用参数」并定义对应变量，否则下发时将原样发送。
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      update("useParams", true);
-                      // 同步导入未定义的 key 作为参数
-                      setDraft((d) => ({
-                        ...d,
-                        useParams: true,
-                        params: [
-                          ...d.params,
-                          ...refKeys
-                            .filter((k) => !d.params.some((p) => p.key === k))
-                            .map((k) => ({ key: k, defaultValue: "", description: "" })),
-                        ],
-                      }));
-                    }}
-                    className="text-red-700 hover:text-red-900 underline shrink-0"
-                  >
-                    一键开启并导入
-                  </button>
-                </div>
-              )}
-
               {draft.useParams && (
                 <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50/50">
-                  {/* 未定义的 {{key}} 错误（阻断保存） */}
+                  {/* 未定义的 {{key}} 提示 */}
                   {undefinedKeys.length > 0 && (
-                    <div className="flex items-start gap-2 text-xs bg-red-50 border border-red-200 rounded-md px-2.5 py-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0" />
-                      <div className="flex-1 text-red-700 leading-relaxed">
+                    <div className="flex items-start gap-2 text-xs bg-amber-50 border border-amber-200 rounded-md px-2.5 py-2">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                      <div className="flex-1 text-amber-700 leading-relaxed">
                         命令内容中引用了
                         {undefinedKeys.map((k, i) => (
                           <span key={k}>
@@ -436,31 +386,31 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
                             <span className="font-mono mx-0.5">{`{{${k}}}`}</span>
                           </span>
                         ))}
-                        ，但尚未定义，<span className="font-medium">无法保存</span>。
+                        ，但尚未定义。
                       </div>
                       <button
                         type="button"
                         onClick={importUndefinedKeys}
-                        className="text-red-700 hover:text-red-900 underline shrink-0"
+                        className="text-amber-700 hover:text-amber-900 underline shrink-0"
                       >
                         一键添加
                       </button>
                     </div>
                   )}
 
-                  {/* 已定义但内容里没用到的 key 错误（阻断保存） */}
+                  {/* 已定义但内容里没用到的 key 提示 */}
                   {unusedKeys.length > 0 && (
-                    <div className="flex items-start gap-2 text-xs bg-red-50 border border-red-200 rounded-md px-2.5 py-2">
-                      <AlertCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 shrink-0" />
-                      <div className="flex-1 text-red-700 leading-relaxed">
+                    <div className="flex items-start gap-2 text-xs text-gray-500 px-1">
+                      <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                      <div className="flex-1 leading-relaxed">
                         变量
                         {unusedKeys.map((k, i) => (
                           <span key={k}>
                             {i > 0 && "、"}
-                            <span className="font-mono mx-0.5">{k}</span>
+                            <span className="font-mono mx-0.5 text-gray-700">{k}</span>
                           </span>
                         ))}
-                        已定义但命令内容未引用，请在命令中以 <span className="font-mono">{"{{key}}"}</span> 引用，或删除该变量。
+                        未在命令内容中引用，可以删除或改用 <span className="font-mono">{"{{key}}"}</span> 引用。
                       </div>
                     </div>
                   )}

@@ -378,9 +378,7 @@ export interface CommandExecuteExtra {
   commandId: string;          // 关联的命令模板 ID
   commandName: string;        // 命令名称
   commandType: "SHELL";       // 暂只支持 Linux Shell
-  commandContent: string;     // 命令内容（已替换参数后的实际下发内容）
-  commandContentTemplate?: string; // 命令模板原始内容（含 {{key}} 占位符，便于追溯）
-  paramValues?: Record<string, string>; // 下发时实际传入的参数值（key → value），用于审计
+  commandContent: string;     // 命令内容（截断展示）
   workingDir: string;         // 执行路径
   runAsUser: string;          // 执行用户
   timeoutSec: number;         // 超时时间（秒）

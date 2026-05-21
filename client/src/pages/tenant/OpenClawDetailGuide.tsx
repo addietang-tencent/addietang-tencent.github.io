@@ -1068,18 +1068,7 @@ export default function OpenClawDetailGuide() {
     fields: ChannelField[];
     fieldValues: Record<string, string>;
   };
-  const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([
-    {
-      type: "飞书", channelValue: "feishu", status: "running",
-      fields: CHANNEL_OPTIONS.find(c => c.value === "feishu")?.fields || [],
-      fieldValues: { appId: "cli_a1b2c3d4e5f6", appSecret: "abc123456789" },
-    },
-    {
-      type: "QQ", channelValue: "qq", status: "running",
-      fields: CHANNEL_OPTIONS.find(c => c.value === "qq")?.fields || [],
-      fieldValues: { appId: "1234567890", appSecret: "xyz987654321" },
-    },
-  ]);
+  const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([]);
   const [expandedChannelIdx, setExpandedChannelIdx] = useState<number | null>(null);
   const [visibleAppliedSecrets, setVisibleAppliedSecrets] = useState<Set<string>>(new Set());
 
@@ -1135,7 +1124,11 @@ export default function OpenClawDetailGuide() {
   };
 
   const handleDeleteChannel = (idx: number) => {
-    setAppliedChannels(prev => prev.filter((_, i) => i !== idx));
+    setAppliedChannels(prev => {
+      const next = prev.filter((_, i) => i !== idx);
+      if (next.length === 0) setShowChannelConfig(true);
+      return next;
+    });
     toast.info("通道已删除");
   };
 
@@ -1831,7 +1824,17 @@ export default function OpenClawDetailGuide() {
                           用户与 Agent 交互的入口，支持微信、QQ、飞书等
                         </p>
                       </div>
-                      <ConfiguredBadge />
+                      {appliedChannels.length > 0 ? (
+                        <ConfiguredBadge />
+                      ) : (
+                        <span
+                          className="inline-flex items-center gap-1.5 h-5 px-2 text-xs shrink-0"
+                          style={{ color: "#A3A3A3", letterSpacing: "0.015em" }}
+                        >
+                          <span className="w-2 h-2 rounded-full" style={{ background: "#A3A3A3" }} />
+                          未配置
+                        </span>
+                      )}
                     </div>
 
                     {/* 通道配置：新增通道按钮 / 配置卡切换 */}
@@ -1851,6 +1854,7 @@ export default function OpenClawDetailGuide() {
                         {/* 添加接入通道配置卡（展开态） */}
                         {showChannelConfig && (
                           <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                            {appliedChannels.length > 0 && (
                             <button
                               type="button"
                               onClick={() => {
@@ -1862,6 +1866,7 @@ export default function OpenClawDetailGuide() {
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
+                            )}
                             {/* 小标题 */}
                             <div className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                               添加接入通道

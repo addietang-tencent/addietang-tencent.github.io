@@ -69,7 +69,10 @@ import ToolsMcpPanel from "./ToolsMcpPanel";
 
 type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 
-const AGENT_NAME_MAX_LENGTH = 30;
+const AGENT_NAME_MAX_BYTES = 128;
+
+const getNameByteLength = (value: string) => new TextEncoder().encode(value).length;
+
 
 const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   label: string;
@@ -195,7 +198,7 @@ export default function AgentDetail() {
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingName, setEditingName] = useState(clawName);
-  const [nameRequiredError, setNameRequiredError] = useState(false);
+  const [nameBytesError, setNameBytesError] = useState("");
   const [nameSaveError, setNameSaveError] = useState("");
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const nameEditorRef = useRef<HTMLDivElement | null>(null);
@@ -205,7 +208,7 @@ export default function AgentDetail() {
   useEffect(() => {
     if (!isEditingName) {
       setEditingName(clawName);
-      setNameRequiredError(false);
+      setNameBytesError("");
       setNameSaveError("");
     }
   }, [clawName, isEditingName]);
@@ -220,7 +223,7 @@ export default function AgentDetail() {
 
   const beginEditName = () => {
     setEditingName(clawName);
-    setNameRequiredError(false);
+    setNameBytesError("");
     setNameSaveError("");
     setIsEditingName(true);
   };
@@ -228,7 +231,7 @@ export default function AgentDetail() {
   const cancelEditName = useCallback(() => {
     setIsEditingName(false);
     setEditingName(clawName);
-    setNameRequiredError(false);
+    setNameBytesError("");
     setNameSaveError("");
   }, [clawName]);
 
@@ -236,16 +239,24 @@ export default function AgentDetail() {
     const trimmedName = editingName.trim();
 
     if (!trimmedName) {
-      setNameRequiredError(false);
+      setNameBytesError("");
       setNameSaveError("");
       setEditingName(clawName);
       setIsEditingName(false);
       return;
     }
 
+    if (getNameByteLength(trimmedName) > AGENT_NAME_MAX_BYTES) {
+      setNameBytesError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+      setNameSaveError("");
+      requestAnimationFrame(() => {
+        nameInputRef.current?.focus();
+      });
+      return;
+    }
 
     if (trimmedName === clawName) {
-      setNameRequiredError(false);
+      setNameBytesError("");
       setNameSaveError("");
       setIsEditingName(false);
       return;
@@ -258,9 +269,10 @@ export default function AgentDetail() {
       saveClawList(nextList);
       notifyClawListChange();
       setClawData((prev) => ({ ...prev, name: trimmedName }));
-      setNameRequiredError(false);
+      setNameBytesError("");
       setNameSaveError("");
       setIsEditingName(false);
+      // toast.success("重命名成功", { position: "top-right" });
     } catch (error) {
       console.error("rename agent failed", error);
       setNameSaveError("重命名失败，请重试");
@@ -269,6 +281,7 @@ export default function AgentDetail() {
       });
     }
   }, [claw.id, clawName, editingName]);
+
 
   // ── Configuration state ──
 
@@ -1442,16 +1455,23 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <div ref={nameEditorRef} className="group/agent-name min-w-0 max-w-[520px]">
                   {isEditingName ? (
                     <div className="relative w-full">
+                      {(nameBytesError || nameSaveError) && (
+                        <p className="absolute left-0 bottom-full mb-1 text-xs text-red-500 whitespace-nowrap z-10">
+                          {nameBytesError || nameSaveError}
+                        </p>
+                      )}
                       <Input
                         ref={nameInputRef}
                         value={editingName}
                         onChange={(e) => {
                           const nextValue = e.target.value;
-                          if (nextValue.length <= AGENT_NAME_MAX_LENGTH) {
-                            setEditingName(nextValue);
-                            setNameRequiredError(false);
-                            setNameSaveError("");
+                          setEditingName(nextValue);
+                          if (getNameByteLength(nextValue) > AGENT_NAME_MAX_BYTES) {
+                            setNameBytesError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+                          } else {
+                            setNameBytesError("");
                           }
+                          setNameSaveError("");
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -1474,22 +1494,20 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           saveEditedName();
                         }}
 
-                        maxLength={AGENT_NAME_MAX_LENGTH}
                         aria-label="编辑 Agent 名称"
-                        className={`h-9 w-full pr-14 text-2xl font-bold leading-none px-2 py-0 border bg-white ${
-                          nameRequiredError || !!nameSaveError
+                        className={`h-9 w-full text-2xl font-bold leading-none px-2 py-0 border bg-white ${
+                          !!nameBytesError || !!nameSaveError
                             ? "border-red-500 focus-visible:ring-red-500"
                             : "border-gray-200"
                         }`}
                       />
-                      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 tabular-nums">
-                        {editingName.length}/{AGENT_NAME_MAX_LENGTH}
-                      </span>
                     </div>
                   ) : (
 
 
+
                     <Tooltip>
+
                       <TooltipTrigger asChild>
                         <button
                           type="button"
@@ -1499,7 +1517,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                         >
 
                           <h1 className="text-2xl font-bold text-gray-900 truncate max-w-[460px]">{clawName}</h1>
-                          <span className="w-5 h-5 inline-flex items-center justify-center text-gray-400 transition-opacity duration-150 opacity-0 group-hover/agent-name:opacity-100 group-focus-within/agent-name:opacity-100">
+                          <span className="w-5 h-5 inline-flex items-center justify-center text-gray-400">
                             <Pencil className="w-3.5 h-3.5" />
                           </span>
                         </button>
@@ -1509,7 +1527,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  {nameSaveError && <p className="mt-1 text-xs text-red-500">{nameSaveError}</p>}
+
                 </div>
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>

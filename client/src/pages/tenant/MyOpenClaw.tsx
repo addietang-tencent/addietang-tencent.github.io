@@ -53,7 +53,8 @@ const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // [006] 列表分页：每页默认 30 条，与后端 GET /openclaw/list 默认 page_size 保持一致
 const PAGE_SIZE = 30;
-const RENAME_NAME_MAX_LENGTH = 30;
+const RENAME_NAME_MAX_BYTES = 128;
+
 
 
 // 8 种状态配置
@@ -383,8 +384,13 @@ export default function MyOpenClaw() {
   const [renameDialog, setRenameDialog] = useState<{ id: string; name: string } | null>(null);
   const [renameInput, setRenameInput] = useState("");
   const [showRenameFail, setShowRenameFail] = useState(false);
+  const renameTrimmedName = renameInput.trim();
+  const renameNameBytes = new TextEncoder().encode(renameTrimmedName).length;
+  const isRenameNameTooLong = renameNameBytes > RENAME_NAME_MAX_BYTES;
+
 
   // 卡片视图 Agent 类型子 Tab
+
   const [activeAgentTab, setActiveAgentTab] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
 
 
@@ -539,6 +545,9 @@ export default function MyOpenClaw() {
     const trimmedName = renameInput.trim();
     if (!trimmedName) return;
 
+    const renameNameBytes = new TextEncoder().encode(trimmedName).length;
+    if (renameNameBytes > RENAME_NAME_MAX_BYTES) return;
+
     try {
       setClaws((prev) => prev.map((c) => (c.id === renameDialog.id ? { ...c, name: trimmedName } : c)));
       setRenameDialog(null);
@@ -549,6 +558,8 @@ export default function MyOpenClaw() {
       setShowRenameFail(true);
     }
   };
+
+
 
   const handleCancelRename = () => {
     setRenameDialog(null);
@@ -1104,40 +1115,52 @@ export default function MyOpenClaw() {
             </DialogHeader>
             <div className="space-y-2">
               <Label htmlFor="rename-agent-input" className="text-sm font-medium text-gray-700">名称</Label>
-              <Input
-                id="rename-agent-input"
-                value={renameInput}
-                onChange={(e) => setRenameInput(e.target.value.slice(0, RENAME_NAME_MAX_LENGTH))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleConfirmRename();
-                  }
-                }}
-                maxLength={RENAME_NAME_MAX_LENGTH}
-                placeholder="请输入 Agent 名称"
-                autoFocus
-              />
-              <p className="text-xs text-gray-400 text-right">
-                {renameInput.length}/{RENAME_NAME_MAX_LENGTH}
-              </p>
+              <div className="relative">
+                <Input
+                  id="rename-agent-input"
+                  value={renameInput}
+                  onChange={(e) => setRenameInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleConfirmRename();
+                    }
+                  }}
+                  placeholder="请输入 Agent 名称"
+                  autoFocus
+                  className={isRenameNameTooLong ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                <p
+                  className={`pointer-events-none absolute left-0 top-full mt-1 text-xs text-red-600 transition-opacity ${
+                    isRenameNameTooLong ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  名称不能超过 {RENAME_NAME_MAX_BYTES} 字节
+                </p>
+              </div>
+
             </div>
+
             <DialogFooter className="gap-2 pt-2">
               <Button variant="outline" onClick={handleCancelRename}>取消</Button>
               <Button
                 className="text-white"
                 style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                disabled={!renameInput.trim()}
+                disabled={!renameTrimmedName || isRenameNameTooLong}
                 onClick={handleConfirmRename}
               >
                 确认
               </Button>
             </DialogFooter>
+
           </DialogContent>
         </Dialog>
 
+
+
         {/* Rename Fail Dialog */}
         <Dialog open={showRenameFail} onOpenChange={(open) => { if (!open) setShowRenameFail(false); }}>
+
           <DialogContent
             className="sm:max-w-[360px]"
             onInteractOutside={(event) => event.preventDefault()}

@@ -233,7 +233,8 @@ const DESKTOP_UPGRADE_DURATION = 2800;
 const BROWSER_RANDOM_FAIL_STEPS: BrowserStartupStepKey[] = ["componentCheck", "policyCheck"];
 const CLOUD_BROWSER_REINSTALL_AUTO_REFRESH_INTERVAL = 1600;
 const CLOUD_BROWSER_REINSTALL_TRANSITION_TIMEOUT = 30000;
-const RENAME_NAME_MAX_LENGTH = 30;
+const RENAME_NAME_MAX_BYTES = 128;
+
 
 
 const pickRandomBrowserFailStep = (steps: BrowserStartupStepKey[]) => {
@@ -716,8 +717,13 @@ export default function ChatView({
   const [renameDialog, setRenameDialog] = useState<{ id: string; name: string } | null>(null);
   const [renameInput, setRenameInput] = useState("");
   const [showRenameFail, setShowRenameFail] = useState(false);
+  const renameTrimmedName = renameInput.trim();
+  const renameNameBytes = new TextEncoder().encode(renameTrimmedName).length;
+  const isRenameNameTooLong = renameNameBytes > RENAME_NAME_MAX_BYTES;
+
 
   const [isTenantHeaderVisible, setIsTenantHeaderVisible] = useState(true);
+
   const [leftPaneWidth, setLeftPaneWidth] = useState(CHAT_PANE_DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
   const [browserStartupModal, setBrowserStartupModal] = useState<BrowserStartupModalState>(createInitialBrowserStartupState);
@@ -794,6 +800,9 @@ export default function ChatView({
     const trimmedName = renameInput.trim();
     if (!trimmedName) return;
 
+    const renameNameBytes = new TextEncoder().encode(trimmedName).length;
+    if (renameNameBytes > RENAME_NAME_MAX_BYTES) return;
+
     try {
       onRename(renameDialog.id, trimmedName);
       setRenameDialog(null);
@@ -804,6 +813,8 @@ export default function ChatView({
       setShowRenameFail(true);
     }
   };
+
+
 
   useEffect(() => {
 
@@ -2868,39 +2879,51 @@ export default function ChatView({
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="chat-rename-agent-input" className="text-sm font-medium text-gray-700">名称</Label>
-            <Input
-              id="chat-rename-agent-input"
-              value={renameInput}
-              onChange={(e) => setRenameInput(e.target.value.slice(0, RENAME_NAME_MAX_LENGTH))}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleConfirmRename();
-                }
-              }}
-              maxLength={RENAME_NAME_MAX_LENGTH}
-              placeholder="请输入 Agent 名称"
-              autoFocus
-            />
-            <p className="text-xs text-gray-400 text-right">
-              {renameInput.length}/{RENAME_NAME_MAX_LENGTH}
-            </p>
+            <div className="relative">
+              <Input
+                id="chat-rename-agent-input"
+                value={renameInput}
+                onChange={(e) => setRenameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleConfirmRename();
+                  }
+                }}
+                placeholder="请输入 Agent 名称"
+                autoFocus
+                className={isRenameNameTooLong ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              <p
+                className={`pointer-events-none absolute left-0 top-full mt-1 text-xs text-red-600 transition-opacity ${
+                  isRenameNameTooLong ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                名称不能超过 {RENAME_NAME_MAX_BYTES} 字节
+              </p>
+            </div>
+
           </div>
+
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={handleCancelRename}>取消</Button>
             <Button
               className="text-white"
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-              disabled={!renameInput.trim()}
+              disabled={!renameTrimmedName || isRenameNameTooLong}
               onClick={handleConfirmRename}
             >
               确认
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
 
+
+
       <Dialog open={showRenameFail} onOpenChange={(open) => { if (!open) setShowRenameFail(false); }}>
+
         <DialogContent
           className="sm:max-w-[360px]"
           onInteractOutside={(event) => event.preventDefault()}

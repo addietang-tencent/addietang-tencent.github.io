@@ -61,6 +61,10 @@ interface BatchDeleteDialogProps {
   }>;
   groups: Group[];
   onDeleteStart: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
+  /** 是否显示分组筛选，默认 true */
+  showScopeFilter?: boolean;
+  /** 隐藏实例中的创建人、分组信息 */
+  hideCreatorAndGroup?: boolean;
 }
 
 export default function BatchDeleteDialog({
@@ -71,6 +75,8 @@ export default function BatchDeleteDialog({
   distributedInstances,
   groups,
   onDeleteStart,
+  showScopeFilter = true,
+  hideCreatorAndGroup = false,
 }: BatchDeleteDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -281,6 +287,7 @@ export default function BatchDeleteDialog({
               />
             </div>
             {/* 分组筛选 — 多选带搜索（参考下发弹窗） */}
+            {showScopeFilter && (
             <div className="relative" ref={scopeDropdownRef}>
               <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
@@ -436,6 +443,7 @@ export default function BatchDeleteDialog({
                 );
               })()}
             </div>
+            )}
             {/* 状态筛选 — 多选下拉（参考下发弹窗） */}
             <div className="relative" ref={statusDropdownRef}>
               <Tooltip delayDuration={1000} open={statusDropdownOpen ? false : undefined}>
@@ -529,8 +537,12 @@ export default function BatchDeleteDialog({
                         <span className="text-xs text-gray-400 font-mono flex-shrink-0">{inst.id}</span>
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs text-gray-500">创建人：{inst.createdBy}</span>
-                        <span className="text-xs text-gray-500">分组：{inst.groupName || '全部用户'}</span>
+                        {!hideCreatorAndGroup && (
+                          <>
+                            <span className="text-xs text-gray-500">创建人：{inst.createdBy}</span>
+                            <span className="text-xs text-gray-500">分组：{inst.groupName || '全部用户'}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     {/* 右侧：卸载状态 + 版本号 */}

@@ -528,7 +528,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
               ))}
             </ul>
             <p className="text-xs text-gray-500">
-              建议先在测试机执行验证后，再批量下发到生产环境。
+              建议先开启「灰度执行」在 1 台实例上验证，再批量下发到生产环境。
             </p>
           </div>
 

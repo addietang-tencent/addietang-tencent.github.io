@@ -429,7 +429,7 @@ export default function ModelQuota() {
             </Popover>
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
-            <div className="flex items-center gap-3 ml-auto flex-wrap">
+            <div className="flex w-[365px] h-8 items-center gap-2 ml-auto flex-wrap rounded-none px-0 py-0 text-base leading-6 text-[#0A0A0A]">
               {/* Mode Toggle */}
               <div className="flex items-center bg-gray-100 rounded-[4px] p-1 gap-1 h-8">
                 <Button

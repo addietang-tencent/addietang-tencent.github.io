@@ -39,9 +39,8 @@ import { toast } from "sonner";
 import {
   Plus, MoreVertical, Settings, RefreshCw, HardDriveDownload, Trash2,
   Zap, Bot, X, RotateCcw, Terminal, Bell, AlertCircle, ChevronDown, ChevronUp, UserMinus,
-  LayoutGrid, MessageSquare, Monitor, Copy, Users, Check, ArrowRight, ArrowLeft, Pencil,
-
-  ChevronLeft, ChevronRight,
+  LayoutGrid, MessageSquare, Monitor, Copy, Users, Check, ArrowRight, ArrowLeft,
+  ChevronLeft, ChevronRight, Pencil,
 } from "lucide-react";
 import ChatView from "./ChatView";
 import { MOCK_ROLES } from "@/lib/mockData";
@@ -53,14 +52,17 @@ const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // [006] 列表分页：每页默认 30 条，与后端 GET /openclaw/list 默认 page_size 保持一致
 const PAGE_SIZE = 30;
-const RENAME_NAME_MAX_BYTES = 128;
+const AGENT_NAME_MAX_BYTES = 128;
 
-
+const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value).length;
 
 // 8 种状态配置
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+const RUNNING_ONLY_ACTION_STATUSES: OpenClawStatus[] = ["running"];
+const canRunOnlyAction = (status: OpenClawStatus) => RUNNING_ONLY_ACTION_STATUSES.includes(status);
 
 interface OpenClawItem {
+
   id: string;
   instanceId: string;
   name: string;
@@ -375,24 +377,16 @@ export default function MyOpenClaw() {
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirmInput, setReinstallConfirmInput] = useState("");
+  const [renameConfirm, setRenameConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [renameInput, setRenameInput] = useState("");
   const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ id: string; name: string; roleName: string } | null>(null);
+
 
   // 开启面板弹窗
   const [panelDialog, setPanelDialog] = useState<{ id: string; name: string } | null>(null);
 
-  // 重命名弹窗
-  const [renameDialog, setRenameDialog] = useState<{ id: string; name: string } | null>(null);
-  const [renameInput, setRenameInput] = useState("");
-  const [showRenameFail, setShowRenameFail] = useState(false);
-  const renameTrimmedName = renameInput.trim();
-  const renameNameBytes = new TextEncoder().encode(renameTrimmedName).length;
-  const isRenameNameTooLong = renameNameBytes > RENAME_NAME_MAX_BYTES;
-
-
   // 卡片视图 Agent 类型子 Tab
-
   const [activeAgentTab, setActiveAgentTab] = useState<"openclaw" | "hermes" | "lightclawace">("openclaw");
-
 
   // [006] 当前分页页码
   const [page, setPage] = useState(1);
@@ -525,49 +519,58 @@ export default function MyOpenClaw() {
     toast.success(`「${name}」正在重新安装...`);
   };
 
+  const canRenameStatus = (status: OpenClawStatus) => canRunOnlyAction(status);
+
+
+  const openRenameDialog = (claw: { id: string; name: string }) => {
+    const target = claws.find((item) => item.id === claw.id);
+    if (!target || !canRenameStatus(target.status)) return;
+    setRenameConfirm(claw);
+    setRenameInput(claw.name);
+  };
+
+
+  const handleRenameInputChange = (value: string) => {
+    const noLineBreakValue = value.replace(/[\r\n]/g, "");
+    setRenameInput(noLineBreakValue);
+  };
+
+  const renameTrimmedValue = renameInput.trim();
+  const renameInputBytes = getAgentNameByteLength(renameInput);
+  const isRenameOverByteLimit = renameInputBytes > AGENT_NAME_MAX_BYTES;
+  const isRenameConfirmDisabled = renameTrimmedValue.length === 0 || isRenameOverByteLimit;
+
+  const handleRenameConfirm = () => {
+    if (!renameConfirm || isRenameConfirmDisabled) return;
+
+    try {
+      const targetExists = claws.some((claw) => claw.id === renameConfirm.id);
+      if (!targetExists) {
+        throw new Error("target-not-found");
+      }
+
+      setClaws(claws.map((claw) => {
+        if (claw.id !== renameConfirm.id) return claw;
+        return {
+          ...claw,
+          name: renameTrimmedValue,
+        };
+      }));
+
+      setRenameConfirm(null);
+      setRenameInput("");
+    } catch {
+      toast.error("重命名失败，请重试");
+    }
+  };
+
   const handleRetry = (id: string, name: string) => {
+
     setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
     toast.success(`「${name}」正在重试...`);
   };
 
-  const handleRenameById = (id: string, name: string) => {
-    setClaws((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)));
-  };
-
-  const handleOpenRename = (id: string, name: string) => {
-
-    setRenameDialog({ id, name });
-    setRenameInput(name);
-  };
-
-  const handleConfirmRename = () => {
-    if (!renameDialog) return;
-    const trimmedName = renameInput.trim();
-    if (!trimmedName) return;
-
-    const renameNameBytes = new TextEncoder().encode(trimmedName).length;
-    if (renameNameBytes > RENAME_NAME_MAX_BYTES) return;
-
-    try {
-      setClaws((prev) => prev.map((c) => (c.id === renameDialog.id ? { ...c, name: trimmedName } : c)));
-      setRenameDialog(null);
-      setRenameInput("");
-      toast.success("重命名成功");
-    } catch (error) {
-      console.error("rename openclaw failed", error);
-      setShowRenameFail(true);
-    }
-  };
-
-
-
-  const handleCancelRename = () => {
-    setRenameDialog(null);
-    setRenameInput("");
-  };
-
   const handleAddNotification = (message: string) => {
-
     const notification: Notification = {
       id: `notif-${Date.now()}`,
       message,
@@ -740,11 +743,11 @@ export default function MyOpenClaw() {
                   onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
                   onRestartConfirm={(claw) => setRestartConfirm(claw)}
                   onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
+                  onRenameConfirm={(claw: { id: string; name: string }) => openRenameDialog(claw)}
                   onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
-                  onRename={handleRenameById}
                   onRetry={handleRetry}
-                  allowTerminal={allowTerminal}
 
+                  allowTerminal={allowTerminal}
                   refreshingIds={refreshingIds}
                   onRefreshStatus={handleRefreshStatus}
                   isFullscreen={isFullscreen}
@@ -841,7 +844,7 @@ export default function MyOpenClaw() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-52">
                               {/* Restart */}
-                              {claw.status === "running" ? (
+                              {canRunOnlyAction(claw.status) ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setRestartConfirm({ id: claw.id, name: claw.name }); }}>
                                   <RotateCcw className="w-4 h-4 mr-2 text-gray-500" />
                                   重启
@@ -854,7 +857,7 @@ export default function MyOpenClaw() {
                               )}
 
                               {/* Reinstall */}
-                              {claw.status === "running" ? (
+                              {canRunOnlyAction(claw.status) ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReinstallConfirm({ id: claw.id, name: claw.name }); }}>
                                   <HardDriveDownload className="w-4 h-4 mr-2 text-gray-500" />
                                   {isNonOpenclaw ? "重新安装 Agent" : "重新安装 OpenClaw"}
@@ -866,7 +869,22 @@ export default function MyOpenClaw() {
                                 </DropdownMenuItem>
                               )}
 
+                              {canRunOnlyAction(claw.status) ? (
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openRenameDialog({ id: claw.id, name: claw.name }); }}>
+                                  <Pencil className="w-4 h-4 mr-2 text-gray-500" />
+                                  重命名
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
+                                  <Pencil className="w-4 h-4 mr-2 text-gray-400" />
+                                  重命名
+                                </DropdownMenuItem>
+                              )}
+
+
+
                               {/* Terminal */}
+
                               {(() => {
                                 const clawGroup = MOCK_USER_GROUPS.find(g => g.id === (claw.groupId || "grp-fe")) || null;
                                 const canTerminal = groupMode === "multi-group" && clawGroup
@@ -894,29 +912,7 @@ export default function MyOpenClaw() {
                                 </DropdownMenuItem>
                               ) : null}
 
-                              {claw.status === "running" || claw.status === "shutdown" ? (
-
-                                <DropdownMenuItem
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenRename(claw.id, claw.name);
-                                  }}
-                                >
-                                  <Pencil className="w-4 h-4 mr-2 text-gray-500" />
-                                  重命名
-                                </DropdownMenuItem>
-                              ) : (
-                                <DropdownMenuItem disabled className="opacity-40 cursor-not-allowed">
-                                  <Pencil className="w-4 h-4 mr-2 text-gray-400" />
-                                  重命名
-                                </DropdownMenuItem>
-                              )}
-
-
-
-
                               <DropdownMenuSeparator />
-
 
                               {/* Delete */}
                               {["creating", "loading", "pending"].includes(claw.status) ? (
@@ -939,16 +935,12 @@ export default function MyOpenClaw() {
                       </div>
 
                       {/* Name and Info */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <h3 className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
-                            {claw.name}
-                          </h3>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs max-w-[280px] break-all">
-                          {claw.name}
-                        </TooltipContent>
-                      </Tooltip>
+                      <h3
+                        className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}
+                        title={claw.name}
+                      >
+                        {claw.name}
+                      </h3>
 
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         {claw.roleName && (
@@ -979,26 +971,55 @@ export default function MyOpenClaw() {
                           重试
                         </Button>
                       ) : isDisabled ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full text-xs opacity-40 cursor-not-allowed"
-                          disabled
-                        >
-                          <Settings className="w-3.5 h-3.5 mr-1.5" />
-                          详细配置
-                        </Button>
-                      ) : (
-                        <Link href={`/openclaw/${claw.id}`}>
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="w-full text-xs"
+                            className="flex-1 text-xs opacity-40 cursor-not-allowed"
+                            disabled
                           >
                             <Settings className="w-3.5 h-3.5 mr-1.5" />
                             详细配置
                           </Button>
-                        </Link>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs opacity-40 cursor-not-allowed"
+                            disabled
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                            对话视图
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/openclaw/${claw.id}`);
+                            }}
+                          >
+                            <Settings className="w-3.5 h-3.5 mr-1.5" />
+                            详细配置
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // 写入待选中的 clawId，供 ChatView 初始化时读取
+                              localStorage.setItem("openclaw_pending_chat_claw_id", claw.id);
+                              handleViewModeChange("chat");
+                            }}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                            对话视图
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1105,77 +1126,63 @@ export default function MyOpenClaw() {
         )}
 
         {/* Rename Dialog */}
-        <Dialog open={!!renameDialog} onOpenChange={(open) => { if (!open) handleCancelRename(); }}>
+        <Dialog
+          open={!!renameConfirm}
+          onOpenChange={(open) => {
+            if (!open) {
+              setRenameConfirm(null);
+              setRenameInput("");
+            }
+          }}
+        >
           <DialogContent
-            className="sm:max-w-[360px]"
+            className="sm:max-w-[420px]"
             onInteractOutside={(event) => event.preventDefault()}
           >
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">重命名 Agent</DialogTitle>
+              <DialogDescription className="text-sm text-gray-500">
+                支持中英文、数字、空格及常用符号，名称长度不能超过 128 字节。
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
               <Label htmlFor="rename-agent-input" className="text-sm font-medium text-gray-700">名称</Label>
-              <div className="relative">
-                <Input
-                  id="rename-agent-input"
-                  value={renameInput}
-                  onChange={(e) => setRenameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleConfirmRename();
-                    }
-                  }}
-                  placeholder="请输入 Agent 名称"
-                  autoFocus
-                  className={isRenameNameTooLong ? "border-red-500 focus-visible:ring-red-500" : ""}
-                />
-                <p
-                  className={`pointer-events-none absolute left-0 top-full mt-1 text-xs text-red-600 transition-opacity ${
-                    isRenameNameTooLong ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  名称不能超过 {RENAME_NAME_MAX_BYTES} 字节
-                </p>
-              </div>
+              <Input
+                id="rename-agent-input"
+                value={renameInput}
+                placeholder="请输入 Agent 名称"
+                aria-invalid={isRenameOverByteLimit}
+                className={isRenameOverByteLimit ? "border-red-500 focus-visible:ring-red-500" : undefined}
+                onChange={(e) => handleRenameInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleRenameConfirm();
+                  }
+                }}
+              />
+              <p
+                className={`text-xs min-h-5 ${isRenameOverByteLimit ? "text-red-500" : "text-transparent"}`}
+                aria-live="polite"
+              >
+                {isRenameOverByteLimit ? "名称不能超过 128 字节" : ""}
+              </p>
 
             </div>
-
             <DialogFooter className="gap-2 pt-2">
-              <Button variant="outline" onClick={handleCancelRename}>取消</Button>
               <Button
-                className="text-white"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                disabled={!renameTrimmedName || isRenameNameTooLong}
-                onClick={handleConfirmRename}
+                variant="outline"
+                onClick={() => {
+                  setRenameConfirm(null);
+                  setRenameInput("");
+                }}
               >
-                确认
+                取消
               </Button>
-            </DialogFooter>
-
-          </DialogContent>
-        </Dialog>
-
-
-
-        {/* Rename Fail Dialog */}
-        <Dialog open={showRenameFail} onOpenChange={(open) => { if (!open) setShowRenameFail(false); }}>
-
-          <DialogContent
-            className="sm:max-w-[360px]"
-            onInteractOutside={(event) => event.preventDefault()}
-          >
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold text-gray-900">重命名失败</DialogTitle>
-              <DialogDescription className="text-sm text-gray-600 leading-relaxed">
-                重命名失败，请重试
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-2 pt-2">
               <Button
-                className="w-full"
-                style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                onClick={() => setShowRenameFail(false)}
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                disabled={isRenameConfirmDisabled}
+                onClick={handleRenameConfirm}
               >
                 确认
               </Button>

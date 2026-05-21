@@ -19,7 +19,7 @@ import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle, FlaskConical, Server, Code2, Search, ChevronRight,
-  Loader2, CheckCircle2, XCircle, ArrowRight, X as XIcon,
+  Loader2, CheckCircle2, XCircle, ArrowRight, X as XIcon, Eye, AlertCircle,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
@@ -64,6 +64,8 @@ export default function DispatchCommandDialog({
   // ── 命令选择 ─────────────────────────────────────────────
   const [pickedCommand, setPickedCommand] = useState<CommandTemplate | null>(command);
   const [commandSearch, setCommandSearch] = useState("");
+  // 命令参数值（key → 用户实际填写的值），仅在 pickedCommand.useParams 时使用
+  const [paramValues, setParamValues] = useState<Record<string, string>>({});
 
   // ── 实例选择 ─────────────────────────────────────────────
   const [agentTypeFilter, setAgentTypeFilter] = useState<AgentTypeKey | "all">("all");
@@ -100,8 +102,31 @@ export default function DispatchCommandDialog({
       setTestInstanceId(null);
       setPhase("prepare");
       setTestResult(null);
+      // 初始化参数值：用模板的默认值填充
+      if (command?.useParams && command.params) {
+        const init: Record<string, string> = {};
+        command.params.forEach((p) => {
+          init[p.key] = p.defaultValue ?? "";
+        });
+        setParamValues(init);
+      } else {
+        setParamValues({});
+      }
     }
   }, [open, command, presetInstanceIds]);
+
+  // 命令切换时（弹窗内挑选命令），同步重置参数值为新命令的默认值
+  useEffect(() => {
+    if (pickedCommand?.useParams && pickedCommand.params) {
+      const init: Record<string, string> = {};
+      pickedCommand.params.forEach((p) => {
+        init[p.key] = p.defaultValue ?? "";
+      });
+      setParamValues(init);
+    } else {
+      setParamValues({});
+    }
+  }, [pickedCommand]);
 
   // 命令搜索结果
   const commandCandidates = useMemo(() => {
@@ -161,10 +186,28 @@ export default function DispatchCommandDialog({
 
   const danger = pickedCommand ? detectDangerousCommand(pickedCommand.content) : { dangerous: false, reasons: [] };
 
+  // 参数完整性：所有定义的参数都必须填值（不允许空字符串）
+  const missingParamKeys = useMemo(() => {
+    if (!pickedCommand?.useParams || !pickedCommand.params) return [];
+    return pickedCommand.params
+      .map((p) => p.key)
+      .filter((k) => !(paramValues[k] ?? "").trim());
+  }, [pickedCommand, paramValues]);
+
+  // 把命令内容里的 {{key}} 替换为用户填的值，得到真实下发内容
+  const renderedContent = useMemo(() => {
+    if (!pickedCommand) return "";
+    if (!pickedCommand.useParams || !pickedCommand.params?.length) return pickedCommand.content;
+    return pickedCommand.content.replace(/\{\{\s*([a-zA-Z_][\w]*)\s*\}\}/g, (_m, k: string) => {
+      return paramValues[k] ?? `{{${k}}}`;
+    });
+  }, [pickedCommand, paramValues]);
+
   // 准备阶段是否可以"开始下发"
   const canStart =
     !!pickedCommand &&
     selected.size > 0 &&
+    missingParamKeys.length === 0 &&
     (!useTestRun || (testInstanceId && selected.has(testInstanceId)));
 
   // ── 写入历史记录（最终提交） ──────────────────────────────
@@ -189,7 +232,13 @@ export default function DispatchCommandDialog({
         commandId: pickedCommand.id,
         commandName: pickedCommand.name,
         commandType: "SHELL",
-        commandContent: pickedCommand.content,
+        // commandContent 存放替换参数后的真实下发内容（便于审计、回放）
+        commandContent: renderedContent,
+        // 模板原始内容（含 {{key}} 占位符），用于追溯
+        commandContentTemplate: pickedCommand.useParams ? pickedCommand.content : undefined,
+        paramValues: pickedCommand.useParams && Object.keys(paramValues).length > 0
+          ? { ...paramValues }
+          : undefined,
         workingDir: pickedCommand.workingDir,
         runAsUser: pickedCommand.runAsUser,
         timeoutSec: pickedCommand.timeoutSec,
@@ -240,7 +289,7 @@ export default function DispatchCommandDialog({
       setTestResult({
         status: success ? "success" : "failed",
         stdout: success
-          ? `[mock] 命令执行成功\n命令：${pickedCommand.content.split("\n")[0]}\n输出已记录，共 ${Math.floor(Math.random() * 8 + 1)} 行`
+          ? `[mock] 命令执行成功\n命令：${renderedContent.split("\n")[0]}\n输出已记录，共 ${Math.floor(Math.random() * 8 + 1)} 行`
           : "",
         stderr: success ? undefined : "exit code 1: permission denied",
         exitCode: success ? 0 : 1,
@@ -411,6 +460,92 @@ export default function DispatchCommandDialog({
                 <pre className="text-xs font-mono text-gray-700 bg-white rounded p-2 max-h-[100px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
                   {pickedCommand.content}
                 </pre>
+              </div>
+            )}
+
+            {/* 命令参数（仅在命令模板启用了参数时显示） */}
+            {pickedCommand?.useParams && pickedCommand.params && pickedCommand.params.length > 0 && (
+              <div className="rounded-xl border border-gray-100 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                    <Code2 className="w-3.5 h-3.5 text-purple-500" />
+                    命令参数 <span className="text-red-500">*</span>
+                    <span className="text-xs text-gray-400 font-normal ml-1">
+                      （命令内容中 <span className="font-mono">{"{{key}}"}</span> 占位符的实际值）
+                    </span>
+                  </Label>
+                  {missingParamKeys.length === 0 && Object.keys(paramValues).length > 0 && (
+                    <span className="text-[11px] text-green-600 inline-flex items-center gap-0.5">
+                      <CheckCircle2 className="w-3 h-3" />
+                      参数已就绪
+                    </span>
+                  )}
+                </div>
+
+                {/* 参数表格（参考 TAT 设计：参数名只读 + 参数值输入） */}
+                <div className="rounded-lg border border-gray-100 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr className="border-b border-gray-100">
+                        <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[36%]">参数名</th>
+                        <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium">参数值</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {pickedCommand.params.map((p) => {
+                        const missing = !(paramValues[p.key] ?? "").trim();
+                        return (
+                          <tr key={p.key} className={missing ? "bg-red-50/30" : ""}>
+                            <td className="px-3 py-2 align-top">
+                              <div className="font-mono text-xs text-gray-900 break-all">{p.key}</div>
+                              {p.description && (
+                                <div className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
+                                  {p.description}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-3 py-2">
+                              <Input
+                                value={paramValues[p.key] ?? ""}
+                                onChange={(e) =>
+                                  setParamValues((prev) => ({ ...prev, [p.key]: e.target.value }))
+                                }
+                                placeholder={p.defaultValue ? `默认：${p.defaultValue}` : "请输入参数值"}
+                                className={`h-8 text-sm ${missing ? "border-red-300" : ""}`}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {missingParamKeys.length > 0 && (
+                  <div className="text-xs text-red-600 inline-flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    以下参数未填值：
+                    {missingParamKeys.map((k, i) => (
+                      <span key={k} className="font-mono">
+                        {i > 0 && "、"}
+                        {k}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* 替换后的实际下发内容预览 */}
+                {missingParamKeys.length === 0 && (
+                  <details className="text-xs">
+                    <summary className="text-gray-500 cursor-pointer hover:text-blue-600 inline-flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      预览替换后的命令内容
+                    </summary>
+                    <pre className="text-xs font-mono text-gray-700 bg-white rounded p-2 mt-2 max-h-[100px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
+                      {renderedContent}
+                    </pre>
+                  </details>
+                )}
               </div>
             )}
 

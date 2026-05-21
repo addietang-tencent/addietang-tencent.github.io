@@ -434,11 +434,55 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 <Field label="超时时间" value={`${record.commandExtra.timeoutSec} 秒`} small />
               </div>
               <div>
-                <div className="text-xs text-gray-500 mb-1">命令内容</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  命令内容
+                  {record.commandExtra.paramValues && Object.keys(record.commandExtra.paramValues).length > 0 && (
+                    <span className="ml-1 text-[10px] text-gray-400">（已替换参数后的实际下发内容）</span>
+                  )}
+                </div>
                 <pre className="text-xs font-mono text-gray-700 bg-gray-50 rounded-lg p-3 max-h-[180px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
                   {record.commandExtra.commandContent}
                 </pre>
               </div>
+
+              {/* 命令参数值（仅本次任务用到了参数化命令时显示） */}
+              {record.commandExtra.paramValues && Object.keys(record.commandExtra.paramValues).length > 0 && (
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">命令参数</div>
+                  <div className="rounded-lg border border-gray-100 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium w-[36%]">
+                            参数名
+                          </th>
+                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium">
+                            参数值
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {Object.entries(record.commandExtra.paramValues).map(([k, v]) => (
+                          <tr key={k}>
+                            <td className="px-3 py-1.5 font-mono text-gray-900 break-all">{k}</td>
+                            <td className="px-3 py-1.5 font-mono text-gray-700 break-all">{v}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {record.commandExtra.commandContentTemplate && (
+                    <details className="text-xs mt-2">
+                      <summary className="text-gray-500 cursor-pointer hover:text-blue-600">
+                        查看命令模板原始内容（含 {"{{key}}"}）
+                      </summary>
+                      <pre className="text-xs font-mono text-gray-500 bg-gray-50/60 rounded p-2 mt-1.5 max-h-[120px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
+                        {record.commandExtra.commandContentTemplate}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
 
               {/* 测试机结果 */}
               {record.commandExtra.testInstanceId && (

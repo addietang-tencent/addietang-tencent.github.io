@@ -1613,11 +1613,11 @@ function SkillSquareDetail({
         hideCreatorAndGroup
       />
 
-      {/* 下发详情弹窗 */}
+      {/* 下发/卸载详情弹窗 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>下发详情</DialogTitle>
+            <DialogTitle>{activeDistribution?.type === 'delete' ? '卸载详情' : '下发详情'}</DialogTitle>
           </DialogHeader>
 
           {activeDistribution && (
@@ -1640,7 +1640,7 @@ function SkillSquareDetail({
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="success">成功</SelectItem>
                     <SelectItem value="failed">失败</SelectItem>
-                    <SelectItem value="distributing">下发中</SelectItem>
+                    <SelectItem value="distributing">{activeDistribution.type === 'delete' ? '卸载中' : '下发中'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

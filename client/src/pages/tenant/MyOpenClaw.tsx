@@ -44,7 +44,8 @@ import {
   ChevronLeft, ChevronRight,
   Sparkles, Heart,
 } from "lucide-react";
-import ChatView from "./ChatView";
+import AgentChat from "./AgentChat";
+// 注：旧版对话视图 `ChatView` 暂不再渲染，相关业务逻辑保留在 `./ChatView`，需要时再接入
 import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
 import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
@@ -572,32 +573,10 @@ export default function MyOpenClaw() {
           <div className="relative px-[42px] pb-8">
             {/* Main Content */}
               {viewMode === "chat" ? (
-                <ChatView
-                  claws={claws}
-                  onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
-                  onRestartConfirm={(claw) => setRestartConfirm(claw)}
-                  onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
-                  onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
-                  onRetry={handleRetry}
-                  allowTerminal={allowTerminal}
-                  refreshingIds={refreshingIds}
-                  onRefreshStatus={handleRefreshStatus}
-                  isFullscreen={isFullscreen}
-                  onToggleFullscreen={handleToggleFullscreen}
-                  groupMode={groupMode}
-                  getClawGroupPermissions={(claw) => {
-                    if (groupMode !== "multi-group") return null;
-                    // 没有 groupId 的 Agent 默认归属前端组（主部门）
-                    const groupId = claw.groupId || "grp-fe";
-                    const group = MOCK_USER_GROUPS.find(g => g.id === groupId);
-                    if (!group) return null;
-                    return {
-                      allowTerminal: group.permissions.allowTerminal,
-                      allowChatView: group.permissions.allowChatView,
-                      panelAccess: group.permissions.panelAccess,
-                    };
-                  }}
-                />
+                /* 新版对话卡片视图：Figma 1003:22598 还原稿（AgentChat）。
+                 * 注：视觉先替换到位，原 ChatView 的业务逻辑（claws / 状态机 / resize / 权限）
+                 * 后续按需接入 AgentChat。 */
+                <AgentChat embedded />
               ) : (() => {
                 const allClaws = claws;
                 // [006] 分页切片：先按创建时间倒序，再按当前页切出 30 条

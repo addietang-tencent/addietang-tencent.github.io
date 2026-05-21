@@ -314,15 +314,15 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               <button
                 key={`dir-${dirPath}`}
                 onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 px-2 py-2 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
+                className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-[#09090b] hover:bg-[#f4f4f5] rounded-[4px] transition-colors cursor-pointer"
                 style={{ paddingLeft: `${8 + depth * 16}px` }}
               >
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
-                <span className="truncate font-medium">{parts[i - 1]}</span>
                 {isExpanded
-                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
-                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                  ? <ChevronDown className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                  : <ChevronRight className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
                 }
+                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />}
+                <span className="truncate font-medium">{parts[i - 1]}</span>
               </button>
             );
           }
@@ -350,16 +350,16 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           key={file.name}
           onClick={() => canView && setExpandedFile(expandedFile === file.name ? null : file.name)}
           disabled={!canView}
-          className={`w-full flex items-center gap-1.5 px-2 py-2 text-xs rounded transition-colors ${
+          className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
             expandedFile === file.name
-              ? 'bg-blue-50 text-blue-700'
+              ? 'bg-[#f4f4f5] text-[#09090b] font-medium'
               : canView
-              ? 'hover:bg-gray-50 text-gray-600 cursor-pointer'
-              : 'text-gray-500 cursor-not-allowed opacity-60'
+              ? 'hover:bg-[#f4f4f5] text-[#09090b] cursor-pointer'
+              : 'text-[#a1a1aa] cursor-not-allowed opacity-60'
           }`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
         >
-          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
           <span className="truncate">{parts[parts.length - 1]}</span>
         </button>
       );
@@ -849,9 +849,9 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <TabsContent value="files" className="mt-0 p-0">
               <SurfaceCard className="flex h-[47rem] overflow-hidden">
                 {/* 左列：版本号选择 */}
-                <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-                  <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center">
-                    <p className="text-xs font-medium text-gray-900">版本</p>
+                <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
+                  <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+                    <p className="text-sm font-medium text-[#09090b]">版本</p>
                   </div>
                   <div className="flex-1 overflow-y-auto">
                     {skill.versions?.map((ver: string, idx: number) => {
@@ -870,10 +870,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         <button
                           key={ver}
                           onClick={() => setSelectedVersion(ver)}
-                          className={`w-full text-left px-3 py-3.5 border-b border-gray-100 transition-colors ${
+                          className={`w-full text-left px-3 py-3.5 border-b border-[#f4f4f5] transition-colors ${
                             isSelected
-                              ? 'bg-blue-50'
-                              : 'hover:bg-gray-50 cursor-pointer'
+                              ? 'bg-[#f4f4f5]'
+                              : 'hover:bg-[#f4f4f5] cursor-pointer'
                           }`}
                         >
                           <div className="flex items-center gap-1.5">
@@ -948,19 +948,19 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 </div>
 
                 {/* 中列：文件列表 */}
-                <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                  <div className="bg-gray-50/50 px-3 py-4 border-b border-gray-200 flex items-center justify-between">
-                    <p className="text-xs font-medium text-gray-900">{selectedVersion || skill.version}</p>
+                <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
+                  <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+                    <p className="text-sm font-medium text-[#09090b]">{selectedVersion || skill.version}</p>
                     <button
                       onClick={handleDownload}
                       disabled={isDownloading}
-                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      className="text-[#71717a] hover:text-[#09090b] transition-colors"
                       title="下载此版本 ZIP"
                     >
                       {isDownloading ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
                     </button>
                   </div>
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto px-3 py-2">
                     {renderFileTree(processedFiles)}
                   </div>
                 </div>
@@ -969,8 +969,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 <div className="flex-1 flex flex-col bg-white">
                   {expandedFile ? (
                     <>
-                      <div className="bg-gray-50/50 px-3 py-2.5 border-b border-gray-200 flex items-center justify-between min-h-[44px]">
-                        <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
+                      <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+                        <p className="text-sm font-medium text-[#09090b]">{expandedFile}</p>
                         {/* 源码/预览 切换 */}
                         <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                           <button

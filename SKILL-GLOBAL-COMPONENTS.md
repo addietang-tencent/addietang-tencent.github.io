@@ -259,19 +259,30 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ## 10.6 树结构组件（GroupTree / FileTree）
 
-> 参考: shadcn/ui Collapsible FileTree
-> 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`
+> 参考: shadcn/ui Collapsible FileTree（https://ui.shadcn.com/docs/components/base/collapsible#file-tree）
+> 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`、`client/src/pages/admin/SkillLibrary/SkillDetail.tsx`
 
-用于分组管理、文件树、目录导航等层级结构场景。
+用于分组管理、文件树、目录导航等层级结构场景。**必须与 shadcn FileTree 完全一致。**
 
-### 颜色规范（对齐 shadcn）
+### 颜色规范（严格对齐 shadcn）
 
-| 元素 | 颜色值 | 语义 |
+| 元素 | 颜色值 | CSS 变量语义 |
 |------|--------|------|
-| 文字（默认 & 选中） | `#09090b` | text-foreground |
-| hover / 选中背景 | `#f4f4f5` | accent |
-| 箭头图标 | `#71717a` | muted-foreground |
-| 计数 / 辅助文字 | `#a1a1aa` | muted |
+| 文字（默认 & 选中） | `#09090b` | `text-foreground` |
+| hover / 选中背景 | `#f4f4f5` | `bg-accent` |
+| 箭头 / 图标（Chevron、Folder、File） | `#71717a` | `text-muted-foreground` |
+| 计数 / 辅助文字 | `#a1a1aa` | `text-muted` |
+| 禁用文字 | `#a1a1aa` + `opacity-60` | — |
+
+### 图标规范
+
+| 图标 | 用途 | 尺寸 | 颜色 |
+|------|------|------|------|
+| `ChevronRight` / `ChevronDown` | 展开/收起 | `w-4 h-4`（含在按钮中）或 `w-3.5 h-3.5` | `#71717a`（muted-foreground） |
+| `FolderIcon` / `FolderOpen` | 文件夹 | `w-4 h-4` | `#71717a`（muted-foreground） |
+| `FileIcon` / `FileText` | 文件 | `w-4 h-4` | `#71717a`（muted-foreground） |
+
+> **重点**：所有图标统一使用 `text-[#71717a]`（muted-foreground），**不使用** gray-400 或其他灰色。
 
 ### 视觉参数
 
@@ -279,21 +290,57 @@ import { SmallIconStateButton } from "@/components/ui/button";
 |------|-----|
 | 行高 | `h-8`（32px） |
 | 圆角 | `rounded-[4px]` |
-| 缩进 | 每层 `16px`，根节点 `paddingLeft: 8px` |
-| 左右间距 | `mx-3`（12px），与搜索框 `px-3` 对齐 |
-| 箭头尺寸 | `w-3.5 h-3.5` |
-| 行间距 | `mb-0.5` |
+| 缩进 | shadcn 用 `ml-5`（20px），自定义实现用 `paddingLeft: 8 + depth * 16` |
+| 行间距 | `gap-1`（4px）或 `mb-0.5` |
+| 图标与文字间距 | `gap-1.5`（6px）或 `gap-2`（8px） |
 
 ### 交互状态
 
-| 状态 | 样式 |
-|------|------|
-| 默认 | `text-[#09090b] bg-transparent` |
-| Hover | `hover:bg-[#f4f4f5]` |
-| 选中（Active） | `bg-[#f4f4f5] text-[#09090b] font-medium` |
-| 展开箭头 | `text-[#71717a] hover:text-[#09090b]` |
+| 状态 | 样式 | 对应 shadcn class |
+|------|------|------|
+| 默认 | `text-[#09090b] bg-transparent` | `text-foreground` |
+| Hover | `bg-[#f4f4f5] text-[#09090b]` | `hover:bg-accent hover:text-accent-foreground` |
+| 选中（Active） | `bg-[#f4f4f5] text-[#09090b] font-medium` | `bg-accent text-accent-foreground` |
+| 展开箭头旋转 | `transition-transform group-data-[state=open]:rotate-90` | shadcn 原生 |
+| 禁用 | `text-[#a1a1aa] cursor-not-allowed opacity-60` | — |
 
-### 代码示例
+### shadcn 标准实现（Collapsible 方式）
+
+```tsx
+import { ChevronRightIcon, FileIcon, FolderIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+
+// 文件夹节点
+<Collapsible>
+  <CollapsibleTrigger asChild>
+    <Button variant="ghost" size="sm" className="group w-full justify-start gap-2 text-[#09090b] hover:bg-[#f4f4f5] hover:text-[#09090b]">
+      <ChevronRightIcon className="w-4 h-4 text-[#71717a] transition-transform group-data-[state=open]:rotate-90" />
+      <FolderIcon className="w-4 h-4 text-[#71717a]" />
+      {folderName}
+    </Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent className="ml-5">
+    <div className="flex flex-col gap-1">
+      {children}
+    </div>
+  </CollapsibleContent>
+</Collapsible>
+
+// 文件节点
+<Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-[#09090b] hover:bg-[#f4f4f5]">
+  <FileIcon className="w-4 h-4 text-[#71717a]" />
+  {fileName}
+</Button>
+
+// 文件节点（选中态）
+<Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-[#09090b] bg-[#f4f4f5] font-medium">
+  <FileIcon className="w-4 h-4 text-[#71717a]" />
+  {fileName}
+</Button>
+```
+
+### 自定义实现（非 Collapsible 方式，如 GroupList）
 
 ```jsx
 <div
@@ -312,6 +359,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
   ) : (
     <span className="w-4 h-4 shrink-0" />
   )}
+  <FolderIcon className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
   <span className="truncate">{name}</span>
   <span className="text-[11px] tabular-nums shrink-0 text-[#a1a1aa]">({count})</span>
 </div>

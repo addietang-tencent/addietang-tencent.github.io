@@ -386,11 +386,11 @@ export default function SkillSquare() {
 
             {/* 内容段（搜索栏 / 分类 / 卡片网格） */}
             <div
-              className="relative px-[42px] py-6"
+              className="relative h-auto px-[42px] py-6"
             >
 
         {/* 搜索栏 + 筛选 */}
-        <div className="relative flex flex-wrap gap-3 mb-4 items-center">
+        <div className="relative flex h-10 flex-wrap gap-2 mb-4 items-center">
           {/* 搜索框 — 加长 */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]"/>

@@ -21,18 +21,6 @@ const STORAGE_KEY = "openclaw_admin_mode";
 
 export function AdminModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AdminMode>(() => {
-    // 优先从 URL query 读取（?mode=oneid → standard / ?mode=manual → custom），便于预览链接直达
-    if (typeof window !== "undefined") {
-      const urlMode = new URLSearchParams(window.location.search).get("mode");
-      if (urlMode === "oneid" || urlMode === "standard") {
-        localStorage.setItem(STORAGE_KEY, "standard");
-        return "standard";
-      }
-      if (urlMode === "manual" || urlMode === "custom") {
-        localStorage.setItem(STORAGE_KEY, "custom");
-        return "custom";
-      }
-    }
     const saved = localStorage.getItem(STORAGE_KEY);
     return (saved === "standard" ? "standard" : "custom") as AdminMode;
   });

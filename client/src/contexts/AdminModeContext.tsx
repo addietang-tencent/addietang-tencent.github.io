@@ -22,7 +22,7 @@ const STORAGE_KEY = "openclaw_admin_mode";
 export function AdminModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<AdminMode>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === "standard" ? "standard" : "custom") as AdminMode;
+    return (saved === "custom" ? "custom" : "standard") as AdminMode;
   });
 
   const setMode = (newMode: AdminMode) => {

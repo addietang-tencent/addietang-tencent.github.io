@@ -641,9 +641,9 @@ function SkillInstallModal({
                     <Badge
                       key={skillId}
                       variant="outline"
-                      className="h-6 justify-start gap-0 overflow-hidden rounded-full border-[#E5E5E5] bg-white px-0 py-0 text-[#737373]"
+                      className="h-6 justify-start gap-0 overflow-hidden rounded-full border-[#E5E5E5] bg-white px-0 py-0 text-[#0A0A0A]"
                     >
-                      <span className="ml-2 max-w-[160px] truncate text-[12px] font-normal leading-5 tracking-[0.18px] text-[#737373]">
+                      <span className="ml-2 max-w-[160px] truncate text-[12px] font-normal leading-5 tracking-[0.18px] text-[#0A0A0A]">
                         {skill.name}
                       </span>
                       <button

@@ -157,4 +157,60 @@ function Button({
   );
 }
 
-export { Button, buttonVariants };
+type SmallIconButtonState = "default" | "disabled";
+
+type SmallIconStateButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
+  state?: SmallIconButtonState;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+const smallIconButtonStateConfig: Record<
+  SmallIconButtonState,
+  {
+    disabled?: boolean;
+    className: string;
+  }
+> = {
+  default: {
+    className:
+      "border-[#D4D4D4] bg-white text-[#0A0A0A] hover:border-[#C9C9C9] hover:bg-[#FAFAFA] active:bg-[#F5F5F5]",
+  },
+  disabled: {
+    disabled: true,
+    className:
+      "border-[#D4D4D4] bg-white text-[#A3A3A3] disabled:border-[#D4D4D4] disabled:bg-white disabled:text-[#A3A3A3] disabled:opacity-100 disabled:[&_svg]:opacity-100",
+  },
+};
+
+function SmallIconStateButton({
+  state = "default",
+  label,
+  icon: Icon,
+  className,
+  disabled,
+  type = "button",
+  ...props
+}: SmallIconStateButtonProps) {
+  const config = smallIconButtonStateConfig[state];
+  const resolvedDisabled = disabled ?? config.disabled ?? false;
+
+  return (
+    <button
+      type={type}
+      disabled={resolvedDisabled}
+      className={cn(
+        "inline-flex h-6 items-center justify-center gap-1.5 whitespace-nowrap rounded-[4px] border px-2 text-xs font-medium leading-none transition-colors disabled:cursor-not-allowed",
+        config.className,
+        className,
+      )}
+      {...props}
+    >
+      <Icon className="w-3 h-3" />
+      <span className="whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
+
+export { Button, buttonVariants, SmallIconStateButton };
+export type { SmallIconButtonState };

@@ -58,7 +58,8 @@ import {
   Plus, Sparkles, Mic, Send, Pencil,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
-import { findClawById, onClawListChange, saveClawList, loadClawList, notifyClawListChange, type AgentItem } from "@/lib/openclawStore";
+import { findClawById, loadClawList, notifyClawListChange, onClawListChange, saveClawList, type AgentItem } from "@/lib/openclawStore";
+
 import { getActivePush, type ActivePush } from "@/lib/upgradePushStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
@@ -68,6 +69,11 @@ import ToolsMcpPanel from "./ToolsMcpPanel";
 
 type AgentStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 
+const AGENT_NAME_MAX_BYTES = 128;
+
+const getNameByteLength = (value: string) => new TextEncoder().encode(value).length;
+
+
 const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   label: string;
   badgeClass: string;
@@ -75,6 +81,7 @@ const INSTANCE_STATUS_CONFIG: Record<AgentStatus, {
   spinning?: boolean;
   tooltipText?: string;
 }> = {
+
   creating: {
     label: "创建中",
     badgeClass: "badge-loading",
@@ -188,110 +195,96 @@ export default function AgentDetail() {
   const clawName = claw.name;
   const clawStatus = (claw.status || "running") as AgentStatus;
   const statusCfg = INSTANCE_STATUS_CONFIG[clawStatus] ?? INSTANCE_STATUS_CONFIG.running;
-  const canRenameByStatus = (["running", "maintaining", "shutdown"] as AgentStatus[]).includes(clawStatus);
 
-
-  // ── Inline rename state ──
-  const AGENT_NAME_MAX_LENGTH = 30;
-  const [isNameEditing, setIsNameEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState("");
-  const [nameError, setNameError] = useState<string>("");
-  const [isNameOverflow, setIsNameOverflow] = useState(false);
-  const nameEditWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingName, setEditingName] = useState(clawName);
+  const [nameBytesError, setNameBytesError] = useState("");
+  const [nameSaveError, setNameSaveError] = useState("");
   const nameInputRef = useRef<HTMLInputElement | null>(null);
-  const nameTextRef = useRef<HTMLHeadingElement | null>(null);
-
-  const startNameEdit = useCallback(() => {
-    if (!canRenameByStatus) return;
-    setIsNameEditing(true);
-    setNameDraft(clawName);
-    setNameError("");
-  }, [canRenameByStatus, clawName]);
+  const nameEditorRef = useRef<HTMLDivElement | null>(null);
+  const skipBlurSaveRef = useRef(false);
 
 
-  const cancelNameEdit = useCallback(() => {
-    setIsNameEditing(false);
-    setNameDraft(clawName);
-    setNameError("");
+  useEffect(() => {
+    if (!isEditingName) {
+      setEditingName(clawName);
+      setNameBytesError("");
+      setNameSaveError("");
+    }
+  }, [clawName, isEditingName]);
+
+  useEffect(() => {
+    if (!isEditingName) return;
+    const input = nameInputRef.current;
+    if (!input) return;
+    input.focus();
+    input.select();
+  }, [isEditingName]);
+
+  const beginEditName = () => {
+    setEditingName(clawName);
+    setNameBytesError("");
+    setNameSaveError("");
+    setIsEditingName(true);
+  };
+
+  const cancelEditName = useCallback(() => {
+    setIsEditingName(false);
+    setEditingName(clawName);
+    setNameBytesError("");
+    setNameSaveError("");
   }, [clawName]);
 
-  const saveNameEdit = useCallback((options?: { silentIfEmpty?: boolean }) => {
-    const trimmed = nameDraft.trim();
+  const saveEditedName = useCallback(() => {
+    const trimmedName = editingName.trim();
 
-    if (!trimmed) {
-      if (options?.silentIfEmpty) {
-        cancelNameEdit();
-        return true;
-      }
-      setNameError("名称不能为空");
-      return false;
+    if (!trimmedName) {
+      setNameBytesError("");
+      setNameSaveError("");
+      setEditingName(clawName);
+      setIsEditingName(false);
+      return;
     }
 
-    if (trimmed === clawName) {
-      setIsNameEditing(false);
-      setNameError("");
-      return true;
+    if (getNameByteLength(trimmedName) > AGENT_NAME_MAX_BYTES) {
+      setNameBytesError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+      setNameSaveError("");
+      requestAnimationFrame(() => {
+        nameInputRef.current?.focus();
+      });
+      return;
+    }
+
+    if (trimmedName === clawName) {
+      setNameBytesError("");
+      setNameSaveError("");
+      setIsEditingName(false);
+      return;
     }
 
     try {
-      const latest = loadClawList();
-      const next = latest.map((item) => (item.id === claw.id ? { ...item, name: trimmed } : item));
-      saveClawList(next);
+      const nextList = loadClawList().map((item) =>
+        item.id === claw.id ? { ...item, name: trimmedName } : item
+      );
+      saveClawList(nextList);
       notifyClawListChange();
-      setClawData((prev) => ({ ...prev, name: trimmed }));
-      setIsNameEditing(false);
-      setNameError("");
-      return true;
-    } catch {
-      setNameError("重命名失败，请重试");
-      return false;
+      setClawData((prev) => ({ ...prev, name: trimmedName }));
+      setNameBytesError("");
+      setNameSaveError("");
+      setIsEditingName(false);
+      // toast.success("重命名成功", { position: "top-right" });
+    } catch (error) {
+      console.error("rename agent failed", error);
+      setNameSaveError("重命名失败，请重试");
+      requestAnimationFrame(() => {
+        nameInputRef.current?.focus();
+      });
     }
-  }, [nameDraft, clawName, claw.id, cancelNameEdit]);
+  }, [claw.id, clawName, editingName]);
 
-  useEffect(() => {
-    if (!isNameEditing) return;
-    const frame = requestAnimationFrame(() => {
-      if (!nameInputRef.current) return;
-      nameInputRef.current.focus();
-      nameInputRef.current.select();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [isNameEditing]);
-
-  useEffect(() => {
-    if (!isNameEditing) return;
-
-    const handlePointerDown = (e: MouseEvent) => {
-      if (!nameEditWrapperRef.current) return;
-      if (nameEditWrapperRef.current.contains(e.target as Node)) return;
-      saveNameEdit({ silentIfEmpty: true });
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, [isNameEditing, saveNameEdit]);
-
-  useEffect(() => {
-    if (isNameEditing) return;
-    const el = nameTextRef.current;
-    if (!el) return;
-
-    const updateOverflow = () => {
-      setIsNameOverflow(el.scrollWidth > el.clientWidth);
-    };
-
-    updateOverflow();
-    const resizeObserver = new ResizeObserver(updateOverflow);
-    resizeObserver.observe(el);
-    window.addEventListener("resize", updateOverflow);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateOverflow);
-    };
-  }, [clawName, isNameEditing]);
 
   // ── Configuration state ──
+
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
   const [quickFixState, setQuickFixState] = useState<"idle" | "loading" | "success" | "failed">("idle");
   const [quickFixFailReason, setQuickFixFailReason] = useState<string>("");
@@ -1458,95 +1451,108 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </div>
             <div>
             {/* 第一行：名称 + 状态 badge（8 种状态动态渲染） */}
-          <div className="flex items-start gap-2 min-w-0">
-                <div ref={nameEditWrapperRef} className="group/name peer/name min-w-0 h-9">
-                  {isNameEditing ? (
+          <div className="flex items-center gap-2 min-w-0">
+                <div ref={nameEditorRef} className="group/agent-name min-w-0 max-w-[520px]">
+                  {isEditingName ? (
                     <div className="relative w-full">
+                      {(nameBytesError || nameSaveError) && (
+                        <p className="absolute left-0 bottom-full mb-1 text-xs text-red-500 whitespace-nowrap z-10">
+                          {nameBytesError || nameSaveError}
+                        </p>
+                      )}
                       <Input
                         ref={nameInputRef}
-                        value={nameDraft}
-                        maxLength={AGENT_NAME_MAX_LENGTH}
+                        value={editingName}
                         onChange={(e) => {
-                          const value = e.target.value.replace(/[\r\n]/g, "").slice(0, AGENT_NAME_MAX_LENGTH);
-                          setNameDraft(value);
-                          if (nameError) setNameError("");
+                          const nextValue = e.target.value;
+                          setEditingName(nextValue);
+                          if (getNameByteLength(nextValue) > AGENT_NAME_MAX_BYTES) {
+                            setNameBytesError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+                          } else {
+                            setNameBytesError("");
+                          }
+                          setNameSaveError("");
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            saveNameEdit({ silentIfEmpty: true });
+                            saveEditedName();
+                            return;
                           }
                           if (e.key === "Escape") {
                             e.preventDefault();
-                            cancelNameEdit();
+                            skipBlurSaveRef.current = true;
+                            cancelEditName();
                           }
                         }}
+                        onBlur={(e) => {
+                          if (skipBlurSaveRef.current) {
+                            skipBlurSaveRef.current = false;
+                            return;
+                          }
+                          if (nameEditorRef.current?.contains(e.relatedTarget as Node | null)) return;
+                          saveEditedName();
+                        }}
+
                         aria-label="编辑 Agent 名称"
-                        aria-invalid={!!nameError}
-                        className={`h-9 w-full pr-16 text-2xl font-bold text-gray-900 bg-transparent rounded-lg ${nameError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200 focus-visible:ring-blue-500"}`}
+                        className={`h-9 w-full text-2xl font-bold leading-none px-2 py-0 border bg-white ${
+                          !!nameBytesError || !!nameSaveError
+                            ? "border-red-500 focus-visible:ring-red-500"
+                            : "border-gray-200"
+                        }`}
                       />
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 tabular-nums">
-                        {nameDraft.length}/{AGENT_NAME_MAX_LENGTH}
-                      </span>
-                      {nameError && <p className="absolute left-0 bottom-full mb-1 text-xs text-red-500">{nameError}</p>}
                     </div>
                   ) : (
+
+
+
                     <Tooltip>
+
                       <TooltipTrigger asChild>
                         <button
                           type="button"
-                          onClick={startNameEdit}
-                          disabled={!canRenameByStatus}
-                          className={`h-9 inline-flex items-center px-1 -ml-1 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${canRenameByStatus ? "hover:bg-gray-50" : "opacity-40 cursor-not-allowed"}`}
-                          aria-label="重命名 Agent"
+                          onClick={beginEditName}
+                          className="group/rename inline-flex h-9 items-center gap-1.5 max-w-full rounded-md outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          aria-label="编辑 Agent 名称"
                         >
 
-                          <h1 ref={nameTextRef} className="text-2xl font-bold text-gray-900 leading-tight whitespace-nowrap">
-                            {clawName}
-                          </h1>
-                          <span className="h-5 inline-flex items-center justify-center flex-shrink-0 overflow-hidden w-0 opacity-0 transition-all duration-150 group-hover/name:w-5 group-hover/name:opacity-100 group-focus-within/name:w-5 group-focus-within/name:opacity-100">
-                            <Pencil className="w-3.5 h-3.5 text-gray-400" />
+                          <h1 className="text-2xl font-bold text-gray-900 truncate max-w-[460px]">{clawName}</h1>
+                          <span className="w-5 h-5 inline-flex items-center justify-center text-gray-400">
+                            <Pencil className="w-3.5 h-3.5" />
                           </span>
                         </button>
                       </TooltipTrigger>
-                      {!canRenameByStatus ? (
-                        <TooltipContent side="top" className="text-xs">
-                          当前状态不支持重命名
-                        </TooltipContent>
-                      ) : isNameOverflow ? (
-                        <TooltipContent side="top" className="text-xs max-w-[520px] break-all">
-                          {clawName}
-                        </TooltipContent>
-                      ) : null}
-
+                      <TooltipContent side="top" className="text-xs max-w-[360px] break-all">
+                        {clawName}
+                      </TooltipContent>
                     </Tooltip>
                   )}
+
                 </div>
-                <div className="transition-transform duration-150 peer-hover/name:translate-x-2 peer-focus-within/name:translate-x-2">
-                  <TooltipProvider delayDuration={200}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className={statusCfg.badgeClass}>
-                          {statusCfg.spinning ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <span
-                              className="w-1.5 h-1.5 rounded-full inline-block"
-                              style={{ backgroundColor: statusCfg.dotColor }}
-                            />
-                          )}
-                          {statusCfg.label}
-                        </span>
-                      </TooltipTrigger>
-                      {statusCfg.tooltipText && (
-                        <TooltipContent side="top" className="text-xs">
-                          {statusCfg.tooltipText}
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={statusCfg.badgeClass}>
+                        {statusCfg.spinning ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <span
+                            className="w-1.5 h-1.5 rounded-full inline-block"
+                            style={{ backgroundColor: statusCfg.dotColor }}
+                          />
+                        )}
+                        {statusCfg.label}
+                      </span>
+                    </TooltipTrigger>
+                    {statusCfg.tooltipText && (
+                      <TooltipContent side="top" className="text-xs">
+                        {statusCfg.tooltipText}
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
+
               {/* 第二行：类型 tag + 角色胶囊标签 + 实例 ID */}
               <div className="flex items-center gap-2 mt-0.5">
                 {/* Agent 类型 tag */}

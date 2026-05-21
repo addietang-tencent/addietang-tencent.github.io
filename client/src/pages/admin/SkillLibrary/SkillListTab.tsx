@@ -833,23 +833,29 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
-        <Button
+      <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
+        <button
           onClick={() => setSelectedCategory(null)}
-          variant={selectedCategory === null ? "claw-primary" : "claw-outline"}
-          size="claw-sm"
+          className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+            selectedCategory === null
+              ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+              : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+          }`}
         >
           全部
-        </Button>
+        </button>
         {categories.map((cat: any) => (
-          <Button
+          <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            variant={selectedCategory === cat.id ? "claw-primary" : "claw-outline"}
-            size="claw-sm"
+            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+              selectedCategory === cat.id
+                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+            }`}
           >
             {cat.name}
-          </Button>
+          </button>
         ))}
       </div>
 

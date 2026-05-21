@@ -725,16 +725,19 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
       </div>
 
       {/* 分类 Tab */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
         {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <Button
+          <button
             key={cat.id}
             onClick={() => handleCategoryChange(cat.id)}
-            variant={activeCategory === cat.id ? "claw-primary" : "claw-outline"}
-            size="claw-sm"
+            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+              activeCategory === cat.id
+                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+            }`}
           >
             {cat.name}
-          </Button>
+          </button>
         ))}
       </div>
 

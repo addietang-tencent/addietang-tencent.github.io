@@ -44,7 +44,8 @@ import {
   ChevronLeft, ChevronRight,
   Sparkles, Heart,
 } from "lucide-react";
-import ChatView from "./ChatView";
+import AgentChat from "./AgentChat";
+// 注：旧版对话视图 `ChatView` 暂不再渲染，相关业务逻辑保留在 `./ChatView`，需要时再接入
 import { MOCK_ROLES } from "@/lib/mockData";
 import type { Role } from "@/lib/mockData";
 import { loadClawList, saveClawList, notifyClawListChange } from "@/lib/openclawStore";
@@ -470,7 +471,7 @@ export default function MyOpenClaw() {
                   - 点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 / pointer-events-none */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute"
+                className="pointer-events-none absolute z-20"
                 style={{
                   top: "112px",
                   bottom: `${dotsBottom}px`,
@@ -483,7 +484,7 @@ export default function MyOpenClaw() {
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute"
+                className="pointer-events-none absolute z-20"
                 style={{
                   top: "112px",
                   bottom: `${dotsBottom}px`,
@@ -572,32 +573,10 @@ export default function MyOpenClaw() {
           <div className="relative px-[42px] pb-8">
             {/* Main Content */}
               {viewMode === "chat" ? (
-                <ChatView
-                  claws={claws}
-                  onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
-                  onRestartConfirm={(claw) => setRestartConfirm(claw)}
-                  onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
-                  onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
-                  onRetry={handleRetry}
-                  allowTerminal={allowTerminal}
-                  refreshingIds={refreshingIds}
-                  onRefreshStatus={handleRefreshStatus}
-                  isFullscreen={isFullscreen}
-                  onToggleFullscreen={handleToggleFullscreen}
-                  groupMode={groupMode}
-                  getClawGroupPermissions={(claw) => {
-                    if (groupMode !== "multi-group") return null;
-                    // 没有 groupId 的 Agent 默认归属前端组（主部门）
-                    const groupId = claw.groupId || "grp-fe";
-                    const group = MOCK_USER_GROUPS.find(g => g.id === groupId);
-                    if (!group) return null;
-                    return {
-                      allowTerminal: group.permissions.allowTerminal,
-                      allowChatView: group.permissions.allowChatView,
-                      panelAccess: group.permissions.panelAccess,
-                    };
-                  }}
-                />
+                /* 新版对话卡片视图：Figma 1003:22598 还原稿（AgentChat）。
+                 * 注：视觉先替换到位，原 ChatView 的业务逻辑（claws / 状态机 / resize / 权限）
+                 * 后续按需接入 AgentChat。 */
+                <AgentChat embedded />
               ) : (() => {
                 const allClaws = claws;
                 // [006] 分页切片：先按创建时间倒序，再按当前页切出 30 条
@@ -1012,7 +991,7 @@ export default function MyOpenClaw() {
                       }
                     }}
                   >
-                    <SelectTrigger className="w-full bg-white border-[#E5E5E5] rounded-[4px]">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="选择所属分组" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1035,7 +1014,6 @@ export default function MyOpenClaw() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                  className="bg-white border-[#E5E5E5] rounded-[4px]"
                   autoFocus
                 />
               </div>
@@ -1060,7 +1038,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={value} id={`agent-type-${value}`} className="peer sr-only" />
                         <Label
                           htmlFor={`agent-type-${value}`}
-                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                          className="flex items-center justify-center rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                         >
                           {label}
                         </Label>
@@ -1088,7 +1066,7 @@ export default function MyOpenClaw() {
                     <RadioGroupItem value="__general__" id="role-general" className="peer sr-only" />
                     <Label
                       htmlFor="role-general"
-                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                     >
                       通用助手
                     </Label>
@@ -1100,7 +1078,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={role.id} id={`role-${role.id}`} className="peer sr-only" />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
+                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                         >
                           {role.name}
                         </Label>
@@ -1108,53 +1086,75 @@ export default function MyOpenClaw() {
                     ))}
                 </RadioGroup>
 
-                {/* Role Detail —— 选中具体角色后展示介绍卡片 */}
-                {selectedRole && (
-                  <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative">
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-0 top-0 h-12"
-                      style={{
-                        backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                        backgroundSize: "12px 12px",
-                        maskImage: "linear-gradient(to bottom, black, transparent)",
-                        WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
-                      }}
-                    />
-                    <div className="p-4 space-y-3 relative z-10">
-                      <div className="flex items-center gap-2">
-                        <AgentAvatar
-                          roleName={selectedRole.name}
-                          size={28}
-                        />
-                        <p className="text-sm font-semibold text-[#0A0A0A]">
-                          {selectedRole.name}角色介绍
-                        </p>
+                {/* Role Detail —— 选中具体角色后展示介绍卡片；未选（通用助手）展示通用介绍 */}
+                {(() => {
+                  // 通用助手兜底文案（与具体角色介绍卡复用同一视觉容器）
+                  const generalIntro = {
+                    name: "通用助手",
+                    skills: "web-search、file-reader、code-runner",
+                    soul: "无固定行业偏好的通用 AI 伙伴，擅长日常问答、信息检索与轻量创作，按需切换专业度",
+                  };
+                  const display = selectedRole
+                    ? {
+                        name: selectedRole.name,
+                        skills: selectedRole.skills.map((s) => s.name).join("、"),
+                        soul: selectedRole.soul,
+                      }
+                    : generalIntro;
+
+                  return (
+                    <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative">
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 h-12"
+                        style={{
+                          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
+                          backgroundSize: "12px 12px",
+                          maskImage: "linear-gradient(to bottom, black, transparent)",
+                          WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
+                        }}
+                      />
+                      <div className="p-4 space-y-3 relative z-10">
+                        <div className="flex items-center gap-2">
+                          <AgentAvatar
+                            roleName={display.name}
+                            size={28}
+                          />
+                          <p className="text-sm font-semibold text-[#0A0A0A]">
+                            {display.name}角色介绍
+                          </p>
+                        </div>
+                        <Separator />
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-semibold text-[#0A0A0A]">
+                            角色技能
+                          </p>
+                          <p className="text-xs text-[#334155] leading-relaxed">
+                            {display.skills}
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-semibold text-[#0A0A0A]">
+                            角色风格
+                          </p>
+                          <p className="text-xs text-[#334155] leading-relaxed">
+                            {display.soul}
+                          </p>
+                        </div>
                       </div>
-                      <Separator />
-                      <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#0A0A0A]">
-                          角色技能
-                        </p>
-                        <p className="text-xs text-[#334155] leading-relaxed">
-                          {selectedRole.skills.map((s) => s.name).join("、")}
-                        </p>
-                      </div>
-                      <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-[#0A0A0A]">
-                          角色风格
-                        </p>
-                        <p className="text-xs text-[#334155] leading-relaxed">
-                          {selectedRole.soul}
-                        </p>
-                      </div>
-                    </div>
-                  </SurfaceInner>
-                )}
+                    </SurfaceInner>
+                  );
+                })()}
               </div>
             </div>
 
             <DialogFooter>
+              <Button
+                variant="claw-outline"
+                onClick={() => setShowCreate(false)}
+              >
+                取消
+              </Button>
               <Button
                 variant="claw-primary"
                 onClick={handleCreate}

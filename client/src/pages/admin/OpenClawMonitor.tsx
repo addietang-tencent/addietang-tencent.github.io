@@ -55,7 +55,7 @@ import {
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
-  Pencil, Plus,
+  Pencil, Plus, Bell,
   TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
@@ -71,12 +71,15 @@ import {
   onCustomChannelsChange,
   type CustomChannel as AdminCustomChannel,
 } from "@/lib/customChannelStore";
-import { loadCustomTypes } from "./ImageManagement/customAgentStore";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
+import BatchUpdateNotice, {
+  useOutdatedTypes,
+  HasOutdatedIndicator,
+} from "./BatchUpdateNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -97,11 +100,7 @@ interface Claw {
   createTime: string;
   status: ClawStatus;
   version: string;
-  /**
-   * Agent 类型字符串：包含系统类型 'OpenClaw' / 'Hermes' / 'LightclawACE'，
-   * 以及在「Agent 类型管理」中创建的自定义类型 id（如 'petselfclaw'）。
-   */
-  agentType: string;
+  agentType: 'OpenClaw' | 'Hermes' | 'LightclawACE';
   pluginVersions: PluginVersions;
   department?: string;
   departmentId?: string;
@@ -712,13 +711,6 @@ export default function AgentMonitor() {
     }
     return [...MOCK_CLAWS].sort((a, b) => b.createTime.localeCompare(a.createTime));
   });
-  // 自研内核（kernelBase: native）类型集合：用于列表行 instanceId 入口的禁用判定
-  // 来自「Agent 类型管理」localStorage，键为 agentType 字符串（自定义类型 id）
-  const nativeAgentTypeIds = useMemo(() => {
-    const types = loadCustomTypes();
-    return new Set(types.filter(t => t.kernelBase === "native").map(t => t.id));
-  }, [claws]);  // claws 变化时重读（HMR / mock 改动友好）
-  const isNativeKernelAgentType = (agentType: string): boolean => nativeAgentTypeIds.has(agentType);
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -1877,19 +1869,21 @@ export default function AgentMonitor() {
             </div>
             {/* 镜像更新提醒铃铛（与批量更新按钮同列） */}
             <ImageUpdateBellEntry />
-            {/* 批量更新按鈕 */}
+            {/* 批量更新按钮（次级样式，避免抢主操作） */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
                   <Button
                     onClick={() => !batchDisabled && setShowBatchUpgradeDialog(true)}
                     disabled={batchDisabled}
+                    variant="claw-outline"
+                    size="claw"
                     className="px-3 gap-1.5"
                   >
                     <CircleArrowUp className="w-3.5 h-3.5" />
                     批量更新
                     {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#f0f3ff] text-[#355EF1] rounded text-xs">{selectedCount}</span>
                     )}
                   </Button>
                 </span>
@@ -1898,7 +1892,7 @@ export default function AgentMonitor() {
                 <TooltipContent side="bottom" className="text-xs">{batchTooltip}</TooltipContent>
               )}
             </Tooltip>
-            {/* 批量删除按钮 */}
+            {/* 批量删除按钮（次级样式 + 红色文字提示危险性） */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="inline-flex">
@@ -1914,15 +1908,16 @@ export default function AgentMonitor() {
                       }
                     }}
                     disabled={batchDeleteDisabled}
-                    variant="outline"
-                    className={`rounded-xl text-sm font-medium px-3 h-9 gap-1.5 transition-all ${
-                      batchDeleteDisabled ? "text-gray-400 cursor-not-allowed" : "text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    variant="claw-outline"
+                    size="claw"
+                    className={`px-3 gap-1.5 ${
+                      batchDeleteDisabled ? "" : "!text-[#d42a1e] hover:!text-[#b91c1c]"
                     }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     批量删除
                     {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-xs">{selectedCount}</span>
+                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#fdecea] text-[#d42a1e] rounded text-xs">{selectedCount}</span>
                     )}
                   </Button>
                 </span>
@@ -1953,8 +1948,9 @@ export default function AgentMonitor() {
                       }
                       setDispatchPresetIds(runningIds);
                     }}
-                    className="rounded-lg text-sm font-medium px-3 h-9 gap-1.5 transition-all text-white"
-                    style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+                    variant="claw-primary"
+                    size="claw"
+                    className="px-3 gap-1.5"
                   >
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
@@ -1968,13 +1964,11 @@ export default function AgentMonitor() {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  >
+                  <Button variant="claw-outline" size="claw" className="px-3 gap-1.5">
                     <TerminalSquare className="w-3.5 h-3.5" />
                     命令下发
                     <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-gray-400" />
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem
@@ -2011,19 +2005,21 @@ export default function AgentMonitor() {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <button
+            <Button
+              variant="claw-outline"
+              size="claw"
               onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              className="px-3 gap-1.5"
             >
               <Tag className="w-3.5 h-3.5" />
               配置默认标签
-            </button>
-            {/* 智能体迁移按鈕 */}
+            </Button>
+            {/* 智能体迁移按钮 */}
             <Link href="/admin/agent-migration">
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-colors">
+              <Button variant="claw-outline" size="claw" className="px-3 gap-1.5">
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 智能体迁移
-              </button>
+              </Button>
             </Link>
           </div>
 

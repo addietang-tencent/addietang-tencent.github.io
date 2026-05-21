@@ -110,15 +110,15 @@ function renderNavItem(item: AdminNavItem, location: string, isSubItem = false, 
       <AdminSidebarMenuItem key={item.href}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <AdminSidebarMenuButton
-              asChild
-              isActive={isActive}
-              className="justify-center px-0"
+            <Link
+              href={item.href}
+              data-slot="admin-sidebar-menu-button"
+              data-active={isActive}
+              aria-current={isActive ? "page" : undefined}
+              className="flex h-[var(--admin-sidebar-item-height)] w-full items-center justify-center rounded-[var(--admin-sidebar-item-radius)] text-[var(--admin-sidebar-foreground)] outline-none transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]"
             >
-              <Link href={item.href}>
-                {iconEl}
-              </Link>
-            </AdminSidebarMenuButton>
+              {iconEl}
+            </Link>
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={8}>
             {item.label}
@@ -242,10 +242,17 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const { collapsed, toggleSidebar } = useAdminSidebar();
   const showFull = !collapsed;
+  // 鼠标在侧栏内时 → 顶部 logo 切换为「展开导航」icon。
+  // 用受控状态替代 CSS group-hover，避免路由切换重渲染时 hover 短暂丢失导致的闪烁。
+  const [sidebarHovered, setSidebarHovered] = useState(false);
 
   return (
     <div className="flex min-h-screen admin-theme" style={{ background: "#FFFFFF" }}>
-      <AdminSidebar className="group/sidebar">
+      <AdminSidebar
+        className="group/sidebar"
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
+      >
         <AdminSidebarHeader>
           {!showFull ? (
             /* 收起态：Logo + 前往用户端，高度与展开态 Header 对齐 */
@@ -254,11 +261,14 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={toggleSidebar}
-                    className="relative flex items-center justify-center h-10"
+                    className="relative flex items-center justify-center h-10 w-7"
                     aria-label="展开导航"
                   >
-                    <AdminSidebarLogo className="shrink-0 w-7 h-auto transition-all duration-200 group-hover/sidebar:opacity-0 group-hover/sidebar:scale-75" />
-                    <SidebarCollapseIcon className="size-4 absolute text-[var(--admin-sidebar-muted)] opacity-0 scale-75 transition-all duration-200 group-hover/sidebar:opacity-100 group-hover/sidebar:scale-100" />
+                    {sidebarHovered ? (
+                      <SidebarCollapseIcon className="size-4 text-[var(--admin-sidebar-muted)]" />
+                    ) : (
+                      <AdminSidebarLogo className="shrink-0 w-7 h-auto" />
+                    )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>

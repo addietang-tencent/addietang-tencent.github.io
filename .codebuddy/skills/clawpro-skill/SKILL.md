@@ -392,10 +392,165 @@ import { SurfaceCard, SurfaceInner, SurfaceConfig } from "@/components/ui/Surfac
 +-----------------------------------------------------------+
 ```
 
-- Navbar：`h-16`, `fixed`, `z-50`, `bg-white/90`, `backdrop-blur-md`, `border-b border-[#E5E5E5]`
+- Navbar：`h-16`, `fixed`, `z-50`, `bg-white/95`, `backdrop-blur-md`, `border-b 1px solid #E2E8F0`
 - 导航项：`px-4 py-2 rounded-[4px] text-sm font-medium`
 - 活跃：`text-[#1447E6] bg-[#EFF6FF]`
 - 非活跃：`text-[#334155] hover:text-[#0A0A0A] hover:bg-gray-50`
+
+#### 7.2.1 用户端导航栏完整规范（TopNav）
+
+> **设计来源**：Figma 公共组件/导航（节点 358:2322 / 297:3719）
+> **组件路径**：`client/src/components/topnav/`
+> **设计意图**：为用户端提供统一的顶部导航，采用"壳子 + 插槽"模式，业务方只需传入中央 Tabs 和右侧功能区即可。
+
+##### 一、整体布局
+
+```
++--[ TopNav h-16 fixed z-50 bg-white/95 backdrop-blur-md ]--------+
+|  左：Logo  |  中：Segmented Tabs  |  右：功能按钮 + 用户菜单    |
++-----------------------------------------------------------------+
+```
+
+- **定位**：`fixed top-0 left-0 right-0 z-50`
+- **高度**：64px（`h-[64px]`）
+- **内边距**：`px-10`（左右 40px）
+- **背景**：`bg-white/95 backdrop-blur-md`
+- **底边**：`1px solid #E2E8F0`
+- **布局方式**：CSS Grid 三栏 `grid-template-columns: 1fr auto 1fr`，gap 24px
+  - 左栏 `justify-self: start` — Logo 靠左
+  - 中栏 `auto` 宽度 — 天然页面正中
+  - 右栏 `justify-self: end` — 功能区靠右
+- **最小宽度**：`min-w-[1200px]`（<1200px 出横向滚动条，不折行）
+
+##### 二、左栏 — Logo
+
+| 属性 | 值 |
+|------|-----|
+| 图标 | `/landing-assets/60.svg`，28×28px |
+| 文字 | "ClawPro"，Be Vietnam Pro 600，22.12px，#000 |
+| 间距 | 图标与文字 gap 8px |
+| 交互 | 点击跳转首页 `/`，hover `opacity: 0.9` |
+| 缩放 | `flex-shrink-0`，永不压缩 |
+
+##### 三、中栏 — Segmented Tabs（CenterTabs）
+
+| 属性 | 值 |
+|------|-----|
+| 容器背景 | `#F5F5F5` |
+| 容器圆角 | 4px |
+| 容器内边距 | 4px（即 `p-1`）|
+| Tab 内边距 | `px-3 py-[7px]` |
+| Tab 圆角 | 3px |
+| Tab 字号 | 14px / line-height 22px |
+| Active 态 | `bg-white`，`color #020617`，`font-medium`，`shadow: 0 1px 2px rgba(0,0,0,.05)` |
+| Normal 态 | `color #334155`，`font-normal` |
+| Hover 态 | `color #020617` |
+| 过渡 | `transition-all duration-150` |
+
+**当前默认 Tab 项**：
+
+| 标签 | 路由 |
+|------|------|
+| 我的 Agent | `/my-openclaw` |
+| 技能广场 | `/skill-square` |
+| 模型额度 | `/model-quota` |
+
+##### 四、右栏 — 功能按钮区
+
+布局：`flex items-center gap-3`，各元素之间用 `NavDivider`（1px × 14px，`#E2E8F0`）分隔。
+
+**按钮排列顺序**（从左到右）：
+
+| 序号 | 组件 | 图标 | 文字 | 说明 |
+|------|------|------|------|------|
+| 1 | HelpPanel | HelpIcon | "使用指南" | 右侧 Sheet 抽屉 |
+| — | NavDivider | — | — | |
+| 2 | NotificationPanel | BellIcon | — | 含红点，右侧 Sheet 抽屉 |
+| — | NavDivider | — | — | |
+| 3 | NavIconButton | SwitchAdminIcon | "管控端" | 仅管理员可见 |
+| — | NavDivider | — | — | |
+| 4 | UserMenu | 头像 | 用户名 | hover 下拉菜单 |
+
+**NavIconButton 规格**：
+
+| 属性 | 值 |
+|------|-----|
+| 内边距 | `px-2 py-[6px]` |
+| 圆角 | 4px |
+| 文字 | 14px / line-height 22px / `#020617` 90% 透明度 |
+| Hover | `bg-[#F5F5F5]`，文字变 `#020617` 100% |
+| 图标着色 | `currentColor`（跟随文字色变化）|
+| 红点 | 4×4px 圆形 `#E85C5C`，绝对定位 `top:6 right:6` |
+
+**UserMenu 规格**：
+
+| 属性 | 值 |
+|------|-----|
+| 头像 | 31×31 圆形，bg `#8CBCF7`，首字母大写，PingFang SC 600 / 14px / #000 |
+| 用户名 | 14px / line-height 22px / `#020617`，max-width 120px 溢出省略 |
+| 间距 | gap 9px，内边距 `px-[9px] py-[4px]` |
+| Hover 态 | 用户名变为品牌蓝 `#1447E6` |
+| 下拉触发 | hover 200ms 延迟打开，移出 300ms 延迟关闭 |
+
+##### 五、响应式策略
+
+| 屏幕宽度 | 行为 |
+|----------|------|
+| **≥ 1200px** | 正常三栏 Grid，中栏天然居中 |
+| **< 1200px** | 容器 `min-w-[1200px]` 锁死，页面出横向滚动条 |
+
+> **设计决策**：用户端导航栏不做折叠/折行处理，而是通过锁定最小宽度 + 横滚来保证导航完整性。这与 §7.4 用户端通用骨架的 <1200px 策略保持一致。
+
+##### 六、组件使用示例
+
+```tsx
+import { TopNav, NavDivider, CenterTabs, NavIconButton, HelpIcon, SwitchAdminIcon, NotificationPanel, UserMenu } from "@/components/topnav";
+
+<TopNav
+  center={<CenterTabs items={tabItems} activeValue={location} onChange={navigate} />}
+  right={
+    <>
+      <HelpPanel />
+      <NavDivider />
+      <NotificationPanel notifications={data} />
+      <NavDivider />
+      {isAdmin && <NavIconButton icon={<SwitchAdminIcon />} label="管控端" />}
+      <NavDivider />
+      <UserMenu username="用户名">
+        <DropdownMenuItem>重置密码</DropdownMenuItem>
+        <DropdownMenuItem className="text-red-600">退出登录</DropdownMenuItem>
+      </UserMenu>
+    </>
+  }
+/>
+```
+
+##### 七、关键 CSS Class（`index.css` 中定义）
+
+```css
+/* 导航栏按钮文字：固定展示不缩略 */
+.nav-btn-label {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+```
+
+##### 八、文件结构
+
+```
+client/src/components/topnav/
+├── TopNav.tsx              # 壳子组件（Grid 三栏），导出 NavDivider
+├── CenterTabs.tsx          # 中央 segmented Tabs
+├── NavIconButton.tsx       # 右侧图标按钮（含红点/徽章）
+├── NavIcons.tsx            # 内联 SVG 图标集（HelpIcon/BellIcon/SwitchAdminIcon/ChevronDownIcon）
+├── NotificationPanel.tsx   # 消息通知（铃铛 + Sheet 抽屉面板）
+├── HelpPanel.tsx           # 使用指南（Sheet 抽屉面板，4 Tab）
+├── UserMenu.tsx            # 用户菜单（头像 + 用户名 + DropdownMenu）
+├── index.ts                # 统一导出入口
+└── README.md               # 组件包文档
+```
+
+---
 
 ### 7.3 响应式网格
 

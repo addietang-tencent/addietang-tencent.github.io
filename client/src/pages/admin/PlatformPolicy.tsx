@@ -855,16 +855,16 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
           <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+        <p className="text-xs text-gray-400 leading-relaxed min-h-[36px]">{description}</p>
       </div>
 
-      <div className="px-5 pb-4">
+      <div className="px-5 pb-3 flex-1 flex flex-col">
         {/* 预设策略（置顶） */}
         {editingId === fallbackRule.id ? (
           <div className={ROW_CLASS}>
@@ -886,74 +886,78 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         )}
 
         {/* 虚线分隔：主策略 vs 例外策略 */}
-        <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
-          {/* 表头：仅在新增/编辑分组策略时展示 */}
-          {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-            <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
-              <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-              <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
-              <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-            </div>
-          )}
-
-          {/* 分组策略行 */}
-          {groupRules.map((rule) => (
-            <div key={rule.id}>
-              {editingId === rule.id ? (
-                <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0">
-                    <GroupTagSelector
-                      selectedIds={draftGroupIds}
-                      disabledIds={getDisabledIds(rule.id)}
-                      onChange={setDraftGroupIds}
-                    />
-                  </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-9">
-                    <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                    <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
-                  </div>
-                </div>
-              ) : (
-                <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
-                  <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                  <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(rule.value)}</span>
-                  <div className="w-14 flex items-center justify-end gap-1">
-                    <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-                    <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* 添加分组策略 */}
-          {addingNew ? (
-            <div className={EDIT_ROW_CLASS}>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <GroupTagSelector
-                  selectedIds={draftGroupIds}
-                  disabledIds={getDisabledIds()}
-                  onChange={setDraftGroupIds}
-                />
+        {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
+          <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
+            {/* 表头：仅在新增/编辑分组策略时展示 */}
+            {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
+              <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
+                <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
+                <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
+                <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-9">
-                <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+            )}
+
+            {/* 分组策略行 */}
+            {groupRules.map((rule) => (
+              <div key={rule.id}>
+                {editingId === rule.id ? (
+                  <div className={EDIT_ROW_CLASS}>
+                    <div className="flex-1 min-w-0">
+                      <GroupTagSelector
+                        selectedIds={draftGroupIds}
+                        disabledIds={getDisabledIds(rule.id)}
+                        onChange={setDraftGroupIds}
+                      />
+                    </div>
+                    <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
+                    <div className="w-14 flex items-center justify-end gap-1 h-9">
+                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                      <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                    <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
+                    <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(rule.value)}</span>
+                    <div className="w-14 flex items-center justify-end gap-1">
+                      <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+                      <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ) : (
-            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-              <Plus className="w-3.5 h-3.5" />添加分组策略
-            </button>
-          )}
-        </div>
+            ))}
+
+            {/* 新增态：添加分组策略编辑行（仍随分组列表渲染） */}
+            {addingNew && (
+              <div className={EDIT_ROW_CLASS}>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <GroupTagSelector
+                    selectedIds={draftGroupIds}
+                    disabledIds={getDisabledIds()}
+                    onChange={setDraftGroupIds}
+                  />
+                </div>
+                <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
+                <div className="w-14 flex items-center justify-end gap-1 h-9">
+                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                  <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {extraContent && (
-        <div className="px-8 pb-4 pt-3 border-t border-[#e5e5e5]">{extraContent}</div>
-      )}
+      {/* 卡片底部 footer：始终带分割线吸底，包含"添加分组策略"按钮和 extraContent */}
+      <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
+        {!addingNew && (
+          <button onClick={startAdd} className="self-start flex items-center gap-1.5 px-3 h-9 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+            <Plus className="w-3.5 h-3.5" />添加分组策略
+          </button>
+        )}
+        {extraContent}
+      </div>
     </div>
   );
 }
@@ -1073,16 +1077,16 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
           <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+        <p className="text-xs text-gray-400 leading-relaxed min-h-[36px]">{description}</p>
       </div>
 
-      <div className="px-5 pb-4">
+      <div className="px-5 pb-3 flex-1 flex flex-col">
         {/* 预设策略（置顶） */}
         {editingId === fallbackRule.id ? (
           <div className={ROW_CLASS}>
@@ -1108,79 +1112,82 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
         )}
 
         {/* 虚线分隔：主策略 vs 例外策略 */}
-        <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
-          {/* 表头：仅在新增/编辑分组策略时展示 */}
-          {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-            <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
-              <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-              <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
-              <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-            </div>
-          )}
-
-          {groupRules.map((rule) => (
-            <div key={rule.id}>
-              {editingId === rule.id ? (
-                <div className={EDIT_ROW_CLASS}>
-                  <div className="flex-1 min-w-0">
-                    <GroupTagSelector
-                      selectedIds={draftGroupIds}
-                      disabledIds={getDisabledIds(rule.id)}
-                      onChange={setDraftGroupIds}
-                    />
-                  </div>
-                  <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                  <div className="w-14 flex items-center justify-end gap-1 h-9">
-                    <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                    <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
-                  </div>
-                </div>
-              ) : (
-                <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
-                  <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                  <div className={`${valueColClass} text-right`}>
-                    {loadingRuleId === rule.id
-                      ? renderLoading()
-                      : <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
-                  </div>
-                  <div className="w-14 flex items-center justify-end gap-1">
-                    <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
-                    <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" disabled={!!loadingRuleId}><Trash2 className="w-3 h-3" /></button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {addingNew ? (
-            <div className={EDIT_ROW_CLASS}>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <GroupTagSelector
-                  selectedIds={draftGroupIds}
-                  disabledIds={getDisabledIds()}
-                  onChange={setDraftGroupIds}
-                />
+        {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
+          <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
+            {/* 表头：仅在新增/编辑分组策略时展示 */}
+            {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
+              <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
+                <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
+                <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
+                <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
               </div>
-              <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-              <div className="w-14 flex items-center justify-end gap-1 h-9">
-                <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+            )}
+
+            {groupRules.map((rule) => (
+              <div key={rule.id}>
+                {editingId === rule.id ? (
+                  <div className={EDIT_ROW_CLASS}>
+                    <div className="flex-1 min-w-0">
+                      <GroupTagSelector
+                        selectedIds={draftGroupIds}
+                        disabledIds={getDisabledIds(rule.id)}
+                        onChange={setDraftGroupIds}
+                      />
+                    </div>
+                    <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
+                    <div className="w-14 flex items-center justify-end gap-1 h-9">
+                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                      <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                    <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
+                    <div className={`${valueColClass} text-right`}>
+                      {loadingRuleId === rule.id
+                        ? renderLoading()
+                        : <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
+                    </div>
+                    <div className="w-14 flex items-center justify-end gap-1">
+                      <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
+                      <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" disabled={!!loadingRuleId}><Trash2 className="w-3 h-3" /></button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ) : (
-            // 最多 1 条分组策略：已有则不显示添加按钮
-            groupRules.length === 0 && (
-              <button onClick={startAdd} disabled={!!loadingRuleId} className="flex items-center gap-1.5 px-3 h-10 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                <Plus className="w-3.5 h-3.5" />添加分组策略
-              </button>
-            )
-          )}
-        </div>
+            ))}
+
+            {/* 新增态：添加分组策略编辑行 */}
+            {addingNew && (
+              <div className={EDIT_ROW_CLASS}>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <GroupTagSelector
+                    selectedIds={draftGroupIds}
+                    disabledIds={getDisabledIds()}
+                    onChange={setDraftGroupIds}
+                  />
+                </div>
+                <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
+                <div className="w-14 flex items-center justify-end gap-1 h-9">
+                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
+                  <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {extraContent && (
-        <div className="px-8 pb-4 pt-3 border-t border-[#e5e5e5]">{extraContent}</div>
-      )}
+      {/* 卡片底部 footer：始终带分割线吸底，包含"添加分组策略"按钮和 extraContent */}
+      <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
+        {/* 最多 1 条分组策略：已有则不显示添加按钮 */}
+        {!addingNew && groupRules.length === 0 && (
+          <button onClick={startAdd} disabled={!!loadingRuleId} className="self-start flex items-center gap-1.5 px-3 h-9 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <Plus className="w-3.5 h-3.5" />添加分组策略
+          </button>
+        )}
+        {extraContent}
+      </div>
 
       {/* 兜底值切换二次确认弹窗 */}
       <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
@@ -1482,7 +1489,7 @@ export default function PlatformPolicy() {
       {/* ── 板块一：用户配额 ── */}
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">用户配额</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuotaPolicyCard
             icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0" />}
             iconBg=""
@@ -1507,7 +1514,7 @@ export default function PlatformPolicy() {
       {/* ── 板块二：模型配额 ── */}
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">模型配额</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuotaPolicyCard
             icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0" />}
             iconBg=""
@@ -1529,7 +1536,7 @@ export default function PlatformPolicy() {
       {/* ── 板块三：功能权限开关 ── */}
       <section>
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />

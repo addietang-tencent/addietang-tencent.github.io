@@ -1053,10 +1053,10 @@ export default function TokensMonitor() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-gray-700">查看企业用户和模型的 Tokens 消耗情况。</span>
+              <p className="text-sm text-gray-500">查看企业用户和模型的 Tokens 消耗情况。</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
-                  <button className="text-xs text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
+                  <button className="text-sm text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
                     查看tokens统计规则
                   </button>
                 </UITooltipTrigger>

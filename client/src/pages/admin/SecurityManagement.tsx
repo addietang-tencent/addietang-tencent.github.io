@@ -88,10 +88,10 @@ export default function SecurityManagement() {
     <div className="page-enter">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#0A0A0A] leading-8 tracking-[-1px]">
+        <h1 className="text-2xl font-bold text-gray-900">
           AI Agent 安全
         </h1>
-        <p className="text-xs text-[#737373] mt-1 leading-5 tracking-[0.18px]">
+        <p className="text-sm text-gray-500 mt-1">
           帮助您持续监测AI Agent资产的风险告警、管控策略生效情况与审计记录，让你在"可见—可控—可追溯"的闭环下，安全引入并持续使用AI Agent。（已支持 OpenClaw，其他 Agent 类型敬请期待）
         </p>
       </div>

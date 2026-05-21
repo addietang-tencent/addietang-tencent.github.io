@@ -33,8 +33,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import {
   Edit3,
   ChevronDown,
@@ -56,6 +54,7 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  Megaphone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
@@ -68,9 +67,17 @@ import {
   loadBuiltinChannelVisibility,
   onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
+import { getActivePush, type ActivePush } from "@/lib/upgradePushStore";
 import ToolsMcpPanel from "./ToolsMcpPanel";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
+
+// ─── 当前实例 mock 数据（Guide 页演示用） ─────────────────────────────────
+// 真实业务接入时替换为 findClawById(id)，目前 Guide 版写死演示数据
+const MOCK_INSTANCE = {
+  agentType: "OpenClaw" as const, // 与 upgradePushStore 的 key 对齐
+  agentVersion: "2026.4.0",       // 当前实例版本（< 推送目标版本 2026.4.23 才会出现徽章）
+};
 
 // ─── 顶部 Tab 数据（横向 Segmented Control） ─────────────────────────────
 type DetailTab = "basic" | "tools" | "memory" | "files" | "doctor";
@@ -213,7 +220,7 @@ const SKILL_CATEGORIES: { id: SkillCategory; label: string }[] = [
 ];
 
 function formatSkillCount(count: number) {
-  if (count >= 10000) return `${(count / 10000).toFixed(1)}万`;
+  if (count >= 10000) return `${Math.round(count / 10000)}万`;
   if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
   return `${count}`;
 }
@@ -598,7 +605,7 @@ function SkillInstallModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[782px] p-0 overflow-hidden" showCloseButton={false}>
+      <DialogContent className="sm:max-w-[780px] p-0 overflow-hidden" showCloseButton={false}>
         {/* 弹窗头部 */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4">
           <DialogHeader className="p-0 m-0 gap-0 space-y-0">
@@ -680,7 +687,7 @@ function SkillInstallModal({
         </div>
 
         {/* 搜索栏 + 排序（§8.6 规范） */}
-        <div className="px-6 pb-3 flex items-center gap-3">
+        <div className="px-6 pb-2 flex items-center gap-3">
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
@@ -707,23 +714,21 @@ function SkillInstallModal({
 
         {/* 分类标签 */}
         <div className="px-6 pb-3">
-          <RadioGroup
-            value={category}
-            onValueChange={(value) => setCategory(value as SkillCategory)}
-            className="flex flex-wrap gap-2"
-          >
+          <div className="flex flex-wrap gap-2">
             {SKILL_CATEGORIES.map((cat) => (
-              <div key={cat.id} className="flex items-center">
-                <RadioGroupItem value={cat.id} id={`skill-cat-${cat.id}`} className="peer sr-only" />
-                <Label
-                  htmlFor={`skill-cat-${cat.id}`}
-                  className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
-                >
-                  {cat.label}
-                </Label>
-              </div>
+              <button
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
+                className={`h-[30px] px-3 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                  category === cat.id
+                    ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                    : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+                }`}
+              >
+                {cat.label}
+              </button>
             ))}
-          </RadioGroup>
+          </div>
         </div>
 
         {/* 技能列表 */}
@@ -824,6 +829,43 @@ export default function OpenClawDetailGuide() {
   const [activeTab, setActiveTab] = useState<DetailTab>("basic");
   const [skillSearch] = useState("");
   const [skillModalOpen, setSkillModalOpen] = useState(false);
+
+  // ── 平台策略：是否允许员工自助更新（与管控端 PlatformPolicy 共享 key） ──
+  // 默认 true；管理员关闭后「一键更新」按钮置灰 + Tooltip 提示
+  const [allowSelfUpgrade, setAllowSelfUpgrade] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem("admin_allow_self_upgrade");
+      return raw === null ? true : raw === "true";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const raw = localStorage.getItem("admin_allow_self_upgrade");
+        setAllowSelfUpgrade(raw === null ? true : raw === "true");
+      } catch { /* ignore */ }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+
+  // ── 管理员推送的「可更新」徽章（监听 upgrade-push-changed / storage 事件） ──
+  const [recommendPush, setRecommendPush] = useState<ActivePush | null>(
+    () => getActivePush(MOCK_INSTANCE.agentType),
+  );
+  useEffect(() => {
+    const refresh = () => setRecommendPush(getActivePush(MOCK_INSTANCE.agentType));
+    refresh();
+    window.addEventListener("upgrade-push-changed", refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("upgrade-push-changed", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
+
   // ─── 已安装 / 待安装技能（动态状态机，对齐 main 分支） ───
   const [installedSkills, setInstalledSkills] = useState<{ name: string; version: string }[]>(
     MOCK_INSTALLED_SKILLS,
@@ -1038,18 +1080,7 @@ export default function OpenClawDetailGuide() {
     fields: ChannelField[];
     fieldValues: Record<string, string>;
   };
-  const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([
-    {
-      type: "飞书", channelValue: "feishu", status: "running",
-      fields: CHANNEL_OPTIONS.find(c => c.value === "feishu")?.fields || [],
-      fieldValues: { appId: "cli_a1b2c3d4e5f6", appSecret: "abc123456789" },
-    },
-    {
-      type: "QQ", channelValue: "qq", status: "running",
-      fields: CHANNEL_OPTIONS.find(c => c.value === "qq")?.fields || [],
-      fieldValues: { appId: "1234567890", appSecret: "xyz987654321" },
-    },
-  ]);
+  const [appliedChannels, setAppliedChannels] = useState<AppliedChannel[]>([]);
   const [expandedChannelIdx, setExpandedChannelIdx] = useState<number | null>(null);
   const [visibleAppliedSecrets, setVisibleAppliedSecrets] = useState<Set<string>>(new Set());
 
@@ -1105,7 +1136,11 @@ export default function OpenClawDetailGuide() {
   };
 
   const handleDeleteChannel = (idx: number) => {
-    setAppliedChannels(prev => prev.filter((_, i) => i !== idx));
+    setAppliedChannels(prev => {
+      const next = prev.filter((_, i) => i !== idx);
+      if (next.length === 0) setShowChannelConfig(true);
+      return next;
+    });
     toast.info("通道已删除");
   };
 
@@ -1310,6 +1345,44 @@ export default function OpenClawDetailGuide() {
                       <span>ID：ins-grpdemo02</span>
                       <span style={{ color: "#E2E8F0" }}>｜</span>
                       <span>分组：默认</span>
+                      {/* 当前 Agent 版本号 */}
+                      <span style={{ color: "#E2E8F0" }}>｜</span>
+                      <span className="font-mono tabular-nums" style={{ color: "#64748B" }}>
+                        v{MOCK_INSTANCE.agentVersion}
+                      </span>
+                      {/* 管理员推送的「可更新」徽章 */}
+                      {recommendPush && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span
+                              className="inline-flex items-center gap-1 cursor-help whitespace-nowrap ml-1"
+                              style={{
+                                padding: "2px 6px",
+                                borderRadius: "2px",
+                                fontSize: "11px",
+                                lineHeight: "16px",
+                                fontWeight: 500,
+                                color: "#1D4ED8",
+                                backgroundColor: "#EFF6FF",
+                                border: "1px solid #DBEAFE",
+                              }}
+                            >
+                              <Megaphone className="w-3 h-3" />
+                              可更新 v{recommendPush.version}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[320px] text-xs leading-relaxed">
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {recommendPush.message ?? `推荐更新到 v${recommendPush.version}`}
+                              </div>
+                              <div className="text-gray-300">
+                                来自 {recommendPush.pushedBy} · {recommendPush.pushedAt}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1317,15 +1390,36 @@ export default function OpenClawDetailGuide() {
 
                 {/* 右：操作按钮 */}
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="claw-outline"
-                    size="claw"
-                    onClick={() => {
-                      toast.success("配置已更新至最新版本");
-                    }}
-                  >
-                    一键更新
-                  </Button>
+                  {allowSelfUpgrade ? (
+                    <Button
+                      variant="claw-outline"
+                      size="claw"
+                      onClick={() => {
+                        toast.success("配置已更新至最新版本");
+                      }}
+                    >
+                      一键更新
+                    </Button>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {/* 用 span 包裹 disabled Button，确保 Tooltip 在禁用态仍可触发 */}
+                        <span tabIndex={0}>
+                          <Button
+                            variant="claw-outline"
+                            size="claw"
+                            disabled
+                            className="cursor-not-allowed opacity-60"
+                          >
+                            一键更新
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs max-w-[240px] leading-relaxed">
+                        管理员已关闭"自助更新"，请联系管理员开启
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   <Button
                     variant="claw-outline"
                     size="claw"
@@ -1717,7 +1811,7 @@ export default function OpenClawDetailGuide() {
                   </SurfaceCard>
 
                   {/* ===== 02/ 通道（Channels） ===== */}
-                  <SurfaceCard className="flex flex-col p-6 gap-4">
+                  <SurfaceCard className="flex flex-col p-6 gap-3">
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
@@ -1742,30 +1836,37 @@ export default function OpenClawDetailGuide() {
                           用户与 Agent 交互的入口，支持微信、QQ、飞书等
                         </p>
                       </div>
-                      <ConfiguredBadge />
+                      {appliedChannels.length > 0 ? (
+                        <ConfiguredBadge />
+                      ) : (
+                        <span
+                          className="inline-flex items-center gap-1.5 h-5 px-2 text-xs shrink-0"
+                          style={{ color: "#A3A3A3", letterSpacing: "0.015em" }}
+                        >
+                          <span className="w-2 h-2 rounded-full" style={{ background: "#A3A3A3" }} />
+                          未配置
+                        </span>
+                      )}
                     </div>
 
-                    {/* 通道配置：始终展示「已接入通道」小标题 + 添加配置卡 / 添加按钮 + 通道列表 */}
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
-                          已接入通道（{appliedChannels.length}）
-                        </div>
+                    {/* 通道配置：新增通道按钮 / 配置卡切换 */}
+                    <div>
+                        {/* 新增通道按钮（收起态） */}
                         {!showChannelConfig && (
-                          <button
-                            className="inline-flex items-center gap-1 text-xs hover:opacity-80"
-                            style={{ color: "#1447E6" }}
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full mb-3 bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
                             onClick={() => setShowChannelConfig(true)}
                           >
-                            <Plus className="w-3 h-3" />
-                            添加通道
-                          </button>
+                            <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                            新增通道
+                          </Button>
                         )}
-                      </div>
-
-                        {/* 点击「添加通道」后，配置卡出现在小标题下方 */}
+                        {/* 添加接入通道配置卡（展开态） */}
                         {showChannelConfig && (
                           <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                            {appliedChannels.length > 0 && (
                             <button
                               type="button"
                               onClick={() => {
@@ -1773,12 +1874,13 @@ export default function OpenClawDetailGuide() {
                                 setShowChannelConfig(false);
                               }}
                               className="absolute top-2 right-2 w-6 h-6 rounded-[4px] flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors z-10"
-                              aria-label="取消"
+                              aria-label="关闭"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
+                            )}
                             {/* 小标题 */}
-                            <div className="text-xs font-medium pr-8" style={{ color: "rgba(0,0,0,0.8)" }}>
+                            <div className="text-xs font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                               添加接入通道
                             </div>
                             {/* 通道选择下拉 */}
@@ -1807,7 +1909,7 @@ export default function OpenClawDetailGuide() {
                                         placeholder={`请输入${field.label}`}
                                         value={channelFields[field.key] || ""}
                                         onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
-                                        className="h-9 rounded-[4px] text-sm pr-9 bg-white"
+                                        className="h-9 rounded-[4px] text-sm pr-9 bg-white border-[#E5E5E5]"
                                       />
                                       {field.secret && (
                                         <button
@@ -1824,7 +1926,7 @@ export default function OpenClawDetailGuide() {
                               </div>
                             )}
 
-                            {/* 前往授权 按钮 */}
+                            {/* 授权添加 按钮 */}
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="claw-outline"
@@ -1832,11 +1934,19 @@ export default function OpenClawDetailGuide() {
                                 className="w-full"
                                 onClick={() => { handleApplyChannel(); setShowChannelConfig(false); }}
                               >
-                                前往授权
+                                授权添加
                               </Button>
                             </div>
                           </div>
                         )}
+
+                      {appliedChannels.length > 0 && (
+                      <div className="mb-3">
+                        <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
+                          已接入通道（{appliedChannels.length}）
+                        </div>
+                      </div>
+                      )}
 
                         {appliedChannels.length > 0 && (
                         <div className="space-y-2">
@@ -1929,20 +2039,23 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
+                    {/* 安装技能（白底灰边黑字 二级按钮样式） */}
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
+                      onClick={() => setSkillModalOpen(true)}
+                    >
+                      <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                      安装技能
+                    </Button>
+
                     {/* 已安装技能列表 */}
                     <div className="flex flex-col gap-3 mt-1 pt-2">
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-medium" style={{ color: "rgba(0,0,0,0.8)" }}>
                           已安装技能（{installedSkills.filter((s) => skillSearch ? s.name.includes(skillSearch) : true).length}）
                         </div>
-                        <button
-                          className="inline-flex items-center gap-1 text-xs hover:opacity-80"
-                          style={{ color: "#1447E6" }}
-                          onClick={() => setSkillModalOpen(true)}
-                        >
-                          <Plus className="w-3 h-3" />
-                          安装技能
-                        </button>
                       </div>
                       {/* Skill 搜索输入框 */}
                       <div className="relative">

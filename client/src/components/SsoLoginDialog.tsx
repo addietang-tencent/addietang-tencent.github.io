@@ -93,14 +93,6 @@ const EmailIcon = (
   </svg>
 );
 
-/** 账号密码图标 - 用户头像轮廓 */
-const AccountIcon = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.546 0.245 262.881)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
 /** 登录操作按钮配置 */
 interface LoginAction {
   icon: React.ReactNode;
@@ -329,277 +321,16 @@ function PhoneLoginForm() {
   );
 }
 
-/** 视图类型：sso=SSO选择页, phone=手机号登录页, account=账号密码登录页, email=邮箱登录页 */
-type ViewMode = 'sso' | 'phone' | 'account' | 'email';
-
-/** 简单邮箱格式校验 */
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/** 模拟邮箱登录表单 */
-function EmailLoginForm() {
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [agreed, setAgreed] = useState(false);
-
-  const handleSendCode = useCallback(() => {
-    if (!email.trim()) {
-      toast.error('请输入邮箱');
-      return;
-    }
-    if (!EMAIL_REGEX.test(email.trim())) {
-      toast.error('请输入正确的邮箱');
-      return;
-    }
-    toast.success('验证码已发送（Demo 演示）');
-    setCodeSent(true);
-    setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [email]);
-
-  const handleLogin = useCallback(() => {
-    if (!email.trim() || !code.trim()) {
-      toast.error('请填写完整信息');
-      return;
-    }
-    if (!EMAIL_REGEX.test(email.trim())) {
-      toast.error('请输入正确的邮箱');
-      return;
-    }
-    if (!agreed) {
-      toast.error('请先阅读并同意服务协议');
-      return;
-    }
-    toast.success('登录成功（Demo 演示）');
-  }, [email, code, agreed]);
-
-  return (
-    <div className="flex flex-col gap-5 w-full">
-      {/* 邮箱输入 */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" style={{ color: '#1d2129' }}>邮箱</label>
-        <div
-          className="flex items-center rounded-lg border border-input transition-[color,box-shadow] overflow-hidden focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
-        >
-          <input
-            type="email"
-            placeholder="请输入邮箱"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
-            style={{ color: '#1d2129' }}
-          />
-        </div>
-      </div>
-
-      {/* 验证码输入 */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" style={{ color: '#1d2129' }}>验证码</label>
-        <div
-          className="flex items-center rounded-lg border border-input transition-[color,box-shadow] overflow-hidden focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
-        >
-          <input
-            type="text"
-            placeholder="请输入验证码"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
-            style={{ color: '#1d2129' }}
-          />
-          <button
-            type="button"
-            disabled={countdown > 0}
-            onClick={handleSendCode}
-            className="flex-shrink-0 px-4 py-3 text-sm font-medium whitespace-nowrap transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            style={{
-              borderLeft: '1px solid #e5e6eb',
-              color: countdown > 0 ? '#c9cdd4' : '#165dff',
-              background: 'transparent',
-            }}
-          >
-            {countdown > 0 ? `${countdown}s` : codeSent ? '重新发送' : '获取验证码'}
-          </button>
-        </div>
-      </div>
-
-      {/* 登录按钮 */}
-      <button
-        type="button"
-        onClick={handleLogin}
-        className="w-full py-3 rounded-full text-white text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.99] mt-1"
-        style={{ background: 'linear-gradient(135deg, #79bbff, #409eff)' }}
-      >
-        登录
-      </button>
-
-      {/* 协议勾选 */}
-      <div className="flex items-start gap-2 justify-center">
-        <button
-          type="button"
-          onClick={() => setAgreed(!agreed)}
-          className="mt-0.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer"
-          style={{
-            borderColor: agreed ? '#165dff' : '#c9cdd4',
-            background: agreed ? '#165dff' : 'transparent',
-          }}
-        >
-          {agreed && (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-        </button>
-        <p className="text-xs" style={{ color: '#86909c' }}>
-          我已阅读并同意
-          <button type="button" className="hover:underline mx-0.5" style={{ color: '#165dff' }} onClick={() => toast.info('Demo: 查看服务协议')}>
-            服务协议
-          </button>
-          和
-          <button type="button" className="hover:underline mx-0.5" style={{ color: '#165dff' }} onClick={() => toast.info('Demo: 查看隐私政策')}>
-            隐私政策
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/** 模拟账号密码登录表单 */
-function AccountLoginForm() {
-  const [account, setAccount] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [agreed, setAgreed] = useState(false);
-
-  const handleLogin = useCallback(() => {
-    if (!account.trim() || !password.trim()) {
-      toast.error('请填写完整信息');
-      return;
-    }
-    if (!agreed) {
-      toast.error('请先阅读并同意服务协议');
-      return;
-    }
-    toast.success('登录成功（Demo 演示）');
-  }, [account, password, agreed]);
-
-  return (
-    <div className="flex flex-col gap-5 w-full">
-      {/* 用户名输入 */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" style={{ color: '#1d2129' }}>用户名</label>
-        <div
-          className="flex items-center rounded-lg border border-input transition-[color,box-shadow] overflow-hidden focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
-        >
-          <input
-            type="text"
-            placeholder="请输入用户名"
-            value={account}
-            onChange={(e) => setAccount(e.target.value)}
-            className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
-            style={{ color: '#1d2129' }}
-          />
-        </div>
-      </div>
-
-      {/* 密码输入 */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium" style={{ color: '#1d2129' }}>密码</label>
-        <div
-          className="flex items-center rounded-lg border border-input transition-[color,box-shadow] overflow-hidden focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
-        >
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="请输入密码"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="flex-1 px-3 py-3 text-sm outline-none bg-transparent"
-            style={{ color: '#1d2129' }}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="flex-shrink-0 px-3 py-3 cursor-pointer flex items-center justify-center"
-            aria-label={showPassword ? '隐藏密码' : '显示密码'}
-            style={{ background: 'transparent' }}
-          >
-            {showPassword ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#86909c" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#86909c" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                <line x1="1" y1="1" x2="23" y2="23" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* 登录按钮 */}
-      <button
-        type="button"
-        onClick={handleLogin}
-        className="w-full py-3 rounded-full text-white text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.99] mt-1"
-        style={{ background: 'linear-gradient(135deg, #79bbff, #409eff)' }}
-      >
-        登录
-      </button>
-
-      {/* 协议勾选 */}
-      <div className="flex items-start gap-2 justify-center">
-        <button
-          type="button"
-          onClick={() => setAgreed(!agreed)}
-          className="mt-0.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-all cursor-pointer"
-          style={{
-            borderColor: agreed ? '#165dff' : '#c9cdd4',
-            background: agreed ? '#165dff' : 'transparent',
-          }}
-        >
-          {agreed && (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          )}
-        </button>
-        <p className="text-xs" style={{ color: '#86909c' }}>
-          我已阅读并同意
-          <button type="button" className="hover:underline mx-0.5" style={{ color: '#165dff' }} onClick={() => toast.info('Demo: 查看服务协议')}>
-            服务协议
-          </button>
-          和
-          <button type="button" className="hover:underline mx-0.5" style={{ color: '#165dff' }} onClick={() => toast.info('Demo: 查看隐私政策')}>
-            隐私政策
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
+/** 视图类型：sso=SSO选择页, phone=手机号登录页 */
+type ViewMode = 'sso' | 'phone';
 
 /** View 1: SSO 选择页面 */
 function SsoMainView({
   options,
   onPhoneLogin,
-  onAccountLogin,
-  onEmailLogin,
 }: {
   options: SsoImOption[];
   onPhoneLogin: () => void;
-  onAccountLogin: () => void;
-  onEmailLogin: () => void;
 }) {
   const handleSsoSelect = useCallback((type: string) => {
     toast.success(`已选择 ${type} 登录（Demo 演示）`);
@@ -613,8 +344,7 @@ function SsoMainView({
         title="其他账号登录"
         actions={[
           { icon: PhoneIcon, label: '手机号', onClick: onPhoneLogin },
-          { icon: AccountIcon, label: '账号密码', onClick: onAccountLogin },
-          { icon: EmailIcon, label: '邮箱', onClick: onEmailLogin },
+          { icon: EmailIcon, label: '邮箱', onClick: () => toast.info('Demo: 邮箱登录') },
         ]}
       />
     </div>
@@ -625,28 +355,19 @@ function SsoMainView({
 function PhoneLoginView({
   showSsoOption,
   onSsoClick,
-  onAccountClick,
-  onEmailClick,
 }: {
   showSsoOption: boolean;
   onSsoClick?: () => void;
-  onAccountClick?: () => void;
-  onEmailClick?: () => void;
 }) {
   const ssoAction: LoginAction = {
     icon: SsoCloudIcon,
     label: 'SSO',
     onClick: onSsoClick ?? (() => toast.info('Demo: SSO 登录')),
   };
-  const accountAction: LoginAction = {
-    icon: AccountIcon,
-    label: '账号密码',
-    onClick: onAccountClick ?? (() => toast.info('Demo: 账号密码登录')),
-  };
   const emailAction: LoginAction = {
     icon: EmailIcon,
     label: '邮箱',
-    onClick: onEmailClick ?? (() => toast.info('Demo: 邮箱登录')),
+    onClick: () => toast.info('Demo: 邮箱登录'),
   };
 
   return (
@@ -654,57 +375,7 @@ function PhoneLoginView({
       <PhoneLoginForm />
 
       <OtherLoginMethods
-        actions={showSsoOption ? [ssoAction, accountAction, emailAction] : [accountAction, emailAction]}
-      />
-    </div>
-  );
-}
-
-/** View 3: 账号密码登录页面 */
-function AccountLoginView({
-  onSsoClick,
-  onPhoneClick,
-  onEmailClick,
-}: {
-  onSsoClick: () => void;
-  onPhoneClick: () => void;
-  onEmailClick: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center">
-      <AccountLoginForm />
-
-      <OtherLoginMethods
-        actions={[
-          { icon: SsoCloudIcon, label: 'SSO', onClick: onSsoClick },
-          { icon: PhoneIcon, label: '手机号', onClick: onPhoneClick },
-          { icon: EmailIcon, label: '邮箱', onClick: onEmailClick },
-        ]}
-      />
-    </div>
-  );
-}
-
-/** View 4: 邮箱登录页面 */
-function EmailLoginView({
-  onSsoClick,
-  onPhoneClick,
-  onAccountClick,
-}: {
-  onSsoClick: () => void;
-  onPhoneClick: () => void;
-  onAccountClick: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center">
-      <EmailLoginForm />
-
-      <OtherLoginMethods
-        actions={[
-          { icon: SsoCloudIcon, label: 'SSO', onClick: onSsoClick },
-          { icon: PhoneIcon, label: '手机号', onClick: onPhoneClick },
-          { icon: AccountIcon, label: '账号密码', onClick: onAccountClick },
-        ]}
+        actions={showSsoOption ? [ssoAction, emailAction] : [emailAction]}
       />
     </div>
   );
@@ -747,8 +418,8 @@ const SsoLoginDialog: React.FC<SsoLoginDialogProps> = ({ visible, onClose }) => 
         onInteractOutside={(e) => e.preventDefault()}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* 返回按钮 - 在非 SSO 主视图时显示 */}
-        {view !== 'sso' && (
+        {/* 返回按钮 - 仅在手机号登录视图时显示 */}
+        {view === 'phone' && (
           <button
             type="button"
             className="absolute top-4 left-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-none z-10"
@@ -764,34 +435,15 @@ const SsoLoginDialog: React.FC<SsoLoginDialogProps> = ({ visible, onClose }) => 
           </div>
 
           <div className="px-8 pb-8 overflow-y-auto flex-1 min-h-0">
-            {view === 'sso' && (
+            {view === 'sso' ? (
               <SsoMainView
                 options={SSO_IM_OPTIONS}
                 onPhoneLogin={() => setView('phone')}
-                onAccountLogin={() => setView('account')}
-                onEmailLogin={() => setView('email')}
               />
-            )}
-            {view === 'phone' && (
+            ) : (
               <PhoneLoginView
                 showSsoOption
                 onSsoClick={() => setView('sso')}
-                onAccountClick={() => setView('account')}
-                onEmailClick={() => setView('email')}
-              />
-            )}
-            {view === 'account' && (
-              <AccountLoginView
-                onSsoClick={() => setView('sso')}
-                onPhoneClick={() => setView('phone')}
-                onEmailClick={() => setView('email')}
-              />
-            )}
-            {view === 'email' && (
-              <EmailLoginView
-                onSsoClick={() => setView('sso')}
-                onPhoneClick={() => setView('phone')}
-                onAccountClick={() => setView('account')}
               />
             )}
           </div>

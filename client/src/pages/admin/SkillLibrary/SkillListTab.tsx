@@ -825,7 +825,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button variant="claw-primary" size="claw-sm" onClick={() => setUploadDialogOpen(true)}>
               + 发布 Skill
             </Button>
           </div>
@@ -833,15 +833,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-1.5 mb-4 flex-wrap border-t border-gray-200 pt-4">
+      <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
         <button
           onClick={() => setSelectedCategory(null)}
-          className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+          className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
             selectedCategory === null
-              ? 'text-white border-transparent'
-              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+              ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+              : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
           }`}
-          style={selectedCategory === null ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
         >
           全部
         </button>
@@ -849,12 +848,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
+            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
               selectedCategory === cat.id
-                ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
             }`}
-            style={selectedCategory === cat.id ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
           >
             {cat.name}
           </button>

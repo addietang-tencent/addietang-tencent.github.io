@@ -196,7 +196,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" sideOffset={6}>
-                    切换至管控端
+                    前往管控端
                   </TooltipContent>
                 </Tooltip>
                 <NavDivider />
@@ -257,7 +257,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
               {isAdmin && (
                 <DropdownMenuItem onClick={() => (window.location.href = "/admin/basic-info")}>
                   <SwitchAdminIcon size={16} className="mr-2 text-[#0A0A0A]" />
-                  切换至管控端
+                  前往管控端
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />

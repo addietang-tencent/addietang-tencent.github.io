@@ -151,8 +151,8 @@ export const MemoryManagement: React.FC = () => {
     <div className="page-enter">
       {/* 页面头部 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">记忆管理</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900">记忆管理</h1>
+        <p className="text-sm text-gray-500 mt-1">
           让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持（已支持 OpenClaw、Hermes，其他 Agent 类型敬请期待）。
         </p>
       </div>

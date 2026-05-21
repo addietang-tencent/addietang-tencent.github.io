@@ -24,6 +24,7 @@ import SkillSquare from "./pages/tenant/SkillSquare";
 import TenantIconAudit from "./pages/tenant/TenantIconAudit";
 import ResourceManagement from "./pages/admin/ResourceManagement";
 import ResetPassword from "./pages/tenant/ResetPassword";
+import AgentChat from "./pages/tenant/AgentChat";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
@@ -76,6 +77,9 @@ function Router() {
       <Route path="/help-docs" component={HelpDocs} />
       <Route path="/tenant-icon-audit" component={TenantIconAudit} />
       <Route path="/reset-password" component={ResetPassword} />
+
+      {/* Preview - Figma 还原稿 */}
+      <Route path="/preview/agent-chat" component={AgentChat} />
 
       {/* Admin Routes - 使用顶层路由避免 wouter 嵌套路由匹配问题 */}
       <Route path="/admin/basic-info" component={() => <AdminLayout><ModeAwareRoute standard={<StandardBasicInfo />} custom={<BasicInfo />} /></AdminLayout>} />

@@ -99,15 +99,12 @@ import {
   Circle,
   Clock,
   Info,
-  ShieldCheck,
-  ShieldAlert,
-  ShieldX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // 复用管控端数据和组件
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES } from '../admin/SkillLibrary/mockData';
-import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP, SECURITY_STATUS_MAP, type SecurityStatus } from '../admin/SkillLibrary/types';
+import { type Skill, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from '../admin/SkillLibrary/types';
 import {
   getDistributionRecords,
   addDistributionRecord,
@@ -461,23 +458,29 @@ export default function SkillSquare() {
         </div>
 
         {/* 分类横排按钮 */}
-        <div className="relative flex items-center gap-1.5 mb-6 flex-wrap pl-1">
-          <Button
+        <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <button
             onClick={() => setSelectedCategory('all')}
-            variant={selectedCategory === 'all' ? 'default' : 'outline'}
-            size="sm"
+            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+              selectedCategory === 'all'
+                ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+            }`}
           >
             全部
-          </Button>
+          </button>
           {DEFAULT_CATEGORIES.map(cat => (
-            <Button
+            <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              variant={selectedCategory === cat.id ? 'default' : 'outline'}
-              size="sm"
+              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                selectedCategory === cat.id
+                  ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+              }`}
             >
               {cat.name}
-            </Button>
+            </button>
           ))}
         </div>
 
@@ -1447,8 +1450,6 @@ function SkillSquareDetail({
                     const isSelected = selectedVersion === ver;
                     const versionRecord = skill.versionHistory?.find(v => v.version === ver);
                     const dateStr = versionRecord?.date || '';
-                    // 安全检测图标：仅最新版本显示当前 skill 的安全状态
-                    const secStatus = isLatest ? (skill.securityInfo?.overallStatus || 'not_scanned') : null;
                     return (
                       <Button
                         key={ver}

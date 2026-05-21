@@ -21,6 +21,7 @@ import OpenClawDetailGuide from "./pages/tenant/OpenClawDetailGuide";
 import ModelQuota from "./pages/tenant/ModelQuota";
 import HelpDocs from "./pages/tenant/HelpDocs";
 import SkillSquare from "./pages/tenant/SkillSquare";
+import TenantIconAudit from "./pages/tenant/TenantIconAudit";
 import ResourceManagement from "./pages/admin/ResourceManagement";
 import ResetPassword from "./pages/tenant/ResetPassword";
 
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/model-quota" component={ModelQuota} />
       <Route path="/skill-square" component={SkillSquare} />
       <Route path="/help-docs" component={HelpDocs} />
+      <Route path="/tenant-icon-audit" component={TenantIconAudit} />
       <Route path="/reset-password" component={ResetPassword} />
 
       {/* Admin Routes - 使用顶层路由避免 wouter 嵌套路由匹配问题 */}

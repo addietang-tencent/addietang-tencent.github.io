@@ -35,9 +35,9 @@
 | Token | 值 |
 |---|---|
 | **claw-outline / 背景** | `#FFFFFF` |
-| **claw-outline / hover 背景** | `linear-gradient(90deg, #FFFFFF 0%, #F2F5FF 100%)` |
+| **claw-outline / hover 背景** | `#F5F5F5` |
 | **claw-outline / 边框** | `1px solid #E5E5E5` |
-| **claw-outline / hover 边框** | `1px solid #D8E1FF` |
+| **claw-outline / hover 边框** | `1px solid #E3E3E3` |
 | **claw-outline / 文字色** | `#020617` |
 | **claw-primary / 背景** | `linear-gradient(90deg, #020617 70%, #1447E6 100%)` |
 | **claw-primary / hover 背景** | `linear-gradient(90deg, #020617 70%, #0A226F 100%)` |
@@ -51,7 +51,7 @@
 
 | variant | 用途 | 视觉描述 |
 |---|---|---|
-| `claw-outline` | 次级按钮（卡片底部、对话框右下次操作） | 白底灰描边，hover 时浅蓝渐变 + 蓝描边 |
+| `claw-outline` | 次级按钮（卡片底部、对话框右下次操作） | 白底灰描边，hover 浅灰底 `#F5F5F5` + 灰描边 `#E3E3E3` |
 | `claw-primary` | 主操作按钮（创建 Agent、提交表单等） | 黑→蓝渐变 + 白字，hover 加深 |
 
 > shadcn 自带的 `default / outline / destructive / secondary / ghost / link` 仍然保留，与 Figma 规范并存，但**新代码不要再用 `outline` 表达 ClawPro 设计稿里的次级按钮**——请用 `claw-outline`。

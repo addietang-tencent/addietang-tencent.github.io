@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
  *   │ Token                   │ Value                                                         │
  *   ├─────────────────────────┼──────────────────────────────────────────────────────────────┤
  *   │ claw-outline / bg       │ #FFFFFF                                                       │
- *   │ claw-outline / hover bg │ linear-gradient(90deg, #FFFFFF 0%, #F2F5FF 100%)              │
+ *   │ claw-outline / hover bg │ #F5F5F5                                                       │
  *   │ claw-outline / border   │ 1px solid #E5E5E5                                             │
- *   │ claw-outline / hover    │ 1px solid #D8E1FF                                             │
+ *   │ claw-outline / hover    │ 1px solid #E3E3E3                                             │
  *   │ claw-outline / text     │ #020617                                                       │
  *   │ claw-primary / bg       │ linear-gradient(90deg, #020617 70%, #355EF1 100%)             │
  *   │ claw-primary / hover bg │ linear-gradient(90deg, #020617 70%, #0A226F 100%)             │

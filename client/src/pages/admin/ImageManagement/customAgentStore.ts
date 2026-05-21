@@ -6,7 +6,7 @@ import type { CustomAgentType } from "./types";
 
 const STORAGE_KEY_TYPES = "admin_custom_agent_types";
 const STORAGE_KEY_VERSION = "admin_custom_agent_schema_version";
-const CURRENT_SCHEMA_VERSION = "v5-with-native-mock";
+const CURRENT_SCHEMA_VERSION = "v4-no-scripts";
 
 // 初次或版本升级时清理旧 mock，避免旧 schema（含 feature scripts）残留
 (function migrateIfNeeded() {
@@ -35,18 +35,6 @@ const DEFAULT_CUSTOM_TYPES: CustomAgentType[] = [
     updatedAt: "2026-04-20 10:15:00",
     linkedInstanceCount: 6,
     createdBy: "alice@acompany.com",
-  },
-  // 示例 2：自研内核（native）— 管控台部分功能不可用
-  {
-    id: "petselfclaw",
-    displayName: "petselfclaw",
-    kernelBase: "native",
-    description: "完全自研内核镜像，管控台不展示其详细配置；用户需通过终端管理",
-    createdAt: "2026-05-15 14:08:00",
-    updatedAt: "2026-05-15 14:08:00",
-    linkedInstanceCount: 1,
-    createdBy: "admin123",
-    nativeTerminalAck: true,
   },
 ];
 

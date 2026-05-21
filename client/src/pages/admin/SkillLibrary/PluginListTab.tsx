@@ -266,7 +266,7 @@ export default function PluginListTab() {
   return (
     <div className="space-y-4">
       {/* 工具栏 */}
-      <div className="flex items-center justify-between gap-6">
+      <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
@@ -277,7 +277,7 @@ export default function PluginListTab() {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {/* 视图切换 */}
           <SegmentGroup>
             <SegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')} title="卡片视图">
@@ -288,7 +288,7 @@ export default function PluginListTab() {
             </SegmentOption>
           </SegmentGroup>
 
-          <Button onClick={() => setUploadDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button variant="claw-primary" size="claw-sm" onClick={() => setUploadDialogOpen(true)}>
             + 发布插件
           </Button>
         </div>

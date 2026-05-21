@@ -33,8 +33,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import {
   Edit3,
   ChevronDown,
@@ -707,23 +705,21 @@ function SkillInstallModal({
 
         {/* 分类标签 */}
         <div className="px-6 pb-3">
-          <RadioGroup
-            value={category}
-            onValueChange={(value) => setCategory(value as SkillCategory)}
-            className="flex flex-wrap gap-2"
-          >
+          <div className="flex flex-wrap gap-2">
             {SKILL_CATEGORIES.map((cat) => (
-              <div key={cat.id} className="flex items-center">
-                <RadioGroupItem value={cat.id} id={`skill-cat-${cat.id}`} className="peer sr-only" />
-                <Label
-                  htmlFor={`skill-cat-${cat.id}`}
-                  className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#1447E6] cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-colors"
-                >
-                  {cat.label}
-                </Label>
-              </div>
+              <button
+                key={cat.id}
+                onClick={() => setCategory(cat.id)}
+                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                  category === cat.id
+                    ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
+                    : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#1447E6]'
+                }`}
+              >
+                {cat.label}
+              </button>
             ))}
-          </RadioGroup>
+          </div>
         </div>
 
         {/* 技能列表 */}

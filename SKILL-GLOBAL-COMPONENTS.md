@@ -180,6 +180,53 @@ description: >
 
 ---
 
+## 10.5 Tab 切换卡（筛选标签按钮）
+
+> Figma: node 1061:7458 (ClawPro 项目设计)  
+> 用于分类筛选场景（如技能库分类、技能列表分类等）
+
+**使用标准 Button 组件实现**：`<Button variant="claw-primary"/"claw-outline" size="claw-sm">`
+
+### 四种状态
+
+| 状态 | 背景 | 边框 | 文字 | 说明 |
+|------|------|------|------|------|
+| **Active（选中）** | `#F6F8FE` | `#1447E6`（品牌蓝） | `#1447E6` | 浅蓝底+蓝边+蓝字 |
+| **Hover（悬停）** | `#ffffff` | `#1447E6`（品牌蓝） | `#000000` | 白底+蓝边+黑字 |
+| **Normal（默认）** | `#ffffff` | `#e4e4e4` | `#000000` | 白底+灰边+黑字 |
+| **Disabled（禁用）** | `#ffffff` | `#e4e4e4` | `rgba(0,0,0,0.3)` | 白底+灰边+淡字 |
+
+### 视觉参数
+
+| 属性 | 值 |
+|------|-----|
+| 高度 | `32px` (h-8) |
+| 圆角 | `4px` (rounded-[4px]) |
+| 内边距 | `px-4 py-[10px]` |
+| 字号 | `14px` |
+| 字重 | Regular (400) |
+| 间距 | 标签之间 `gap-2`（8px） |
+
+### 代码示例
+
+```jsx
+{/* 使用标准 Button 组件 */}
+<div className="flex items-center gap-2 flex-wrap">
+  <Button
+    variant={isActive ? "claw-primary" : "claw-outline"}
+    size="claw-sm"
+    onClick={() => setCategory(cat.id)}
+    disabled={cat.disabled}
+  >
+    {cat.name}
+  </Button>
+</div>
+```
+
+**注意**：设计稿中 Active 态的颜色是 `#165DFC`，但在代码实现中统一映射到 `claw-primary` variant（使用品牌渐变）。如需精确还原设计稿的纯蓝色 Active 态，可使用 className 覆盖。
+
+---
+
 ## 11. 其他组件速查
 
 | 组件 | 关键样式 |

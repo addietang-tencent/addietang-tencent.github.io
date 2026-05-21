@@ -2,7 +2,7 @@
 name: clawpro-global-components
 description: >
   ClawPro 全局组件样式规范（owner: addietang）。
-  此文件定义所有基础 UI 组件的视觉规范，包括颜色、描边、圆角、阴影、交互状态。
+  此文件定义所有基础 UI 组件的视觉规范，包括字体、颜色、描边、圆角、阴影、交互状态。
   任何人修改页面时，组件样式必须严格遵循此规范，不允许覆盖或自由发挥。
   如有冲突，以此文件为准。
 ---
@@ -13,6 +13,114 @@ description: >
 > **优先级**: 最高——所有分支合并时，组件样式以此规范为准，不允许其他人修改组件源文件  
 > **组件源码路径**: `client/src/components/ui/`  
 > **CSS 变量定义**: `client/src/index.css`
+
+---
+
+## 0. Typography 字体组件（用户端基础文字入口）
+
+**文件**: `client/src/components/ui/Typography.tsx`  
+**研究页**: `client/public/research/tenant-typography-audit.html`  
+**适用范围**: 所有用户端（Tenant）页面、用户端共享组件、后续新增业务组件。管控端可按需复用数字 / 代码类组件，但管控端导航等已有专属规范的组件以自身规范为准。
+
+### 0.1 设计原则
+
+1. **文字不再只按字号写 class，而按语义选组件**：页面标题用 `TenantPageTitle`，卡片标题用 `CardTitle`，正文用 `BodyText`，辅助信息用 `MetaText`。
+2. **默认色必须由 Typography 组件提供**：业务侧默认不要再手写 `text-gray-*` / `text-[#...]` 表达基础文字色。
+3. **字号、字重、行高、字体族、默认颜色绑定在同一个组件里**：避免同一个 `text-sm` 在正文、按钮、Tab、表格中语义漂移。
+4. **组件内部文字也应优先复用 Typography token**：新写 Button、Card、Dialog、Popover、表格、空状态、状态标签时，先判断文字是否可映射到 Typography 层级。
+5. **只允许通过 `tone` 切换语义色**：不要用 `className` 覆盖颜色；`className` 主要用于布局（如 `mt-1`、`truncate`、`text-center`）。
+
+### 0.2 颜色 token
+
+| `tone` | Tailwind token | 色值 | 用途 |
+|--------|----------------|------|------|
+| `primary` | `text-gray-900` | `#0A0A0A` | 标题、卡片标题、主内容 |
+| `emphasis` | `text-gray-950` | `#020617` | 强调文字、按钮文字、关键字段 |
+| `secondary` | `text-gray-700` | `#334155` | 正文、表格内容、ID、说明正文 |
+| `muted` | `text-gray-500` | `#737373` | 时间、描述、辅助说明、表头 |
+| `weak` | `text-gray-400` | `#A3A3A3` | 占位、空状态、极弱提示 |
+| `brand` | `text-[var(--brand-blue)]` | `#1447E6` | 链接、活跃态、步骤标识、英文 Badge |
+| `danger` | `text-red-600` | `#DC2626` | 危险操作、错误提示 |
+| `inherit` | `text-inherit` | 继承 | 放在已定义颜色的父级中 |
+
+### 0.3 组件层级
+
+| 组件 | 默认标签 | 字号 / 字重 / 行高 | 默认 tone | 使用场景 |
+|------|----------|--------------------|------------|----------|
+| `TenantHeroTitle` | `h1` | 26px / Medium / 35.56px | `primary` | 用户端 Hero 标题，如模型额度、技能广场 |
+| `TenantPageTitle` | `h1` | 24px / Medium / 1.4 | `primary` | 页面标题、详情页主标题 |
+| `TenantDocTitle` | `h1` | 20px / Semibold / 1.4 | `primary` | 帮助文档、文章标题 |
+| `SectionTitle` | `h2` | 18px / Medium / 1.4 | `primary` | 页面内大模块标题 |
+| `PanelTitle` | `h2` | 16px / Semibold / 1.4 | `primary` | Dialog / Sheet / 卡片区块 / 表格区块标题 |
+| `CardTitle` | `h3` | 14px / Medium / 1.5 | `primary` | Agent 卡片名、技能卡标题、模型名、列表项标题 |
+| `BodyText` | `p` | 14px / Regular / 1.5 | `secondary` | 普通正文、说明、表格内容 |
+| `BodyMedium` | `span` | 14px / Medium / 1.5 | `emphasis` | 按钮、Tab、Label、列表主字段 |
+| `CompactText` | `span` | 13px / Regular / 1.5 | `secondary` | 紧凑列表、空间不足的轻量描述 |
+| `MetaText` | `span` | 12px / Regular / 1.5 | `muted` | 时间、ID、Tooltip、辅助说明、空状态 |
+| `MetaMedium` | `span` | 12px / Medium / 1.5 | `muted` | 表头、状态标签内文字、次级强调 |
+| `TinyText` | `span` | 10px / Semibold / Open Sans | `brand` | `New` / `Beta` / 小角标 |
+| `StatNumber` | `span` | 24px / Bold / DIN | `emphasis` | 统计数字、额度数字 |
+| `InlineNumber` | `span` | 14px / DIN / tabular | `secondary` | 表格内 Token 数、请求数、百分比 |
+| `CodeText` | `code` | 12px / Menlo | `secondary` | ID、Token、路径、命令、代码片段 |
+| `StepText` | `span` | 14px / Medium / Menlo | `brand` | Step 1 / Step 2 / 步骤编号 |
+
+### 0.4 使用方式
+
+```tsx
+import {
+  TenantPageTitle,
+  PanelTitle,
+  CardTitle,
+  BodyText,
+  BodyMedium,
+  MetaText,
+  StatNumber,
+  CodeText,
+} from "@/components/ui/Typography";
+
+<TenantPageTitle>Agent 详情</TenantPageTitle>
+<BodyText>这里是当前 Agent 的模型、通道和技能配置说明。</BodyText>
+<PanelTitle as="h3">模型使用汇总</PanelTitle>
+<CardTitle>Alice 的技术助手</CardTitle>
+<BodyMedium tone="brand">查看详情</BodyMedium>
+<MetaText>更新于 2026-05-21 21:14</MetaText>
+<StatNumber>128,000</StatNumber>
+<CodeText>ins-g71c6vud</CodeText>
+```
+
+### 0.5 组件作者如何受影响
+
+新建或修改全局组件时，按下面规则处理组件内部文字：
+
+| 组件类型 | 内部文字推荐 |
+|----------|--------------|
+| Button / Tab / Segment item | `BodyMedium` 对应规格：14px / Medium / `emphasis`；组件内部可直接写等效 class，但不得偏离 Typography token |
+| Dialog / Sheet 标题 | `PanelTitle` |
+| Card 标题 | `CardTitle` |
+| 表格表头 | `MetaMedium` |
+| 表格内容 | `BodyText` 或 `InlineNumber` |
+| 空状态说明 | `MetaText tone="weak"` |
+| Badge / New / Beta | `TinyText` 或 `MetaMedium`，英文 Badge 优先 `TinyText` |
+| 统计卡数字 | `StatNumber` |
+| ID / Token / 路径 | `CodeText` |
+
+> 注意：基础组件源码里不一定必须直接 import Typography（避免 Button 等低层组件依赖过深），但视觉参数必须与 Typography token 保持一致。业务页面与业务组件应优先直接使用 Typography 组件。
+
+### 0.6 禁止事项
+
+- 禁止在用户端新增页面中继续散落书写 `text-gray-900/700/500/400` 表达基础文字色；应改用 Typography 默认色或 `tone`。
+- 禁止新增 inline `style={{ fontFamily: ... }}`；数字用 `StatNumber` / `InlineNumber`，代码用 `CodeText`，英文 Badge 用 `TinyText`。
+- 禁止把 `text-[10px]` / `text-[11px]` 用于正文；只能用于 Badge、角标、通知小时间戳等极小信息。
+- 禁止用 `className` 覆盖 Typography 组件颜色，除非是特殊业务状态色，并需能说明原因。
+- 禁止直接全仓机械替换 `text-sm` / `text-xs`；必须按语义映射逐步迁移。
+
+### 0.7 迁移策略
+
+1. **新增页面 / 新增组件必须直接使用 Typography**。
+2. **触达即同步**：修改用户端旧页面时，顺手把当前文件中明显的标题、正文、Meta、数字、代码文字替换为 Typography。
+3. **优先迁移共享组件**：`components/topnav/**`、`components/agent/**`、用户端卡片/状态/空状态组件。
+4. **再迁移核心页面**：`MyOpenClaw.tsx`、`OpenClawDetailGuide.tsx`、`SkillSquare.tsx`、`ModelQuota.tsx`。
+5. **大型复杂页渐进处理**：`OpenClawDetail.tsx`、`ChatView.tsx` 按业务迭代逐步替换，避免一次性大重构。
 
 ---
 
@@ -328,8 +436,11 @@ import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/
 
 1. **组件源文件 (`client/src/components/ui/*.tsx`) 只有 addietang 可以修改**
 2. 其他人使用组件时，不允许通过 className 覆盖组件定义的颜色/边框/圆角
-3. 如发现 rebase 后组件样式被改，以 addietang 的版本为准强制恢复
-4. 新增组件需经 addietang 审核后才能合入基线
+3. 用户端新增页面 / 新增业务组件必须优先使用 `Typography.tsx` 中的文字组件，不再自行拼装基础文字色、字号、字重
+4. 修改用户端旧页面时，遵循“触达即同步”：当前文件内明显的标题、正文、Meta、数字、代码文字应同步迁移到 Typography
+5. 新增全局组件时，组件内部文字规格必须先映射到 Typography 层级；如确需新增文字层级，先更新本规范和 `Typography.tsx`
+6. 如发现 rebase 后组件样式被改，以 addietang 和 miekoyychen 的版本为准强制恢复
+7. 新增组件需经 addietang 和 miekoyychen 审核后才能合入基线
 
 ---
 

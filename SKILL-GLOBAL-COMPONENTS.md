@@ -734,15 +734,16 @@ import {
 ```
 
 **操作列规则（强制）：**
-- 操作列按钮必须使用 `<Button variant="ghost">` —— 参见 §4.3
-- icon-only 用 `size="icon-sm"`，icon+文字用 `size="sm"`
-- 危险操作（删除）不加红色样式，hover 时自然由 ghost 提供反馈即可
+- 操作列必须使用 `<TableActionCell>` 包裹 —— 内部按钮自动应用 `link-dark` 黑色文字按钮样式
+- 也可在 `<TableCell>` 中手动使用 `<Button variant="link-dark">`
+- 操作按钮之间用 `gap-3` 或 `gap-4` 分隔
+- 禁止在操作列使用 ghost、outline、default 或自定义按钮样式
 
 **禁止事项：**
 - 禁止使用原生 `<table>` + 自定义 class（如 `text-xs font-medium text-gray-500 uppercase tracking-wide`）
 - 禁止自定义表头背景色（如 `bg-gray-50/50`），统一使用 TableHeader 的 `bg-[#fafafa]`
 - 禁止自定义行 hover 效果（如 `hover:bg-gray-50/50`），使用 TableRow 内置 `hover:bg-[#fafafa]`
-- 禁止在操作列使用非 ghost 按钮或自定义 `<button>`
+- 禁止在操作列使用非 link-dark 按钮或自定义 `<button>`
 - 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-3 border-t border-[#f0f0f0]">` 包裹
 
 ---

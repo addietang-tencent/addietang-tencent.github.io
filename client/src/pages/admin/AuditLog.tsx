@@ -3,6 +3,7 @@
  */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { SurfaceCard } from "@/components/ui/Surface";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -305,39 +306,16 @@ export default function AuditLog() {
           </Table>
 
           {/* Footer: count + pagination */}
-          <div className="px-4 py-3 border-t border-[#f0f0f0] flex items-center justify-between">
-            <span className="text-[14px] text-[#09090b]">共 {filtered.length} 条记录</span>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1] disabled:text-[#d9d9d9] disabled:border-[#d9d9d9] disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-[4px] text-[14px] font-medium transition-colors ${
-                      p === safePage
-                        ? "bg-[#355EF1] text-white border border-[#1447E6]"
-                        : "border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1]"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1] disabled:text-[#d9d9d9] disabled:border-[#d9d9d9] disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+          <div className="px-4 py-3 border-t border-[#f0f0f0]">
+            <Pagination
+              total={filtered.length}
+              current={safePage}
+              pageSize={PAGE_SIZE}
+              showTotal={(total) => `共 ${total} 条记录`}
+              className="w-full justify-between"
+              hideOnSinglePage
+              onChange={(p) => setPage(p)}
+            />
           </div>
         </SurfaceCard>
       </div>

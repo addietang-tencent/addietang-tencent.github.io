@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Tooltip,
   TooltipContent,
@@ -2537,44 +2538,17 @@ export default function AgentMonitor() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {versionFiltered.length} 条记录，第 {safePage}/{totalPages} 页</span>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <button disabled={safePage === 1} onClick={() => setPage(safePage - 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                {(() => {
-                  const pages: (number | string)[] = [];
-                  if (totalPages <= 7) {
-                    for (let i = 1; i <= totalPages; i++) pages.push(i);
-                  } else {
-                    pages.push(1);
-                    if (safePage > 3) pages.push("...");
-                    for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
-                    if (safePage < totalPages - 2) pages.push("...");
-                    pages.push(totalPages);
-                  }
-                  return pages.map((p, idx) =>
-                    typeof p === "string" ? (
-                      <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
-                    ) : (
-                      <button
-                        key={p}
-                        className={`h-7 w-7 rounded-xl text-xs font-medium transition-colors border ${p === safePage ? "text-white border-blue-500" : "text-gray-600 border-gray-200 bg-white hover:border-gray-300"}`}
-                        style={p === safePage ? { background: "#355EF1" } : undefined}
-                        onClick={() => setPage(p as number)}
-                      >{p}</button>
-                    )
-                  );
-                })()}
-                <button disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}
-                  className="h-7 w-7 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+          <div className="px-6 py-3 border-t border-gray-50">
+            <Pagination
+              total={versionFiltered.length}
+              current={safePage}
+              pageSize={PAGE_SIZE}
+              showTotal={(total) => `共 ${total} 条记录`}
+              size="small"
+              className="w-full justify-between"
+              hideOnSinglePage
+              onChange={(page) => { setPage(page); }}
+            />
           </div>
         </div>
 

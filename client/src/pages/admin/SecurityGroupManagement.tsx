@@ -3,6 +3,7 @@
  * 采用 Tab 结构：私有网络和子网、安全组、公网、更多功能
  */
 import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from "react";
+import { Pagination } from "@/components/ui/pagination";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -3167,32 +3168,16 @@ export default function SecurityGroupManagement() {
                           })}
                         </div>
                         {candidateTotalPages > 1 && (
-                          <div className="flex items-center justify-between border-t border-[#e5e5e5] bg-gray-50/50 px-4 py-2.5">
-                            <span className="text-xs text-gray-400">第 {candidatePage} / {candidateTotalPages} 页</span>
-                            <div className="flex items-center gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700"
-                                disabled={candidatePage === 1}
-                                onClick={() => onCandidatePageChange(candidatePage - 1)}
-                              >
-                                <ChevronLeft className="mr-1 h-3.5 w-3.5" />
-                                上一页
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-700"
-                                disabled={candidatePage === candidateTotalPages}
-                                onClick={() => onCandidatePageChange(candidatePage + 1)}
-                              >
-                                下一页
-                                <ChevronRight className="ml-1 h-3.5 w-3.5" />
-                              </Button>
-                            </div>
+                          <div className="border-t border-[#e5e5e5] bg-gray-50/50 px-4 py-2.5">
+                            <Pagination
+                              total={candidateTotalPages * SECURITY_GROUP_DIALOG_PAGE_SIZE}
+                              current={candidatePage}
+                              pageSize={SECURITY_GROUP_DIALOG_PAGE_SIZE}
+                              size="small"
+                              className="w-full justify-between"
+                              hideOnSinglePage
+                              onChange={(page) => { onCandidatePageChange(page); }}
+                            />
                           </div>
                         )}
                       </>

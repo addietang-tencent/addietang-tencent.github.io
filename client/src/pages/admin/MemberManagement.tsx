@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -2943,42 +2944,17 @@ export default function MemberManagement() {
           </div>
 
           {/* 底部翻页 */}
-          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {filtered.length} 名用户，第 {currentPage} / {totalPages} 页</span>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                {(() => {
-                  const pages: (number | string)[] = [];
-                  if (totalPages <= 7) {
-                    for (let i = 1; i <= totalPages; i++) pages.push(i);
-                  } else {
-                    pages.push(1);
-                    if (currentPage > 3) pages.push("...");
-                    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
-                    if (currentPage < totalPages - 2) pages.push("...");
-                    pages.push(totalPages);
-                  }
-                  return pages.map((p, idx) =>
-                    typeof p === "string" ? (
-                      <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-gray-400">…</span>
-                    ) : (
-                      <button
-                        key={p}
-                        className={`h-7 w-7 rounded-xl text-xs font-medium transition-colors ${p === currentPage ? "text-white" : "text-gray-500 hover:bg-gray-100"}`}
-                        style={p === currentPage ? { background: "#355EF1" } : undefined}
-                        onClick={() => setPage(p as number)}
-                      >{p}</button>
-                    )
-                  );
-                })()}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-400" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
+          <div className="px-6 py-3 border-t border-gray-50">
+            <Pagination
+              total={filtered.length}
+              current={currentPage}
+              pageSize={PAGE_SIZE}
+              showTotal={(total) => `共 ${total} 名用户`}
+              size="small"
+              className="w-full justify-between"
+              hideOnSinglePage
+              onChange={(page) => { setPage(page); }}
+            />
           </div>
         </div>
         )}

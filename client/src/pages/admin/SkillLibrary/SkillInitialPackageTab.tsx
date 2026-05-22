@@ -3,6 +3,7 @@
  * 设计风格：浅色主题，草稿+发布分离，生效开关
  */
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { Pagination } from '@/components/ui/pagination';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1039,48 +1040,31 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
               )}
             </div>
 
-            {/* 分页控件 — 像素级复刻下发弹窗 */}
+            {/* 分页控件 */}
             <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
-              <div className="flex items-center gap-1.5">
-                <span>共 {updatableSkills.length} 条，每页</span>
-                <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[70px] h-7 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZE_OPTIONS.map(size => (
-                      <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span>条</span>
-                {selectedIds.size > 0 && (
-                  <span className="text-gray-500 ml-1.5">
-                    已选 {selectedIds.size} 条记录
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                >
-                  上一页
-                </Button>
-                <span className="px-2 text-gray-600">{currentPage} / {totalPages}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                >
-                  下一页
-                </Button>
-              </div>
+              <Pagination
+                total={updatableSkills.length}
+                current={currentPage}
+                pageSize={pageSize}
+                showTotal={(total) => `共 ${total} 条`}
+                showSizeChanger
+                pageSizeOptions={PAGE_SIZE_OPTIONS}
+                size="small"
+                className="w-full justify-between"
+                onChange={(page, newPageSize) => {
+                  if (newPageSize !== pageSize) {
+                    setPageSize(newPageSize);
+                    setCurrentPage(1);
+                  } else {
+                    setCurrentPage(page);
+                  }
+                }}
+              />
+              {selectedIds.size > 0 && (
+                <span className="text-gray-500 ml-1.5">
+                  已选 {selectedIds.size} 条记录
+                </span>
+              )}
             </div>
           </>
         )}

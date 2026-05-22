@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Pagination } from "@/components/ui/pagination";
 import { Zap, Database, Layers, User, FileText, ChevronRight, ChevronDown, ChevronLeft, ChevronUp, MessageSquare, ArrowUpDown, Shield, Crown, Loader2, Sparkles, Lock, Calendar, Target, Brain, Search, Link2, Clock, X } from "lucide-react";
 import {
   Select,
@@ -307,39 +308,6 @@ export function MemoryPreview({
   const paginatedConversations = filteredConversations.slice((conversationsPage - 1) * pageSize, conversationsPage * pageSize);
   const totalConversationsPages = Math.ceil(filteredConversations.length / pageSize);
 
-  // 通用分页组件 - 与管控端样式保持一致
-  const Pagination = ({ current, total, totalCount, onChange }: { current: number; total: number; totalCount: number; onChange: (page: number) => void }) => {
-    return (
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#e5e5e5]">
-        {/* 左侧：共X条记录，第X/Y页 */}
-        <span className="text-xs text-gray-400">
-          共 {totalCount} 条记录{total > 0 && `，第 ${current} / ${total} 页`}
-        </span>
-        
-        {/* 右侧：翻页按钮 + 第X页 */}
-        {total > 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onChange(Math.max(1, current - 1))}
-              disabled={current <= 1}
-              className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs text-gray-400 px-2">第 {current} 页</span>
-            <button
-              onClick={() => onChange(Math.min(total, current + 1))}
-              disabled={current >= total}
-              className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Pro 版左侧导航 - 左侧流程线 + 顶部箭头
   const ProNavigation = () => {
     const navItems = [
@@ -469,7 +437,7 @@ export function MemoryPreview({
           );
         })}
       </div>
-      <Pagination current={scenesPage} total={totalScenesPages} totalCount={mockSceneBlocks.length} onChange={setScenesPage} />
+      <Pagination total={mockSceneBlocks.length} current={scenesPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setScenesPage(p)} />
     </div>
   );
 
@@ -548,7 +516,7 @@ export function MemoryPreview({
           <div className="text-center py-12 text-sm text-gray-400">暂无匹配的记忆记录</div>
         )}
       </div>
-      <Pagination current={recordsPage} total={totalRecordsPages} totalCount={filteredRecords.length} onChange={setRecordsPage} />
+      <Pagination total={filteredRecords.length} current={recordsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setRecordsPage(p)} />
     </div>
   );
 
@@ -774,7 +742,7 @@ export function MemoryPreview({
             <div className="text-center py-12 text-sm text-gray-400">暂无匹配的对话记录</div>
           )}
         </div>
-        <Pagination current={conversationsPage} total={totalConversationsPages} totalCount={filteredConversations.length} onChange={setConversationsPage} />
+        <Pagination total={filteredConversations.length} current={conversationsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setConversationsPage(p)} />
       </div>
     );
   };

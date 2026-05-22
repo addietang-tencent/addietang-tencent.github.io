@@ -6,7 +6,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
-import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronLeft, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
+import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -470,35 +471,6 @@ function TokenGroupFilter({
   );
 }
 
-function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const safe = Math.min(page, totalPages);
-  if (totalPages <= 1) return (
-    <div className="px-6 py-3 border-t border-gray-50 text-xs text-gray-400">共 {total} 条记录</div>
-  );
-  return (
-    <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-      <span className="text-xs text-gray-400">共 {total} 条记录，第 {safe} / {totalPages} 页</span>
-      <div className="flex items-center gap-1">
-        <button onClick={() => onChange(Math.max(1, safe - 1))} disabled={safe <= 1}
-          className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-          <button key={p} onClick={() => onChange(p)}
-            className={`w-7 h-7 flex items-center justify-center rounded-xl text-xs font-medium transition-colors ${p === safe ? "text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-            style={p === safe ? { background: "linear-gradient(90deg, #020617 70%, #355EF1 100%)" } : {}}>
-            {p}
-          </button>
-        ))}
-        <button onClick={() => onChange(Math.min(totalPages, safe + 1))} disabled={safe >= totalPages}
-          className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 export default function TokensMonitor() {
@@ -1311,7 +1283,7 @@ export default function TokensMonitor() {
                   ))}
                 </tbody>
               </table>
-              <Pagination page={instancePage} total={instanceStats.length} onChange={setInstancePage} />
+              <Pagination total={instanceStats.length} current={instancePage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setInstancePage(p)} />
             </div>
           </SegmentContent>
 
@@ -1364,7 +1336,7 @@ export default function TokensMonitor() {
                   ))}
                 </tbody>
               </table>
-              <Pagination page={memberPage} total={memberStats.length} onChange={setMemberPage} />
+              <Pagination total={memberStats.length} current={memberPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setMemberPage(p)} />
             </div>
           </SegmentContent>
 
@@ -1410,7 +1382,7 @@ export default function TokensMonitor() {
                   ))}
                 </tbody>
               </table>
-              <Pagination page={modelPage} total={modelStats.length} onChange={setModelPage} />
+              <Pagination total={modelStats.length} current={modelPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setModelPage(p)} />
             </div>
           </SegmentContent>
 
@@ -1466,7 +1438,7 @@ export default function TokensMonitor() {
                     ))}
                   </tbody>
                 </table>
-                <Pagination page={deptPage} total={deptStats.length} onChange={setDeptPage} />
+                <Pagination total={deptStats.length} current={deptPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setDeptPage(p)} />
               </div>
             </SegmentContent>
           )}
@@ -1544,7 +1516,7 @@ export default function TokensMonitor() {
                   })}
                 </tbody>
               </table>
-              <Pagination page={groupPage} total={groupStats.length} onChange={setGroupPage} />
+              <Pagination total={groupStats.length} current={groupPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setGroupPage(p)} />
             </div>
           </SegmentContent>
 
@@ -1803,7 +1775,7 @@ export default function TokensMonitor() {
                     })}
                   </tbody>
                 </table>
-                <Pagination page={sessionPage} total={sessionStats.length} onChange={setSessionPage} />
+                <Pagination total={sessionStats.length} current={sessionPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setSessionPage(p)} />
               </div>
               </>
             )}

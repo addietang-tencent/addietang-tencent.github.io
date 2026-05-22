@@ -76,7 +76,7 @@ export interface PaginationProps {
   /** 是否显示每页条数选择器 */
   showSizeChanger?: boolean;
   /** 每页条数选项 */
-  pageSizeOptions?: number[];
+  pageSizeOptions?: readonly number[] | number[];
   /** 是否显示快速跳转 */
   showQuickJumper?: boolean;
   /** 显示总数的函数 */
@@ -286,9 +286,9 @@ function Pagination({
             disabled={disabled || currentPage === 1}
             aria-label="上一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-md text-[#000000a6] transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-[#e5e5e5] text-[#000000a6] bg-white transition-colors",
               itemSize,
-              !disabled && currentPage !== 1 && "hover:bg-[#0000000a]",
+              !disabled && currentPage !== 1 && "hover:bg-[#f5f5f5]",
               "disabled:text-[#00000040] disabled:cursor-not-allowed"
             )}
           >
@@ -346,14 +346,14 @@ function Pagination({
                 disabled={disabled}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+                  "inline-flex items-center justify-center rounded-lg font-medium transition-colors border",
                   itemSize,
                   "px-1.5",
                   textSize,
                   isActive
-                    ? "border border-[#1447E6] text-[#355EF1] bg-white"
-                    : "text-[#000000e0] bg-transparent",
-                  !disabled && !isActive && "hover:bg-[#0000000a]",
+                    ? "border-[#1447E6] text-[#355EF1] bg-white"
+                    : "border-[#e5e5e5] text-[#000000e0] bg-white",
+                  !disabled && !isActive && "hover:bg-[#f5f5f5]",
                   disabled && "cursor-not-allowed opacity-60"
                 )}
               >
@@ -370,9 +370,9 @@ function Pagination({
             disabled={disabled || currentPage === totalPages}
             aria-label="下一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-md text-[#000000a6] transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-[#e5e5e5] text-[#000000a6] bg-white transition-colors",
               itemSize,
-              !disabled && currentPage !== totalPages && "hover:bg-[#0000000a]",
+              !disabled && currentPage !== totalPages && "hover:bg-[#f5f5f5]",
               "disabled:text-[#00000040] disabled:cursor-not-allowed"
             )}
           >

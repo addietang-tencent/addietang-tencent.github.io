@@ -12,6 +12,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
   Dialog,
@@ -41,7 +42,6 @@ import {
   Plus,
   Bot, Bell, X, AlertCircle, ChevronUp,
   Copy, Users, Check, ArrowRight, ArrowLeft,
-  ChevronLeft, ChevronRight,
   Sparkles, Heart,
 } from "lucide-react";
 import AgentChat from "./AgentChat";
@@ -635,14 +635,9 @@ export default function MyOpenClaw() {
                           />
                         ))}
                     </div>
-                    {/* [006] 分页控件（对齐管控端-用户管理 MemberManagement.tsx 样式）
-                        分割线：用 100vw + calc(50% - 50vw) 让线横跨整个视口宽度，
-                        在 >1920px 大屏下也能左右顶到视口边缘（祖先 overflow-x-clip 兜底防止水平滚动）；
-                        分页内容本身保留 px-6 py-3 自适应内边距，与 Section Header 段落对齐；
-                        ref：用于动态测量自身高度，让中间内容区两侧的点阵装饰层避开分页栏段；
-                        仅当总页数 > 1 时才显示分页栏 */}
+                    {/* [006] 分页控件 */}
                     {totalPages > 1 && (
-                    <div ref={paginationRef} className="relative mt-6 px-6 py-3 flex items-center justify-between">
+                    <div ref={paginationRef} className="relative mt-6 px-6 py-3">
                       <div
                         aria-hidden
                         className="pointer-events-none absolute"
@@ -654,44 +649,14 @@ export default function MyOpenClaw() {
                           backgroundColor: "#E2E8F0",
                         }}
                       />
-                      <span className="text-xs text-muted-foreground">共 {sortedClaws.length} 个实例，第 {safePage} / {totalPages} 页</span>
-                      {totalPages > 1 && (
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>
-                            <ChevronLeft className="w-4 h-4" />
-                          </Button>
-                          {(() => {
-                            const pages: (number | string)[] = [];
-                            if (totalPages <= 7) {
-                              for (let i = 1; i <= totalPages; i++) pages.push(i);
-                            } else {
-                              pages.push(1);
-                              if (safePage > 3) pages.push("...");
-                              for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pages.push(i);
-                              if (safePage < totalPages - 2) pages.push("...");
-                              pages.push(totalPages);
-                            }
-                            return pages.map((p, idx) =>
-                              typeof p === "string" ? (
-                                <span key={`ellipsis-${idx}`} className="h-7 w-7 flex items-center justify-center text-xs text-muted-foreground">…</span>
-                              ) : (
-                                <button
-                                  key={p}
-                                  className={`h-7 w-7 rounded-[4px] text-xs font-medium transition-colors ${
-                                    p === safePage
-                                      ? "bg-primary text-primary-foreground"
-                                      : "text-muted-foreground hover:bg-muted"
-                                  }`}
-                                  onClick={() => setPage(p as number)}
-                                >{p}</button>
-                              )
-                            );
-                          })()}
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground" disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}>
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
+                      <Pagination
+                        total={sortedClaws.length}
+                        current={safePage}
+                        pageSize={PAGE_SIZE}
+                        showTotal={(total) => `共 ${total} 个实例`}
+                        className="w-full justify-between"
+                        onChange={(p) => setPage(p)}
+                      />
                     </div>
                     )}
                     </>

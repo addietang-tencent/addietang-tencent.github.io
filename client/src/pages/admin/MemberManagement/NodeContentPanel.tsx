@@ -10,6 +10,7 @@
  */
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -820,45 +821,14 @@ export default function NodeContentPanel({
                 <span className="text-xs text-blue-600">
                   共 {total} 名用户
                 </span>
-                {totalPages > 1 && (
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      disabled={page === 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                      const isActive = p === page;
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setPage(() => p)}
-                          className={`w-7 h-7 rounded-xl text-xs font-medium transition-colors ${
-                            isActive
-                              ? "text-white"
-                              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      );
-                    })}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      disabled={page === totalPages}
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+                <Pagination
+                  total={total}
+                  current={page}
+                  pageSize={PAGE_SIZE}
+                  size="small"
+                  hideOnSinglePage
+                  onChange={(p) => { setPage(() => p); }}
+                />
               </div>
             </div>
           </>

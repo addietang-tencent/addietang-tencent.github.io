@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Pagination } from '@/components/ui/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
@@ -1227,28 +1228,17 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 
       {/* 底部：翻页 - 与 Agent 列表保持一致 */}
       {!loading && (
-        <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-          <span className="text-xs text-gray-400">
-            共 {filteredList.length} 条记录
-            {filteredList.length > 0 && `，第 ${currentPage} / ${totalPages} 页`}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs text-gray-400 px-2">第 {currentPage} 页</span>
-            <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="px-6 py-3 border-t border-gray-50">
+          <Pagination
+            total={filteredList.length}
+            current={currentPage}
+            pageSize={PAGE_SIZE}
+            showTotal={(total) => `共 ${total} 条记录`}
+            size="small"
+            className="w-full justify-between"
+            hideOnSinglePage
+            onChange={(page) => { setCurrentPage(page); }}
+          />
         </div>
       )}
 

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useLayoutEffect } from "react";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Dialog,
   DialogContent,
@@ -1495,44 +1496,18 @@ export default function FileManagement() {
           </table>
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-[#e5e5e5]">
-              <div className="text-sm text-gray-500">
-                显示 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredPersonalSpaces.length)} 条，共 {filteredPersonalSpaces.length} 条记录
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`h-8 w-8 p-0 rounded-full transition-all ${
-                      currentPage === page
-                        ? "bg-gray-900 text-white hover:bg-gray-800"
-                        : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </Button>
-                ))}
-                <Button
-                  variant="ghost"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="px-6 py-4 border-t border-[#e5e5e5]">
+            <Pagination
+              total={filteredPersonalSpaces.length}
+              current={currentPage}
+              pageSize={itemsPerPage}
+              showTotal={(total) => `共 ${total} 条记录`}
+              size="small"
+              className="w-full justify-between"
+              hideOnSinglePage
+              onChange={(page) => { setCurrentPage(page); }}
+            />
+          </div>
         </div>
       </div>
 

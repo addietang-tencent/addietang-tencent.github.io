@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from 
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { createPortal } from "react-dom";
+import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
-import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus, CircleAlert } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -1292,21 +1293,21 @@ function CreateSecurityGroupDialog({
             </div>
 
             {hasRiskyRule && (
-              <div className="bg-amber-50 px-3 py-2.5 rounded-xl flex items-start gap-2 border border-amber-100">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-relaxed">
+              <Alert variant="warning" className="px-3 py-2.5">
+                <CircleAlert />
+                <AlertDescription>
                   当前规则中包含来源/目标为 0.0.0.0/0 或 ::/0 的允许规则，可能带来安全风险。建议创建 Agent 云服务器后及时收紧访问范围，仅保留必要的来源或目标。
-                </p>
-              </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             {checkedOptions.length === 0 && (
-              <div className="bg-amber-50 px-3 py-2.5 rounded-xl flex items-start gap-2 border border-amber-100">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-relaxed">
+              <Alert variant="warning" className="px-3 py-2.5">
+                <CircleAlert />
+                <AlertDescription>
                   无任何规则时 Agent 将无法正常使用，请在创建后手动配置规则。至少放通一条出站规则，否则所有出站流量将被拒绝。
-                </p>
-              </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -3066,14 +3067,14 @@ export default function SecurityGroupManagement() {
         {/* 内容区（可滚动） */}
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
           <div className="px-6 pt-5 pb-4 space-y-4">
-            <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-              <p className="text-xs leading-relaxed text-blue-600">
+            <Alert variant="info" className="px-4 py-3">
+              <Info />
+              <AlertDescription>
                 {sgDialogMode === "create"
                   ? "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到 ClawPro 安全组（默认名称为 ClawPro-Default），原云端安全组不受影响。"
                   : "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。"}
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
             <div className="space-y-3">
                 <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
                   <div className="relative border-b border-[#e5e5e5] p-4">
@@ -3538,15 +3539,29 @@ export default function SecurityGroupManagement() {
           {MigrationBanner}
 
           {/* 顶部说明区 */}
-          <div className="flex items-start gap-2.5 rounded-[4px] border border-[#e5e5e5] bg-white px-4 py-3 mb-5">
-            <Info className="w-4 h-4 text-[#0A0A0A] mt-0.5 shrink-0" />
-            <ul className="text-xs text-[#737373] leading-relaxed space-y-1 list-disc pl-4">
-              <li><span className="font-medium text-[#0A0A0A]">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</li>
-              <li><span className="font-medium text-[#0A0A0A]">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</li>
-              <li><span className="font-medium text-[#0A0A0A]">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>。</li>
-              <li><span className="font-medium text-[#0A0A0A]">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</li>
-            </ul>
-          </div>
+          <Alert variant="operation-info" className="-mt-2 mb-5 w-full">
+            <AlertOperationInfoIcon />
+            <AlertDescription>
+              <ul className="space-y-1.5">
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用「预设策略」。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                </li>
+              </ul>
+            </AlertDescription>
+          </Alert>
 
           {/* VPC 列表 */}
           <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">私有网络与子网配置</h3>
@@ -3859,7 +3874,7 @@ export default function SecurityGroupManagement() {
               onInteractOutside={(e) => e.preventDefault()}
               onEscapeKeyDown={(e) => e.preventDefault()}
             >
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
+              <DialogHeader className="mx-0 gap-0 px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
                 <DialogTitle className="text-base font-semibold text-gray-900">
                   {showEditVpcDialog?.type === "enterprise"
                     ? "编辑预设策略"
@@ -3868,52 +3883,58 @@ export default function SecurityGroupManagement() {
                       : "编辑分组策略"}
                 </DialogTitle>
                 {showEditVpcDialog?.type === "enterprise" ? (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 ) : showEditVpcDialog?.id === NEW_GROUP_VPC_ID ? (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 ) : (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>可修改该分组策略的应用范围、VPC 和子网。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>可修改该分组策略的应用范围、VPC 和子网。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 )}
                 {editAutoCleaned && showEditVpcDialog?.id !== NEW_GROUP_VPC_ID && (
-                  <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mt-3">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                    <span className="text-xs text-amber-700 leading-relaxed break-all">
+                  <Alert variant="warning" className="mt-2 px-3 py-2.5">
+                    <CircleAlert />
+                    <AlertDescription className="break-all">
                       {(() => {
                         const segs: string[] = [];
                         if (editAutoCleaned.vpcId) {
@@ -3926,8 +3947,8 @@ export default function SecurityGroupManagement() {
                         }
                         return `检测到原配置中的${segs.join("、")} 已从腾讯云控制台被删除，已自动从本次编辑中移除。`;
                       })()}
-                    </span>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
               </DialogHeader>
 
@@ -4847,16 +4868,16 @@ export default function SecurityGroupManagement() {
               确认导入规则到当前 ClawPro 安全组
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-3 py-3">
-              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-              <div className="text-sm text-red-600 leading-relaxed">
+          <div className="pt-2">
+            <Alert variant="warning" className="w-full px-3 py-3">
+              <CircleAlert />
+              <AlertDescription>
                 <ul className="list-disc pl-4 space-y-1">
                   <li>ClawPro 将把所选规则模板的规则<span className="font-semibold">复制</span>到当前 ClawPro 安全组，当前企业下<span className="font-semibold">所有 Agent 所在云服务器</span>将立即使用新规则。</li>
                   <li>所选规则模板在云端对应的原安全组<span className="font-semibold">不受影响</span>，其关联的其他云端资源也不会被影响。</li>
                 </ul>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsConfirmSwitchDialogOpen(false)}>

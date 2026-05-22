@@ -11,7 +11,8 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleAlert, ExternalLink } from "lucide-react";
+import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/alert";
 
 // ─── 基础配置 6 项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
 const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
@@ -52,7 +53,7 @@ const PRODUCT_NEWS = [
 ];
 
 // ─── 通知条目类型 ─────────────────────────────────────────────────────────────
-type NoticeType = "warning" | "info";
+type NoticeType = "warning" | "product-news";
 
 interface NoticeItem {
   id: string;
@@ -103,7 +104,7 @@ function buildNotices(): NoticeItem[] {
   for (const news of PRODUCT_NEWS) {
     notices.push({
       id: news.id,
-      type: "info",
+      type: "product-news",
       message: news.message,
     });
   }
@@ -141,76 +142,72 @@ export default function AdminNoticeBar() {
   const notice = NOTICES[current];
   const isWarning = notice.type === "warning";
 
+  const noticeContent = (
+    <>
+      <span>{notice.message}</span>
+      {notice.action && (
+        <>
+          {notice.action.external ? (
+            <a
+              href={notice.action.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap text-current hover:opacity-80 transition-opacity"
+            >
+              {notice.action.label}
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          ) : (
+            <Link href={notice.action.href}>
+              <span className="inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer text-current hover:opacity-80 transition-opacity">
+                {notice.action.label}
+              </span>
+            </Link>
+          )}
+        </>
+      )}
+    </>
+  );
+
+  const renderControls = (className = "") =>
+    total > 1 ? (
+      <div className={`shrink-0 flex items-center gap-1 text-current ${className}`}>
+        <button
+          onClick={goPrev}
+          className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
+          aria-label="上一条"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <span className="text-xs tabular-nums text-current">
+          {current + 1}/{total}
+        </span>
+        <button
+          onClick={goNext}
+          className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
+          aria-label="下一条"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div
       className="sticky top-0 z-20 w-full min-w-[960px] max-w-[1600px] mx-auto px-10 pt-4 pb-2"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div
-        role="alert"
-        className={`relative w-full rounded-[4px] border h-12 px-4 flex items-center gap-2 text-xs [&>svg]:size-4 [&>svg]:shrink-0 ${
-          isWarning
-            ? "border-[#FCD28C] bg-[#FFFBED] text-[#181818] [&>svg]:text-[#FCA004]"
-            : "border-[#A7C5FD] bg-[#F1F6FD] text-[#181818] [&>svg]:text-[#0052EA]"
-        }`}
+      <Alert
+        variant={isWarning ? "warning" : "product-news"}
+        className="has-[>svg]:grid-cols-[16px_minmax(0,1fr)_auto] gap-y-0"
       >
-        {/* 图标 */}
-        {isWarning ? (
-          <AlertTriangle className="w-4 h-4" />
-        ) : (
-          <Sparkles className="w-4 h-4" />
-        )}
-
-        {/* 通知内容 */}
-        <div className="flex-1 min-w-0 flex items-baseline flex-wrap gap-x-1 leading-5">
-          <span>{notice.message}</span>
-          {notice.action && (
-            <>
-              {notice.action.external ? (
-                <a
-                  href={notice.action.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap text-current hover:opacity-80 transition-opacity"
-                >
-                  {notice.action.label}
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              ) : (
-                <Link href={notice.action.href}>
-                  <span className="inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer text-current hover:opacity-80 transition-opacity">
-                    {notice.action.label}
-                  </span>
-                </Link>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* 切换按钮（仅多条时显示） */}
-        {total > 1 && (
-          <div className="shrink-0 flex items-center gap-1 text-current">
-            <button
-              onClick={goPrev}
-              className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
-              aria-label="上一条"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <span className="text-xs tabular-nums text-current">
-              {current + 1}/{total}
-            </span>
-            <button
-              onClick={goNext}
-              className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
-              aria-label="下一条"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-      </div>
+        {isWarning ? <CircleAlert /> : <AlertProductNewsIcon />}
+        <AlertDescription className="flex flex-1 min-w-0 items-baseline flex-wrap gap-x-1 leading-[1.5]">
+          {noticeContent}
+        </AlertDescription>
+        {renderControls("col-start-3")}
+      </Alert>
     </div>
   );
 }

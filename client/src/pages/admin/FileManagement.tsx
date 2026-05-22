@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1209,12 +1210,12 @@ export default function FileManagement() {
         </div>
 
         {/* 信息提示横幅 */}
-        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-600 leading-relaxed">
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
             默认开启,为您赠送 <span className="font-semibold">50GB + 50GB</span> 永久免费空间,用于存放 Agent 工具库和初始技能包
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
 
         <div
           className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
@@ -1275,12 +1276,12 @@ export default function FileManagement() {
         </div>
 
         {/* 信息提示横幅 */}
-        <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-600 leading-relaxed">
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
             开启后,为您赠送每个 OpenClaw 实例 <span className="font-semibold">3个月50GB</span> 免费额度,到期后可以通过购买资源包进行续租
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
 
         {/* 网盘配置卡片 */}
         <div className="grid grid-cols-2 gap-4">

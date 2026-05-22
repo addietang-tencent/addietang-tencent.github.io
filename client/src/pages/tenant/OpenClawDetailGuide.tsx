@@ -12,6 +12,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { Alert, AlertDescription, AlertInfoIcon } from "@/components/ui/alert";
 import { Button, SmallIconStateButton } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
@@ -2325,11 +2326,12 @@ export default function OpenClawDetailGuide() {
             <DialogTitle className="text-base font-bold text-foreground">开启面板</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-5">
-            <div className="bg-orange-50 border border-orange-100 rounded-[4px] px-4 py-3">
-              <p className="text-sm font-semibold text-orange-600 leading-relaxed">
+            <Alert variant="info">
+              <AlertInfoIcon />
+              <AlertDescription>
                 访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
             <div className="rounded-[4px] border border-[#E5E5E5] overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">WebSocket URL</span>

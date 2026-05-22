@@ -16,6 +16,7 @@
  *   - 创建 native（自研）类型必须勾选确认"允许用户进入终端"
  */
 import { useMemo, useRef, useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,7 +55,7 @@ import {
   Wrench,
   Check,
   X as XIcon,
-  AlertTriangle,
+  CircleAlert,
   ChevronDown,
   ChevronRight,
   Pencil,
@@ -1552,13 +1553,13 @@ export default function ImageManagement() {
             {/* 自研（native）：风险提示 + 必勾选确认 */}
             {newKernelBase === "native" && (
               <div className="space-y-2">
-                <div className="flex items-start gap-2 bg-orange-50 border border-orange-200 rounded-[4px] px-3 py-2.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" />
-                  <div className="text-xs text-orange-700 leading-relaxed space-y-1">
-                    <p className="font-semibold">{NATIVE_KERNEL_NOTICE_TITLE}：</p>
+                <Alert variant="warning">
+                  <CircleAlert />
+                  <AlertTitle>{NATIVE_KERNEL_NOTICE_TITLE}：</AlertTitle>
+                  <AlertDescription>
                     {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (<p key={i}>{l}</p>))}
-                  </div>
-                </div>
+                  </AlertDescription>
+                </Alert>
                 <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-[#E5E5E5] cursor-pointer hover:bg-[#FAFAFA]">
                   <Checkbox
                     id="native-ack"
@@ -1594,19 +1595,17 @@ export default function ImageManagement() {
       <Dialog open={!!removeCustomConfirm} onOpenChange={(o) => { if (!o) setRemoveCustomConfirm(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-              删除自定义 Agent 类型
-            </DialogTitle>
+            <DialogTitle>删除自定义 Agent 类型</DialogTitle>
           </DialogHeader>
-          <div className="py-2">
-            <p className="text-sm text-gray-700 leading-relaxed">
+          <Alert variant="warning">
+            <CircleAlert />
+            <AlertTitle>
               确认删除自定义类型「<span className="font-semibold">{removeCustomConfirm?.displayName}</span>」？
-            </p>
-            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+            </AlertTitle>
+            <AlertDescription>
               删除后该类型及其下镜像将不再展示，可重新添加。此操作不会影响已存在的腾讯云镜像数据。
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
             <Button size="claw-sm" onClick={confirmRemoveCustomType} className="bg-red-500 hover:bg-red-600 text-white">

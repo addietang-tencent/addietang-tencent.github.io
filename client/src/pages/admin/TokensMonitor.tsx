@@ -1531,16 +1531,16 @@ export default function TokensMonitor() {
             {!clsEnabled && (
               <>
                 {/* CLS 提示弹框 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                  <div className="flex items-start justify-between">
+                <div className="bg-white border border-[#E5E5E5] rounded-[4px] p-6 mb-6">
+                  <div className="flex items-start justify-between gap-6">
                     <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-blue-900">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
-                      <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+                      <h3 className="text-sm font-semibold text-[#0A0A0A] mb-1">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
+                      <p className="text-xs text-[#737373]">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:underline inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
                     </div>
                     <Button
                       onClick={handleOpenCLS}
                       disabled={isEnablingCls}
-                      className="ml-4 text-xs h-8 px-4 whitespace-nowrap"
+                      className="ml-4 text-xs h-8 px-4 whitespace-nowrap flex-shrink-0"
                     >
                       {isEnablingCls ? "开启中..." : "开启 CLS 日志服务"}
                     </Button>
@@ -1555,16 +1555,15 @@ export default function TokensMonitor() {
                     </DialogHeader>
                     <div className="space-y-4">
                       <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           id="cls-agreement"
                           checked={clsAgreed}
-                          onChange={(e) => setClsAgreed(e.target.checked)}
-                          className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          onCheckedChange={(checked) => setClsAgreed(checked === true)}
+                          className="mt-1"
                         />
-                        <label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1">
+                        <Label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1 font-normal leading-relaxed">
                           为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
-                        </label>
+                        </Label>
                       </div>
                     </div>
                     <DialogFooter>
@@ -1588,87 +1587,88 @@ export default function TokensMonitor() {
                 </Dialog>
 
                 {/* 卡片功能展示 */}
-                <div className="space-y-6 mb-8">
-                  {/* 第一块：高成本会话分析 */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#F59E0B" }}>
-                            <TrendingUp className="w-5 h-5 text-white" />
-                          </div>
+                <div className="space-y-4 mb-8">
+                  {/* 第一块：当前页可获得的会话数据 */}
+                  <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+                    <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                      {[
+                        {
+                          id: "high-cost-session",
+                          title: "高Token会话实时分析与管控",
+                          description: "聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率",
+                          iconSrc: "/assets/admin-session-management/high-token-session-control.svg",
+                        },
+                        {
+                          id: "single-session-cost",
+                          title: "单会话全链路Token透视",
+                          description: "拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响",
+                          iconSrc: "/assets/admin-session-management/single-session-token-insight.svg",
+                        },
+                      ].map((card) => (
+                        <div
+                          key={card.id}
+                          className="flex items-center gap-[14px] py-5"
+                        >
+                          <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
                           <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">高Token会话实时分析与管控</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
+                            <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                              {card.title}
+                            </h5>
+                            <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                              {card.description}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#AF52DE" }}>
-                            <Zap className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">单会话全链路Token透视</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* 分割线 */}
-                  <div className="border-t border-gray-200" />
-
-                  {/* 第二块：会话管理功能 */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#3B82F6" }}>
-                            <BarChart3 className="w-5 h-5 text-white" />
-                          </div>
+                  {/* 第二块：运维观测和会话管理中可获得的数据 */}
+                  <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+                    <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                      {[
+                        {
+                          id: "log-metrics-insight",
+                          title: "应用日志与 OTEL 指标全景洞察",
+                          description: "多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时",
+                          iconSrc: "/assets/admin-session-management/app-log-otel-insight.svg",
+                        },
+                        {
+                          id: "session-efficiency",
+                          title: "会话详情与交互效率精细化分析",
+                          description: "聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率",
+                          iconSrc: "/assets/admin-session-management/session-detail-analysis.svg",
+                        },
+                        {
+                          id: "health-monitoring",
+                          title: "业务运行健康度实时监控",
+                          description: "聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行",
+                          iconSrc: "/assets/admin-session-management/business-health-monitoring.svg",
+                        },
+                        {
+                          id: "session-global-monitoring",
+                          title: "会话全局运行态势监控",
+                          description: "聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析",
+                          iconSrc: "/assets/admin-session-management/session-global-monitoring.svg",
+                        },
+                      ].map((card) => (
+                        <div
+                          key={card.id}
+                          className="flex items-center gap-[14px] py-5"
+                        >
+                          <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
                           <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">应用日志与 OTEL 指标全景洞察</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
+                            <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                              {card.title}
+                            </h5>
+                            <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                              {card.description}
+                            </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#FF9500" }}>
-                            <BarChart3 className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">会话详情与交互效率精细化分析</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#10B981" }}>
-                            <Activity className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">业务运行健康度实时监控</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#34C759" }}>
-                            <Activity className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-xs font-bold text-gray-900 mb-1">会话全局运行态势监控</h5>
-                            <p className="text-xs text-gray-500 leading-relaxed">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>

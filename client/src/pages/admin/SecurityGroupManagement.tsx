@@ -1963,13 +1963,14 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
           className="flex items-center gap-1 w-full max-w-[220px] overflow-hidden cursor-default"
         >
           {paths.slice(0, visibleCount).map((p, i) => (
-            <span
+            <StatusTag
               key={i}
-              ref={(el) => { tagRefs.current[i] = el; }}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap shrink-0"
+              ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
+              variant="gray"
+              className="shrink-0"
             >
               {p}
-            </span>
+            </StatusTag>
           ))}
           {omitted > 0 && (
             <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">
@@ -1979,13 +1980,13 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
           {/* 隐藏测量区 */}
           <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
             {paths.map((p, i) => (
-              <span
+              <StatusTag
                 key={`m-${i}`}
-                ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap"
+                ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
+                variant="gray"
               >
                 {p}
-              </span>
+              </StatusTag>
             ))}
             <span
               ref={moreRef}
@@ -2162,7 +2163,8 @@ export default function SecurityGroupManagement() {
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
-    return tab === "vpc" ? "vpc" : "security";
+    if (tab && TABS.some((t) => t.id === tab)) return tab;
+    return "vpc";
   });
   const initialDefaultSecurityGroup = getInitialDefaultSecurityGroup();
 
@@ -2766,6 +2768,7 @@ export default function SecurityGroupManagement() {
   const [publicConfig, setPublicConfig] = useState(INITIAL_PUBLIC_CONFIG);
   const [savedPublicConfig, setSavedPublicConfig] = useState(INITIAL_PUBLIC_CONFIG);
   const [isPublicDirty, setIsPublicDirty] = useState(false);
+  const [isPublicEditing, setIsPublicEditing] = useState(false);
   const [showBandwidthTip, setShowBandwidthTip] = useState(true);
   const bandwidthInputRef = useRef<HTMLInputElement>(null);
   const [tipPos, setTipPos] = useState<{ top: number; left: number } | null>(null);
@@ -2814,12 +2817,14 @@ export default function SecurityGroupManagement() {
   const handlePublicSave = () => {
     setSavedPublicConfig(publicConfig);
     setIsPublicDirty(false);
+    setIsPublicEditing(false);
     toast.success("公网配置已保存");
   };
 
   const handlePublicDiscard = () => {
     setPublicConfig(savedPublicConfig);
     setIsPublicDirty(false);
+    setIsPublicEditing(false);
   };
 
   // [004] 导入规则到当前 ClawPro 安全组（B15：抄规则，ClawPro 安全组身份恒定）
@@ -2945,22 +2950,22 @@ export default function SecurityGroupManagement() {
       <div className="flex flex-col w-full">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-50 bg-gray-50/50">
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{type === "inbound" ? "来源" : "目标"}</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">协议</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">端口</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">策略</th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">备注</th>
-              {!readonly && <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>}
+            <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">{type === "inbound" ? "来源" : "目标"}</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">协议</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">端口</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">策略</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">备注</th>
+              {!readonly && <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-[#E5E5E5]">
             {displayRules.length > 0 ? (
               displayRules.map((rule) => (
                 <tr key={rule.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-700">{rule.source}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{rule.protocol}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{rule.port}</td>
+                  <td className="px-6 py-4 text-sm text-[#334155]">{rule.source}</td>
+                  <td className="px-6 py-4 text-sm text-[#334155]">{rule.protocol}</td>
+                  <td className="px-6 py-4 text-sm text-[#334155]">{rule.port}</td>
                   <td className="px-6 py-4">
                     {rule.policy === "允许" ? (
                       <StatusTag variant="green" dot>
@@ -2972,23 +2977,21 @@ export default function SecurityGroupManagement() {
                       </StatusTag>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{rule.remark || "—"}</td>
+                  <td className="px-6 py-4 text-sm text-[#334155]">{rule.remark || "—"}</td>
                   {!readonly && (
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => onEdit?.(rule, type)}
-                          className="text-gray-400 hover:text-blue-500 transition-colors"
-                          title="编辑"
+                          className="text-xs text-[#737373] hover:text-[#0A0A0A] transition-colors"
                         >
-                          <Pencil className="w-3.5 h-3.5" />
+                          编辑
                         </button>
                         <button
                           onClick={() => onDelete?.(rule, type)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                          title="删除"
+                          className="text-xs text-[#737373] hover:text-red-600 transition-colors"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          删除
                         </button>
                       </div>
                     </td>
@@ -2999,9 +3002,9 @@ export default function SecurityGroupManagement() {
               <tr>
                 <td colSpan={readonly ? 5 : 6} className="px-6 py-8">
                   {type === "outbound" ? (
-                    <p className="text-sm text-[#737373] leading-relaxed text-center">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                    <p className="text-sm text-[#A3A3A3] leading-relaxed text-center">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
                   ) : (
-                    <p className="text-center text-sm text-gray-400">暂无入站规则</p>
+                    <p className="text-center text-sm text-[#A3A3A3]">暂无入站规则</p>
                   )}
                 </td>
               </tr>
@@ -3301,7 +3304,7 @@ export default function SecurityGroupManagement() {
 
         {/* Tab 内容 */}
         {activeTab === "security" && (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {/* [004] 安全组 Tab 顶部双提示框（参照 VPC/子网 Tab 布局风格）
               统一规则：两个框都仅在已配置 ClawPro 安全组后才显示
               - 黄色（⚠️）：操作风险提示
@@ -3310,9 +3313,9 @@ export default function SecurityGroupManagement() {
                    告知区与下方配置卡片之间保持外层 gap-6（24px）喘息空间。 */}
           {currentSg && (
             <div className="flex flex-col gap-3">
-              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3">
                 <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <div className="text-xs text-amber-800 leading-relaxed space-y-1.5">
+                <div className="text-xs text-amber-700 leading-relaxed space-y-1.5">
                   <p>
                     当前企业下所有 Agent 云服务器共用同一个 ClawPro 安全组，修改规则将对所有 Agent 立即统一生效，请谨慎操作。
                   </p>
@@ -3322,213 +3325,210 @@ export default function SecurityGroupManagement() {
               {/* 蓝色说明框（仅已配置态显示）
                   [004] 结构：小标题 + 作用范围 + 一致性保障
                         （"了解更多"链接暂移除，等详细说明文章上线后再挂回） */}
-              <div className="relative flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+              <div className="relative flex items-start gap-2.5 rounded-[4px] border border-blue-100 bg-blue-50 px-4 py-3">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                <div className="flex-1 text-xs leading-relaxed text-blue-700 space-y-1.5">
-                  <p className="font-semibold text-blue-800">ClawPro 安全组规则管理说明</p>
-                  <p>
-                    • 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。
-                  </p>
-                  <p>
-                    • 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。
-                  </p>
+                <div className="flex-1 text-xs leading-relaxed text-blue-600 space-y-1">
+                  <p>• 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。</p>
+                  <p>• 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。</p>
                 </div>
               </div>
             </div>
           )}
 
 
-          {/* 安全组与规则配置卡片 */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-            <div className="flex items-center justify-between px-6 border-b border-[#e5e5e5]" style={{ minHeight: "56px" }}>
-              <span className="text-sm font-semibold text-gray-800">ClawPro 安全组</span>
+          {/* ===== 模块一：已绑定安全组 ===== */}
+          <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-5">
+              <span className="text-base font-semibold text-[#0A0A0A]">ClawPro 安全组</span>
+              {currentSg && (
+                <Button
+                  variant="claw-outline"
+                  size="claw-sm"
+                  onClick={() => openSelectSecurityGroupDialog()}
+                >
+                  配置
+                </Button>
+              )}
             </div>
 
-            {/* 1. 安全组配置项（标准配置行） */}
-            <div className="px-6 py-5 border-b border-[#e5e5e5]">
-              {/* [004 · B12/B13/B14] ClawPro 安全组生命周期约束：
-                   - B12 一旦创建不可删除（UI 永远不得新增"删除"按钮）
-                   - B13 初始化 2 条路径：新建 / 选择已有
-                   - B14 初始化二选一且终生一次：currentSg 有值后，稳定态 UI
-                        永远不得出现"新建安全组"/"选择已有安全组"按钮
-                   备注：v2.0 引入多条 SG 后，B12/B14 规则将重新定义，由 v2.0 PRD 单独立规 */}
+            <div className="px-6 pb-6">
               {currentSg ? (
-                <div className="w-full flex items-center gap-6">
-                  <div className="w-full max-w-md flex items-center justify-between gap-4 px-4 py-2.5 bg-white border border-gray-200 rounded-xl group text-left min-w-0">
-                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {currentSg.name}
-                      </span>
-                      {/* [004] 当前 ClawPro 安全组对应的云端安全组列表（始终走 Popover）
-                          统一展示：无论单分片或多分片，都用 "对应 N 个云端安全组 ▾" 入口
-                          原因：ClawPro 安全组与云端安全组是不同层次对象，1:N 映射关系永远存在 */}
-                      <div className="text-xs text-gray-500 flex items-center min-w-0">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button className="hover:text-blue-500 transition-colors flex items-center gap-0.5 shrink-0">
-                              对应 {currentSg.cloudSgs.length} 个云端安全组
-                              <ChevronDown className="w-3 h-3" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[380px] p-0" align="start">
-                            <div className="px-4 py-4 space-y-3">
-                              {/* [004] Popover 顶部引导：最终版
-                                  演进路径：
-                                    ① 独立灰色气泡框 → 突兀、与表格脱节
-                                    ② 括号补充「名称由 ClawPro 自动生成」→ 字面不严谨（ID 也不是用户起的）
-                                    ③ 括号补充「名称由 ClawPro 按规范生成」→ 仍是"解释性补充"，不自然
-                                    ④ 完全删除 → 光秃秃，非新建者/隔久后的用户会误解"我起的名呢？"
-                                    ✅ ⑤ 把"由 ClawPro 自动生成的"作为主句定语嵌入 → 自然、严谨、有品牌价值感
-                                  核心判断：
-                                    不是"新建时告知一次就够"——用户可能不是新建者、可能隔很久、
-                                    可能第一次接触系统，都需要在此处被告知"名字对不上号是正常的，由 ClawPro 负责" */}
-                              <p className="text-xs text-gray-600 leading-relaxed">
-                                在云端控制台中，「{currentSg.name}」对应以下由 ClawPro 自动生成的云端安全组：
-                              </p>
-                              <div className="grid grid-cols-[130px_1fr] gap-3 text-[11px] font-medium text-gray-400 uppercase tracking-wide">
-                                <span>ID</span>
-                                <span>名称</span>
-                              </div>
-                              <ul className="space-y-2.5">
-                                {[...currentSg.cloudSgs]
-                                  .sort((a, b) => a.seq - b.seq)
-                                  .map((sg) => (
-                                    <li
-                                      key={sg.sgId}
-                                      className="grid grid-cols-[130px_1fr] gap-3 text-xs leading-relaxed items-center"
-                                    >
-                                      <span className="font-mono text-gray-700">{sg.sgId}</span>
-                                      <span className="text-gray-500 truncate" title={sg.cloudSgName}>
-                                        {sg.cloudSgName}
-                                      </span>
-                                    </li>
-                                  ))}
-                              </ul>
-                            </div>
-                            {/* [004] 扩容提示：仅 cloudSgs.length > 1 时展示
-                                 单分片场景下不展示，避免制造不必要的容量焦虑（用户看到"只有 1 个"却告知"会扩容"会困惑）
-                                 数字虚化：不写死 2,000，避免未来云厂商限额调整或多云扩展时硬编码文案需要改 */}
-                            {currentSg.cloudSgs.length > 1 && (
-                              <div className="px-4 pb-4">
-                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-                                  <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                                  <p className="text-xs text-blue-700 leading-relaxed">
-                                    当 Agent 数量超过单个云端安全组的承载上限时，ClawPro 会自动创建更多云端安全组来承载，所有安全组规则保持一致。
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </PopoverContent>
-                        </Popover>
-                        <span className="mx-1.5 text-gray-200 shrink-0">|</span>
-                        <span className="truncate">{currentSg.remark || "—"}</span>
-                      </div>
+                <div className="w-full space-y-5">
+                  {/* 安全组名称 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">安全组名称</h4>
+                    <p className="text-xs text-gray-500 mb-2">{currentSg.remark || "当前企业的默认安全组"}</p>
+                    <div className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#0A0A0A]">
+                      {currentSg.name}
                     </div>
-                    <button
-                      onClick={() => openSelectSecurityGroupDialog()}
-                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors shrink-0"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      导入规则
-                    </button>
+                  </div>
+                  {/* 云端安全组 */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">云端安全组</h4>
+                    <p className="text-xs text-gray-500 mb-2">由 ClawPro 自动生成并托管的云端安全组</p>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#1447E6] hover:text-[#1039C4] transition-colors flex items-center gap-1">
+                          对应 {currentSg.cloudSgs.length} 个云端安全组
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[380px] p-0" align="start">
+                        <div className="px-4 py-4 space-y-3">
+                          <p className="text-xs text-[#334155] leading-relaxed">
+                            在云端控制台中，「{currentSg.name}」对应以下由 ClawPro 自动生成的云端安全组：
+                          </p>
+                          <div className="grid grid-cols-[130px_1fr] gap-3 text-[11px] font-medium text-[#737373] uppercase tracking-wide">
+                            <span>ID</span>
+                            <span>名称</span>
+                          </div>
+                          <ul className="space-y-2.5">
+                            {[...currentSg.cloudSgs]
+                              .sort((a, b) => a.seq - b.seq)
+                              .map((sg) => (
+                                <li
+                                  key={sg.sgId}
+                                  className="grid grid-cols-[130px_1fr] gap-3 text-xs leading-relaxed items-center"
+                                >
+                                  <span className="font-mono text-[#334155]">{sg.sgId}</span>
+                                  <span className="text-[#737373] truncate" title={sg.cloudSgName}>
+                                    {sg.cloudSgName}
+                                  </span>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                        {currentSg.cloudSgs.length > 1 && (
+                          <div className="px-4 pb-4">
+                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
+                              <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
+                              <p className="text-xs text-blue-700 leading-relaxed">
+                                当 Agent 数量超过单个云端安全组的承载上限时，ClawPro 会自动创建更多云端安全组来承载，所有安全组规则保持一致。
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               ) : (
-                <div className="w-full">
-                  <div className="flex items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-xl flex-col text-center">
-                    <div className="text-sm text-gray-500 mb-4">暂未配置 ClawPro 安全组，请选择创建方式：</div>
-
-                    <div className="flex gap-3 mb-4">
-                      <Button
-                        onClick={openCreateSecurityGroupDialog}
-                      >
-                        自定义规则
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => openSelectSecurityGroupDialog("create")}
-                        className="h-9 px-6 text-sm bg-white border-gray-200 hover:bg-gray-50 text-gray-700"
-                      >
-                        导入已有规则
-                      </Button>
-                    </div>
-
-                    <p className="text-xs text-gray-400">设置完成后，当前企业下所有 Agent 所在云服务器将默认使用该 ClawPro 安全组</p>
+                /* 未配置态：引导配置（对齐 Figma 812:4043） */
+                <div className="flex flex-col items-center justify-center gap-5 py-5">
+                  {/* 配图 + 文字 */}
+                  <div className="flex flex-col items-center gap-1">
+                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M54.1729 33.0183H42.5693C40.9125 33.0183 39.5693 34.3588 39.5693 36.0156V43.4753C39.5693 50.7431 47.6926 53.1163 48.6101 53.1163C49.5275 53.1163 57.1729 50.2981 57.1729 43.4753V36.018C57.1729 34.3612 55.8297 33.0183 54.1729 33.0183Z" fill="#D4D8E3"/>
+                      <path d="M38.9629 12.9204H9.75586C8.09901 12.9204 6.75586 14.2585 6.75586 15.9153V33.8343C6.75586 48.37 23.0024 53.1163 24.8373 53.1163C26.6723 53.1163 41.9629 47.48 41.9629 33.8343V15.9196C41.9629 14.2628 40.6197 12.9204 38.9629 12.9204Z" fill="#E9EBF3"/>
+                      <path d="M22.7755 24.5547C23.8125 23.9448 25.1248 24.0114 26.0987 24.7441L34.9717 31.4199C35.8543 32.0839 36.032 33.3381 35.3682 34.2207C34.7041 35.1033 33.4501 35.2803 32.5674 34.6162L24.2745 28.3769L16.1006 34.1152C15.1966 34.7498 13.9491 34.531 13.3145 33.6269C12.68 32.7229 12.8978 31.4754 13.8018 30.8408L22.5714 24.6855L22.7755 24.5547Z" fill="#CDD3DF"/>
+                      <path d="M43.971 11.2821L41.0449 10.1116L43.971 8.9412L45.1414 6.01514L46.3119 8.9412L49.2379 10.1116L46.3119 11.2821L45.1414 14.2082L43.971 11.2821Z" fill="url(#paint0_linear_812_4074)"/>
+                      <path d="M48.485 36.7046C49.4057 36.7048 50.1518 37.4512 50.1518 38.372L50.1519 42.3953C50.1519 43.3161 49.4056 44.063 48.4849 44.063C47.5642 44.063 46.8174 43.3167 46.8172 42.3961L46.8177 38.3714C46.8179 37.4507 47.5643 36.7046 48.485 36.7046Z" fill="#BBC2D4"/>
+                      <path d="M50.2974 46.9988C50.2974 47.9252 49.5464 48.6763 48.6199 48.6763C47.6934 48.6763 46.9424 47.9252 46.9424 46.9988C46.9424 46.0723 47.6934 45.3213 48.6199 45.3213C49.5464 45.3213 50.2974 46.0723 50.2974 46.9988Z" fill="#BBC2D4"/>
+                      <defs>
+                        <linearGradient id="paint0_linear_812_4074" x1="49.9562" y1="12.5521" x2="44.3948" y2="7.71227" gradientUnits="userSpaceOnUse">
+                          <stop stopColor="#0080FF"/>
+                          <stop offset="1" stopColor="#202020"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <p className="text-sm font-semibold text-[#020617] leading-[22px] mt-1">暂未配置 ClawPro 安全组，请选择创建方式：</p>
+                    <p className="text-sm text-gray-500 leading-relaxed">设置完成后，当前企业下所有 Agent 所在云服务器将默认使用该 ClawPro 安全组</p>
+                  </div>
+                  {/* 操作按钮（文字链接风格） */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={openCreateSecurityGroupDialog}
+                      className="px-2 py-[7px] text-xs text-[#355EF1] hover:text-[#1447E6] transition-colors"
+                    >
+                      自定义规则
+                    </button>
+                    <button
+                      onClick={() => openSelectSecurityGroupDialog("create")}
+                      className="px-2 py-[7px] text-xs text-[#020617] hover:text-[#334155] transition-colors"
+                    >
+                      导入已有规则
+                    </button>
                   </div>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* 规则表区域：直接在外层卡片中展示，左右顶边，通过分割线区分层级 */}
-            <div className="flex flex-col mt-4">
-              {/* 规则Tab + 添加按钮 */}
-              <div className="flex items-center justify-between border-b border-gray-200 px-6" style={{ minHeight: "40px" }}>
-                <div className="flex items-center gap-6">
-                  {(["outbound", "inbound"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setSecurityTab(t)}
-                      className={`relative pb-3 text-sm font-medium transition-colors whitespace-nowrap ${
-                        securityTab === t
-                          ? "text-blue-600 border-b-2 border-blue-600 -mb-[1px]"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      {t === "outbound" ? "出站规则" : "入站规则"}
-                    </button>
-                  ))}
-                </div>
-                <div className="pb-2">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (!currentSg) return;
-                      setShowAddDialog(securityTab);
-                    }}
-                    disabled={!currentSg}
-                    className="h-8 gap-1"
+          {/* ===== 模块二：出站规则 / 入站规则 ===== */}
+          <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+            {/* 规则 Tab + 添加按钮 */}
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] px-6" style={{ minHeight: "48px" }}>
+              <div className="flex items-center gap-6">
+                {(["outbound", "inbound"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setSecurityTab(t)}
+                    className={`relative pb-3 pt-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                      securityTab === t
+                        ? "text-[#1447E6] border-b-2 border-[#1447E6] -mb-[1px]"
+                        : "text-[#737373] hover:text-[#334155]"
+                    }`}
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    添加规则
-                  </Button>
-                </div>
+                    {t === "outbound" ? "出站规则" : "入站规则"}
+                  </button>
+                ))}
               </div>
-
-              {/* 规则表 */}
-              <div className="bg-white">
-                {currentSg ? (
-                  <RuleTableBody
-                    rules={securityTab === "outbound" ? outboundRules : inboundRules}
-                    type={securityTab}
-                    readonly={false}
-                    paginate={true}
-                    onEdit={(rule, type) => {
-                      setEditingRule({ id: rule.id, type });
-                      setEditDraft(rule);
-                    }}
-                    onDelete={(rule, type) => {
-                      setShowDeleteDialog({ id: rule.id, type });
-                    }}
-                  />
-                ) : (
-                  <div className="px-6 py-10 flex flex-col items-center justify-center border-t border-gray-50">
-                    {securityTab === "outbound" ? (
-                      <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 max-w-lg w-full">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                        <p className="text-sm text-[#181818] leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
-                      </div>
-                    ) : (
-                      <>
-                        <Shield className="w-10 h-10 text-gray-200 mb-3" />
-                        <p className="text-sm text-gray-400">暂无入站规则</p>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
+              {currentSg ? (
+                <Button
+                  variant="claw-outline"
+                  size="claw-sm"
+                  onClick={() => {
+                    setShowAddDialog(securityTab);
+                  }}
+                >
+                  添加规则
+                </Button>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-block">
+                      <Button
+                        variant="claw-outline"
+                        size="claw-sm"
+                        disabled
+                      >
+                        添加规则
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>请先配置安全组后再添加规则</TooltipContent>
+                </Tooltip>
+              )}
             </div>
 
+            {/* 规则表 */}
+            <div className="bg-white">
+              {currentSg ? (
+                <RuleTableBody
+                  rules={securityTab === "outbound" ? outboundRules : inboundRules}
+                  type={securityTab}
+                  readonly={false}
+                  paginate={true}
+                  onEdit={(rule, type) => {
+                    setEditingRule({ id: rule.id, type });
+                    setEditDraft(rule);
+                  }}
+                  onDelete={(rule, type) => {
+                    setShowDeleteDialog({ id: rule.id, type });
+                  }}
+                />
+              ) : (
+                <div className="px-6 py-10 flex flex-col items-center justify-center">
+                  {securityTab === "outbound" ? (
+                    <p className="text-sm text-gray-500 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                  ) : (
+                    <p className="text-sm text-gray-500 leading-relaxed">入站规则为空时，所有入站流量将被拒绝</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
         )}
 
@@ -3538,37 +3538,21 @@ export default function SecurityGroupManagement() {
           {MigrationBanner}
 
           {/* 顶部说明区 */}
-          <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-5">
-            <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-            <ul className="text-xs text-blue-700 leading-relaxed space-y-1.5">
-              <li className="flex gap-1.5">
-                <span className="shrink-0">•</span>
-                <span><span className="font-medium">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</span>
-              </li>
-              <li className="flex gap-1.5">
-                <span className="shrink-0">•</span>
-                <span><span className="font-medium">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</span>
-              </li>
-              <li className="flex gap-1.5">
-                <span className="shrink-0">•</span>
-                <span><span className="font-medium">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用「预设策略」。</span>
-              </li>
-              <li className="flex gap-1.5">
-                <span className="shrink-0">•</span>
-                <span><span className="font-medium">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-              </li>
+          <div className="flex items-start gap-2.5 rounded-[4px] border border-[#e5e5e5] bg-white px-4 py-3 mb-5">
+            <Info className="w-4 h-4 text-[#0A0A0A] mt-0.5 shrink-0" />
+            <ul className="text-xs text-[#737373] leading-relaxed space-y-1 list-disc pl-4">
+              <li><span className="font-medium text-[#0A0A0A]">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</li>
+              <li><span className="font-medium text-[#0A0A0A]">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</li>
+              <li><span className="font-medium text-[#0A0A0A]">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>。</li>
+              <li><span className="font-medium text-[#0A0A0A]">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</li>
             </ul>
           </div>
 
-          {/* VPC 列表卡片 */}
+          {/* VPC 列表 */}
+          <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">私有网络与子网配置</h3>
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+            className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden"
           >
-            {/* 标题栏：标题（按钮已下移到表格 tbody 末尾，弱化视觉） */}
-            <div className="flex items-center px-6 py-4 border-b border-[#e5e5e5]">
-              <span className="text-sm font-semibold text-gray-800">私有网络与子网配置</span>
-            </div>
-
             {/* 表格 */}
             <Table>
               <TableHeader>
@@ -3592,12 +3576,11 @@ export default function SecurityGroupManagement() {
                   const effectiveZoneSubnets = getEffectiveZoneSubnets(row);
                   const assignedZones = AVAILABLE_ZONES.filter((z) => (effectiveZoneSubnets[z] ?? []).length > 0);
                   const totalSubnets = assignedZones.reduce((sum, z) => sum + effectiveZoneSubnets[z].length, 0);
-                  const isDefault = row.type === "enterprise";
 
                   return (
                     <Fragment key={row.id}>
                       {/* 主行 */}
-                      <tr className={`${isDefault ? "bg-blue-50/80" : "hover:bg-gray-50/30"} transition-colors ${idx > 0 ? "border-t border-gray-50" : ""}`}>
+                      <tr className={`hover:bg-gray-50/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
                         <td className="px-6 pt-4 pb-2">
                           <div className="flex items-start gap-2 min-w-0">
@@ -3669,7 +3652,7 @@ export default function SecurityGroupManagement() {
                         <td className="px-4 pt-4 pb-2 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-100 cursor-default whitespace-nowrap">预设策略</span>
+                              <StatusTag variant="blue">预设策略</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center text-gray-400 hover:text-gray-500 cursor-default">
@@ -3687,12 +3670,13 @@ export default function SecurityGroupManagement() {
                             <GroupBadges groupNames={row.associatedGroups ?? []} />
                           )}
                         </td>
-                        {/* 操作：ghost 按钮 */}
+                        {/* 操作：文字 ghost 按钮 */}
                         <td className="px-4 pt-4 pb-2 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
-                              size="icon-sm"
+                              size="sm"
+                              className="text-xs text-[#737373] hover:text-[#0A0A0A]"
                               onClick={() => {
                                 const isSystemDefault =
                                   row.type === "enterprise" && row.vpcId === AUTO_ASSIGNED_VPC.id;
@@ -3740,18 +3724,17 @@ export default function SecurityGroupManagement() {
                                 setZoneSubnetPickerOpen({});
                                 setShowEditVpcDialog(row);
                               }}
-                              title="编辑"
                             >
-                              <Pencil className="w-3.5 h-3.5" />
+                              编辑
                             </Button>
                             {row.type === "group" && (
                               <Button
                                 variant="ghost"
-                                size="icon-sm"
+                                size="sm"
+                                className="text-xs text-[#737373] hover:text-red-600"
                                 onClick={() => setShowDeleteVpcDialog(row)}
-                                title="删除"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                删除
                               </Button>
                             )}
                           </div>
@@ -3760,9 +3743,9 @@ export default function SecurityGroupManagement() {
 
                       {/* 次级详情行：仅展开时渲染，按可用区纵向展示（视觉弱化，作当前行补充说明） */}
                       {expandedVpcIds.has(row.id) && (
-                        <tr className={`${isDefault ? "bg-blue-50/80" : ""}`}>
+                        <tr>
                           <td colSpan={4} className="px-6 pb-3 pt-0">
-                            <div className={`rounded-xl ${isDefault ? "bg-white/60 border border-blue-100/40" : "bg-gray-50/50 border border-[#e5e5e5]"} px-3 py-2`}>
+                            <div className="rounded-xl bg-gray-50/50 border border-[#e5e5e5] px-3 py-2">
                               <div className="text-[11px] text-gray-400 mb-1.5">子网配置明细</div>
                               <div className="flex flex-col gap-1">
                                 {AVAILABLE_ZONES.map((zone) => {
@@ -4526,70 +4509,90 @@ export default function SecurityGroupManagement() {
         )}
 
         {activeTab === "public" && (
-        <div>
-          <div
-            className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-          >
-            <div className="flex items-center justify-between px-6 border-b border-[#e5e5e5]" style={{ minHeight: "56px" }}>
-              <span className="text-sm font-semibold text-gray-800">公网配置</span>
-              {isPublicDirty && (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handlePublicDiscard} className="h-7 px-3 text-xs text-gray-500">取消</Button>
-                  <Button size="sm" className="h-7 px-3 text-xs" onClick={handlePublicSave}>保存</Button>
-                </div>
+        <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-5">
+            <h2 className="text-base font-semibold text-[#0A0A0A]">公网配置</h2>
+            {!isPublicEditing && (
+              <Button variant="claw-outline" size="claw-sm" onClick={() => setIsPublicEditing(true)}>
+                更改配置
+              </Button>
+            )}
+          </div>
+
+          <div className="px-6 pb-6">
+          {!isPublicEditing ? (
+            /* ── 只读展示模式 ── */
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-[#0A0A0A]">是否分配公网 IP</span>
+                <span className="text-sm text-[#334155]">{savedPublicConfig.assignPublicIp ? "分配" : "不分配"}</span>
+              </div>
+              {savedPublicConfig.assignPublicIp && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-[#0A0A0A]">带宽计费模式</span>
+                    <span className="text-sm text-[#334155]">{savedPublicConfig.billingMode === "monthly" ? "包月带宽" : "按流量计费"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-[#0A0A0A]">带宽上限</span>
+                    <span className="text-sm text-[#334155]">{savedPublicConfig.bandwidth} Mbps</span>
+                  </div>
+                </>
               )}
             </div>
-
-            {/* ── 是否分配公网 IP ── */}
-            <div className="px-6 py-5 border-b border-[#e5e5e5]">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-medium text-gray-700">是否分配公网 IP</span>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="!max-w-none w-96 text-xs leading-relaxed text-justify">
-                      云服务器需要外网访问能力的时候，需要为云服务器分配公网IP，如果云服务器不分配公网IP，则不支持外出流量，并且无法使用外网IP对外进行互相通信。
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+          ) : (
+            /* ── 编辑模式 ── */
+            <div className="space-y-6">
+              {/* 是否分配公网 IP */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-[#0A0A0A]">是否分配公网 IP</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-3.5 h-3.5 text-[#A3A3A3] cursor-help flex-shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="!max-w-none w-96 text-xs leading-relaxed text-justify">
+                        云服务器需要外网访问能力的时候，需要为云服务器分配公网IP，如果云服务器不分配公网IP，则不支持外出流量，并且无法使用外网IP对外进行互相通信。
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="assignPublicIp"
+                      checked={publicConfig.assignPublicIp === true}
+                      onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: true })); setIsPublicDirty(true); }}
+                      className="w-4 h-4 accent-[#1447E6] cursor-pointer"
+                    />
+                    <span className="text-sm text-[#334155]">分配</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="assignPublicIp"
+                      checked={publicConfig.assignPublicIp === false}
+                      onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: false })); setIsPublicDirty(true); }}
+                      className="w-4 h-4 accent-[#1447E6] cursor-pointer"
+                    />
+                    <span className="text-sm text-[#334155]">不分配</span>
+                  </label>
+                </div>
               </div>
-              <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="assignPublicIp"
-                    checked={publicConfig.assignPublicIp === true}
-                    onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: true })); setIsPublicDirty(true); }}
-                    className="w-4 h-4 accent-blue-600 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700">分配</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="assignPublicIp"
-                    checked={publicConfig.assignPublicIp === false}
-                    onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: false })); setIsPublicDirty(true); }}
-                    className="w-4 h-4 accent-blue-600 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-700">不分配</span>
-                </label>
-              </div>
-            </div>
 
             {/* 带宽计费模式 + 带宽上限（分配公网 IP 时才显示） */}
             {publicConfig.assignPublicIp && (
               <>
                 {/* 带宽计费模式 */}
-                <div className="px-6 py-5 border-b border-[#e5e5e5]">
+                <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-medium text-gray-700">带宽计费模式</span>
+                    <span className="text-sm font-medium text-[#0A0A0A]">带宽计费模式</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
+                          <Info className="w-3.5 h-3.5 text-[#A3A3A3] cursor-help flex-shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent side="right" className="!max-w-none w-96 text-xs leading-relaxed space-y-2">
                           <p><span className="font-semibold">包月带宽：</span>包月的固定带宽是指定公网出方向的带宽的大小，选择单台服务器最大带宽値。按固定带宽值计费，费用与实际使用流量无关。适合流量消耗大、带宽利用率较高的业务场景。</p>
@@ -4605,9 +4608,9 @@ export default function SecurityGroupManagement() {
                         name="billingMode"
                         checked={publicConfig.billingMode === "monthly"}
                         onChange={() => handleBillingModeChange("monthly")}
-                        className="w-4 h-4 accent-blue-600 cursor-pointer"
+                        className="w-4 h-4 accent-[#1447E6] cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700">包月带宽</span>
+                      <span className="text-sm text-[#334155]">包月带宽</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -4615,21 +4618,21 @@ export default function SecurityGroupManagement() {
                         name="billingMode"
                         checked={publicConfig.billingMode === "traffic"}
                         onChange={() => handleBillingModeChange("traffic")}
-                        className="w-4 h-4 accent-blue-600 cursor-pointer"
+                        className="w-4 h-4 accent-[#1447E6] cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700">按流量计费</span>
+                      <span className="text-sm text-[#334155]">按流量计费</span>
                     </label>
                   </div>
                 </div>
 
                 {/* 带宽上限 */}
-                <div className="px-6 py-5">
+                <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-sm font-medium text-gray-700">带宽上限</span>
+                    <span className="text-sm font-medium text-[#0A0A0A]">带宽上限</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="w-3.5 h-3.5 text-gray-400 cursor-help flex-shrink-0" />
+                          <Info className="w-3.5 h-3.5 text-[#A3A3A3] cursor-help flex-shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent side="right" className="!max-w-none w-96 text-xs leading-relaxed text-justify">
                           单台云服务器可以运行到的最高带宽，超过这个带宽上限将默认丢包。不同的网络计费模式，支持的公网带宽上限有所不同。
@@ -4639,7 +4642,7 @@ export default function SecurityGroupManagement() {
                   </div>
                   <div className="flex items-center gap-4">
                     {/* 滑块 */}
-                    <div className="flex-1">
+                    <div className="w-[360px]">
                       <Slider
                         min={1}
                         max={publicConfig.billingMode === "monthly" ? 20 : 200}
@@ -4649,8 +4652,8 @@ export default function SecurityGroupManagement() {
                         className="w-full"
                       />
                       <div className="flex justify-between mt-1">
-                        <span className="text-xs text-gray-400">1 Mbps</span>
-                        <span className="text-xs text-gray-400">{publicConfig.billingMode === "monthly" ? "20" : "200"} Mbps</span>
+                        <span className="text-xs text-[#A3A3A3]">1 Mbps</span>
+                        <span className="text-xs text-[#A3A3A3]">{publicConfig.billingMode === "monthly" ? "20" : "200"} Mbps</span>
                       </div>
                     </div>
                     {/* 输入框 */}
@@ -4689,15 +4692,22 @@ export default function SecurityGroupManagement() {
                             setIsPublicDirty(true);
                           }
                         }}
-                        className="w-20 h-9 text-sm text-center border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-20 h-9 text-sm text-center border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <span className="text-sm text-gray-500">Mbps</span>
+                      <span className="text-sm text-[#737373]">Mbps</span>
                     </div>
                   </div>
                 </div>
               </>
             )}
 
+            {/* 操作按钮 */}
+            <div className="flex items-center gap-3 pt-2">
+              <Button variant="claw-outline" size="claw-sm" onClick={handlePublicDiscard}>取消</Button>
+              <Button variant="claw-primary" size="claw-sm" onClick={handlePublicSave}>保存</Button>
+            </div>
+            </div>
+          )}
           </div>
         </div>
         )}

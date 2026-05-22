@@ -122,6 +122,87 @@ import {
 4. **再迁移核心页面**：`MyOpenClaw.tsx`、`OpenClawDetailGuide.tsx`、`SkillSquare.tsx`、`ModelQuota.tsx`。
 5. **大型复杂页渐进处理**：`OpenClawDetail.tsx`、`ChatView.tsx` 按业务迭代逐步替换，避免一次性大重构。
 
+### 0.8 Typography 迁移顺序
+
+> 原则：不要从最大页面开始，不要全仓机械替换 `text-sm` / `text-xs`；先建立示范，再影响共享组件，最后通过“触达即同步”覆盖复杂页面。
+
+| 阶段 | 优先级 | 范围 | 目标 |
+|------|--------|------|------|
+| 1. 示范 PR | 最高 | `components/agent/AgentCard.tsx` 或 `components/topnav/NotificationPanel.tsx` | 建立团队可复制的 import、`tone`、数字、ID、时间处理范式 |
+| 2. 共享组件 | 高 | `client/src/components/topnav/**`、`client/src/components/agent/**`、用户端状态 / 空状态 / 卡片 / 表格区块组件 | 改一次，多处生效，快速统一用户端基础观感 |
+| 3. 用户端核心页 | 中高 | `MyOpenClaw.tsx`、`OpenClawDetailGuide.tsx`、`SkillSquare.tsx`、`ModelQuota.tsx` | 覆盖用户高频主路径，让 Typography 的视觉收益尽快可见 |
+| 4. 复杂大页 | 渐进 | `OpenClawDetail.tsx`、`ChatView.tsx`、`AgentChat.tsx` | 不做一次性大重构，改到哪个区块就同步哪个区块 |
+
+复杂页面迁移时优先替换：页面标题、模块标题、卡片标题、Meta 信息、统计数字、ID / Token / 路径；聊天消息正文、Markdown 正文等内容型排版可按 §0.12 例外机制处理。
+
+### 0.9 Vibe Coding / AI 辅助开发提示
+
+同事使用 AI 生成用户端页面或组件时，必须在 prompt 中明确引用 Typography，而不是只说“注意字体规范”。推荐使用以下提示：
+
+```text
+这是 ClawPro 用户端页面 / 组件，请按 `SKILL-GLOBAL-COMPONENTS.md` 的 Typography 规范实现。
+
+开工前必须读取：
+1. `SKILL-GLOBAL-COMPONENTS.md`
+2. `client/src/components/ui/Typography.tsx`
+3. `client/public/research/typography-guideline.html`
+
+要求：
+- 优先使用 `@/components/ui/Typography`
+- 不要自行发明字号、字重和基础文字色
+- 不要新增 inline `fontFamily`
+- 不要随意新增 `text-[xxpx]`
+- 页面标题、卡片标题、正文、Meta、数字、代码文字必须按语义映射到 Typography 组件
+- 如果现有 Typography 层级不满足，先说明原因，不要直接在页面里写新样式
+```
+
+更短版：
+
+```text
+这是用户端页面 / 组件，请遵循 `SKILL-GLOBAL-COMPONENTS.md` 的 Typography 规范，优先使用 `@/components/ui/Typography`，不要自行拼装基础文字样式。
+```
+
+### 0.10 Typography PR Review Checklist
+
+用户端页面 / 组件提交时，Review 必须检查：
+
+- 页面标题是否使用 `TenantHeroTitle` / `TenantPageTitle`。
+- 大模块标题是否使用 `SectionTitle`。
+- Dialog / Sheet / 表格区块 / 卡片区块标题是否使用或对齐 `PanelTitle`。
+- 卡片对象名、Agent 名、技能名、模型名是否使用 `CardTitle`。
+- 普通正文、说明、表格内容是否使用 `BodyText`。
+- Label、Tab、按钮文字、列表主字段是否使用或对齐 `BodyMedium`。
+- 时间、ID、Tooltip、描述、空状态是否使用 `MetaText` / `MetaMedium`。
+- 统计大数字是否使用 `StatNumber`，表格内数字是否使用 `InlineNumber`。
+- Token、路径、命令、实例 ID 是否使用 `CodeText`。
+- 是否新增了散落的 `text-gray-*` / `text-[#...]` 表达基础文字色。
+- 是否新增了 inline `style={{ fontFamily: ... }}`。
+- 是否新增了无规范来源的 `text-[10px]` / `text-[11px]` / `text-[15px]` / 其他任意字号。
+
+### 0.11 Typography 接入边界
+
+| 类型 | 接入方式 | 说明 |
+|------|----------|------|
+| 用户端页面 | 直接 import Typography | 页面标题、正文、Meta、数字、代码必须优先使用 Typography |
+| 用户端业务组件 | 直接 import Typography | Agent 卡、技能卡、模型卡、状态说明、空状态等应直接使用 |
+| 用户端共享组件 | 优先直接 import Typography | `topnav`、`agent` 等共享组件改一次影响多处，优先接入 |
+| 底层 UI 组件 | 不强制 import，但必须对齐 token | `Button`、`Input`、`Select`、`Dialog`、`Tabs`、`Segment` 等可写等效 class，避免依赖过深 |
+| 特殊内容区 | 可局部豁免 | Markdown、聊天消息正文、代码编辑器、图表坐标轴等可保留专属排版，但标题 / Meta / 数字 / 代码仍应接入 Typography |
+
+> 关键判断：业务层能直接使用 Typography 就直接使用；底层组件即使不 import，也必须能映射回 §0.3 的 Typography 层级。
+
+### 0.12 Typography 例外机制
+
+允许特殊场景例外，但必须满足以下条件：
+
+1. **说明原因**：现有 Typography 层级为什么不适合该场景。
+2. **不破坏色阶**：仍应使用 `#0A0A0A / #020617 / #334155 / #737373 / #A3A3A3 / #1447E6` 等既有 token。
+3. **不新增无说明的字体族**：禁止新增 inline `fontFamily`；数字 / 代码 / 英文 Badge 优先使用 `font-din` / `font-mono` / `font-en`。
+4. **不扩大豁免范围**：特殊内容区只豁免内容正文，不豁免页面标题、模块标题、Meta、数字、ID / Token / 路径。
+5. **形成通用模式时反向沉淀**：如果某个例外被多个页面复用，应补充到 `Typography.tsx` 与本规范，而不是长期散落在页面里。
+
+常见可豁免场景：Markdown 正文渲染、聊天消息正文、代码编辑器、图表坐标轴 / 图例、第三方富文本内容、极小空间内的特定角标。
+
 ---
 
 ## 1. 品牌色系

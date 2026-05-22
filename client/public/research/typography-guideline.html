@@ -291,6 +291,27 @@
       line-height: 1.7;
     }
     .checkmark { color: var(--brand); font-weight: 700; }
+    .phase-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .phase-card { padding: 18px; }
+    .phase-kicker { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .phase-no {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: linear-gradient(90deg, #020617 70%, #1447E6 100%);
+      font-family: Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .phase-tag { color: var(--brand); background: var(--brand-soft); border-radius: 2px; padding: 2px 6px; font-size: 11px; font-weight: 600; }
+    .phase-card h3 { margin: 0; color: var(--text); font-size: 15px; line-height: 1.4; font-weight: 600; }
+    .phase-card p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .phase-card ul { margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+    .phase-card li { list-style: none; color: var(--secondary); font-size: 12px; line-height: 1.5; }
+    .phase-card li::before { content: "•"; color: var(--brand); margin-right: 6px; }
     .warning {
       display: flex;
       gap: 10px;
@@ -314,6 +335,8 @@
       <a href="#tokens">颜色 token</a>
       <a href="#components">组件层级</a>
       <a href="#usage">使用规则</a>
+      <a href="#migration">迁移顺序</a>
+      <a href="#vibe">Vibe Coding</a>
       <a href="#checklist">检查清单</a>
     </div>
     <div class="meta-top">给页面与组件作者的字体规范</div>
@@ -505,10 +528,147 @@
         </div>
       </section>
 
+      <section class="section" id="migration">
+        <div class="section-head">
+          <div>
+            <h2>6. Vibe Coding 迁移组件建议</h2>
+            <p>我们主要通过 AI / Vibe Coding 迁移现有组件，所以重点不是“全仓替换”，而是给 AI 清晰边界：一次只迁移一个组件或一个页面区块，只改文字表达，不改业务逻辑。</p>
+          </div>
+          <span class="badge">Vibe Migration</span>
+        </div>
+        <div class="grid-2">
+          <div class="card prompt-card">
+            <div class="prompt-title"><span>每次开工 Prompt</span></div>
+            <p>迁移任何组件前，先把这段发给 AI，确保它读取规范并限制改动范围。</p>
+            <pre class="code-block">我要迁移当前组件的文字样式到 Typography 规范。
+
+请先读取：
+1. `SKILL-GLOBAL-COMPONENTS.md`
+2. `client/src/components/ui/Typography.tsx`
+3. `client/public/research/typography-guideline.html`
+
+要求：
+- 只迁移当前文件 / 当前组件，不做全仓替换
+- 按语义使用 `@/components/ui/Typography`
+- 页面标题、模块标题、卡片标题、正文、Meta、数字、代码分别映射到对应 Typography 组件
+- 不新增 `text-gray-*`、inline `fontFamily`、无规范来源的 `text-[xxpx]`
+- 保持原有布局、交互和业务逻辑不变
+- 如果是底层 UI 组件，不一定直接 import Typography，但文字规格必须对齐 Typography token</pre>
+          </div>
+          <div class="card prompt-card">
+            <div class="prompt-title"><span>完成后自检 Prompt</span></div>
+            <p>改完后继续让 AI 自检，避免迁移 Typography 时误改逻辑或引入散落样式。</p>
+            <pre class="code-block">请检查本次 Typography 迁移：
+1. 是否还新增了 `text-gray-*` 或 `text-[#...]`
+2. 是否还新增了 inline `fontFamily`
+3. 是否有无规范来源的 `text-[xxpx]`
+4. 标题、正文、Meta、数字、代码是否按语义映射
+5. 是否误改了布局、交互、状态逻辑
+6. 当前文件是否有 lint / TypeScript 问题</pre>
+          </div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="phase-list">
+          <div class="card phase-card">
+            <div class="phase-kicker"><span class="phase-no">1</span><span class="phase-tag">示范组件</span></div>
+            <h3>先做一个小样板</h3>
+            <p>先选一个共享组件做示范，让团队知道 AI 应该怎么迁移。</p>
+            <ul>
+              <li>`components/agent/AgentCard.tsx`</li>
+              <li>`components/topnav/NotificationPanel.tsx`</li>
+              <li>只改文字表达，不改布局、交互和业务逻辑</li>
+            </ul>
+          </div>
+          <div class="card phase-card">
+            <div class="phase-kicker"><span class="phase-no">2</span><span class="phase-tag">共享组件</span></div>
+            <h3>再迁移复用组件</h3>
+            <p>共享组件适合小步提交，改一次可以影响多个页面。</p>
+            <ul>
+              <li>`client/src/components/topnav/**`</li>
+              <li>`client/src/components/agent/**`</li>
+              <li>状态、空状态、卡片、表格区块组件</li>
+            </ul>
+          </div>
+          <div class="card phase-card">
+            <div class="phase-kicker"><span class="phase-no">3</span><span class="phase-tag">按区块拆</span></div>
+            <h3>页面按区域迁移</h3>
+            <p>大页面不要一次迁移完整文件，让 AI 只处理一个明确区块。</p>
+            <ul>
+              <li>Header / Title 区</li>
+              <li>卡片列表区 / 表格区 / 弹窗区</li>
+              <li>空状态 / 错误状态 / 统计数字区</li>
+            </ul>
+          </div>
+          <div class="card phase-card">
+            <div class="phase-kicker"><span class="phase-no">4</span><span class="phase-tag">触达同步</span></div>
+            <h3>复杂页面渐进处理</h3>
+            <p>复杂大页只在业务迭代触达时顺手同步，避免一次性重构。</p>
+            <ul>
+              <li>`OpenClawDetail.tsx`、`ChatView.tsx`、`AgentChat.tsx`</li>
+              <li>优先迁移标题、Meta、数字、ID、Token、路径</li>
+              <li>聊天正文、Markdown 正文可暂时保留内容型排版</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="vibe">
+        <div class="section-head">
+          <div>
+            <h2>7. Vibe Coding 指引</h2>
+            <p>如果同事通过 AI 辅助快速生成页面或组件，不要只说“注意字体规范”，而要明确要求 AI 读取规范、使用 Typography，并按语义检查文字角色。</p>
+          </div>
+          <span class="badge">Prompt Guide</span>
+        </div>
+        <div class="grid-2">
+          <div class="card prompt-card">
+            <div class="prompt-title"><span>推荐短 Prompt</span></div>
+            <p>适合放在任意用户端页面 / 业务组件需求末尾。</p>
+            <pre class="code-block">这是用户端页面 / 组件，请按 `SKILL-GLOBAL-COMPONENTS.md` 的 Typography 规范实现。
+
+要求：
+- 优先使用 `@/components/ui/Typography`
+- 不要自行发明字号、字重和基础文字色
+- 不要新增 inline `fontFamily`
+- 页面标题、卡片标题、正文、Meta、数字、代码文字必须按语义映射到 Typography 组件</pre>
+          </div>
+          <div class="card prompt-card">
+            <div class="prompt-title"><span>完整开工 Prompt</span></div>
+            <p>适合新页面、新模块或较复杂组件开发前使用。</p>
+            <pre class="code-block">你正在开发 ClawPro 用户端页面 / 组件。
+
+开工前必须读取：
+1. `SKILL-GLOBAL-COMPONENTS.md`
+2. `client/src/components/ui/Typography.tsx`
+3. `client/public/research/typography-guideline.html`
+
+Typography 规则：
+- 新增页面 / 业务组件必须优先使用 `@/components/ui/Typography`
+- 基础文字色不手写，使用组件默认色或 `tone`
+- 数字用 `StatNumber` / `InlineNumber`
+- ID、Token、路径、命令用 `CodeText`
+- 如果现有层级不满足，先说明原因，不要直接发明新样式</pre>
+          </div>
+        </div>
+        <div style="height:16px"></div>
+        <div class="card prompt-card">
+          <div class="prompt-title"><span>Vibe Coding 自检清单</span></div>
+          <ul class="prompt-list">
+            <li><strong>页面标题：</strong>是否使用 `TenantHeroTitle` / `TenantPageTitle`，而不是 `text-2xl font-bold`？</li>
+            <li><strong>模块与卡片：</strong>模块标题用 `SectionTitle` / `PanelTitle`，卡片对象名用 `CardTitle`。</li>
+            <li><strong>正文与说明：</strong>普通正文用 `BodyText`，Label / Tab / 按钮文字按 `BodyMedium` 规格。</li>
+            <li><strong>辅助信息：</strong>时间、ID、Tooltip、空状态、描述文字优先用 `MetaText` / `MetaMedium`。</li>
+            <li><strong>数字与代码：</strong>统计数字用 `StatNumber`，表格数字用 `InlineNumber`，Token / 路径 / 命令用 `CodeText`。</li>
+            <li><strong>禁止项：</strong>不要新增散落的 `text-gray-*`、任意 `text-[xxpx]`、inline `fontFamily`。</li>
+            <li><strong>底层组件：</strong>即使不直接 import Typography，内部文字也必须与 Typography token 对齐。</li>
+          </ul>
+        </div>
+      </section>
+
       <section class="section" id="checklist">
         <div class="section-head">
           <div>
-            <h2>6. 给同事的开发检查清单</h2>
+            <h2>8. 给同事的开发检查清单</h2>
             <p>新增页面、新增组件、修改旧页面时，用下面清单快速判断是否符合 Typography 规范。</p>
           </div>
           <span class="badge">Checklist</span>

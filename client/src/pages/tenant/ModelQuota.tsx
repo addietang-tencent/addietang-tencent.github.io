@@ -25,10 +25,9 @@ import {
   Zap,
   RefreshCw,
   Info,
-  ChevronLeft,
-  ChevronRight,
   Filter,
 } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { SurfaceCard } from "@/components/ui/Surface";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -194,45 +193,6 @@ function StatCard({
   );
 }
 
-function Pagination({
-  page,
-  total,
-  pageSize,
-  onChange,
-}: {
-  page: number;
-  total: number;
-  pageSize: number;
-  onChange: (p: number) => void;
-}) {
-  const totalPages = Math.ceil(total / pageSize);
-  if (totalPages <= 1) return null;
-  return (
-    <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-[#e5e5e5]">
-      <span className="text-xs text-gray-400">
-        第 {page}/{totalPages} 页，共 {total} 条
-      </span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="w-7 h-7"
-        disabled={page === 1}
-        onClick={() => onChange(page - 1)}
-      >
-        <ChevronLeft className="w-4 h-4 text-gray-500" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="w-7 h-7"
-        disabled={page === totalPages}
-        onClick={() => onChange(page + 1)}
-      >
-        <ChevronRight className="w-4 h-4 text-gray-500" />
-      </Button>
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const SUMMARY_PAGE_SIZE = 5;
@@ -592,10 +552,12 @@ export default function ModelQuota() {
               </Table>
             </div>
             <Pagination
-              page={summaryPage}
               total={summary.length}
+              current={summaryPage}
               pageSize={SUMMARY_PAGE_SIZE}
-              onChange={setSummaryPage}
+              simple
+              hideOnSinglePage
+              onChange={(p) => setSummaryPage(p)}
             />
           </SurfaceCard>
 
@@ -634,10 +596,12 @@ export default function ModelQuota() {
               </Table>
             </div>
             <Pagination
-              page={detailPage}
               total={details.length}
+              current={detailPage}
               pageSize={DETAIL_PAGE_SIZE}
-              onChange={setDetailPage}
+              simple
+              hideOnSinglePage
+              onChange={(p) => setDetailPage(p)}
             />
           </SurfaceCard>
 

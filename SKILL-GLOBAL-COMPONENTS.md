@@ -578,6 +578,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 | Separator | `bg-[#e5e5e5]` |
 | Skeleton | `bg-[#f3f3f4] animate-pulse` |
 | Progress | 轨道 `#f3f3f4` + 填充 `#355EF1` |
+| Pagination | 卡片式 `rounded-lg border-[#e5e5e5]` + 激活 `border-[#1447E6] text-[#355EF1]` + hover `bg-[#f5f5f5]` |
 | RadioGroup | 边框 `#d3d6db` + checked 圆点 `#355EF1` |
 | Slider | 轨道 `#f3f3f4` + 填充 `#355EF1` + 把手白色 border |
 | Accordion | `border-[#e5e5e5]` 卡片式 + 无 shadow |
@@ -627,6 +628,93 @@ import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/
 **禁止事项：**
 - 禁止用 className 覆盖 Segment 组件样式
 - 页面内分类切换统一使用 Segment，不再自行写 button + border-l 的竖向导航
+
+---
+
+## 11.6 Pagination 分页器规范
+
+文件：`client/src/components/ui/pagination.tsx`
+
+> 全局统一分页组件，参考 Ant Design Pagination 风格，使用项目品牌色。所有页面和弹窗中的分页必须使用此组件，禁止自行实现内联分页。
+
+**设计令牌：**
+
+| Token | Value |
+|-------|-------|
+| item / size (default) | `32px` (h-8 min-w-[32px]) |
+| item / size (small) | `24px` (h-6 min-w-[24px]) |
+| item / border-radius | `8px` (rounded-lg) |
+| item / border (inactive) | `#e5e5e5` |
+| item / bg (inactive) | `#FFFFFF` |
+| item / text (inactive) | `#000000e0` |
+| item / hover bg | `#f5f5f5` |
+| item / active border | `#1447E6` |
+| item / active text | `#355EF1` |
+| item / active bg | `#FFFFFF` |
+| item / disabled text | `#00000040` |
+| arrow / border | `#e5e5e5` |
+| arrow / hover bg | `#f5f5f5` |
+| focus ring | `border-[#1447E6] shadow-[0_0_0_2px_rgba(53,94,241,0.1)]` |
+| sizeChanger / hover border | `#1447E6` |
+
+**使用方式：**
+
+```tsx
+import { Pagination } from "@/components/ui/pagination";
+
+// 基础用法
+<Pagination total={100} current={page} pageSize={10} onChange={(p) => setPage(p)} />
+
+// 完整功能（带总数、每页条数选择、快速跳转）
+<Pagination
+  total={500}
+  current={page}
+  pageSize={pageSize}
+  showTotal={(total, range) => `${range[0]}-${range[1]} 共 ${total} 条`}
+  showSizeChanger
+  pageSizeOptions={[10, 20, 50, 100]}
+  showQuickJumper
+  onChange={(p, size) => { setPage(p); setPageSize(size); }}
+/>
+
+// 简洁模式（仅 < 1/5 >）
+<Pagination total={50} current={page} pageSize={10} simple onChange={(p) => setPage(p)} />
+
+// 小尺寸 + 平铺布局
+<Pagination
+  total={total}
+  current={page}
+  pageSize={PAGE_SIZE}
+  size="small"
+  showTotal={(total) => `共 ${total} 条`}
+  className="w-full justify-between"
+  onChange={(p) => setPage(p)}
+/>
+```
+
+**Props 速查：**
+
+| Prop | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `total` | `number` | — | 数据总条数（必填） |
+| `current` | `number` | `1` | 当前页码（受控） |
+| `pageSize` | `number` | `10` | 每页条数 |
+| `onChange` | `(page, pageSize) => void` | — | 页码/条数变化回调 |
+| `showTotal` | `(total, [start, end]) => ReactNode` | — | 左侧总数文案 |
+| `showSizeChanger` | `boolean` | `false` | 显示每页条数选择器 |
+| `pageSizeOptions` | `number[]` | `[10,20,50,100]` | 条数选项 |
+| `showQuickJumper` | `boolean` | `false` | 显示跳页输入框 |
+| `simple` | `boolean` | `false` | 简洁模式 |
+| `size` | `"default" \| "small"` | `"default"` | 尺寸 |
+| `hideOnSinglePage` | `boolean` | `false` | 单页时隐藏 |
+| `disabled` | `boolean` | `false` | 禁用 |
+| `className` | `string` | — | 外层 nav 额外样式 |
+
+**禁止事项：**
+- 禁止在页面中自行实现分页按钮逻辑（内联 prev/next button、Array.from 页码循环等）
+- 禁止自定义分页样式覆盖组件样式（如蓝色填充背景 `bg-[#355EF1] text-white`）
+- 新页面/弹窗中出现列表分页，必须直接使用此组件
+- 现有页面修改时如发现内联分页，应顺手替换为标准组件
 
 ---
 

@@ -6,6 +6,7 @@ import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Pagination } from '@/components/ui/pagination';
 import {
   Search, Download, Star, Heart, ChevronRight,
   ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
@@ -91,74 +92,6 @@ function getLanguageFromFilename(filename: string): string {
     ini: 'ini', cfg: 'ini', conf: 'ini',
   };
   return map[ext] || 'text';
-}
-
-// ─── 分页组件 ─────────────────────────────────────────────────────────────────
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  onPageChange: (page: number) => void;
-}
-
-function Pagination({ currentPage, totalPages, totalCount, onPageChange }: PaginationProps) {
-  const pages: (number | '...')[] = [];
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i);
-  } else {
-    pages.push(1);
-    if (currentPage > 3) pages.push('...');
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
-    if (currentPage < totalPages - 2) pages.push('...');
-    pages.push(totalPages);
-  }
-
-  const btnBase = 'min-w-[28px] h-7 px-2 flex items-center justify-center rounded-xl text-xs font-medium transition-all';
-  const btnActive = 'text-white shadow-sm';
-  const btnInactive = 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50';
-  const btnArrow = `${btnBase} border border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed`;
-
-  return (
-    <div className="flex items-center justify-between pt-3 border-t border-[#e5e5e5] mt-2">
-      {/* 左侧：数据总览 */}
-      <span className="text-xs text-gray-400">
-        共 {totalCount} 个技能，第 {currentPage} / {totalPages} 页
-      </span>
-
-      {/* 右侧：翻页按钮组 */}
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={btnArrow}
-        >
-          ‹
-        </button>
-        {pages.map((p, i) =>
-          p === '...' ? (
-            <span key={`ellipsis-${i}`} className="min-w-[28px] h-7 flex items-center justify-center text-gray-400 text-xs">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onPageChange(p as number)}
-              className={`${btnBase} ${currentPage === p ? btnActive : btnInactive}`}
-              style={currentPage === p ? { backgroundColor: '#355EF1' } : undefined}
-            >
-              {p}
-            </button>
-          )
-        )}
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={btnArrow}
-        >
-          ›
-        </button>
-      </div>
-    </div>
-  );
 }
 
 // ─── 排名徽章 ─────────────────────────────────────────────────────────────────
@@ -760,12 +693,17 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
               );
             })}
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={filteredSkills.length}
-            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          />
+          <div className="pt-3 border-t border-[#e5e5e5] mt-2">
+            <Pagination
+              total={filteredSkills.length}
+              current={currentPage}
+              pageSize={PAGE_SIZE}
+              showTotal={(total) => `共 ${total} 个技能`}
+              className="w-full justify-between"
+              size="small"
+              onChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            />
+          </div>
         </>
       ) : (
         <div className="text-center py-16 text-gray-400">

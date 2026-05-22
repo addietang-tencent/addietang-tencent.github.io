@@ -3,6 +3,7 @@
  * 功能：拖拽排序、开关可见性、编辑角色、删除角色、新增自定义角色、应用范围
  */
 import { useState, useRef, useEffect } from "react";
+import { Pagination } from "@/components/ui/pagination";
 import {
   DndContext,
   closestCenter,
@@ -486,44 +487,29 @@ function BatchUpdateDialog({
 
               {/* 分页控件 */}
               <div className="flex items-center justify-between text-sm text-[#737373]">
-                <div className="flex items-center gap-1.5">
-                  <span>共 {updatableSkills.length} 条，每页</span>
-                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[70px] h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAGE_SIZE_OPTIONS.map(size => (
-                        <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <span>条</span>
-                  {selectedIndices.size > 0 && (
-                    <span className="text-[#737373] ml-1.5">
-                      已选 {selectedIndices.size} 条记录
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="claw-outline"
-                    className="h-7 px-3 text-xs"
-                    disabled={currentPage <= 1}
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  >
-                    上一页
-                  </Button>
-                  <span className="px-2 text-[#334155]">{currentPage} / {totalPages}</span>
-                  <Button
-                    variant="claw-outline"
-                    className="h-7 px-3 text-xs"
-                    disabled={currentPage >= totalPages}
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  >
-                    下一页
-                  </Button>
-                </div>
+                <Pagination
+                  total={updatableSkills.length}
+                  current={currentPage}
+                  pageSize={pageSize}
+                  showTotal={(total) => `共 ${total} 条`}
+                  showSizeChanger
+                  pageSizeOptions={PAGE_SIZE_OPTIONS}
+                  size="small"
+                  className="w-full justify-between"
+                  onChange={(page, newPageSize) => {
+                    if (newPageSize !== pageSize) {
+                      setPageSize(newPageSize);
+                      setCurrentPage(1);
+                    } else {
+                      setCurrentPage(page);
+                    }
+                  }}
+                />
+                {selectedIndices.size > 0 && (
+                  <span className="text-[#737373] ml-1.5">
+                    已选 {selectedIndices.size} 条记录
+                  </span>
+                )}
               </div>
             </div>
           )}

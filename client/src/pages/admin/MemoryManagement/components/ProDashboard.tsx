@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Search, 
+import {
+  Search,
   Gem,
   AlertCircle,
   RefreshCw,
@@ -15,6 +15,7 @@ import {
   Brain,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Pagination } from '@/components/ui/pagination';
 import { Input } from '@/components/ui/input';
 import { SurfaceCard } from '@/components/ui/Surface';
 import { toast } from 'sonner';
@@ -592,41 +593,14 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 </span>
               </div>
               {totalPages > 1 && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 text-gray-500"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <Button
-                      key={page}
-                      variant="ghost"
-                      size="sm"
-                      className={`h-7 w-7 p-0 text-xs ${
-                        page === currentPage
-                          ? 'bg-blue-50 text-blue-600 font-semibold'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 text-gray-500"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </div>
+                <Pagination
+                  total={filteredList.length}
+                  current={currentPage}
+                  pageSize={PAGE_SIZE}
+                  size="small"
+                  hideOnSinglePage
+                  onChange={(page) => { setCurrentPage(page); }}
+                />
               )}
             </>
           )}

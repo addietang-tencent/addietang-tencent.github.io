@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Pagination } from "@/components/ui/pagination";
 
 // CLS 采集插件版本历史
 interface CLSPluginVersion {
@@ -504,8 +505,8 @@ export default function SessionManagement() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-white border border-[#e5e5e5] rounded-[4px] p-4 mb-6">
-            <div className="flex items-start justify-between">
+          <div className="bg-white border border-[#e5e5e5] rounded-[4px] py-8 px-4 mb-8 mt-8">
+            <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h3 className="text-[14px] font-semibold text-[#09090b]">会话管理需要开启 CLS 日志服务</h3>
                 <p className="text-[13px] text-[#525252] mt-1">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:underline inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
@@ -723,38 +724,16 @@ export default function SessionManagement() {
               </table>
             </div>
             {/* 翻页控件 */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 bg-gray-50/50">
-              <div className="text-xs text-gray-500">
-                共 {filteredSessions.length} 条记录，第 {currentPage} / {totalPages} 页
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  variant="outline"
-                  className="text-xs h-7 px-2"
-                >
-                  上一页
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    variant={currentPage === page ? "default" : "outline"}
-                    className="text-xs h-7 px-2 min-w-7"
-                  >
-                    {page}
-                  </Button>
-                ))}
-                <Button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  variant="outline"
-                  className="text-xs h-7 px-2"
-                >
-                  下一页
-                </Button>
-              </div>
+            <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/50">
+              <Pagination
+                total={filteredSessions.length}
+                current={currentPage}
+                pageSize={PAGE_SIZE}
+                showTotal={(total) => `共 ${total} 条记录`}
+                size="small"
+                className="w-full justify-between"
+                onChange={(page) => { setCurrentPage(page); }}
+              />
             </div>
           </div>
 

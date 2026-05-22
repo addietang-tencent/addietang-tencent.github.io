@@ -2631,7 +2631,7 @@ export default function MemberManagement() {
                   </div>
                 </th>
                 <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
-                <th className="text-center px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fafafa" }}>
+                <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap sticky right-0 z-10 relative" style={{ backgroundColor: "#fafafa" }}>
                   {memberTableCanScrollRight && (
                     <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                   )}
@@ -2837,34 +2837,26 @@ export default function MemberManagement() {
                   <td className="px-3 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
                   </td>
-                  <td className="px-4 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
+                  <td className="px-4 py-4 sticky right-0 bg-white z-10 relative">
                     {memberTableCanScrollRight && (
                       <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                     )}
-                    <div className="flex items-center justify-center gap-3">
-                    {hasOneid ? (
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="link-dark"
                         size="sm"
+                        className="h-auto px-0"
                         onClick={() => openEditDialog(member)}
                       >
                         编辑
                       </Button>
-                    ) : (
-                      <>
-                        <Button
-                          variant="link-dark"
-                          size="sm"
-                          onClick={() => openEditDialog(member)}
-                        >
-                          编辑
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="link-dark" size="sm" className="!ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
-                              更多
-                            </Button>
-                          </DropdownMenuTrigger>
+                      {!hasOneid && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="link-dark" size="sm" className="h-auto px-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
+                            更多
+                          </Button>
+                        </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             {member.id === initialAdminId ? (
                               <Tooltip>
@@ -2914,8 +2906,7 @@ export default function MemberManagement() {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </>
-                    )}
+                      )}
                     </div>
                   </td>
                 </tr>

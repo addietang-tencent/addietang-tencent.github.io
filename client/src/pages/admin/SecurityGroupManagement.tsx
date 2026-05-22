@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from "react";
 import { Pagination } from "@/components/ui/pagination";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -3598,15 +3599,15 @@ export default function SecurityGroupManagement() {
             </div>
 
             {/* 表格 */}
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-50 bg-gray-50/50">
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">私有网络（VPC）</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">子网配置</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">应用范围</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">操作</th>
-                </tr>
-              </thead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>私有网络（VPC）</TableHead>
+                  <TableHead>子网配置</TableHead>
+                  <TableHead>应用范围</TableHead>
+                  <TableHead>操作</TableHead>
+                </TableRow>
+              </TableHeader>
               <tbody>
                 {/* 显示顺序：预设策略（type === "enterprise"）固定排在表格首行（默认主线），
                     其余分组策略保持原有顺序（不影响 vpcList 状态本身的存储顺序） */}
@@ -3715,11 +3716,12 @@ export default function SecurityGroupManagement() {
                             <GroupBadges groupNames={row.associatedGroups ?? []} />
                           )}
                         </td>
-                        {/* 操作：图标按钮（对齐 skills 规范） */}
+                        {/* 操作：ghost 按钮 */}
                         <td className="px-4 pt-4 pb-2 whitespace-nowrap">
                           <div className="flex items-center gap-1">
-                            <button
-                              type="button"
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
                               onClick={() => {
                                 const isSystemDefault =
                                   row.type === "enterprise" && row.vpcId === AUTO_ASSIGNED_VPC.id;
@@ -3767,20 +3769,19 @@ export default function SecurityGroupManagement() {
                                 setZoneSubnetPickerOpen({});
                                 setShowEditVpcDialog(row);
                               }}
-                              className="p-1.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                               title="编辑"
                             >
                               <Pencil className="w-3.5 h-3.5" />
-                            </button>
+                            </Button>
                             {row.type === "group" && (
-                              <button
-                                type="button"
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
                                 onClick={() => setShowDeleteVpcDialog(row)}
-                                className="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                 title="删除"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </td>
@@ -3858,7 +3859,7 @@ export default function SecurityGroupManagement() {
                   </td>
                 </tr>
               </tbody>
-            </table>
+            </Table>
 
             {/* 底部提示 */}
             <div className="px-6 py-3 border-t border-[#e5e5e5] bg-gray-50/50">

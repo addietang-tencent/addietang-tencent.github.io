@@ -728,15 +728,20 @@ import { Pagination } from "@/components/ui/pagination";
 | `disabled` | `boolean` | `false` | 禁用 |
 | `className` | `string` | — | 外层 nav 额外样式 |
 
+**尺寸使用规则（强制）：**
+
+| 尺寸 | 值 | 使用场景 |
+|------|-----|---------|
+| `size="default"`（默认） | **32px** (h-8) | 页面级表格底部分页，所有常规列表 |
+| `size="small"` | **24px** (h-6) | **仅限**弹窗（Dialog）内的表格分页 |
+
+> ⚠️ 页面表格一律使用 32px 默认尺寸，不允许使用 small。只有 Dialog 内空间受限时才用 24px。
+
 **禁止事项：**
 - 禁止在页面中自行实现分页按钮逻辑（内联 prev/next button、Array.from 页码循环等）
 - 禁止自定义分页样式覆盖组件样式（如蓝色填充背景 `bg-[#355EF1] text-white`）
 - 新页面/弹窗中出现列表分页，必须直接使用此组件
 - 现有页面修改时如发现内联分页，应顺手替换为标准组件
-
----
-
-## 12. 统计卡片规范
 
 设计稿样式（适用于 OpenClawMonitor/TokensMonitor/FileManagement/SecurityManagement）：
 

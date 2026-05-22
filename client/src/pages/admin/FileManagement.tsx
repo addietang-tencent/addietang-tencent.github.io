@@ -1248,9 +1248,9 @@ export default function FileManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
+                    <StatusTag variant="blue">
                       {item.type}
-                    </span>
+                    </StatusTag>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700">
                     <span className="tabular-nums">

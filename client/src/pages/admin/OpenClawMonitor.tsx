@@ -2238,9 +2238,6 @@ export default function AgentMonitor() {
                       {/* 名称/ID */}
                       <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-3.5 h-3.5 text-white" />
-                          </div>
                           <div className="min-w-0 flex-1">
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -2538,13 +2535,12 @@ export default function AgentMonitor() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-3 border-t border-gray-50">
+          <div className="px-4 py-3 border-t border-[#f0f0f0]">
             <Pagination
               total={versionFiltered.length}
               current={safePage}
               pageSize={PAGE_SIZE}
               showTotal={(total) => `共 ${total} 条记录`}
-              size="small"
               className="w-full justify-between"
               hideOnSinglePage
               onChange={(page) => { setPage(page); }}

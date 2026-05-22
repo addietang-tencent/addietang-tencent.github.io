@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -529,27 +528,25 @@ export default function OpsObservation() {
           </Dialog>
 
           {/* 卡片功能展示 - 现有观测功能 + CLS 新增功能 */}
-          <div className="space-y-6 mb-8">
+          <div className="space-y-4 mb-8">
             {/* 第一块：CLS 新增功能 */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
+                      className="flex items-center gap-[14px] py-5"
                     >
-                      <div className="flex items-start gap-3">
-                        <img src={card.iconSrc} alt="" className="shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
-                            {card.title}
-                          </h5>
-                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
-                            {card.description}
-                          </p>
-                        </div>
+                      <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
+                      <div className="flex-1 min-w-0">
+                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                          {card.title}
+                        </h5>
+                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                          {card.description}
+                        </p>
                       </div>
                     </div>
                   );
@@ -557,29 +554,24 @@ export default function OpsObservation() {
               </div>
             </div>
 
-            {/* 分割线 */}
-            <Separator />
-
             {/* 第二块：CLS 新增功能 */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {CLS_NEW_CARDS.map((card) => {
                   return (
                     <div
                       key={card.id}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow"
+                      className="flex items-center gap-[14px] py-5"
                     >
-                      <div className="flex items-start gap-3">
-                        <img src={card.iconSrc} alt="" className="shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">
-                            {card.title}
-                          </h5>
-                          <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">
-                            {card.description}
-                          </p>
-                        </div>
+                      <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
+                      <div className="flex-1 min-w-0">
+                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                          {card.title}
+                        </h5>
+                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                          {card.description}
+                        </p>
                       </div>
                     </div>
                   );

@@ -1234,7 +1234,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             current={currentPage}
             pageSize={PAGE_SIZE}
             showTotal={(total) => `共 ${total} 条记录`}
-            size="small"
+            size="default"
             className="w-full justify-between"
             hideOnSinglePage
             onChange={(page) => { setCurrentPage(page); }}

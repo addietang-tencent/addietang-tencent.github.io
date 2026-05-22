@@ -89,6 +89,28 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   );
 }
 
+/**
+ * TableActionCell - 表格操作列专用单元格
+ * 内部按钮强制使用 link-dark 样式（黑色文字按钮）
+ * 用法：<TableActionCell>操作按钮...</TableActionCell>
+ */
+function TableActionCell({ className, ...props }: React.ComponentProps<"td">) {
+  return (
+    <td
+      data-slot="table-action-cell"
+      className={cn(
+        "px-4 py-3 align-middle whitespace-nowrap text-[14px] [&:has([role=checkbox])]:pr-0",
+        "[&_[data-slot=button]]:text-[#020617] [&_[data-slot=button]]:font-normal [&_[data-slot=button]]:underline-offset-4 [&_[data-slot=button]]:bg-transparent [&_[data-slot=button]]:border-0 [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:p-0 [&_[data-slot=button]]:h-auto",
+        "[&_[data-slot=button]:hover]:text-[#525252] [&_[data-slot=button]:hover]:bg-transparent",
+        "[&_[data-slot=button]:active]:text-[#020617] [&_[data-slot=button]:active]:underline",
+        "[&_[data-slot=button]:disabled]:text-[rgba(2,6,23,0.3)] [&_[data-slot=button]:disabled]:no-underline",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 function TableCaption({
   className,
   ...props
@@ -110,5 +132,6 @@ export {
   TableHead,
   TableRow,
   TableCell,
+  TableActionCell,
   TableCaption,
 };

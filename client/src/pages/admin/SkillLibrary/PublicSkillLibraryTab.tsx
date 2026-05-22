@@ -658,17 +658,9 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
       {/* 分类 Tab */}
       <div className="flex items-center gap-2 flex-wrap">
         {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.id)}
-            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-              activeCategory === cat.id
-                ? 'bg-[#020617] border-[#020617] text-white'
-                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-            }`}
-          >
+          <Button key={cat.id} variant="plain" size="sm" data-state={activeCategory === cat.id ? "active" : undefined} onClick={() => handleCategoryChange(cat.id)}>
             {cat.name}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -700,7 +692,6 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
               pageSize={PAGE_SIZE}
               showTotal={(total) => `共 ${total} 个技能`}
               className="w-full justify-between"
-              size="small"
               onChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             />
           </div>

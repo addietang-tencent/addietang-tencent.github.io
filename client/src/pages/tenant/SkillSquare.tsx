@@ -459,28 +459,13 @@ export default function SkillSquare() {
 
         {/* 分类横排按钮 */}
         <div className="flex items-center gap-2 mb-6 flex-wrap">
-          <button
-            onClick={() => setSelectedCategory('all')}
-            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-              selectedCategory === 'all'
-                ? 'bg-[#020617] border-[#020617] text-white'
-                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-            }`}
-          >
+          <Button variant="plain" size="sm" data-state={selectedCategory === 'all' ? "active" : undefined} onClick={() => setSelectedCategory('all')}>
             全部
-          </button>
+          </Button>
           {DEFAULT_CATEGORIES.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                selectedCategory === cat.id
-                  ? 'bg-[#020617] border-[#020617] text-white'
-                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-              }`}
-            >
+            <Button key={cat.id} variant="plain" size="sm" data-state={selectedCategory === cat.id ? "active" : undefined} onClick={() => setSelectedCategory(cat.id)}>
               {cat.name}
-            </button>
+            </Button>
           ))}
         </div>
 

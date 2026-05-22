@@ -388,12 +388,12 @@ function Pagination({
           disabled={disabled}
           onChange={(e) => handlePageSizeChange(Number(e.target.value))}
           className={cn(
-            "border border-[#d9d9d9] rounded-md bg-white text-[#000000e0] outline-none transition-colors px-2",
+            "border border-[#E4E4E4] rounded-[4px] bg-white text-[#09090b] outline-none transition-colors pl-3 pr-7 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat",
             itemSize,
             textSize,
-            "focus:border-[#1447E6] focus:shadow-[0_0_0_2px_rgba(53,94,241,0.1)]",
-            "hover:border-[#1447E6]",
-            "disabled:opacity-60 disabled:cursor-not-allowed"
+            "hover:border-[#355EF1]",
+            "focus:border-[#355EF1]",
+            "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#E4E4E4]"
           )}
         >
           {pageSizeOptions.map((opt) => (
@@ -406,8 +406,8 @@ function Pagination({
 
       {/* Quick jumper */}
       {showQuickJumper && (
-        <div className={cn("flex items-center gap-1", textSize)}>
-          <span className="text-[#000000e0]">跳至</span>
+        <div className={cn("flex items-center gap-2", textSize)}>
+          <span className="text-[#09090b]">跳至</span>
           <input
             value={jumpValue}
             onChange={(e) => setJumpValue(e.target.value)}
@@ -415,11 +415,12 @@ function Pagination({
             onKeyDown={(e) => e.key === "Enter" && handleJump()}
             disabled={disabled}
             className={cn(
-              "w-12 text-center border border-[#d9d9d9] rounded-md outline-none transition-colors",
-              "focus:border-[#1447E6] focus:shadow-[0_0_0_2px_rgba(53,94,241,0.1)]",
+              "w-12 text-center border border-[#E4E4E4] rounded-[4px] outline-none transition-colors",
+              "hover:border-[#355EF1]",
+              "focus:border-[#355EF1]",
               itemSize,
               textSize,
-              "disabled:bg-gray-50 disabled:cursor-not-allowed"
+              "disabled:bg-[#f3f3f4] disabled:cursor-not-allowed"
             )}
           />
           <span className="text-[#000000e0]">页</span>

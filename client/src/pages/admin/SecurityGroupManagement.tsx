@@ -3010,44 +3010,15 @@ export default function SecurityGroupManagement() {
         </table>
 
         {paginate && (
-          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between bg-white">
-            <span className="text-xs text-gray-400">共 {rules.length} 条规则</span>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-gray-500"
-                  disabled={currentPage === 1}
-                  onClick={() => setPage(currentPage - 1)}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <Button
-                    key={p}
-                    variant="ghost"
-                    size="sm"
-                    className={`h-7 w-7 p-0 text-xs ${p === currentPage
-                        ? "bg-blue-50 text-blue-600 font-semibold"
-                        : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </Button>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-gray-500"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setPage(currentPage + 1)}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
+          <div className="px-4 py-3 border-t border-[#f0f0f0] bg-white">
+            <Pagination
+              total={rules.length}
+              current={currentPage}
+              pageSize={10}
+              showTotal={(total) => `共 ${total} 条规则`}
+              className="w-full justify-between"
+              onChange={(page) => setPage(page)}
+            />
           </div>
         )}
       </div>

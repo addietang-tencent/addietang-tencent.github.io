@@ -260,10 +260,13 @@ import {
 | variant | 背景 | 边框 | 文字 | hover | disabled |
 |---------|------|------|------|-------|----------|
 | `claw-primary` / `default` | 黑蓝渐变 `#020617→#355EF1` | 无 | 白色 | 渐变加深 | 叠白30%+文字50% |
+| `dialog-confirm` | 纯黑 `#0A0A0A` | 无 | 白色 | `bg-[#404040]` | `bg-[#A3A3A3]` 白字 |
 | `claw-outline` / `outline` | 白色 | `#e5e5e5` | `#020617` | `bg-[#f5f5f5]` | 文字`rgba(2,6,23,0.3)` |
 | `destructive` | `#d42a1e` | 无 | 白色 | `#b91c1c` | 40%透明 |
 | `ghost` | 无 | 无 | `#020617` | `bg-[#f5f5f5]` | 文字30%透明 |
+| `plain` | 白色 | `#e4e4e4` | `#020617` | `border-[#020617]` | 文字`rgba(0,0,0,0.3)` |
 | `link` | 无 | 无 | `#355EF1` | 加下划线 | 40%透明 |
+| `link-dark` | 无 | 无 | `#020617` | 文字`#525252` | 文字`rgba(2,6,23,0.3)` |
 
 ### 4.2 尺寸
 
@@ -280,26 +283,78 @@ import {
 - 同行所有控件高度必须一致（如 Input h-9 + Button h-9）
 - disabled 态有 `cursor-not-allowed`，不用全局 `opacity-50`
 - **刷新按钮标准写法**: `<Button variant="claw-outline" size="icon" className="w-9 h-9">`
-- **表格操作列**：操作栏中的按钮（无论纯文字还是 icon+文字）必须统一使用 `variant="ghost"`，禁止使用 outline、default 或自定义样式。示例：
+- **表格操作列**：操作列必须使用 `<TableActionCell>` 组件包裹，内部按钮自动强制应用 `link-dark` 黑色文字样式。也可手动使用 `variant="link-dark"`。禁止在操作列使用 outline、default、ghost 或自定义样式。
 
 ```tsx
-// 纯文字操作
-<Button variant="ghost" size="sm">编辑</Button>
-<Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">删除</Button>
+import { TableActionCell } from "@/components/ui/table";
 
-// icon + 文字操作
-<Button variant="ghost" size="sm">
-  <Pencil className="w-3.5 h-3.5 mr-1" />
-  编辑
-</Button>
+// 推荐：使用 TableActionCell 自动应用 link-dark 样式
+<TableActionCell>
+  <Button onClick={...}>编辑</Button>
+  <Button onClick={...}>查看详情</Button>
+  <Button onClick={...} disabled>删除</Button>
+</TableActionCell>
 
-// 仅 icon 操作
-<Button variant="ghost" size="icon-sm">
-  <Trash2 className="w-4 h-4" />
-</Button>
+// 也可手动指定 variant
+<TableCell>
+  <Button variant="link-dark" size="sm">编辑</Button>
+  <Button variant="link-dark" size="sm">查看详情</Button>
+</TableCell>
 ```
 
-### 4.4 SmallIconStateButton（小图标按钮）
+### link-dark 四种状态
+
+| 状态 | 文字色 | 效果 |
+|------|--------|------|
+| Normal | `#020617` | 黑色文字，无背景无边框 |
+| Hover | `#525252` | 文字变深灰 |
+| Active/Click | `#020617` + 下划线 | 点击反馈 |
+| Disabled | `rgba(2,6,23,0.3)` | 浅灰，无下划线 |
+
+### 4.4 Plain 普通按钮（弹窗内筛选按钮）
+
+**用途**：弹窗（Dialog）内的分类筛选切换按钮，交互风格与 §10.5 Tab 切换卡一致。
+
+**四种状态（与 Tab 切换卡对齐）：**
+
+| 状态 | 背景 | 边框 | 文字 |
+|------|------|------|------|
+| **Normal** | `#ffffff` | `#e4e4e4` | `#020617` |
+| **Hover** | `#ffffff` | `#020617` | `#020617` |
+| **Active（选中）** | `#020617` | `#020617` | 白色 |
+| **Disabled** | `#ffffff` | `#e4e4e4` | `rgba(0,0,0,0.3)` |
+
+**使用方式**：通过 `data-state="active"` 标记选中态。
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+// 弹窗内分类筛选按钮组
+<div className="flex items-center gap-2 flex-wrap">
+  {categories.map((cat) => (
+    <Button
+      key={cat.id}
+      variant="plain"
+      size="sm"
+      data-state={activeCategory === cat.id ? "active" : undefined}
+      onClick={() => setActiveCategory(cat.id)}
+    >
+      {cat.name}
+    </Button>
+  ))}
+</div>
+```
+
+**适用场景**：
+- 弹窗内的分类筛选（如技能分类、标签筛选）
+- 需要多选/单选切换的按钮组
+- 任何需要 active 态为黑底白字的切换场景
+
+**与 Tab 切换卡的区别**：
+- Tab 切换卡（§10.5）用原生 `<button>` 实现，适用于页面级分类筛选
+- Plain 按钮用 `<Button variant="plain">` 实现，适用于弹窗内筛选，带有 Button 组件的标准圆角和尺寸
+
+### 4.5 SmallIconStateButton（小图标按钮）
 
 **文件**: `client/src/components/ui/button.tsx`（owner: miekoyychen）
 
@@ -638,6 +693,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
+  TableActionCell,
   TableFooter,
   TableCaption,
 } from "@/components/ui/table";
@@ -662,10 +718,10 @@ import {
           <TableCell className="font-medium">{item.name}</TableCell>
           <TableCell><StatusTag variant="green" dot>运行中</StatusTag></TableCell>
           <TableCell className="text-right tabular-nums">{item.count}</TableCell>
-          <TableCell>
-            <Button variant="ghost" size="icon-sm"><Pencil className="w-4 h-4" /></Button>
-            <Button variant="ghost" size="icon-sm"><Trash2 className="w-4 h-4" /></Button>
-          </TableCell>
+          <TableActionCell>
+            <Button onClick={...}>编辑</Button>
+            <Button onClick={...}>删除</Button>
+          </TableActionCell>
         </TableRow>
       ))}
     </TableBody>
@@ -678,15 +734,16 @@ import {
 ```
 
 **操作列规则（强制）：**
-- 操作列按钮必须使用 `<Button variant="ghost">` —— 参见 §4.3
-- icon-only 用 `size="icon-sm"`，icon+文字用 `size="sm"`
-- 危险操作（删除）不加红色样式，hover 时自然由 ghost 提供反馈即可
+- 操作列必须使用 `<TableActionCell>` 包裹 —— 内部按钮自动应用 `link-dark` 黑色文字按钮样式
+- 也可在 `<TableCell>` 中手动使用 `<Button variant="link-dark">`
+- 操作按钮之间用 `gap-3` 或 `gap-4` 分隔
+- 禁止在操作列使用 ghost、outline、default 或自定义按钮样式
 
 **禁止事项：**
 - 禁止使用原生 `<table>` + 自定义 class（如 `text-xs font-medium text-gray-500 uppercase tracking-wide`）
 - 禁止自定义表头背景色（如 `bg-gray-50/50`），统一使用 TableHeader 的 `bg-[#fafafa]`
 - 禁止自定义行 hover 效果（如 `hover:bg-gray-50/50`），使用 TableRow 内置 `hover:bg-[#fafafa]`
-- 禁止在操作列使用非 ghost 按钮或自定义 `<button>`
+- 禁止在操作列使用非 link-dark 按钮或自定义 `<button>`
 - 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-3 border-t border-[#f0f0f0]">` 包裹
 
 ---

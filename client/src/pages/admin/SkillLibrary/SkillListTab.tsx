@@ -839,28 +839,13 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 分类筛选 */}
       <div className="flex items-start gap-2 mb-4 border-t border-gray-200 pt-4">
         <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-              selectedCategory === null
-                ? 'bg-[#020617] border-[#020617] text-white'
-                : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-            }`}
-          >
+          <Button variant="plain" size="sm" data-state={selectedCategory === null ? "active" : undefined} onClick={() => setSelectedCategory(null)}>
             全部
-          </button>
+          </Button>
           {categories.map((cat: any) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                selectedCategory === cat.id
-                  ? 'bg-[#020617] border-[#020617] text-white'
-                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-              }`}
-            >
+            <Button key={cat.id} variant="plain" size="sm" data-state={selectedCategory === cat.id ? "active" : undefined} onClick={() => setSelectedCategory(cat.id)}>
               {cat.name}
-            </button>
+            </Button>
           ))}
         </div>
         <Button

@@ -2720,23 +2720,21 @@ export default function MemberManagement() {
                                   )}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                <div className="py-2">
-                                  {mmGroupItems.map((gi, idx) => (
-                                    <div key={idx} className="px-3 py-1.5 text-sm flex items-center gap-2">
-                                      <span
-                                        className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                          gi.kind === "oneid-dept"
-                                            ? "text-blue-400 bg-blue-500/20"
-                                            : "text-purple-400 bg-purple-500/20"
-                                        }`}
-                                      >
-                                        {gi.kind === "oneid-dept" ? "部门" : "自定义分组"}
-                                      </span>
-                                      <span className="text-white">{gi.path}</span>
-                                    </div>
-                                  ))}
-                                </div>
+                              <TooltipContent side="bottom" align="start" className="text-xs max-w-[380px]">
+                                {mmGroupItems.map((gi, idx) => (
+                                  <div key={idx} className="flex items-center gap-2">
+                                    <span
+                                      className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
+                                        gi.kind === "oneid-dept"
+                                          ? "text-blue-400 bg-blue-500/20"
+                                          : "text-purple-400 bg-purple-500/20"
+                                      }`}
+                                    >
+                                      {gi.kind === "oneid-dept" ? "部门" : "自定义分组"}
+                                    </span>
+                                    <span>{gi.path}</span>
+                                  </div>
+                                ))}
                               </TooltipContent>
                             </Tooltip>
                           )}
@@ -2764,14 +2762,10 @@ export default function MemberManagement() {
                                 )}
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                              <div className="py-2">
-                                {manualGroupPaths.map((gp, idx) => (
-                                  <div key={idx} className="px-3 py-1.5 text-sm">
-                                    <span className="text-white">{gp.path}</span>
-                                  </div>
-                                ))}
-                              </div>
+                            <TooltipContent side="bottom" align="start" className="text-xs">
+                              {manualGroupPaths.map((gp, idx) => (
+                                <div key={idx}>{gp.path}</div>
+                              ))}
                             </TooltipContent>
                           </Tooltip>
                         )}
@@ -2950,7 +2944,6 @@ export default function MemberManagement() {
               current={currentPage}
               pageSize={PAGE_SIZE}
               showTotal={(total) => `共 ${total} 名用户`}
-              size="small"
               className="w-full justify-between"
               hideOnSinglePage
               onChange={(page) => { setPage(page); }}

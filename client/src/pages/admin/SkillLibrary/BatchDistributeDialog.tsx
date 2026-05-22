@@ -384,13 +384,13 @@ export default function BatchDistributeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="text-[16px] font-semibold text-[#020617]">{title}</DialogTitle>
           <DialogDescription asChild>
-            <div className="text-sm text-muted-foreground">
+            <div className="space-y-1 pt-1">
               {descriptionNode || (
                 <>
-                  <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
-                  <p className="mt-1">筛选限制：仅限状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；同时，该实例的下发状态须为 <span className="font-medium text-gray-700">未下发</span>{showScopeFilter ? <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></> : <>{' '}、 <span className="font-medium text-gray-700">下发失败</span> 或 <span className="font-medium text-gray-700">待更新</span></>}。</p>
+                  <p className="text-[13px] text-[#525252] leading-[20px]">将 <span className="font-medium text-[#020617]">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
+                  <p className="text-[12px] text-[#a3a3a3] leading-[18px]">筛选限制：仅限状态为<span className="text-[#525252]">运行中</span>的实例；下发状态须为<span className="text-[#525252]">未下发</span>、<span className="text-[#525252]">下发失败</span>或<span className="text-[#525252]">待更新</span>。</p>
                 </>
               )}
             </div>
@@ -398,7 +398,7 @@ export default function BatchDistributeDialog({
         </DialogHeader>
 
         {/* 搜索框 + 应用范围筛选 + 版本筛选 + 状态下拉 */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mt-4 mb-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -435,7 +435,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
                   >
                     <span className="truncate text-left">
                       {getScopeDisplayText()}
@@ -459,7 +459,7 @@ export default function BatchDistributeDialog({
               const showUngrouped = !scopeSearchQuery || '未分组'.includes(scopeSearchQuery);
 
               return (
-              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-[#E5E5E5] rounded-[4px] shadow-lg z-50 py-1">
                 {/* 搜索框 */}
                 <div className="px-2 pb-1.5 pt-1.5">
                   <div className="relative">
@@ -468,7 +468,7 @@ export default function BatchDistributeDialog({
                       placeholder="搜索分组..."
                       value={scopeSearchQuery}
                       onChange={(e) => setScopeSearchQuery(e.target.value)}
-                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full pl-7 pr-2 h-8 text-sm border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
                     />
@@ -639,7 +639,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setFilterDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
                   >
                     <span className="truncate text-left">{getFilterDisplayText()}</span>
                     <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
@@ -650,7 +650,7 @@ export default function BatchDistributeDialog({
                 </TooltipContent>
               </Tooltip>
             {filterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-[#E5E5E5] rounded-[4px] shadow-lg z-50 py-1">
                 {/* 全部状态选项 — toggle：点击全选，再次点击取消全部 */}
                 <button
                   type="button"
@@ -721,30 +721,30 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 实例列表 */}
-        <div className="border border-gray-200 rounded-xl max-h-[340px] overflow-y-auto">
+        <div className="border border-[#E5E5E5] rounded-[4px] max-h-[340px] overflow-y-auto">
           {/* 全选复选框 — 跨页全选 */}
-          <div className="flex items-center gap-3 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#E5E5E5] bg-[#FAFAFA] sticky top-0 z-10">
             <Checkbox
               checked={isAllSelected}
               // @ts-ignore – indeterminate prop
               indeterminate={isIndeterminate}
               onCheckedChange={handleSelectAll}
             />
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-[13px] font-medium text-[#525252]">
               全选（{selectedInFilterCount}/{totalCount}）
             </span>
           </div>
 
           {/* 实例项 */}
           {pagedInstances.length === 0 ? (
-            <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+            <div className="flex items-center justify-center py-10 text-[13px] text-[#a3a3a3]">
               暂无匹配的实例
             </div>
           ) : (
             pagedInstances.map(instance => (
               <div
                 key={instance.id}
-                className="flex items-center gap-3 px-3 py-3 border-b border-[#e5e5e5] last:border-b-0 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F5] last:border-b-0 hover:bg-[#FAFAFA] transition-colors"
               >
                 <div className="flex-shrink-0">
                   <Checkbox
@@ -753,19 +753,19 @@ export default function BatchDistributeDialog({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-900 truncate">{instance.name}</span>
-                    <span className="text-xs text-gray-400 font-mono flex-shrink-0">{instance.id}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-medium text-[#020617] truncate">{instance.name}</span>
+                    <span className="text-[12px] text-[#a3a3a3] font-mono flex-shrink-0">{instance.id}</span>
                   </div>
                   {/* Agent 类型和版本信息 — MCP 场景显示 */}
                   {showVersionFilter && instance.agentType && (
-                    <div className="text-xs text-gray-400 mt-0.5">
+                    <div className="text-[11px] text-[#a3a3a3] mt-0.5">
                       {instance.agentType}{instance.agentVersion ? `(${instance.agentVersion})` : ''}
                     </div>
                   )}
                   {!hideCreatorAndGroup && (
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs text-gray-500">创建人：{instance.createdBy}</span>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[12px] text-[#737373]">创建人：{instance.createdBy}</span>
                     {(() => {
                       const groupText = instance.groupIds && instance.groupIds.length > 0
                         ? instance.groupIds.filter(gId => gId !== '__public__').map(gId => getGroupName(gId)).join('、')
@@ -798,7 +798,7 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 分页控件 */}
-        <div className="pt-1">
+        <div className="pt-2">
           <Pagination
             total={totalCount}
             current={safeCurrentPage}
@@ -806,7 +806,7 @@ export default function BatchDistributeDialog({
             showSizeChanger
             pageSizeOptions={PAGE_SIZE_OPTIONS}
             showTotal={(total) => `共 ${total} 条`}
-            size="small"
+            size="default"
             className="w-full justify-between"
             onChange={(page, size) => {
               if (size !== pageSize) {
@@ -819,7 +819,7 @@ export default function BatchDistributeDialog({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <DialogFooter className="gap-2 sm:gap-2 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>

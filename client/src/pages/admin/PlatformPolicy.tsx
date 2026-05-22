@@ -14,6 +14,7 @@ import {
   ChevronDown, ChevronRight, Minus, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
   Dialog, DialogContent,
 } from "@/components/ui/dialog";
@@ -698,17 +700,18 @@ function LabeledOptionIndicator<T extends string>({
         </PopoverTrigger>
         <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
-            <div className="flex gap-1.5">
+            <SegmentGroup className="w-full">
               {options.map((opt) => (
-                <button
+                <SegmentOption
                   key={opt.value}
+                  active={draft === opt.value}
                   onClick={() => setDraft(opt.value)}
-                  className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${draft === opt.value ? "border-blue-200 bg-blue-50 text-blue-600" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}
+                  className="flex-1"
                 >
                   {opt.label}
-                </button>
+                </SegmentOption>
               ))}
-            </div>
+            </SegmentGroup>
           </div>
           <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5]">
             <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
@@ -771,9 +774,9 @@ function TimeDimensionIndicator({ mode, onSave }: { mode: "daily" | "monthly"; o
 }
 
 // ─── 统一的行容器 ─────────────────────────────────────────────────────────────
-const ROW_CLASS = "flex items-center gap-3 px-3 h-10";
+const ROW_CLASS = "flex items-center gap-3 h-10";
 // 编辑行：允许分组标签撑开高度（多标签时换行）
-const EDIT_ROW_CLASS = "flex items-center gap-3 px-3 min-h-10 py-1.5";
+const EDIT_ROW_CLASS = "flex items-center gap-3 min-h-10 py-1.5";
 
 // ─── 子组件：配额策略卡片 ────────────────────────────────────────────────────
 
@@ -845,8 +848,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
     <>
       {type === "token" && (
         <div className="flex gap-1 shrink-0">
-          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "unlimited" ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium" : "border-[#E5E5E5] text-gray-500"}`}>无限制</button>
-          <button onClick={() => setDraftMode("custom")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "custom" ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium" : "border-[#E5E5E5] text-gray-500"}`}>自定义</button>
+          <Button variant="plain" size="sm" className="h-9 px-3 text-xs" data-state={draftMode === "unlimited" ? "active" : undefined} onClick={() => setDraftMode("unlimited")}>无限制</Button>
+          <Button variant="plain" size="sm" className="h-9 px-3 text-xs" data-state={draftMode === "custom" ? "active" : undefined} onClick={() => setDraftMode("custom")}>自定义</Button>
         </div>
       )}
       {(type === "integer" || draftMode === "custom") && (
@@ -890,7 +893,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
           <div className="border-t border-[#f0f0f0] pt-3">
             {/* 表头 */}
-            <div className="flex items-center gap-3 px-3 pb-2">
+            <div className="flex items-center gap-3 pb-2">
               <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
               <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>配额</span>
               <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
@@ -1060,13 +1063,13 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   // 兜底值编辑器（开启/关闭 二选一按钮）
   const renderFallbackValueEditor = () => (
     <>
-      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-gray-200 text-gray-500"}`}>开启</button>
-      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-xl border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-gray-200 text-gray-500"}`}>关闭</button>
+      <Button variant="plain" size="sm" data-state={draftValue ? "active" : undefined} onClick={() => setDraftValue(true)} className="h-7 px-3 text-xs">开启</Button>
+      <Button variant="plain" size="sm" data-state={!draftValue ? "active" : undefined} onClick={() => setDraftValue(false)} className="h-7 px-3 text-xs">关闭</Button>
     </>
   );
   // 分组规则编辑态：展示静态文字（值固定为例外值，不可改）
   const renderGroupRuleStaticValue = () => (
-    <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
+    <StatusTag variant={groupRuleValue ? "green" : "gray"} dot>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
   );
   // 行内 loading 文字
   const renderLoading = () => (
@@ -1102,7 +1105,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
             <div className="flex-1 text-right">
               {loadingRuleId === fallbackRule.id
                 ? renderLoading()
-                : <span className={`text-[14px] font-semibold ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>}
+                : <StatusTag variant={fallbackRule.value ? "green" : "gray"} dot>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
             </div>
             <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
           </div>
@@ -1114,7 +1117,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
           <div className="border-t border-[#f0f0f0] pt-3">
             {/* 表头 */}
-            <div className="flex items-center gap-3 px-3 pb-2">
+            <div className="flex items-center gap-3 pb-2">
               <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
               <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>权限</span>
               <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
@@ -1143,7 +1146,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                     <div className={`${valueColClass} text-right`}>
                       {loadingRuleId === rule.id
                         ? renderLoading()
-                        : <span className={`text-[13px] font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
+                        : <StatusTag variant={rule.value ? "green" : "gray"} dot>{rule.value ? "开启" : "关闭"}</StatusTag>}
                     </div>
                     <div className="w-16 flex items-center justify-end gap-3">
                       <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>
@@ -1466,7 +1469,7 @@ export default function PlatformPolicy() {
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 页面标题 */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
@@ -1486,7 +1489,7 @@ export default function PlatformPolicy() {
 
       {/* ── 板块一：用户配额 ── */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">用户配额</h2>
+        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">用户配额</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuotaPolicyCard
             icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0" />}
@@ -1511,7 +1514,7 @@ export default function PlatformPolicy() {
 
       {/* ── 板块二：模型配额 ── */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">模型配额</h2>
+        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">模型配额</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuotaPolicyCard
             icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0" />}
@@ -1533,7 +1536,7 @@ export default function PlatformPolicy() {
 
       {/* ── 板块三：功能权限开关 ── */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">功能权限开关</h2>
+        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">功能权限开关</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
           <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />

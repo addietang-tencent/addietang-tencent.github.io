@@ -248,10 +248,10 @@ function InlineQuotaField({
                   setDraft("unlimited");
                   setInputStr("");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
+                className={`text-sm h-9 px-3 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
-                    ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
+                    ? "border-[#020617] bg-[#020617] text-white font-medium"
+                    : "border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 无限制
@@ -261,10 +261,10 @@ function InlineQuotaField({
                   setDraft(0);
                   setInputStr(inputStr || "0");
                 }}
-                className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
+                className={`text-sm h-9 px-3 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
-                    ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
+                    ? "border-[#020617] bg-[#020617] text-white font-medium"
+                    : "border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 自定义
@@ -525,7 +525,7 @@ export default function StandardBasicInfo() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="w-full max-w-[360px] flex items-center justify-between gap-2 rounded-[4px] border border-[#E5E5E5] bg-white px-3 text-sm text-left hover:border-[#1447E6] transition-colors h-9 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50"
+                    className="w-full max-w-[360px] flex items-center justify-between gap-2 rounded-[4px] border border-[#E4E4E4] bg-white px-3 text-sm text-left hover:border-[#355EF1] focus:border-[#355EF1] transition-colors h-9 outline-none data-[state=open]:border-[#355EF1]"
                   >
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
                       {ssoImTypes.length === 0 ? (
@@ -536,11 +536,11 @@ export default function StandardBasicInfo() {
                           return (
                             <span
                               key={val}
-                              className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 rounded px-2 py-0.5 text-xs font-medium shrink-0"
+                              className="inline-flex items-center gap-1 bg-[#F5F5F5] text-[#09090b] rounded-[4px] px-2 py-0.5 text-xs font-medium shrink-0"
                             >
                               {opt?.label ?? val}
                               <X
-                                className="w-3 h-3 cursor-pointer hover:text-blue-900 shrink-0"
+                                className="w-3 h-3 cursor-pointer hover:text-[#09090b] text-[#a1a1aa] shrink-0"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSsoImTypes((prev) => prev.filter((t) => t !== val));

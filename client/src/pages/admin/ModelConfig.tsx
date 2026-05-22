@@ -13,6 +13,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -22,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
 import {
-  Plus, Trash2, Info, Pencil, AlertTriangle,
+  Plus, Trash2, Info, Pencil,
   Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
@@ -888,10 +892,10 @@ export default function ModelConfig() {
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader className="border-b border-[#F5F5F5]">
+          <DialogHeader>
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4">
             {/* 模型厂商选择（含自定义模型） */}
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-[#525252]">模型厂商</Label>
@@ -1010,37 +1014,46 @@ export default function ModelConfig() {
               </>
             )}
           </div>
-          <DialogFooter className="border-t border-[#F5F5F5]">
-            <Button variant="outline" className="rounded-[4px] border-[#E5E5E5]" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button onClick={handleAddModel} className="rounded-[4px]">
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
+            <Button variant="dialog-confirm" onClick={handleAddModel}>
               确认添加
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirm Dialog */}
-      <Dialog open={!!deleteConfirmModel} onOpenChange={(open) => { if (!open) setDeleteConfirmModel(null); }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertTriangle className="w-4 h-4" />
-              确认删除模型
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-2 space-y-3">
-            <p className="text-sm text-gray-600">
-              确定要删除模型 <span className="font-medium text-gray-900">{deleteConfirmModel?.name}</span>（{deleteConfirmModel?.version}）吗？
-            </p>
-            {deleteConfirmModel?.isDefault && (
-              <p className="text-sm text-amber-600 font-medium">
-                该模型当前为默认模型，删除后将取消默认设置。
-              </p>
-            )}
-            <p className="text-sm text-red-500 font-medium">删除后用户将无法使用该模型，此操作不可撤销。</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>取消</Button>
+      {/* Delete Confirm Dialog —— 遵循项目标准警示弹窗规范：
+            - 标题使用黑色（#0A0A0A）
+            - 正文普通文字使用黑色
+            - 强调文字使用告警色 #d42a1e
+            - 主按钮使用 destructive variant（红底白字）
+            - 右上角带关闭按钮
+       */}
+      <AlertDialog open={!!deleteConfirmModel} onOpenChange={(open) => { if (!open) setDeleteConfirmModel(null); }}>
+        <AlertDialogContent className="sm:max-w-sm">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteConfirmModel(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">
+              确认删除模型？
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#0A0A0A]">确定要删除模型 <span className="font-medium">{deleteConfirmModel?.name}</span>（{deleteConfirmModel?.version}）吗？<span className="text-[#DC2626]">{deleteConfirmModel?.isDefault && '该模型当前为默认模型，删除后将取消默认设置。'}删除后用户将无法使用该模型，此操作不可撤销。</span></p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>
+              取消
+            </Button>
             <Button
               variant="destructive"
               onClick={() => {
@@ -1054,9 +1067,9 @@ export default function ModelConfig() {
             >
               确认删除
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Quota Dialog */}
       <EditQuotaDialog

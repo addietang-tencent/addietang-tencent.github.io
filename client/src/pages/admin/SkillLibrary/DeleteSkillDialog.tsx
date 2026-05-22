@@ -3,6 +3,13 @@
  * - 被技能包引用时，列出包名称 + 警告
  * - 无引用时，简洁确认
  * - 使用 AlertDialog 实现危险操作确认
+ *
+ * 遵循项目标准警示弹窗规范：
+ *  - 标题使用黑色（#0A0A0A）
+ *  - 正文普通文字使用黑色
+ *  - 强调文字使用告警色 #d42a1e
+ *  - 警示信息使用 Alert destructive 变体（带 AlertTriangle 图标）
+ *  - 主按钮使用 destructive variant（红底白字）
  */
 import {
   AlertDialog,
@@ -14,6 +21,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
+import { buttonVariants } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
 interface DeleteSkillDialogProps {
@@ -38,7 +46,7 @@ export default function DeleteSkillDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="sm:max-w-sm">
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               {hasReferences ? (
@@ -54,16 +62,16 @@ export default function DeleteSkillDialog({
                       </ul>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0A0A0A]">
                     删除后将自动从上述技能包中移除该技能。
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-gray-600">
-                    确定要删除 MCP「{skillName}」吗？
+                  <p className="text-sm text-[#0A0A0A]">
+                    确定要删除 Skill「<span className="font-medium text-[#d42a1e]">{skillName}</span>」吗？
                   </p>
-                  <p className="text-sm text-gray-500">此操作不可撤销。</p>
+                  <p className="text-sm font-medium text-[#d42a1e]">此操作不可撤销。</p>
                 </>
               )}
             </div>
@@ -73,7 +81,7 @@ export default function DeleteSkillDialog({
           <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className={buttonVariants({ variant: 'destructive' })}
           >
             确认删除
           </AlertDialogAction>

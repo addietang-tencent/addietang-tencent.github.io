@@ -170,7 +170,7 @@ export default function DocManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button onClick={handleAdd}>确认添加</Button>
+            <Button variant="dialog-confirm" onClick={handleAdd}>确认添加</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

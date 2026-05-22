@@ -70,15 +70,14 @@ export default function CategoryManagementTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-gray-900">分类管理</h2>
-        <Button onClick={() => setAddDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+      <div className="flex items-center justify-end">
+        <Button variant="outline" size="sm" onClick={() => setAddDialogOpen(true)} className="gap-1.5">
+          <Plus className="w-3.5 h-3.5" />
           新增分类
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>

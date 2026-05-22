@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, X, ChevronDown, ChevronRight, Loader, Download } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import JSZip from 'jszip';
 import { type SkillScope } from './types';
@@ -244,18 +244,17 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
             <div
               onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
               onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${uploadedFiles.length > 0 ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 hover:border-blue-400'}`}
+              className={`border border-dashed rounded-[4px] p-8 text-center transition-colors ${uploadedFiles.length > 0 ? 'border-[#E5E5E5] bg-[#FAFAFA] cursor-not-allowed' : 'border-[#E5E5E5] hover:border-[#1447E6]'}`}
             >
-              <Upload className={`w-8 h-8 mx-auto mb-2 ${uploadedFiles.length > 0 ? 'text-gray-300' : 'text-gray-400'}`} />
-              <p className={`text-sm mb-2 ${uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`text-sm mb-2 ${uploadedFiles.length > 0 ? 'text-[#A3A3A3]' : 'text-[#737373]'}`}>
                 {uploadedFiles.length > 0 ? '如需替换，请先删除下方文件' : '点击或拖拽 ZIP 文件上传'}
               </p>
 
               <div className="flex items-center justify-center gap-4 mb-3">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button type="button" onClick={(e) => e.stopPropagation()} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
-                      <FileText className="w-3.5 h-3.5" />上传要求
+                    <button type="button" onClick={(e) => e.stopPropagation()} className="text-sm text-gray-500 hover:text-gray-700">
+                      上传要求
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[420px] p-4" align="center" side="bottom">

@@ -3025,7 +3025,7 @@ export default function MemberManagement() {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button onClick={handleAdd}>确认添加</Button>
+            <Button variant="dialog-confirm" onClick={handleAdd}>确认添加</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3058,7 +3058,7 @@ export default function MemberManagement() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditMemberId(null)}>取消</Button>
-            <Button onClick={handleEdit}>保存修改</Button>
+            <Button variant="dialog-confirm" onClick={handleEdit}>保存修改</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3272,7 +3272,7 @@ export default function MemberManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); }}>取消</Button>
-            <Button onClick={handleReset}>
+            <Button variant="dialog-confirm" onClick={handleReset}>
               确认重置
             </Button>
           </DialogFooter>
@@ -3964,7 +3964,7 @@ export default function MemberManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateGroupDialog(false)}>取消</Button>
-            <Button onClick={handleCreateGroup}>确认创建</Button>
+            <Button variant="dialog-confirm" onClick={handleCreateGroup}>确认创建</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -4195,7 +4195,7 @@ export default function MemberManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowAddToGroupDialog(false); setAddToGroupSearch(""); setAddToGroupSelected([]); setAddToGroupDeptFilter(""); }}>取消</Button>
-            <Button onClick={handleAddMembersToGroup} disabled={addToGroupSelected.length === 0}>
+            <Button variant="dialog-confirm" onClick={handleAddMembersToGroup} disabled={addToGroupSelected.length === 0}>
               确认添加
             </Button>
           </DialogFooter>

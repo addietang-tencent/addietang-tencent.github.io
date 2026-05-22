@@ -117,7 +117,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
-          <Button onClick={handleConfirm} disabled={!agreed}>
+          <Button variant="dialog-confirm" onClick={handleConfirm} disabled={!agreed}>
             确认
           </Button>
         </DialogFooter>

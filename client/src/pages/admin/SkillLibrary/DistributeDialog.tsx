@@ -204,6 +204,7 @@ export default function DistributeDialog({
             取消
           </Button>
           <Button
+            variant="dialog-confirm"
             onClick={handleStartDistribute}
             disabled={selectedInstances.length === 0 || isDistributing}
           >

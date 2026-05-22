@@ -2705,7 +2705,7 @@ export default function AgentMonitor() {
           </div>
           <DialogFooter className="gap-2 pt-2">
             <Button variant="outline" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
-            <Button onClick={confirmBatchUpgrade}>
+            <Button variant="dialog-confirm" onClick={confirmBatchUpgrade}>
               确认更新
             </Button>
           </DialogFooter>

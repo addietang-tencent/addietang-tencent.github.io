@@ -33,8 +33,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -516,9 +514,9 @@ function BatchUpdateDialog({
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="claw-outline" onClick={handleCancel}>取消</Button>
+          <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
-            variant="claw-primary"
+            variant="dialog-confirm"
             onClick={handleConfirm}
             disabled={selectedIndices.size === 0}
           >
@@ -722,6 +720,7 @@ function RoleAddPublicSkillDialog({
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
+            variant="dialog-confirm"
             onClick={handleConfirm}
             disabled={selectedIds.length === 0}
           >
@@ -1133,6 +1132,7 @@ function RoleAddEnterpriseSkillDialog({
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>取消</Button>
           <Button
+            variant="dialog-confirm"
             onClick={handleConfirm}
             disabled={selectedIds.length === 0}
           >
@@ -1302,7 +1302,7 @@ function RoleEditModal({
             <div className="space-y-5">
             {/* Name */}
             <div>
-              <Label className="text-sm font-medium text-[#334155]">
+              <Label className="text-sm font-medium text-[#0A0A0A]">
                 角色名称
                 <span className="text-xs text-[#A3A3A3] font-normal ml-1.5">{name.length}/{NAME_MAX_LEN}</span>
               </Label>
@@ -1321,7 +1321,7 @@ function RoleEditModal({
 
             {/* Description — use Textarea for auto wrap */}
             <div>
-              <Label className="text-sm font-medium text-[#334155]">角色描述</Label>
+              <Label className="text-sm font-medium text-[#0A0A0A]">角色描述</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -1333,7 +1333,7 @@ function RoleEditModal({
 
             {/* Soul */}
             <div>
-              <Label className="text-sm font-medium text-[#334155]">
+              <Label className="text-sm font-medium text-[#0A0A0A]">
                 角色灵魂
                 <span className="text-[#A3A3A3] font-normal ml-1.5">— 定义智能体的人格、价值观与行为准则</span>
               </Label>
@@ -1348,7 +1348,7 @@ function RoleEditModal({
 
             {/* 应用范围 — 放在角色技能上面 */}
             <div>
-              <Label className="text-sm font-medium text-[#334155]">应用范围</Label>
+              <Label className="text-sm font-medium text-[#0A0A0A]">应用范围</Label>
               <div className="mt-2 space-y-3">
                 <div className="flex items-center gap-1.5">
                   <Button
@@ -1470,13 +1470,13 @@ function RoleEditModal({
 
             {/* Skills */}
             <div>
-              <Label className="text-sm font-medium text-[#334155]">
+              <Label className="text-sm font-medium text-[#0A0A0A]">
                 角色技能
                 <span className="text-[#A3A3A3] font-normal ml-1.5">— 赋予智能体专业执行能力的技能工具</span>
               </Label>
               <div className="mt-1.5 border border-[#E5E5E5] rounded-[4px] overflow-hidden">
                 <div className="px-4 border-b border-[#E5E5E5] flex items-center justify-between" style={{ minHeight: '48px' }}>
-                  <span className="text-sm font-medium text-[#334155]">
+                  <span className="text-sm font-medium text-[#0A0A0A]">
                     技能列表（共 {skills.length} 个）
                   </span>
                   <div className="flex items-center gap-2">
@@ -1601,7 +1601,7 @@ function RoleEditModal({
             {/* Visible */}
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-sm font-medium text-[#334155]">用户可见</Label>
+                <Label className="text-sm font-medium text-[#0A0A0A]">用户可见</Label>
                 <p className="text-xs text-[#A3A3A3] mt-0.5">启用后，员工创建 Agent 时可选择此角色</p>
               </div>
               <Switch checked={visible} onCheckedChange={setVisible} />
@@ -1610,9 +1610,9 @@ function RoleEditModal({
           </DialogBody>
 
           <DialogFooter>
-            <Button variant="claw-outline" onClick={onClose}>取消</Button>
+            <Button variant="outline" onClick={onClose}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               onClick={handleSave}
             >
               保存
@@ -1957,23 +1957,38 @@ export default function SkillRolesTab() {
         onSave={handleSave}
       />
 
-      {/* Delete Confirm */}
+      {/* Delete Confirm —— 遵循项目标准警示弹窗规范：
+            标题/正文黑色，强调字段告警色，destructive 主按钮，右上角带 X 关闭按钮 */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent>
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteTarget(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除角色</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除角色「{deleteTarget?.name}」吗？删除后，已选择该角色的 Agent 不受影响，但新创建的 Agent 将无法再选择此角色。此操作不可撤销。
+            <AlertDialogTitle className="text-[#0A0A0A]">确认删除角色</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-[#0A0A0A]">
+                <p>
+                  确定要删除角色「<span className="font-medium text-[#d42a1e]">{deleteTarget?.name}</span>」吗？
+                </p>
+                <p>
+                  删除后，已选择该角色的 Agent 不受影响，但新创建的 Agent 将无法再选择此角色，
+                  <span className="font-medium text-[#d42a1e]">此操作不可撤销</span>。
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
+            <Button variant="destructive" onClick={handleDelete}>
               确认删除
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

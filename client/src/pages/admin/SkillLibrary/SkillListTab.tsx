@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLocation } from 'wouter';
+import { Badge } from '@/components/ui/badge';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_OPENCLAW_INSTANCES, MOCK_GROUPS } from './mockData';
 import SkillUploadDialog from './SkillUploadDialog';
 import SkillDetail from './SkillDetail';
@@ -33,6 +34,7 @@ import EditCategoriesDialog from './EditCategoriesDialog';
 import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
+import CategoryManagementDialog from './CategoryManagementDialog';
 import { Skill, type SkillScope, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
 import {
   getSkillDistributionSummary,
@@ -135,6 +137,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [editingSkillCategories, setEditingSkillCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  // 标签分类管理弹窗
+  const [categoryManageDialogOpen, setCategoryManageDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateSkillId, setUpdateSkillId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -833,39 +837,47 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       </div>
 
       {/* 分类筛选 */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap border-t border-gray-200 pt-4">
-        <button
-          onClick={() => setSelectedCategory(null)}
-          className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-            selectedCategory === null
-              ? 'bg-[#020617] border-[#020617] text-white'
-              : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-          }`}
-        >
-          全部
-        </button>
-        {categories.map((cat: any) => (
+      <div className="flex items-start gap-2 mb-4 border-t border-gray-200 pt-4">
+        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
           <button
-            key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
+            onClick={() => setSelectedCategory(null)}
             className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-              selectedCategory === cat.id
+              selectedCategory === null
                 ? 'bg-[#020617] border-[#020617] text-white'
                 : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
             }`}
           >
-            {cat.name}
+            全部
           </button>
-        ))}
+          {categories.map((cat: any) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+                selectedCategory === cat.id
+                  ? 'bg-[#020617] border-[#020617] text-white'
+                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+        <Button
+          variant="claw-outline"
+          size="claw-sm"
+          onClick={() => setCategoryManageDialogOpen(true)}
+          className="flex-shrink-0"
+        >
+          <Settings2 className="w-4 h-4" />
+          标签分类管理
+        </Button>
       </div>
 
       {/* 空状态 */}
       {sortedSkills.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">还没有发布任何 SKILL</p>
-          <Button onClick={() => setUploadDialogOpen(true)} className="mt-4">
-            + 发布 SKILL
-          </Button>
         </div>
       )}
 
@@ -1514,6 +1526,15 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         />
       )}
 
+      {/* 标签分类管理弹窗 */}
+      <CategoryManagementDialog
+        open={categoryManageDialogOpen}
+        onOpenChange={setCategoryManageDialogOpen}
+        categories={categories}
+        setCategories={setCategories}
+        skills={skills}
+      />
+
        {/* 编辑分类弹窗 */}
       <EditCategoriesDialog
         open={editCategoryDialogOpen}
@@ -1570,12 +1591,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
-              <span className="relative group">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                </span>
-              </span>
+              <Badge variant="secondary" className="rounded-full bg-[#F0F2F8] text-[#1447E6] text-[10px] px-2 py-0.5 border-0">限免</Badge>
             </AlertDialogTitle>
             <AlertDialogDescription>
               {securityServiceUsed >= 1000 ? (

@@ -824,6 +824,7 @@ export default function BatchDistributeDialog({
             取消
           </Button>
           <Button
+            variant="dialog-confirm"
             onClick={handleDistribute}
             disabled={selectedInstances.length === 0}
           >

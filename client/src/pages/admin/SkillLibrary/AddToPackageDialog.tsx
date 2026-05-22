@@ -115,6 +115,7 @@ export default function AddToPackageDialog({
             <DialogFooter className="flex gap-2">
               <Button variant="outline" onClick={handleClose}>取消</Button>
               <Button
+                variant="dialog-confirm"
                 onClick={handleConfirm}
                 disabled={!selectedPackageId || packages.length === 0}
               >

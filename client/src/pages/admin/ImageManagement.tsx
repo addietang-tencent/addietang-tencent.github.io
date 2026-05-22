@@ -438,23 +438,23 @@ function ImageScopePopover({
         </PopoverTrigger>
         <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="end" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
-            <div className="flex gap-1.5">
+            <div className="flex gap-2">
               <button
                 onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "all"
-                    ? "border-blue-200 bg-blue-50 text-[#1447E6]"
-                    : "border-[#E5E5E5] bg-white text-[#334155] hover:bg-gray-50"
+                    ? "bg-[#020617] border-[#020617] text-white"
+                    : "bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 全部用户
               </button>
               <button
                 onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
+                className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "groups"
-                    ? "border-blue-200 bg-blue-50 text-[#1447E6]"
-                    : "border-[#E5E5E5] bg-white text-[#334155] hover:bg-gray-50"
+                    ? "bg-[#020617] border-[#020617] text-white"
+                    : "bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 按分组
@@ -554,7 +554,7 @@ function ImageScopePopover({
               取消
             </Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               size="claw-sm"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
@@ -1163,7 +1163,7 @@ export default function ImageManagement() {
               全部更新记录
             </Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               size="claw-sm"
               onClick={() => setShowCreateCustomDialog(true)}
               className="shrink-0"
@@ -1398,7 +1398,7 @@ export default function ImageManagement() {
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => handleDialogOpenChange(false)}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               size="claw-sm"
               onClick={handleImport}
               disabled={!canImport}
@@ -1459,7 +1459,7 @@ export default function ImageManagement() {
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => setShowEditDialog(false)}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               size="claw-sm"
               onClick={handleEditSave}
             >
@@ -1579,7 +1579,7 @@ export default function ImageManagement() {
               取消
             </Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               size="claw-sm"
               onClick={handleCreateCustomType}
               disabled={!canCreateCustom}

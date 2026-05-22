@@ -490,7 +490,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
-## 10.5 Tab 切换卡（筛选标签按钮）
+## 11. Tab 切换卡（筛选标签按钮）
 
 > Figma: node 1086:6426 (ClawPro 项目设计)
 > 用于分类筛选场景（如技能库分类、技能列表分类等）
@@ -538,7 +538,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
-## 10.6 Alert 提示组件
+## 12. Alert 提示组件
 
 **文件**: `client/src/components/ui/alert.tsx`  
 **Token 定义**: `client/src/index.css`
@@ -668,7 +668,7 @@ import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/a
 
 ---
 
-## 10.7 树结构组件（GroupTree / FileTree）
+## 13. 树结构组件（GroupTree / FileTree）
 
 > 参考: shadcn/ui Collapsible FileTree（https://ui.shadcn.com/docs/components/base/collapsible#file-tree）
 > 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`、`client/src/pages/admin/SkillLibrary/SkillDetail.tsx`
@@ -784,7 +784,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 ---
 
-## 11. Badge 徽标组件
+## 14. Badge 徽标组件
 
 **文件**: `client/src/components/ui/badge.tsx`
 
@@ -813,7 +813,7 @@ import { Badge } from "@/components/ui/badge";
 
 ---
 
-## 11.1 Table 表格组件规范
+## 15. Table 表格组件规范
 
 **文件**: `client/src/components/ui/table.tsx`
 
@@ -901,7 +901,7 @@ import {
 
 ---
 
-## 11.2 StatusTag 状态标签规范
+## 16. StatusTag 状态标签规范
 
 **文件**: `client/src/components/ui/status-tag.tsx`
 
@@ -956,7 +956,7 @@ import { StatusTag } from "@/components/ui/status-tag";
 
 ---
 
-## 11.3 DropdownMenu 下拉菜单规范
+## 17. DropdownMenu 下拉菜单规范
 
 **文件**: `client/src/components/ui/dropdown-menu.tsx`
 
@@ -979,7 +979,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 ---
 
-## 11.31 Tooltip 提示浮层规范
+## 18. Tooltip 提示浮层规范
 
 **文件**: `client/src/components/ui/tooltip.tsx`
 
@@ -1006,7 +1006,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 ---
 
-## 11.32 Popover 气泡卡片规范
+## 19. Popover 气泡卡片规范
 
 **文件**: `client/src/components/ui/popover.tsx`
 
@@ -1026,7 +1026,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 ---
 
-## 11.33 Card 卡片规范
+## 20. Card 卡片规范
 
 **文件**: `client/src/components/ui/card.tsx`
 
@@ -1045,7 +1045,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 
 ---
 
-## 11.34 RadioGroup 单选组规范
+## 21. RadioGroup 单选组规范
 
 **文件**: `client/src/components/ui/radio-group.tsx`
 
@@ -1074,7 +1074,7 @@ import { Label } from "@/components/ui/label";
 
 ---
 
-## 11.35 Avatar 头像规范
+## 22. Avatar 头像规范
 
 **文件**: `client/src/components/ui/avatar.tsx`
 
@@ -1095,7 +1095,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 ---
 
-## 11.36 Label 标签规范
+## 23. Label 标签规范
 
 **文件**: `client/src/components/ui/label.tsx`
 
@@ -1114,7 +1114,7 @@ import { Label } from "@/components/ui/label";
 
 ---
 
-## 11.37 Empty 空白页/空状态规范
+## 24. Empty 空白页/空状态规范
 
 **文件**: `client/src/components/ui/empty.tsx`
 
@@ -1143,7 +1143,7 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/
 
 ---
 
-## 11.5 Segment 分段选择器规范
+## 25. Segment 分段选择器规范
 
 文件：`client/src/components/ui/segment.tsx`
 
@@ -1187,7 +1187,7 @@ import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/
 
 ---
 
-## 11.6 Pagination 分页器规范
+## 26. Pagination 分页器规范
 
 文件：`client/src/components/ui/pagination.tsx`
 
@@ -1295,7 +1295,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 13. 全局描边颜色规则
+## 27. 全局描边颜色规则
 
 | 用途 | 色值 | 说明 |
 |------|------|------|
@@ -1308,7 +1308,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 14. 强制执行规则
+## 28. 强制执行规则
 
 1. **组件源文件 (`client/src/components/ui/*.tsx`) 只有 addietang 可以修改**
 2. 其他人使用组件时，不允许通过 className 覆盖组件定义的颜色/边框/圆角
@@ -1324,7 +1324,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 15. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
+## 29. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
 
 > **Owner**: miekoyychen  
 > **源文件**: `client/src/components/ui/admin-sidebar.tsx`  

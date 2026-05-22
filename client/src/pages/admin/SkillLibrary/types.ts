@@ -164,6 +164,12 @@ export interface MCPService {
   usageDoc?: string;
   /** 工具说明 (Markdown) */
   toolDoc?: string;
+  /** 是否开启凭据托管 */
+  credentialHostingEnabled?: boolean;
+  /** IP 白名单（仅在 credentialHostingEnabled 为 true 时有效） */
+  ipWhitelist?: string[];
+  /** 凭据 Token（仅在 credentialHostingEnabled 为 true 时有效） */
+  token?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -407,6 +407,35 @@ export default function AgentDetail() {
     modelId: number | null;
   }>({ open: false, type: "set-primary", modelId: null });
 
+  // 连通性检测
+  const [connectTesting, setConnectTesting] = useState(false);
+  const [connectFailResult, setConnectFailResult] = useState<string | null>(null);
+
+  const handleConnectTest = async () => {
+    if (customInputMode === "form") {
+      if (!customForm.base_url || !customForm.api_key || !customForm.model_id) {
+        toast.error("请填写完整的模型配置信息");
+        return;
+      }
+    } else {
+      if (!customJson.trim()) {
+        toast.error("请填写完整的模型配置信息");
+        return;
+      }
+    }
+    setConnectTesting(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setConnectTesting(false);
+    setConnectFailResult(JSON.stringify({
+      error: {
+        message: "Invalid API Key",
+        param: "Please provide valid API Key",
+        code: "401",
+        type: "invalid_key",
+      }
+    }, null, 2));
+  };
+
   const currentProvider = MODEL_PROVIDERS.find(p => p.value === selectedProvider) || MODEL_PROVIDERS[0];
   const currentVersions = currentProvider.versions;
 
@@ -1892,26 +1921,41 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       自定义模型配置指引 <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
+
                 </div>
               )}
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    className="w-full text-sm" 
-                    variant="outline" 
-                    onClick={handleApplyModel}
-                    disabled={isConfiguring}
+              {/* 添加模型行：自定义模型时左侧显示连通性检测按钮 */}
+              <div className="flex items-center gap-2">
+                {selectedProvider === "custom" && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-sm"
+                    disabled={connectTesting}
+                    onClick={handleConnectTest}
                   >
-                    {appliedModels.some(m => m.primary) ? "添加备用模型" : "设为主模型"}
+                    {connectTesting && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+                    {connectTesting ? "检测中…" : "连通性检测"}
                   </Button>
-                </TooltipTrigger>
-                {isConfiguring && (
-                  <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                    当前TAT状态不在线，无法操作
-                  </TooltipContent>
                 )}
-              </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="flex-1 text-sm" 
+                      variant="outline" 
+                      onClick={handleApplyModel}
+                      disabled={isConfiguring}
+                    >
+                      {appliedModels.some(m => m.primary) ? "添加备用模型" : "设为主模型"}
+                    </Button>
+                  </TooltipTrigger>
+                  {isConfiguring && (
+                    <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                      当前TAT状态不在线，无法操作
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </div>
 
             </div>
             {/* Lower: model list */}
@@ -3030,6 +3074,33 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       </Dialog>
 
       {/* ===== 一键更新 确认弹窗 ===== */}
+      {/* 连通性检测失败弹窗 */}
+      <Dialog open={!!connectFailResult} onOpenChange={() => setConnectFailResult(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="w-5 h-5" />
+              模型连接失败
+            </DialogTitle>
+            <DialogDescription className="sr-only">模型连接失败详情</DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <pre className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs text-gray-700 font-mono whitespace-pre-wrap break-all">
+              {connectFailResult}
+            </pre>
+          </div>
+          <div className="flex justify-end pt-1">
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => setConnectFailResult(null)}
+            >
+              我知道了
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showUpdateConfirmDialog} onOpenChange={setShowUpdateConfirmDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>

@@ -696,7 +696,7 @@ function LabeledOptionIndicator<T extends string>({
       <StatusTag variant="gray">{currentLabel}</StatusTag>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <button className="text-gray-300 hover:text-blue-500 transition-colors" title={`编辑${label}`}><Pencil className="w-3 h-3" /></button>
+          <Button variant="link-dark" size="sm" className="h-auto px-0" title={`编辑${label}`}>编辑</Button>
         </PopoverTrigger>
         <PopoverContent className="w-56 p-0" align="start" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
@@ -859,7 +859,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
+    <Card className="overflow-hidden h-full py-0 gap-0">
       <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
@@ -874,9 +874,9 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <div className="flex-1 flex items-center justify-end gap-2">{renderValueEditor()}</div>
-            <div className="flex items-center gap-1 shrink-0">
-              <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(fallbackRule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+              <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
             </div>
           </div>
         ) : (
@@ -889,13 +889,13 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
       </div>
 
       {/* 分组策略区域 */}
-      <div className="px-5 pb-3 flex-1 flex flex-col">
+      <div className="px-5 flex-1 flex flex-col">
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="border-t border-[#f0f0f0] pt-3">
+          <div className="pt-3">
             {/* 表头 */}
             <div className="flex items-center gap-3 pb-2">
               <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
-              <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>配额</span>
+              <span className={`${valueColClass} text-[12px] font-medium text-[#a3a3a3]`}>配额</span>
               <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
             </div>
 
@@ -912,9 +912,9 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                       />
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                    <div className="w-16 flex items-center justify-end gap-1 h-9">
-                      <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(rule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+                    <div className="w-32 flex items-center justify-end gap-2 h-9">
+                      <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+                      <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
                     </div>
                   </div>
                 ) : (
@@ -941,9 +941,9 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                   />
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                <div className="w-16 flex items-center justify-end gap-1 h-9">
-                  <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon-sm" onClick={() => saveEdit()} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+                <div className="w-32 flex items-center justify-end gap-2 h-9">
+                  <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+                  <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
                 </div>
               </div>
             )}
@@ -952,15 +952,15 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
       </div>
 
       {/* 卡片底部 footer */}
-      <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
+      <CardFooter className="px-5 py-3 flex-col items-start gap-3">
         {!addingNew && (
-          <Button variant="link-dark" size="sm" className="h-auto px-0 self-start" onClick={startAdd}>
+          <Button variant="outline" size="sm" onClick={startAdd}>
             <Plus className="w-3.5 h-3.5" />添加分组策略
           </Button>
         )}
         {extraContent}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -1079,7 +1079,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
+    <Card className="overflow-hidden h-full py-0 gap-0">
       <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
@@ -1094,28 +1094,27 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <div className="flex-1 flex items-center justify-end gap-2">{renderFallbackValueEditor()}</div>
-            <div className="flex items-center gap-1 shrink-0">
-              <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-              <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(fallbackRule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+              <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <div className="flex-1 text-right">
-              {loadingRuleId === fallbackRule.id
-                ? renderLoading()
-                : <StatusTag variant={fallbackRule.value ? "green" : "gray"} dot>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
-            </div>
+            <span className="flex-1" />
+            {loadingRuleId === fallbackRule.id
+              ? renderLoading()
+              : <StatusTag variant={fallbackRule.value ? "green" : "gray"} dot>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
             <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
           </div>
         )}
       </div>
 
       {/* 分组策略区域 */}
-      <div className="px-5 pb-3 flex-1 flex flex-col">
+      <div className="px-5 flex-1 flex flex-col">
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="border-t border-[#f0f0f0] pt-3">
+          <div className="pt-3">
             {/* 表头 */}
             <div className="flex items-center gap-3 pb-2">
               <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
@@ -1135,9 +1134,9 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                       />
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                    <div className="w-16 flex items-center justify-end gap-1 h-9">
-                      <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(rule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+                    <div className="w-32 flex items-center justify-end gap-2 h-9">
+                      <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+                      <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
                     </div>
                   </div>
                 ) : (
@@ -1168,9 +1167,9 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                   />
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                <div className="w-16 flex items-center justify-end gap-1 h-9">
-                  <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon-sm" onClick={() => saveEdit()} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
+                <div className="w-32 flex items-center justify-end gap-2 h-9">
+                  <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
+                  <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
                 </div>
               </div>
             )}
@@ -1179,14 +1178,14 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
       </div>
 
       {/* 卡片底部 footer */}
-      <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
+      <CardFooter className="px-5 py-3 flex-col items-start gap-3">
         {!addingNew && groupRules.length === 0 && (
-          <Button variant="link-dark" size="sm" className="h-auto px-0 self-start" onClick={startAdd} disabled={!!loadingRuleId}>
+          <Button variant="outline" size="sm" onClick={startAdd} disabled={!!loadingRuleId}>
             <Plus className="w-3.5 h-3.5" />添加分组策略
           </Button>
         )}
         {extraContent}
-      </div>
+      </CardFooter>
 
       {/* 兜底值切换二次确认弹窗 */}
       <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
@@ -1203,7 +1202,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 }
 
@@ -1634,7 +1633,7 @@ export default function PlatformPolicy() {
                 <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
               </ol>
             </div>
-            <div className="border-t border-[#e5e5e5] pt-3 space-y-2">
+            <div className="pt-3 space-y-2">
               <p className="text-sm font-medium text-gray-900">说明</p>
               <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
                 <li><span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">腾讯云费用中心</a> 查看</li>

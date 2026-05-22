@@ -145,7 +145,7 @@ export default function DocManagement() {
                 placeholder="请输入文档标题"
                 value={newDoc.title}
                 onChange={(e) => setNewDoc({ ...newDoc, title: e.target.value })}
-                className="bg-gray-50"
+                className="bg-white"
               />
             </div>
             <div className="space-y-2">

@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Info,
   RefreshCw,
@@ -396,11 +397,10 @@ function ImageScopePopover({
 
   const renderBadges = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
-      // 默认态："全部用户" — 与已选分组徽章保持同款白底黑字风格
       return (
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] whitespace-nowrap">
+        <StatusTag variant="blue">
           全部用户
-        </span>
+        </StatusTag>
       );
     }
     const firstName = selectedGroupPaths[0];
@@ -410,13 +410,13 @@ function ImageScopePopover({
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] max-w-[140px] truncate">
+            <StatusTag variant="gray" className="max-w-[140px] truncate">
               {firstName}
-            </span>
+            </StatusTag>
             {rest > 0 && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-white text-[#0A0A0A] border border-[#E5E5E5] whitespace-nowrap">
+              <StatusTag variant="gray">
                 +{rest}
-              </span>
+              </StatusTag>
             )}
           </span>
         </TooltipTrigger>
@@ -428,7 +428,7 @@ function ImageScopePopover({
   };
 
   return (
-    <div className="inline-flex items-center gap-1.5 min-h-[20px]">
+    <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[160px]">
       {renderBadges()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
@@ -436,7 +436,7 @@ function ImageScopePopover({
             <Pencil className="w-3 h-3" />
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="end" sideOffset={6}>
+        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
             <div className="flex gap-2">
               <button
@@ -1215,11 +1215,10 @@ export default function ImageManagement() {
       <Dialog open={showImportDialog} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-purple-500" />
+            <DialogTitle>
               导入自定义镜像
               {importTargetAgentType && (
-                <span className="text-xs text-gray-400 font-normal">
+                <span className="text-xs text-gray-400 font-normal ml-2">
                   · {getTypeLabel(importTargetAgentType)}
                 </span>
               )}
@@ -1348,7 +1347,7 @@ export default function ImageManagement() {
                   setVersionError("");
                 }}
               >
-                <SelectTrigger className="bg-gray-50 w-full">
+                <SelectTrigger className="bg-white w-full">
                   <SelectValue placeholder="请选择 Agent 类型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1425,7 +1424,7 @@ export default function ImageManagement() {
                 value={editAgentType}
                 onValueChange={(v) => { setEditAgentType(v); setEditAgentVersion(""); setEditVersionError(""); }}
               >
-                <SelectTrigger className="bg-gray-50 w-full">
+                <SelectTrigger className="bg-white w-full">
                   <SelectValue placeholder="请选择 Agent 类型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1594,8 +1593,7 @@ export default function ImageManagement() {
       <Dialog open={!!removeCustomConfirm} onOpenChange={(o) => { if (!o) setRemoveCustomConfirm(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
+            <DialogTitle>
               删除自定义 Agent 类型
             </DialogTitle>
           </DialogHeader>

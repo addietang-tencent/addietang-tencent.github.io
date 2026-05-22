@@ -16,6 +16,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { MOCK_OPENCLAW_INSTANCES } from './mockData';
 import MCPAddDialog from './MCPAddDialog';
 import MCPDetail from './MCPDetail';
@@ -576,20 +586,20 @@ export default function MCPListTab() {
       />
 
       {/* 删除确认弹窗 */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>删除 MCP</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-600">
-            确定要删除 MCP「<span className="font-medium text-gray-900">{deleteMCP?.displayName || deleteMCP?.name}</span>」吗？此操作无法撤销。
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>取消</Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>确认删除</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="sm:max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除 MCP</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除 MCP「{deleteMCP?.displayName || deleteMCP?.name}」吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white" onClick={handleConfirmDelete}>确认删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -291,11 +291,11 @@ export default function ServerManagement() {
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label>镜像名称</Label>
-              <Input placeholder="请输入镜像名称" className="bg-gray-50" />
+              <Input placeholder="请输入镜像名称" className="bg-white" />
             </div>
             <div className="space-y-2">
               <Label>镜像 ID</Label>
-              <Input placeholder="请输入镜像 ID" className="bg-gray-50 font-mono" />
+              <Input placeholder="请输入镜像 ID" className="bg-white font-mono" />
             </div>
           </div>
           <DialogFooter>
@@ -321,14 +321,14 @@ export default function ServerManagement() {
                 placeholder={ruleType === "inbound" ? "例如 0.0.0.0/0" : "例如 0.0.0.0/0"}
                 value={newRule.source}
                 onChange={(e) => setNewRule({ ...newRule, source: e.target.value })}
-                className="bg-gray-50"
+                className="bg-white"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>协议</Label>
                 <Select value={newRule.protocol} onValueChange={(v) => setNewRule({ ...newRule, protocol: v })}>
-                  <SelectTrigger className="bg-gray-50"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {["TCP", "UDP", "ICMP", "ICMPv6", "ALL"].map((p) => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
@@ -342,14 +342,14 @@ export default function ServerManagement() {
                   placeholder="例如 80 或 ALL"
                   value={newRule.port}
                   onChange={(e) => setNewRule({ ...newRule, port: e.target.value })}
-                  className="bg-gray-50"
+                  className="bg-white"
                 />
               </div>
             </div>
             <div className="space-y-2">
               <Label>策略</Label>
               <Select value={newRule.policy} onValueChange={(v) => setNewRule({ ...newRule, policy: v })}>
-                <SelectTrigger className="bg-gray-50"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="允许">允许</SelectItem>
                   <SelectItem value="拒绝">拒绝</SelectItem>
@@ -362,7 +362,7 @@ export default function ServerManagement() {
                 placeholder="规则备注"
                 value={newRule.remark}
                 onChange={(e) => setNewRule({ ...newRule, remark: e.target.value })}
-                className="bg-gray-50"
+                className="bg-white"
               />
             </div>
           </div>

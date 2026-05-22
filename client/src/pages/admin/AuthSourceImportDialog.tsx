@@ -22,15 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Stepper } from "@/components/ui/stepper";
+import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
-  Check,
-  ChevronRight,
   Info,
   Plus,
   Trash2,
   CheckCircle,
-  ArrowLeft,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -344,10 +343,18 @@ export default function AuthSourceImportDialog({
     return initValues;
   };
 
-  // 选择数据源 → 跳到步骤2
+  // 选择数据源（仅切换选中态，不再自动进入下一步）
   const handleSelectSource = (sourceId: string) => {
     setSelectedSource(sourceId);
-    const source = AUTH_SOURCES.find((s) => s.id === sourceId);
+  };
+
+  // 步骤1 → 步骤2：下一步
+  const handleNextFromStep1 = () => {
+    if (!selectedSource) {
+      toast.error("请先选择一个数据源");
+      return;
+    }
+    const source = AUTH_SOURCES.find((s) => s.id === selectedSource);
     if (source) {
       setFormValues(buildInitialFormValues(source.fields));
     }
@@ -447,83 +454,65 @@ export default function AuthSourceImportDialog({
   };
 
   // ─── 步骤条渲染 ────────────────────────────────────────────────────────────
-  const renderStepBar = () => {
-    const steps = [
-      { num: 1, label: "选择数据源方式" },
-      { num: 2, label: "添加应用凭证" },
-      { num: 3, label: "设置字段映射" },
-      { num: 4, label: "完成" },
-    ];
-    return (
-      <div className="flex items-center gap-2 mb-6">
-        {steps.map((s, idx) => (
-          <React.Fragment key={s.num}>
-            <div className="flex items-center gap-2">
-              {/* 步骤圆圈 */}
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
-                  step > s.num
-                    ? "text-white"
-                    : step === s.num
-                    ? "text-white"
-                    : "bg-gray-200 text-gray-400"
-                }`}
-              >
-                {step > s.num ? <Check className="w-3.5 h-3.5" /> : s.num}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  step >= s.num ? "text-gray-900" : "text-gray-400"
-                }`}
-              >
-                {s.label}
-              </span>
-            </div>
-            {idx < steps.length - 1 && (
-              <ChevronRight className="w-4 h-4 text-gray-300 mx-1" />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    );
-  };
+  const renderStepBar = () => (
+    <Stepper
+      className="mb-6"
+      current={step}
+      steps={[
+        { label: "选择数据源方式" },
+        { label: "添加应用凭证" },
+        { label: "设置字段映射" },
+        { label: "完成" },
+      ]}
+    />
+  );
 
   // ─── 步骤1：选择数据源 ────────────────────────────────────────────────────
   const renderStep1 = () => (
     <div>
-      <div className="grid grid-cols-3 gap-4">
+      <div
+        role="radiogroup"
+        aria-label="选择数据源"
+        className="grid grid-cols-3 gap-4"
+      >
         {AUTH_SOURCES.map((source) => {
+          const isSelected = selectedSource === source.id;
           return (
-            <div
+            <Card
               key={source.id}
-              className="flex flex-col items-center text-center p-5 rounded-xl border border-[#e5e5e5] hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200 cursor-pointer group"
+              role="radio"
+              aria-checked={isSelected}
+              tabIndex={0}
               onClick={() => handleSelectSource(source.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleSelectSource(source.id);
+                }
+              }}
+              className={`flex flex-col items-center text-center p-5 gap-0 cursor-pointer transition-all duration-200 outline-none ${
+                isSelected
+                  ? "border-[#1447E6] bg-[#EFF6FF] ring-1 ring-[#1447E6]"
+                  : "hover:border-[#1447E6] hover:bg-[#EFF6FF]/30"
+              }`}
             >
-              {/* 图标 */}
-              <div className="w-12 h-12 rounded-xl bg-white border border-[#e5e5e5] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform overflow-hidden">
+              {/* 图标（logo 36×36） */}
+              <div className="w-12 h-12 rounded-[4px] bg-white border border-[#E5E5E5] flex items-center justify-center mb-3 overflow-hidden">
                 <img
                   src={source.iconUrl}
                   alt={source.name}
-                  className="w-8 h-8 object-contain"
+                  className="w-9 h-9 object-contain"
                 />
               </div>
               {/* 名称 */}
-              <p className="text-sm font-semibold text-gray-900 mb-1">
+              <p className="text-sm font-semibold text-[#0A0A0A] mb-1">
                 {source.name}
               </p>
               {/* 描述 */}
-              <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              <p className="text-xs text-gray-500 leading-relaxed">
                 {source.description}
               </p>
-              {/* 选择按钮 */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 mt-auto"
-              >
-                选为数据源
-              </Button>
-            </div>
+            </Card>
           );
         })}
       </div>
@@ -568,12 +557,12 @@ export default function AuthSourceImportDialog({
                 value={entry}
                 onChange={(e) => updateEntry(idx, e.target.value)}
                 placeholder={field.placeholder}
-                className="bg-gray-50 flex-1"
+                className="bg-white flex-1"
               />
               {entries.length > 1 && (
                 <button
                   type="button"
-                  className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                  className="w-8 h-8 flex items-center justify-center rounded-[4px] text-[#A3A3A3] hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
                   onClick={() => removeEntry(idx)}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -617,7 +606,7 @@ export default function AuthSourceImportDialog({
                 </div>
                 <span
                   className={`text-sm ${
-                    currentValue === opt.value ? "text-gray-900 font-medium" : "text-gray-600"
+                    currentValue === opt.value ? "text-[#0A0A0A] font-medium" : "text-gray-600"
                   }`}
                   onClick={() =>
                     setFormValues({ ...formValues, [field.key]: opt.value })
@@ -642,7 +631,7 @@ export default function AuthSourceImportDialog({
                     setFormValues({ ...formValues, [sub.key]: e.target.value })
                   }
                   placeholder={sub.placeholder}
-                  className={`bg-gray-50 ${isSubSecret ? "pr-10" : ""}`}
+                  className={`bg-white ${isSubSecret ? "pr-10" : ""}`}
                 />
                 {isSubSecret && (
                   <button
@@ -689,7 +678,7 @@ export default function AuthSourceImportDialog({
                       setFormValues({ ...formValues, [field.key]: e.target.value })
                     }
                     placeholder={field.placeholder}
-                    className={`bg-gray-50 ${isSecret ? "pr-10" : ""}`}
+                    className={`bg-white ${isSecret ? "pr-10" : ""}`}
                   />
                   {isSecret && (
                     <button
@@ -718,7 +707,7 @@ export default function AuthSourceImportDialog({
                     setFormValues({ ...formValues, [field.key]: v })
                   }
                 >
-                  <SelectTrigger className="bg-gray-50">
+                  <SelectTrigger className="bg-white">
                     <SelectValue placeholder="请选择" />
                   </SelectTrigger>
                   <SelectContent>
@@ -775,7 +764,7 @@ export default function AuthSourceImportDialog({
                 className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center"
               >
                 <Select value={mapping.sourceAttr} disabled={mapping.fixed}>
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-gray-50"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">{mapping.sourceLabel}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -788,7 +777,7 @@ export default function AuthSourceImportDialog({
                 </Select>
                 <span className="text-gray-400 text-center text-sm flex items-center justify-center">→</span>
                 <Select value={mapping.platformAttr} disabled={mapping.fixed}>
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-gray-50"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">{mapping.platformLabel}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -829,7 +818,7 @@ export default function AuthSourceImportDialog({
                   value={mapping.sourceAttr}
                   onValueChange={(v) => updateMemberMapping(mapping.id, "sourceAttr", v)}
                 >
-                  <SelectTrigger className="h-9 text-sm min-w-0 w-full bg-gray-50">
+                  <SelectTrigger className="h-9 text-sm min-w-0 w-full bg-white">
                     <SelectValue placeholder="选择属性">{mapping.sourceLabel}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -846,7 +835,7 @@ export default function AuthSourceImportDialog({
                   onValueChange={(v) => !mapping.fixed && updateMemberMapping(mapping.id, "platformAttr", v)}
                   disabled={mapping.fixed}
                 >
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-gray-50"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">
                       <span className="flex items-center gap-1">
                         {mapping.platformLabel}
@@ -873,7 +862,7 @@ export default function AuthSourceImportDialog({
                 </Select>
                 {!mapping.fixed ? (
                   <button
-                    className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-[4px] text-[#A3A3A3] hover:text-red-500 hover:bg-red-50 transition-colors"
                     onClick={() => removeMemberMapping(mapping.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -904,7 +893,7 @@ export default function AuthSourceImportDialog({
       >
         <CheckCircle className="w-8 h-8 text-white" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">数据源配置成功</h3>
+      <h3 className="text-lg font-semibold text-[#0A0A0A] mb-2">数据源配置成功</h3>
       <p className="text-sm text-gray-500 text-center max-w-xs leading-relaxed">
         {currentSource?.name} 数据源已成功配置，系统将自动开始同步通讯录数据，预计需要几分钟时间。
       </p>
@@ -920,17 +909,7 @@ export default function AuthSourceImportDialog({
     >
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-on-hover">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {(step === 2 || step === 3) && (
-              <button
-                onClick={handleBack}
-                className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-            )}
-            数据源导入
-          </DialogTitle>
+          <DialogTitle className="text-[#0A0A0A]">数据源导入</DialogTitle>
         </DialogHeader>
 
         {/* 步骤条 */}
@@ -944,12 +923,27 @@ export default function AuthSourceImportDialog({
 
         {/* 底部按钮 */}
         <DialogFooter>
+          {step === 1 && (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                取消
+              </Button>
+              <Button
+                variant="dialog-confirm"
+                onClick={handleNextFromStep1}
+                disabled={!selectedSource}
+              >
+                下一步
+              </Button>
+            </>
+          )}
           {step === 2 && (
             <>
               <Button variant="outline" onClick={handleBack}>
                 上一步
               </Button>
               <Button
+                variant="dialog-confirm"
                 onClick={handleNextToMapping}
               >
                 下一步
@@ -962,6 +956,7 @@ export default function AuthSourceImportDialog({
                 上一步
               </Button>
               <Button
+                variant="dialog-confirm"
                 onClick={handleSubmit}
               >
                 确定
@@ -970,6 +965,7 @@ export default function AuthSourceImportDialog({
           )}
           {step === 4 && (
             <Button
+              variant="dialog-confirm"
               onClick={() => onOpenChange(false)}
             >
               完成

@@ -819,7 +819,7 @@ export default function BatchDistributeDialog({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 pt-2">
+        <DialogFooter className="gap-2 sm:gap-2 !pt-4 !pb-4 border-t border-[#f0f0f0] mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>

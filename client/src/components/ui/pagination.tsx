@@ -268,7 +268,7 @@ function Pagination({
     <nav
       role="navigation"
       aria-label="pagination"
-      className={cn("flex items-center gap-2 flex-wrap", textSize, className)}
+      className={cn("flex items-center gap-[8px] flex-wrap", textSize, className)}
     >
       {/* Show Total */}
       {showTotal && (
@@ -277,6 +277,8 @@ function Pagination({
         </span>
       )}
 
+      {/* Page controls group */}
+      <div className="flex items-center gap-[8px]">
       {/* Page items */}
       <ul className="flex items-center gap-1 list-none m-0 p-0">
         {/* Prev button */}
@@ -423,9 +425,10 @@ function Pagination({
               "disabled:bg-[#f3f3f4] disabled:cursor-not-allowed"
             )}
           />
-          <span className="text-[#000000e0]">页</span>
+          <span className="text-[#09090b]">页</span>
         </div>
       )}
+      </div>
     </nav>
   );
 }

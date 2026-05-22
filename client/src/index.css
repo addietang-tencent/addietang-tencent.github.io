@@ -132,6 +132,33 @@
   --input: #E5E5E5;               /* Input 描边 */
   --ring: #1447E6;                /* focus 外环 */
 
+  /* Alert：基础 token（对齐全局 4px 圆角，供 shadcn Alert 使用） */
+  --alert-radius: var(--radius);
+
+  /* Alert：Info 类型（对齐 Figma，供 shadcn Alert variant="info" 使用） */
+  --alert-info-bg: #F0F3FC;
+  --alert-info-border: #BFCFFE;
+  --alert-info-foreground: #0A0A0A;
+  --alert-info-icon: #1447E6;
+
+  /* Alert：操作 Info 类型（对齐 Figma，供 shadcn Alert variant="operation-info" 使用） */
+  --alert-operation-info-bg: #FFFFFF;
+  --alert-operation-info-border: #E5E5E5;
+  --alert-operation-info-foreground: var(--alert-info-foreground);
+  --alert-operation-info-icon: #737373;
+
+  /* Alert：Warning 类型（对齐 Figma，供 shadcn Alert variant="warning" 使用） */
+  --alert-warning-bg: #FFF7ED;
+  --alert-warning-border: #FED7AA;
+  --alert-warning-foreground: #0A0A0A;
+  --alert-warning-icon: #FF6900;
+
+  /* Alert：产品动态类型（颜色对齐 Info，供 shadcn Alert variant="product-news" 使用） */
+  --alert-product-news-bg: var(--alert-info-bg);
+  --alert-product-news-border: var(--alert-info-border);
+  --alert-product-news-foreground: var(--alert-info-foreground);
+  --alert-product-news-icon: var(--alert-info-icon);
+
   /* Charts */
   --chart-1: oklch(0.546 0.245 262.881);
   --chart-2: oklch(0.48 0.22 280);

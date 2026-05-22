@@ -6,6 +6,7 @@
  */
 import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import { useLocation } from "wouter";
+import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import {
   Pencil, Check, X,
   HelpCircle, Info,
@@ -878,7 +879,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         ) : (
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <span className="flex-1 text-right text-[20px] font-bold text-[#020617] tabular-nums" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{displayValue(fallbackRule.value)}</span>
+            <span className="flex-1 text-right text-[20px] font-bold text-[#020617] font-din tabular-nums">{displayValue(fallbackRule.value)}</span>
             <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)}>编辑</Button>
           </div>
         )}
@@ -1076,50 +1077,48 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
-      <div className="px-5 pt-5 pb-3">
+      <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
-          <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
+          <h3 className="text-[14px] font-semibold text-[#020617] flex-1">{title}</h3>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed min-h-[36px]">{description}</p>
+        <p className="text-[12px] text-[#737373] leading-relaxed">{description}</p>
       </div>
 
-      <div className="px-5 pb-3 flex-1 flex flex-col">
-        {/* 预设策略（置顶） */}
+      {/* 预设策略区域 */}
+      <div className="px-5 pb-4">
         {editingId === fallbackRule.id ? (
-          <div className={ROW_CLASS}>
-            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
-            <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderFallbackValueEditor()}</div>
-            <div className="w-14 flex items-center justify-end gap-1">
-              <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
+            <div className="flex-1 flex items-center justify-end gap-2">{renderFallbackValueEditor()}</div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+              <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(fallbackRule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
             </div>
           </div>
         ) : (
-          <div className={ROW_CLASS}>
-            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
-            <div className={`${valueColClass} text-right`}>
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
+            <div className="flex-1 text-right">
               {loadingRuleId === fallbackRule.id
                 ? renderLoading()
-                : <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>}
+                : <span className={`text-[14px] font-semibold ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>}
             </div>
-            <div className="w-14 flex items-center justify-end">
-              <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
-            </div>
+            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
           </div>
         )}
+      </div>
 
-        {/* 虚线分隔：主策略 vs 例外策略 */}
+      {/* 分组策略区域 */}
+      <div className="px-5 pb-3 flex-1 flex flex-col">
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="border-t border-[#f0f0f0] mt-2 pt-2">
-            {/* 表头：仅在新增/编辑分组策略时展示 */}
-            {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-              <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
-                <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-                <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>权限</span>
-                <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-              </div>
-            )}
+          <div className="border-t border-[#f0f0f0] pt-3">
+            {/* 表头 */}
+            <div className="flex items-center gap-3 px-3 pb-2">
+              <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
+              <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>权限</span>
+              <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
+            </div>
 
             {groupRules.map((rule) => (
               <div key={rule.id}>
@@ -1133,29 +1132,29 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                       />
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                    <div className="w-14 flex items-center justify-end gap-1 h-9">
-                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                      <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                    <div className="w-16 flex items-center justify-end gap-1 h-9">
+                      <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(rule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
                     </div>
                   </div>
                 ) : (
-                  <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                  <div className={`${ROW_CLASS} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
                     <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
                     <div className={`${valueColClass} text-right`}>
                       {loadingRuleId === rule.id
                         ? renderLoading()
-                        : <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
+                        : <span className={`text-[13px] font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>}
                     </div>
-                    <div className="w-14 flex items-center justify-end gap-1">
-                      <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1" disabled={!!loadingRuleId}><Pencil className="w-3 h-3" /></button>
-                      <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1" disabled={!!loadingRuleId}><Trash2 className="w-3 h-3" /></button>
+                    <div className="w-16 flex items-center justify-end gap-3">
+                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>
+                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)} disabled={!!loadingRuleId}>删除</Button>
                     </div>
                   </div>
                 )}
               </div>
             ))}
 
-            {/* 新增态：添加分组策略编辑行 */}
+            {/* 新增态 */}
             {addingNew && (
               <div className={EDIT_ROW_CLASS}>
                 <div className="flex-1 min-w-0 pt-0.5">
@@ -1166,9 +1165,9 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                   />
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                <div className="w-14 flex items-center justify-end gap-1 h-9">
-                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                <div className="w-16 flex items-center justify-end gap-1 h-9">
+                  <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => saveEdit()} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
                 </div>
               </div>
             )}
@@ -1176,13 +1175,12 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
         )}
       </div>
 
-      {/* 卡片底部 footer：始终带分割线吸底，包含"添加分组策略"按钮和 extraContent */}
+      {/* 卡片底部 footer */}
       <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
-        {/* 最多 1 条分组策略：已有则不显示添加按钮 */}
         {!addingNew && groupRules.length === 0 && (
-          <button onClick={startAdd} disabled={!!loadingRuleId} className="self-start flex items-center gap-1.5 px-3 h-9 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <Button variant="link-dark" size="sm" className="h-auto px-0 self-start" onClick={startAdd} disabled={!!loadingRuleId}>
             <Plus className="w-3.5 h-3.5" />添加分组策略
-          </button>
+          </Button>
         )}
         {extraContent}
       </div>
@@ -1476,13 +1474,15 @@ export default function PlatformPolicy() {
       </div>
 
       {/* 优先级说明信息条 */}
-      <div className="flex items-start gap-2.5 rounded-[4px] border border-[#e5e5e5] bg-white px-4 py-3">
-        <Info className="w-4 h-4 text-[#0A0A0A] mt-0.5 shrink-0" />
-        <ul className="text-xs text-[#737373] leading-relaxed space-y-1 list-disc pl-4">
-          <li>无需按分组设置策略时，直接使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>，全部用户应用该策略。</li>
-          <li>需要按分组设置策略时，添加<span className="font-medium text-[#0A0A0A]">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>。若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
-        </ul>
-      </div>
+      <Alert variant="operation-info">
+        <AlertOperationInfoIcon />
+        <AlertDescription>
+          <ul className="space-y-1 list-disc pl-4">
+            <li>无需按分组设置策略时，直接使用<span className="font-medium">「预设策略」</span>，全部用户应用该策略。</li>
+            <li>需要按分组设置策略时，添加<span className="font-medium">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium">「预设策略」</span>。若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
+          </ul>
+        </AlertDescription>
+      </Alert>
 
       {/* ── 板块一：用户配额 ── */}
       <section>

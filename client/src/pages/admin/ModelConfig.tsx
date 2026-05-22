@@ -3,6 +3,7 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
 import { useState, useMemo } from "react";
+import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -710,21 +711,21 @@ export default function ModelConfig() {
       <div className="page-enter space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
-          <div className="mt-2 flex items-start gap-2 rounded-[4px] border border-[#e5e5e5] bg-white px-3 py-2.5">
-            <Info className="mt-0.5 shrink-0 w-4 h-4 text-[#0A0A0A]" />
-            <div className="space-y-1">
-              <p className="text-xs text-[#737373] leading-relaxed">
-                <span className="font-semibold text-[#0A0A0A]">用户可见：</span>开启后，该模型会展示在用户端的模型选项列表中。
+          <Alert variant="operation-info" className="mt-2">
+            <AlertOperationInfoIcon />
+            <AlertDescription>
+              <p>
+                <span className="font-semibold">用户可见：</span>开启后，该模型会展示在用户端的模型选项列表中。
               </p>
-              <p className="text-xs text-[#737373] leading-relaxed">
-                <span className="font-semibold text-[#0A0A0A]">默认配置：</span>用户在创建新实例时，该模型将被自动预添加，用户无需手动配置。
+              <p>
+                <span className="font-semibold">默认配置：</span>用户在创建新实例时，该模型将被自动预添加，用户无需手动配置。
               </p>
-            </div>
-          </div>
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* Part 1: Model List */}
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
          >
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
             <h2 className="font-semibold text-gray-900">模型列表</h2>

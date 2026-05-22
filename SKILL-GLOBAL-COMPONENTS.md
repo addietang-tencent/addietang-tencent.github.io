@@ -538,7 +538,137 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
-## 10.6 树结构组件（GroupTree / FileTree）
+## 10.6 Alert 提示组件
+
+**文件**: `client/src/components/ui/alert.tsx`  
+**Token 定义**: `client/src/index.css`
+
+### 基础规则
+
+所有页面信息提示、操作信息提示、警告提示、产品动态通知必须使用 shadcn Alert 标准结构，不允许在业务页面手写 `bg-blue-50` / `bg-amber-50` / `border-*` / `rounded-*` 拼装。
+
+统一视觉参数：圆角使用 `--alert-radius: var(--radius)`（当前为 `4px`，组件内为 `rounded-[var(--alert-radius)]`）、`px-4 py-2.5`（上下各 `10px`）、图标 `16px`、图标列固定 `16px`、图标与文字间距 `8px`。图标使用 `translate-y-px`，与 12px / 18px 行高文字首行视觉居中。标题与描述必须拆成 `AlertTitle` / `AlertDescription` 两个兄弟节点，默认 `gap-y-1`，标题与描述上下间距 `4px`。字体必须受 Typography 组件约束：`AlertDescription` 使用 `MetaText`（12px / regular / 1.5 / `tone="inherit"`），`AlertTitle` 使用 `MetaMedium`（12px / medium / 1.5 / `tone="inherit"`）。正文默认保持 inline flow，允许文案中的 `span` 在同一行展示。
+
+| Token | 值 | 用途 |
+|------|-----|------|
+| `--alert-radius` | `var(--radius)`（当前 `4px`） | Alert 容器圆角 |
+
+### Info 类型（标准信息提示）
+
+用于页面常驻说明、表单辅助提示、非阻断的信息告知。
+
+```tsx
+import { Alert, AlertDescription, AlertInfoIcon } from "@/components/ui/alert";
+
+<Alert variant="info">
+  <AlertInfoIcon />
+  <AlertDescription>提示文案</AlertDescription>
+</Alert>
+```
+
+Info 标准图标必须使用 `AlertInfoIcon`，不要在业务侧直接引入 lucide `Info` 拼装。
+
+| Token | 值 | 用途 |
+|------|-----|------|
+| `--alert-info-bg` | `#F0F3FC` | Info 背景 |
+| `--alert-info-border` | `#BFCFFE` | Info 描边 |
+| `--alert-info-foreground` | `#0A0A0A` | Info 正文 |
+| `--alert-info-icon` | `#1447E6` | Info 图标 |
+
+### 操作 Info 类型（标准操作说明）
+
+用于操作前后的辅助说明、勾选确认说明、批量操作说明、表单内非警告的操作提示。必须使用 `Alert variant="operation-info"`，左侧图标必须使用 `AlertOperationInfoIcon`；该图标复用 `AlertInfoIcon`，与普通 `info` 类型图标形状完全一致，仅颜色由 `--alert-operation-info-icon` 控制。
+
+```tsx
+import { Alert, AlertDescription, AlertOperationInfoIcon, AlertTitle } from "@/components/ui/alert";
+
+<Alert variant="operation-info">
+  <AlertOperationInfoIcon />
+  <AlertTitle>操作说明标题</AlertTitle>
+  <AlertDescription>操作说明描述</AlertDescription>
+</Alert>
+```
+
+| Token | 值 | 用途 |
+|------|-----|------|
+| `--alert-operation-info-bg` | `#FFFFFF` | 操作 Info 背景 |
+| `--alert-operation-info-border` | `#E5E5E5` | 操作 Info 描边 |
+| `--alert-operation-info-foreground` | `var(--alert-info-foreground)` | 操作 Info 正文 |
+| `--alert-operation-info-icon` | `#737373` | 操作 Info 图标 |
+
+操作 Info 与普通 `info` 的区别：`info` 用于蓝色页面说明或功能告知；`operation-info` 用于白底灰边的操作上下文说明。两者图标形状一致，颜色分别由 `--alert-info-icon` / `--alert-operation-info-icon` 控制。禁止用手写白底灰边容器替代。
+
+### Warning 类型（标准警告提示）
+
+用于配置缺失、配额不足、风险提示、需要处理但非阻断的警告信息。管控端公告栏中除「产品动态」外，其余公告均使用 `Alert variant="warning"`。
+
+```tsx
+import { CircleAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+<Alert variant="warning">
+  <CircleAlert />
+  <AlertTitle>警告标题</AlertTitle>
+  <AlertDescription>警告描述</AlertDescription>
+</Alert>
+```
+
+Warning 标准图标必须使用 `CircleAlert`，禁止使用 `AlertTriangle` 作为标准 warning 横幅图标。仅危险确认、错误态等非 Alert 横幅场景可按语义单独使用 `AlertTriangle`。
+
+| Token | 值 | 用途 |
+|------|-----|------|
+| `--alert-warning-bg` | `#FFF7ED` | Warning 背景 |
+| `--alert-warning-border` | `#FED7AA` | Warning 描边 |
+| `--alert-warning-foreground` | `#0A0A0A` | Warning 正文 |
+| `--alert-warning-icon` | `#FF6900` | Warning 图标 |
+
+### 产品动态类型
+
+用于管控端顶部产品发布、版本更新、功能上线等非阻断动态告知。必须使用 `Alert variant="product-news"`，左侧图标必须使用设计稿沉淀的 `AlertProductNewsIcon`。颜色 token 通过产品动态语义变量映射到 Info 色值，禁止在业务组件中硬编码蓝色或改用 lucide `Sparkles`。
+
+```tsx
+import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/alert";
+
+<Alert variant="product-news">
+  <AlertProductNewsIcon />
+  <AlertDescription>【产品动态】提示文案</AlertDescription>
+</Alert>
+```
+
+| Token | 值 | 用途 |
+|------|-----|------|
+| `--alert-product-news-bg` | `var(--alert-info-bg)` | 产品动态背景 |
+| `--alert-product-news-border` | `var(--alert-info-border)` | 产品动态描边 |
+| `--alert-product-news-foreground` | `var(--alert-info-foreground)` | 产品动态正文 |
+| `--alert-product-news-icon` | `var(--alert-info-icon)` | 产品动态图标 |
+
+### 带右侧操作区的公告栏写法
+
+顶部常驻通知条可通过 `className` 增加第三列操作区，但颜色、字体、图标和基础间距必须由 Alert variant 与 token 控制。
+
+```tsx
+<Alert
+  variant="warning"
+  className="has-[>svg]:grid-cols-[16px_minmax(0,1fr)_auto] gap-y-0"
+>
+  <CircleAlert />
+  <AlertDescription className="flex min-w-0 items-baseline flex-wrap gap-x-1 leading-[1.5]">
+    警告文案
+  </AlertDescription>
+  <div className="col-start-3 shrink-0">操作区</div>
+</Alert>
+```
+
+### 禁止事项
+
+- 禁止业务页面继续手写 info / operation-info / warning / product-news 提示条样式。
+- 禁止使用 warning/amber 样式承载普通信息提示；普通说明必须使用 `variant="info"` 或 `variant="operation-info"`。
+- 禁止在业务组件中硬编码 Alert 色值，必须通过 `client/src/index.css` 的 `--alert-*` token。
+- 禁止在 Alert 上使用 `rounded-lg` / `rounded-xl` / `shadow-*` / inline `boxShadow`。
+
+---
+
+## 10.7 树结构组件（GroupTree / FileTree）
 
 > 参考: shadcn/ui Collapsible FileTree（https://ui.shadcn.com/docs/components/base/collapsible#file-tree）
 > 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`、`client/src/pages/admin/SkillLibrary/SkillDetail.tsx`

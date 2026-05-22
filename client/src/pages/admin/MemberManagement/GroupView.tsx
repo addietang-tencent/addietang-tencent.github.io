@@ -10,6 +10,7 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -634,19 +635,17 @@ export default function GroupView({
     <div className="space-y-3">
       {/* 常驻分组命名提醒 */}
       {groups.length > 0 && (
-        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-          <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="text-xs text-amber-700 leading-relaxed">
-              分组名称将在用户端展示，用户可查看自己所属的分组。请确保分组命名规范、清晰，避免使用内部代号或敏感信息。
-            </div>
-          </div>
-        </div>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            分组名称将在用户端展示，用户可查看自己所属的分组。请确保分组命名规范、清晰，避免使用内部代号或敏感信息。
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* 主体：合并为一个卡片，左右面板 + 可拖拽分割线 */}
       <div
-        className="flex bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        className="flex bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         style={{
           height: "calc(100vh - 220px)",
         }}
@@ -704,7 +703,7 @@ export default function GroupView({
               {/* 上段竖线 */}
               <div className="flex-1 w-px bg-gray-100" />
               {/* 拖拽手柄：圆角矩形 + 2×3 六点阵列 */}
-              <div className="w-3 py-1.5 flex flex-col items-center justify-center gap-[2px] rounded-xl bg-gray-50 group-hover:bg-gray-100 transition-colors">
+              <div className="w-3 py-1.5 flex flex-col items-center justify-center gap-[2px] rounded-full bg-gray-50 group-hover:bg-gray-100 transition-colors">
                 <div className="flex gap-[2px]">
                   <span className="w-[1.5px] h-[1.5px] rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
                   <span className="w-[1.5px] h-[1.5px] rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
@@ -810,7 +809,7 @@ export default function GroupView({
             <p className="text-sm text-gray-700">
               该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
             </p>
-            <div className="rounded-xl border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
+            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
@@ -841,7 +840,7 @@ export default function GroupView({
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors ${editGroupAgentChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
+                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${editGroupAgentChoice === opt.value ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"}`}
                 onClick={() => setEditGroupAgentChoice(opt.value as "keep" | "delete")}
               >
                 <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${editGroupAgentChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>

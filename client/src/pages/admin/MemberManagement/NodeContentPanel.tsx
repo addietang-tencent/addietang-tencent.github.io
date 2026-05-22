@@ -9,6 +9,7 @@
  *   - 初始化校验仅模型/通道/安全组三项
  */
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
@@ -868,12 +869,12 @@ export default function NodeContentPanel({
             </DialogTitle>
           </DialogHeader>
           {/* 多分组规则提示 */}
-          <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-xl">
-            <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span className="text-xs text-blue-600">
+          <Alert variant="info">
+            <Info />
+            <AlertDescription>
               一个用户支持加入多个分组，可按分组设置不同的配置与权限
-            </span>
-          </div>
+            </AlertDescription>
+          </Alert>
           <div className="py-2 space-y-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

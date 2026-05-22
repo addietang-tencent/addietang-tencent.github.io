@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -56,7 +57,7 @@ import {
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
-  Pencil, Plus, Bell,
+  Pencil, Plus, Bell, CircleAlert,
   TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
@@ -1851,8 +1852,7 @@ export default function AgentMonitor() {
         </div>
 
         {/* 表格卡片 */}
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-         >
+        <SurfaceCard className="overflow-hidden">
 
           {/* 工具栏 */}
           <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
@@ -2024,10 +2024,13 @@ export default function AgentMonitor() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto" ref={tableScrollRef}>
-          <table className="text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f9fafb' }}>
+          <Table
+            containerRef={tableScrollRef}
+            className="text-sm"
+            style={{ width: 'max-content', minWidth: '100%' }}
+          >
+            <TableHeader>
+              <TableRow className="bg-[#f9fafb] hover:bg-[#f9fafb]">
                 {/* 复选框列 - sticky left */}
                 <th className="py-3 whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
                   {isTableScrolled && (
@@ -2200,9 +2203,9 @@ export default function AgentMonitor() {
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
                 </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-gray-400">
@@ -2530,9 +2533,8 @@ export default function AgentMonitor() {
                   );
                 })
               )}
-            </tbody>
-          </table>
-          </div>
+            </TableBody>
+          </Table>
 
           {/* Pagination */}
           <div className="px-4 py-3 border-t border-[#f0f0f0]">
@@ -2546,7 +2548,7 @@ export default function AgentMonitor() {
               onChange={(page) => { setPage(page); }}
             />
           </div>
-        </div>
+        </SurfaceCard>
 
       </div>
 
@@ -2640,59 +2642,67 @@ export default function AgentMonitor() {
 
       {/* 批量更新确认弹窗 */}
       <Dialog open={showBatchUpgradeDialog} onOpenChange={setShowBatchUpgradeDialog}>
-        <DialogContent className="sm:max-w-[640px]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-gray-900">批量更新</DialogTitle>
+        <DialogContent className="rounded-[4px] sm:max-w-[680px]">
+          <DialogHeader className="pb-5">
+            <DialogTitle className="text-[16px] font-semibold text-[#0A0A0A]">批量更新</DialogTitle>
+            <DialogDescription className="text-xs leading-[1.5] text-[#737373]">
+              将 <span className="font-din font-bold tabular-nums text-[#020617]">{selectedIds.size}</span> 个实例更新至当前生效镜像版本。
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p>1. 更新版本预计需要 5～10 分钟不等，期间 Agent 实例不可使用。</p>
-            <p>2. Agent 版本将会升级至当前生效镜像对应的版本，请先将目标镜像指定为生效状态再执行升级操作。</p>
-            <p>3. 更新后模型、通道、技能和记忆，以及用户个人数据均不会丢失。</p>
+          <Alert variant="warning" className="border-0 bg-[#FFF7ED] px-4 py-3">
+            <CircleAlert />
+            <AlertDescription className="space-y-1.5">
+              <p>更新预计需要 5～10 分钟，期间 Agent 实例不可使用。</p>
+              <p>请先确认目标镜像已设为生效状态；更新后模型、通道、技能、记忆及用户个人数据不会丢失。</p>
+            </AlertDescription>
+          </Alert>
+          <div className="flex items-center justify-between pt-1">
+            <p className="text-sm font-medium text-[#0A0A0A]">待更新实例</p>
+            <p className="text-xs text-[#737373]">可移除不需要更新的实例</p>
           </div>
-          <p className="text-sm text-gray-600">已选择 <span className="font-semibold text-gray-900">{selectedIds.size}</span> 个实例</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl scrollbar-on-hover">
+          <div className="max-h-[300px] overflow-y-auto scrollbar-on-hover">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">实例</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent类型</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">Agent 版本</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">当前状态</th>
-                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-500">操作</th>
+                <tr className="border-y border-[#F5F5F5]">
+                  <th className="sticky top-0 z-10 bg-white px-2 py-2.5 text-left text-xs font-medium text-[#737373]">实例</th>
+                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">Agent 类型</th>
+                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">版本</th>
+                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">状态</th>
+                  <th className="sticky top-0 z-10 bg-white px-2 py-2.5 text-right text-xs font-medium text-[#737373]">操作</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[#F5F5F5]">
                 {claws.filter(c => selectedIds.has(c.id)).map(c => {
                   const sc = STATUS_CONFIG[c.status];
                   return (
-                    <tr key={c.id} className="hover:bg-gray-50/50">
-                      <td className="px-4 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white" style={{ fontSize: '10px' }}>C</span>
+                    <tr key={c.id} className="transition-colors hover:bg-[#FAFAFA]">
+                      <td className="py-3 pl-2 pr-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#1447E6]">
+                            <span className="font-din text-xs font-bold">{c.agentType.slice(0, 1)}</span>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-gray-900 truncate">{c.name}</div>
-                            <div className="text-xs text-gray-400 font-mono">{c.instanceId}</div>
+                            <div className="truncate text-sm font-medium text-[#0A0A0A]">{c.name}</div>
+                            <div className="font-mono text-xs text-[#A3A3A3]">{c.instanceId}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
+                      <td className="px-3 py-3">
+                        <span className="text-xs text-[#334155]">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <span className="font-mono text-xs text-gray-500">{c.version}</span>
+                      <td className="px-3 py-3">
+                        <span className="font-mono text-xs text-[#334155]">{c.version}</span>
                       </td>
-                      <td className="px-4 py-2.5">
-                        <span className={`${sc.badgeClass} text-xs inline-flex items-center gap-1`}>
-                          <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${sc.dotColor}`} />
+                      <td className="px-3 py-3">
+                        <span className={`${sc.badgeClass} inline-flex items-center gap-1 text-xs`}>
+                          <span className={`inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full ${sc.dotColor}`} />
                           {sc.label}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5">
+                      <td className="py-3 pl-3 pr-2 text-right">
                         <button
                           onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
-                          className="text-xs text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+                          className="whitespace-nowrap text-xs text-[#737373] transition-colors hover:text-red-600"
                         >
                           移除
                         </button>

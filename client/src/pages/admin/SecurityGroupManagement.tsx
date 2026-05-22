@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from 
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { createPortal } from "react-dom";
+import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
-import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus, CircleAlert } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -1292,21 +1293,21 @@ function CreateSecurityGroupDialog({
             </div>
 
             {hasRiskyRule && (
-              <div className="bg-amber-50 px-3 py-2.5 rounded-xl flex items-start gap-2 border border-amber-100">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-relaxed">
+              <Alert variant="warning" className="px-3 py-2.5">
+                <CircleAlert />
+                <AlertDescription>
                   当前规则中包含来源/目标为 0.0.0.0/0 或 ::/0 的允许规则，可能带来安全风险。建议创建 Agent 云服务器后及时收紧访问范围，仅保留必要的来源或目标。
-                </p>
-              </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             {checkedOptions.length === 0 && (
-              <div className="bg-amber-50 px-3 py-2.5 rounded-xl flex items-start gap-2 border border-amber-100">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 leading-relaxed">
+              <Alert variant="warning" className="px-3 py-2.5">
+                <CircleAlert />
+                <AlertDescription>
                   无任何规则时 Agent 将无法正常使用，请在创建后手动配置规则。至少放通一条出站规则，否则所有出站流量将被拒绝。
-                </p>
-              </div>
+                </AlertDescription>
+              </Alert>
             )}
 
             <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -3066,14 +3067,14 @@ export default function SecurityGroupManagement() {
         {/* 内容区（可滚动） */}
         <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
           <div className="px-6 pt-5 pb-4 space-y-4">
-            <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-              <p className="text-xs leading-relaxed text-blue-600">
+            <Alert variant="info" className="px-4 py-3">
+              <Info />
+              <AlertDescription>
                 {sgDialogMode === "create"
                   ? "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到 ClawPro 安全组（默认名称为 ClawPro-Default），原云端安全组不受影响。"
                   : "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。"}
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
             <div className="space-y-3">
                 <div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
                   <div className="relative border-b border-[#e5e5e5] p-4">
@@ -3538,15 +3539,29 @@ export default function SecurityGroupManagement() {
           {MigrationBanner}
 
           {/* 顶部说明区 */}
-          <div className="flex items-start gap-2.5 rounded-[4px] border border-[#e5e5e5] bg-white px-4 py-3 mb-5">
-            <Info className="w-4 h-4 text-[#0A0A0A] mt-0.5 shrink-0" />
-            <ul className="text-xs text-[#737373] leading-relaxed space-y-1 list-disc pl-4">
-              <li><span className="font-medium text-[#0A0A0A]">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</li>
-              <li><span className="font-medium text-[#0A0A0A]">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</li>
-              <li><span className="font-medium text-[#0A0A0A]">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用<span className="font-medium text-[#0A0A0A]">「预设策略」</span>。</li>
-              <li><span className="font-medium text-[#0A0A0A]">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</li>
-            </ul>
-          </div>
+          <Alert variant="operation-info" className="-mt-2 mb-5 w-full">
+            <AlertOperationInfoIcon />
+            <AlertDescription>
+              <ul className="space-y-1.5">
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">私有网络（VPC）：</span>配置 Agent 实例新建时使用的 VPC。「预设策略」默认自动分配可用 VPC，您也可以指定企业已有 VPC。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">子网：</span>选择「自动分配」VPC 时，系统将按可用区自动分配子网；选择已有 VPC 时，可手动配置各可用区子网，或选择「不分配」跳过该可用区部署。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">策略生效：</span>新建 Agent 实例将优先使用所选用户组的分组策略；本组未配置时，使用最近的上级用户组策略，均未配置时使用「预设策略」。</span>
+                </li>
+                <li className="flex gap-1.5">
+                  <span className="shrink-0">•</span>
+                  <span><span className="font-medium">变更影响：</span>修改网络策略后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                </li>
+              </ul>
+            </AlertDescription>
+          </Alert>
 
           {/* VPC 列表 */}
           <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">私有网络与子网配置</h3>

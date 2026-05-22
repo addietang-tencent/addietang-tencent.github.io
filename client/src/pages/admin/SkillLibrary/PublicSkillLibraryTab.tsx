@@ -273,13 +273,13 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
     return (
       <div>
         <button
-          className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors"
+          className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-[#09090b] hover:bg-[#f4f4f5] rounded-[4px] transition-colors"
           style={{ paddingLeft: `${8 + depth * 16}px` }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-gray-400" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-gray-400" />}
+          {expanded ? <ChevronDown className="w-3.5 h-3.5 shrink-0 text-[#71717a]" /> : <ChevronRightIcon className="w-3.5 h-3.5 shrink-0 text-[#71717a]" />}
+          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-[#71717a]" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-[#71717a]" />}
           <span className="font-medium">{file.name}</span>
-          {expanded ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400" /> : <ChevronRightIcon className="w-3 h-3 ml-auto text-gray-400" />}
         </button>
         {expanded && file.children?.map(child => (
           <FileTreeNode
@@ -297,13 +297,13 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
   const isSelected = selectedFile?.path === file.path;
   return (
     <button
-      className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
-        isSelected ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+      className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
+        isSelected ? 'bg-[#f4f4f5] text-[#09090b] font-medium' : 'text-[#09090b] hover:bg-[#f4f4f5]'
       }`}
       style={{ paddingLeft: `${8 + depth * 16}px` }}
       onClick={() => onSelect(file)}
     >
-      <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+      <FileText className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
       <span>{file.name}</span>
     </button>
   );
@@ -416,43 +416,41 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       </div>
 
       {/* 三列内容区 */}
-      <div className="flex h-[47rem] border border-gray-200 rounded-xl overflow-hidden bg-white">
+      <div className="flex h-[47rem] border border-[#e5e5e5] rounded-[4px] overflow-hidden bg-white">
         {/* 左列：版本列表 */}
-        <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-            <p className="text-xs font-medium text-gray-900">版本</p>
+        <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
+          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+            <p className="text-sm font-medium text-[#09090b]">版本</p>
           </div>
           <div className="flex-1 overflow-y-auto">
             {skill.versions.map((v, idx) => (
               <button
                 key={v.version}
                 onClick={() => setSelectedVersion(v)}
-                className={`w-full text-left px-3 py-2.5 border-b border-[#e5e5e5] transition-colors rounded-none ${
+                className={`w-full text-left px-3 py-2.5 border-b border-[#f4f4f5] transition-colors ${
                   selectedVersion.version === v.version
-                    ? 'bg-blue-50'
-                    : 'hover:bg-gray-50 cursor-pointer'
+                    ? 'bg-[#f4f4f5]'
+                    : 'hover:bg-[#f4f4f5] cursor-pointer'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-xs font-normal ${
-                    selectedVersion.version === v.version ? 'text-blue-700' : 'text-gray-700'
-                  }`}>{v.version}</span>
+                  <span className="text-[14px] font-semibold text-[#09090b]">{v.version}</span>
                   {v.isLatest && (
-                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">最新</span>
+                    <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">New</span>
                   )}
                 </div>
-                <p className="text-[11px] text-gray-400 mt-0.5">{v.date.slice(0, 10)}</p>
+                <p className="text-[12px] text-[#a1a1aa] mt-0.5">{v.date.slice(0, 10)}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* 中列：文件目录 */}
-        <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-            <p className="text-xs font-medium text-gray-900">{selectedVersion.version}</p>
+        <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
+          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+            <p className="text-sm font-medium text-[#09090b]">{selectedVersion.version}</p>
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-3 py-2">
             {displayFiles.map(file => (
               <FileTreeNode
                 key={file.path}
@@ -472,8 +470,8 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex-1 flex flex-col bg-white">
           {selectedFile ? (
             <>
-              <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-                <p className="text-xs font-medium text-gray-900">{selectedFile.name}</p>
+              <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+                <p className="text-sm font-medium text-[#09090b]">{selectedFile.name}</p>
                 {/* 源码/预览 切换（所有文件都显示） */}
                 <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                   <button

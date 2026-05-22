@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { toast } from "sonner";
 import { Pencil, Check, X, ChevronRight, ChevronDown, Minus } from "lucide-react";
 import type { UserGroup } from "@/pages/admin/MemberManagement/types";
@@ -341,29 +342,15 @@ export function ScopePopover({
         </PopoverTrigger>
         <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
-            {/* Radio 切换 */}
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
-                  draftScope === "all"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
+            {/* Segment 切换 */}
+            <SegmentGroup className="w-full">
+              <SegmentOption active={draftScope === "all"} onClick={() => setDraftScope("all")} className="flex-1">
                 全部用户
-              </button>
-              <button
-                onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
-                  draftScope === "groups"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
+              </SegmentOption>
+              <SegmentOption active={draftScope === "groups"} onClick={() => setDraftScope("groups")} className="flex-1">
                 按分组
-              </button>
-            </div>
+              </SegmentOption>
+            </SegmentGroup>
 
             {/* 分组列表（仅 groups 模式） */}
             {draftScope === "groups" && (

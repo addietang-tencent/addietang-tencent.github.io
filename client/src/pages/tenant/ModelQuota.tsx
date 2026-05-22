@@ -34,7 +34,13 @@ import { SurfaceCard } from "@/components/ui/Surface";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 
 // ─── 多分组相关 ──────────────────────────────────────────────────────────────
@@ -246,7 +252,6 @@ export default function ModelQuota() {
   });
   const groupList = groupMode === "multi-group" ? MOCK_GROUPS : MOCK_DEFAULT_GROUP;
   const [selectedGroup, setSelectedGroup] = useState<SimpleGroup>(() => getDefaultGroup(groupMode === "multi-group" ? MOCK_GROUPS : MOCK_DEFAULT_GROUP));
-  const [showGroupFilter, setShowGroupFilter] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -390,43 +395,28 @@ export default function ModelQuota() {
           {/* Filter Bar */}
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
             {/* Left: 分组筛选 */}
-            <Popover open={showGroupFilter} onOpenChange={setShowGroupFilter}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="claw-outline"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm h-8"
-                >
-                  <Filter className="w-3.5 h-3.5 text-gray-400" />
-                  <span className="text-gray-700">{selectedGroup.name}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="p-1 min-w-[200px]">
+            <Select
+              value={selectedGroup.id}
+              onValueChange={(value) => {
+                const nextGroup = groupList.find((group) => group.id === value);
+                if (!nextGroup || !nextGroup.allowViewQuota) return;
+                setSelectedGroup(nextGroup);
+                setSummaryPage(1);
+                setDetailPage(1);
+              }}
+            >
+              <SelectTrigger size="sm" className="min-w-[168px] text-[#334155]">
+                <Filter className="size-4 text-[#737373]" />
+                <SelectValue placeholder="选择分组" />
+              </SelectTrigger>
+              <SelectContent align="start">
                 {groupList.map((group) => (
-                  <div key={group.id} className="relative group/item">
-                    <Button
-                      variant="ghost"
-                      disabled={!group.allowViewQuota}
-                      onClick={() => { if (group.allowViewQuota) { setSelectedGroup(group); setShowGroupFilter(false); setSummaryPage(1); setDetailPage(1); } }}
-                      className={cn(
-                        "w-full justify-start px-4 py-2.5 text-sm h-auto rounded-none",
-                        !group.allowViewQuota
-                          ? "text-gray-300 cursor-not-allowed"
-                          : selectedGroup.id === group.id
-                            ? "bg-blue-50 text-blue-700 font-medium hover:bg-blue-50"
-                            : "text-gray-700 hover:bg-gray-50"
-                      )}
-                    >
-                      {group.name}
-                    </Button>
-                    {!group.allowViewQuota && (
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-[4px] whitespace-nowrap opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-30">
-                        该分组不允许查看模型额度
-                      </div>
-                    )}
-                  </div>
+                  <SelectItem key={group.id} value={group.id} disabled={!group.allowViewQuota}>
+                    {group.name}
+                  </SelectItem>
                 ))}
-              </PopoverContent>
-            </Popover>
+              </SelectContent>
+            </Select>
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex w-[365px] h-8 items-center gap-2 ml-auto flex-wrap rounded-none px-0 py-0 text-base leading-6 text-[#0A0A0A]">

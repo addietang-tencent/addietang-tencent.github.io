@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Search, Check, Edit2, X } from 'lucide-react';
 import { type SkillScope, type Group } from './types';
 
@@ -131,29 +132,15 @@ export default function EditScopePopover({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
-            {/* 全部用户 / 按分组 胶囊切换按钮 */}
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setDraftScope('public')}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === 'public'
-                    ? 'border-blue-200 bg-blue-50 text-blue-600'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
+            {/* 全部用户 / 按分组 Segment 切换 */}
+            <SegmentGroup className="w-full">
+              <SegmentOption active={draftScope === 'public'} onClick={() => setDraftScope('public')} className="flex-1">
                 全部用户
-              </button>
-              <button
-                onClick={() => setDraftScope('private')}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === 'private'
-                    ? 'border-blue-200 bg-blue-50 text-blue-600'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
+              </SegmentOption>
+              <SegmentOption active={draftScope === 'private'} onClick={() => setDraftScope('private')} className="flex-1">
                 按分组
-              </button>
-            </div>
+              </SegmentOption>
+            </SegmentGroup>
 
             {/* 分组列表（仅 private 模式） */}
             {draftScope === 'private' && (

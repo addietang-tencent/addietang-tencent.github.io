@@ -928,7 +928,7 @@ export default function ApiDocs() {
                 placeholder="搜索文档..."
                 value={navSearchQuery}
                 onChange={(e) => setNavSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#355EF1]/20 focus:border-[#355EF1] transition-all placeholder:text-gray-400"
+                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#355EF1]/20 focus:border-[#1447E6] transition-all placeholder:text-gray-400"
               />
             </div>
           </div>

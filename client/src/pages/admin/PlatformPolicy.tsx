@@ -428,7 +428,7 @@ function GroupTagSelector({
         <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
-          className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#d3d6db] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+          className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
         >
           {selectedIds.length === 0 ? (
             <span className="text-xs text-gray-400 px-1">选择分组…</span>
@@ -844,8 +844,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
     <>
       {type === "token" && (
         <div className="flex gap-1 shrink-0">
-          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "unlimited" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>无限制</button>
-          <button onClick={() => setDraftMode("custom")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "custom" ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium" : "border-[#d3d6db] text-gray-500"}`}>自定义</button>
+          <button onClick={() => setDraftMode("unlimited")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "unlimited" ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium" : "border-[#E5E5E5] text-gray-500"}`}>无限制</button>
+          <button onClick={() => setDraftMode("custom")} className={`text-xs h-9 px-3 rounded-[4px] border transition-colors ${draftMode === "custom" ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium" : "border-[#E5E5E5] text-gray-500"}`}>自定义</button>
         </div>
       )}
       {(type === "integer" || draftMode === "custom") && (

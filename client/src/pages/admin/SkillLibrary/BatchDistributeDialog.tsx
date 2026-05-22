@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Pagination } from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -797,42 +798,25 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 分页控件 */}
-        <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
-          <div className="flex items-center gap-1.5">
-            <span>共 {totalCount} 条，每页</span>
-            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
-              <SelectTrigger className="w-16 h-7 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_SIZE_OPTIONS.map(size => (
-                  <SelectItem key={size} value={String(size)}>{size}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span>条</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              disabled={safeCurrentPage <= 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            >
-              上一页
-            </Button>
-            <span className="px-2 text-gray-600">{safeCurrentPage} / {totalPages}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              disabled={safeCurrentPage >= totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            >
-              下一页
-            </Button>
-          </div>
+        <div className="pt-1">
+          <Pagination
+            total={totalCount}
+            current={safeCurrentPage}
+            pageSize={pageSize}
+            showSizeChanger
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            showTotal={(total) => `共 ${total} 条`}
+            size="small"
+            className="w-full justify-between"
+            onChange={(page, size) => {
+              if (size !== pageSize) {
+                setPageSize(size);
+                setCurrentPage(1);
+              } else {
+                setCurrentPage(page);
+              }
+            }}
+          />
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">

@@ -645,7 +645,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#d3d6db] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#355EF1] transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -799,7 +799,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-[#d3d6db] rounded-[4px] p-0.5 bg-white h-9">
+          <div className="flex items-center gap-1 border border-[#E5E5E5] rounded-[4px] p-0.5 bg-white h-9">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${

@@ -504,11 +504,11 @@ export default function SessionManagement() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <div className="bg-white border border-[#e5e5e5] rounded-[4px] p-4 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-blue-900">会话管理需要开启 CLS 日志服务</h3>
-                <p className="text-xs text-blue-700">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+                <h3 className="text-[14px] font-semibold text-[#09090b]">会话管理需要开启 CLS 日志服务</h3>
+                <p className="text-[13px] text-[#525252] mt-1">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:underline inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               </div>
               <Button
                 onClick={handleOpenCLS}

@@ -877,67 +877,25 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                           }`}
                         >
                           <div className="flex items-center gap-1.5">
-                            {/* 安全检测状态图标 */}
-                            {secStatus && (() => {
-                              if (secStatus === 'not_scanned') {
-                                return (
-                                  <Tooltip delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex flex-shrink-0">
-                                        <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top"><span className="text-xs">未检测</span></TooltipContent>
-                                  </Tooltip>
-                                );
-                              }
-                              if (secStatus === 'scanning') {
-                                return (
-                                  <Tooltip delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex flex-shrink-0">
-                                        <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top"><span className="text-xs">安全检测中</span></TooltipContent>
-                                  </Tooltip>
-                                );
-                              }
-                              const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                              const iconColor = secStatus === 'safe' ? 'text-green-500' : secStatus === 'suspicious' ? 'text-yellow-500' : 'text-red-500';
-                              const statusLabel = secStatus === 'safe' ? '安全' : secStatus === 'suspicious' ? '可疑' : '恶意';
-                              return (
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex flex-shrink-0">
-                                      <IconComp className={`w-3.5 h-3.5 ${iconColor}`} />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top"><span className="text-xs">安全检测：{statusLabel}</span></TooltipContent>
-                                </Tooltip>
-                              );
-                            })()}
-                            <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                            <span className="text-[14px] font-semibold text-[#09090b]">
                               {ver}
                             </span>
                             {isLatest && (
-                              <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
-                                最新
+                              <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">
+                                New
                               </span>
                             )}
-                          </div>
-                          <div className="flex items-center gap-1 mt-1.5">
-                            <p className="text-[10px] text-gray-400">{dateStr}</p>
+                            <span className="text-[12px] text-[#a1a1aa]">{dateStr}</span>
                             {/* ℹ️ 图标 hover 展示更新说明 */}
                             <Tooltip delayDuration={300}>
                               <TooltipTrigger asChild>
-                                <span className="ml-auto cursor-pointer" onClick={(e) => e.stopPropagation()}>
-                                  <Info className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                                <span className="cursor-pointer inline-flex items-center" onClick={(e) => e.stopPropagation()}>
+                                  <Info className="w-3 h-3 text-[#a1a1aa] hover:text-[#09090b]" />
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent side="right" className="max-w-[260px] p-3 bg-white text-gray-900 border border-gray-200 shadow-lg text-xs">
-                                <p className="font-medium mb-1.5 text-gray-900 text-xs">更新说明</p>
-                                <p className="whitespace-pre-line leading-relaxed text-gray-700 text-xs">{versionRecord?.changeLog || '暂无更新说明'}</p>
+                              <TooltipContent side="right" className="max-w-[260px] p-3 bg-white text-[#09090b] border border-[#e5e5e5] shadow-lg text-xs">
+                                <p className="font-medium mb-1.5 text-[#09090b] text-xs">更新说明</p>
+                                <p className="whitespace-pre-line leading-relaxed text-[#525252] text-xs">{versionRecord?.changeLog || '暂无更新说明'}</p>
                               </TooltipContent>
                             </Tooltip>
                           </div>

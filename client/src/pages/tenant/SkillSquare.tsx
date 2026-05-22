@@ -1468,7 +1468,7 @@ function SkillSquareDetail({
                           </span>
                           {isLatest && (
                             <span
-                              className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#355EF1] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]"
+                              className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]"
                             >
                               New
                             </span>
@@ -1650,14 +1650,7 @@ function SkillSquareDetail({
                             </div>
                             <div className="flex items-center gap-2">
                               <span
-                                className="inline-block px-3 py-1 rounded-[3px] text-xs font-medium"
-                                style={
-                                  record.status === 'distributing'
-                                    ? { background: "#EFF6FF", color: "#1447E6" }
-                                    : record.successCount === record.totalCount
-                                      ? { background: "#F0FDF4", color: "#166534" }
-                                      : { background: "#FEFCE8", color: "#854D0E" }
-                                }
+                                className="inline-block px-3 py-1 rounded-[3px] text-xs font-medium bg-[#F5F5F5] text-[#0A0A0A]"
                               >
                                 {record.status === 'distributing'
                                   ? `下发中 ${progress}%`

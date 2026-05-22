@@ -229,7 +229,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full max-w-[360px] flex items-center bg-white border border-[#d3d6db] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#355EF1] transition-colors text-left group"
+          className="w-full max-w-[360px] flex items-center bg-white border border-[#E5E5E5] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
@@ -246,8 +246,8 @@ function InlineQuotaField({
                 }}
                 className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
-                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
+                    ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
                 }`}
               >
                 无限制
@@ -259,8 +259,8 @@ function InlineQuotaField({
                 }}
                 className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
-                    ? "border-[#355EF1] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#d3d6db] text-[#020617] hover:border-[#355EF1]"
+                    ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
+                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
                 }`}
               >
                 自定义
@@ -383,7 +383,7 @@ export default function BasicInfo() {
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   placeholder="例如：A公司企业版Agent"
-                  className="w-full max-w-[360px] h-9 border-[#d3d6db] rounded-[4px] text-sm text-[#020617]"
+                  className="w-full max-w-[360px] h-9 border-[#E5E5E5] rounded-[4px] text-sm text-[#020617]"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -393,7 +393,7 @@ export default function BasicInfo() {
                 </div>
                 <div className="flex items-center gap-2">
                   <img src="/icon/上传图片默认icon.svg" alt="" className="w-14 h-14 shrink-0 rounded-[6px]" />
-                  <label className="flex items-center gap-2 px-4 py-[5px] border border-dashed border-[#ddd] rounded-[3px] text-sm text-[rgba(0,0,0,0.9)] hover:border-[#355EF1] cursor-pointer transition-colors bg-white">
+                  <label className="flex items-center gap-2 px-4 py-[5px] border border-dashed border-[#ddd] rounded-[3px] text-sm text-[rgba(0,0,0,0.9)] hover:border-[#1447E6] cursor-pointer transition-colors bg-white">
                     <Upload className="w-4 h-4" />
                     更换logo
                     <input

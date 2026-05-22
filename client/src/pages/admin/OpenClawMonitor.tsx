@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { SurfaceCard, SurfaceOverlay } from "@/components/ui/Surface";
 import {
   Tooltip,
   TooltipContent,
@@ -2075,13 +2077,12 @@ export default function AgentMonitor() {
                           onClick={() => setShowStatusFilter(false)}
                           style={{ pointerEvents: 'auto' }}
                         />
-                        <div 
-                          className="fixed w-56 bg-white border border-gray-200 rounded-[4px] z-50 will-change-transform" 
+                        <SurfaceOverlay
+                          className="fixed w-56 rounded-[4px] z-50 will-change-transform"
                           style={{
                             top: `${filterPosition.top}px`,
                             left: `${filterPosition.left}px`,
                             pointerEvents: 'auto',
-                            boxShadow: 'var(--shadow-overlay)',
                           }}
                         >
                           <div className="p-3 space-y-2 max-h-64 overflow-y-auto">

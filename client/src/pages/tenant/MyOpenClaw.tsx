@@ -59,7 +59,10 @@ const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value
 // 8 种状态配置
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
 const RUNNING_ONLY_ACTION_STATUSES: OpenClawStatus[] = ["running"];
+const RENAME_ALLOWED_STATUSES: OpenClawStatus[] = ["running", "shutdown"];
 const canRunOnlyAction = (status: OpenClawStatus) => RUNNING_ONLY_ACTION_STATUSES.includes(status);
+const canRenameStatus = (status: OpenClawStatus) => RENAME_ALLOWED_STATUSES.includes(status);
+
 
 interface OpenClawItem {
 
@@ -519,9 +522,6 @@ export default function MyOpenClaw() {
     toast.success(`「${name}」正在重新安装...`);
   };
 
-  const canRenameStatus = (status: OpenClawStatus) => canRunOnlyAction(status);
-
-
   const openRenameDialog = (claw: { id: string; name: string }) => {
     const target = claws.find((item) => item.id === claw.id);
     if (!target || !canRenameStatus(target.status)) return;
@@ -743,7 +743,7 @@ export default function MyOpenClaw() {
                   onDeleteConfirm={(claw) => { setDeleteConfirm({ id: claw.id, name: claw.name, status: claw.status }); setDeleteConfirmInput(""); }}
                   onRestartConfirm={(claw) => setRestartConfirm(claw)}
                   onReinstallConfirm={(claw) => setReinstallConfirm(claw)}
-                  onRenameConfirm={(claw: { id: string; name: string }) => openRenameDialog(claw)}
+                  onRename={(id: string, name: string) => openRenameDialog({ id, name })}
                   onRemoveRoleConfirm={(claw) => setRemoveRoleConfirm(claw)}
                   onRetry={handleRetry}
 
@@ -869,7 +869,7 @@ export default function MyOpenClaw() {
                                 </DropdownMenuItem>
                               )}
 
-                              {canRunOnlyAction(claw.status) ? (
+                              {canRenameStatus(claw.status) ? (
                                 <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openRenameDialog({ id: claw.id, name: claw.name }); }}>
                                   <Pencil className="w-4 h-4 mr-2 text-gray-500" />
                                   重命名
@@ -1142,7 +1142,7 @@ export default function MyOpenClaw() {
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-gray-900">重命名 Agent</DialogTitle>
               <DialogDescription className="text-sm text-gray-500">
-                支持中英文、数字、空格及常用符号，名称长度不能超过 128 字节。
+                支持中英文、数字、空格及常用符号。
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">

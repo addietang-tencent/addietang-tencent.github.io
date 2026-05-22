@@ -522,35 +522,33 @@ export default function ModelQuota() {
             <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
             </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide hover:bg-gray-50">
-                    <TableHead className="text-left px-5 py-3 font-medium">模型名称</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium">总请求数</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium">输入 Tokens</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium">输出 Tokens</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium">总 Tokens</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>模型名称</TableHead>
+                  <TableHead className="text-right">总请求数</TableHead>
+                  <TableHead className="text-right">输入 Tokens</TableHead>
+                  <TableHead className="text-right">输出 Tokens</TableHead>
+                  <TableHead className="text-right">总 Tokens</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {summarySlice.map((row) => (
+                  <TableRow key={row.model}>
+                    <TableCell>{row.model}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.requests.toLocaleString()}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.inputTokens.toLocaleString()}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.outputTokens.toLocaleString()}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.totalTokens.toLocaleString()}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-gray-50">
-                  {summarySlice.map((row) => (
-                    <TableRow key={row.model} className="hover:bg-gray-50/60">
-                      <TableCell className="px-5 py-3.5 text-sm text-gray-600">{row.model}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.requests.toLocaleString()}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.inputTokens.toLocaleString()}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.outputTokens.toLocaleString()}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500">{row.totalTokens.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                  {summarySlice.length === 0 && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+                {summarySlice.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-[#a3a3a3]">暂无数据</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
             <Pagination
               total={summary.length}
               current={summaryPage}
@@ -566,43 +564,44 @@ export default function ModelQuota() {
             <div className="px-5 py-4 border-b border-[#e5e5e5]">
               <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
             </div>
-            <div className="overflow-x-auto max-h-[360px] overflow-y-auto scrollbar-on-hover">
-              <Table>
-                <TableHeader className="sticky top-0 z-10">
-                  <TableRow className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide hover:bg-gray-50">
-                    <TableHead className="text-left px-5 py-3 font-medium whitespace-nowrap w-44">请求时间</TableHead>
-                    <TableHead className="text-left px-5 py-3 font-medium">模型名称</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium w-32">输入 Tokens</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium w-32">输出 Tokens</TableHead>
-                    <TableHead className="text-right px-5 py-3 font-medium w-32">总 Tokens</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-44">请求时间</TableHead>
+                  <TableHead>模型名称</TableHead>
+                  <TableHead className="text-right w-32">输入 Tokens</TableHead>
+                  <TableHead className="text-right w-32">输出 Tokens</TableHead>
+                  <TableHead className="text-right w-32">总 Tokens</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {detailSlice.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="tabular-nums text-gray-500 w-44">{row.time}</TableCell>
+                    <TableCell>{row.model}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.inputTokens.toLocaleString()}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.outputTokens.toLocaleString()}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">{row.totalTokens.toLocaleString()}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody className="divide-y divide-gray-50">
-                  {detailSlice.map((row, idx) => (
-                    <TableRow key={idx} className="hover:bg-gray-50/60">
-                      <TableCell className="px-5 py-3.5 text-sm tabular-nums text-gray-500 whitespace-nowrap w-44">{row.time}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-sm text-gray-600">{row.model}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.inputTokens.toLocaleString()}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.outputTokens.toLocaleString()}</TableCell>
-                      <TableCell className="px-5 py-3.5 text-right text-sm tabular-nums text-gray-500 w-32">{row.totalTokens.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                  {detailSlice.length === 0 && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">暂无数据</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                ))}
+                {detailSlice.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-400 py-8">暂无数据</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <Pagination
+                total={details.length}
+                current={detailPage}
+                pageSize={DETAIL_PAGE_SIZE}
+                showTotal={(total) => `共 ${total} 条记录`}
+                className="w-full justify-between"
+                hideOnSinglePage
+                onChange={(p) => setDetailPage(p)}
+              />
             </div>
-            <Pagination
-              total={details.length}
-              current={detailPage}
-              pageSize={DETAIL_PAGE_SIZE}
-              simple
-              hideOnSinglePage
-              onChange={(p) => setDetailPage(p)}
-            />
           </SurfaceCard>
 
           </div>{/* end 内容区 px-[42px] py-6 */}

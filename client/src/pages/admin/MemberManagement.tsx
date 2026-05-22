@@ -2581,10 +2581,10 @@ export default function MemberManagement() {
             )}
           </div>
           <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
-          <table className="text-sm" style={{ width: "max-content", minWidth: hasOneid ? "1320px" : "100%" }}>
+          <table className="text-sm w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
             <thead>
-              <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "220px" }}>
+              <tr className="border-b border-[#f0f0f0] bg-[#fafafa]">
+                <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2595,7 +2595,7 @@ export default function MemberManagement() {
                 </th>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>
+                    <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
@@ -2604,15 +2604,15 @@ export default function MemberManagement() {
                         </Tooltip>
                       </div>
                     </th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
+                    <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                   </>
                 )}
                 {!hasOneid && (
-                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
+                  <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                 )}
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>角色</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>状态</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "120px" }}>
+                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "80px" }}>角色</th>
+                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "80px" }}>状态</th>
+                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "120px" }}>
                   <div className="flex items-center gap-1.5">
                     Agent 上限
                     <Tooltip>
@@ -2621,7 +2621,7 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap">
                   <div className="flex items-center gap-1.5">
                     每日 Tokens 上限
                     <Tooltip>
@@ -2630,8 +2630,8 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
-                <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
+                <th className="text-center px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fafafa" }}>
                   {memberTableCanScrollRight && (
                     <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                   )}
@@ -2841,40 +2841,28 @@ export default function MemberManagement() {
                     {memberTableCanScrollRight && (
                       <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                     )}
-                    <div className="flex items-center justify-center gap-0.5">
+                    <div className="flex items-center justify-center gap-3">
                     {hasOneid ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-gray-400 hover:text-blue-600 h-7 w-7 p-0"
-                            onClick={() => openEditDialog(member)}
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>编辑</TooltipContent>
-                      </Tooltip>
+                      <Button
+                        variant="link-dark"
+                        size="sm"
+                        onClick={() => openEditDialog(member)}
+                      >
+                        编辑
+                      </Button>
                     ) : (
                       <>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-gray-400 hover:text-blue-600 h-7 w-7 p-0"
-                              onClick={() => openEditDialog(member)}
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>编辑</TooltipContent>
-                        </Tooltip>
+                        <Button
+                          variant="link-dark"
+                          size="sm"
+                          onClick={() => openEditDialog(member)}
+                        >
+                          编辑
+                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600 h-7 w-7 p-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
-                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            <Button variant="link-dark" size="sm" className="!ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
+                              更多
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">

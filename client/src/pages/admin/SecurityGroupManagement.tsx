@@ -3874,7 +3874,7 @@ export default function SecurityGroupManagement() {
               onInteractOutside={(e) => e.preventDefault()}
               onEscapeKeyDown={(e) => e.preventDefault()}
             >
-              <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
+              <DialogHeader className="mx-0 gap-0 px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
                 <DialogTitle className="text-base font-semibold text-gray-900">
                   {showEditVpcDialog?.type === "enterprise"
                     ? "编辑预设策略"
@@ -3883,52 +3883,58 @@ export default function SecurityGroupManagement() {
                       : "编辑分组策略"}
                 </DialogTitle>
                 {showEditVpcDialog?.type === "enterprise" ? (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 ) : showEditVpcDialog?.id === NEW_GROUP_VPC_ID ? (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 ) : (
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 mt-3">
-                    <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                    <ul className="text-xs text-blue-600 leading-relaxed space-y-1">
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>可修改该分组策略的应用范围、VPC 和子网。</span>
-                      </li>
-                      <li className="flex gap-1.5">
-                        <span className="shrink-0">•</span>
-                        <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <Alert variant="info" className="mt-3 px-3 py-2.5">
+                    <Info />
+                    <AlertDescription>
+                      <ul className="space-y-1">
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>可修改该分组策略的应用范围、VPC 和子网。</span>
+                        </li>
+                        <li className="flex gap-1.5">
+                          <span className="shrink-0">•</span>
+                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                        </li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
                 )}
                 {editAutoCleaned && showEditVpcDialog?.id !== NEW_GROUP_VPC_ID && (
-                  <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mt-3">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                    <span className="text-xs text-amber-700 leading-relaxed break-all">
+                  <Alert variant="warning" className="mt-2 px-3 py-2.5">
+                    <CircleAlert />
+                    <AlertDescription className="break-all">
                       {(() => {
                         const segs: string[] = [];
                         if (editAutoCleaned.vpcId) {
@@ -3941,8 +3947,8 @@ export default function SecurityGroupManagement() {
                         }
                         return `检测到原配置中的${segs.join("、")} 已从腾讯云控制台被删除，已自动从本次编辑中移除。`;
                       })()}
-                    </span>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                 )}
               </DialogHeader>
 

@@ -175,6 +175,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                 取消
               </Button>
               <Button
+                variant="dialog-confirm"
                 onClick={handleConfirm}
                 disabled={!confirmChecked}
               >

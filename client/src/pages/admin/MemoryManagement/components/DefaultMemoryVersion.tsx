@@ -215,7 +215,7 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
             <Button variant="outline" onClick={handleCancel}>
               取消
             </Button>
-            <Button onClick={handleConfirm}>
+            <Button variant="dialog-confirm" onClick={handleConfirm}>
               确认
             </Button>
           </DialogFooter>

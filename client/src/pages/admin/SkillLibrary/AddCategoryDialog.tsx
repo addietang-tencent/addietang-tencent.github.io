@@ -98,7 +98,7 @@ export default function AddCategoryDialog({
           <Button variant="outline" onClick={handleClose}>
             取消
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button variant="dialog-confirm" onClick={handleConfirm}>
             确认添加
           </Button>
         </DialogFooter>

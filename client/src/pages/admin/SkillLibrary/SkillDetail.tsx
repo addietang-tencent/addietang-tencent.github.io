@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusTag } from '@/components/ui/status-tag';
+import { Badge } from '@/components/ui/badge';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
@@ -1226,12 +1227,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
-              <span className="relative group">
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-[4px] bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                  限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                </span>
-              </span>
+              <Badge variant="secondary" className="rounded-full bg-[#F0F2F8] text-[#1447E6] text-[10px] px-2 py-0.5 border-0">限免</Badge>
             </AlertDialogTitle>
             <AlertDialogDescription>
               确认对技能「{skill.name}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。

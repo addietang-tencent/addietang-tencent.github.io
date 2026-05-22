@@ -613,11 +613,11 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
     <Dialog open={open} onOpenChange={(o) => { if (!o) { resetForm(); onCancel(); } }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>新建初始技能包</DialogTitle>
+          <DialogTitle className="text-[#0A0A0A]">新建初始技能包</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 my-2">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">技能包名称</label>
+            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">技能包名称</label>
             <Input
               placeholder="例如：全员通用技能包"
               value={name}
@@ -628,7 +628,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
           </div>
           {/* 应用范围 */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">应用范围</label>
+            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">应用范围</label>
             <div className="space-y-3">
               <div className="flex items-center gap-1.5">
                 <button
@@ -740,7 +740,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={() => { resetForm(); onCancel(); }}>取消</Button>
-          <Button onClick={handleConfirm} disabled={!trimmed || (scopeType === 'private' && groupIds.length === 0)}>创建</Button>
+          <Button variant="dialog-confirm" onClick={handleConfirm} disabled={!trimmed || (scopeType === 'private' && groupIds.length === 0)}>创建</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -762,16 +762,16 @@ function PublishConfirmDialog({ open, packageName, isActive, onConfirm, onCancel
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>确认保存修改</DialogTitle>
+          <DialogTitle className="text-[#0A0A0A]">确认保存修改</DialogTitle>
         </DialogHeader>
         <div className="my-2">
-          <p className="text-sm text-gray-600">
-            本次修改将<strong className="text-gray-800">应用于新创建的 Agent</strong>，已创建的 Agent 保持原有初始配置不受影响。
+          <p className="text-sm text-[#0A0A0A]">
+            本次修改将<span className="font-medium">应用于新创建的 Agent</span>，已创建的 Agent 保持原有初始配置不受影响。
           </p>
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>取消</Button>
-          <Button onClick={onConfirm}>
+          <Button variant="dialog-confirm" onClick={onConfirm}>
             确认保存
           </Button>
         </DialogFooter>
@@ -794,16 +794,17 @@ function DeleteConfirmDialog({ open, packageName, onConfirm, onCancel }: DeleteC
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>确认删除</DialogTitle>
+          <DialogTitle className="text-[#0A0A0A]">确认删除</DialogTitle>
         </DialogHeader>
         <div className="my-2">
-          <p className="text-sm text-gray-600">
-            确定要删除「<span className="font-medium text-gray-800">{packageName}</span>」吗？删除后不可恢复。
+          <p className="text-sm text-[#0A0A0A]">
+            确定要删除「<span className="font-medium text-[#d42a1e]">{packageName}</span>」吗？
+            <span className="font-medium text-[#d42a1e]">删除后不可恢复</span>。
           </p>
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onCancel}>取消</Button>
-          <Button onClick={onConfirm} className="bg-red-600 hover:bg-red-700">确认删除</Button>
+          <Button variant="destructive" onClick={onConfirm}>确认删除</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

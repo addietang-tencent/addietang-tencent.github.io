@@ -300,7 +300,7 @@ export default function ServerManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowImportDialog(false)}>取消</Button>
-            <Button onClick={() => { setShowImportDialog(false); toast.success("镜像导入任务已提交"); }}
+            <Button variant="dialog-confirm" onClick={() => { setShowImportDialog(false); toast.success("镜像导入任务已提交"); }}
              >
               确认导入
             </Button>
@@ -368,7 +368,7 @@ export default function ServerManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddRuleDialog(false)}>取消</Button>
-            <Button onClick={handleSaveRule}>
+            <Button variant="dialog-confirm" onClick={handleSaveRule}>
               {editRule ? "保存" : "确认添加"}
             </Button>
           </DialogFooter>

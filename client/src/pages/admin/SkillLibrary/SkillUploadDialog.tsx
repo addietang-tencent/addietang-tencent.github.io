@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Upload, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check, ShieldCheck, Settings } from 'lucide-react';
+import { AlertCircle, AlertTriangle, X, ChevronDown, ChevronRight, Loader, FileText, Download, Search as SearchIcon, Check, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { StatusTag } from '@/components/ui/status-tag';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
@@ -179,7 +180,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
         groupIds: [],
       });
       setGroupSearchQuery('');
-      setEnableSecurityScan(securityServiceActive ? defaultSecurityScan : false);
+      setEnableSecurityScan(false);
     }
     onOpenChange(newOpen);
   };
@@ -194,7 +195,7 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
     groupIds: [] as string[],
   });
   const [groupSearchQuery, setGroupSearchQuery] = useState('');
-  const [enableSecurityScan, setEnableSecurityScan] = useState(securityServiceActive ? defaultSecurityScan : false);
+  const [enableSecurityScan, setEnableSecurityScan] = useState(false);
 
   const hasSuccessfulUpload = uploadedFiles.some(f => f.status === 'success');
 
@@ -494,54 +495,44 @@ export default function SkillUploadDialog({ open, onOpenChange, onConfirm, exist
 
   return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[532px] max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[532px]" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>发布新技能</DialogTitle>
           </DialogHeader>
 
-        <div className="space-y-6">
+        <DialogBody className="flex-1">
+        <div className="space-y-5">
+          {/* 提示文字 - 只有在没有上传文件时显示 */}
+          {uploadedFiles.length === 0 && (
+            <div
+              role="alert"
+              className="relative w-full rounded-[4px] border px-4 py-3 flex items-start gap-2 text-xs border-[#FCD28C] bg-[#FFFBED] text-[#181818] [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:mt-0.5 [&>svg]:text-[#FCA004]"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <div className="flex-1 min-w-0 leading-5">
+                <p>请先上传 Skill 文件，然后填写技能信息。</p>
+              </div>
+            </div>
+          )}
+
           {/* 文件上传区域 */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold">选择上传方式</Label>
-
-            <div
-              onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
-              onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                uploadedFiles.length > 0
-                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                  : 'border-gray-300 hover:border-blue-400'
-              }`}
-            >
-              <Upload className={`w-8 h-8 mx-auto mb-2 ${
-                uploadedFiles.length > 0 ? 'text-gray-300' : 'text-gray-400'
-              }`} />
-              <p className={`text-sm mb-2 ${
-                uploadedFiles.length > 0 ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                {uploadedFiles.length > 0 ? '如需替换，请先删除下方文件' : '点击或拖拽文件上传'}
-              </p>
-
-              {/* 上传要求 + 下载样例 */}
-              <div className="flex items-center justify-center gap-4 mb-3">
+            <Label className="text-sm font-medium text-[#0A0A0A]">
+              {uploadedFiles.length > 0 ? '文件' : '选择上传方式'}
+            </Label>
+            {uploadedFiles.length > 0 && (
+              <p className="text-xs text-[#737373]">
+                如需替换，请先删除当前文件
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      上传要求
-                    </button>
+                    <button type="button" className="ml-2 text-[#1447E6] hover:underline cursor-pointer">查看上传要求</button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[420px] p-4" align="center" side="bottom">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">上传要求</p>
-                    <ol className="text-sm text-gray-600 space-y-2 list-decimal pl-5">
+                  <PopoverContent className="w-[360px] p-4" align="start" side="bottom">
+                    <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
                       <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
                       <li className="leading-relaxed">
                         SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
-                        <pre className="mt-1.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 font-mono whitespace-pre leading-relaxed">
+                        <pre className="mt-1.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
 {`---
 name: skill-creator
 description: this is a skill creator.
@@ -552,28 +543,32 @@ description: this is a skill creator.
                     </ol>
                   </PopoverContent>
                 </Popover>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); downloadSampleSkillZip(); toast.success('样例文件下载中...'); }}
-                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  下载样例
-                </button>
-              </div>
+              </p>
+            )}
+
+            {uploadedFiles.length === 0 && (
+            <>
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              className="border border-dashed rounded-[4px] p-4 text-center transition-colors border-[#E5E5E5] hover:border-[#1447E6]"
+            >
+              <p className="text-sm mb-3 text-[#737373]">
+                点击或拖拽文件上传
+              </p>
 
               <div className="flex gap-3 justify-center">
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadedFiles.length > 0}
                 >
                   上传 ZIP
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => folderInputRef.current?.click()}
-                  disabled={uploadedFiles.length > 0}
                 >
                   选择文件夹
                 </Button>
@@ -596,126 +591,130 @@ description: this is a skill creator.
                 {...({ webkitdirectory: '' } as any)}
               />
             </div>
+
+            {/* 上传要求卡片（含 下载样例 链接按钮）—— 放在虚线框外 */}
+            <div className="border border-[#E5E5E5] rounded-[4px] p-4 text-left bg-white">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-[#0A0A0A]">
+                  上传要求
+                </p>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="h-auto p-0 text-sm gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadSampleSkillZip();
+                    toast.success('样例文件下载中...');
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  下载样例
+                </Button>
+              </div>
+              <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
+                <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
+                <li className="leading-relaxed">
+                  SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
+                  <pre className="mt-1.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
+{`---
+name: skill-creator
+description: this is a skill creator.
+---`}
+                  </pre>
+                </li>
+                <li>建议文件夹/ZIP 包名称和 name 名称保持一致</li>
+              </ol>
+            </div>
+            </>
+            )}
           </div>
 
           {/* 已上传文件列表 */}
           {uploadedFiles.length > 0 && (
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">已上传文件</Label>
-              <div className="space-y-2">
-                {uploadedFiles.map((file) => (
-                  <div key={file.name} className="border border-gray-200 rounded-xl overflow-hidden">
-                    {/* 文件项头部 */}
-                    <div className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center gap-3 flex-1">
-                        {file.status !== 'parsing' && (
-                          <button
-                            onClick={() => setExpandedFile(expandedFile === file.name ? null : file.name)}
-                            className="flex items-center gap-1"
-                          >
-                            {expandedFile === file.name ? (
-                              <ChevronDown className="w-4 h-4 text-gray-600" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4 text-gray-600" />
-                            )}
-                          </button>
+            <div className="space-y-2">
+              {uploadedFiles.map((file) => (
+                <div key={file.name} className="border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden">
+                  {/* 文件项头部 */}
+                  <div
+                    className="flex items-center justify-between px-3 py-3 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
+                    onClick={() => file.status !== 'parsing' && setExpandedFile(expandedFile === file.name ? null : file.name)}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {file.status === 'success' && (
+                        <span className="w-7 h-7 rounded-full bg-[#F5F5F5] flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4 text-[#525252]" />
+                        </span>
+                      )}
+                      {file.status === 'error' && <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
+                      {file.status === 'parsing' && <Loader className="w-5 h-5 text-blue-600 animate-spin shrink-0" />}
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-sm font-normal text-[#0A0A0A]">{file.name}</p>
+                        {file.status === 'success' && file.files && (
+                          <span className="text-xs text-[#737373] shrink-0">包含 {file.files.length} 个文件</span>
                         )}
-                        {file.status === 'parsing' && null}
-
-                        <div className="flex items-center gap-2">
-                          {file.status === 'success' && (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          )}
-                          {file.status === 'error' && (
-                            <AlertCircle className="w-5 h-5 text-red-600" />
-                          )}
-                          {file.status === 'parsing' && (
-                            <Loader className="w-5 h-5 text-blue-600 animate-spin" />
-                          )}
-                          <div className="text-left">
-                            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                            <p className="text-xs text-gray-500">
-                              {file.status === 'parsing' && '正在解析...'}
-                              {file.status === 'success' && file.files && `包含 ${file.files.length} 个文件`}
-                              {file.status === 'error' && file.error}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {file.status === 'success' && (
-                          <span className="text-xs font-medium text-green-600">成功</span>
-                        )}
-                        {file.status === 'error' && (
-                          <span className="text-xs font-medium text-red-600">失败</span>
-                        )}
-                        {file.status !== 'parsing' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveFile(file.name)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        )}
+                        {file.status === 'parsing' && <span className="text-xs text-[#737373]">正在解析...</span>}
+                        {file.status === 'error' && <span className="text-xs text-red-500 truncate">{file.error}</span>}
                       </div>
                     </div>
 
-                    {/* 文件详情展开 */}
-                    {expandedFile === file.name && file.files && file.status !== 'parsing' && (
-                      <div className="border-t border-gray-200 bg-white p-3 space-y-2">
-                        <p className="text-xs font-semibold text-gray-700">查看文件列表</p>
-                        <div className="space-y-1 max-h-48 overflow-y-auto">
-                          {file.files.map((f) => (
-                            <div key={f.name} className="flex justify-between text-xs text-gray-600">
-                              <span>{f.name}</span>
-                              <span>{(f.size / 1024).toFixed(2)} KB</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        {file.skillmdParsed && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <p className="text-xs font-semibold text-gray-700 mb-2">SKILL.md 校验通过</p>
-                            <div className="text-xs text-green-600 space-y-1">
-                              {file.skillmdParsed.name && (
-                                <p>
-                                  <span className="font-medium">name:</span> {file.skillmdParsed.name}
-                                </p>
-                              )}
-                              {file.skillmdParsed.description && (
-                                <p>
-                                  <span className="font-medium">description:</span>{' '}
-                                  {file.skillmdParsed.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {file.status !== 'parsing' && (
+                        <>
+                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleRemoveFile(file.name); }} className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-500">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                          <span className="h-7 w-7 flex items-center justify-center">
+                            {expandedFile === file.name ? <ChevronDown className="w-4 h-4 text-[#737373]" /> : <ChevronRight className="w-4 h-4 text-[#737373]" />}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* 文件详情展开 */}
+                  {expandedFile === file.name && file.files && file.status !== 'parsing' && (
+                    <div className="border-t border-[#E5E5E5] bg-white p-3 space-y-2">
+                      <p className="text-xs font-medium text-[#0A0A0A]">文件列表</p>
+                      <div className="space-y-1 max-h-48 overflow-y-auto">
+                        {file.files.map((f) => (
+                          <div key={f.name} className="flex justify-between text-xs text-[#737373]">
+                            <span>{f.name}</span>
+                            <span>{(f.size / 1024).toFixed(2)} KB</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {file.skillmdParsed && (
+                        <div className="mt-3 pt-3 border-t border-[#E5E5E5]">
+                          <p className="text-xs font-medium text-[#0A0A0A] mb-2">SKILL.md 校验通过</p>
+                          <div className="text-xs text-green-600 space-y-1">
+                            {file.skillmdParsed.name && (
+                              <p>
+                                <span className="font-medium">name:</span> {file.skillmdParsed.name}
+                              </p>
+                            )}
+                            {file.skillmdParsed.description && (
+                              <p>
+                                <span className="font-medium">description:</span>{' '}
+                                {file.skillmdParsed.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* 提示文字 - 只有在没有上传文件时显示 */}
-          {uploadedFiles.length === 0 && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-              <p className="text-sm text-blue-600 font-medium">请先上传 Skill 文件，然后填写技能信息</p>
-            </div>
-          )}
-
-          {/* 技能信息表单 - 只有在上传成功后才启用 */}
-          <div className={`space-y-4 border-t border-gray-200 pt-4 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
+          {/* 技能信息表单 - 只有在上传成功后才显示 */}
+          {hasSuccessfulUpload && (
+          <div className="space-y-5">
             <div>
-              <Label className="text-base font-semibold">技能信息</Label>
-            </div>
-
-            <div>
-              <Label htmlFor="slug" className="text-sm">
+              <Label htmlFor="slug" className="text-sm font-medium text-[#0A0A0A]">
                 唯一标识 (slug) <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -726,11 +725,11 @@ description: this is a skill creator.
                 placeholder="e.g., doc-summarizer-1"
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
+              <p className="text-xs text-[#737373] mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
             </div>
 
           <div>
-              <Label htmlFor="name" className="text-sm">
+              <Label htmlFor="name" className="text-sm font-medium text-[#0A0A0A]">
                 显示名称 <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -744,7 +743,7 @@ description: this is a skill creator.
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-sm">
+              <Label htmlFor="description" className="text-sm font-medium text-[#0A0A0A]">
                 描述
               </Label>
               <Textarea
@@ -759,7 +758,7 @@ description: this is a skill creator.
             </div>
 
             <div>
-              <Label htmlFor="version" className="text-sm">
+              <Label htmlFor="version" className="text-sm font-medium text-[#0A0A0A]">
                 版本号 <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -773,50 +772,54 @@ description: this is a skill creator.
             </div>
 
             <div>
-              <Label className="text-sm">分类</Label>
+              <Label className="text-sm font-medium text-[#0A0A0A]">分类</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {DEFAULT_CATEGORIES.map(cat => (
-                  <button
-                    key={cat.id}
-                    disabled={!hasSuccessfulUpload}
-                    onClick={() => {
-                      if (!hasSuccessfulUpload) return;
-                      setFormData(prev => ({
-                        ...prev,
-                        categories: prev.categories.includes(cat.id)
-                          ? prev.categories.filter(id => id !== cat.id)
-                          : [...prev.categories, cat.id]
-                      }));
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                      formData.categories.includes(cat.id)
-                        ? 'border-blue-200 bg-blue-50 text-blue-600'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                    } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+                {DEFAULT_CATEGORIES.map(cat => {
+                  const isSelected = formData.categories.includes(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      disabled={!hasSuccessfulUpload}
+                      onClick={() => {
+                        if (!hasSuccessfulUpload) return;
+                        setFormData(prev => ({
+                          ...prev,
+                          categories: prev.categories.includes(cat.id)
+                            ? prev.categories.filter(id => id !== cat.id)
+                            : [...prev.categories, cat.id]
+                        }));
+                      }}
+                      className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors whitespace-nowrap inline-flex items-center gap-1 ${
+                        isSelected
+                          ? 'bg-[#020617] border-[#020617] text-white'
+                          : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                      } ${!hasSuccessfulUpload ? 'cursor-not-allowed' : ''}`}
+                    >
+                      {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
+                      {cat.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* 应用范围 */}
             <div>
-              <Label className="text-sm">应用范围</Label>
+              <Label className="text-sm font-medium text-[#0A0A0A]">应用范围</Label>
               <div className="mt-2 space-y-3">
                 {/* 两个胶囊切换按钮 + 下拉框同行 */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <button
                     disabled={!hasSuccessfulUpload}
                     onClick={() => {
                       if (!hasSuccessfulUpload) return;
                       setFormData(prev => ({ ...prev, scope: 'public', groupIds: [] }));
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                    className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                       formData.scope === 'public'
-                        ? 'border-blue-200 bg-blue-50 text-blue-600'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                    } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        ? 'bg-[#020617] border-[#020617] text-white'
+                        : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                    } ${!hasSuccessfulUpload ? 'cursor-not-allowed' : ''}`}
                   >
                     全部用户
                   </button>
@@ -826,11 +829,11 @@ description: this is a skill creator.
                       if (!hasSuccessfulUpload) return;
                       setFormData(prev => ({ ...prev, scope: 'private' }));
                     }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
+                    className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                       formData.scope === 'private'
-                        ? 'border-blue-200 bg-blue-50 text-blue-600'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                    } ${!hasSuccessfulUpload ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        ? 'bg-[#020617] border-[#020617] text-white'
+                        : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                    } ${!hasSuccessfulUpload ? 'cursor-not-allowed' : ''}`}
                   >
                     按分组
                   </button>
@@ -841,7 +844,7 @@ description: this is a skill creator.
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <PopoverTrigger asChild>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                            <button className="flex items-center justify-between gap-2 h-8 px-4 flex-1 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border border-[#E5E5E5] bg-white text-[#0A0A0A] hover:border-[#1447E6] hover:bg-[#FAFAFA] data-[state=open]:border-[#1447E6] data-[state=open]:bg-[#FAFAFA] transition-colors">
                               <span className="truncate">
                                 {formData.groupIds.length > 0
                                   ? `已选 ${formData.groupIds.length} 个分组`
@@ -862,12 +865,12 @@ description: this is a skill creator.
                       <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
                         <div className="p-2 border-b border-[#e5e5e5]">
                           <div className="relative">
-                            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                             <input
                               placeholder="搜索分组…"
                               value={groupSearchQuery}
                               onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                              className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] outline-none focus:border-[#1447E6] transition-colors"
                             />
                           </div>
                         </div>
@@ -887,29 +890,29 @@ description: this is a skill creator.
                                         : [...prev.groupIds, group.id]
                                     }));
                                   }}
-                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-[#FAFAFA] transition-colors text-left"
                                 >
                                   <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                                    checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
+                                    checked ? 'bg-[#1447E6] border-[#1447E6]' : 'border-[#E5E5E5] bg-white'
                                   }`}>
                                     {checked && <Check className="w-2.5 h-2.5 text-white" />}
                                   </span>
-                                  <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                                  <span className="text-xs text-[#0A0A0A] truncate">{group.name}</span>
                                 </button>
                               );
                             })}
                           {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
-                            <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
+                            <p className="text-[11px] text-[#A3A3A3] py-3 text-center">无匹配分组</p>
                           )}
                         </div>
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5]">
-                          <p className="text-[11px] text-gray-400">
+                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5]">
+                          <p className="text-[11px] text-[#A3A3A3]">
                             已选 {formData.groupIds.length} 个分组
                           </p>
                           {formData.groupIds.length > 0 && (
                             <button
                               onClick={() => setFormData(prev => ({ ...prev, groupIds: [] }))}
-                              className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                              className="text-[11px] text-[#1447E6] hover:opacity-80 transition-opacity"
                             >
                               清除
                             </button>
@@ -923,17 +926,29 @@ description: this is a skill creator.
             </div>
 
             {/* 安全检测 */}
-            <div className="border-t border-[#e5e5e5] pt-4">
-              <div className="flex items-start gap-3">
+            <div className="border border-[#E5E5E5] rounded-[4px] p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-[#0A0A0A]">提交后进行安全检测</span>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span><StatusTag variant="blue" className="cursor-default">限免</StatusTag></span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs max-w-[260px] leading-relaxed">
+                      限时免费，该检测能力正在公测中，暂不收费，后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
+                    </TooltipContent>
+                  </Tooltip>
+                  {!securityServiceActive && (
+                    <StatusTag variant="gray">未开通</StatusTag>
+                  )}
+                </div>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <span className="mt-0.5">
-                      <Checkbox
-                        id="security-scan"
+                    <span>
+                      <Switch
                         checked={enableSecurityScan}
-                        onCheckedChange={(checked) => setEnableSecurityScan(checked === true)}
+                        onCheckedChange={(checked) => setEnableSecurityScan(checked)}
                         disabled={!hasSuccessfulUpload || !securityServiceActive}
-                        className="mt-0"
                       />
                     </span>
                   </TooltipTrigger>
@@ -943,75 +958,37 @@ description: this is a skill creator.
                     </TooltipContent>
                   )}
                 </Tooltip>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <label htmlFor="security-scan" className={`flex items-center gap-1.5 text-sm font-medium cursor-pointer ${!securityServiceActive ? 'text-gray-400' : 'text-gray-700'}`}>
-                      <ShieldCheck className={`w-3.5 h-3.5 ${!securityServiceActive ? 'text-gray-400' : 'text-green-600'}`} />
-                      提交安全检测
-                      <span className="relative group">
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-600 border border-orange-200 cursor-default">限免</span>
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 rounded-xl bg-gray-800 text-white text-xs leading-relaxed whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                          限时免费，该检测能力正在公测中，暂不收费，<br />后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
-                        </span>
-                      </span>
-                      {!securityServiceActive && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 border border-gray-200">未开通</span>
-                      )} - 安全检测默认不勾选，上传/更新行为统一 - 简化AgentToolLibrary/EnterpriseSkillLibrary组件层级)
-                    </label>
-                    {securityServiceActive && (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Settings className="w-3.5 h-3.5" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[280px] p-3" align="end" side="top">
-                          <p className="text-xs font-medium text-gray-700 mb-2.5">设置默认行为</p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-600">上传/更新时默认</span>
-                            <div className="flex items-center gap-2 ml-3 shrink-0">
-                              <span className={`text-[11px] ${!defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>不勾选</span>
-                              <Switch
-                                checked={defaultSecurityScan}
-                                onCheckedChange={(checked) => {
-                                  onDefaultSecurityScanChange(checked);
-                                  // 同步当前勾选状态
-                                  setEnableSecurityScan(checked);
-                                }}
-                                className="scale-90"
-                              />
-                              <span className={`text-[11px] ${defaultSecurityScan ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>勾选</span>
-                            </div>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    )}
-                  </div>
-                  {!securityServiceActive ? (
-                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                      安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
-                    </p>
-                  ) : (
-                    <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                      开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。
-                    </p>
-                  )}
-                </div>
               </div>
+              <p className="text-xs text-[#737373] mt-2 leading-relaxed">
+                {!securityServiceActive
+                  ? '安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。'
+                  : '开启后将由腾讯云 AI Agent 安全对技能文件进行安全分析，包括代码结构、依赖安全、命令执行、网络请求、文件操作、Prompt 注入等维度的全面审查。检测通常在几分钟内完成。'}
+              </p>
+              {securityServiceActive && (
+                <label className={`flex items-center gap-2 mt-3 ${enableSecurityScan ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                  <Checkbox
+                    checked={defaultSecurityScan}
+                    onCheckedChange={(checked) => {
+                      onDefaultSecurityScanChange(checked === true);
+                    }}
+                    disabled={!enableSecurityScan}
+                  />
+                  <span className={`text-xs ${enableSecurityScan ? 'text-[#737373]' : 'text-[#A3A3A3]'}`}>设置上传/更新时默认提交安全检测</span>
+                </label>
+              )}
             </div>
           </div>
+          )}
         </div>
+        </DialogBody>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             取消
           </Button>
-          <Button 
-            onClick={handlePublish} 
+          <Button
+            variant="dialog-confirm"
+            onClick={handlePublish}
             disabled={!hasSuccessfulUpload}
           >
             发布 Skill

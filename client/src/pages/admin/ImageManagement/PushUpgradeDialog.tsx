@@ -271,7 +271,7 @@ export default function PushUpgradeDialog({
             取消
           </Button>
           <Button
-            variant="claw-primary"
+            variant="dialog-confirm"
             size="claw-sm"
             onClick={handleConfirm}
             disabled={!canPush}

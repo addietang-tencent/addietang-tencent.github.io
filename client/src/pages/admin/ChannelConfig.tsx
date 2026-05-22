@@ -638,11 +638,11 @@ export default function ChannelConfig() {
             </section>
           </DialogBody>
 
-          <DialogFooter className="shrink-0 border-t border-[#F5F5F5]">
-            <Button variant="outline" className="rounded-[4px] border-[#E5E5E5]" onClick={() => setDialogOpen(false)}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               取消
             </Button>
-            <Button className="rounded-[4px]" onClick={handleSave}>
+            <Button variant="dialog-confirm" onClick={handleSave}>
               保存
             </Button>
           </DialogFooter>

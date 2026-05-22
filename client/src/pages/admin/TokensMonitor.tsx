@@ -305,7 +305,7 @@ function TokenDepartmentFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              onClick={handleConfirm}>确认</Button>
+              variant="dialog-confirm" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -464,7 +464,7 @@ function TokenGroupFilter({
             <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
-              onClick={handleConfirm}>确认</Button>
+              variant="dialog-confirm" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -1867,6 +1867,7 @@ export default function TokensMonitor() {
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleConfirmFreeQuota}
               disabled={!freeQuotaAgreed}
             >

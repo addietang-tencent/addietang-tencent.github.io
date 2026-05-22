@@ -191,39 +191,38 @@ export default function AgentToolLibrary() {
       <Dialog open={securityApplyDialogOpen} onOpenChange={setSecurityApplyDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base">申请免费试用（Skills 风险检测 API）</DialogTitle>
+            <DialogTitle>申请免费试用（Skills 风险检测 API）</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-[5rem_1fr] gap-y-3 text-sm">
-              <span className="text-gray-500">试用有效期</span>
-              <span className="text-gray-900">有效期至 2026年6月30日</span>
-              <span className="text-gray-500">调用额度</span>
-              <span className="text-gray-900">1000次<span className="text-gray-400 text-xs ml-1">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
-              <span className="text-gray-500">操作指引</span>
+              <span className="text-[#737373]">试用有效期</span>
+              <span className="text-[#0A0A0A]">有效期至 2026年6月30日</span>
+              <span className="text-[#737373]">调用额度</span>
+              <span className="text-[#0A0A0A]">1000次<span className="text-[#A3A3A3] text-xs ml-1">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
+              <span className="text-[#737373]">操作指引</span>
               <a
                 href="https://cloud.tencent.com/document/api/664/131590"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                className="text-[#1447E6] hover:opacity-80 flex items-center gap-1"
               >
                 说明文档
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setSecurityApplyDialogOpen(false)} className="text-sm">
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSecurityApplyDialogOpen(false)}>
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={() => {
                 setSecurityServiceActive(true);
                 localStorage.setItem('skill_security_service_active', 'true');
                 setSecurityApplyDialogOpen(false);
                 setSecuritySuccessDialogOpen(true);
               }}
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
-              className="text-white text-sm"
             >
               立即领取
             </Button>
@@ -235,9 +234,9 @@ export default function AgentToolLibrary() {
       <Dialog open={securitySuccessDialogOpen} onOpenChange={setSecuritySuccessDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <span className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                <Check className="w-4 h-4 text-green-600" />
+            <DialogTitle className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#E9F8EB] flex items-center justify-center">
+                <Check className="w-4 h-4 text-[#008236]" />
               </span>
               试用额度已开通
             </DialogTitle>
@@ -247,14 +246,14 @@ export default function AgentToolLibrary() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <p className="text-sm font-medium text-gray-900 mb-1">使用 API</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm font-medium text-[#0A0A0A] mb-1">使用 API</p>
+              <p className="text-sm text-[#737373]">
                 您可以前往查看{' '}
                 <a
                   href="https://cloud.tencent.com/document/api/664/131590"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
+                  className="text-[#1447E6] hover:opacity-80 inline-flex items-center gap-0.5"
                 >
                   说明文档
                   <ExternalLink className="w-3 h-3" />
@@ -265,9 +264,8 @@ export default function AgentToolLibrary() {
           </div>
           <DialogFooter>
             <Button
+              variant="dialog-confirm"
               onClick={() => setSecuritySuccessDialogOpen(false)}
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
-              className="text-white text-sm"
             >
               我知道了
             </Button>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Check } from 'lucide-react';
 import { Category } from './types';
 
 interface EditCategoriesDialogProps {
@@ -56,21 +57,24 @@ export default function EditCategoriesDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="flex flex-wrap gap-1.5">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleToggleCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-xl text-sm font-medium transition-all border ${
-                  selected.includes(cat.id)
-                    ? 'text-white border-transparent'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                }`}
-                style={selected.includes(cat.id) ? { backgroundColor: '#355EF1', borderColor: '#355EF1' } : undefined}
-              >
-                {cat.name}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => {
+              const isSelected = selected.includes(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleToggleCategory(cat.id)}
+                  className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors whitespace-nowrap inline-flex items-center gap-1 ${
+                    isSelected
+                      ? 'bg-[#0A0A0A] border-[#0A0A0A] text-white'
+                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
+                  {cat.name}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -78,7 +82,7 @@ export default function EditCategoriesDialog({
           <Button variant="outline" onClick={handleCancel}>
             取消
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button variant="dialog-confirm" onClick={handleConfirm}>
             确认
           </Button>
         </DialogFooter>

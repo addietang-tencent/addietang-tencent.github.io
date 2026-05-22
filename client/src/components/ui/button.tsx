@@ -105,6 +105,18 @@ const buttonVariants = cva(
           "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
           "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
+
+        /**
+         * 普通弹窗主按钮
+         * - normal: 纯黑底 + 白字
+         * - hover : 深灰底
+         * - disabled: 中灰底 + 白字
+         */
+        "dialog-confirm":
+          "bg-[#0A0A0A] text-white font-normal border-0 " +
+          "hover:bg-[#404040] " +
+          "active:bg-[#262626] " +
+          "disabled:bg-[#A3A3A3] disabled:text-white disabled:opacity-100",
       },
       size: {
         default: "h-9 px-6 py-2 has-[>svg]:px-4",

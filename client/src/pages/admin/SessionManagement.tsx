@@ -795,6 +795,7 @@ export default function SessionManagement() {
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleGoToAuth}
             >
               前往授权
@@ -841,6 +842,7 @@ export default function SessionManagement() {
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleConfirmFreeQuota}
               disabled={!freeQuotaAgreed}
             >

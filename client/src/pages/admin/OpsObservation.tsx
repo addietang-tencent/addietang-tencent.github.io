@@ -518,6 +518,7 @@ export default function OpsObservation() {
                   取消
                 </Button>
                 <Button
+                  variant="dialog-confirm"
                   onClick={handleConfirmClsAgreement}
                   disabled={!clsAgreed || isEnablingCls}
                 >
@@ -980,6 +981,7 @@ export default function OpsObservation() {
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleConfirmFreeQuota}
               disabled={!freeQuotaAgreed}
             >

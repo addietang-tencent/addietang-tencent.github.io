@@ -134,6 +134,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
             取消
           </Button>
           <Button 
+            variant="dialog-confirm"
             onClick={handleConfirm}
             disabled={isLoading}
           >

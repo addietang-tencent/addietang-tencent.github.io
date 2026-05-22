@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, AlertTriangle, ChevronDown, Check, Download } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -1240,50 +1241,47 @@ export default function TokensMonitor() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
              >
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                    {hasOneid && <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">所属部门</th>}
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</TableHead>
+                    <TableHead>用户 ID</TableHead>
+                    {hasOneid && <TableHead>所属部门</TableHead>}
+                    <TableHead className="text-right">总请求数</TableHead>
+                    <TableHead className="text-right">输入 Tokens</TableHead>
+                    <TableHead className="text-right">输出 Tokens</TableHead>
+                    <TableHead className="text-right">总 Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {instancePaged.length === 0 ? (
-                    <tr><td colSpan={hasOneid ? 7 : 6} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    <TableRow><TableCell colSpan={hasOneid ? 7 : 6} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                   ) : instancePaged.map((inst) => (
-                    <tr key={inst.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <UITooltip>
-                              <UITooltipTrigger asChild>
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{inst.name}</div>
-                              </UITooltipTrigger>
-                              <UITooltipContent side="top" className="text-xs max-w-xs break-all">{inst.name}</UITooltipContent>
-                            </UITooltip>
-                            <div className="text-xs font-mono text-blue-500">{inst.instanceId}</div>
-                          </div>
+                    <TableRow key={inst.id}>
+                      <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="min-w-0">
+                          <UITooltip>
+                            <UITooltipTrigger asChild>
+                              <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{inst.name}</div>
+                            </UITooltipTrigger>
+                            <UITooltipContent side="top" className="text-xs max-w-xs break-all">{inst.name}</UITooltipContent>
+                          </UITooltip>
+                          <div className="text-xs font-mono text-gray-500">{inst.instanceId}</div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{inst.creator || "—"}</td>
-                      {hasOneid && <td className="px-6 py-4 text-sm text-gray-500">{inst.department || "—"}</td>}
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(inst.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(inst.total)}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">{inst.creator || "—"}</TableCell>
+                      {hasOneid && <TableCell className="text-sm text-gray-500">{inst.department || "—"}</TableCell>}
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.requests)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(inst.total)}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-              <Pagination total={instanceStats.length} current={instancePage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setInstancePage(p)} />
+                </TableBody>
+              </Table>
+              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <Pagination total={instanceStats.length} current={instancePage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setInstancePage(p)} />
+              </div>
             </div>
           </SegmentContent>
 
@@ -1305,38 +1303,40 @@ export default function TokensMonitor() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
              >
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>用户 ID</TableHead>
+                    <TableHead className="text-right">总请求数</TableHead>
+                    <TableHead className="text-right">输入 Tokens</TableHead>
+                    <TableHead className="text-right">输出 Tokens</TableHead>
+                    <TableHead className="text-right">总 Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {memberPaged.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                   ) : memberPaged.map((m) => (
-                    <tr key={m.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                    <TableRow key={m.id}>
+                      <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <UITooltip>
                           <UITooltipTrigger asChild>
                             <span className="text-sm text-gray-700 truncate block max-w-[180px]">{m.id}</span>
                           </UITooltipTrigger>
                           <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
                         </UITooltip>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.requests)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-              <Pagination total={memberStats.length} current={memberPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setMemberPage(p)} />
+                </TableBody>
+              </Table>
+              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <Pagination total={memberStats.length} current={memberPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setMemberPage(p)} />
+              </div>
             </div>
           </SegmentContent>
 
@@ -1358,31 +1358,33 @@ export default function TokensMonitor() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
              >
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型名称</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>模型名称</TableHead>
+                    <TableHead className="text-right">总请求数</TableHead>
+                    <TableHead className="text-right">输入 Tokens</TableHead>
+                    <TableHead className="text-right">输出 Tokens</TableHead>
+                    <TableHead className="text-right">总 Tokens</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {modelPaged.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                   ) : modelPaged.map((m) => (
-                    <tr key={m.name} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.requests)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</td>
-                    </tr>
+                    <TableRow key={m.name}>
+                      <TableCell className="text-sm font-medium text-gray-900">{m.name}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.requests)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-              <Pagination total={modelStats.length} current={modelPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setModelPage(p)} />
+                </TableBody>
+              </Table>
+              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <Pagination total={modelStats.length} current={modelPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setModelPage(p)} />
+              </div>
             </div>
           </SegmentContent>
 
@@ -1412,33 +1414,35 @@ export default function TokensMonitor() {
               </div>
               <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
                >
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">部门名称</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">所属路径</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>部门名称</TableHead>
+                      <TableHead>所属路径</TableHead>
+                      <TableHead className="text-right">总请求数</TableHead>
+                      <TableHead className="text-right">输入 Tokens</TableHead>
+                      <TableHead className="text-right">输出 Tokens</TableHead>
+                      <TableHead className="text-right">总 Tokens</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {deptPaged.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                      <TableRow><TableCell colSpan={6} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                     ) : deptPaged.map((d) => (
-                      <tr key={d.departmentId} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{d.departmentName}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{d.path.replace(/\//g, " / ")}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.requests)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.inputTokens)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(d.outputTokens)}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(d.totalTokens)}</td>
-                      </tr>
+                      <TableRow key={d.departmentId}>
+                        <TableCell className="text-sm font-medium text-gray-900">{d.departmentName}</TableCell>
+                        <TableCell className="text-sm text-gray-500">{d.path.replace(/\//g, " / ")}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.requests)}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.inputTokens)}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.outputTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(d.totalTokens)}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
-                <Pagination total={deptStats.length} current={deptPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setDeptPage(p)} />
+                  </TableBody>
+                </Table>
+                <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                  <Pagination total={deptStats.length} current={deptPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setDeptPage(p)} />
+                </div>
               </div>
             </SegmentContent>
           )}
@@ -1468,33 +1472,33 @@ export default function TokensMonitor() {
             </div>
             <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
              >
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总请求数</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输入 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">输出 Tokens</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">总 Tokens</th>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>分组名称</TableHead>
+                    <TableHead className="text-right">总请求数</TableHead>
+                    <TableHead className="text-right">输入 Tokens</TableHead>
+                    <TableHead className="text-right">输出 Tokens</TableHead>
+                    <TableHead className="text-right">总 Tokens</TableHead>
                     {IS_GLOBAL_BY_GROUP && (
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</th>
+                      <TableHead className="text-right whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</TableHead>
                     )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {groupPaged.length === 0 ? (
-                    <tr><td colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                    <TableRow><TableCell colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                   ) : groupPaged.map((g) => {
                     const q = IS_GLOBAL_BY_GROUP ? getGroupQuotaInfo(g) : null;
                     return (
-                      <tr key={g.groupId} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{g.groupName}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.requests)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</td>
+                      <TableRow key={g.groupId}>
+                        <TableCell className="text-sm font-medium text-gray-900">{g.groupName}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.requests)}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</TableCell>
                         {IS_GLOBAL_BY_GROUP && q && (
-                          <td className="px-6 py-4 text-sm text-right">
+                          <TableCell className="text-sm text-right">
                             {q.unlimited ? (
                               <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-xl">无限制</span>
                             ) : (
@@ -1509,14 +1513,16 @@ export default function TokensMonitor() {
                                 </UITooltipContent>
                               </UITooltip>
                             )}
-                          </td>
+                          </TableCell>
                         )}
-                      </tr>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
-              <Pagination total={groupStats.length} current={groupPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setGroupPage(p)} />
+                </TableBody>
+              </Table>
+              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <Pagination total={groupStats.length} current={groupPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setGroupPage(p)} />
+              </div>
             </div>
           </SegmentContent>
 
@@ -1727,38 +1733,38 @@ export default function TokensMonitor() {
               </div>
               <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
                >
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">渠道</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                      <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">最后活动时间</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
-                      <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">耗时</th>
-                      <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>会话</TableHead>
+                      <TableHead>渠道</TableHead>
+                      <TableHead>模型</TableHead>
+                      <TableHead>最后活动时间</TableHead>
+                      <TableHead className="text-right">轮次</TableHead>
+                      <TableHead className="text-right">TOKENS</TableHead>
+                      <TableHead className="text-right">成本</TableHead>
+                      <TableHead className="text-right">耗时</TableHead>
+                      <TableHead className="text-center">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {sessionPaged.length === 0 ? (
-                      <tr><td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">暂无数据</td></tr>
+                      <TableRow><TableCell colSpan={9} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
                     ) : sessionPaged.map((s) => {
                       return (
-                      <tr key={s.sessionId} className="hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
-                        <td className="px-6 py-4">
+                      <TableRow key={s.sessionId} className="cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
+                        <TableCell>
                           <div className="text-sm text-gray-700">{s.sessionName}</div>
                           <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{s.channel}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{s.model}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{s.lastActiveTime}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.rounds}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">${s.cost.toFixed(4)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{s.duration}</td>
-                        <td className="px-6 py-4 text-center">
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-700">{s.channel}</TableCell>
+                        <TableCell className="text-sm text-gray-700">{s.model}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{s.lastActiveTime}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{s.rounds}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right font-mono">${s.cost.toFixed(4)}</TableCell>
+                        <TableCell className="text-sm text-gray-600 text-right">{s.duration}</TableCell>
+                        <TableCell className="text-center">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1769,13 +1775,15 @@ export default function TokensMonitor() {
                           >
                             查看详情
                           </Button>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                       );
                     })}
-                  </tbody>
-                </table>
-                <Pagination total={sessionStats.length} current={sessionPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setSessionPage(p)} />
+                  </TableBody>
+                </Table>
+                <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                  <Pagination total={sessionStats.length} current={sessionPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setSessionPage(p)} />
+                </div>
               </div>
               </>
             )}

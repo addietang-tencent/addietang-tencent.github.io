@@ -522,73 +522,60 @@ export default function SessionManagement() {
           </div>
 
           {/* 卡片功能展示 */}
-          <div className="space-y-6 mb-8">
+          <div className="space-y-10 mb-8">
             {/* 第一块：会话数据 */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/session-global-monitoring.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话全局运行态势监控</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
-                    </div>
+              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/session-global-monitoring.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">会话全局运行态势监控</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">聚合总会话数、平均轮次与工具调用量，多维度洞察渠道与模型分布，实现会话全生命周期可追溯、可分析</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/session-detail-analysis.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">会话详情与交互效率精细化分析</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
-                    </div>
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/session-detail-analysis.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">会话详情与交互效率精细化分析</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">聚焦单会话 Token 消耗，可视化渠道与模型分布特征，精准定位高Token会话，优化资源配置与调用效率</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* 分割线 */}
-            <div className="border-t border-gray-200" />
+
 
             {/* 第二块：运维观测和会话管理功能 */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/high-token-session-control.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">高Token会话实时分析与管控</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
-                    </div>
+              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在 Tokens 监控和运维观测页面中获得以下观测数据：</h4>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/high-token-session-control.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">高Token会话实时分析与管控</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">聚焦 TOP 会话的 Token 消耗、轮次分布与耗时特征，精准定位高Token交互，优化模型调用成本与资源效率</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/single-session-token-insight.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">单会话全链路Token透视</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
-                    </div>
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/single-session-token-insight.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">单会话全链路Token透视</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">拆解每轮交互的 Token 流量与耗时分布，可视化工具调用与上下文膨胀对成本的影响</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/business-health-monitoring.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">业务运行健康度实时监控</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
-                    </div>
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/business-health-monitoring.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">业务运行健康度实时监控</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">聚焦消息处理总量、入队效率与卡死会话，保障系统稳定运行</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <img src="/assets/admin-session-management/app-log-otel-insight.svg" alt="" className="shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-medium tracking-[0.005em] text-[#020617]">应用日志与 OTEL 指标全景洞察</h5>
-                      <p className="mt-1 text-xs leading-[18px] tracking-[0.015em] text-[#737373]">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
-                    </div>
+                <div className="flex items-center gap-[14px] py-5">
+                  <img src="/assets/admin-session-management/app-log-otel-insight.svg" alt="" className="shrink-0 w-9 h-9" />
+                  <div className="flex-1 min-w-0">
+                    <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">应用日志与 OTEL 指标全景洞察</h5>
+                    <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">多维度分析日志级别与模块分布，精细化追踪消息处理、队列状态与执行耗时</p>
                   </div>
                 </div>
               </div>

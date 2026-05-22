@@ -280,6 +280,24 @@ import {
 - 同行所有控件高度必须一致（如 Input h-9 + Button h-9）
 - disabled 态有 `cursor-not-allowed`，不用全局 `opacity-50`
 - **刷新按钮标准写法**: `<Button variant="claw-outline" size="icon" className="w-9 h-9">`
+- **表格操作列**：操作栏中的按钮（无论纯文字还是 icon+文字）必须统一使用 `variant="ghost"`，禁止使用 outline、default 或自定义样式。示例：
+
+```tsx
+// 纯文字操作
+<Button variant="ghost" size="sm">编辑</Button>
+<Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">删除</Button>
+
+// icon + 文字操作
+<Button variant="ghost" size="sm">
+  <Pencil className="w-3.5 h-3.5 mr-1" />
+  编辑
+</Button>
+
+// 仅 icon 操作
+<Button variant="ghost" size="icon-sm">
+  <Trash2 className="w-4 h-4" />
+</Button>
+```
 
 ### 4.4 SmallIconStateButton（小图标按钮）
 

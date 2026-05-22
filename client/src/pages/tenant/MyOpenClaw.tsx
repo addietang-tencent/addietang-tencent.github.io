@@ -935,12 +935,19 @@ export default function MyOpenClaw() {
                       </div>
 
                       {/* Name and Info */}
-                      <h3
-                        className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}
-                        title={claw.name}
-                      >
-                        {claw.name}
-                      </h3>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <h3
+                            className={`font-semibold text-base mb-0.5 transition-colors truncate ${isGrayAvatar ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}
+                          >
+                            {claw.name}
+                          </h3>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs max-w-[520px] break-all">
+                          {claw.name}
+                        </TooltipContent>
+                      </Tooltip>
+
 
                       <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                         {claw.roleName && (

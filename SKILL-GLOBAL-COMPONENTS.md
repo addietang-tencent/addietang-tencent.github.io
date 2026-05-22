@@ -605,6 +605,92 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 ---
 
+## 11.1 Table 表格组件规范
+
+**文件**: `client/src/components/ui/table.tsx`
+
+> 所有管控端/用户端的数据表格必须使用标准 Table 组件，禁止使用原生 `<table>` + 自定义 class。
+
+**设计令牌：**
+
+| Token | Value |
+|-------|-------|
+| container | `w-full caption-bottom text-[14px] text-[#09090b]` |
+| header / bg | `bg-[#fafafa]` |
+| header / border | `border-b border-[#f0f0f0]` |
+| head cell / height | `54px` |
+| head cell / padding | `px-4` |
+| head cell / font | `text-[14px] font-semibold text-[#09090b]` |
+| body row / border | `border-b border-[#f0f0f0]` |
+| body row / hover | `hover:bg-[#fafafa]` |
+| body row / selected | `bg-[rgba(53,94,241,0.06)]` |
+| body cell / padding | `px-4 py-3` |
+| body cell / font | `text-[14px] text-[#09090b]` |
+| footer / bg | `bg-[#fafafa] border-t border-[#f0f0f0]` |
+
+**组件导出：**
+
+```tsx
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableFooter,
+  TableCaption,
+} from "@/components/ui/table";
+```
+
+**标准用法：**
+
+```tsx
+<div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>名称</TableHead>
+        <TableHead>状态</TableHead>
+        <TableHead className="text-right">数量</TableHead>
+        <TableHead>操作</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {data.map((item) => (
+        <TableRow key={item.id}>
+          <TableCell className="font-medium">{item.name}</TableCell>
+          <TableCell><StatusTag variant="green" dot>运行中</StatusTag></TableCell>
+          <TableCell className="text-right tabular-nums">{item.count}</TableCell>
+          <TableCell>
+            <Button variant="ghost" size="icon-sm"><Pencil className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon-sm"><Trash2 className="w-4 h-4" /></Button>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+  {/* 分页器放在表格外部，带 padding 和 border-t */}
+  <div className="px-4 py-3 border-t border-[#f0f0f0]">
+    <Pagination total={data.length} current={page} pageSize={PAGE_SIZE} showTotal={(t) => `共 ${t} 条`} className="w-full justify-between" onChange={setPage} />
+  </div>
+</div>
+```
+
+**操作列规则（强制）：**
+- 操作列按钮必须使用 `<Button variant="ghost">` —— 参见 §4.3
+- icon-only 用 `size="icon-sm"`，icon+文字用 `size="sm"`
+- 危险操作（删除）不加红色样式，hover 时自然由 ghost 提供反馈即可
+
+**禁止事项：**
+- 禁止使用原生 `<table>` + 自定义 class（如 `text-xs font-medium text-gray-500 uppercase tracking-wide`）
+- 禁止自定义表头背景色（如 `bg-gray-50/50`），统一使用 TableHeader 的 `bg-[#fafafa]`
+- 禁止自定义行 hover 效果（如 `hover:bg-gray-50/50`），使用 TableRow 内置 `hover:bg-[#fafafa]`
+- 禁止在操作列使用非 ghost 按钮或自定义 `<button>`
+- 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-3 border-t border-[#f0f0f0]">` 包裹
+
+---
+
 ## 11.5 Segment 分段选择器规范
 
 文件：`client/src/components/ui/segment.tsx`

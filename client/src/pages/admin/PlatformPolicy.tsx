@@ -856,46 +856,44 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden flex flex-col h-full">
-      <div className="px-5 pt-5 pb-3">
+      <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3 mb-1.5">
           {icon}
-          <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-[14px] font-semibold text-[#020617]">{title}</h3>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed min-h-[36px]">{description}</p>
+        <p className="text-[12px] text-[#737373] leading-relaxed">{description}</p>
       </div>
 
-      <div className="px-5 pb-3 flex-1 flex flex-col">
-        {/* 预设策略（置顶） */}
+      {/* 预设策略区域 */}
+      <div className="px-5 pb-4">
         {editingId === fallbackRule.id ? (
-          <div className={ROW_CLASS}>
-            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
-            <div className={`${valueColClass} flex items-center justify-end gap-1`}>{renderValueEditor()}</div>
-            <div className="w-14 flex items-center justify-end gap-1">
-              <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
+            <div className="flex-1 flex items-center justify-end gap-2">{renderValueEditor()}</div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+              <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(fallbackRule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
             </div>
           </div>
         ) : (
-          <div className={ROW_CLASS}>
-            <div className="flex-1 min-w-0"><span className="text-sm text-gray-700 font-medium">预设策略</span></div>
-            <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(fallbackRule.value)}</span>
-            <div className="w-14 flex items-center justify-end">
-              <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-            </div>
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
+            <span className="flex-1 text-right text-[20px] font-bold text-[#020617] tabular-nums" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{displayValue(fallbackRule.value)}</span>
+            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)}>编辑</Button>
           </div>
         )}
+      </div>
 
-        {/* 虚线分隔：主策略 vs 例外策略 */}
+      {/* 分组策略区域 */}
+      <div className="px-5 pb-3 flex-1 flex flex-col">
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
-            {/* 表头：仅在新增/编辑分组策略时展示 */}
-            {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
-              <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>
-                <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-                <span className={`${valueColClass} text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide`}>配额</span>
-                <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
-              </div>
-            )}
+          <div className="border-t border-[#f0f0f0] pt-3">
+            {/* 表头 */}
+            <div className="flex items-center gap-3 px-3 pb-2">
+              <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
+              <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>配额</span>
+              <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
+            </div>
 
             {/* 分组策略行 */}
             {groupRules.map((rule) => (
@@ -910,25 +908,25 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                       />
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                    <div className="w-14 flex items-center justify-end gap-1 h-9">
-                      <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                      <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                    <div className="w-16 flex items-center justify-end gap-1 h-9">
+                      <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(rule.id)} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
                     </div>
                   </div>
                 ) : (
-                  <div className={`${ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+                  <div className={`${ROW_CLASS} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
                     <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                    <span className={`${valueColClass} text-right text-sm text-gray-700 font-medium tabular-nums`}>{displayValue(rule.value)}</span>
-                    <div className="w-14 flex items-center justify-end gap-1">
-                      <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-                      <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
+                    <span className={`${valueColClass} text-right text-[14px] text-[#020617] font-medium tabular-nums`}>{displayValue(rule.value)}</span>
+                    <div className="w-16 flex items-center justify-end gap-3">
+                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => startEdit(rule)}>编辑</Button>
+                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)}>删除</Button>
                     </div>
                   </div>
                 )}
               </div>
             ))}
 
-            {/* 新增态：添加分组策略编辑行（仍随分组列表渲染） */}
+            {/* 新增态 */}
             {addingNew && (
               <div className={EDIT_ROW_CLASS}>
                 <div className="flex-1 min-w-0 pt-0.5">
@@ -939,9 +937,9 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                   />
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                <div className="w-14 flex items-center justify-end gap-1 h-9">
-                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                <div className="w-16 flex items-center justify-end gap-1 h-9">
+                  <Button variant="ghost" size="icon-sm" onClick={cancelEdit} className="w-7 h-7"><X className="w-3.5 h-3.5" /></Button>
+                  <Button variant="ghost" size="icon-sm" onClick={() => saveEdit()} className="w-7 h-7 text-[#1447E6]"><Check className="w-3.5 h-3.5" /></Button>
                 </div>
               </div>
             )}
@@ -949,12 +947,12 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         )}
       </div>
 
-      {/* 卡片底部 footer：始终带分割线吸底，包含"添加分组策略"按钮和 extraContent */}
+      {/* 卡片底部 footer */}
       <div className="px-5 py-3 border-t border-[#e5e5e5] flex flex-col gap-3">
         {!addingNew && (
-          <button onClick={startAdd} className="self-start flex items-center gap-1.5 px-3 h-9 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+          <Button variant="link-dark" size="sm" className="h-auto px-0 self-start" onClick={startAdd}>
             <Plus className="w-3.5 h-3.5" />添加分组策略
-          </button>
+          </Button>
         )}
         {extraContent}
       </div>
@@ -1113,7 +1111,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
 
         {/* 虚线分隔：主策略 vs 例外策略 */}
         {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
+          <div className="border-t border-[#f0f0f0] mt-2 pt-2">
             {/* 表头：仅在新增/编辑分组策略时展示 */}
             {(addingNew || (editingId && editingId !== fallbackRule.id)) && (
               <div className={`${ROW_CLASS} border-b border-[#e5e5e5]`}>

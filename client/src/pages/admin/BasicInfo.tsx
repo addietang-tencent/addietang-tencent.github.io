@@ -130,7 +130,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 transition-all overflow-hidden"
+      className="bg-white rounded-[4px] border border-[#e5e5e5] p-6 transition-all overflow-hidden"
     >
       <div className="flex items-start gap-3.5">
         <StepBadge step={step} done={done} />
@@ -143,8 +143,8 @@ function StepCard({
               <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
-          <p className="text-xs text-black/70 leading-5 tracking-[0.18px]">{description}</p>
-          <div className="mt-4">{children}</div>
+          <p className="text-[13px] text-[#71717a] leading-5 tracking-[0.18px]">{description}</p>
+          <div className="mt-5">{children}</div>
         </div>
       </div>
     </div>
@@ -351,9 +351,9 @@ export default function BasicInfo() {
   return (
     <div className="page-enter">
       {/* 页面标题 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">基础信息配置</h1>
-        <p className="text-sm text-gray-500 mt-1">
+      <div className="mb-8">
+        <h1 className="text-[22px] font-semibold text-[#09090b] leading-8">基础信息配置</h1>
+        <p className="text-[14px] text-[#71717a] mt-2 leading-6">
           以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整
         </p>
       </div>
@@ -361,9 +361,9 @@ export default function BasicInfo() {
 
 
       {/* 双栏主体 */}
-        <div className="flex gap-4 items-start">
+        <div className="flex gap-6 items-start">
         {/* ── 左侧：分步引导 ── */}
-        <div className="min-w-0 space-y-4" style={{ flex: "1 1 0" }}>
+        <div className="min-w-0 space-y-5" style={{ flex: "1 1 0" }}>
 
           {/* 步骤 1：平台名称与品牌 */}
           <StepCard
@@ -495,7 +495,7 @@ export default function BasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -516,7 +516,7 @@ export default function BasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -537,7 +537,7 @@ export default function BasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -558,7 +558,7 @@ export default function BasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -582,33 +582,33 @@ export default function BasicInfo() {
         </div>
 
         {/* ── 右侧：基础信息 + API文档 + 产品动态 ── */}
-        <div className="shrink-0 flex flex-col gap-4" style={{ width: "352px" }}>
+        <div className="shrink-0 flex flex-col gap-5" style={{ width: "352px" }}>
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
           >
-            <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
-            <div className="flex flex-col gap-4">
+            <p className="text-[14px] font-semibold text-[#09090b] tracking-[0.07px] mb-5">平台基础信息</p>
+            <div className="flex flex-col gap-5">
               <div className="flex gap-4 items-center">
                 <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
-                <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">所在地域</p>
+                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
-                <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">域名</p>
+                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
-                <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
+                <div className="flex flex-col gap-0.5">
+                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">关联腾讯云账号</p>
+                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>
@@ -616,7 +616,7 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
+            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
@@ -633,9 +633,9 @@ export default function BasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
           >
-            <p className="text-sm font-medium text-black tracking-[0.07px] mb-6">产品动态</p>
+            <p className="text-[14px] font-semibold text-[#09090b] tracking-[0.07px] mb-6">产品动态</p>
             <div className="flex flex-col gap-3">
               {PRODUCT_UPDATES.map((item, idx) => (
                 <div key={idx}>

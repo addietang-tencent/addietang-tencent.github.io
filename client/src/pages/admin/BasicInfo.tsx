@@ -136,14 +136,14 @@ function StepCard({
         <StepBadge step={step} done={done} />
         <div className="flex-1 min-w-0 flex flex-col gap-1">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
+            <p className="text-[16px] font-semibold text-[#0A0A0A] leading-6">{title}</p>
             {done ? (
               <StatusTag variant="green" dot>已完成</StatusTag>
             ) : (
               <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
-          <p className="text-[13px] text-[#71717a] leading-5 tracking-[0.18px]">{description}</p>
+          <p className="text-[14px] text-[#334155] leading-6">{description}</p>
           <div className="mt-5">{children}</div>
         </div>
       </div>
@@ -352,8 +352,8 @@ export default function BasicInfo() {
     <div className="page-enter">
       {/* 页面标题 */}
       <div className="mb-8">
-        <h1 className="text-[22px] font-semibold text-[#09090b] leading-8">基础信息配置</h1>
-        <p className="text-[14px] text-[#71717a] mt-2 leading-6">
+        <h1 className="text-[20px] font-semibold text-[#0A0A0A] leading-7">基础信息配置</h1>
+        <p className="text-[14px] text-[#334155] mt-2 leading-6">
           以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整
         </p>
       </div>
@@ -376,7 +376,7 @@ export default function BasicInfo() {
               <div className="flex flex-col gap-2 mb-3">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-[#020617] leading-[22px]">网站名称</p>
-                  <p className="text-xs text-black/30 leading-5">将展示在用户端左上角常驻和首页</p>
+                  <p className="text-[12px] text-[#737373] leading-5">将展示在用户端左上角常驻和首页</p>
                 </div>
                 <Input
                   id="siteName"
@@ -389,7 +389,7 @@ export default function BasicInfo() {
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-[#020617] leading-[22px]">网站logo</p>
-                  <p className="text-xs text-black/30 leading-5">建议尺寸200x200px，不超过512kb</p>
+                  <p className="text-[12px] text-[#737373] leading-5">建议尺寸200x200px，不超过512kb</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <img src="/icon/上传图片默认icon.svg" alt="" className="w-14 h-14 shrink-0 rounded-[6px]" />
@@ -588,27 +588,27 @@ export default function BasicInfo() {
           <div
             className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
           >
-            <p className="text-[14px] font-semibold text-[#09090b] tracking-[0.07px] mb-5">平台基础信息</p>
+            <p className="text-[16px] font-semibold text-[#0A0A0A] tracking-[0.07px] mb-5">平台基础信息</p>
             <div className="flex flex-col gap-5">
               <div className="flex gap-4 items-center">
                 <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">所在地域</p>
-                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">{SITE_CONFIG.region}</p>
+                  <p className="text-[12px] text-[#737373] leading-5">所在地域</p>
+                  <p className="text-[14px] font-medium text-[#0A0A0A] leading-[22px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">域名</p>
-                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">https://nmyy3n7z.clawpro.cloud/</p>
+                  <p className="text-[12px] text-[#737373] leading-5">域名</p>
+                  <p className="text-[14px] font-medium text-[#0A0A0A] leading-[22px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-[12px] text-[#a1a1aa] leading-5 tracking-[0.06px]">关联腾讯云账号</p>
-                  <p className="text-[14px] font-medium text-[#09090b] leading-[22px]">{SITE_CONFIG.tencentUin}</p>
+                  <p className="text-[12px] text-[#737373] leading-5">关联腾讯云账号</p>
+                  <p className="text-[14px] font-medium text-[#0A0A0A] leading-[22px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>
@@ -623,8 +623,8 @@ export default function BasicInfo() {
               <div className="flex items-center gap-4">
                 <img src="/icon/api文档-icon.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-medium text-black tracking-[0.07px] group-hover:text-[#355EF1] transition-colors">API 文档</p>
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px] group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
+                  <p className="text-[14px] font-medium text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors">API 文档</p>
+                  <p className="text-[12px] text-[#737373] leading-5 group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
                 </div>
               </div>
               <img src="/icon/arrow-left-stroke.svg" alt="" className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:[filter:invert(32%)_sepia(98%)_saturate(1497%)_hue-rotate(215deg)_brightness(96%)_contrast(95%)] transition-all rotate-[-45deg]" />
@@ -635,7 +635,7 @@ export default function BasicInfo() {
           <div
             className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
           >
-            <p className="text-[14px] font-semibold text-[#09090b] tracking-[0.07px] mb-6">产品动态</p>
+            <p className="text-[16px] font-semibold text-[#0A0A0A] tracking-[0.07px] mb-6">产品动态</p>
             <div className="flex flex-col gap-3">
               {PRODUCT_UPDATES.map((item, idx) => (
                 <div key={idx}>
@@ -657,17 +657,17 @@ export default function BasicInfo() {
                       </StatusTag>
                     </div>
                     {/* 标题 */}
-                    <p className="text-xs font-medium text-black leading-5">{item.title}</p>
+                    <p className="text-[14px] font-medium text-[#0A0A0A] leading-5">{item.title}</p>
                     {/* 描述 */}
-                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
+                    <p className="text-[12px] text-[#737373] leading-5 line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
                     {/* 日期 */}
-                    <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">{item.date}</p>
+                    <p className="text-[12px] text-[#A3A3A3] leading-5">{item.date}</p>
                   </div>
                 </div>
               ))}
             </div>
             {/* 查看全部更新按钮 */}
-            <button className="mt-6 border border-black/9 rounded-[4px] px-3 py-2 flex items-center gap-1 text-xs text-black leading-5 hover:bg-[#f5f5f5] transition-colors">
+            <button className="mt-6 border border-[#e5e5e5] rounded-[4px] px-3 py-2 flex items-center gap-1 text-[12px] text-[#0A0A0A] leading-5 hover:bg-[#f5f5f5] transition-colors">
               查看全部更新
               <img src="/icon/arrow-left-stroke.svg" alt="" className="w-3 h-3" />
             </button>

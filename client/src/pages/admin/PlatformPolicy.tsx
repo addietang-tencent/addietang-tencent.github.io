@@ -876,7 +876,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
             <div className="flex-1 flex items-center justify-end gap-2">{renderValueEditor()}</div>
             <div className="flex items-center gap-2 shrink-0">
               <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-              <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
+              <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
             </div>
           </div>
         ) : (
@@ -914,7 +914,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
                     <div className="w-32 flex items-center justify-end gap-2 h-9">
                       <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                      <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
+                      <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
                     </div>
                   </div>
                 ) : (
@@ -943,7 +943,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
                 <div className="w-32 flex items-center justify-end gap-2 h-9">
                   <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                  <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
+                  <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
                 </div>
               </div>
             )}
@@ -1060,11 +1060,24 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
     toast.success("策略已删除");
   };
 
-  // 兜底值编辑器（开启/关闭 二选一按钮）
+  // 兜底值直接切换（点击即保存，无需编辑态）
+  const handleFallbackToggle = (newValue: boolean) => {
+    if (newValue === fallbackRule.value) { cancelEdit(); return; }
+    // 若值发生变化且有分组规则 → 弹二次确认
+    if (groupRules.length > 0) {
+      setConfirmFallbackDraft(newValue);
+      return;
+    }
+    const result = onRulesChange(rules.map((r) => r.id === fallbackRule.id ? { ...r, value: newValue } : r));
+    if (result === false) return;
+    toast.success("策略已保存");
+    cancelEdit();
+  };
+
   const renderFallbackValueEditor = () => (
     <>
-      <Button variant="plain" size="sm" data-state={draftValue ? "active" : undefined} onClick={() => setDraftValue(true)} className="h-7 px-3 text-xs">开启</Button>
-      <Button variant="plain" size="sm" data-state={!draftValue ? "active" : undefined} onClick={() => setDraftValue(false)} className="h-7 px-3 text-xs">关闭</Button>
+      <Button variant="plain" size="sm" data-state={fallbackRule.value ? "active" : undefined} onClick={() => handleFallbackToggle(true)} className="h-9 px-3 text-xs">开启</Button>
+      <Button variant="plain" size="sm" data-state={!fallbackRule.value ? "active" : undefined} onClick={() => handleFallbackToggle(false)} className="h-9 px-3 text-xs">关闭</Button>
     </>
   );
   // 分组规则编辑态：展示静态文字（值固定为例外值，不可改）
@@ -1093,11 +1106,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
         {editingId === fallbackRule.id ? (
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <div className="flex-1 flex items-center justify-end gap-2">{renderFallbackValueEditor()}</div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-              <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
-            </div>
+            <span className="flex-1" />
+            {renderFallbackValueEditor()}
           </div>
         ) : (
           <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
@@ -1136,7 +1146,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
                     <div className="w-32 flex items-center justify-end gap-2 h-9">
                       <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                      <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
+                      <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
                     </div>
                   </div>
                 ) : (
@@ -1169,7 +1179,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
                 <div className="w-32 flex items-center justify-end gap-2 h-9">
                   <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                  <Button size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
+                  <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
                 </div>
               </div>
             )}

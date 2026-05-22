@@ -2032,7 +2032,7 @@ export default function AgentMonitor() {
             <TableHeader>
               <TableRow className="bg-[#f9fafb] hover:bg-[#f9fafb]">
                 {/* 复选框列 - sticky left */}
-                <th className="py-3 whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
+                <TableHead className="h-auto py-3 whitespace-nowrap sticky left-0 z-50 relative text-xs font-medium text-[#737373]" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
                   {isTableScrolled && (
                     <>
                       <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
@@ -2045,16 +2045,16 @@ export default function AgentMonitor() {
                       onCheckedChange={(v) => handleSelectAll(!!v)}
                       className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 data-[state=indeterminate]:bg-blue-500 data-[state=indeterminate]:border-blue-500"
                     />
-                    <span className="text-xs font-medium text-gray-500 whitespace-nowrap">全选</span>
+                    <span className="text-xs font-medium text-[#737373] whitespace-nowrap">全选</span>
                   </div>
-                </th>
-                <th className="text-left pr-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
+                </TableHead>
+                <TableHead className="h-auto text-left pr-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
                       ref={filterButtonRef}
-                      className="p-1 hover:bg-gray-200 rounded"
+                      className="p-1 hover:bg-gray-200 rounded-[4px]"
                       onClick={() => {
                         if (filterButtonRef.current) {
                           const rect = filterButtonRef.current.getBoundingClientRect();
@@ -2076,11 +2076,12 @@ export default function AgentMonitor() {
                           style={{ pointerEvents: 'auto' }}
                         />
                         <div 
-                          className="fixed w-56 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 will-change-transform" 
+                          className="fixed w-56 bg-white border border-gray-200 rounded-[4px] z-50 will-change-transform" 
                           style={{
                             top: `${filterPosition.top}px`,
                             left: `${filterPosition.left}px`,
-                            pointerEvents: 'auto'
+                            pointerEvents: 'auto',
+                            boxShadow: 'var(--shadow-overlay)',
                           }}
                         >
                           <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
@@ -2091,28 +2092,28 @@ export default function AgentMonitor() {
                                   onCheckedChange={(checked) => handleStatusFilterChange(status as ClawStatus, !!checked)}
                                   disabled={isStatusDisabled(status as ClawStatus)}
                                 />
-                                <span className={`text-sm ${isStatusDisabled(status as ClawStatus) ? "text-gray-300" : "text-gray-700"}`}>
+                                <span className={`text-sm ${isStatusDisabled(status as ClawStatus) ? "text-gray-300" : "text-[#334155]"}`}>
                                   {STATUS_CONFIG[status as ClawStatus].label}
                                 </span>
                               </label>
                             ))}
                           </div>
                           <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleStatusFilterReset} className="flex-1">
+                            <Button variant="claw-outline" size="claw-sm" onClick={handleStatusFilterReset} className="flex-1">
                               重置
                             </Button>
-                            <Button size="sm" onClick={handleStatusFilterConfirm} className="flex-1">
+                            <Button variant="claw-primary" size="claw-sm" onClick={handleStatusFilterConfirm} className="flex-1">
                               确认
                             </Button>
                           </div>
-                        </div>
+                        </SurfaceOverlay>
                       </>
                     )}
                   </div>
-                </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</th>
+                </TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</TableHead>
                 {hasOneid && (
-                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                  <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2129,9 +2130,9 @@ export default function AgentMonitor() {
                         />
                       </PopoverContent>
                     </Popover>
-                  </th>
+                  </TableHead>
                 )}
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2149,9 +2150,9 @@ export default function AgentMonitor() {
                       />
                     </PopoverContent>
                   </Popover>
-                </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                </TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
                   <Popover open={typeColFilterOpen} onOpenChange={(open) => {
                     setTypeColFilterOpen(open);
                     if (open) setTempTypeFilter(new Set(agentTypeFilter));
@@ -2176,18 +2177,18 @@ export default function AgentMonitor() {
                                 });
                               }}
                             />
-                            <span className="text-sm text-gray-700">{label}</span>
+                            <span className="text-sm text-[#334155]">{label}</span>
                           </label>
                         ))}
                       </div>
                       <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                        <Button variant="claw-outline" size="claw-sm" className="flex-1" onClick={() => {
                           setTempTypeFilter(new Set(ALL_AGENT_TYPES));
                           setAgentTypeFilter(new Set(ALL_AGENT_TYPES));
                           setPage(1);
                           setTypeColFilterOpen(false);
                         }}>重置</Button>
-                        <Button size="sm" className="flex-1" onClick={() => {
+                        <Button variant="claw-primary" size="claw-sm" className="flex-1" onClick={() => {
                           setAgentTypeFilter(new Set(tempTypeFilter));
                           setPage(1);
                           setTypeColFilterOpen(false);
@@ -2195,23 +2196,23 @@ export default function AgentMonitor() {
                       </div>
                     </PopoverContent>
                   </Popover>
-                </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                </TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
+                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
                   <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
-                </th>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginated.length === 0 ? (
-                <tr>
-                  <td colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-gray-400">
+                <TableRow>
+                  <TableCell colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的 Agent
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 paginated.map((claw) => {
                   const isRunning = claw.status === "running";
@@ -2223,9 +2224,9 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <tr key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
+                    <TableRow key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
                       {/* 复选框 */}
-                      <td className="py-4 whitespace-nowrap sticky left-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px' }}>
+                      <TableCell className="py-4 whitespace-nowrap sticky left-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px' }}>
                         {isTableScrolled && (
                           <>
                             <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
@@ -2237,35 +2238,35 @@ export default function AgentMonitor() {
                           onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
                           className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                         />
-                      </td>
+                      </TableCell>
                       {/* 名称/ID */}
-                      <td className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                      <TableCell className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="min-w-0 flex-1">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{claw.name}</div>
+                                <div className="text-sm font-medium text-[#0A0A0A] truncate max-w-[150px]">{claw.name}</div>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs max-w-xs break-all">{claw.name}</TooltipContent>
                             </Tooltip>
                             <button
                               onClick={() => handleOpenDrawer(claw)}
-                              className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
+                              className="text-xs font-mono cursor-pointer text-[#1447E6] hover:underline"
                             >
                               {claw.instanceId}
                             </button>
                           </div>
                         </div>
-                      </td>
+                      </TableCell>
                       {/* 状态列 */}
-                      <td className="px-3 py-4">
+                      <TableCell className="px-3 py-4">
                         <span className={`${statusConfig.badgeClass} text-xs`}>
                           <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
                           {statusConfig.label}
                         </span>
-                      </td>
+                      </TableCell>
                       {/* 创建人 */}
-                      <td className="px-3 py-4 text-sm text-gray-500" style={{ maxWidth: '208px' }}>
+                      <TableCell className="px-3 py-4 text-sm text-[#737373]" style={{ maxWidth: '208px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="block truncate cursor-default">{claw.creator}</span>
@@ -2274,16 +2275,16 @@ export default function AgentMonitor() {
                             <span className="text-xs">{claw.creator}</span>
                           </TooltipContent>
                         </Tooltip>
-                      </td>
+                      </TableCell>
                       {/* 部门 - 仅 OneID 模式显示 */}
                       {hasOneid && (
-                        <td className="px-3 py-4">
+                        <TableCell className="px-3 py-4">
                           {(() => {
                             const deptPaths = getCreatorDeptPaths(claw.creator);
-                            if (deptPaths.length === 0) return <span className="text-sm text-gray-300">—</span>;
+                            if (deptPaths.length === 0) return <span className="text-sm text-[#A3A3A3]">—</span>;
                             if (deptPaths.length === 1) {
                               return (
-                                <span className="text-sm text-gray-600 truncate block max-w-[200px]" title={deptPaths[0].path}>
+                                <span className="text-sm text-[#334155] truncate block max-w-[200px]" title={deptPaths[0].path}>
                                   {deptPaths[0].path}
                                 </span>
                               );
@@ -2292,8 +2293,8 @@ export default function AgentMonitor() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
-                                    <span className="text-sm text-gray-600 truncate">{deptPaths[0].path}</span>
-                                    <span className="text-xs text-gray-400 tabular-nums shrink-0">+{deptPaths.length - 1}</span>
+                                    <span className="text-sm text-[#334155] truncate">{deptPaths[0].path}</span>
+                                    <span className="text-xs text-[#737373] tabular-nums shrink-0">+{deptPaths.length - 1}</span>
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
@@ -2314,14 +2315,14 @@ export default function AgentMonitor() {
                               </Tooltip>
                             );
                           })()}
-                        </td>
+                        </TableCell>
                       )}
                       {/* 分组 */}
-                      <td className="px-3 py-4 whitespace-nowrap">
+                      <TableCell className="px-3 py-4 whitespace-nowrap">
                         {(() => {
                           if (hasOneid) {
                             const item = getCreatorGroupItemOneid(claw.creator);
-                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            if (!item) return <span className="text-sm text-[#A3A3A3]">—</span>;
                             return (
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
@@ -2349,7 +2350,7 @@ export default function AgentMonitor() {
                             );
                           } else {
                             const item = getCreatorGroupItemManual(claw.creator);
-                            if (!item) return <span className="text-sm text-gray-300">—</span>;
+                            if (!item) return <span className="text-sm text-[#A3A3A3]">—</span>;
                             return (
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
@@ -2370,43 +2371,43 @@ export default function AgentMonitor() {
                             );
                           }
                         })()}
-                      </td>
+                      </TableCell>
                       {/* 创建时间 */}
-                      <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{claw.createTime}</td>
+                      <TableCell className="px-3 py-4 text-sm whitespace-nowrap text-[#737373]">{claw.createTime}</TableCell>
                       {/* 智能体 */}
-                      <td className="px-3 py-4">
-                        <span className="text-xs font-medium text-gray-500">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
-                      </td>
+                      <TableCell className="px-3 py-4">
+                        <span className="text-xs font-medium text-[#737373]">{AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}</span>
+                      </TableCell>
                       {/* Agent 版本 */}
-                      <td className="px-3 py-4">
-                        <span className="text-xs font-mono text-gray-500">{claw.version}</span>
-                      </td>
+                      <TableCell className="px-3 py-4">
+                        <span className="text-xs font-mono text-[#737373]">{claw.version}</span>
+                      </TableCell>
                       {/* 标签 */}
-                      <td className="px-3 py-4">
+                      <TableCell className="px-3 py-4">
                         {claw.tags && claw.tags.length > 0 ? (
                           <HoverCard openDelay={100} closeDelay={150}>
                             <HoverCardTrigger asChild>
-                              <button className="inline-flex items-center text-gray-400 hover:text-gray-600 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                              <button className="inline-flex items-center text-[#737373] hover:text-[#334155] transition-colors">
+                                <Tag className="w-4 h-4" />
                               </button>
                             </HoverCardTrigger>
-                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-gray-200 shadow-lg rounded-xl overflow-hidden">
+                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden">
                               <div className="grid grid-cols-2 bg-gray-50 border-b border-[#e5e5e5] px-3 py-2">
-                                <span className="text-xs font-semibold text-gray-600">标签键</span>
-                                <span className="text-xs font-semibold text-gray-600">标签値</span>
+                                <span className="text-xs font-semibold text-[#334155]">标签键</span>
+                                <span className="text-xs font-semibold text-[#334155]">标签值</span>
                               </div>
                               <div className="divide-y divide-gray-100">
                                 {claw.tags.map((tag, i) => (
                                   <div key={i} className="grid grid-cols-2 px-3 py-2 gap-1">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <span className="text-xs text-gray-600 truncate block max-w-full cursor-default">{tag.key}</span>
+                                        <span className="text-xs text-[#334155] truncate block max-w-full cursor-default">{tag.key}</span>
                                       </TooltipTrigger>
                                       <TooltipContent side="left"><span>{tag.key}</span></TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <span className="text-xs text-gray-500 truncate block max-w-full cursor-default">{tag.value}</span>
+                                        <span className="text-xs text-[#737373] truncate block max-w-full cursor-default">{tag.value}</span>
                                       </TooltipTrigger>
                                       <TooltipContent side="right"><span>{tag.value}</span></TooltipContent>
                                     </Tooltip>
@@ -2416,11 +2417,11 @@ export default function AgentMonitor() {
                             </HoverCardContent>
                           </HoverCard>
                         ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+                          <Tag className="w-4 h-4 text-gray-200" />
                         )}
-                      </td>
+                      </TableCell>
                       {/* 操作 */}
-                      <td className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                      <TableCell className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                         <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
@@ -2439,7 +2440,7 @@ export default function AgentMonitor() {
                             </Tooltip>
                           ) : (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
+                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
                               onClick={() => handleOpenTerminal(claw)}
                             >
                               <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
@@ -2450,7 +2451,7 @@ export default function AgentMonitor() {
                           {/* 关机/开机 */}
                           {claw.status === "running" ? (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
+                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
                               onClick={() => setShutdownTarget(claw.id)}
                             >
                               <Power className="w-3.5 h-3.5 flex-shrink-0" />
@@ -2458,7 +2459,7 @@ export default function AgentMonitor() {
                             </button>
                           ) : claw.status === "shutdown" ? (
                             <button
-                              className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 leading-none whitespace-nowrap"
+                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
                               onClick={() => setShutdownTarget(claw.id)}
                             >
                               <Power className="w-3.5 h-3.5 flex-shrink-0" />
@@ -2528,8 +2529,8 @@ export default function AgentMonitor() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}

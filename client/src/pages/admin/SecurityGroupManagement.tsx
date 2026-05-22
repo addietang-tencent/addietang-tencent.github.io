@@ -4868,16 +4868,16 @@ export default function SecurityGroupManagement() {
               确认导入规则到当前 ClawPro 安全组
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-3 py-3">
-              <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-              <div className="text-sm text-red-600 leading-relaxed">
+          <div className="pt-2">
+            <Alert variant="warning" className="w-full px-3 py-3">
+              <CircleAlert />
+              <AlertDescription>
                 <ul className="list-disc pl-4 space-y-1">
                   <li>ClawPro 将把所选规则模板的规则<span className="font-semibold">复制</span>到当前 ClawPro 安全组，当前企业下<span className="font-semibold">所有 Agent 所在云服务器</span>将立即使用新规则。</li>
                   <li>所选规则模板在云端对应的原安全组<span className="font-semibold">不受影响</span>，其关联的其他云端资源也不会被影响。</li>
                 </ul>
-              </div>
-            </div>
+              </AlertDescription>
+            </Alert>
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsConfirmSwitchDialogOpen(false)}>

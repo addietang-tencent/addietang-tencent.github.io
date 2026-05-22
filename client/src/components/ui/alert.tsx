@@ -2,7 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
-import { InfoIcon } from "lucide-react";
+import { Info } from "lucide-react";
 
 import { MetaMedium, MetaText } from "@/components/ui/Typography";
 
@@ -73,7 +73,7 @@ function AlertDescription({
 }
 
 function AlertInfoIcon(props: React.ComponentProps<"svg">) {
-  return <InfoIcon {...props} />;
+  return <Info {...props} />;
 }
 
 function AlertProductNewsIcon(props: React.ComponentProps<"svg">) {

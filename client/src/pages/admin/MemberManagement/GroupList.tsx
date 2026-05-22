@@ -172,13 +172,13 @@ function GroupRow(props: RowProps) {
   return (
     <>
       <div
-        className={`group flex items-center gap-1.5 h-9 pr-3 text-sm cursor-pointer rounded-xl mx-1 mb-0.5 transition-colors ${
+        className={`group flex items-center gap-1.5 h-8 pr-3 text-sm cursor-pointer rounded-[4px] mx-3 mb-0.5 transition-colors ${
           isActive
-            ? "bg-blue-50 text-blue-600"
-            : "text-gray-700 hover:bg-gray-50"
+            ? "bg-[#f4f4f5] text-[#09090b] font-medium"
+            : "text-[#09090b] hover:bg-[#f4f4f5]"
         }`}
         style={{
-          paddingLeft: 10 + node.depth * 16,
+          paddingLeft: 8 + node.depth * 16,
         }}
         onClick={() => onSelect(node.id)}
       >
@@ -190,7 +190,7 @@ function GroupRow(props: RowProps) {
               e.stopPropagation();
               onToggle(node.id);
             }}
-            className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+            className="w-4 h-4 flex items-center justify-center text-[#71717a] hover:text-[#09090b] shrink-0 transition-colors"
           >
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5" />
@@ -206,7 +206,7 @@ function GroupRow(props: RowProps) {
           {node.name}
         </span>
         {showCount && (
-          <span className={`text-[11px] tabular-nums shrink-0 ${isActive ? "text-blue-400" : "text-gray-400"}`}>
+          <span className={`text-[11px] tabular-nums shrink-0 ${isActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`}>
             ({count})
           </span>
         )}
@@ -298,12 +298,12 @@ function GroupRow(props: RowProps) {
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className={`w-5 h-5 flex items-center justify-center rounded transition-colors ${isActive ? "text-blue-400 hover:text-blue-600 hover:bg-blue-100" : "text-gray-300 hover:text-blue-500 hover:bg-blue-50"}`}
+                  className={`w-5 h-5 flex items-center justify-center rounded transition-colors ${isActive ? "text-[#737373] hover:text-[#020617] hover:bg-[#e5e5e5]" : "text-[#d4d4d4] hover:text-[#525252] hover:bg-[#f5f5f5]"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onAddChildGroup?.(node.id);
                   }}
-                >
+>
                   <Plus className="w-3 h-3" />
                 </button>
               </TooltipTrigger>
@@ -316,7 +316,7 @@ function GroupRow(props: RowProps) {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className={`w-5 h-5 flex items-center justify-center rounded transition-colors ${isActive ? "text-blue-400 hover:text-blue-600 hover:bg-blue-100" : "text-gray-300 hover:text-gray-600 hover:bg-gray-100"}`}
+                  className={`w-5 h-5 flex items-center justify-center rounded transition-colors ${isActive ? "text-[#737373] hover:text-[#020617] hover:bg-[#e5e5e5]" : "text-[#d4d4d4] hover:text-[#525252] hover:bg-[#f5f5f5]"}`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreHorizontal className="w-3 h-3" />
@@ -518,7 +518,7 @@ export default function GroupList({
         <span className="text-lg font-semibold text-gray-900">分组</span>
         <button
           type="button"
-          className="inline-flex items-center gap-1 px-2.5 h-7 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 h-7 text-sm font-medium text-[#020617] hover:bg-[#f5f5f5] rounded-[4px] transition-colors"
           onClick={onCreateGroup}
         >
           <Plus className="w-3.5 h-3.5" />
@@ -534,7 +534,7 @@ export default function GroupList({
             <input
               type="text"
               placeholder="搜索分组..."
-              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-gray-200 rounded-xl outline-none transition-colors focus:border-blue-300 focus:ring-2 focus:ring-blue-50 placeholder:text-gray-400"
+              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-[#E4E4E4] rounded-[4px] outline-none transition-colors focus:border-[#020617] placeholder:text-[#a3a3a3]"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -544,10 +544,10 @@ export default function GroupList({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={`w-8 h-8 flex items-center justify-center rounded-xl border bg-white transition-colors shrink-0 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-[4px] border bg-white transition-colors shrink-0 ${
                   filter !== "all"
-                    ? "border-blue-300 text-blue-600 bg-blue-50"
-                    : "border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                    ? "border-[#020617] text-[#020617] bg-[#f5f5f5]"
+                    : "border-[#E4E4E4] text-[#737373] hover:bg-[#fafafa] hover:text-[#525252]"
                 }`}
                 title="筛选"
               >
@@ -556,20 +556,20 @@ export default function GroupList({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[140px]">
               <DropdownMenuItem
-                className={`text-xs gap-2 ${filter === "all" ? "font-medium text-blue-600" : ""}`}
+                className={`text-xs gap-2 ${filter === "all" ? "font-medium text-[#020617]" : ""}`}
                 onClick={() => setFilter("all")}
               >
                 全部
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={`text-xs gap-2 ${filter === "uninitialized" ? "font-medium text-blue-600" : ""}`}
+                className={`text-xs gap-2 ${filter === "uninitialized" ? "font-medium text-[#020617]" : ""}`}
                 onClick={() => setFilter("uninitialized")}
               >
                 <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
                 初始化未完成
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={`text-xs gap-2 ${filter === "anomalous" ? "font-medium text-blue-600" : ""}`}
+                className={`text-xs gap-2 ${filter === "anomalous" ? "font-medium text-[#020617]" : ""}`}
                 onClick={() => setFilter("anomalous")}
               >
                 <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
@@ -803,16 +803,16 @@ export default function GroupList({
       {/* 底部固定：未分组 */}
       <div className="border-t border-[#e5e5e5] shrink-0">
         <div
-          className={`group flex items-center gap-1.5 h-9 px-4 text-sm cursor-pointer transition-colors ${
+          className={`group flex items-center gap-1.5 h-8 px-4 text-sm cursor-pointer rounded-[4px] mx-3 mt-1 transition-colors ${
             isUnassignedActive
-              ? "bg-blue-50 text-blue-600"
-              : "text-gray-700 hover:bg-gray-50"
+              ? "bg-[#f4f4f5] text-[#09090b] font-medium"
+              : "text-[#09090b] hover:bg-[#f4f4f5]"
           }`}
           onClick={() => onSelect(UNASSIGNED_GROUP_ID)}
         >
-          <UserX className={`w-3.5 h-3.5 shrink-0 ${isUnassignedActive ? "text-blue-500" : "text-gray-400"}`} />
+          <UserX className={`w-3.5 h-3.5 shrink-0 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`} />
           <span className="truncate">未分组</span>
-          <span className={`text-[11px] tabular-nums shrink-0 ${isUnassignedActive ? "text-blue-400" : "text-gray-400"}`}>
+          <span className={`text-[11px] tabular-nums shrink-0 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`}>
             ({unassignedCount})
           </span>
         </div>

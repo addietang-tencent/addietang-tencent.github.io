@@ -3724,7 +3724,7 @@ function ImageUpdateBellEntry() {
       <button
         type="button"
         title={`${outdated.length} 个 Agent 类型有新版本，可推送提醒员工更新`}
-        className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors shrink-0"
+        className="relative inline-flex items-center justify-center w-9 h-9 rounded-[4px] border border-[#e5e5e5] bg-white text-[#020617] hover:bg-[#f5f5f5] transition-colors shrink-0"
         aria-label="镜像更新提醒"
       >
         <Bell className="w-4 h-4" />

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -487,79 +488,79 @@ export default function ChannelConfig() {
 
       {/* ── 新增自定义通道弹窗 ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0 flex flex-col max-h-[min(640px,90vh)]">
-          <DialogHeader className="shrink-0">
+        <DialogContent className="sm:max-w-lg flex flex-col max-h-[min(640px,90vh)]">
+          <DialogHeader className="shrink-0 border-b border-[#F5F5F5]">
             <DialogTitle>添加自定义通道</DialogTitle>
             <DialogDescription>
               配置企业自研 IM 通道信息，保存后可在通道列表中管理可见性。
             </DialogDescription>
           </DialogHeader>
 
-          {/* 中间内容区：滚动只发生在这里，header / footer 始终可见 */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-1 space-y-5">
+          <DialogBody className="space-y-5">
             {/* 顶部提醒条 */}
             <div className="flex items-start gap-2 rounded-[4px] border border-[#FCD28C] bg-[#FFFBED] px-3 py-2">
               <AlertCircle className="w-4 h-4 text-[#FCA004] mt-0.5 shrink-0" />
-              <p className="text-xs text-[#181818] leading-5">
+              <p className="text-xs text-[#0A0A0A] leading-5">
                 使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
               </p>
             </div>
 
             {/* ── 第一部分：通道基础信息 ── */}
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-900">通道基础信息</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">通道基础信息</h3>
+              <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-[#525252]">
                     通道名称 <span className="text-red-500">*</span>
                   </label>
                   <Input
                     placeholder="展示给用户的通道名字，如「内部 IM」"
                     value={form.name}
                     onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                    className="rounded-[4px] border-[#E5E5E5] bg-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-[#525252]">
                     Channel ID <span className="text-red-500">*</span>
                   </label>
                   <Input
                     placeholder="写入 agent.json 的 key，需与插件名一致"
                     value={form.channelId}
                     onChange={(e) => setForm(f => ({ ...f, channelId: e.target.value }))}
-                    className="font-mono"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
                   />
-                  <p className="text-xs text-[#7b818f] mt-1.5">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
+                  <p className="text-xs text-[#737373] mt-1">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
                 </div>
               </div>
             </section>
 
             {/* ── 第二部分：IM 服务器地址 ── */}
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-900">IM 服务器地址</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">IM 服务器地址</h3>
+              <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-[#525252]">
                     Server URL <span className="text-red-500">*</span>
                   </label>
                   <Input
                     placeholder="自定义 IM 的 HTTP API 地址"
                     value={form.serverUrl}
                     onChange={(e) => setForm(f => ({ ...f, serverUrl: e.target.value }))}
-                    className="font-mono"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-[#525252]">
                     WebSocket URL <span className="text-red-500">*</span>
                   </label>
                   <Input
                     placeholder="自定义 IM 的长连接地址，可与 Server URL 相同"
                     value={form.wsUrl}
                     onChange={(e) => setForm(f => ({ ...f, wsUrl: e.target.value }))}
-                    className="font-mono"
+                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
                   />
-                  <p className="text-xs text-[#7b818f] mt-1.5">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
+                  <p className="text-xs text-[#737373] mt-1">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
                 </div>
               </div>
             </section>
@@ -567,11 +568,11 @@ export default function ChannelConfig() {
             {/* ── 第三部分：用户凭证字段 ── */}
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-900">用户凭证字段</h3>
+                <h3 className="text-sm font-semibold text-[#0A0A0A]">用户凭证字段</h3>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 px-2.5 text-xs flex items-center gap-1"
+                  className="h-7 px-2.5 text-xs flex items-center gap-1 rounded-[4px] border-[#E5E5E5]"
                   onClick={addCredentialField}
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -581,46 +582,46 @@ export default function ChannelConfig() {
 
               <div className="space-y-2">
                 {form.credentialFields.length === 0 ? (
-                  <div className="rounded-[4px] bg-[#fafafa] border border-dashed border-[#e5e5e5] px-4 py-3 text-center">
-                    <p className="text-xs text-[#7b818f]">暂未添加凭证字段</p>
+                  <div className="rounded-[4px] bg-[#FAFAFA] border border-dashed border-[#E5E5E5] px-4 py-3 text-center">
+                    <p className="text-xs text-[#737373]">暂未添加凭证字段</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-2">
                     {/* 表头 */}
                     <div className="flex items-center gap-2">
-                      <span className="w-5 shrink-0" />{/* 序号占位 */}
+                      <span className="w-5 shrink-0" />
                       <div className="flex gap-2 flex-1">
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-700">字段 Key</p>
-                          <p className="text-xs text-[#7b818f]">写入配置文件的字段名</p>
+                          <p className="text-xs font-medium text-[#525252]">字段 Key</p>
+                          <p className="text-xs text-[#737373]">写入配置文件的字段名</p>
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs font-medium text-gray-700">字段名称</p>
-                          <p className="text-xs text-[#7b818f]">用户看到的字段名称</p>
+                          <p className="text-xs font-medium text-[#525252]">字段名称</p>
+                          <p className="text-xs text-[#737373]">用户看到的字段名称</p>
                         </div>
                       </div>
-                      <span className="w-7 shrink-0" />{/* 删除按钮占位 */}
+                      <span className="w-7 shrink-0" />
                     </div>
                     {/* 字段行 */}
                     {form.credentialFields.map((field, idx) => (
                       <div key={field.id} className="flex items-center gap-2">
-                        <span className="text-xs text-[#7b818f] w-5 text-right shrink-0">{idx + 1}.</span>
+                        <span className="text-xs text-[#737373] w-5 text-right shrink-0">{idx + 1}.</span>
                         <div className="flex gap-2 flex-1">
                           <Input
                             placeholder={`如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
                             value={field.key}
                             onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
-                            className="flex-1 font-mono"
+                            className="flex-1 rounded-[4px] border-[#E5E5E5] bg-white font-mono"
                           />
                           <Input
                             placeholder={idx % 2 === 0 ? "如 机器人的AccessKey" : "如 机器人的SecretKey"}
                             value={field.label}
                             onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
-                            className="flex-1"
+                            className="flex-1 rounded-[4px] border-[#E5E5E5] bg-white"
                           />
                         </div>
                         <button
-                          className="w-7 shrink-0 text-[#b0b6c3] hover:text-[#d42a1e] transition-colors flex items-center justify-center"
+                          className="w-7 shrink-0 text-[#A3A3A3] hover:text-[#DC2626] transition-colors flex items-center justify-center"
                           onClick={() => removeCredentialField(field.id)}
                           title="删除此字段"
                         >
@@ -630,18 +631,18 @@ export default function ChannelConfig() {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-[#7b818f] leading-5 pt-0.5">
+                <p className="text-xs text-[#737373] leading-5 pt-0.5">
                   用户凭证的字段名称会展示在用户端，用户选择该通道后会看到对应的输入框
                 </p>
               </div>
             </section>
-          </div>
+          </DialogBody>
 
-          <DialogFooter className="shrink-0">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+          <DialogFooter className="shrink-0 border-t border-[#F5F5F5]">
+            <Button variant="outline" className="rounded-[4px] border-[#E5E5E5]" onClick={() => setDialogOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleSave}>
+            <Button className="rounded-[4px]" onClick={handleSave}>
               保存
             </Button>
           </DialogFooter>

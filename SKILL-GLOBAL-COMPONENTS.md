@@ -10,9 +10,11 @@ description: >
 # ClawPro 全局组件样式规范
 
 > **Owner**: addietang  
+> **全局样式修改人**: addietang, miekoyychen  
 > **优先级**: 最高——所有分支合并时，组件样式以此规范为准，不允许其他人修改组件源文件  
 > **组件源码路径**: `client/src/components/ui/`  
-> **CSS 变量定义**: `client/src/index.css`
+> **CSS 变量定义**: `client/src/index.css`  
+> **说明**: miekoyychen 负责全局样式的后续修改和调整，与 addietang 共同维护本规范
 
 ---
 
@@ -279,6 +281,33 @@ import {
 - disabled 态有 `cursor-not-allowed`，不用全局 `opacity-50`
 - **刷新按钮标准写法**: `<Button variant="claw-outline" size="icon" className="w-9 h-9">`
 
+### 4.4 SmallIconStateButton（小图标按钮）
+
+**文件**: `client/src/components/ui/button.tsx`（owner: miekoyychen）
+
+用于列表行内的迷你操作按钮（如"添加"、"移除"），带图标 + 文字。
+
+| 属性 | 说明 |
+|------|------|
+| 高度 | `h-6`（24px） |
+| 圆角 | `rounded-[4px]` |
+| padding | `px-2` |
+| 字号 | `text-xs font-medium` |
+| 图标 | `w-3 h-3`，与文字 `gap-1.5` |
+
+| state | 边框 | 背景 | 文字 | hover |
+|-------|------|------|------|-------|
+| `default` | `#D4D4D4` | 白色 | `#0A0A0A` | `border-[#C9C9C9] bg-[#FAFAFA]` active:`bg-[#F5F5F5]` |
+| `disabled` | `#D4D4D4` | 白色 | `#A3A3A3` | — |
+
+**用法**:
+```tsx
+import { SmallIconStateButton } from "@/components/ui/button";
+
+<SmallIconStateButton icon={Plus} label="添加" state="default" />
+<SmallIconStateButton icon={Minus} label="移除" state="disabled" />
+```
+
 ---
 
 ## 5. Input 组件
@@ -371,18 +400,18 @@ import {
 
 ## 10.5 Tab 切换卡（筛选标签按钮）
 
-> Figma: node 1061:7458 (ClawPro 项目设计)
+> Figma: node 1086:6426 (ClawPro 项目设计)
 > 用于分类筛选场景（如技能库分类、技能列表分类等）
 
-**使用标准 Button 组件实现**：`<Button variant="claw-primary"/"claw-outline" size="claw-sm">`
+**使用原生 `<button>` 实现**（不使用 Button 组件，避免内置 hover 样式干扰）
 
 ### 四种状态
 
 | 状态 | 背景 | 边框 | 文字 | 说明 |
 |------|------|------|------|------|
-| **Active（选中）** | `#F6F8FE` | `#1447E6`（品牌蓝） | `#1447E6` | 浅蓝底+蓝边+蓝字 |
-| **Hover（悬停）** | `#ffffff` | `#1447E6`（品牌蓝） | `#000000` | 白底+蓝边+黑字 |
-| **Normal（默认）** | `#ffffff` | `#e4e4e4` | `#000000` | 白底+灰边+黑字 |
+| **Active（选中）** | `#020617` | `#020617` | 白色 | 黑底+黑边+白字 |
+| **Hover（悬停）** | `#ffffff` | `#020617` | `#020617` | 白底+黑边+黑字 |
+| **Normal（默认）** | `#ffffff` | `#e4e4e4` | `#020617` | 白底+灰边+黑字 |
 | **Disabled（禁用）** | `#ffffff` | `#e4e4e4` | `rgba(0,0,0,0.3)` | 白底+灰边+淡字 |
 
 ### 视觉参数
@@ -399,20 +428,89 @@ import {
 ### 代码示例
 
 ```jsx
-{/* 使用标准 Button 组件 */}
 <div className="flex items-center gap-2 flex-wrap">
-  <Button
-    variant={isActive ? "claw-primary" : "claw-outline"}
-    size="claw-sm"
+  <button
     onClick={() => setCategory(cat.id)}
-    disabled={cat.disabled}
+    className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
+      isActive
+        ? 'bg-[#020617] border-[#020617] text-white'
+        : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+    }`}
   >
     {cat.name}
-  </Button>
+  </button>
 </div>
 ```
 
 **注意**：设计稿中 Active 态的颜色是 `#165DFC`，但在代码实现中统一映射到 `claw-primary` variant（使用品牌渐变）。如需精确还原设计稿的纯蓝色 Active 态，可使用 className 覆盖。
+
+---
+
+## 10.6 树结构组件（GroupTree / FileTree）
+
+> 参考: shadcn/ui Collapsible FileTree
+> 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`
+
+用于分组管理、文件树、目录导航等层级结构场景。
+
+### 颜色规范（对齐 shadcn）
+
+| 元素 | 颜色值 | 语义 |
+|------|--------|------|
+| 文字（默认 & 选中） | `#09090b` | text-foreground |
+| hover / 选中背景 | `#f4f4f5` | accent |
+| 箭头图标 | `#71717a` | muted-foreground |
+| 计数 / 辅助文字 | `#a1a1aa` | muted |
+
+### 视觉参数
+
+| 属性 | 值 |
+|------|-----|
+| 行高 | `h-8`（32px） |
+| 圆角 | `rounded-[4px]` |
+| 缩进 | 每层 `16px`，根节点 `paddingLeft: 8px` |
+| 左右间距 | `mx-3`（12px），与搜索框 `px-3` 对齐 |
+| 箭头尺寸 | `w-3.5 h-3.5` |
+| 行间距 | `mb-0.5` |
+
+### 交互状态
+
+| 状态 | 样式 |
+|------|------|
+| 默认 | `text-[#09090b] bg-transparent` |
+| Hover | `hover:bg-[#f4f4f5]` |
+| 选中（Active） | `bg-[#f4f4f5] text-[#09090b] font-medium` |
+| 展开箭头 | `text-[#71717a] hover:text-[#09090b]` |
+
+### 代码示例
+
+```jsx
+<div
+  className={`group flex items-center gap-1.5 h-8 pr-3 text-sm cursor-pointer rounded-[4px] mx-3 mb-0.5 transition-colors ${
+    isActive
+      ? "bg-[#f4f4f5] text-[#09090b] font-medium"
+      : "text-[#09090b] hover:bg-[#f4f4f5]"
+  }`}
+  style={{ paddingLeft: 8 + depth * 16 }}
+>
+  {/* 展开箭头 */}
+  {hasChildren ? (
+    <button className="w-4 h-4 flex items-center justify-center text-[#71717a] hover:text-[#09090b] shrink-0">
+      {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+    </button>
+  ) : (
+    <span className="w-4 h-4 shrink-0" />
+  )}
+  <span className="truncate">{name}</span>
+  <span className="text-[11px] tabular-nums shrink-0 text-[#a1a1aa]">({count})</span>
+</div>
+```
+
+### 配套元素
+
+- **搜索框**: `h-8 rounded-[4px] border-[#E4E4E4] focus:border-[#020617]`
+- **操作按钮**: `w-5 h-5 rounded text-[#d4d4d4] hover:text-[#09090b] hover:bg-[#f4f4f5]`
+- **筛选按钮**: `w-8 h-8 rounded-[4px] border-[#E4E4E4]`，活跃态 `border-[#020617] bg-[#f5f5f5]`
 
 ---
 

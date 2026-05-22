@@ -34,7 +34,7 @@ export function AdminModeProvider({ children }: { children: ReactNode }) {
       }
     }
     const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === "custom" ? "custom" : "standard") as AdminMode;
+    return (saved === "standard" ? "standard" : "custom") as AdminMode;
   });
 
   const setMode = (newMode: AdminMode) => {

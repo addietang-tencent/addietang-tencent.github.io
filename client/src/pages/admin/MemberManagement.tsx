@@ -2417,7 +2417,7 @@ export default function MemberManagement() {
 
         {/* Search + Filter + Actions Row */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex w-[676px] h-9 items-center gap-2 px-0 py-0 text-base leading-6 text-[#0A0A0A]">
             {/* 视图切换按钮组（最左侧，两种模式通用） */}
             <SegmentGroup>
               <SegmentOption

@@ -134,7 +134,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#7b818f] transition-colors hover:text-[#020617] focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -168,6 +168,41 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * DialogBody - 弹窗内容滚动区
+ *
+ * 设计规则：
+ *   - 内容区左边与标题左边对齐，右边与底部按钮最右边对齐
+ *   - 纵向滚动滑块不占用内容区水平空间，向右偏移 8px
+ *   - 滚动条默认不可见，hover/滚动时才显示
+ *   - 滚动条宽 6px，圆角，灰色（#D4D4D4）
+ *   - scrollbar-gutter: stable 防止出现/消失时内容区跳动
+ *
+ * 使用示例：
+ *   <DialogBody>
+ *     <div className="space-y-4">...</div>
+ *   </DialogBody>
+ */
+function DialogBody({ className, style, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(
+        "flex-1 min-h-0 overflow-y-auto py-2 -mr-2 pr-2",
+        "[&::-webkit-scrollbar]:w-[6px]",
+        "[&::-webkit-scrollbar-thumb]:rounded-full",
+        "[&::-webkit-scrollbar-thumb]:bg-transparent",
+        "[&::-webkit-scrollbar-track]:bg-transparent",
+        "hover:[&::-webkit-scrollbar-thumb]:bg-[#D4D4D4]",
+        "[&:active::-webkit-scrollbar-thumb]:bg-[#D4D4D4]",
+        className
+      )}
+      style={{ scrollbarGutter: "stable", ...style }}
+      {...props}
+    />
+  );
+}
+
 function DialogTitle({
   className,
   ...props
@@ -188,7 +223,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-sm text-[#7b818f]", className)}
+      className={cn("text-sm text-[#737373]", className)}
       {...props}
     />
   );
@@ -196,6 +231,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,

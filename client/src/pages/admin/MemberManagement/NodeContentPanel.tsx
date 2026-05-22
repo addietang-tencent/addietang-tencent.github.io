@@ -825,7 +825,7 @@ export default function NodeContentPanel({
                   total={total}
                   current={page}
                   pageSize={PAGE_SIZE}
-                  size="small"
+
                   hideOnSinglePage
                   onChange={(p) => { setPage(() => p); }}
                 />

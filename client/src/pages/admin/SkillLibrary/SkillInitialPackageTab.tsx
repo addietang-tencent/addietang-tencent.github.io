@@ -1050,7 +1050,6 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                 showTotal={(total) => `共 ${total} 条`}
                 showSizeChanger
                 pageSizeOptions={PAGE_SIZE_OPTIONS}
-                size="small"
                 className="w-full justify-between"
                 onChange={(page, newPageSize) => {
                   if (newPageSize !== pageSize) {

@@ -716,17 +716,9 @@ function SkillInstallModal({
         <div className="px-6 pb-3">
           <div className="flex flex-wrap gap-2">
             {SKILL_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                  category === cat.id
-                    ? 'bg-[#020617] border-[#020617] text-white'
-                    : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-                }`}
-              >
+              <Button key={cat.id} variant="plain" size="sm" data-state={category === cat.id ? "active" : undefined} onClick={() => setCategory(cat.id)}>
                 {cat.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

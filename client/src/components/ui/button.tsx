@@ -70,11 +70,30 @@ const buttonVariants = cva(
           "hover:bg-[#f5f5f5] " +
           "active:bg-[#ebebeb] " +
           "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+        plain:
+          "bg-white border border-[#e4e4e4] text-[#020617] font-normal " +
+          "hover:border-[#020617] " +
+          "active:bg-[#020617] active:border-[#020617] active:text-white " +
+          "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
+          "disabled:bg-white disabled:border-[#e4e4e4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
         link:
           "text-[#355EF1] font-normal underline-offset-4 " +
           "hover:underline " +
           "active:text-[#0a226f] " +
           "disabled:text-[rgba(20,71,230,0.4)] disabled:opacity-100 disabled:no-underline",
+
+        /**
+         * 黑色文字按钮（用于表格操作列）
+         * - normal: #020617 字色，无背景无边框
+         * - hover : #525252 字色
+         * - click/active: #020617 字色 + 下划线
+         * - disabled: rgba(2,6,23,0.3) 字色
+         */
+        "link-dark":
+          "text-[#020617] font-normal underline-offset-4 " +
+          "hover:text-[#525252] " +
+          "active:text-[#020617] active:underline " +
+          "disabled:text-[rgba(2,6,23,0.3)] disabled:no-underline disabled:opacity-100",
 
         /* ============================================================== */
         /*  Figma「按钮」ComponentSet 317:1051 对齐变体                       */

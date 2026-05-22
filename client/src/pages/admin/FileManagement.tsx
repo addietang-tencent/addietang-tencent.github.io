@@ -1502,7 +1502,6 @@ export default function FileManagement() {
               current={currentPage}
               pageSize={itemsPerPage}
               showTotal={(total) => `共 ${total} 条记录`}
-              size="small"
               className="w-full justify-between"
               hideOnSinglePage
               onChange={(page) => { setCurrentPage(page); }}

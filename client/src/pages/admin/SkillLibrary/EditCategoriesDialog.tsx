@@ -61,18 +61,10 @@ export default function EditCategoriesDialog({
             {categories.map((cat) => {
               const isSelected = selected.includes(cat.id);
               return (
-                <button
-                  key={cat.id}
-                  onClick={() => handleToggleCategory(cat.id)}
-                  className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors whitespace-nowrap inline-flex items-center gap-1 ${
-                    isSelected
-                      ? 'bg-[#0A0A0A] border-[#0A0A0A] text-white'
-                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-                  }`}
-                >
+                <Button key={cat.id} variant="plain" size="sm" data-state={isSelected ? "active" : undefined} onClick={() => handleToggleCategory(cat.id)}>
                   {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
                   {cat.name}
-                </button>
+                </Button>
               );
             })}
           </div>

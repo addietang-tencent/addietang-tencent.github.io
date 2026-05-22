@@ -597,7 +597,6 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                   total={filteredList.length}
                   current={currentPage}
                   pageSize={PAGE_SIZE}
-                  size="small"
                   hideOnSinglePage
                   onChange={(page) => { setCurrentPage(page); }}
                 />

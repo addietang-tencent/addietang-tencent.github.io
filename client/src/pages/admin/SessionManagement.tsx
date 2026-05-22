@@ -717,7 +717,6 @@ export default function SessionManagement() {
                 current={currentPage}
                 pageSize={PAGE_SIZE}
                 showTotal={(total) => `共 ${total} 条记录`}
-                size="small"
                 className="w-full justify-between"
                 onChange={(page) => { setCurrentPage(page); }}
               />

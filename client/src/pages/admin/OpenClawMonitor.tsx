@@ -2782,8 +2782,7 @@ export default function AgentMonitor() {
       <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); setValueDropdownOpen(false); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Tag className="w-4 h-4 text-blue-500" />
+            <DialogTitle>
               配置默认标签
             </DialogTitle>
           </DialogHeader>
@@ -3063,7 +3062,7 @@ export default function AgentMonitor() {
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-gray-600">模型厂商</label>
                             <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
-                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
                                 <SelectValue placeholder="选择模型厂商" />
                               </SelectTrigger>
                               <SelectContent>
@@ -3076,7 +3075,7 @@ export default function AgentMonitor() {
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-gray-600">模型名称</label>
                             <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
-                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
                                 <SelectValue placeholder="选择模型名称" />
                               </SelectTrigger>
                               <SelectContent>
@@ -3382,7 +3381,7 @@ export default function AgentMonitor() {
                           <div className="space-y-2">
                             <label className="text-xs font-medium text-gray-600">通道类型</label>
                             <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
-                              <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
                                 <SelectValue placeholder="选择要添加的通道" />
                               </SelectTrigger>
                               <SelectContent>

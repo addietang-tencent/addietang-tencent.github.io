@@ -431,6 +431,25 @@ import { SmallIconStateButton } from "@/components/ui/button";
 | Header | `pt-6 pb-3 -mx-6 px-6` |
 | Footer | `pt-4 pb-6 -mx-6 px-6` 右对齐 |
 
+### 7.1 内嵌组件强制规范（不可违反）
+
+> 对话框 / 弹窗内出现的任何基础组件，**必须直接复用本设计 SKILL 中已定义的规范样式，禁止在弹窗内重新编造一套样式**。
+
+| 组件 | 必须引用 | 关键约束 |
+|------|----------|----------|
+| Input | `client/src/components/ui/input.tsx`（见第 5 节） | 默认状态**禁止加底色**（无 `bg-gray-*` / `bg-[#FAFAFA]` 等），统一 `border-[#d3d6db]` + 白底 |
+| Select / 下拉 | `client/src/components/ui/select.tsx`（见第 6 节） | Trigger 与 Input 完全一致，默认状态**禁止加底色**；`Content` 面板沿用统一阴影 |
+| Table / 表格 | 见第 11.1 节 Table 表格组件规范 | 表头、行高、分割线、空状态等必须沿用全局 Table 规范，禁止在弹窗内自定义新表格样式 |
+
+**强制条款**：
+
+1. 弹窗内的 Input、Select（下拉）、Table 三类组件**必须** `import` 自 `@/components/ui/*`，禁止以 `<input>` / `<select>` / `<table>` 原生标签 + 临时 class 的方式拼凑。
+2. **严禁**为弹窗内的 Input、Select 重新调色或重写样式；尤其：
+   - **默认状态禁止加任何底色**（如 `bg-gray-50`、`bg-[#F5F5F5]`、`bg-[#FAFAFA]` 等），必须保持白底 + `border-[#d3d6db]`。
+   - **禁用（disabled）状态禁止再添加 hover 样式**（不允许 `disabled:hover:*`、不允许在 disabled 下出现边框变蓝、底色加深等任何 hover 反馈）；disabled 视觉锁死为 `border-[#d3d6db] bg-[#f3f3f4] text-[#b0b6c3] cursor-not-allowed`。
+3. 弹窗内 Table 必须沿用全局 Table 表头 / 行 / 边框 / 空状态样式，禁止重新定义表头底色、行高、分割线颜色。
+4. 若弹窗内确有特殊视觉需求，**必须在本 SKILL 文档中扩展规范**后再使用，禁止在业务代码内单点编造样式绕过规范。
+
 ---
 
 ## 8. Checkbox 组件
@@ -1052,6 +1071,10 @@ import { Pagination } from "@/components/ui/pagination";
 5. 新增全局组件时，组件内部文字规格必须先映射到 Typography 层级；如确需新增文字层级，先更新本规范和 `Typography.tsx`
 6. 如发现 rebase 后组件样式被改，以 addietang 和 miekoyychen 的版本为准强制恢复
 7. 新增组件需经 addietang 和 miekoyychen 审核后才能合入基线
+8. **对话框 / 弹窗内的 Input、下拉（Select）、Table 必须直接 import 自 `@/components/ui/*` 且与本 SKILL 第 5 / 6 / 11.1 节规范完全一致**：
+   - 禁止在弹窗中重新编造 Input / Select / Table 样式
+   - Input / Select **默认状态禁止加底色**（白底 + `border-[#d3d6db]`）
+   - Input / Select **禁用（disabled）状态禁止添加任何 hover 样式**（不允许 `disabled:hover:*`，不允许出现边框变蓝、底色加深等反馈）
 
 ---
 

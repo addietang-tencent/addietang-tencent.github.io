@@ -19,6 +19,16 @@ import {
   DialogFooter,
   DialogBody,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -791,23 +801,23 @@ interface DeleteConfirmDialogProps {
 
 function DeleteConfirmDialog({ open, packageName, onConfirm, onCancel }: DeleteConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-[#0A0A0A]">确认删除</DialogTitle>
-        </DialogHeader>
-        <div className="my-2">
-          <p className="text-sm text-[#0A0A0A]">
-            确定要删除「<span className="font-medium text-[#d42a1e]">{packageName}</span>」吗？
-            <span className="font-medium text-[#d42a1e]">删除后不可恢复</span>。
-          </p>
-        </div>
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>取消</Button>
-          <Button variant="destructive" onClick={onConfirm}>确认删除</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <AlertDialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <AlertDialogContent className="max-w-sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <p className="text-sm text-[#0A0A0A]">
+              确定要删除「<span className="font-medium text-[#DC2626]">{packageName}</span>」吗？
+              <span className="text-[#DC2626]">删除后不可恢复。</span>
+            </p>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>取消</AlertDialogCancel>
+          <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white" onClick={onConfirm}>确认删除</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

@@ -1960,15 +1960,6 @@ export default function SkillRolesTab() {
             标题/正文黑色，强调字段告警色，destructive 主按钮，右上角带 X 关闭按钮 */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
         <AlertDialogContent>
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={() => setDeleteTarget(null)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#0A0A0A]">确认删除角色</AlertDialogTitle>
             <AlertDialogDescription asChild>

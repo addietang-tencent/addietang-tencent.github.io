@@ -324,8 +324,7 @@ export default function AuditLog() {
       <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-blue-500" />
+            <DialogTitle>
               消息详情
             </DialogTitle>
           </DialogHeader>

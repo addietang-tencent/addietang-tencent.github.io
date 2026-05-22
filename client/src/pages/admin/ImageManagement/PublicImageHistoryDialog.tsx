@@ -46,8 +46,7 @@ export default function PublicImageHistoryDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-[560px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2">
-            <Cloud className="w-4 h-4 text-[#1447E6]" />
+          <DialogTitle>
             版本更新记录
           </DialogTitle>
           <DialogDescription className="text-xs text-[#737373] leading-relaxed">

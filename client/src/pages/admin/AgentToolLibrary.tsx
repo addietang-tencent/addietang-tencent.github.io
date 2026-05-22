@@ -234,10 +234,7 @@ export default function AgentToolLibrary() {
       <Dialog open={securitySuccessDialogOpen} onOpenChange={setSecuritySuccessDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#E9F8EB] flex items-center justify-center">
-                <Check className="w-4 h-4 text-[#008236]" />
-              </span>
+            <DialogTitle>
               试用额度已开通
             </DialogTitle>
             <DialogDescription className="pt-2">

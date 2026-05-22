@@ -516,9 +516,9 @@ CSS 定义：
 </div>
 ```
 
-### 8.7 Dialog（参考 Ant Design Modal）
+### 8.7 Dialog（弹窗组件规范）
 
-**视觉参数**：
+#### 8.7.1 通用规范
 
 | 属性 | 值 |
 |------|-----|
@@ -526,40 +526,121 @@ CSS 定义：
 | 遮罩 | `rgba(0,0,0,0.45)` |
 | 阴影 | `0 6px 16px 0 rgba(0,0,0,0.08), 0 3px 6px -4px rgba(0,0,0,0.12), 0 9px 28px 8px rgba(0,0,0,0.05)` |
 | 分割线 | **无**（Header/Footer 均无分割线） |
-| 标题 | `16px font-semibold rgba(0,0,0,0.88)` |
-| 描述 | `14px text-[#7b818f]` |
-| 关闭按钮 | 右上角 20px `#7b818f` hover 变深 |
-| Content padding | `px-6 pb-6`（内容区自动继承） |
+| 标题 | `16px font-semibold text-[#0A0A0A]` |
+| 关闭按钮 | 右上角 `#737373` → hover `#0A0A0A` |
+| 最大高度 | `maxHeight: min(90vh, 780px)`，高度自适应内容，不出现大面积空白 |
+| 内容区滚动 | 使用 `DialogBody` 管理滚动，设置 `scrollbarGutter: "stable"` |
+| 元素间距 | 内容区元素间距可取 **8px**（`space-y-2`）、**12px**（`space-y-3`）、**16px**（`space-y-4`）三档；默认两个一级模块之间取 **16px**；**严禁**两个元素紧贴在一起无任何间距 |
+| Alert 位置 | Alert 提示必须放在内容区（DialogBody）**最上方** |
+| 表单组件 | 下拉框和 Input 必须引用项目规范组件（`@/components/ui/select`、`@/components/ui/input`），禁止自行编造样式 |
 
 **尺寸规范**：
 - 小确认框：`sm:max-w-sm`
-- 中表单：`sm:max-w-md`
-- 大表单：`sm:max-w-lg`
+- 中表单：`sm:max-w-md` / `sm:max-w-[532px]`
+- 大表单：`sm:max-w-lg` / `sm:max-w-[640px]`
 - 详情查看：`sm:max-w-2xl`
-- 长表单加：`max-h-[90vh] overflow-y-auto`
 
 **关键约束**：
 - 不加 Header/Footer 分割线
 - Footer 按钮右对齐，取消在左确认在右
-- 危险操作确认按钮用 `variant="destructive"`
+- 取消按钮统一使用 `variant="outline"`
+
+**强制规范（不可违反）**：
+1. 项目中的弹窗**只能使用普通弹窗或警示弹窗**两种变体，禁止自行产出新样式
+2. 弹窗内的下拉组件、Input 组件、按钮组件等**必须使用项目规范组件样式**（`@/components/ui/*`），禁止自行编造
+3. 弹窗内的一级标题和说明文字**必须保持字体属性一致**（标题 `text-base font-semibold text-[#0A0A0A]`，说明 `text-sm text-[#525252]`）
+4. 如果弹窗内有 info 图标，**必须使用相同的 SVG**（统一使用 `lucide-react` 的 `Info` / `AlertTriangle` 等图标组件）
+5. 如果弹窗内有 Alert 组件，**Alert 必须位于内容区最上方**
+6. 弹窗左上角大标题旁边**不使用图标**，标题保持纯文字
+7. 弹窗内的 Input 和 Select 组件统一使用**灰色边框白色底**（`border-[#E5E5E5] bg-white`），禁止加入灰色底色（如 `bg-gray-50`、`bg-[#FAFAFA]`）
+8. 弹窗内容区元素间距**只能在 8px / 12px / 16px 三档中选取**（对应 `space-y-2` / `space-y-3` / `space-y-4`）：
+   - 默认情况下，两个**一级模块**之间使用 **16px**（`space-y-4`）
+   - 同一模块内子元素可使用 **12px**（`space-y-3`）或 **8px**（`space-y-2`）
+   - **严禁**两个元素紧贴（即间距为 0），所有相邻元素必须保留可见间距
+9. **弹窗和对话框右上角必须有关闭按钮**（X 图标，`top-5 right-5`，`#737373` → hover `#0A0A0A`，尺寸 `size-5`）：
+   - 普通 `Dialog`（`@/components/ui/dialog`）已内置该关闭按钮，**禁止移除**
+   - `AlertDialog`（`@/components/ui/alert-dialog`）**未自带**关闭按钮，必须**手动**在 `AlertDialogContent` 内添加：
+     ```jsx
+     <button
+       type="button"
+       aria-label="关闭"
+       onClick={onClose}
+       className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+     >
+       <X className="size-5" />
+       <span className="sr-only">关闭</span>
+     </button>
+     ```
+   - 关闭按钮与底部「取消」按钮的行为一致（关闭弹窗，不提交任何数据）
+   - 关闭按钮**位于标题左侧时不允许**（如返回箭头）；返回操作请通过底部「上一步」按钮承载
+
+---
+
+#### 8.7.2 普通弹窗
+
+主按钮使用 **`variant="dialog-confirm"`**（纯黑底白字）：
+- 默认：`bg-[#0A0A0A] text-white`
+- hover：`bg-[#404040]`
+- disabled：`bg-[#A3A3A3] text-white`
 
 ```jsx
 <Dialog>
-  <DialogTrigger asChild>
-    <Button variant="outline">打开弹窗</Button>
-  </DialogTrigger>
-  <DialogContent className="sm:max-w-md">
+  <DialogContent className="sm:max-w-md" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}>
     <DialogHeader>
       <DialogTitle>确认操作</DialogTitle>
-      <DialogDescription>这是描述信息。</DialogDescription>
     </DialogHeader>
-    <div>内容区域（自动有 px-6 padding）</div>
+    <DialogBody className="flex-1">
+      {/* Alert 提示放在最上方 */}
+      <div className="space-y-4">
+        {/* 内容区域 */}
+      </div>
+    </DialogBody>
     <DialogFooter>
       <Button variant="outline">取消</Button>
-      <Button>确认</Button>
+      <Button variant="dialog-confirm">确认</Button>
     </DialogFooter>
   </DialogContent>
 </Dialog>
+```
+
+---
+
+#### 8.7.3 警示弹窗
+
+用于删除、危险操作等场景。关键调整：
+- 主按钮使用 **`variant="destructive"`**（红色底白字：`bg-[#d42a1e]`）
+- 右上角**必须有关闭按钮**
+- 标题保持黑色（不用红色）
+- 警示文字用 `text-[#DC2626]` 红色强调
+
+```jsx
+<AlertDialog>
+  <AlertDialogContent className="sm:max-w-sm">
+    {/* 右上角关闭按钮 */}
+    <button
+      className="absolute top-5 right-5 size-5 rounded-sm text-[#737373] hover:text-[#0A0A0A]"
+      onClick={onClose}
+    >
+      <X className="size-5" />
+    </button>
+    <AlertDialogHeader>
+      <AlertDialogTitle className="text-[#0A0A0A]">
+        确认删除？
+      </AlertDialogTitle>
+      <AlertDialogDescription asChild>
+        <p className="text-sm text-[#0A0A0A]">
+          确定要删除 XXX 吗？<span className="text-[#DC2626]">此操作不可撤销。</span>
+        </p>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>取消</AlertDialogCancel>
+      <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white">
+        确认删除
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
 ```
 
 ### 8.8 提示横幅
@@ -681,9 +762,13 @@ CSS 定义：
 
 ### 10.4 危险操作确认
 
-使用 `AlertDialog`（非 `Dialog`），红色确认按钮：
+使用 `AlertDialog`（非 `Dialog`），参见 **8.7.3 警示弹窗** 规范：
+- 主按钮使用 `variant="destructive"`（`bg-[#d42a1e]`）
+- 右上角必须有关闭按钮
+- 警示文字用 `text-[#DC2626]`
+
 ```jsx
-<AlertDialogAction className="bg-red-500 hover:bg-red-600 text-white">
+<AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white">
   确认删除
 </AlertDialogAction>
 ```

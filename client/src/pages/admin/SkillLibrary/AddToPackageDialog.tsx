@@ -63,8 +63,7 @@ export default function AddToPackageDialog({
         {!result ? (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-blue-600" />
+              <DialogTitle>
                 选择初始技能包
               </DialogTitle>
             </DialogHeader>
@@ -126,8 +125,7 @@ export default function AddToPackageDialog({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <DialogTitle>
                 添加成功
               </DialogTitle>
             </DialogHeader>

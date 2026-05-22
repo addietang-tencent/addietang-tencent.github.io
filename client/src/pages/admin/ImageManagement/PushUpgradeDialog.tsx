@@ -148,8 +148,7 @@ export default function PushUpgradeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Megaphone className="w-4 h-4 text-[#1447E6]" />
+          <DialogTitle>
             推送更新提醒
           </DialogTitle>
           <DialogDescription className="text-xs text-[#737373]">

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -397,29 +398,23 @@ function ScopePopover({
         </PopoverTrigger>
         <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
           <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
-            {/* Radio 切换 */}
-            <div className="flex gap-1.5">
-              <button
+            {/* Segment 切换（标准分段选择器） */}
+            <SegmentGroup className="w-full">
+              <SegmentOption
+                active={draftScope === "all"}
                 onClick={() => setDraftScope("all")}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === "all"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
+                className="flex-1"
               >
                 全部用户
-              </button>
-              <button
+              </SegmentOption>
+              <SegmentOption
+                active={draftScope === "groups"}
                 onClick={() => setDraftScope("groups")}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === "groups"
-                    ? "border-blue-200 bg-blue-50 text-blue-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-                }`}
+                className="flex-1"
               >
                 按分组
-              </button>
-            </div>
+              </SegmentOption>
+            </SegmentGroup>
 
             {/* 分组列表（仅 groups 模式） */}
             {draftScope === "groups" && (
@@ -568,7 +563,7 @@ function EditQuotaDialog({
               type="number"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-gray-50"
+              className="bg-white"
             />
           </div>
         </div>
@@ -1033,15 +1028,6 @@ export default function ModelConfig() {
        */}
       <AlertDialog open={!!deleteConfirmModel} onOpenChange={(open) => { if (!open) setDeleteConfirmModel(null); }}>
         <AlertDialogContent className="sm:max-w-sm">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={() => setDeleteConfirmModel(null)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#0A0A0A]">
               确认删除模型？

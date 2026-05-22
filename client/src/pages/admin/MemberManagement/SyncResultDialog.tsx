@@ -39,8 +39,7 @@ export default function SyncResultDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
+          <DialogTitle>
             同步结果
           </DialogTitle>
         </DialogHeader>

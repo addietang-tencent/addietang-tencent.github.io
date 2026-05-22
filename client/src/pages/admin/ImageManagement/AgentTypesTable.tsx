@@ -119,51 +119,53 @@ export default function AgentTypesTable({
   };
 
   return (
-    <div className="rounded-[4px] border border-[#E5E5E5] bg-white overflow-x-auto">
-      <table className="w-full text-sm table-auto">
-        <thead>
-          <tr style={{ backgroundColor: "#f9fafb" }}>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
-              Agent 类型
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 170 }}>
-              Agent 版本
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 220 }}>
-              镜像
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 160 }}>
-              应用范围
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 100 }}>
-              用户可见
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 300, width: "1%" }}>
-              操作
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {rows.map((row) => (
-            <AgentTypeRow
-              key={row.agentType}
-              row={row}
-              expanded={expandedType === row.agentType}
-              onToggleExpand={() => toggleExpand(row.agentType)}
-              onSetDefaultType={() => onSetDefaultType(row.agentType)}
-              onRemoveCustomType={() => onRemoveCustomType(row.agentType)}
-              onEnableImage={(imgId) => onEnableImage(imgId, row.agentType)}
-              onDisableImage={onDisableImage}
-              onSelectImage={(imgId) => onSelectImage(imgId, row.agentType)}
-              onEditImage={onEditImage}
-              onDeleteImage={onDeleteImage}
-              onViewPublicHistory={onViewPublicHistory}
-              onImportCustom={() => onImportCustom(row.agentType)}
-              scopeSlot={renderScope(row.agentType)}
-            />
-          ))}
-        </tbody>
-      </table>
+    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm table-auto">
+          <thead>
+            <tr className="border-b border-gray-50 bg-gray-50/50">
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
+                Agent 类型
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 170 }}>
+                Agent 版本
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 220 }}>
+                镜像
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 160 }}>
+                应用范围
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 100 }}>
+                用户可见
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 300, width: "1%" }}>
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <AgentTypeRow
+                key={row.agentType}
+                row={row}
+                expanded={expandedType === row.agentType}
+                onToggleExpand={() => toggleExpand(row.agentType)}
+                onSetDefaultType={() => onSetDefaultType(row.agentType)}
+                onRemoveCustomType={() => onRemoveCustomType(row.agentType)}
+                onEnableImage={(imgId) => onEnableImage(imgId, row.agentType)}
+                onDisableImage={onDisableImage}
+                onSelectImage={(imgId) => onSelectImage(imgId, row.agentType)}
+                onEditImage={onEditImage}
+                onDeleteImage={onDeleteImage}
+                onViewPublicHistory={onViewPublicHistory}
+                onImportCustom={() => onImportCustom(row.agentType)}
+                scopeSlot={renderScope(row.agentType)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -216,7 +218,7 @@ function AgentTypeRow({
       <tr
         id={`section-${row.agentType}`}
         data-anchor={row.agentType}
-        className="group hover:bg-gray-50/50 transition-colors"
+        className="group border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
       >
         {/* 1. Agent 类型 */}
         <td className="px-4 py-4 align-top" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
@@ -248,7 +250,7 @@ function AgentTypeRow({
               {isNative && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span><StatusTag variant="gray" dot>自定义内核</StatusTag></span>
+                    <span><StatusTag variant="gray">自定义内核</StatusTag></span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
                     完全自研内核：管控台部分功能不可用，用户需通过终端配置
@@ -258,7 +260,7 @@ function AgentTypeRow({
               {customType && !isNative && kernelBaseLabel && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <StatusTag variant="gray" className="text-[10px] h-4 px-1.5">兼容 {kernelBaseLabel}</StatusTag>
+                    <span><StatusTag variant="gray">兼容 {kernelBaseLabel}</StatusTag></span>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
                     与 {kernelBaseLabel} 完全兼容，管控台功能保持一致

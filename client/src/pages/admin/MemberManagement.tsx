@@ -3,7 +3,7 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+} from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -469,7 +476,7 @@ function TokenLimitInput({
           }
         }}
       >
-        <SelectTrigger className="bg-gray-50 w-full">
+        <SelectTrigger className="bg-white w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -491,7 +498,7 @@ function TokenLimitInput({
               onChange(0);
             }
           }}
-          className="bg-gray-50"
+          className="bg-white"
           placeholder="请输入数量"
         />
       )}
@@ -665,7 +672,7 @@ function AddMemberFormFields({
                 setIdError("");
               }}
               onBlur={handleIdBlur}
-              className={`bg-gray-50 ${idError ? "border-red-300 focus:ring-red-500 focus:border-red-500" : ""}`}
+              className={`bg-white ${idError ? "border-red-300 focus:ring-red-500 focus:border-red-500" : ""}`}
             />
             {idError && <p className="text-xs text-red-500 font-medium">{idError}</p>}
           </div>
@@ -673,7 +680,7 @@ function AddMemberFormFields({
           <div className="space-y-2">
             <Label>用户角色 <span className="text-red-500">*</span></Label>
             <Select value={values.role} onValueChange={(v) => onChange({ ...values, role: v })}>
-              <SelectTrigger className="bg-gray-50 w-full">
+              <SelectTrigger className="bg-white w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -763,41 +770,39 @@ function AddMemberFormFields({
                 <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
               </Tooltip>
             </Label>
-            <Input type="email" placeholder="输入用户接收账号密码的邮箱地址" value={values.notificationEmail} onChange={(e) => onChange({ ...values, notificationEmail: e.target.value })} className="bg-gray-50" />
+            <Input type="email" placeholder="输入用户接收账号密码的邮箱地址" value={values.notificationEmail} onChange={(e) => onChange({ ...values, notificationEmail: e.target.value })} className="bg-white" />
           </div>
         </div>
       </div>
-
-      <div className="border-t border-[#e5e5e5]" />
 
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>分组</TableHead>
+                    <TableHead className="text-right">Agent 上限</TableHead>
+                    <TableHead className="text-right">每日 Tokens 上限</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {values.groupIds.map((gId) => {
                     const quotaMap = hasUserGroups && userGroups.some((g) => g.source === 'oneid-dept' || g.source === 'oneid-group') ? ONEID_GROUP_POLICY_QUOTAS : GROUP_POLICY_QUOTAS;
                     const ugName = hasUserGroups ? getUgPath(gId) : gId;
                     const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
                     return (
-                      <tr key={gId}>
-                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
-                      </tr>
+                      <TableRow key={gId} className="hover:bg-transparent">
+                        <TableCell>{ugName}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.clawLimit}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.tokenLimit.toLocaleString()}</TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
               该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
@@ -830,7 +835,7 @@ function AddMemberFormFields({
                   onChange({ ...values, clawLimit: 0 });
                 }
               }}
-              className="bg-gray-50" placeholder="请输入数量"
+              className="bg-white" placeholder="请输入数量"
             />
           </div>
           <div className="space-y-2">
@@ -994,15 +999,15 @@ function EditMemberFormFields({
             </Label>
             <Input
               value={values.id}
-              readOnly
-              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
+              disabled
+              className="disabled:bg-gray-100 disabled:text-[#A3A3A3] disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
           <div className="space-y-2">
             <Label>用户角色</Label>
             <Select value={values.role} onValueChange={(v) => !isInitialAdmin && onChange({ ...values, role: v })} disabled={isInitialAdmin}>
-              <SelectTrigger className={`w-full ${isInitialAdmin ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-gray-50"}`}>
+              <SelectTrigger className={`w-full ${isInitialAdmin ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-white"}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1082,38 +1087,35 @@ function EditMemberFormFields({
         </div>
       </div>
 
-      {/* 分隔线 */}
-      <div className="border-t border-[#e5e5e5]" />
-
       {/* 第二大块：用户配额 */}
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>分组</TableHead>
+                    <TableHead className="text-right">Agent 上限</TableHead>
+                    <TableHead className="text-right">每日 Tokens 上限</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {values.groupIds.map((gId) => {
                     const quotaMap = hasUserGroups && userGroups.some((g) => g.source === 'oneid-dept' || g.source === 'oneid-group') ? ONEID_GROUP_POLICY_QUOTAS : GROUP_POLICY_QUOTAS;
                     const ugName = hasUserGroups ? getUgPath(gId) : gId;
                     const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
                     return (
-                      <tr key={gId}>
-                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
-                      </tr>
+                      <TableRow key={gId} className="hover:bg-transparent">
+                        <TableCell>{ugName}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.clawLimit}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.tokenLimit.toLocaleString()}</TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
               该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
@@ -1146,7 +1148,7 @@ function EditMemberFormFields({
                   onChange({ ...values, clawLimit: 0 });
                 }
               }}
-              className="bg-gray-50"
+              className="bg-white"
               placeholder="请输入数量"
             />
           </div>
@@ -1328,8 +1330,8 @@ function OneidEditMemberFormFields({
             </Label>
             <Input
               value={values.id}
-              readOnly
-              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
+              disabled
+              className="disabled:bg-gray-100 disabled:text-[#A3A3A3] disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
           <div className="space-y-2">
@@ -1348,8 +1350,8 @@ function OneidEditMemberFormFields({
             <Label>部门</Label>
             <Input
               value={values.department || "—"}
-              readOnly
-              className="bg-gray-100 cursor-not-allowed select-none text-gray-400"
+              disabled
+              className="disabled:bg-gray-100 disabled:text-[#A3A3A3] disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
@@ -1417,37 +1419,35 @@ function OneidEditMemberFormFields({
         </div>
       </div>
 
-      <div className="border-t border-[#e5e5e5]" />
-
       {/* 用户配额（可编辑） */}
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">Agent 上限</th>
-                    <th className="text-right px-3 py-2 font-medium text-gray-500">每日 Tokens 上限</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead>分组</TableHead>
+                    <TableHead className="text-right">Agent 上限</TableHead>
+                    <TableHead className="text-right">每日 Tokens 上限</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {values.groupIds.map((gId) => {
                     const quotaMap = ONEID_GROUP_POLICY_QUOTAS;
                     const ugName = hasUserGroups ? getUgPath(gId) : gId;
                     const quota = quotaMap[gId] ?? { clawLimit: PRESET_POLICY_CLAW_LIMIT, tokenLimit: PRESET_POLICY_TOKEN_LIMIT };
                     return (
-                      <tr key={gId}>
-                        <td className="px-3 py-2 text-gray-700">{ugName}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.clawLimit}</td>
-                        <td className="px-3 py-2 text-right text-gray-700 tabular-nums">{quota.tokenLimit.toLocaleString()}</td>
-                      </tr>
+                      <TableRow key={gId} className="hover:bg-transparent">
+                        <TableCell>{ugName}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.clawLimit}</TableCell>
+                        <TableCell className="text-right tabular-nums">{quota.tokenLimit.toLocaleString()}</TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
               该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
@@ -1480,7 +1480,7 @@ function OneidEditMemberFormFields({
                   onChange({ ...values, clawLimit: 0 });
                 }
               }}
-              className="bg-gray-50"
+              className="bg-white"
               placeholder="请输入数量"
             />
           </div>
@@ -3052,82 +3052,86 @@ export default function MemberManagement() {
           if (batchImportStep === "importing") e.preventDefault();
         }}>
           <DialogHeader>
-            <DialogTitle>批量导入用户</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A]">批量导入用户</DialogTitle>
           </DialogHeader>
 
+          <DialogBody>
+            {/* ── 上传阶段 ── */}
+            {batchImportStep === "upload" && (
+              <div className="space-y-5">
+                {/* Step 1: 下载模板 */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-[#0A0A0A]">第一步：下载模板并填写用户信息</p>
+                  <p className="text-xs text-[#737373] leading-relaxed">
+                    下载 CSV 模板，按格式填写信息后保存。
+                    <span className="text-[#d42a1e] font-medium">单次最多导入 1000 个用户。</span>
+                  </p>
+                  <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
+                    // 生成模板 CSV 并下载
+                    const header = "用户邮箱,姓名,角色(admin/member),每日Tokens上限(-1表示无限制)";
+                    const example = "user@example.com,张三,member,100000";
+                    const blob = new Blob([header + "\n" + example], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = "批量导入用户模板.csv"; a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("模板已下载");
+                  }}>
+                    <Download className="w-4 h-4 mr-2" />
+                    下载导入模板
+                  </Button>
+                </div>
 
-
-          {/* ── 上传阶段 ── */}
-          {batchImportStep === "upload" && (
-            <div className="space-y-4 py-1">
-              {/* Step 1: 下载模板 */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">第一步：下载模板并填写用户信息</p>
-                <p className="text-xs text-gray-500 leading-relaxed">下载 CSV 模板，按格式填写信息后保存。<span className="text-orange-500 font-medium">单次最多导入 1000 个用户。</span></p>
-                <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
-                  // 生成模板 CSV 并下载
-                  const header = "用户邮箱,姓名,角色(admin/member),每日Tokens上限(-1表示无限制)";
-                  const example = "user@example.com,张三,member,100000";
-                  const blob = new Blob([header + "\n" + example], { type: "text/csv;charset=utf-8;" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url; a.download = "批量导入用户模板.csv"; a.click();
-                  URL.revokeObjectURL(url);
-                  toast.success("模板已下载");
-                }}>
-                  <Download className="w-4 h-4 mr-2" />
-                  下载导入模板
-                </Button>
-              </div>
-
-              {/* Step 2: 上传文件 */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">第二步：上传填写好的 CSV 文件</p>
-                {!batchImportFile ? (
-                  <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
-                    <Upload className="w-5 h-5 text-gray-400 mb-1.5" />
-                    <span className="text-sm text-gray-500">点击选择 CSV 文件</span>
-                    <span className="text-xs text-gray-400 mt-0.5">仅支持 .csv 格式</span>
-                    <input type="file" accept=".csv" className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) setBatchImportFile(file);
-                      }} />
-                  </label>
-                ) : (
-                  <div className="flex items-center gap-3 p-3 rounded-xl border border-green-300 bg-green-50">
-                    <FileText className="w-8 h-8 text-green-600 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{batchImportFile.name}</p>
-                      <p className="text-xs text-gray-500">{(batchImportFile.size / 1024).toFixed(1)} KB</p>
+                {/* Step 2: 上传文件 */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-[#0A0A0A]">第二步：上传填写好的 CSV 文件</p>
+                  {!batchImportFile ? (
+                    <label className="flex flex-col items-center justify-center w-full h-28 border border-dashed rounded-[4px] cursor-pointer border-[#E5E5E5] hover:border-[#1447E6] hover:bg-[#F5F8FF] transition-colors">
+                      <Upload className="w-5 h-5 text-[#737373] mb-1.5" />
+                      <span className="text-sm text-[#0A0A0A]">点击选择 CSV 文件</span>
+                      <span className="text-xs text-[#737373] mt-0.5">仅支持 .csv 格式</span>
+                      <input type="file" accept=".csv" className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) setBatchImportFile(file);
+                        }} />
+                    </label>
+                  ) : (
+                    <div className="flex items-center gap-3 p-3 rounded-[4px] border border-[#E5E5E5] bg-[#F5F5F5]">
+                      <FileText className="w-8 h-8 text-[#1447E6] flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#0A0A0A] truncate">{batchImportFile.name}</p>
+                        <p className="text-xs text-[#737373]">{(batchImportFile.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button
+                        aria-label="移除文件"
+                        className="w-6 h-6 rounded-full text-[#737373] hover:text-[#d42a1e] hover:bg-[#FEF2F2] flex items-center justify-center transition-colors flex-shrink-0"
+                        onClick={() => setBatchImportFile(null)}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <button
-                      className="w-6 h-6 rounded-full bg-gray-200 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors flex-shrink-0"
-                      onClick={() => setBatchImportFile(null)}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── 导入中阶段 ── */}
-          {batchImportStep === "importing" && (
-            <div className="py-8 flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full border-4 border-blue-100 flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  )}
                 </div>
               </div>
-              <div className="text-center space-y-1.5">
-                <p className="text-base font-semibold text-gray-800">正在导入中...</p>
-                <p className="text-sm text-gray-500">预计需要 1 ~ 2 分钟，请勿关闭弹窗</p>
-                <p className="text-xs text-gray-400">导入完成后将自动显示结果通知</p>
+            )}
+
+            {/* ── 导入中阶段 ── */}
+            {batchImportStep === "importing" && (
+              <div className="py-8 flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full border-4 border-[#E8ECFE] flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-[#1447E6] animate-spin" />
+                  </div>
+                </div>
+                <div className="text-center space-y-1.5">
+                  <p className="text-base font-semibold text-[#0A0A0A]">正在导入中...</p>
+                  <p className="text-sm text-[#737373]">预计需要 1 ~ 2 分钟，请勿关闭弹窗</p>
+                  <p className="text-xs text-[#A3A3A3]">导入完成后将自动显示结果通知</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </DialogBody>
 
           <DialogFooter>
             {batchImportStep === "upload" && (
@@ -3142,6 +3146,7 @@ export default function MemberManagement() {
                   }, 300);
                 }}>取消</Button>
                 <Button
+                  variant="dialog-confirm"
                   disabled={!batchImportFile}
                   onClick={() => {
                     // 开始导入
@@ -3237,7 +3242,7 @@ export default function MemberManagement() {
                 placeholder="输入用户接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
-                className="bg-gray-50 text-sm placeholder:text-gray-300 border-gray-200"
+                className="bg-white text-sm placeholder:text-gray-300 border-gray-200"
                 tabIndex={-1}
               />
             </div>
@@ -3625,43 +3630,48 @@ export default function MemberManagement() {
       </Dialog>
 
       {/* Disable Confirm Dialog（新：所有用户均可禁用，说明后果） */}
-      <Dialog
+      <AlertDialog
         open={!!disableConfirmDialog?.open}
         onOpenChange={(open) => { if (!open) setDisableConfirmDialog(null); }}
       >
-        <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <DialogHeader>
-            <DialogTitle>禁用用户</DialogTitle>
-          </DialogHeader>
-          <div className="py-2 space-y-4">
-            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">用户 ID</span>
-              <span className="text-sm font-medium text-gray-900">{disableConfirmDialog?.memberId}</span>
-            </div>
-            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 Agent 数量</span>
-              <span className="text-sm font-semibold text-gray-800">{disableConfirmDialog?.clawCount ?? 0} 个</span>
-            </div>
-            <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 space-y-2">
-              <p className="font-medium">禁用后将产生以下影响：</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>
-                <li>名下所有 Agent 云服务器<span className="font-semibold">关机</span>（数据不删除）</li>
-                <li>用户将<span className="font-semibold">无法与 Agent 机器人对话</span></li>
-              </ul>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDisableConfirmDialog(null)}>取消</Button>
-            <Button
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>禁用用户</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="pt-2 space-y-4">
+                <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">用户 ID</span>
+                  <span className="text-sm font-medium text-[#0A0A0A]">{disableConfirmDialog?.memberId}</span>
+                </div>
+                <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">名下 Agent 数量</span>
+                  <span className="text-sm font-semibold text-[#0A0A0A]">{disableConfirmDialog?.clawCount ?? 0} 个</span>
+                </div>
+                <div className="flex items-start gap-2.5 rounded-[4px] bg-[#FFFBED] border border-[#FCD28C] px-4 py-3 text-xs text-[#181818] leading-relaxed">
+                  <AlertTriangle className="w-4 h-4 text-[#FCA004] mt-0.5 shrink-0" />
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <p className="font-medium">禁用后将产生以下影响：</p>
+                    <ul className="space-y-1 list-disc list-inside">
+                      <li>该用户将<span className="font-semibold">无法再登录</span>用户端</li>
+                      <li>名下所有 Agent 云服务器<span className="font-semibold">关机</span>（数据不删除）</li>
+                      <li>用户将<span className="font-semibold">无法与 Agent 机器人对话</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDisableConfirmDialog(null)}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
               onClick={() => handleDisable(disableConfirmDialog!.memberId)}
             >
               确认禁用
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Enable Confirm Dialog */}
       <Dialog
@@ -3761,7 +3771,7 @@ export default function MemberManagement() {
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-white">
                     <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
                     <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
                     <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
@@ -3903,7 +3913,7 @@ export default function MemberManagement() {
             <div className="space-y-2">
               <Label>上级分组</Label>
               <Select value={newGroupParentId ?? "__root__"} onValueChange={(v) => setNewGroupParentId(v === "__root__" ? null : v)}>
-                <SelectTrigger className="bg-gray-50 w-full">
+                <SelectTrigger className="bg-white w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -3927,7 +3937,7 @@ export default function MemberManagement() {
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleCreateGroup(); }}
-                  className="bg-gray-50 flex-1"
+                  className="bg-white flex-1"
                   autoFocus
                 />
               </div>

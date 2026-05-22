@@ -47,7 +47,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
   if (names.length === 0) {
     return (
       <div className="w-full overflow-hidden">
-        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-[4px] border border-[#d3d6db] bg-white text-sm font-normal hover:border-[#355EF1] transition-colors">
+        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-[4px] border border-[#E5E5E5] bg-white text-sm font-normal hover:border-[#1447E6] transition-colors">
           <span className="text-muted-foreground truncate">请选择分组</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
         </button>
@@ -57,7 +57,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
 
   return (
     <div className="w-full overflow-hidden" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-[4px] border border-[#d3d6db] bg-white text-sm font-normal hover:border-[#355EF1] transition-colors relative pr-7">
+      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-sm font-normal hover:border-[#1447E6] transition-colors relative pr-7">
         {names.map((name) => (
           <span
             key={name}

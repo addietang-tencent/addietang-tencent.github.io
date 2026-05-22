@@ -436,7 +436,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                 <div className="flex items-center gap-1.5">
                   <span className="text-[14px] font-semibold text-[#09090b]">{v.version}</span>
                   {v.isLatest && (
-                    <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#355EF1] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">New</span>
+                    <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">New</span>
                   )}
                 </div>
                 <p className="text-[12px] text-[#a1a1aa] mt-0.5">{v.date.slice(0, 10)}</p>

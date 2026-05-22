@@ -486,7 +486,7 @@ export function MemoryPreview({
               className={`px-3 py-1.5 text-xs rounded-[4px] border transition-colors ${
                 recordFilter === filter
                   ? 'bg-blue-50 text-[#1447E6] border-[#1447E6] font-medium'
-                  : 'bg-white text-[#737373] border-[#d3d6db] hover:border-[#1447E6] hover:text-[#1447E6]'
+                  : 'bg-white text-[#737373] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
               }`}
             >
               {filter === 'all' ? '全部' : filter === 'fact' ? '事实' : filter === 'preference' ? '偏好' : '事件'}
@@ -636,7 +636,7 @@ export function MemoryPreview({
               className={`w-8 h-8 flex items-center justify-center rounded-[4px] border transition-colors ${
                 convTimeFilter === 'custom' || showDatePicker
                   ? 'bg-[#EFF6FF] border-[#1447E6] text-[#1447E6]'
-                  : 'bg-white border-[#d3d6db] text-[#737373] hover:text-[#0A0A0A] hover:border-[#1447E6]'
+                  : 'bg-white border-[#E5E5E5] text-[#737373] hover:text-[#0A0A0A] hover:border-[#1447E6]'
               }`}
               title="自定义日期范围"
             >
@@ -672,14 +672,14 @@ export function MemoryPreview({
                       type="date"
                       value={convCustomStartDate}
                       onChange={(e) => setConvCustomStartDate(e.target.value)}
-                      className="h-8 text-xs px-2 py-1.5 border border-[#d3d6db] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
+                      className="h-8 text-xs px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
                     <span className="text-xs text-[#737373]">至</span>
                     <input
                       type="date"
                       value={convCustomEndDate}
                       onChange={(e) => setConvCustomEndDate(e.target.value)}
-                      className="h-8 text-xs px-2 py-1.5 border border-[#d3d6db] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
+                      className="h-8 text-xs px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
                   </div>
                   {convCustomStartDate && convCustomEndDate && !isCustomDateValid() && (

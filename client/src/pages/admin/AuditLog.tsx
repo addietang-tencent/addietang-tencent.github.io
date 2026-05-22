@@ -5,10 +5,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ClipboardList, CheckCircle, XCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ClipboardList, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -267,68 +269,61 @@ export default function AuditLog() {
 
         {/* Table */}
         <SurfaceCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[26%]">操作人的用户 ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">操作事件</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">请求时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">返回时间</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%] whitespace-nowrap">执行结果</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[26%]">操作人的用户 ID</TableHead>
+                <TableHead className="w-[22%]">操作事件</TableHead>
+                <TableHead className="w-[22%]">请求时间</TableHead>
+                <TableHead className="w-[22%]">返回时间</TableHead>
+                <TableHead className="w-[8%]">执行结果</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paged.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">暂无操作记录</td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-12">暂无操作记录</TableCell>
+                </TableRow>
               ) : paged.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-700">{log.operator}</td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-mono text-gray-700 bg-gray-50 px-2 py-0.5 rounded">{log.action}</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{log.requestTime}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{log.responseTime}</td>
-                  <td className="px-6 py-4">
+                <TableRow key={log.id}>
+                  <TableCell>{log.operator}</TableCell>
+                  <TableCell>
+                    <span className="font-mono bg-[#f5f5f5] px-2 py-0.5 rounded">{log.action}</span>
+                  </TableCell>
+                  <TableCell>{log.requestTime}</TableCell>
+                  <TableCell>{log.responseTime}</TableCell>
+                  <TableCell>
                     {log.success ? (
-                      <span className="flex items-center gap-1 text-green-600 text-xs whitespace-nowrap">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        成功
-                      </span>
+                      <StatusTag variant="green" dot>成功</StatusTag>
                     ) : (
-                      <span className="flex items-center gap-1 text-red-500 text-xs whitespace-nowrap">
-                        <XCircle className="w-3.5 h-3.5" />
-                        失败
-                      </span>
+                      <StatusTag variant="red" dot>失败</StatusTag>
                     )}
-                  </td>
-
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
 
           {/* Footer: count + pagination */}
-          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
-            <span className="text-xs text-gray-400">共 {filtered.length} 条记录</span>
+          <div className="px-4 py-3 border-t border-[#f0f0f0] flex items-center justify-between">
+            <span className="text-[14px] text-[#09090b]">共 {filtered.length} 条记录</span>
             {totalPages > 1 && (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1] disabled:text-[#d9d9d9] disabled:border-[#d9d9d9] disabled:cursor-not-allowed transition-colors"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-7 h-7 flex items-center justify-center rounded-xl text-xs font-medium transition-colors ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-[4px] text-[14px] font-medium transition-colors ${
                       p === safePage
-                        ? "bg-blue-500 text-white border border-blue-500"
-                        : "border border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500"
+                        ? "bg-[#355EF1] text-white border border-[#1447E6]"
+                        : "border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1]"
                     }`}
                   >
                     {p}
@@ -337,9 +332,9 @@ export default function AuditLog() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:text-blue-500 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-[4px] border border-[#d9d9d9] text-[#09090b] hover:border-[#1447E6] hover:text-[#355EF1] disabled:text-[#d9d9d9] disabled:border-[#d9d9d9] disabled:cursor-not-allowed transition-colors"
                 >
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}

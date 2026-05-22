@@ -1038,7 +1038,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={value} id={`agent-type-${value}`} className="peer sr-only" />
                         <Label
                           htmlFor={`agent-type-${value}`}
-                          className="flex items-center justify-center rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                         >
                           {label}
                         </Label>
@@ -1066,7 +1066,7 @@ export default function MyOpenClaw() {
                     <RadioGroupItem value="__general__" id="role-general" className="peer sr-only" />
                     <Label
                       htmlFor="role-general"
-                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                     >
                       通用助手
                     </Label>
@@ -1078,7 +1078,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={role.id} id={`role-${role.id}`} className="peer sr-only" />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#d3d6db] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#355EF1] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
                         >
                           {role.name}
                         </Label>

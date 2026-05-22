@@ -1,7 +1,6 @@
 /**
  * DatePicker - Custom date picker using Popover + Calendar
- * Visual style references Ant Design DatePicker
- * Brand color: #355EF1
+ * Brand color: #1447E6 (consistent with Input component)
  */
 import * as React from "react";
 import { CalendarIcon } from "lucide-react";
@@ -94,13 +93,13 @@ function DatePicker({
           type="button"
           disabled={disabled}
           className={cn(
-            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm rounded-[4px] border border-[#d3d6db] bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
-            "hover:border-[#355EF1]",
-            "focus:outline-none focus:border-[#355EF1]",
-            "focus-visible:outline-none focus-visible:border-[#355EF1]",
-            open && "border-[#355EF1]",
+            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm rounded-[4px] border border-[#E5E5E5] bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
+            "hover:border-[#1447E6]",
+            "focus:outline-none focus:border-[#1447E6]",
+            "focus-visible:outline-none focus-visible:border-[#1447E6]",
+            open && "border-[#1447E6]",
             disabled &&
-              "bg-[#f3f3f4] border-[#d3d6db] text-[#b0b6c3] cursor-not-allowed hover:border-[#d3d6db]",
+              "bg-[#FAFAFA] border-[#E5E5E5] text-[#b0b6c3] cursor-not-allowed hover:border-[#E5E5E5]",
             className
           )}
         >
@@ -128,9 +127,9 @@ function DatePicker({
           disabled={disabledMatcher}
           classNames={{
             today:
-              "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#355EF1]",
+              "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#1447E6]",
           }}
-          className="[&_[data-selected-single=true]]:bg-[#355EF1] [&_[data-selected-single=true]]:text-white [&_[data-selected-single=true]]:hover:bg-[#355EF1] [&_[data-selected-single=true]]:hover:text-white [&_button:not([data-selected-single=true]):hover]:bg-[#eff4ff]"
+          className="[&_[data-selected-single=true]]:bg-[#1447E6] [&_[data-selected-single=true]]:text-white [&_[data-selected-single=true]]:hover:bg-[#1447E6] [&_[data-selected-single=true]]:hover:text-white [&_button:not([data-selected-single=true]):hover]:bg-[#eff4ff]"
         />
       </PopoverContent>
     </Popover>

@@ -881,7 +881,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                               {ver}
                             </span>
                             {isLatest && (
-                              <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#355EF1] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">
+                              <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">
                                 New
                               </span>
                             )}

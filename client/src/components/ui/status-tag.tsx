@@ -30,6 +30,11 @@ const variantStyles = {
     text: "text-[#008236]",
     dot: "bg-[#008236]",
   },
+  red: {
+    bg: "bg-[#FEF2F2]",
+    text: "text-[#DC2626]",
+    dot: "bg-[#DC2626]",
+  },
   gray: {
     bg: "bg-[#F5F5F5]",
     text: "text-[#0A0A0A]",

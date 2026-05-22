@@ -1772,7 +1772,7 @@ export default function AgentMonitor() {
           <button
             onClick={() => handleCardFilterChange("all")}
             className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "all" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+              activeCardFilter === "all" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
             }`}
           >
             <div className="flex items-center gap-1">
@@ -1786,7 +1786,7 @@ export default function AgentMonitor() {
           <button
             onClick={() => handleCardFilterChange("running")}
             className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "running" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+              activeCardFilter === "running" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
             }`}
           >
             <div className="flex items-center gap-1">
@@ -1800,7 +1800,7 @@ export default function AgentMonitor() {
           <button
             onClick={() => handleCardFilterChange("shutdown")}
             className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "shutdown" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+              activeCardFilter === "shutdown" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
             }`}
           >
             <div className="flex items-center gap-1">
@@ -1816,7 +1816,7 @@ export default function AgentMonitor() {
               <button
                 onClick={() => handleCardFilterChange("other")}
                 className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-                  activeCardFilter === "other" ? "border-[#355EF1]" : "border-[#E5E5E5] hover:border-[#355EF1]"
+                  activeCardFilter === "other" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
                 }`}
               >
                 <div className="flex items-center gap-1">

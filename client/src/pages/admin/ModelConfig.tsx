@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import {
   Plus, Trash2, Info, Brain, Pencil, AlertTriangle,
-  Check, X, ChevronRight, ChevronDown, Minus,
+  Check, X, ChevronRight, ChevronDown, Minus, Wifi,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 import type { UserGroup } from "./MemberManagement/types";
@@ -595,6 +595,10 @@ export default function ModelConfig() {
   // 多模态切换二次确认弹窗
   const [multimodalConfirm, setMultimodalConfirm] = useState<{ model: ModelRow; enable: boolean } | null>(null);
 
+  // 连通性检测
+  const [connectTesting, setConnectTesting] = useState(false);
+  const [connectFailResult, setConnectFailResult] = useState<string | null>(null);
+
   // Add form state — 统一用一个 provider 字段，默认选第一个厂商
   const [newModel, setNewModel] = useState({
     provider: PROVIDER_OPTIONS[0]?.value ?? "", version: "", modelUrl: "", dailyLimit: 100000,
@@ -603,6 +607,42 @@ export default function ModelConfig() {
     provider: "", base_url: "", api: "", api_key: "", model_id: "", model_name: "", dailyLimit: 100000, isMultimodal: false,
   });
   const [customJson, setCustomJson] = useState(DEFAULT_JSON);
+
+  // 连通性检测：校验必填字段后模拟请求
+  const handleConnectTest = async () => {
+    // 校验：厂商模型需要 version + modelUrl；自定义模型（表单）需要 base_url + api_key + model_id
+    if (isCustomProvider) {
+      if (customInputMode === "form") {
+        if (!customForm.base_url || !customForm.api_key || !customForm.model_id) {
+          toast.error("请填写完整的模型配置信息");
+          return;
+        }
+      } else {
+        if (!customJson.trim()) {
+          toast.error("请填写完整的模型配置信息");
+          return;
+        }
+      }
+    } else {
+      if (!newModel.version || !newModel.modelUrl) {
+        toast.error("请填写完整的模型配置信息");
+        return;
+      }
+    }
+    setConnectTesting(true);
+    // 模拟网络请求（实际接入后替换为真实 API 调用）
+    await new Promise((r) => setTimeout(r, 1500));
+    setConnectTesting(false);
+    // 模拟检测失败，展示错误弹窗
+    setConnectFailResult(JSON.stringify({
+      error: {
+        message: "Invalid API Key",
+        param: "Please provide valid API Key",
+        code: "401",
+        type: "invalid_key",
+      }
+    }, null, 2));
+  };
 
   const isCustomProvider = newModel.provider === CUSTOM_PROVIDER_VALUE;
   const selectedProviderData = AVAILABLE_MODELS.find((m) => m.value === newModel.provider);
@@ -1016,8 +1056,16 @@ export default function ModelConfig() {
               </>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
+          <DialogFooter className="flex items-center justify-between gap-2">
+            <Button
+              variant="outline"
+              className="gap-1.5"
+              disabled={connectTesting}
+              onClick={handleConnectTest}
+            >
+              <Wifi className="w-4 h-4" />
+              {connectTesting ? "检测中…" : "连通性检测"}
+            </Button>
             <Button
               onClick={handleAddModel}
               style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
@@ -1110,6 +1158,32 @@ export default function ModelConfig() {
               }}
             >
               {multimodalConfirm?.enable ? "确认开启" : "确认关闭"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 连通性检测失败弹窗 */}
+      <Dialog open={!!connectFailResult} onOpenChange={() => setConnectFailResult(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="w-5 h-5" />
+              模型连接失败
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <pre className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs text-gray-700 font-mono whitespace-pre-wrap break-all">
+              {connectFailResult}
+            </pre>
+          </div>
+          <DialogFooter>
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => setConnectFailResult(null)}
+            >
+              我知道了
             </Button>
           </DialogFooter>
         </DialogContent>

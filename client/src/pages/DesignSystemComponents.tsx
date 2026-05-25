@@ -740,6 +740,7 @@ const COMPONENTS: ComponentMeta[] = [
     cnName: "用户端顶部导航",
     description: "用户端顶部导航壳，承载左侧 Logo、中间 Tabs 和右侧功能区。",
     owner: "miekoyychen / addietang",
+    maintainer: "jingsujiang / brennali",
     source: "client/src/components/topnav/TopNav.tsx",
     doc: "SKILL-GLOBAL-COMPONENTS.md · 用户端导航栏完整规范",
     platform: "Tenant 用户端",

@@ -2,8 +2,6 @@ import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Bot,
-  CheckCircle2,
-  CircleAlert,
   FileText,
   Info,
   PanelLeft,
@@ -742,6 +740,7 @@ const COMPONENTS: ComponentMeta[] = [
     cnName: "用户端顶部导航",
     description: "用户端顶部导航壳，承载左侧 Logo、中间 Tabs 和右侧功能区。",
     owner: "miekoyychen / addietang",
+    maintainer: "jingsujiang / brennali",
     source: "client/src/components/topnav/TopNav.tsx",
     doc: "SKILL-GLOBAL-COMPONENTS.md · 用户端导航栏完整规范",
     platform: "Tenant 用户端",
@@ -779,7 +778,7 @@ const COMPONENTS: ComponentMeta[] = [
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3">
+    <div className="rounded-[4px] border border-[#DDE7F2] bg-white px-4 py-3">
       <span className="text-xs text-[#737373]">{label}</span>
       <div className="mt-2 flex items-end gap-2">
         <span className="font-din text-2xl font-bold leading-none tabular-nums text-[#020617]">{value}</span>
@@ -812,23 +811,21 @@ function GuidanceBlock({
   variant: "usage" | "notice" | "migration";
 }) {
   const config = {
-    usage: { Icon: CheckCircle2, icon: "text-[#1447E6]", marker: "bg-[#1447E6]" },
-    notice: { Icon: CircleAlert, icon: "text-[#F59E0B]", marker: "bg-[#F59E0B]" },
-    migration: { Icon: ArrowRight, icon: "text-[#334155]", marker: "bg-[#334155]" },
+    usage: { text: "text-[#1447E6]" },
+    notice: { text: "text-[#B8640A]" },
+    migration: { text: "text-[#334155]" },
   }[variant];
-  const Icon = config.Icon;
 
   return (
-    <div className="border-t border-[#E5E5E5] pt-4">
-      <div className="flex items-center gap-2">
-        <Icon className={`size-4 ${config.icon}`} />
+    <div className="min-w-0 border-t border-[#EAF1F8] pt-3">
+      <div className="mb-2 flex items-center">
         <BodyMedium>{title}</BodyMedium>
       </div>
-      <ul className="mt-3 grid gap-2">
+      <ul className="grid gap-1.5">
         {items.map((item, index) => (
-          <li key={item} className="grid grid-cols-[22px_minmax(0,1fr)] gap-2">
-            <span className={`mt-[7px] h-1 w-1 rounded-full ${config.marker}`} />
-            <MetaText as="span" tone="secondary">{variant === "usage" ? `${String(index + 1).padStart(2, "0")} · ${item}` : item}</MetaText>
+          <li key={item} className="grid grid-cols-[14px_minmax(0,1fr)] items-start gap-1.5">
+            <span className={`block h-5 text-[11px] font-medium leading-5 tabular-nums ${config.text}`}>{String(index + 1).padStart(2, "0")}</span>
+            <MetaText as="span" tone="secondary" className="leading-5">{item}</MetaText>
           </li>
         ))}
       </ul>
@@ -846,7 +843,7 @@ function PreviewPanel({
   layout?: "center" | "wide";
 }) {
   return (
-    <div className="relative mt-3 rounded-[4px] border border-[#DADDE3] bg-white">
+    <div className="relative mt-3 rounded-[4px] border border-[#DDE7F2] bg-white">
       <div className="absolute -top-3 left-6 bg-white px-2">
         <BodyMedium>{title}</BodyMedium>
       </div>
@@ -870,11 +867,20 @@ function TypographyPreview() {
     ["CodeText", <CodeText key="code">client/src/components/ui/button.tsx</CodeText>, "路径 / ID"],
     ["StepText", <StepText key="step">Step 1</StepText>, "步骤标识"],
   ] as const;
+  const toneCards = [
+    { token: "primary", name: "标题色", value: "#0A0A0A", color: "#0A0A0A" },
+    { token: "emphasis", name: "强调", value: "#020617", color: "#020617" },
+    { token: "secondary", name: "正文", value: "#334155", color: "#334155" },
+    { token: "muted", name: "辅助", value: "#737373", color: "#737373" },
+    { token: "weak", name: "极弱", value: "#A3A3A3", color: "#A3A3A3" },
+    { token: "brand", name: "活跃", value: "#1447E6", color: "#1447E6" },
+    { token: "danger", name: "危险", value: "#DC2626", color: "#DC2626" },
+  ] as const;
 
   return (
     <div className="space-y-4">
       <PreviewPanel title="Typography token 一览" layout="wide">
-        <div className="divide-y divide-[#E5E5E5]">
+        <div className="divide-y divide-[#EAF1F8]">
           {rows.map(([name, example, usage]) => (
             <div key={name} className="grid grid-cols-[180px_minmax(0,1fr)_160px] items-center gap-4 py-3">
               <CodeText>{name}</CodeText>
@@ -885,14 +891,17 @@ function TypographyPreview() {
         </div>
       </PreviewPanel>
       <PreviewPanel title="Tone 色阶示例" layout="wide">
-        <div className="flex flex-wrap gap-3">
-          <BodyMedium tone="primary">primary 标题色</BodyMedium>
-          <BodyMedium tone="emphasis">emphasis 强调</BodyMedium>
-          <BodyMedium tone="secondary">secondary 正文</BodyMedium>
-          <BodyMedium tone="muted">muted 辅助</BodyMedium>
-          <BodyMedium tone="weak">weak 极弱</BodyMedium>
-          <BodyMedium tone="brand">brand 活跃</BodyMedium>
-          <BodyMedium tone="danger">danger 危险</BodyMedium>
+        <div className="grid grid-cols-7 gap-2.5">
+          {toneCards.map((tone) => (
+            <div key={tone.token} className="overflow-hidden rounded-[4px] border border-[#EAF1F8] bg-white">
+              <div className="h-11" style={{ backgroundColor: tone.color }} />
+              <div className="px-2.5 py-2">
+                <BodyMedium className="block truncate text-xs">{tone.name}</BodyMedium>
+                <CodeText className="mt-0.5 block text-[11px]">{tone.value}</CodeText>
+                <MetaText className="mt-1 block truncate">{tone.token}</MetaText>
+              </div>
+            </div>
+          ))}
         </div>
       </PreviewPanel>
     </div>
@@ -1067,7 +1076,7 @@ function TablePreview() {
   const rows = [["Button", "操作组件", "已接入", 42], ["Input", "表单组件", "已接入", 39], ["Table", "数据展示", "高频参考", 26]] as const;
   return (
     <PreviewPanel title="Table / TableActionCell 表格结构与操作列" layout="wide">
-      <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
+      <div className="overflow-hidden rounded-[4px] border border-[#DDE7F2] bg-white">
         <Table>
           <TableHeader><TableRow><TableHead>组件</TableHead><TableHead>分类</TableHead><TableHead>状态</TableHead><TableHead className="text-right">应用范围</TableHead><TableHead className="w-[160px]">操作</TableHead></TableRow></TableHeader>
           <TableBody>
@@ -1130,7 +1139,7 @@ function StatusPreview({ id }: { id: ComponentId }) {
   }
   return (
     <PreviewPanel title="Empty 空状态">
-      <Empty className="border border-dashed border-[#E5E5E5]"><EmptyHeader><EmptyMedia variant="icon"><Bot /></EmptyMedia><EmptyTitle>暂无组件记录</EmptyTitle><EmptyDescription>可以通过筛选条件查看其他组件分类。</EmptyDescription></EmptyHeader><EmptyContent><Button variant="claw-outline" size="claw-sm">清空筛选</Button></EmptyContent></Empty>
+      <Empty className="border border-dashed border-[#DDE7F2]"><EmptyHeader><EmptyMedia variant="icon"><Bot /></EmptyMedia><EmptyTitle>暂无组件记录</EmptyTitle><EmptyDescription>可以通过筛选条件查看其他组件分类。</EmptyDescription></EmptyHeader><EmptyContent><Button variant="claw-outline" size="claw-sm">清空筛选</Button></EmptyContent></Empty>
     </PreviewPanel>
   );
 }
@@ -1144,9 +1153,9 @@ function TopNavPreview() {
   return (
     <div className="space-y-4">
       <PreviewPanel title="TopNav 组合结构" layout="wide">
-        <div className="overflow-x-auto rounded-[4px] border border-[#E5E5E5] bg-white">
+        <div className="overflow-x-auto rounded-[4px] border border-[#DDE7F2] bg-white">
           <div className="min-w-[1200px]">
-            <div className="grid h-[64px] grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-[#E2E8F0] px-10">
+            <div className="grid h-[64px] grid-cols-[1fr_auto_1fr] items-center gap-6 border-b border-[#D8E4F0] px-10">
               <div className="flex items-center gap-2"><img src="/landing-assets/60.svg" alt="ClawPro" className="size-7" /><BodyMedium className="text-[22px]">ClawPro</BodyMedium></div>
               <CenterTabs activeValue="/my-openclaw" items={[{ label: "我的 Agent", value: "/my-openclaw" }, { label: "技能广场", value: "/skill-square" }, { label: "模型额度", value: "/model-quota" }]} />
               <div className="flex items-center justify-end gap-3"><NavIconButton icon={<HelpIcon />} label="使用指南" /><NavDivider /><NotificationPanel notifications={notifications} /><NavDivider /><NavIconButton icon={<SwitchAdminIcon />} label="管控端" /><NavDivider /><UserMenu username="miekoyychen" /></div>
@@ -1172,7 +1181,7 @@ function AdminSidebarPreview() {
     <div className="space-y-4">
       <PreviewPanel title="AdminSidebar 关键元素" layout="wide">
         <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-5">
-          <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-4 [--admin-sidebar-action-bg:#ffffff] [--admin-sidebar-action-border:#e3e3e3] [--admin-sidebar-foreground:#0A0A0A] [--admin-sidebar-muted:#737373] [--admin-sidebar-item-height:32px] [--admin-sidebar-item-radius:4px]">
+          <div className="rounded-[4px] border border-[#DDE7F2] bg-white p-4 [--admin-sidebar-action-bg:#ffffff] [--admin-sidebar-action-border:#d8e4f0] [--admin-sidebar-foreground:#0A0A0A] [--admin-sidebar-muted:#737373] [--admin-sidebar-item-height:32px] [--admin-sidebar-item-radius:4px]">
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <AdminSidebarLogo className="shrink-0" />
@@ -1196,6 +1205,10 @@ function AdminSidebarPreview() {
       </PreviewPanel>
     </div>
   );
+}
+
+function getComponentIntro(component: ComponentMeta) {
+  return `用于${component.applicationScope}；${component.applicationSummary}`;
 }
 
 function getApplicationPages(component: ComponentMeta): ApplicationPage[] {
@@ -1285,17 +1298,23 @@ export default function DesignSystemComponents() {
   const platformCount = (platform: Platform) => COMPONENTS.filter((item) => item.platform === platform).length;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#0A0A0A]">
-      <header className="relative overflow-hidden border-b border-[#E5E5E5] bg-[linear-gradient(180deg,#FFFFFF_0%,#F7FAFF_100%)]">
+    <div className="min-h-screen bg-[#F4F8FC] text-[#0A0A0A]">
+      <header className="relative overflow-hidden border-b border-[#DDE7F2] bg-[linear-gradient(180deg,#FFFFFF_0%,#F7FAFF_100%)]">
         <div className="pointer-events-none absolute right-[-140px] top-[-180px] h-[380px] w-[380px] rounded-full bg-[#1447E6]/10 blur-3xl" />
         <div className="pointer-events-none absolute left-[20%] top-[-220px] h-[320px] w-[320px] rounded-full bg-[#60A5FA]/8 blur-3xl" />
         <div className="relative mx-auto max-w-[1680px] px-8 py-7">
           <div className="flex items-start justify-between gap-8">
             <div className="min-w-0">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="rounded-[2px]">内部设计资产</Badge>
-                <Badge variant="secondary" className="rounded-[2px]">组件规范维护：miekoyychen / addietang</Badge>
-                <Badge variant="outline" className="rounded-[2px]">数据来源: SKILL-GLOBAL-COMPONENTS.md</Badge>
+                <span className="inline-flex h-6 items-center rounded-[4px] border border-[#DDE7F2] bg-white/75 px-2.5 text-xs font-medium text-[#334155]">
+                  内部设计资产
+                </span>
+                <span className="inline-flex h-6 items-center rounded-[4px] border border-[#DDE7F2] bg-white/75 px-2.5 text-xs font-medium text-[#334155]">
+                  组件规范维护：miekoyychen / addietang
+                </span>
+                <span className="inline-flex h-6 items-center rounded-[4px] border border-[#DDE7F2] bg-white/75 px-2.5 text-xs font-medium text-[#334155]">
+                  数据来源: SKILL-GLOBAL-COMPONENTS.md
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <TenantPageTitle>ClawPro 全局组件展示台</TenantPageTitle>
@@ -1336,7 +1355,7 @@ export default function DesignSystemComponents() {
                     key={item}
                     type="button"
                     onClick={() => setPlatformFilter(item)}
-                    className={`h-8 rounded-[4px] border px-4 text-sm transition-colors ${active ? "border-[#020617] bg-[#020617] text-white" : "border-[#E5E5E5] bg-white text-[#020617] hover:border-[#020617]"}`}
+                    className={`h-8 rounded-[4px] border px-4 text-sm transition-colors ${active ? "border-[#020617] bg-[#020617] text-white" : "border-[#DDE7F2] bg-white text-[#020617] hover:border-[#9FB6D8]"}`}
                   >
                     {item} <span className={active ? "text-white/70" : "text-[#737373]"}>{count}</span>
                   </button>
@@ -1345,14 +1364,14 @@ export default function DesignSystemComponents() {
             </div>
             <div className="relative w-[360px] max-w-full">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
-              <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} className="pl-9" placeholder="搜索组件" />
+              <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} className="border-[#DDE7F2] pl-9 hover:border-[#9FB6D8] focus:border-[#1447E6]" placeholder="搜索组件" />
             </div>
           </div>
         </div>
 
-        <SurfaceCard className="overflow-hidden rounded-[4px] bg-white">
+        <SurfaceCard className="overflow-hidden rounded-[4px] border-[#DDE7F2] bg-white">
           <div className="grid grid-cols-[300px_minmax(0,1fr)] items-stretch bg-white">
-            <aside className="self-stretch border-r border-[#E5E5E5] bg-[#FAFAFA]">
+            <aside className="self-stretch border-r border-[#DDE7F2] bg-[#F7FAFF]">
               <div className="sticky top-4 max-h-[calc(100vh-32px)] overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="space-y-5">
                   {grouped.map((group) => (
@@ -1385,48 +1404,56 @@ export default function DesignSystemComponents() {
             </aside>
 
             <section className="min-w-0 space-y-7 bg-white p-6">
-              <div className="border-b border-[#E5E5E5] pb-4">
-                <div className="flex items-start justify-between gap-5">
+              <div className="pb-1">
+                <div className="flex items-start justify-between gap-6">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-3">
                       <TenantPageTitle>{selected.name}</TenantPageTitle>
                       <BodyText>{selected.cnName}</BodyText>
                     </div>
-                    <BodyText className="mt-2 max-w-3xl">{selected.description}</BodyText>
-                    <div className="mt-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5">
-                      <MetaText>应用情况</MetaText><MetaText tone="secondary">{selected.applicationSummary}</MetaText>
-                      <MetaText>典型场景</MetaText><MetaText tone="secondary">{selected.applicationScope}</MetaText>
-                    </div>
+                    <BodyText className="mt-2 max-w-3xl">{getComponentIntro(selected)}</BodyText>
+                    <details className="group mt-2 inline-block">
+                      <summary className="flex w-max cursor-pointer list-none items-center gap-1 whitespace-nowrap text-sm font-normal text-[#334155] transition-colors hover:text-[#0A0A0A] [&::-webkit-details-marker]:hidden">
+                        <span className="transition-transform group-open:rotate-90">›</span>
+                        更多信息
+                      </summary>
+                      <div className="mt-2 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 border-t border-[#DDE7F2] pt-2">
+                        <MetaText>维护人</MetaText><MetaText tone="secondary">{selected.maintainer ?? selected.owner}</MetaText>
+                        <MetaText>源码路径</MetaText><CodeText>{selected.source}</CodeText>
+                        <MetaText>规范来源</MetaText><CodeText>{selected.doc}</CodeText>
+                      </div>
+                    </details>
                   </div>
-                  <div className="grid w-[260px] shrink-0 grid-cols-2 gap-6 border-l border-[#E5E5E5] pl-6">
-                    <div><MetaText>应用范围</MetaText><div className="mt-2"><StatNumber>{selected.moduleCount}</StatNumber><MetaText className="ml-1">页面/模块</MetaText></div></div>
-                    <div><MetaText>组件实例</MetaText><div className="mt-2"><StatNumber>{selected.instanceCount}</StatNumber><MetaText className="ml-1">处</MetaText></div></div>
+                  <div className="w-[280px] shrink-0 border-l border-[#DDE7F2] pl-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div><MetaText>应用范围</MetaText><div className="mt-2"><StatNumber>{selected.moduleCount}</StatNumber><MetaText className="ml-1">页面/模块</MetaText></div></div>
+                      <div><MetaText>组件实例</MetaText><div className="mt-2"><StatNumber>{selected.instanceCount}</StatNumber><MetaText className="ml-1">处</MetaText></div></div>
+                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button type="button" className="mt-3 text-sm font-medium text-[#1447E6] transition-colors hover:text-[#0A226F] hover:underline">
+                          查看应用页面（{applicationPages.length}）
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" className="w-[540px] p-0">
+                        <div className="border-b border-[#DDE7F2] px-4 py-3">
+                          <BodyMedium>应用页面</BodyMedium>
+                          <MetaText className="mt-1 block">按参考优先级排序，点击行可打开页面查看实际效果。</MetaText>
+                        </div>
+                        <div className="divide-y divide-[#DDE7F2]">
+                          {applicationPages.map((page, index) => (
+                            <a key={`${page.path}-${page.name}`} href={page.path} target="_blank" rel="noreferrer" className="grid grid-cols-[28px_120px_100px_minmax(0,1fr)_88px] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#F8FAFF]">
+                              <MetaText>{index + 1}</MetaText>
+                              <BodyMedium className="truncate">{page.name}</BodyMedium>
+                              <MetaText className="truncate">{page.platform}</MetaText>
+                              <MetaText className="truncate" tone="secondary">{page.usage}</MetaText>
+                              <span className="inline-flex items-center justify-end gap-1 text-xs font-medium text-[#1447E6]">打开页面<ArrowRight className="size-3" /></span>
+                            </a>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                  <details className="group min-w-[220px] flex-1">
-                    <summary className="cursor-pointer font-medium text-[#1447E6]">查看应用页面（{applicationPages.length}）</summary>
-                    <div className="mt-2 divide-y divide-[#E5E5E5] overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
-                      {applicationPages.map((page, index) => (
-                        <a key={`${page.path}-${page.name}`} href={page.path} target="_blank" rel="noreferrer" className="grid grid-cols-[28px_140px_110px_80px_minmax(0,1fr)_44px] items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-[#FAFAFA]">
-                          <MetaText>{index + 1}</MetaText>
-                          <BodyMedium className="truncate">{page.name}</BodyMedium>
-                          <MetaText className="truncate">{page.platform}</MetaText>
-                          <MetaText>{page.priority}优先级</MetaText>
-                          <MetaText className="truncate" tone="secondary">{page.usage}</MetaText>
-                          <MetaText tone="brand">查看</MetaText>
-                        </a>
-                      ))}
-                    </div>
-                  </details>
-                  <details className="group min-w-[180px] flex-1">
-                    <summary className="cursor-pointer font-medium text-[#737373]">更多信息</summary>
-                    <div className="mt-2 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 border-t border-[#E5E5E5] pt-2">
-                      <MetaText>维护人</MetaText><MetaText tone="secondary">{selected.maintainer ?? selected.owner}</MetaText>
-                      <MetaText>源码路径</MetaText><CodeText>{selected.source}</CodeText>
-                      <MetaText>规范来源</MetaText><CodeText>{selected.doc}</CodeText>
-                    </div>
-                  </details>
                 </div>
               </div>
 
@@ -1435,12 +1462,10 @@ export default function DesignSystemComponents() {
               </DetailSection>
 
               <DetailSection title="使用指引">
-                <div className="grid gap-5">
+                <div className="grid grid-cols-3 gap-8">
                   <GuidanceBlock title="推荐使用场景" items={selected.usage} variant="usage" />
-                  <div className="grid grid-cols-2 gap-6">
-                    <GuidanceBlock title="注意事项" items={selected.notes} variant="notice" />
-                    <GuidanceBlock title="页面效果校准 / 迁移建议" items={selected.migration} variant="migration" />
-                  </div>
+                  <GuidanceBlock title="注意事项" items={selected.notes} variant="notice" />
+                  <GuidanceBlock title="页面效果校准 / 迁移建议" items={selected.migration} variant="migration" />
                 </div>
               </DetailSection>
             </section>

@@ -1962,37 +1962,36 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
       <TooltipTrigger asChild>
         <div
           ref={containerRef}
-          className="flex items-center gap-1 w-full max-w-[220px] overflow-hidden cursor-default"
+          className="flex items-center gap-2 w-full max-w-[280px] overflow-hidden cursor-default"
         >
           {paths.slice(0, visibleCount).map((p, i) => (
-            <StatusTag
+            <span
               key={i}
               ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
-              variant="gray"
-              className="shrink-0"
+              className="shrink-0 text-[14px] text-[#09090b]"
             >
               {p}
-            </StatusTag>
+            </span>
           ))}
           {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap shrink-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[14px] text-[#737373] whitespace-nowrap shrink-0">
               …共 {paths.length} 个分组
             </span>
           )}
           {/* 隐藏测量区 */}
           <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
             {paths.map((p, i) => (
-              <StatusTag
+              <span
                 key={`m-${i}`}
                 ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
-                variant="gray"
+                className="text-[14px]"
               >
                 {p}
-              </StatusTag>
+              </span>
             ))}
             <span
               ref={moreRef}
-              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap"
+              className="inline-flex items-center px-1.5 py-0.5 text-[14px] text-[#737373] whitespace-nowrap"
             />
           </div>
         </div>
@@ -3591,7 +3590,7 @@ export default function SecurityGroupManagement() {
                       {/* 主行 */}
                       <tr className={`hover:bg-gray-50/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
-                        <td className="px-6 pt-4 pb-2">
+                        <td className="px-4 py-3">
                           <div className="flex items-start gap-2 min-w-0">
                             <button
                               type="button"
@@ -3647,7 +3646,7 @@ export default function SecurityGroupManagement() {
                           </div>
                         </td>
                         {/* 子网配置：仅展示已配置子网总数 */}
-                        <td className="px-4 pt-4 pb-2">
+                        <td className="px-4 py-3">
                           {totalSubnets === 0 ? (
                             <span className="text-xs text-[#A3A3A3] whitespace-nowrap">未配置</span>
                           ) : (
@@ -3658,10 +3657,10 @@ export default function SecurityGroupManagement() {
                           )}
                         </td>
                         {/* 策略：胶囊式徽章（对齐 ModelConfig 风格）；预设策略额外带 tooltip 说明 */}
-                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
-                              <StatusTag variant="blue">预设策略</StatusTag>
+                              <span className="text-[14px] text-[#09090b]">预设策略</span>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-default">
@@ -3679,13 +3678,13 @@ export default function SecurityGroupManagement() {
                             <GroupBadges groupNames={row.associatedGroups ?? []} />
                           )}
                         </td>
-                        {/* 操作：文字 ghost 按钮 */}
-                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                        {/* 操作：link-dark 按钮 */}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
                             <Button
-                              variant="ghost"
+                              variant="link-dark"
                               size="sm"
-                              className="text-xs text-[#737373] hover:text-[#0A0A0A]"
+                              className="h-auto px-0"
                               onClick={() => {
                                 const isSystemDefault =
                                   row.type === "enterprise" && row.vpcId === AUTO_ASSIGNED_VPC.id;
@@ -3738,9 +3737,9 @@ export default function SecurityGroupManagement() {
                             </Button>
                             {row.type === "group" && (
                               <Button
-                                variant="ghost"
+                                variant="link-dark"
                                 size="sm"
-                                className="text-xs text-[#737373] hover:text-red-600"
+                                className="h-auto px-0"
                                 onClick={() => setShowDeleteVpcDialog(row)}
                               >
                                 删除
@@ -4337,6 +4336,7 @@ export default function SecurityGroupManagement() {
               <div className="shrink-0 flex items-center justify-end gap-2 px-6 py-4 border-t border-[#e5e5e5] bg-white">
                 <Button variant="outline" size="sm" onClick={() => setShowEditVpcDialog(null)}>取消</Button>
                 <Button
+                  variant="dialog-confirm"
                   size="sm"
                   onClick={() => {
                     if (!showEditVpcDialog) return;

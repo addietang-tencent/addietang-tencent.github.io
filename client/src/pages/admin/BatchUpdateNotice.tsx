@@ -14,6 +14,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Megaphone, RotateCcw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Popover,
   PopoverContent,
@@ -239,88 +240,72 @@ export default function BatchUpdateNotice({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="w-[360px] p-0">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A0A0A]">
-            <Megaphone className="w-4 h-4 text-[#355EF1]" />
+        <div className="px-5 py-4 border-b border-[#f0f0f0]">
+          <div className="flex items-center gap-2 text-[14px] font-semibold text-[#020617]">
+            <Megaphone className="w-4 h-4 text-[#1447E6]" />
             镜像有新版本
           </div>
-          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
+          <p className="text-[12px] text-[#737373] mt-1 leading-relaxed">
             以下 Agent 类型的存量 Agent 运行了旧版本，可推送提醒员工更新
           </p>
         </div>
 
         {outdated.length === 0 ? (
-          <div className="py-8 text-center text-sm text-[#A3A3A3]">
+          <div className="py-10 text-center text-[13px] text-[#a3a3a3]">
             所有 Agent 都已运行最新启用版本
           </div>
         ) : (
-          <ul className="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
+          <ul className="max-h-[420px] overflow-y-auto divide-y divide-[#f0f0f0]">
             {outdated.map((item) => {
               const push = findPush(item.agentType, item.enabledVersion);
               return (
-                <li key={item.agentType} className="px-4 py-3">
-                  <div className="flex items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-medium text-[#0A0A0A]">
-                          {item.agentTypeLabel}
-                        </span>
-                        <span className="text-xs text-[#355EF1] font-mono tabular-nums">
-                          v{item.enabledVersion}
-                        </span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">
-                          新版本上线
-                        </span>
-                      </div>
-                      <div className="text-xs text-[#737373] mt-0.5">
-                        有 <span className="font-semibold text-amber-600">{item.outdatedCount}</span> 个 Agent 运行旧版本
-                      </div>
-                      {push && (
-                        <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">
-                            <Megaphone className="w-2.5 h-2.5" />
-                            正在提醒员工更新此版本
-                          </span>
-                          <button
-                            onClick={() => handleRevoke(item)}
-                            className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
-                          >
-                            <RotateCcw className="w-2.5 h-2.5" />
-                            撤回
-                          </button>
-                        </div>
-                      )}
+                <li key={item.agentType} className="px-5 py-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[14px] font-medium text-[#020617]">
+                        {item.agentTypeLabel}
+                      </span>
+                      <span className="text-[12px] text-[#1447E6] font-mono tabular-nums">
+                        v{item.enabledVersion}
+                      </span>
+                      <StatusTag variant="blue">新版本上线</StatusTag>
                     </div>
-                  </div>
-                  <div className="mt-2.5 flex items-center justify-end gap-1.5">
-                    {!push && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs h-7 px-2.5"
-                            onClick={() => handlePush(item)}
-                          >
-                            <Megaphone className="w-3 h-3 mr-1" />
-                            推送提醒
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs max-w-[240px]">
-                          通知员工"管理员推荐更新到 v{item.enabledVersion}"
-                        </TooltipContent>
-                      </Tooltip>
+                    <p className="text-[12px] text-[#737373] mt-1">
+                      有 <span className="font-medium text-[#020617]">{item.outdatedCount}</span> 个 Agent 运行旧版本
+                    </p>
+                    {push && (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <StatusTag variant="blue" dot>正在提醒员工更新</StatusTag>
+                        <button
+                          onClick={() => handleRevoke(item)}
+                          className="text-[12px] text-[#737373] hover:text-[#020617] transition-colors"
+                        >
+                          撤回
+                        </button>
+                      </div>
                     )}
                   </div>
+                  {!push && (
+                    <div className="mt-3 flex items-center justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 px-3 text-[13px]"
+                        onClick={() => handlePush(item)}
+                      >
+                        推送提醒
+                      </Button>
+                    </div>
+                  )}
                 </li>
               );
             })}
           </ul>
         )}
 
-        <div className="px-4 py-2.5 border-t border-gray-100 flex items-start gap-1.5">
-          <Info className="w-3 h-3 text-[#A3A3A3] mt-0.5 shrink-0" />
-          <p className="text-[11px] text-[#737373] leading-relaxed">
+        <div className="px-5 py-3 border-t border-[#f0f0f0] flex items-start gap-2">
+          <Info className="w-3.5 h-3.5 text-[#a3a3a3] mt-0.5 shrink-0" />
+          <p className="text-[12px] text-[#737373] leading-relaxed">
             "推送提醒"是软通知，员工在用户端会看到更新建议，自行决定更新时机
           </p>
         </div>

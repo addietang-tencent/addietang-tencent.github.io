@@ -263,8 +263,8 @@ function GroupTreeNodeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
-          isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+          isSelected ? "bg-[#f4f4f5] text-[#0A0A0A] font-medium" : "text-[#334155] hover:bg-[#f4f4f5]"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
@@ -354,8 +354,8 @@ function InstanceGroupFilter({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox"
-          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
-            triggerGroup ? "text-foreground" : "text-muted-foreground"
+          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white border-[#E4E4E4] hover:border-[#355EF1] data-[state=open]:border-[#355EF1] ${
+            triggerGroup ? "text-[#0A0A0A]" : "text-[#A3A3A3]"
           }`}>
           <span className="truncate">{triggerGroup?.name || "全部分组"}</span>
           <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -371,17 +371,17 @@ function InstanceGroupFilter({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜索分组"
-              className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="w-full h-8 pl-8 pr-3 text-sm border border-[#E4E4E4] rounded-[4px] focus:outline-none focus:border-[#355EF1] transition-colors"
             />
           </div>
         </div>
         <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
           {/* 全部分组 */}
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
-            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+            tempValue === "" ? "bg-[#f4f4f5]" : "hover:bg-[#f4f4f5]"
           }`} onClick={() => setTempValue("")}>
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
-            {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#0A0A0A] font-medium" : "text-[#334155]"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-[#0A0A0A] flex-shrink-0" />}
           </div>
           {/* 按 source 分区展示 */}
           {activeSources.map((source) => (
@@ -402,14 +402,14 @@ function InstanceGroupFilter({
             </div>
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-[#f0f0f0] px-3 py-2.5 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs text-[#737373] truncate">
             {selectedGroup ? getGroupPath(selectedGroup.id, groups) : "全部分组"}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2"
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="claw-outline" size="claw-sm" className="h-7 px-3 text-xs"
               onClick={handleCancel}>取消</Button>
-            <Button size="sm" className="text-xs h-7 px-3"
+            <Button variant="claw-primary" size="claw-sm" className="h-7 px-3 text-xs"
               onClick={handleConfirm}>确认</Button>
           </div>
         </div>
@@ -432,8 +432,8 @@ function InstanceDepartmentTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
-          isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
+          isSelected ? "bg-[#f4f4f5] text-[#0A0A0A] font-medium" : "text-[#334155] hover:bg-[#f4f4f5]"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
@@ -507,7 +507,7 @@ function InstanceDepartmentFilter({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部部门</span>
@@ -576,7 +576,7 @@ function DepartmentColumnFilter({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"}`}
+          className={`flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${isSelected ? "bg-[#f4f4f5] text-[#0A0A0A] font-medium" : "text-[#334155] hover:bg-[#f4f4f5]"}`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setTempValue(node.id)}
         >
@@ -605,15 +605,15 @@ function DepartmentColumnFilter({
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${tempValue === "" ? "bg-[#f4f4f5]" : "hover:bg-[#f4f4f5]"}`} onClick={() => setTempValue("")}>
           <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部部门</span>
           {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
         </div>
         {departments.map((d) => renderNode(d, 0))}
       </div>
-      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
-        <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
+      <div className="border-t border-[#f0f0f0] px-3 py-2.5 flex items-center justify-end gap-2">
+        <Button variant="claw-outline" size="claw-sm" className="h-7 px-3 text-xs" onClick={onCancel}>取消</Button>
+        <Button variant="claw-primary" size="claw-sm" className="h-7 px-3 text-xs" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -661,13 +661,13 @@ function GroupColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索分组"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-[#E4E4E4] rounded-[4px] focus:outline-none focus:border-[#355EF1] transition-colors" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
-        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
-          <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
-          {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
+        <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${tempValue === "" ? "bg-[#f4f4f5]" : "hover:bg-[#f4f4f5]"}`} onClick={() => setTempValue("")}>
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#0A0A0A] font-medium" : "text-[#334155]"}`}>全部分组</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-[#0A0A0A] flex-shrink-0" />}
         </div>
         {activeSources.map((source) => (
           <div key={source}>
@@ -687,9 +687,9 @@ function GroupColumnFilter({
           </div>
         ))}
       </div>
-      <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-end gap-1.5">
-        <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2" onClick={onCancel}>取消</Button>
-        <Button size="sm" className="text-xs h-7 px-3" onClick={() => onConfirm(tempValue)}>确认</Button>
+      <div className="border-t border-[#f0f0f0] px-3 py-2.5 flex items-center justify-end gap-2">
+        <Button variant="claw-outline" size="claw-sm" className="h-7 px-3 text-xs" onClick={onCancel}>取消</Button>
+        <Button variant="claw-primary" size="claw-sm" className="h-7 px-3 text-xs" onClick={() => onConfirm(tempValue)}>确认</Button>
       </div>
     </>
   );
@@ -1853,11 +1853,8 @@ export default function AgentMonitor() {
           </Tooltip>
         </div>
 
-        {/* 表格卡片 */}
-        <SurfaceCard className="overflow-hidden">
-
-          {/* 工具栏 */}
-          <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between gap-4 flex-wrap">
+        {/* 工具栏（独立于表格卡片） */}
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               {/* 搜索框 */}
               <div className="relative flex-1 max-w-sm">
@@ -1866,7 +1863,7 @@ export default function AgentMonitor() {
                   placeholder="搜索名称、ID 或创建人"
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  className="pl-9 bg-gray-50 border-gray-200 h-9"
+                  className="pl-9 h-9"
                 />
               </div>
             </div>
@@ -2026,15 +2023,17 @@ export default function AgentMonitor() {
             </Link>
           </div>
 
+        {/* 表格卡片 */}
+        <SurfaceCard className="overflow-hidden">
           <Table
             containerRef={tableScrollRef}
             className="text-sm"
             style={{ width: 'max-content', minWidth: '100%' }}
           >
             <TableHeader>
-              <TableRow className="bg-[#f9fafb] hover:bg-[#f9fafb]">
+              <TableRow>
                 {/* 复选框列 - sticky left */}
-                <TableHead className="h-auto py-3 whitespace-nowrap sticky left-0 z-50 relative text-xs font-medium text-[#737373]" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#f9fafb' }}>
+                <TableHead className="whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#fafafa' }}>
                   {isTableScrolled && (
                     <>
                       <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
@@ -2050,8 +2049,8 @@ export default function AgentMonitor() {
                     <span className="text-xs font-medium text-[#737373] whitespace-nowrap">全选</span>
                   </div>
                 </TableHead>
-                <TableHead className="h-auto text-left pr-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '120px' }}>
+                <TableHead className="whitespace-nowrap pr-4" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</TableHead>
+                <TableHead className="whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
@@ -2112,9 +2111,9 @@ export default function AgentMonitor() {
                     )}
                   </div>
                 </TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</TableHead>
+                <TableHead className="whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</TableHead>
                 {hasOneid && (
-                  <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                  <TableHead className="whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                     <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
                       <PopoverTrigger asChild>
                         <button className="flex items-center gap-1 group/dept">
@@ -2133,7 +2132,7 @@ export default function AgentMonitor() {
                     </Popover>
                   </TableHead>
                 )}
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
+                <TableHead className="whitespace-nowrap" style={{ width: 200, maxWidth: 200 }}>
                   <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1 group/grp">
@@ -2152,8 +2151,8 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] normal-case whitespace-nowrap" style={{ minWidth: '130px' }}>
+                <TableHead className="whitespace-nowrap" style={{ minWidth: '140px' }}>创建时间</TableHead>
+                <TableHead className="whitespace-nowrap" style={{ minWidth: '130px' }}>
                   <Popover open={typeColFilterOpen} onOpenChange={(open) => {
                     setTypeColFilterOpen(open);
                     if (open) setTempTypeFilter(new Set(agentTypeFilter));
@@ -2198,9 +2197,9 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 </TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] normal-case whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
-                <TableHead className="h-auto text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '160px', minWidth: '160px', backgroundColor: '#f9fafb' }}>
+                <TableHead className="whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
+                <TableHead className="whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
+                <TableHead className="whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '240px', minWidth: '240px', backgroundColor: '#fafafa' }}>
                   <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                   <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                   操作
@@ -2422,7 +2421,7 @@ export default function AgentMonitor() {
                         )}
                       </TableCell>
                       {/* 操作 */}
-                      <TableCell className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '160px' }}>
+                      <TableCell className="px-3 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '240px' }}>
                         <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
                         <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">

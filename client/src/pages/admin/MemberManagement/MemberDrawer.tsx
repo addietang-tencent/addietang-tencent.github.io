@@ -41,7 +41,7 @@ function Section({
 }) {
   return (
     <div className="mb-5">
-      <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+      <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-2">
         {title}
       </div>
       <div
@@ -64,12 +64,12 @@ function Row({
 }) {
   return (
     <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0">
-      <div className="w-20 shrink-0 text-sm text-gray-500">{label}</div>
-      <div className="flex-1 min-w-0 text-sm text-gray-900 break-words">
+      <div className="w-20 shrink-0 text-sm text-[#737373]">{label}</div>
+      <div className="flex-1 min-w-0 text-sm text-[#0A0A0A] break-words">
         {value}
       </div>
       {hint && (
-        <div className="text-xs text-gray-400 shrink-0 tabular-nums">{hint}</div>
+        <div className="text-xs text-[#A3A3A3] shrink-0 tabular-nums">{hint}</div>
       )}
     </div>
   );
@@ -130,11 +130,11 @@ export default function MemberDrawer({
         <SheetHeader className="px-6 py-5 border-b border-[#e5e5e5]">
           <SheetTitle className="text-lg">
             {user.displayName}
-            <span className="ml-2 text-sm font-normal text-gray-500">
+            <span className="ml-2 text-sm font-normal text-[#737373]">
               {user.userId}
             </span>
           </SheetTitle>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-[#737373] mt-1">
             查看该用户的最终生效配置
           </div>
         </SheetHeader>
@@ -177,7 +177,7 @@ export default function MemberDrawer({
                 value={
                   <div className="space-y-1">
                     {secondaryDepts.map((p, i) => (
-                      <div key={i} className="text-sm text-gray-700">
+                      <div key={i} className="text-sm text-[#334155]">
                         {p}
                       </div>
                     ))}
@@ -189,13 +189,13 @@ export default function MemberDrawer({
               label="所在分组"
               value={
                 oneidGroups.length + manualGroups.length === 0 ? (
-                  <span className="text-gray-400">未加入分组</span>
+                  <span className="text-[#A3A3A3]">未加入分组</span>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {oneidGroups.map((g) => (
                       <span
                         key={"og-" + g}
-                        className="text-xs bg-blue-50 text-blue-600 rounded-full px-2 py-0.5"
+                        className="text-xs bg-blue-50 text-[#355EF1] rounded-full px-2 py-0.5"
                       >
                         {g}
                       </span>
@@ -221,13 +221,13 @@ export default function MemberDrawer({
               label="可见模型"
               value={
                 (cfg.models ?? []).length === 0 ? (
-                  <span className="text-gray-400">—</span>
+                  <span className="text-[#A3A3A3]">—</span>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {(cfg.models ?? []).map((m) => (
                       <span
                         key={m}
-                        className="text-xs bg-gray-50 text-gray-700 rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
                       >
                         {m}
                       </span>
@@ -241,13 +241,13 @@ export default function MemberDrawer({
               label="可见通道"
               value={
                 (cfg.channels ?? []).length === 0 ? (
-                  <span className="text-gray-400">—</span>
+                  <span className="text-[#A3A3A3]">—</span>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {(cfg.channels ?? []).map((c) => (
                       <span
                         key={c}
-                        className="text-xs bg-gray-50 text-gray-700 rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
                       >
                         {c}
                       </span>
@@ -259,11 +259,11 @@ export default function MemberDrawer({
             />
             <Row
               label="技能"
-              value={<span className="text-gray-400">未配置</span>}
+              value={<span className="text-[#A3A3A3]">未配置</span>}
             />
             <Row
               label="工具"
-              value={<span className="text-gray-400">未配置</span>}
+              value={<span className="text-[#A3A3A3]">未配置</span>}
             />
           </Section>
 
@@ -272,7 +272,7 @@ export default function MemberDrawer({
             <Row
               label="安全组"
               value={
-                <span className="font-mono text-xs text-gray-900">
+                <span className="font-mono text-xs text-[#0A0A0A]">
                   {cfg.securityGroup ?? "—"}
                 </span>
               }
@@ -281,7 +281,7 @@ export default function MemberDrawer({
               label="VPC"
               value={
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-gray-900">
+                  <span className="font-mono text-xs text-[#0A0A0A]">
                     {cfg.vpc ?? "—"}
                   </span>
                   {hasConflict && (
@@ -295,7 +295,7 @@ export default function MemberDrawer({
             <Row
               label="记忆"
               value={
-                <span className="font-mono text-xs text-gray-900">
+                <span className="font-mono text-xs text-[#0A0A0A]">
                   {cfg.memory ?? "—"}
                 </span>
               }
@@ -303,7 +303,7 @@ export default function MemberDrawer({
             <Row
               label="镜像"
               value={
-                <span className="font-mono text-xs text-gray-900">
+                <span className="font-mono text-xs text-[#0A0A0A]">
                   {cfg.image ?? "—"}
                 </span>
               }

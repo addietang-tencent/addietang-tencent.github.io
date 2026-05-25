@@ -18,22 +18,22 @@ export default function BucketManagementTab() {
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">存储桶信息</h3>
+        <h3 className="text-lg font-semibold text-[#0A0A0A] mb-6">存储桶信息</h3>
 
         <div className="space-y-4">
           <div className="flex justify-between items-center py-3 border-b border-gray-200">
-            <span className="text-sm text-gray-600">存储桶名称</span>
-            <span className="text-sm font-semibold text-gray-900">{bucketInfo.name}</span>
+            <span className="text-sm text-[#737373]">存储桶名称</span>
+            <span className="text-sm font-semibold text-[#0A0A0A]">{bucketInfo.name}</span>
           </div>
 
           <div className="flex justify-between items-center py-3 border-b border-gray-200">
-            <span className="text-sm text-gray-600">存储量</span>
-            <span className="text-sm font-semibold text-gray-900">{bucketInfo.storageGB} GB</span>
+            <span className="text-sm text-[#737373]">存储量</span>
+            <span className="text-sm font-semibold text-[#0A0A0A]">{bucketInfo.storageGB} GB</span>
           </div>
 
           <div className="flex justify-between items-center py-3">
-            <span className="text-sm text-gray-600">地域</span>
-            <span className="text-sm font-semibold text-gray-900">
+            <span className="text-sm text-[#737373]">地域</span>
+            <span className="text-sm font-semibold text-[#0A0A0A]">
               {bucketInfo.region === 'ap-guangzhou' ? '广州' : bucketInfo.region}
             </span>
           </div>

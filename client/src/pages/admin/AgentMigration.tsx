@@ -117,7 +117,7 @@ function SecretInput({ value, onChange, placeholder }: { value: string; onChange
   return (
     <div className="relative">
       <Input type={vis ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="pr-8 font-mono text-xs h-8" />
-      <button type="button" onClick={() => setVis(!vis)} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+      <button type="button" onClick={() => setVis(!vis)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
         {vis ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
       </button>
     </div>
@@ -128,7 +128,7 @@ function CopyBtn({ text }: { text: string }) {
   const [ok, setOk] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setOk(true); toast.success("已复制"); setTimeout(() => setOk(false), 2000); }}
-      className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+      className="p-1 rounded hover:bg-gray-100 text-[#A3A3A3] hover:text-[#737373] transition-colors">
       {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
   );
@@ -421,31 +421,31 @@ rm -f /tmp/openclaw-state.tgz`;
     <div className="page-enter">
       {/* Header */}
       <div className="mb-6">
-        <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 mb-2 transition-colors">
+        <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] mb-2 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" /> 返回 Agent 列表
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">智能体迁移</h1>
-        <p className="text-sm text-gray-500 mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">智能体迁移</h1>
+        <p className="text-sm text-[#737373] mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
       </div>
 
       {/* ==================== Section 1: 源端配置 ==================== */}
       <Card className="p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
-          <h2 className="text-sm font-semibold text-gray-900">源端环境</h2>
-          <span className="text-xs text-gray-400">— 选择源端类型，配置密钥和迁移选项</span>
+          <h2 className="text-sm font-semibold text-[#0A0A0A]">源端环境</h2>
+          <span className="text-xs text-[#A3A3A3]">— 选择源端类型，配置密钥和迁移选项</span>
         </div>
 
         <div className="flex items-end gap-4">
           {/* Source Type */}
           <div className="w-48 flex-shrink-0">
-            <Label className="text-xs text-gray-500 mb-1 block">源端类型</Label>
+            <Label className="text-xs text-[#737373] mb-1 block">源端类型</Label>
             <Select value={sourceType} onValueChange={(v) => { setSourceType(v as SourceType); setRows([]); setSrcLoaded(false); setCosLoaded(false); }}>
               <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {SOURCE_TYPES.map((s) => (
                   <SelectItem key={s.value} value={s.value} disabled={!s.enabled}>
-                    {s.label}{!s.enabled && <span className="text-gray-400 ml-1 text-xs">即将支持</span>}
+                    {s.label}{!s.enabled && <span className="text-[#A3A3A3] ml-1 text-xs">即将支持</span>}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -456,17 +456,17 @@ rm -f /tmp/openclaw-state.tgz`;
           {isAuto && (
             <>
               <div className="flex-1 min-w-0">
-                <Label className="text-xs text-gray-500 mb-1 block">
+                <Label className="text-xs text-[#737373] mb-1 block">
                   SecretId
                   <a href="https://console.cloud.tencent.com/cam/capi" target="_blank" rel="noopener noreferrer"
-                    className="ml-1.5 text-blue-500 hover:text-blue-600 hover:underline inline-flex items-center gap-0.5">
+                    className="ml-1.5 text-[#355EF1] hover:text-[#355EF1] hover:underline inline-flex items-center gap-0.5">
                     获取密钥 <ExternalLink className="w-2.5 h-2.5" />
                   </a>
                 </Label>
                 <SecretInput value={srcAk} onChange={setSrcAk} placeholder="源端 SecretId" />
               </div>
               <div className="flex-1 min-w-0">
-                <Label className="text-xs text-gray-500 mb-1 block">SecretKey</Label>
+                <Label className="text-xs text-[#737373] mb-1 block">SecretKey</Label>
                 <SecretInput value={srcSk} onChange={setSrcSk} placeholder="源端 SecretKey" />
               </div>
               <div className="flex-shrink-0">
@@ -481,7 +481,7 @@ rm -f /tmp/openclaw-state.tgz`;
           {/* EKS: Container dirs */}
           {sourceType === "eks" && (
             <div className="flex-1">
-              <Label className="text-xs text-gray-500 mb-1 block">待迁移目录（逗号分隔）</Label>
+              <Label className="text-xs text-[#737373] mb-1 block">待迁移目录（逗号分隔）</Label>
               <Input value={containerDirs} onChange={(e) => setContainerDirs(e.target.value)} placeholder="/root/.agent" className="h-8 text-xs font-mono" />
             </div>
           )}
@@ -491,15 +491,15 @@ rm -f /tmp/openclaw-state.tgz`;
         <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[#e5e5e5]">
           <div className="flex items-center gap-2">
             <Switch checked={stopGateway} onCheckedChange={setStopGateway} className="scale-90" />
-            <span className="text-xs text-gray-600">迁移前停止 Gateway</span>
-            <TooltipProvider><Tooltip><TooltipTrigger><HelpCircle className="w-3 h-3 text-gray-400" /></TooltipTrigger>
+            <span className="text-xs text-[#737373]">迁移前停止 Gateway</span>
+            <TooltipProvider><Tooltip><TooltipTrigger><HelpCircle className="w-3 h-3 text-[#A3A3A3]" /></TooltipTrigger>
               <TooltipContent><p className="text-xs">建议开启，保证数据一致性</p></TooltipContent></Tooltip></TooltipProvider>
           </div>
-          <div className="text-xs text-gray-400 leading-relaxed">
+          <div className="text-xs text-[#A3A3A3] leading-relaxed">
             <Database className="w-3 h-3 inline mr-1 -mt-0.5" />
             系统自动创建临时 COS 桶 <code className="bg-gray-100 px-1 rounded font-mono">{cosBucket}/{batchId}/</code> 作为数据中转，迁移数据保留 24 小时后自动清理。COS
             按量计费，<a href="https://cloud.tencent.com/document/product/436/53482#.E5.AD.98.E5.82.A8.E5.AE.B9.E9.87.8F.E5.AE.9A.E4.BB.B7" target="_blank" rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-600 hover:underline inline-flex items-center gap-0.5">
+              className="text-[#355EF1] hover:text-[#355EF1] hover:underline inline-flex items-center gap-0.5">
               费用详见腾讯云定价文档 <ExternalLink className="w-2.5 h-2.5" />
             </a>
           </div>
@@ -508,7 +508,7 @@ rm -f /tmp/openclaw-state.tgz`;
         {/* Manual scene: Upload Script */}
         {isManual && (
           <Collapsible className="mt-3 pt-3 border-t border-[#e5e5e5]">
-            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700">
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-[#355EF1] hover:text-[#355EF1]">
               <Terminal className="w-3.5 h-3.5" />
               查看上传脚本（请在源端执行）
               <ChevronRight className="w-3 h-3" />
@@ -525,7 +525,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <pre className="text-xs text-green-400 font-mono whitespace-pre leading-relaxed">{uploadScript}</pre>
               </div>
               <div className="flex items-center gap-3 mt-2">
-                <span className="text-xs text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" /> 临时密钥有效 4 小时</span>
+                <span className="text-xs text-[#A3A3A3] flex items-center gap-1"><Clock className="w-3 h-3" /> 临时密钥有效 4 小时</span>
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -540,7 +540,7 @@ rm -f /tmp/openclaw-state.tgz`;
             {cosLoaded && (
               <>
                 <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> 检测到 {cosFiles.length} 个文件</span>
-                <Button variant="ghost" size="sm" onClick={downloadCosCsv} className="h-7 text-xs text-blue-600">
+                <Button variant="ghost" size="sm" onClick={downloadCosCsv} className="h-7 text-xs text-[#355EF1]">
                   <Download className="w-3 h-3 mr-1" /> 下载文件列表 CSV
                 </Button>
               </>
@@ -554,9 +554,9 @@ rm -f /tmp/openclaw-state.tgz`;
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">2</div>
-            <h2 className="text-sm font-semibold text-gray-900">迁移映射</h2>
-            <span className="text-xs text-gray-400">— 建立源端与 ClawPro 用户/实例的对应关系</span>
-            <span className="text-xs text-gray-400 ml-auto mr-2">{validRows.length} / {rows.length} 有效</span>
+            <h2 className="text-sm font-semibold text-[#0A0A0A]">迁移映射</h2>
+            <span className="text-xs text-[#A3A3A3]">— 建立源端与 ClawPro 用户/实例的对应关系</span>
+            <span className="text-xs text-[#A3A3A3] ml-auto mr-2">{validRows.length} / {rows.length} 有效</span>
           </div>
           <Tabs value={editMode} onValueChange={(v) => setEditMode(v as EditMode)}>
             <TabsList className="h-8 bg-[#F5F5F5] p-1 rounded-[4px]">
@@ -570,7 +570,7 @@ rm -f /tmp/openclaw-state.tgz`;
           /* ===== CSV Tab ===== */
           <div className="space-y-3">
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <p className="text-xs text-blue-700 leading-relaxed">
+              <p className="text-xs text-[#355EF1] leading-relaxed">
                 <FileSpreadsheet className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
                 <strong>批量迁移推荐使用 CSV：</strong>下载映射模板 → 在 Excel 中填写源端标识与目标用户/实例的对应关系 → 上传 CSV 自动导入。
               </p>
@@ -600,12 +600,12 @@ rm -f /tmp/openclaw-state.tgz`;
               </Button>
               <label className="cursor-pointer">
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-xs font-medium text-blue-700 hover:bg-blue-100 cursor-pointer transition-colors">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-xs font-medium text-[#355EF1] hover:bg-blue-100 cursor-pointer transition-colors">
                   <Upload className="w-3 h-3" /> 上传 CSV 文件
                 </span>
               </label>
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-[#A3A3A3]">
               CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
             </div>
             {rows.length > 0 && (
@@ -621,7 +621,7 @@ rm -f /tmp/openclaw-state.tgz`;
           /* ===== Table Tab ===== */
           <>
             {rows.length === 0 ? (
-              <div className="text-center py-8 text-sm text-gray-400">
+              <div className="text-center py-8 text-sm text-[#A3A3A3]">
                 {isAuto ? "请先获取源端实例列表" : "请先检测 COS 文件或手动添加行"}
               </div>
             ) : (
@@ -658,7 +658,7 @@ rm -f /tmp/openclaw-state.tgz`;
                                   placeholder="文件名或标识" className="h-7 text-xs font-mono" />
                               )}
                             </TableCell>
-                            <TableCell className="py-1.5"><ArrowRight className="w-3 h-3 text-gray-300" /></TableCell>
+                            <TableCell className="py-1.5"><ArrowRight className="w-3 h-3 text-[#A3A3A3]" /></TableCell>
                             <TableCell className="py-1.5">
                               <Select value={row.targetUser} onValueChange={(v) => updateRow(row.id, "targetUser", v)}>
                                 <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="选择用户" /></SelectTrigger>
@@ -669,7 +669,7 @@ rm -f /tmp/openclaw-state.tgz`;
                                     <SelectItem key={u.id} value={u.id}>
                                       <span className="flex items-center gap-1">
                                         {u.name}
-                                        <span className="text-gray-400 text-xs">（{instCount}台）</span>
+                                        <span className="text-[#A3A3A3] text-xs">（{instCount}台）</span>
                                       </span>
                                     </SelectItem>
                                     );
@@ -682,7 +682,7 @@ rm -f /tmp/openclaw-state.tgz`;
                                 <div className="flex items-center gap-1 text-xs text-green-600 px-2 h-7">
                                   <CheckCircle2 className="w-3 h-3" />
                                   {userInst[0].name}
-                                  <span className="text-gray-400 font-mono">{userInst[0].instanceId}</span>
+                                  <span className="text-[#A3A3A3] font-mono">{userInst[0].instanceId}</span>
                                 </div>
                               ) : (
                                 <Select value={row.targetInstance} disabled={!row.targetUser}
@@ -690,7 +690,7 @@ rm -f /tmp/openclaw-state.tgz`;
                                   <SelectTrigger className="h-7 text-xs"><SelectValue placeholder={row.targetUser ? "选择实例" : "—"} /></SelectTrigger>
                                   <SelectContent>
                                     {userInst.map((inst) => (
-                                      <SelectItem key={inst.id} value={inst.id}>{inst.name} <span className="text-gray-400 text-xs">{inst.instanceId}</span></SelectItem>
+                                      <SelectItem key={inst.id} value={inst.id}>{inst.name} <span className="text-[#A3A3A3] text-xs">{inst.instanceId}</span></SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -698,7 +698,7 @@ rm -f /tmp/openclaw-state.tgz`;
                             </TableCell>
                             <TableCell className="py-1.5">
                               {!isAuto && (
-                                <button onClick={() => removeRow(row.id)} className="p-1 text-gray-400 hover:text-red-500">
+                                <button onClick={() => removeRow(row.id)} className="p-1 text-[#A3A3A3] hover:text-red-500">
                                   <Trash2 className="w-3 h-3" />
                                 </button>
                               )}
@@ -710,7 +710,7 @@ rm -f /tmp/openclaw-state.tgz`;
                   </Table>
                 </div>
                 {!isAuto && (
-                  <Button variant="ghost" size="sm" onClick={addRow} className="mt-2 h-6 text-xs text-gray-500">
+                  <Button variant="ghost" size="sm" onClick={addRow} className="mt-2 h-6 text-xs text-[#737373]">
                     <Plus className="w-3 h-3 mr-1" /> 添加行
                   </Button>
                 )}
@@ -724,21 +724,21 @@ rm -f /tmp/openclaw-state.tgz`;
       <Card className="p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">3</div>
-          <h2 className="text-sm font-semibold text-gray-900">执行迁移</h2>
-          <span className="text-xs text-gray-400">— 确认无误后一键执行，平台自动创建操作台并运行迁移脚本</span>
+          <h2 className="text-sm font-semibold text-[#0A0A0A]">执行迁移</h2>
+          <span className="text-xs text-[#A3A3A3]">— 确认无误后一键执行，平台自动创建操作台并运行迁移脚本</span>
         </div>
 
         {tasks.length === 0 ? (
           <>
             {/* Pre-execution info */}
-            <div className="flex items-center gap-4 mb-3 text-xs text-gray-500">
+            <div className="flex items-center gap-4 mb-3 text-xs text-[#737373]">
               <span className="flex items-center gap-1"><Database className="w-3 h-3" /> COS 中转桶: <code className="bg-gray-100 px-1 rounded font-mono">{cosBucket}/{batchId}/</code></span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 临时数据保留 24 小时后自动清理</span>
             </div>
 
             {/* Command preview */}
             <Collapsible open={showCommand} onOpenChange={setShowCommand}>
-              <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 mb-2">
+              <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-[#355EF1] hover:text-[#355EF1] mb-2">
                 <Terminal className="w-3.5 h-3.5" />
                 {showCommand ? "收起" : "查看"}迁移命令
                 {showCommand ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -757,7 +757,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <Play className="w-4 h-4 mr-1.5" />
                 开始迁移（{validRows.length} 台）
               </Button>
-              <span className="text-xs text-gray-400">将创建临时实例「<strong className="text-gray-600">[迁移操作台] {batchId}</strong>」，完成后请在 Agent 列表删除</span>
+              <span className="text-xs text-[#A3A3A3]">将创建临时实例「<strong className="text-[#737373]">[迁移操作台] {batchId}</strong>」，完成后请在 Agent 列表删除</span>
             </div>
           </>
         ) : (
@@ -767,15 +767,15 @@ rm -f /tmp/openclaw-state.tgz`;
               <div className="flex items-center gap-2">
                 {jumpboxReady
                   ? <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  : <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
-                <span className="text-xs text-gray-600">操作台 {jumpboxReady ? jumpboxId : "创建中..."}</span>
+                  : <Loader2 className="w-4 h-4 text-[#355EF1] animate-spin" />}
+                <span className="text-xs text-[#737373]">操作台 {jumpboxReady ? jumpboxId : "创建中..."}</span>
                 {jumpboxReady && (
-                  <button onClick={() => toast.info(`跳转到终端: ${jumpboxId}`)} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5">
+                  <button onClick={() => toast.info(`跳转到终端: ${jumpboxId}`)} className="text-xs text-[#355EF1] hover:underline flex items-center gap-0.5">
                     <Terminal className="w-3 h-3" /> 终端 <ExternalLink className="w-2.5 h-2.5" />
                   </button>
                 )}
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-[#737373]">
                 {successCount + failedCount}/{tasks.length}
                 {failedCount > 0 && <span className="text-red-500 ml-1">({failedCount} 失败)</span>}
               </span>
@@ -794,17 +794,17 @@ rm -f /tmp/openclaw-state.tgz`;
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {t.status === "success" && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />}
                     {t.status === "failed" && <XCircle className="w-3.5 h-3.5 text-red-500" />}
-                    {t.status === "pending" && <Clock className="w-3.5 h-3.5 text-gray-400" />}
-                    {(t.status === "uploading" || t.status === "restoring") && <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />}
+                    {t.status === "pending" && <Clock className="w-3.5 h-3.5 text-[#A3A3A3]" />}
+                    {(t.status === "uploading" || t.status === "restoring") && <Loader2 className="w-3.5 h-3.5 text-[#355EF1] animate-spin" />}
                     <span className="font-mono truncate">{t.srcId}</span>
-                    <ArrowRight className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                    <ArrowRight className="w-3 h-3 text-[#A3A3A3] flex-shrink-0" />
                     <span className="truncate">{t.targetUser}/{t.targetInstanceName}</span>
                     {t.message && <span className="text-red-500 ml-1">({t.message})</span>}
                   </div>
                   <span className={`flex-shrink-0 ${
                     t.status === "success" ? "text-green-600" :
                     t.status === "failed" ? "text-red-600" :
-                    t.status === "pending" ? "text-gray-400" : "text-blue-600"
+                    t.status === "pending" ? "text-[#A3A3A3]" : "text-[#355EF1]"
                   }`}>
                     {{ success: "✓", failed: "✗", pending: "等待", uploading: "上传中", restoring: "恢复中" }[t.status]}
                   </span>
@@ -815,7 +815,7 @@ rm -f /tmp/openclaw-state.tgz`;
             {/* Done */}
             {isDone && (
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#e5e5e5]">
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-[#737373]">
                   <Database className="w-3 h-3 inline mr-1" />
                   COS 临时数据 24h 后自动清理 | 请前往列表验证并删除临时操作台
                 </div>
@@ -835,7 +835,7 @@ rm -f /tmp/openclaw-state.tgz`;
 
       {/* ==================== History ==================== */}
       <Collapsible open={showHistory} onOpenChange={setShowHistory}>
-        <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 mb-2">
+        <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-[#737373] hover:text-[#334155] mb-2">
           <History className="w-3.5 h-3.5" /> 迁移历史
           {showHistory ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </CollapsibleTrigger>
@@ -855,11 +855,11 @@ rm -f /tmp/openclaw-state.tgz`;
                   <TableRow key={h.batchId}>
                     <TableCell className="text-xs font-mono py-1.5">{h.batchId}</TableCell>
                     <TableCell className="text-xs py-1.5">{h.scene}</TableCell>
-                    <TableCell className="text-xs text-gray-500 py-1.5">{h.createdAt}</TableCell>
+                    <TableCell className="text-xs text-[#737373] py-1.5">{h.createdAt}</TableCell>
                     <TableCell className="text-xs py-1.5">
                       <span className="text-green-600">{h.success}✓</span>
                       {h.failed > 0 && <span className="text-red-500 ml-1">{h.failed}✗</span>}
-                      <span className="text-gray-400 ml-1">/ {h.total}</span>
+                      <span className="text-[#A3A3A3] ml-1">/ {h.total}</span>
                     </TableCell>
                   </TableRow>
                 ))}

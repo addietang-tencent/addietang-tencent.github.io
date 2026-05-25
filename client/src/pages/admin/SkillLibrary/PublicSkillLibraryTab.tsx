@@ -150,18 +150,18 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
       <div className="p-4 pl-4 flex flex-col flex-1">
         {/* 技能名称 */}
-        <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight mb-1 pl-3">
+        <h3 className="font-mono text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight mb-1 pl-3">
           {skill.name}
         </h3>
 
         {/* 中文简介 - 固定两行高度 */}
-        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
+        <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
           {skill.descriptionZh}
         </p>
 
         {/* 统计数据 + 收藏按钮 - 常驻第三行 */}
         <div className="flex items-center justify-between mt-3 pl-3">
-          <div className="flex items-center gap-3 text-xs text-gray-400">
+          <div className="flex items-center gap-3 text-xs text-[#A3A3A3]">
             <span className="flex items-center gap-1">
               <Download className="w-3 h-3" />
               {formatCount(skill.downloads)}
@@ -170,7 +170,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
               <Star className="w-3 h-3" />
               {formatCount(skill.stars)}
             </span>
-            <span className="font-mono text-gray-300">v{skill.version}</span>
+            <span className="font-mono text-[#A3A3A3]">v{skill.version}</span>
           </div>
           {/* 收藏按钮 - 右下角 */}
           <button
@@ -178,7 +178,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
             className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
               isFavorited
                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
+                : 'text-[#A3A3A3] hover:text-red-500 hover:bg-red-50'
             }`}
             title={isFavorited ? '取消收藏' : '添加到我的收藏'}
           >
@@ -302,7 +302,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       {/* 顶部导航 */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         返回公共技能库
@@ -314,12 +314,12 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="font-mono text-lg font-bold text-gray-900">{skill.name}</h2>
+              <h2 className="font-mono text-lg font-bold text-[#0A0A0A]">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
-            <p className="text-xs text-gray-400 font-mono mb-2">slug：{skill.name}</p>
-            <p className="text-sm text-gray-600 mb-3">{skill.descriptionZh}</p>
-            <div className="flex items-center gap-4 text-xs text-gray-400">
+            <p className="text-xs text-[#A3A3A3] font-mono mb-2">slug：{skill.name}</p>
+            <p className="text-sm text-[#737373] mb-3">{skill.descriptionZh}</p>
+            <div className="flex items-center gap-4 text-xs text-[#A3A3A3]">
               <span className="flex items-center gap-1.5">
                 <Download className="w-4 h-4" />
                 {formatCount(skill.downloads)} 次下载
@@ -411,8 +411,8 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                     onClick={() => setMdPreviewMode('preview')}
                     className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                       mdPreviewMode === 'preview'
-                        ? 'bg-white text-gray-900 shadow-sm font-medium'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                        : 'text-[#737373] hover:text-[#334155]'
                     }`}
                   >
                     <Eye className="w-3 h-3" />
@@ -422,8 +422,8 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                     onClick={() => setMdPreviewMode('source')}
                     className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                       mdPreviewMode === 'source'
-                        ? 'bg-white text-gray-900 shadow-sm font-medium'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                        : 'text-[#737373] hover:text-[#334155]'
                     }`}
                   >
                     <Code className="w-3 h-3" />
@@ -436,7 +436,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                   const content = selectedFile.content || '';
                   if (!content) {
                     return (
-                      <div className="flex items-center justify-center h-full text-gray-400">
+                      <div className="flex items-center justify-center h-full text-[#A3A3A3]">
                         <p className="text-sm">文件内容暂无</p>
                       </div>
                     );
@@ -447,7 +447,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                     registerLanguage(lang);
                     return (
                       <Suspense fallback={
-                        <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                        <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
                       }>
                         <SyntaxHighlighter
                           language={lang}
@@ -474,7 +474,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                   registerLanguage(previewLang);
                   return (
                     <Suspense fallback={
-                      <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                      <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
                     }>
                       <SyntaxHighlighter
                         language={previewLang}
@@ -492,7 +492,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
+            <div className="flex items-center justify-center h-full text-[#737373]">
               <p className="text-sm">选择一个文件查看内容</p>
             </div>
           )}
@@ -629,7 +629,7 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
       {/* 搜索框 + 刷新按钮 */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
           <Input
             placeholder="搜索技能名称或关键词..."
             value={searchQuery}
@@ -697,7 +697,7 @@ export default function PublicSkillLibraryTab({ packages, onAddSkillToPackage }:
           </div>
         </>
       ) : (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-[#A3A3A3]">
           <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
             {activeCategory === 'favorites' && favorites.length === 0

@@ -509,7 +509,7 @@ export default function AuthSourceImportDialog({
                 {source.name}
               </p>
               {/* 描述 */}
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-[#737373] leading-relaxed">
                 {source.description}
               </p>
             </Card>
@@ -572,7 +572,7 @@ export default function AuthSourceImportDialog({
           ))}
           <button
             type="button"
-            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#355EF1] hover:text-[#355EF1] font-medium transition-colors"
             onClick={addEntry}
           >
             <Plus className="w-3.5 h-3.5" />
@@ -606,7 +606,7 @@ export default function AuthSourceImportDialog({
                 </div>
                 <span
                   className={`text-sm ${
-                    currentValue === opt.value ? "text-[#0A0A0A] font-medium" : "text-gray-600"
+                    currentValue === opt.value ? "text-[#0A0A0A] font-medium" : "text-[#737373]"
                   }`}
                   onClick={() =>
                     setFormValues({ ...formValues, [field.key]: opt.value })
@@ -636,7 +636,7 @@ export default function AuthSourceImportDialog({
                 {isSubSecret && (
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] transition-colors"
                     onClick={() =>
                       setSecretVisible({ ...secretVisible, [sub.key]: !isSubVisible })
                     }
@@ -683,7 +683,7 @@ export default function AuthSourceImportDialog({
                   {isSecret && (
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] transition-colors"
                       onClick={() =>
                         setSecretVisible({ ...secretVisible, [field.key]: !isVisible })
                       }
@@ -728,7 +728,7 @@ export default function AuthSourceImportDialog({
 
               {/* helpText */}
               {field.helpText && (
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <p className="text-xs text-[#A3A3A3] leading-relaxed">
                   {field.helpText}
                 </p>
               )}
@@ -753,9 +753,9 @@ export default function AuthSourceImportDialog({
           <div className="pl-4 space-y-2">
             {/* 表头 */}
             <div className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center">
-              <span className="text-xs font-semibold text-gray-500">{currentSource.name}部门</span>
+              <span className="text-xs font-semibold text-[#737373]">{currentSource.name}部门</span>
               <span />
-              <span className="text-xs font-semibold text-gray-500">ClawPro 部门</span>
+              <span className="text-xs font-semibold text-[#737373]">ClawPro 部门</span>
               <span />
             </div>
             {deptMappings.map((mapping) => (
@@ -764,7 +764,7 @@ export default function AuthSourceImportDialog({
                 className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center"
               >
                 <Select value={mapping.sourceAttr} disabled={mapping.fixed}>
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-[#737373] cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">{mapping.sourceLabel}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -775,9 +775,9 @@ export default function AuthSourceImportDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <span className="text-gray-400 text-center text-sm flex items-center justify-center">→</span>
+                <span className="text-[#A3A3A3] text-center text-sm flex items-center justify-center">→</span>
                 <Select value={mapping.platformAttr} disabled={mapping.fixed}>
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-[#737373] cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">{mapping.platformLabel}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -804,9 +804,9 @@ export default function AuthSourceImportDialog({
           <div className="pl-4 space-y-2">
             {/* 表头 */}
             <div className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center">
-              <span className="text-xs font-semibold text-gray-500">{currentSource.name}成员</span>
+              <span className="text-xs font-semibold text-[#737373]">{currentSource.name}成员</span>
               <span />
-              <span className="text-xs font-semibold text-gray-500">ClawPro 成员</span>
+              <span className="text-xs font-semibold text-[#737373]">ClawPro 成员</span>
               <span />
             </div>
             {memberMappings.map((mapping) => (
@@ -829,13 +829,13 @@ export default function AuthSourceImportDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <span className="text-gray-400 text-center text-sm flex items-center justify-center">→</span>
+                <span className="text-[#A3A3A3] text-center text-sm flex items-center justify-center">→</span>
                 <Select
                   value={mapping.platformAttr}
                   onValueChange={(v) => !mapping.fixed && updateMemberMapping(mapping.id, "platformAttr", v)}
                   disabled={mapping.fixed}
                 >
-                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white"}`}>
+                  <SelectTrigger className={`h-9 text-sm min-w-0 w-full ${mapping.fixed ? "bg-gray-100 text-[#737373] cursor-not-allowed" : "bg-white"}`}>
                     <SelectValue placeholder="选择属性">
                       <span className="flex items-center gap-1">
                         {mapping.platformLabel}
@@ -843,7 +843,7 @@ export default function AuthSourceImportDialog({
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="cursor-default inline-flex">
-                                <Info className="w-3.5 h-3.5 text-gray-400" />
+                                <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent>{mapping.tooltipText}</TooltipContent>
@@ -873,7 +873,7 @@ export default function AuthSourceImportDialog({
               </div>
             ))}
             <button
-              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors mt-1"
+              className="flex items-center gap-1.5 text-sm text-[#355EF1] hover:text-[#355EF1] font-medium transition-colors mt-1"
               onClick={addMemberMapping}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -894,7 +894,7 @@ export default function AuthSourceImportDialog({
         <CheckCircle className="w-8 h-8 text-white" />
       </div>
       <h3 className="text-lg font-semibold text-[#0A0A0A] mb-2">数据源配置成功</h3>
-      <p className="text-sm text-gray-500 text-center max-w-xs leading-relaxed">
+      <p className="text-sm text-[#737373] text-center max-w-xs leading-relaxed">
         {currentSource?.name} 数据源已成功配置，系统将自动开始同步通讯录数据，预计需要几分钟时间。
       </p>
     </div>

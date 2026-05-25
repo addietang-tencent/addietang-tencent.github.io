@@ -142,24 +142,24 @@ export default function CategoryManagementDialog({
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 whitespace-nowrap w-16">序号</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 whitespace-nowrap" style={{ width: '240px' }}>分类名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 whitespace-nowrap">描述</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 whitespace-nowrap w-24">技能数量</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 whitespace-nowrap w-20">操作</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-16">序号</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap" style={{ width: '240px' }}>分类名称</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap">描述</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-24">技能数量</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-20">操作</th>
                 </tr>
               </thead>
               <tbody>
                 {draftCategories.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-sm text-gray-500">
+                    <td colSpan={5} className="px-4 py-12 text-center text-sm text-[#737373]">
                       暂无分类，点击右上角「新增分类」开始添加
                     </td>
                   </tr>
                 ) : (
                   draftCategories.map((category, index) => (
                     <tr key={category.id} className="border-b border-gray-200 hover:bg-gray-50/60 last:border-0">
-                      <td className="px-4 py-3 text-sm text-gray-900 align-middle">{index + 1}</td>
+                      <td className="px-4 py-3 text-sm text-[#0A0A0A] align-middle">{index + 1}</td>
                       <td className="px-4 py-3 align-middle">
                         <Input
                           value={category.name}
@@ -176,11 +176,11 @@ export default function CategoryManagementDialog({
                           className="h-8"
                         />
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600 align-middle">{getSkillCountByCategory(category.id)}</td>
+                      <td className="px-4 py-3 text-sm text-[#737373] align-middle">{getSkillCountByCategory(category.id)}</td>
                       <td className="px-4 py-3 text-sm align-middle">
                         <button
                           onClick={() => openDeleteConfirm(category)}
-                          className="text-gray-400 hover:text-red-600 transition-colors"
+                          className="text-[#A3A3A3] hover:text-red-600 transition-colors"
                           title="删除"
                         >
                           <Trash2 className="w-4 h-4" />

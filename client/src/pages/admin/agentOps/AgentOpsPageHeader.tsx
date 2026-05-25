@@ -33,14 +33,14 @@ export default function AgentOpsPageHeader({
       <Link href={backTo}>
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors mb-2 group"
+          className="inline-flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] transition-colors mb-2 group"
         >
           <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
           {backLabel}
         </button>
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-      <p className="text-sm text-gray-500 mt-1">{description}</p>
+      <h1 className="text-2xl font-bold text-[#0A0A0A]">{title}</h1>
+      <p className="text-sm text-[#737373] mt-1">{description}</p>
     </div>
   );
 }

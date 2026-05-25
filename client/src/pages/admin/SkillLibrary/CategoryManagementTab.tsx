@@ -81,32 +81,32 @@ export default function CategoryManagementTab() {
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">序号</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">分类名称</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">描述</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">技能数量</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">操作</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[#0A0A0A]">序号</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[#0A0A0A]">分类名称</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[#0A0A0A]">描述</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[#0A0A0A]">技能数量</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-[#0A0A0A]">操作</th>
             </tr>
           </thead>
           <tbody>
             {categories.map((category, index) => (
               <tr key={category.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-900">{index + 1}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">{category.name}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{category.description}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{getSkillCountByCategory(category.id)}</td>
+                <td className="px-6 py-4 text-sm text-[#0A0A0A]">{index + 1}</td>
+                <td className="px-6 py-4 text-sm text-[#0A0A0A]">{category.name}</td>
+                <td className="px-6 py-4 text-sm text-[#737373]">{category.description}</td>
+                <td className="px-6 py-4 text-sm text-[#737373]">{getSkillCountByCategory(category.id)}</td>
                 <td className="px-6 py-4 text-sm">
                   <div className="flex gap-4">
                     <button
                       onClick={() => openEditDialog(category)}
-                      className="text-gray-400 hover:text-blue-600 transition-colors"
+                      className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                       title="编辑"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => openDeleteConfirm(category)}
-                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      className="text-[#A3A3A3] hover:text-red-600 transition-colors"
                       title="删除"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -139,9 +139,9 @@ export default function CategoryManagementTab() {
           {deleteConfirmOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div className="bg-white rounded-xl p-6 max-w-md">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">删除分类</h3>
+                <h3 className="text-lg font-semibold text-[#0A0A0A] mb-4">删除分类</h3>
                 
-                <p className="text-sm text-gray-600 mb-6">
+                <p className="text-sm text-[#737373] mb-6">
                   确定要删除分类「{selectedCategory?.name}」吗？该分类下共有 {getSkillCountByCategory(selectedCategory?.id || '')} 个技能，删除此分类后对应skill将移除该分类。
                 </p>
 

@@ -360,8 +360,8 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">
                             <div className="font-medium">{r.imageName}</div>
-                            <div className="font-mono text-gray-300 mt-0.5">{r.imageId}</div>
-                            <div className="text-gray-300 mt-0.5">
+                            <div className="font-mono text-[#A3A3A3] mt-0.5">{r.imageId}</div>
+                            <div className="text-[#A3A3A3] mt-0.5">
                               所属 Agent 类型：{r.agentTypeLabel}
                             </div>
                           </TooltipContent>

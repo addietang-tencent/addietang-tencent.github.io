@@ -60,14 +60,14 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">
+            <DialogTitle className="text-[#0A0A0A]">
               无法关闭服务
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4 space-y-4">
-            <div className="text-sm text-gray-700">
-              当前还有 <strong className="text-gray-900">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
+            <div className="text-sm text-[#334155]">
+              当前还有 <strong className="text-[#0A0A0A]">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
             </div>
             
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
@@ -76,7 +76,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
               </div>
             </div>
 
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-[#737373]">
               您可以前往实例列表，使用「批量关闭」功能快速关闭多个实例的 Memory Pro。
             </div>
           </div>
@@ -99,20 +99,20 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">
+          <DialogTitle className="text-[#0A0A0A]">
             关闭 Memory Pro 服务
           </DialogTitle>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-[#737373]">
             当前没有实例开通 Memory Pro 服务，可以安全关闭。
           </div>
 
           {/* 关闭影响说明 */}
           <div className="space-y-2">
-            <div className="font-medium text-gray-900">关闭后将产生以下影响：</div>
-            <ul className="text-sm text-gray-700 space-y-1.5">
+            <div className="font-medium text-[#0A0A0A]">关闭后将产生以下影响：</div>
+            <ul className="text-sm text-[#334155] space-y-1.5">
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-500 flex-shrink-0" />
                 <span>新创建的实例将<strong>无法开通 Memory Pro</strong></span>

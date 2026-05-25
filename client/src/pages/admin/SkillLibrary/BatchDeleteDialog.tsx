@@ -215,7 +215,7 @@ export default function BatchDeleteDialog({
               <div className="text-sm text-muted-foreground">
                 <p>
                   从已下发实例中卸载技能{' '}
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-[#0A0A0A]">
                     {skillName}
                   </span>
                 </p>
@@ -232,7 +232,7 @@ export default function BatchDeleteDialog({
           {/* 搜索框 + 筛选 */}
           <div className="flex gap-2 mb-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <Input
                 placeholder="搜索实例名称/ID..."
                 value={searchQuery}
@@ -247,12 +247,12 @@ export default function BatchDeleteDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">
                       {getScopeDisplayText()}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
@@ -273,7 +273,7 @@ export default function BatchDeleteDialog({
                     {/* 搜索框 */}
                     <div className="px-2 pb-1.5 pt-1.5">
                       <div className="relative">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                         <input
                           placeholder="搜索分组..."
                           value={scopeSearchQuery}
@@ -295,7 +295,7 @@ export default function BatchDeleteDialog({
                             setScopeFilters([...availableGroupNames, '__ungrouped__']);
                           }
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors border-b border-gray-100"
                       >
                         <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                           isAllGroupSelected ? 'bg-blue-600 border-blue-600' : isSomeGroupSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -332,7 +332,7 @@ export default function BatchDeleteDialog({
                                 return combined;
                               });
                             }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                           >
                             <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                               isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -365,28 +365,28 @@ export default function BatchDeleteDialog({
                               }
                             });
                           }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                         >
                           <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                             (isAllGroupSelected || hasUngrouped) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
                           }`}>
                             {(isAllGroupSelected || hasUngrouped) && <Check className="w-3 h-3 text-white" />}
                           </div>
-                          <span className="text-gray-500">未分组</span>
+                          <span className="text-[#737373]">未分组</span>
                         </button>
                       )}
                       {filteredGroups.length === 0 && !showUngrouped && scopeSearchQuery && (
-                        <p className="text-xs text-gray-400 py-3 text-center">没有匹配的分组</p>
+                        <p className="text-xs text-[#A3A3A3] py-3 text-center">没有匹配的分组</p>
                       )}
                     </div>
                     {/* 底部统计 */}
                     {selectedCount > 0 && !isAllGroupSelected && (
                       <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 text-xs">
-                        <span className="text-gray-500">已选 {selectedCount} 个分组</span>
+                        <span className="text-[#737373]">已选 {selectedCount} 个分组</span>
                         <button
                           type="button"
                           onClick={() => setScopeFilters([])}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
+                          className="text-[#355EF1] hover:text-[#355EF1] font-medium"
                         >
                           清除筛选
                         </button>
@@ -403,10 +403,10 @@ export default function BatchDeleteDialog({
                   <button
                     type="button"
                     onClick={() => setStatusDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-28 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between gap-1 w-28 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">{getStatusDisplayText()}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${statusDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${statusDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
@@ -424,7 +424,7 @@ export default function BatchDeleteDialog({
                         return [];
                       });
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                   >
                     <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                       isAllStatusSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -456,7 +456,7 @@ export default function BatchDeleteDialog({
                             return next;
                           });
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                       >
                         <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                           isOptSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -482,14 +482,14 @@ export default function BatchDeleteDialog({
                 indeterminate={isSomeSelected}
                 onCheckedChange={toggleAll}
               />
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm font-medium text-[#0A0A0A]">
                 全选（{selectedInFilterCount}/{filteredInstances.length}）
               </span>
             </div>
 
             {/* 实例项 */}
             {filteredInstances.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+              <div className="flex items-center justify-center py-8 text-sm text-[#A3A3A3]">
                 暂无已下发的实例
               </div>
             ) : (
@@ -513,8 +513,8 @@ export default function BatchDeleteDialog({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-3">
-                        <span className="text-sm font-medium text-gray-900 truncate">{inst.name}</span>
-                        <span className="text-xs text-gray-400 font-mono flex-shrink-0">{inst.id}</span>
+                        <span className="text-sm font-medium text-[#0A0A0A] truncate">{inst.name}</span>
+                        <span className="text-xs text-[#A3A3A3] font-mono flex-shrink-0">{inst.id}</span>
                         {deleteStatus === 'delete_failed' ? (
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
@@ -527,15 +527,15 @@ export default function BatchDeleteDialog({
                             </TooltipContent>
                           </Tooltip>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-500 ml-auto flex-shrink-0">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-[#737373] ml-auto flex-shrink-0">
                             未卸载
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        <span className="text-xs text-gray-500">创建人：{inst.createdBy}</span>
-                        <span className="text-xs text-gray-500">分组：{inst.groupName || '全部用户'}</span>
-                        <span className="text-[11px] text-gray-400 ml-auto">
+                        <span className="text-xs text-[#737373]">创建人：{inst.createdBy}</span>
+                        <span className="text-xs text-[#737373]">分组：{inst.groupName || '全部用户'}</span>
+                        <span className="text-[11px] text-[#A3A3A3] ml-auto">
                           v{inst.distributedVersion || skillVersion}
                         </span>
                       </div>
@@ -548,8 +548,8 @@ export default function BatchDeleteDialog({
 
           {/* 底部操作 */}
           <div className="flex items-center justify-between pt-2">
-            <span className="text-sm text-gray-500">
-              已选择 <span className="font-semibold text-gray-900">{selectedInstances.length}</span> 个实例
+            <span className="text-sm text-[#737373]">
+              已选择 <span className="font-semibold text-[#0A0A0A]">{selectedInstances.length}</span> 个实例
             </span>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -576,7 +576,7 @@ export default function BatchDeleteDialog({
               确认卸载
             </AlertDialogTitle>
             <AlertDialogDescription>
-              确定要从 <span className="font-semibold text-gray-900">{selectedInstances.length}</span> 个实例中卸载技能「{skillName}」吗？卸载后该技能将恢复为未下发状态。
+              确定要从 <span className="font-semibold text-[#0A0A0A]">{selectedInstances.length}</span> 个实例中卸载技能「{skillName}」吗？卸载后该技能将恢复为未下发状态。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

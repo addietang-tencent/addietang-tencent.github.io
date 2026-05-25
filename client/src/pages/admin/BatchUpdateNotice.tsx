@@ -240,17 +240,17 @@ export default function BatchUpdateNotice({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="w-[360px] p-0">
         <div className="px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
-            <Megaphone className="w-4 h-4 text-blue-500" />
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A0A0A]">
+            <Megaphone className="w-4 h-4 text-[#355EF1]" />
             镜像有新版本
           </div>
-          <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+          <p className="text-xs text-[#737373] mt-0.5 leading-relaxed">
             以下 Agent 类型的存量 Agent 运行了旧版本，可推送提醒员工更新
           </p>
         </div>
 
         {outdated.length === 0 ? (
-          <div className="py-8 text-center text-sm text-gray-400">
+          <div className="py-8 text-center text-sm text-[#A3A3A3]">
             所有 Agent 都已运行最新启用版本
           </div>
         ) : (
@@ -262,28 +262,28 @@ export default function BatchUpdateNotice({
                   <div className="flex items-start gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-[#0A0A0A]">
                           {item.agentTypeLabel}
                         </span>
-                        <span className="text-xs text-blue-600 font-mono tabular-nums">
+                        <span className="text-xs text-[#355EF1] font-mono tabular-nums">
                           v{item.enabledVersion}
                         </span>
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">
                           新版本上线
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className="text-xs text-[#737373] mt-0.5">
                         有 <span className="font-semibold text-amber-600">{item.outdatedCount}</span> 个 Agent 运行旧版本
                       </div>
                       {push && (
                         <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">
                             <Megaphone className="w-2.5 h-2.5" />
                             正在提醒员工更新此版本
                           </span>
                           <button
                             onClick={() => handleRevoke(item)}
-                            className="inline-flex items-center gap-0.5 text-[10px] text-gray-500 hover:text-red-500 transition-colors"
+                            className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
                           >
                             <RotateCcw className="w-2.5 h-2.5" />
                             撤回
@@ -319,8 +319,8 @@ export default function BatchUpdateNotice({
         )}
 
         <div className="px-4 py-2.5 border-t border-gray-100 flex items-start gap-1.5">
-          <Info className="w-3 h-3 text-gray-400 mt-0.5 shrink-0" />
-          <p className="text-[11px] text-gray-500 leading-relaxed">
+          <Info className="w-3 h-3 text-[#A3A3A3] mt-0.5 shrink-0" />
+          <p className="text-[11px] text-[#737373] leading-relaxed">
             "推送提醒"是软通知，员工在用户端会看到更新建议，自行决定更新时机
           </p>
         </div>

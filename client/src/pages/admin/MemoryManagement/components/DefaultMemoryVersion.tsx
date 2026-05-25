@@ -134,10 +134,10 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
     <TooltipProvider>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">新建 Agent 默认记忆版本</span>
+          <span className="text-sm font-medium text-[#334155]">新建 Agent 默认记忆版本</span>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Info className="w-4 h-4 text-gray-400 cursor-help" />
+              <Info className="w-4 h-4 text-[#A3A3A3] cursor-help" />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-xs">
               <p className="text-xs">新建 Agent 将自动开启所选版本的记忆功能</p>
@@ -167,8 +167,8 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
                   ${isSelected 
                     ? 'text-white' 
                     : isDisabled
-                      ? 'text-gray-300 cursor-not-allowed'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'text-[#A3A3A3] cursor-not-allowed'
+                      : 'text-[#737373] hover:text-[#0A0A0A]'
                   }
                 `}
               >
@@ -195,7 +195,7 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
         </div>
         
         {/* 说明文字 */}
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-[#A3A3A3]">
           {value === 'none' && '新建 Agent 不自动开启记忆'}
           {value === 'free' && '新建 Agent 自动开启 Free版'}
           {value === 'pro' && '新建 Agent 自动开启 Pro版'}

@@ -77,12 +77,12 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
   return (
     <div className="relative group rounded-xl overflow-hidden border border-gray-200/80">
       {language && (
-        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-200/80 text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+        <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-200/80 text-[11px] text-[#A3A3A3] font-medium uppercase tracking-wider">
           {language}
         </div>
       )}
       <pre className="p-4 bg-[#FAFBFC] text-sm leading-relaxed overflow-x-auto">
-        <code className="text-gray-800 font-mono text-[13px]">{code}</code>
+        <code className="text-[#0A0A0A] font-mono text-[13px]">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
@@ -92,7 +92,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
         {copied ? (
           <Check className="w-3.5 h-3.5 text-green-500" />
         ) : (
-          <Copy className="w-3.5 h-3.5 text-gray-400" />
+          <Copy className="w-3.5 h-3.5 text-[#A3A3A3]" />
         )}
       </button>
     </div>
@@ -164,9 +164,9 @@ function NavTreeNode({
       >
         {hasChildren && !isEndpointItem ? (
           isExpanded ? (
-            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 shrink-0 text-[#A3A3A3]" />
           ) : (
-            <ChevronRight className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+            <ChevronRight className="w-3.5 h-3.5 shrink-0 text-[#A3A3A3]" />
           )
         ) : (
           <span className="w-3.5 shrink-0" />
@@ -208,17 +208,17 @@ function OverviewTable({
 }) {
   return (
     <div className="mb-8">
-      <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
+      <h3 className="text-[15px] font-semibold text-[#0A0A0A] mb-3">
         {section.title}
       </h3>
       <div className="border border-gray-200/80 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50/80">
-              <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider ${COL_W_API}`}>
+              <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider ${COL_W_API}`}>
                 接口名称
               </th>
-              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider">
                 接口功能
               </th>
             </tr>
@@ -241,7 +241,7 @@ function OverviewTable({
                       <MethodPath method={method} path={path} />
                     </button>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600 text-[13px] break-words">
+                  <td className="px-4 py-2.5 text-[#737373] text-[13px] break-words">
                     {entry.description}
                   </td>
                 </tr>
@@ -264,35 +264,35 @@ function EndpointDetailView({
     <div className="space-y-8">
       {/* 标题行 */}
       <div className="flex items-center gap-3">
-        <h3 className="text-lg font-semibold text-gray-900 font-mono">
+        <h3 className="text-lg font-semibold text-[#0A0A0A] font-mono">
           {endpoint.method} {endpoint.path}
         </h3>
       </div>
 
       {/* 1. 接口描述 */}
       <div>
-        <h4 className="text-base font-semibold text-gray-900 mb-3">1. 接口描述</h4>
-        <p className="text-sm text-gray-600 leading-relaxed mb-4">
+        <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">1. 接口描述</h4>
+        <p className="text-sm text-[#737373] leading-relaxed mb-4">
           {endpoint.description}
         </p>
         <div className="border border-gray-200/80 rounded-xl overflow-hidden">
           <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="bg-gray-50/80">
-                <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>属性</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">值</th>
+                <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>属性</th>
+                <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">值</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-t border-[#e5e5e5]">
-                <td className="px-4 py-2.5 text-gray-900 font-medium">认证</td>
-                <td className="px-4 py-2.5 text-gray-600">{endpoint.auth}</td>
+                <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">认证</td>
+                <td className="px-4 py-2.5 text-[#737373]">{endpoint.auth}</td>
               </tr>
               {endpoint.contentType && (
                 <tr className="border-t border-[#e5e5e5]">
-                  <td className="px-4 py-2.5 text-gray-900 font-medium">Content-Type</td>
+                  <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">Content-Type</td>
                   <td className="px-4 py-2.5">
-                    <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded font-mono text-gray-700">
+                    <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded font-mono text-[#334155]">
                       {endpoint.contentType}
                     </code>
                   </td>
@@ -305,73 +305,73 @@ function EndpointDetailView({
 
       {/* 2. 输入参数 */}
       <div>
-        <h4 className="text-base font-semibold text-gray-900 mb-3">2. 输入参数</h4>
+        <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">2. 输入参数</h4>
         {endpoint.inputParams.length > 0 ? (
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
             <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>参数</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W2}`}>类型</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W3}`}>必填</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">说明</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>参数</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>类型</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W3}`}>必填</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
                 </tr>
               </thead>
               <tbody>
                 {endpoint.inputParams.map((p, i) => (
                   <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900 break-all">{p.name}</td>
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-gray-600">{p.type}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-gray-600">{p.required}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-gray-600 break-words">{p.description}</td>
+                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</td>
+                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373]">{p.type}</td>
+                    <td className="px-4 py-2.5 text-[13px] text-[#737373]">{p.required}</td>
+                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{p.description}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">无</p>
+          <p className="text-sm text-[#A3A3A3]">无</p>
         )}
       </div>
 
       {/* 3. 输出参数 */}
       <div>
-        <h4 className="text-base font-semibold text-gray-900 mb-3">3. 输出参数</h4>
+        <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">3. 输出参数</h4>
         {endpoint.outputParams.length > 0 ? (
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
             <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>字段</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W2}`}>类型</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">说明</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>字段</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>类型</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
                 </tr>
               </thead>
               <tbody>
                 {endpoint.outputParams.map((p, i) => (
                   <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900 break-all">{p.name}</td>
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-gray-600">{p.type}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-gray-600 break-words">{p.description}</td>
+                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</td>
+                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373]">{p.type}</td>
+                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{p.description}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">无</p>
+          <p className="text-sm text-[#A3A3A3]">无</p>
         )}
       </div>
 
       {/* 4. 示例 */}
       <div className="space-y-4">
-        <h4 className="text-base font-semibold text-gray-900">4. 示例</h4>
+        <h4 className="text-base font-semibold text-[#0A0A0A]">4. 示例</h4>
         <div>
-          <p className="text-xs text-gray-500 mb-1.5 font-medium">请求示例：</p>
+          <p className="text-xs text-[#737373] mb-1.5 font-medium">请求示例：</p>
           <CodeBlock code={endpoint.requestExample} language="bash" />
         </div>
         <div>
-          <p className="text-xs text-gray-500 mb-1.5 font-medium">响应示例：</p>
+          <p className="text-xs text-[#737373] mb-1.5 font-medium">响应示例：</p>
           <CodeBlock code={endpoint.responseExample} language="json" />
         </div>
       </div>
@@ -379,20 +379,20 @@ function EndpointDetailView({
       {/* 5. 错误码 */}
       {endpoint.errorCodes.length > 0 && (
         <div>
-          <h4 className="text-base font-semibold text-gray-900 mb-3">5. 错误码</h4>
+          <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">5. 错误码</h4>
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
             <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>状态码</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">错误信息</th>
+                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>状态码</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">错误信息</th>
                 </tr>
               </thead>
               <tbody>
                 {endpoint.errorCodes.map((ec, i) => (
                   <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">{ec.code}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-gray-600 break-words">{ec.error}</td>
+                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">{ec.code}</td>
+                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{ec.error}</td>
                   </tr>
                 ))}
               </tbody>
@@ -417,10 +417,10 @@ function SectionDetailPage({
   return (
     <div className="space-y-8 page-enter">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">
           {section.title}
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#737373]">
           共 {section.entries.length} 个接口
         </p>
       </div>
@@ -430,10 +430,10 @@ function SectionDetailPage({
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50/80">
-              <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider ${COL_W_API}`}>
+              <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider ${COL_W_API}`}>
                 接口名称
               </th>
-              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider">
                 接口功能
               </th>
             </tr>
@@ -456,7 +456,7 @@ function SectionDetailPage({
                       <MethodPath method={method} path={path} />
                     </button>
                   </td>
-                  <td className="px-4 py-2.5 text-gray-600 text-[13px] break-words">
+                  <td className="px-4 py-2.5 text-[#737373] text-[13px] break-words">
                     {entry.description}
                   </td>
                 </tr>
@@ -585,35 +585,35 @@ export default function ApiDocs() {
         return (
           <div className="space-y-6 page-enter">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">简介</h1>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">简介</h1>
+              <p className="text-sm text-[#737373] leading-relaxed">
                 腾讯云 ClawPro（Agent 企业版）提供完整的 REST API，支持通过 API Token 进行自动化管理。
               </p>
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-3">基础信息</h2>
+              <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">基础信息</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
                 <table className="w-full text-sm table-fixed">
                   <thead>
                     <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>项目</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">说明</th>
+                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>项目</th>
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-gray-900 font-medium">Base URL</td>
+                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">Base URL</td>
                       <td className="px-4 py-2.5 break-words">
-                        <code className="text-[13px] bg-gray-50 px-2 py-0.5 rounded text-gray-700 font-mono">{baseInfo.baseUrl}</code>
+                        <code className="text-[13px] bg-gray-50 px-2 py-0.5 rounded text-[#334155] font-mono">{baseInfo.baseUrl}</code>
                       </td>
                     </tr>
                     <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-gray-900 font-medium">协议</td>
-                      <td className="px-4 py-2.5 text-gray-600">{baseInfo.protocol}</td>
+                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">协议</td>
+                      <td className="px-4 py-2.5 text-[#737373]">{baseInfo.protocol}</td>
                     </tr>
                     <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-gray-900 font-medium">数据格式</td>
-                      <td className="px-4 py-2.5 text-gray-600">{baseInfo.dataFormat}</td>
+                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">数据格式</td>
+                      <td className="px-4 py-2.5 text-[#737373]">{baseInfo.dataFormat}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -625,26 +625,26 @@ export default function ApiDocs() {
       case "changelog":
         return (
           <div className="space-y-8 page-enter">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">更新历史</h1>
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">更新历史</h1>
             {changelogEntries.map((release, ri) => (
               <div key={ri} className="border border-gray-200/80 rounded-xl overflow-hidden">
                 {/* 版本头 */}
                 <div className="bg-gray-50/80 px-5 py-3 border-b border-gray-200/60">
-                  <h2 className="text-base font-semibold text-gray-900">{release.version}</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">发布时间：{release.date}</p>
+                  <h2 className="text-base font-semibold text-[#0A0A0A]">{release.version}</h2>
+                  <p className="text-xs text-[#737373] mt-0.5">发布时间：{release.date}</p>
                 </div>
                 <div className="px-5 py-4 space-y-4">
-                  <p className="text-sm text-gray-600">{release.summary}</p>
+                  <p className="text-sm text-[#737373]">{release.summary}</p>
                   {release.sections.map((section, si) => (
                     <div key={si} className="space-y-3">
-                      <h3 className="text-sm font-semibold text-gray-800">{section.title}：</h3>
+                      <h3 className="text-sm font-semibold text-[#0A0A0A]">{section.title}：</h3>
                       {/* 接口分组 */}
                       {"groups" in section && section.groups?.map((group, gi) => (
                         <div key={gi} className="ml-1">
-                          <p className="text-sm font-medium text-gray-700 mb-1">• {group.name}</p>
+                          <p className="text-sm font-medium text-[#334155] mb-1">• {group.name}</p>
                           <ul className="ml-5 space-y-0.5">
                             {group.items.map((item, ii) => (
-                              <li key={ii} className="text-sm text-gray-600 font-mono text-[13px] leading-relaxed">
+                              <li key={ii} className="text-sm text-[#737373] font-mono text-[13px] leading-relaxed">
                                 {item}
                               </li>
                             ))}
@@ -653,7 +653,7 @@ export default function ApiDocs() {
                       ))}
                       {/* 改善说明 */}
                       {"notes" in section && section.notes?.map((note, ni) => (
-                        <p key={ni} className="text-sm text-gray-600 ml-1">• {note}</p>
+                        <p key={ni} className="text-sm text-[#737373] ml-1">• {note}</p>
                       ))}
                     </div>
                   ))}
@@ -667,9 +667,9 @@ export default function ApiDocs() {
         return (
           <div className="space-y-6 page-enter">
             <div className="mb-2">
-              <h1 className="text-2xl font-bold text-gray-900">API 概览</h1>
+              <h1 className="text-2xl font-bold text-[#0A0A0A]">API 概览</h1>
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+            <p className="text-sm text-[#737373] leading-relaxed mb-6">
               以下为平台所有开放 API 的汇总，点击接口名称查看详细文档。
             </p>
             {overviewSections.map((section) => (
@@ -685,40 +685,40 @@ export default function ApiDocs() {
       case "request-structure":
         return (
           <div className="space-y-6 page-enter">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">请求结构</h1>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">请求结构</h1>
+            <p className="text-sm text-[#737373] leading-relaxed">
               所有 API 请求均基于 HTTPS 协议，使用 RESTful 风格。请求的 Base URL 为：
             </p>
             <CodeBlock code={baseInfo.baseUrl} language="text" />
             <div className="space-y-3">
-              <h2 className="text-base font-semibold text-gray-900">请求方法</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <h2 className="text-base font-semibold text-[#0A0A0A]">请求方法</h2>
+              <p className="text-sm text-[#737373] leading-relaxed">
                 API 支持标准的 HTTP 方法：
               </p>
               <div className="flex gap-3">
                 {["GET", "POST", "PUT", "DELETE"].map((m) => (
-                  <MethodPath key={m} method={m} className="text-gray-600" />
+                  <MethodPath key={m} method={m} className="text-[#737373]" />
                 ))}
               </div>
             </div>
             <div className="space-y-3">
-              <h2 className="text-base font-semibold text-gray-900">请求头</h2>
+              <h2 className="text-base font-semibold text-[#0A0A0A]">请求头</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
                 <table className="w-full text-sm table-fixed">
                   <thead>
                     <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>Header</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">说明</th>
+                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>Header</th>
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">Authorization</td>
-                      <td className="px-4 py-2.5 text-gray-600 break-words">Bearer Token 认证（大部分接口必须）</td>
+                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">Authorization</td>
+                      <td className="px-4 py-2.5 text-[#737373] break-words">Bearer Token 认证（大部分接口必须）</td>
                     </tr>
                     <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">Content-Type</td>
-                      <td className="px-4 py-2.5 text-gray-600 break-words">
+                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">Content-Type</td>
+                      <td className="px-4 py-2.5 text-[#737373] break-words">
                         <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded">application/json</code>{" "}
                         或{" "}
                         <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded">application/x-www-form-urlencoded</code>
@@ -735,28 +735,28 @@ export default function ApiDocs() {
       case "auth":
         return (
           <div className="space-y-6 page-enter">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">认证方式</h1>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">认证方式</h1>
+            <p className="text-sm text-[#737373] leading-relaxed">
               所有接口（除公共接口外）均需要认证。API 请求通过 <code className="bg-gray-50 px-1.5 py-0.5 rounded text-[13px]">Authorization</code> 请求头传递 Bearer Token。
             </p>
             <CodeBlock code={authInfo.header} language="bash" />
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-3">Token 类型</h2>
+              <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">Token 类型</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
                 <table className="w-full text-sm table-fixed">
                   <thead>
                     <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>类型</th>
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W2}`}>前缀</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">权限范围</th>
+                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>类型</th>
+                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>前缀</th>
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">权限范围</th>
                     </tr>
                   </thead>
                   <tbody>
                     {authInfo.tokenTypes.map((t, i) => (
                       <tr key={i} className="border-t border-[#e5e5e5]">
-                        <td className="px-4 py-2.5 text-gray-900 font-medium">{t.type}</td>
-                        <td className="px-4 py-2.5 font-mono text-gray-600">{t.prefix}</td>
-                        <td className="px-4 py-2.5 text-gray-600 break-words">{t.scope}</td>
+                        <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">{t.type}</td>
+                        <td className="px-4 py-2.5 font-mono text-[#737373]">{t.prefix}</td>
+                        <td className="px-4 py-2.5 text-[#737373] break-words">{t.scope}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -773,17 +773,17 @@ export default function ApiDocs() {
       case "response":
         return (
           <div className="space-y-6 page-enter">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">返回结果</h1>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">返回结果</h1>
+            <p className="text-sm text-[#737373] leading-relaxed">
               API 统一使用 JSON 格式返回数据。
             </p>
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-3">成功响应</h2>
+              <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">成功响应</h2>
               <CodeBlock code={responseFormat.success} language="json" />
-              <p className="text-sm text-gray-500 mt-2">{responseFormat.successNote}</p>
+              <p className="text-sm text-[#737373] mt-2">{responseFormat.successNote}</p>
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-3">失败响应</h2>
+              <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">失败响应</h2>
               <CodeBlock code={responseFormat.error} language="json" />
             </div>
           </div>
@@ -792,25 +792,25 @@ export default function ApiDocs() {
       case "param-types":
         return (
           <div className="space-y-6 page-enter">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">参数类型</h1>
-            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-2">参数类型</h1>
+            <p className="text-sm text-[#737373] leading-relaxed mb-4">
               以下为接口文档中使用的常见参数类型说明。
             </p>
             <div className="border border-gray-200/80 rounded-xl overflow-hidden">
               <table className="w-full text-sm table-fixed">
                 <thead>
                   <tr className="bg-gray-50/80">
-                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W1}`}>类型</th>
-                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-gray-500 ${COL_W2}`}>说明</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">示例</th>
+                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>类型</th>
+                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>说明</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">示例</th>
                   </tr>
                 </thead>
                 <tbody>
                   {parameterTypes.map((pt, i) => (
                     <tr key={i} className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-gray-900">{pt.type}</td>
-                      <td className="px-4 py-2.5 text-gray-600">{pt.desc}</td>
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-gray-500 break-words">{pt.example}</td>
+                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">{pt.type}</td>
+                      <td className="px-4 py-2.5 text-[#737373]">{pt.desc}</td>
+                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373] break-words">{pt.example}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -838,7 +838,7 @@ export default function ApiDocs() {
             return (
               <div className="space-y-6 page-enter">
                 {/* 面包屑导航 */}
-                <div className="flex items-center gap-1.5 text-sm text-gray-400">
+                <div className="flex items-center gap-1.5 text-sm text-[#A3A3A3]">
                   <button
                     onClick={() => handleSelect(sectionId)}
                     className="hover:text-[#355EF1] transition-colors cursor-pointer"
@@ -846,7 +846,7 @@ export default function ApiDocs() {
                     {matchedSectionTitle || sectionId}
                   </button>
                   <ChevronRight className="w-3.5 h-3.5" />
-                  <span className="text-gray-600 font-medium">
+                  <span className="text-[#737373] font-medium">
                     <MethodPath method={ep.method} path={ep.path} />
                   </span>
                 </div>
@@ -871,7 +871,7 @@ export default function ApiDocs() {
           );
         }
         return (
-          <div className="text-center py-20 text-gray-400 text-sm page-enter">
+          <div className="text-center py-20 text-[#A3A3A3] text-sm page-enter">
             请从左侧导航选择要查看的内容
           </div>
         );
@@ -892,7 +892,7 @@ export default function ApiDocs() {
           <button
             onClick={() => window.close()}
             onAuxClick={() => window.history.back()}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors cursor-pointer"
             title="关闭页面"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -905,12 +905,12 @@ export default function ApiDocs() {
             >
               <Book className="w-3.5 h-3.5 text-white" />
             </div>
-            <h1 className="text-sm font-semibold text-gray-900">
+            <h1 className="text-sm font-semibold text-[#0A0A0A]">
               ClawPro API文档
             </h1>
           </div>
           <div className="flex-1" />
-          <span className="text-xs text-gray-400">v1.0 · 2026-04-07</span>
+          <span className="text-xs text-[#A3A3A3]">v1.0 · 2026-04-07</span>
         </div>
       </header>
 
@@ -922,13 +922,13 @@ export default function ApiDocs() {
         >
           <div className="p-4 border-b border-[#e5e5e5]">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
               <input
                 type="text"
                 placeholder="搜索文档..."
                 value={navSearchQuery}
                 onChange={(e) => setNavSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#355EF1]/20 focus:border-[#1447E6] transition-all placeholder:text-gray-400"
+                className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50/80 focus:outline-none focus:ring-2 focus:ring-[#355EF1]/20 focus:border-[#1447E6] transition-all placeholder:text-[#A3A3A3]"
               />
             </div>
           </div>
@@ -944,7 +944,7 @@ export default function ApiDocs() {
               />
             ))}
             {filteredNavTree.length === 0 && navSearchQuery.trim() && (
-              <div className="text-center py-8 text-gray-400 text-xs">
+              <div className="text-center py-8 text-[#A3A3A3] text-xs">
                 未找到匹配的文档
               </div>
             )}

@@ -95,8 +95,8 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                   <Zap className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Memory Free 版</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">基于实例本地存储，自动提取对话记忆，跨会话精准召回，免费即开即用。</p>
+                  <h2 className="text-lg font-bold text-[#0A0A0A]">Memory Free 版</h2>
+                  <p className="text-xs text-[#A3A3A3] mt-0.5">基于实例本地存储，自动提取对话记忆，跨会话精准召回，免费即开即用。</p>
                 </div>
               </div>
 
@@ -107,7 +107,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                     className="w-2 h-2 rounded-full transition-colors duration-300"
                     style={{ background: isEnabled ? '#16A34A' : '#d0d0e0' }}
                   />
-                  <span className={`text-sm font-medium ${isEnabled ? 'text-gray-900' : 'text-gray-400'}`}>
+                  <span className={`text-sm font-medium ${isEnabled ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>
                     {isEnabled ? '已启用' : '未启用'}
                   </span>
                 </div>
@@ -133,9 +133,9 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
               {freeFeatures.map((feature, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0 mt-[7px]" />
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    <span className="font-semibold text-gray-900">{feature.title}</span>
-                    <span className="mx-1.5 text-gray-300">—</span>
+                  <p className="text-sm text-[#737373] leading-relaxed">
+                    <span className="font-semibold text-[#0A0A0A]">{feature.title}</span>
+                    <span className="mx-1.5 text-[#A3A3A3]">—</span>
                     {feature.desc}
                   </p>
                 </div>
@@ -153,8 +153,8 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
             </DialogHeader>
             <div className="space-y-4">
               <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-                <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                <div className="text-xs text-blue-800 leading-relaxed space-y-1">
+                <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
+                <div className="text-xs text-[#1447E6] leading-relaxed space-y-1">
                   <p>• 将为<strong>所有现有实例</strong>自动安装并启用记忆插件。</p>
                   <p>• 之后新创建的实例也将<strong>默认启用</strong>记忆功能。</p>
                   <p>• 用户可在各自实例的设置中自行管理（开启 / 关闭 / 清除数据）。</p>
@@ -167,7 +167,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                   onChange={(e) => setConfirmChecked(e.target.checked)}
                   className="w-4 h-4 rounded accent-blue-600"
                 />
-                <span className="text-sm text-gray-600">我已了解上述说明，确认开启</span>
+                <span className="text-sm text-[#737373]">我已了解上述说明，确认开启</span>
               </label>
             </div>
             <DialogFooter>
@@ -214,7 +214,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                   onChange={(e) => setConfirmChecked(e.target.checked)}
                   className="w-4 h-4 rounded accent-red-600"
                 />
-                <span className="text-sm text-gray-600">我已了解上述说明，确认关闭</span>
+                <span className="text-sm text-[#737373]">我已了解上述说明，确认关闭</span>
               </label>
             </div>
             <DialogFooter>

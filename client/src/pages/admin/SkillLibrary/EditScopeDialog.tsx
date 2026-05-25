@@ -74,7 +74,7 @@ export default function EditScopePopover({
   const renderBadges = () => {
     if (isPublic) {
       return (
-        <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+        <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-[#355EF1] text-xs font-medium rounded-full">
           全部用户
         </span>
       );
@@ -89,11 +89,11 @@ export default function EditScopePopover({
       <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full max-w-[100px] truncate">
+            <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full max-w-[100px] truncate">
               {firstName}
             </span>
             {rest > 0 && (
-              <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full whitespace-nowrap">
+              <span className="inline-block px-2 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full whitespace-nowrap">
                 +{rest}
               </span>
             )}
@@ -115,7 +115,7 @@ export default function EditScopePopover({
             <PopoverTrigger asChild>
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
+                className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors flex-shrink-0"
               >
                 <Edit2 className="w-3 h-3" />
               </button>

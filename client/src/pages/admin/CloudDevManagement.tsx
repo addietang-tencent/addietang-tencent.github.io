@@ -44,15 +44,15 @@ export default function CloudDevManagement() {
       {/* 页面标题 */}
       <div className="mb-6">
         <div className="flex items-center gap-2.5">
-          <h1 className="text-2xl font-bold text-gray-900">云开发管理</h1>
+          <h1 className="text-2xl font-bold text-[#0A0A0A]">云开发管理</h1>
           <span
-            className="font-medium text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded"
+            className="font-medium text-[#A3A3A3] bg-gray-50 border border-gray-200 px-2 py-0.5 rounded"
             style={{ fontSize: "12px" }}
           >
             即将开放
           </span>
         </div>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-[#737373] mt-1">
           管理企业云开发环境的创建、分配与生命周期。管理员可为成员分配独立的云开发环境，统一配置运行环境与规格，为成员提供应用开发及部署能力。
         </p>
       </div>
@@ -67,10 +67,10 @@ export default function CloudDevManagement() {
             <div className="flex items-start gap-4">
               <img src={feature.iconSrc} alt="" className="shrink-0" />
               <div className="flex flex-col pt-0.5">
-                <h3 className="text-sm font-semibold text-gray-900">
+                <h3 className="text-sm font-semibold text-[#0A0A0A]">
                   {feature.title}
                 </h3>
-                <p className="mt-1 text-xs text-gray-500 leading-relaxed">
+                <p className="mt-1 text-xs text-[#737373] leading-relaxed">
                   {feature.description}
                 </p>
               </div>

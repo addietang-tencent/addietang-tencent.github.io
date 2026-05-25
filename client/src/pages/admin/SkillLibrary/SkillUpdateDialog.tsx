@@ -517,7 +517,7 @@ description: this is a skill creator.
                         </span>
                       )}
                       {file.status === 'error' && <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
-                      {file.status === 'parsing' && <Loader className="w-5 h-5 text-blue-600 animate-spin shrink-0" />}
+                      {file.status === 'parsing' && <Loader className="w-5 h-5 text-[#355EF1] animate-spin shrink-0" />}
                       <div className="flex items-center gap-2 min-w-0">
                         <p className="text-sm font-normal text-[#0A0A0A]">{file.name}</p>
                         {file.status === 'success' && file.files && (
@@ -691,7 +691,7 @@ description: this is a skill creator.
                                 ? `已选 ${formData.groupIds.length} 个分组`
                                 : '选择分组…'}
                             </span>
-                            <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
+                            <ChevronDown className="w-3 h-3 text-[#A3A3A3] shrink-0" />
                           </button>
                         </PopoverTrigger>
                       </TooltipTrigger>

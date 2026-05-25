@@ -254,14 +254,14 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
           </DialogHeader>
 
           {/* 信息提示（参考 TAT 已创建数提示） */}
-          <div className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+          <div className="text-xs text-[#355EF1] bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
             您已创建 <span className="font-semibold">{MOCK_COMMAND_TEMPLATES.length}</span> 个命令（最多 500 个）
           </div>
 
           <div className="space-y-4">
             {/* 命令名称 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
+              <Label className="text-sm font-medium text-[#334155] mb-1.5 flex items-center gap-1">
                 命令名称 <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -275,9 +275,9 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
             {/* 命令类型 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-1.5">命令类型</Label>
+              <Label className="text-sm font-medium text-[#334155] mb-1.5">命令类型</Label>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-3 h-9 rounded-md border border-blue-200 bg-blue-50 text-sm font-medium text-blue-700">
+                <span className="inline-flex items-center px-3 h-9 rounded-md border border-blue-200 bg-blue-50 text-sm font-medium text-[#355EF1]">
                   <span className="w-2 h-2 bg-blue-500 rounded-full mr-2" />
                   SHELL
                 </span>
@@ -287,7 +287,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
             {/* 执行路径 + 执行用户（一行） */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5">执行路径</Label>
+                <Label className="text-sm font-medium text-[#334155] mb-1.5">执行路径</Label>
                 <Input
                   value={draft.workingDir}
                   onChange={(e) => update("workingDir", e.target.value)}
@@ -296,7 +296,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
                 />
               </div>
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-1.5">执行用户</Label>
+                <Label className="text-sm font-medium text-[#334155] mb-1.5">执行用户</Label>
                 <Input
                   value={draft.runAsUser}
                   onChange={(e) => update("runAsUser", e.target.value)}
@@ -308,11 +308,11 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
             {/* 超时时间（带 Tooltip 解释） */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
+              <Label className="text-sm font-medium text-[#334155] mb-1.5 flex items-center gap-1">
                 超时时间
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3] cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent side="right" className="max-w-[260px] text-xs leading-relaxed">
                     可设置范围 1~86400 秒，默认 60 秒。超时后，会强制终止命令执行进程。
@@ -328,14 +328,14 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
                   onChange={(e) => update("timeoutSec", Number(e.target.value) || 60)}
                   className="h-9 tabular-nums"
                 />
-                <span className="text-sm text-gray-500">秒</span>
+                <span className="text-sm text-[#737373]">秒</span>
               </div>
               {errors.timeoutSec && <p className="text-xs text-red-600 mt-1">{errors.timeoutSec}</p>}
             </div>
 
             {/* 命令内容 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1">
+              <Label className="text-sm font-medium text-[#334155] mb-1.5 flex items-center gap-1">
                 命令内容 <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -355,11 +355,11 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
             {/* 使用参数（开关 + 变量定义表格） */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                <Label className="text-sm font-medium text-[#334155] flex items-center gap-1">
                   使用参数
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                      <Info className="w-3.5 h-3.5 text-[#A3A3A3] cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" className="max-w-[280px] text-xs leading-relaxed">
                       您在命令中设置的变量值，以 <span className="font-mono">{"{{key}}"}</span> 的形式表示。下发命令时可覆盖默认值，便于一份命令复用到不同场景。
@@ -400,14 +400,14 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
                   {/* 已定义但内容里没用到的 key 提示 */}
                   {unusedKeys.length > 0 && (
-                    <div className="flex items-start gap-2 text-xs text-gray-500 px-1">
+                    <div className="flex items-start gap-2 text-xs text-[#737373] px-1">
                       <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                       <div className="flex-1 leading-relaxed">
                         变量
                         {unusedKeys.map((k, i) => (
                           <span key={k}>
                             {i > 0 && "、"}
-                            <span className="font-mono mx-0.5 text-gray-700">{k}</span>
+                            <span className="font-mono mx-0.5 text-[#334155]">{k}</span>
                           </span>
                         ))}
                         未在命令内容中引用，可以删除或改用 <span className="font-mono">{"{{key}}"}</span> 引用。
@@ -417,7 +417,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
                   {/* 参数列表表头 */}
                   {draft.params.length > 0 && (
-                    <div className="grid grid-cols-12 gap-2 px-1 text-[11px] text-gray-400 font-medium">
+                    <div className="grid grid-cols-12 gap-2 px-1 text-[11px] text-[#A3A3A3] font-medium">
                       <div className="col-span-3">变量名</div>
                       <div className="col-span-4">默认值</div>
                       <div className="col-span-4">说明</div>
@@ -459,7 +459,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
                           <button
                             type="button"
                             onClick={() => removeParam(idx)}
-                            className="h-8 w-8 inline-flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                            className="h-8 w-8 inline-flex items-center justify-center text-[#A3A3A3] hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
                             title="删除变量"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -486,7 +486,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
             {/* 备注 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-1.5">备注</Label>
+              <Label className="text-sm font-medium text-[#334155] mb-1.5">备注</Label>
               <Input
                 value={draft.description ?? ""}
                 onChange={(e) => update("description", e.target.value)}
@@ -521,13 +521,13 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
           </DialogHeader>
 
           <div className="space-y-3">
-            <p className="text-sm text-gray-700">命令内容中包含以下高危操作：</p>
+            <p className="text-sm text-[#334155]">命令内容中包含以下高危操作：</p>
             <ul className="text-sm text-red-700 space-y-1 pl-4 list-disc bg-red-50 rounded-lg p-3">
               {showDangerConfirm?.reasons.map((r, i) => (
                 <li key={i}>{r}</li>
               ))}
             </ul>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#737373]">
               建议先在测试机执行验证后，再批量下发到生产环境。
             </p>
           </div>

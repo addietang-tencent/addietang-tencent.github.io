@@ -645,8 +645,8 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                   onClick={() => { setScopeType('public'); setGroupIds([]); }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                     scopeType === 'public'
-                      ? 'border-blue-200 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
+                      : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
                   }`}
                 >
                   全部用户
@@ -655,8 +655,8 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                   onClick={() => setScopeType('private')}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                     scopeType === 'private'
-                      ? 'border-blue-200 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
+                      : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
                   }`}
                 >
                   按分组
@@ -668,13 +668,13 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                     <Tooltip delayDuration={1000}>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors min-w-[120px]">
+                          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 bg-white text-[#737373] hover:bg-gray-50 transition-colors min-w-[120px]">
                             <span className="truncate">
                               {groupIds.length > 0
                                 ? `已选 ${groupIds.length} 个分组`
                                 : '选择分组…'}
                             </span>
-                            <ChevronDown className="w-3 h-3 text-gray-400 shrink-0" />
+                            <ChevronDown className="w-3 h-3 text-[#A3A3A3] shrink-0" />
                           </button>
                         </PopoverTrigger>
                       </TooltipTrigger>
@@ -689,7 +689,7 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                     <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
                       <div className="p-2 border-b border-[#e5e5e5]">
                         <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                           <input
                             placeholder="搜索分组…"
                             value={groupSearchQuery}
@@ -720,22 +720,22 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                                 }`}>
                                   {checked && <Check className="w-2.5 h-2.5 text-white" />}
                                 </span>
-                                <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                                <span className="text-xs text-[#334155] truncate">{group.name}</span>
                               </button>
                             );
                           })}
                         {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
-                          <p className="text-[11px] text-gray-400 py-3 text-center">无匹配分组</p>
+                          <p className="text-[11px] text-[#A3A3A3] py-3 text-center">无匹配分组</p>
                         )}
                       </div>
                       <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5]">
-                        <p className="text-[11px] text-gray-400">
+                        <p className="text-[11px] text-[#A3A3A3]">
                           已选 {groupIds.length} 个分组
                         </p>
                         {groupIds.length > 0 && (
                           <button
                             onClick={() => setGroupIds([])}
-                            className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+                            className="text-[11px] text-[#A3A3A3] hover:text-[#737373] transition-colors"
                           >
                             清除
                           </button>
@@ -965,7 +965,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
         </DialogHeader>
 
         {updatableSkills.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-gray-400">
+          <div className="flex items-center justify-center py-12 text-[#A3A3A3]">
             <div className="text-center">
               <CheckCircle2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p className="text-sm">所有技能均为最新版本</p>
@@ -988,16 +988,16 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                     {allPageSelected && <Check className="w-3 h-3 text-white" />}
                   </div>
                 </div>
-                <span className="text-xs font-medium text-gray-500">技能名称</span>
-                <span className="text-xs font-medium text-gray-500">类型</span>
-                <span className="text-xs font-medium text-gray-500">新版本</span>
-                <span className="text-xs font-medium text-gray-500">原版本</span>
-                <span className="text-xs font-medium text-gray-500">更新说明</span>
+                <span className="text-xs font-medium text-[#737373]">技能名称</span>
+                <span className="text-xs font-medium text-[#737373]">类型</span>
+                <span className="text-xs font-medium text-[#737373]">新版本</span>
+                <span className="text-xs font-medium text-[#737373]">原版本</span>
+                <span className="text-xs font-medium text-[#737373]">更新说明</span>
               </div>
 
               {/* 技能列表项 */}
               {pagedSkills.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-sm text-gray-400">
+                <div className="flex items-center justify-center py-8 text-sm text-[#A3A3A3]">
                   暂无可更新的技能
                 </div>
               ) : (
@@ -1021,7 +1021,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                         </div>
                       </div>
                       {/* 技能名称 */}
-                      <span className="text-sm font-medium text-gray-900 truncate">
+                      <span className="text-sm font-medium text-[#0A0A0A] truncate">
                         {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
                       </span>
                       {/* 类型 */}
@@ -1029,13 +1029,13 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                         {skill.source === 'public' ? '公共' : '企业'}
                       </StatusTag>
                       {/* 新版本 */}
-                      <span className="font-mono text-xs text-gray-600 font-medium">v{latest}</span>
+                      <span className="font-mono text-xs text-[#737373] font-medium">v{latest}</span>
                       {/* 原版本 */}
-                      <span className="font-mono text-xs text-gray-400">v{skill.version}</span>
+                      <span className="font-mono text-xs text-[#A3A3A3]">v{skill.version}</span>
                       {/* 更新说明 */}
                       <Tooltip delayDuration={300}>
                         <TooltipTrigger asChild>
-                          <span className="text-xs text-gray-500 line-clamp-2 block">
+                          <span className="text-xs text-[#737373] line-clamp-2 block">
                             {changeLog}
                           </span>
                         </TooltipTrigger>
@@ -1052,7 +1052,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
             </div>
 
             {/* 分页控件 */}
-            <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
+            <div className="flex items-center justify-between text-sm text-[#737373] pt-1">
               <Pagination
                 total={updatableSkills.length}
                 current={currentPage}
@@ -1071,7 +1071,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                 }}
               />
               {selectedIds.size > 0 && (
-                <span className="text-gray-500 ml-1.5">
+                <span className="text-[#737373] ml-1.5">
                   已选 {selectedIds.size} 条记录
                 </span>
               )}
@@ -1199,7 +1199,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           返回初始技能包列表
@@ -1215,12 +1215,12 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
+              <h2 className="text-sm font-semibold text-[#0A0A0A]">{pkg.name}</h2>
               {pkg.isActive && (
                 <StatusTag variant="green" dot>生效中</StatusTag>
               )}
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <div className="flex items-center gap-1.5 text-xs text-[#A3A3A3]">
               <StatusTag variant={isPublicScope(pkg) ? "blue" : "gray"}>
                 {isPublicScope(pkg) ? '全部用户' : scopeLabels.join('、')}
               </StatusTag>
@@ -1233,7 +1233,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
        >
         <div className="px-4 border-b border-[#e5e5e5] flex items-center justify-between" style={{ minHeight: '48px' }}>
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-[#334155]">
             技能列表（共 {localSkills.length} 个）
           </span>
           <div className="flex items-center gap-2">
@@ -1265,7 +1265,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                   variant="outline"
                   size="sm"
                   onClick={handleDiscard}
-                  className="h-7 px-3 text-xs text-gray-500"
+                  className="h-7 px-3 text-xs text-[#737373]"
                 >
                   取消
                 </Button>
@@ -1289,11 +1289,11 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
               return (
                 <div key={skill.skillId} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
                   <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                    <Package className="w-4 h-4 text-gray-500" />
+                    <Package className="w-4 h-4 text-[#737373]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium text-gray-800">
+                      <span className="font-mono text-sm font-medium text-[#0A0A0A]">
                         {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
                       </span>
                     </div>
@@ -1304,10 +1304,10 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                       {wasRefreshed ? (
                         <span className="font-mono text-[10px]">
                           <span className="text-green-600 font-medium">v{skill.version}</span>
-                          <span className="text-gray-400 ml-0.5">(原v{skill.originalVersion})</span>
+                          <span className="text-[#A3A3A3] ml-0.5">(原v{skill.originalVersion})</span>
                         </span>
                       ) : (
-                        <span className="font-mono text-[10px] text-gray-400">v{skill.version}</span>
+                        <span className="font-mono text-[10px] text-[#A3A3A3]">v{skill.version}</span>
                       )}
                     </div>
                   </div>
@@ -1319,7 +1319,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                         className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
                           canUpdate
                             ? 'text-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer'
-                            : 'text-gray-300 cursor-default'
+                            : 'text-[#A3A3A3] cursor-default'
                         }`}
                         title={canUpdate ? '有新版本，点击刷新' : '已是最新'}
                       >
@@ -1335,7 +1335,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                   {/* 删除按钮 */}
                   <button
                     onClick={() => handleRemoveLocal(skill.skillId)}
-                    className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-[#A3A3A3] hover:text-red-500 hover:bg-red-50 transition-colors"
                     title="从技能包中移除"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1345,7 +1345,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-12 text-[#A3A3A3]">
             <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-sm">该技能包还没有技能</p>
             <p className="text-xs mt-1">可从公共技能库或企业技能库添加</p>
@@ -1564,10 +1564,10 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       {/* 顶部操作栏 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <h3 style={{ fontSize: '16px' }} className="font-medium text-gray-700 shrink-0">初始技能包列表</h3>
+          <h3 style={{ fontSize: '16px' }} className="font-medium text-[#334155] shrink-0">初始技能包列表</h3>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-xl whitespace-nowrap">
-            <Sparkles className="w-3 h-3 text-blue-500 shrink-0" />
-            <span className="text-xs text-blue-600">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
+            <Sparkles className="w-3 h-3 text-[#355EF1] shrink-0" />
+            <span className="text-xs text-[#355EF1]">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -1578,7 +1578,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -1587,7 +1587,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                         ? '全部应用范围'
                         : [...selectedScopes].map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[280px]">
@@ -1619,7 +1619,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   {/* 搜索框 */}
                   <div className="px-2 pb-1.5 pt-1">
                     <div className="relative">
-                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                       <input
                         placeholder="搜索..."
                         value={scopeSearchQuery}
@@ -1641,7 +1641,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                         }
                         setScopeSearchQuery('');
                       }}
-                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                     >
                       <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                         isAllSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1654,13 +1654,13 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   {/* 全部用户 区域 */}
                   {showPublic && (
                     <>
-                      <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
+                      <div className="px-3 pt-2 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                         全部用户
                       </div>
                       <button
                         type="button"
                         onClick={() => toggleScope('public')}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                       >
                         <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                           selectedScopes.has('public') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1674,7 +1674,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   {/* 按分组 区域 */}
                   {showGroupSection && (
                     <>
-                      <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
+                      <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                         按分组
                       </div>
                       <div className="max-h-44 overflow-y-auto">
@@ -1683,7 +1683,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                             key={group.id}
                             type="button"
                             onClick={() => toggleScope(group.id)}
-                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                           >
                             <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                               selectedScopes.has(group.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1694,7 +1694,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           </button>
                         ))}
                         {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
-                          <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
+                          <p className="text-xs text-[#A3A3A3] py-2 text-center">没有匹配的结果</p>
                         )}
                       </div>
                     </>
@@ -1702,14 +1702,14 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   {/* 底部：已选数量 + 清除筛选 */}
                   {selectedScopes.size > 0 && (
                     <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
+                      <span className="text-xs text-[#737373]">已选 {selectedScopes.size} 个应用范围</span>
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedScopes(new Set());
                           setScopeSearchQuery('');
                         }}
-                        className="text-xs text-blue-500 hover:text-blue-600"
+                        className="text-xs text-[#355EF1] hover:text-[#355EF1]"
                       >
                         清除
                       </button>
@@ -1751,7 +1751,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                       {isPinned && (
                         <Tooltip delayDuration={300}>
                           <TooltipTrigger asChild>
-                            <span className="text-blue-500 shrink-0">
+                            <span className="text-[#355EF1] shrink-0">
                               <Pin className="w-3.5 h-3.5" />
                             </span>
                           </TooltipTrigger>
@@ -1760,9 +1760,9 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           </TooltipContent>
                         </Tooltip>
                       )}
-                      <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
+                      <span className="text-sm font-medium text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors">{pkg.name}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <div className="flex items-center gap-3 text-xs text-[#A3A3A3]">
                       <span>{pkg.skills.length} 个技能</span>
                       {/* 应用范围标签 + 编辑 */}
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -1782,7 +1782,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                     {/* 生效开关 */}
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-gray-400">设为生效</span>
+                      <span className="text-xs text-[#A3A3A3]">设为生效</span>
                       <Switch
                         checked={pkg.isActive}
                         onCheckedChange={(v) => handleToggleActive(pkg.id, v)}
@@ -1795,7 +1795,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           <TooltipTrigger asChild>
                             <button
                               onClick={() => {}}
-                              className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
+                              className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-[#A3A3A3] cursor-not-allowed"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1807,7 +1807,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                     ) : (
                       <button
                         onClick={() => setDeleteTarget(pkg.id)}
-                        className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
+                        className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-[#A3A3A3] hover:text-red-500 hover:bg-red-50"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1819,7 +1819,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           })}
         </div>
       ) : (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#e5e5e5]"
+        <div className="text-center py-16 text-[#A3A3A3] bg-white rounded-xl border border-[#e5e5e5]"
          >
           <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm font-medium">

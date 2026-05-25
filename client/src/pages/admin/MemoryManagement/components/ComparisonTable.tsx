@@ -38,8 +38,8 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <Zap className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-[15px] font-semibold text-gray-900">Free 版</h3>
-              <span className="text-xs text-gray-500">入门方案</span>
+              <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Free 版</h3>
+              <span className="text-xs text-[#737373]">入门方案</span>
             </div>
           </div>
 
@@ -49,19 +49,19 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-sm text-gray-700">本地文件持久化</span>
+              <span className="text-sm text-[#334155]">本地文件持久化</span>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Minus className="w-3 h-3 text-gray-400" />
+                <Minus className="w-3 h-3 text-[#A3A3A3]" />
               </div>
-              <span className="text-sm text-gray-500">仅关键词检索</span>
+              <span className="text-sm text-[#737373]">仅关键词检索</span>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Minus className="w-3 h-3 text-gray-400" />
+                <Minus className="w-3 h-3 text-[#A3A3A3]" />
               </div>
-              <span className="text-sm text-gray-500">小于 1 万条记忆数据</span>
+              <span className="text-sm text-[#737373]">小于 1 万条记忆数据</span>
             </div>
           </div>
         </div>
@@ -79,8 +79,8 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <Crown className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-[15px] font-semibold text-gray-900">Pro 版</h3>
-              <span className="text-xs text-blue-600 font-medium">企业级方案</span>
+              <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Pro 版</h3>
+              <span className="text-xs text-[#355EF1] font-medium">企业级方案</span>
             </div>
             {/* 已开通状态标签 */}
             {isProActive && (
@@ -97,41 +97,41 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-sm text-gray-700">腾讯云向量数据库 (VDB)</span>
+              <span className="text-sm text-[#334155]">腾讯云向量数据库 (VDB)</span>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-sm text-gray-700">语义 + 关键词双路检索</span>
+              <span className="text-sm text-[#334155]">语义 + 关键词双路检索</span>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
                 <Check className="w-3 h-3 text-white" />
               </div>
-              <span className="text-sm text-gray-700">支持百万级记忆数据</span>
+              <span className="text-sm text-[#334155]">支持百万级记忆数据</span>
             </div>
           </div>
 
           {/* 企业级特性 Grid */}
           <div className="grid grid-cols-2 gap-2.5 mt-4">
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Sparkles className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">短期记忆压缩，Token 节省 50%+</span>
+              <Sparkles className="w-4 h-4 text-[#737373] flex-shrink-0" />
+              <span className="text-sm text-[#737373]">短期记忆压缩，Token 节省 50%+</span>
               <span className="px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">New</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Shield className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">全链路加密，保障数据安全</span>
+              <Shield className="w-4 h-4 text-[#737373] flex-shrink-0" />
+              <span className="text-sm text-[#737373]">全链路加密，保障数据安全</span>
               <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Database className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">数据备份，可靠性更高</span>
+              <Database className="w-4 h-4 text-[#737373] flex-shrink-0" />
+              <span className="text-sm text-[#737373]">数据备份，可靠性更高</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="text-sm text-gray-600">租户权限隔离，访问更安全</span>
+              <Lock className="w-4 h-4 text-[#737373] flex-shrink-0" />
+              <span className="text-sm text-[#737373]">租户权限隔离，访问更安全</span>
             </div>
           </div>
         </div>

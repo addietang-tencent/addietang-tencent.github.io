@@ -141,8 +141,8 @@ function ParentDropdownSelector({
         <div
           className={`flex items-center gap-1.5 h-8 px-2 rounded-xl cursor-pointer text-sm transition-colors ${
             isSelected
-              ? "bg-blue-50 text-blue-600"
-              : "text-gray-700 hover:bg-gray-50"
+              ? "bg-blue-50 text-[#355EF1]"
+              : "text-[#334155] hover:bg-gray-50"
           }`}
           style={{ paddingLeft: 8 + node.depth * 16 }}
           onClick={() => {
@@ -157,7 +157,7 @@ function ParentDropdownSelector({
                 e.stopPropagation();
                 toggle(node.id);
               }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0"
             >
               {(shouldShow) ? (
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -184,11 +184,11 @@ function ParentDropdownSelector({
       >
         {selectedFullPath ? (
           <span className="flex items-center gap-1 flex-1 min-w-0">
-            <span className="truncate text-gray-900">{selectedFullPath}</span>
+            <span className="truncate text-[#0A0A0A]">{selectedFullPath}</span>
             {!disabled && (
               <button
                 type="button"
-                className="w-4 h-4 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 shrink-0"
+                className="w-4 h-4 flex items-center justify-center rounded-full text-[#A3A3A3] hover:text-[#737373] hover:bg-gray-100 shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange(null);
@@ -199,9 +199,9 @@ function ParentDropdownSelector({
             )}
           </span>
         ) : (
-          <span className="flex-1 text-gray-400">选填，不选则为一级分组</span>
+          <span className="flex-1 text-[#A3A3A3]">选填，不选则为一级分组</span>
         )}
-        <ChevronsUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+        <ChevronsUpDown className="w-3.5 h-3.5 text-[#A3A3A3] shrink-0" />
       </div>
 
       {/* 下拉面板 */}
@@ -210,19 +210,19 @@ function ParentDropdownSelector({
           {/* 搜索框 */}
           <div className="px-2 pt-2 pb-1.5 border-b border-[#e5e5e5]">
             <div className="flex items-center gap-1.5 h-8 px-2 bg-gray-50 border border-gray-200 rounded-xl">
-              <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <Search className="w-3.5 h-3.5 text-[#A3A3A3] shrink-0" />
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="搜索分组"
-                className="flex-1 text-sm bg-transparent outline-none placeholder:text-gray-400"
+                className="flex-1 text-sm bg-transparent outline-none placeholder:text-[#A3A3A3]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
                 <button
                   type="button"
-                  className="w-3.5 h-3.5 flex items-center justify-center text-gray-400 hover:text-gray-600"
+                  className="w-3.5 h-3.5 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373]"
                   onClick={() => setSearchQuery("")}
                 >
                   <X className="w-3 h-3" />
@@ -233,11 +233,11 @@ function ParentDropdownSelector({
           {/* 树形列表 */}
           <div className="max-h-[180px] overflow-y-auto p-1.5">
             {tree.length === 0 ? (
-              <div className="text-xs text-gray-400 text-center py-3">
+              <div className="text-xs text-[#A3A3A3] text-center py-3">
                 暂无可选分组
               </div>
             ) : matchedIds && matchedIds.size === 0 ? (
-              <div className="text-xs text-gray-400 text-center py-3">
+              <div className="text-xs text-[#A3A3A3] text-center py-3">
                 未找到匹配分组
               </div>
             ) : (
@@ -369,11 +369,11 @@ export function GroupFormDialog({
         <div className="py-2 space-y-4">
           {/* 上级分组（在前） */}
           <div>
-            <label className="text-sm font-medium text-gray-900 mb-1.5 block">
+            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">
               上级分组
             </label>
             {parentLocked && lockedParentName ? (
-              <div className="h-9 flex items-center px-3 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl">
+              <div className="h-9 flex items-center px-3 text-sm text-[#737373] bg-gray-50 border border-gray-200 rounded-xl">
                 {lockedParentName}
               </div>
             ) : (
@@ -388,7 +388,7 @@ export function GroupFormDialog({
 
           {/* 分组名称（在后） */}
           <div>
-            <label className="text-sm font-medium text-gray-900 mb-1.5 block">
+            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">
               分组名称<span className="text-red-500 ml-0.5">*</span>
             </label>
             <div
@@ -396,7 +396,7 @@ export function GroupFormDialog({
               onClick={() => nameInputRef.current?.focus()}
             >
               {pathPrefix && (
-                <span className="pl-3 text-sm text-gray-600 whitespace-nowrap shrink-0 pointer-events-none select-none">
+                <span className="pl-3 text-sm text-[#737373] whitespace-nowrap shrink-0 pointer-events-none select-none">
                   {pathPrefix}
                 </span>
               )}
@@ -404,7 +404,7 @@ export function GroupFormDialog({
                 ref={nameInputRef}
                 type="text"
                 placeholder="请输入分组名称"
-                className="flex-1 h-full px-3 text-sm bg-transparent outline-none placeholder:text-gray-400"
+                className="flex-1 h-full px-3 text-sm bg-transparent outline-none placeholder:text-[#A3A3A3]"
                 style={{ paddingLeft: pathPrefix ? "0" : undefined }}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -414,7 +414,7 @@ export function GroupFormDialog({
             {isDuplicate && name.trim() && (
               <p className="text-xs text-red-500 mt-1">分组名称已存在</p>
             )}
-            <p className="text-xs text-gray-400 mt-1.5">
+            <p className="text-xs text-[#A3A3A3] mt-1.5">
               分组名称为唯一标识，不能与已有分组重名，创建后支持修改
             </p>
           </div>
@@ -527,14 +527,14 @@ export function DeleteGroupDialog({
 
         <div className="py-2 space-y-3">
           <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-500">分组名称</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm text-[#737373]">分组名称</span>
+            <span className="text-sm font-medium text-[#0A0A0A]">
               {group?.name}
             </span>
           </div>
           <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-500">分组内用户数</span>
-            <span className="text-sm font-semibold text-gray-800">
+            <span className="text-sm text-[#737373]">分组内用户数</span>
+            <span className="text-sm font-semibold text-[#0A0A0A]">
               {memberCount} 人
             </span>
           </div>
@@ -542,9 +542,9 @@ export function DeleteGroupDialog({
           {/* 分组专属配置 */}
           <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-500">分组专属配置</span>
+              <span className="text-sm text-[#737373]">分组专属配置</span>
               <button
-                className="text-gray-400 hover:text-blue-500 transition-colors"
+                className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                 title="刷新"
                 onClick={() => {
                   setConfigRefreshing(true);
@@ -574,9 +574,9 @@ export function DeleteGroupDialog({
           {/* Agent 实例数 */}
           <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-500">分组下 Agent 实例</span>
+              <span className="text-sm text-[#737373]">分组下 Agent 实例</span>
               <button
-                className="text-gray-400 hover:text-blue-500 transition-colors"
+                className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                 title="刷新"
                 onClick={() => {
                   setAgentRefreshing(true);
@@ -591,7 +591,7 @@ export function DeleteGroupDialog({
               </button>
             </div>
             {hasAgentInstances ? (
-              <span className="text-sm font-semibold text-gray-800">
+              <span className="text-sm font-semibold text-[#0A0A0A]">
                 {agentStats.instanceCount} 个实例
               </span>
             ) : (
